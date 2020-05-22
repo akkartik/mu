@@ -456,6 +456,7 @@ else if (is_equal(*arg, "--trace")) {
 :(before "End trace Commit")
 if (Trace_file.is_open()) {
   dump_trace_line(Trace_file, t);
+  Trace_file.flush();
   past_lines.pop_back();  // economize on memory
 }
 :(before "End One-time Setup")

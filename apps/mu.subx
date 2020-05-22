@@ -2802,7 +2802,7 @@ test-convert-index-into-array-using-offset-on-stack:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-and-type-definition:
+test-convert-function-and-type-definition:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3354,7 +3354,9 @@ $parse-mu:type:
         #
         (lookup *ecx *(ecx+4))  # => eax
         # TODO: ensure that 'line' has nothing else but '{'
+#? (dump-typeinfos "=== aaa\n")
         (populate-mu-type *(ebp+8) %eax)  # => eax
+#? (dump-typeinfos "=== zzz\n")
         # reclaim new-type
         81 0/subop/add %esp 8/imm32
         # restore
@@ -5603,15 +5605,10 @@ $add-operation-and-inputs-to-stmt:read-inouts:
       {
         81 7/subop/compare %ebx 0/imm32/false
         74/jump-if-= break/disp8
-        81 7/subop/compare *(edi+8) 0/imm32  # Stmt1-inouts or Regvardef-inouts
+        (lookup *(edi+0xc) *(edi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+        3d/compare-eax-and 0/imm32
         74/jump-if-= break/disp8
-        (lookup-or-create-constant *(edi+8) %ecx)  # Stmt1-inouts => eax
-#?         (write-buffered Stderr "creating new output var ")
-#?         (print-int32-buffered Stderr %eax)
-#?         (write-buffered Stderr " for field called ")
-#?         (write-slice-buffered Stderr %ecx)
-#?         (write-buffered Stderr Newline)
-#?         (flush Stderr)
+        (lookup-or-create-constant %eax %ecx %esi)
         e9/jump $add-operation-and-inputs-to-stmt:save-var/disp32
       }
       # is-deref? = false
@@ -6453,13 +6450,13 @@ container-type:  # container: (addr stmt-var) -> result/eax: type-id
     89/<- %ebp 4/r32/esp
     #
     8b/-> *(ebp+8) 0/r32/eax
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
-    8b/-> *(eax+4) 0/r32/eax  # Var-type
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
     {
       81 7/subop/compare *(eax+8) 0/imm32  # Tree-right
       74/jump-if-= break/disp8
-      8b/-> *(eax+8) 0/r32/eax  # Tree-right
-      8b/-> *(eax+4) 0/r32/eax  # Tree-left
+      (lookup *(eax+0xc) *(eax+0x10))  # Tree-right Tree-right => eax
+      (lookup *(eax+4) *(eax+8))  # Tree-left Tree-left => eax
     }
     8b/-> *(eax+4) 0/r32/eax  # Tree-value
 $container-type:end:
@@ -6494,6 +6491,12 @@ $find-or-create-typeinfo:create:
       (allocate Heap *Typeinfo-size %edi)
       # var tmp/eax: (addr typeinfo) = lookup(*out)
       (lookup *edi *(edi+4))  # => eax
+#?     (write-buffered Stderr "created typeinfo at ")
+#?     (print-int32-buffered Stderr %eax)
+#?     (write-buffered Stderr " for type-id ")
+#?     (print-int32-buffered Stderr *(ebp+8))
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
       # tmp->id = t
       8b/-> *(ebp+8) 2/r32/edx
       89/<- *eax 2/r32/edx  # Typeinfo-id
@@ -6517,6 +6520,8 @@ $find-or-create-typeinfo:create:
       89/<- *_Program-types->payload 1/r32/ecx
     }
 $find-or-create-typeinfo:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
     5f/pop-to-edi
     5a/pop-to-edx
@@ -6602,7 +6607,7 @@ find-or-create-typeinfo-output-var:  # T: (addr typeinfo), f: (addr slice), out:
       89/<- %eax 4/r32/esp
       (copy-array Heap "field" %eax)
       # . new var
-      (new-var Heap *eax *(eax+4) *(ebp+0x10))
+      (new-var Heap  *eax *(eax+4)  *(ebp+0x10))
       # . reclaim name
       81 0/subop/add %esp 8/imm32
       # save out in typeinfo
@@ -6647,22 +6652,37 @@ find-or-create-typeinfo-fields:  # T: (addr typeinfo), f: (addr slice), out: (ad
     50/push-eax
     56/push-esi
     57/push-edi
-    # esi = T->fields
-    8b/-> *(ebp+8) 6/r32/esi
-    8b/-> *(esi+4) 6/r32/esi  # Typeinfo-fields
+    # eax = lookup(T->fields)
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *(eax+4) *(eax+8))  # Typeinfo-fields Typeinfo-fields => eax
+    # edi = out
+    8b/-> *(ebp+0x10) 7/r32/edi
     # var src/esi: (addr handle typeinfo-entry) = get-or-insert-slice(T->fields, f)
-    (get-or-insert-slice %esi *(ebp+0xc) *Typeinfo-fields-row-size Heap)  # => eax
+    (get-or-insert-slice %eax *(ebp+0xc) *Typeinfo-fields-row-size Heap)  # => eax
     89/<- %esi 0/r32/eax
     # if src doesn't exist, allocate it
     {
       81 7/subop/compare *esi 0/imm32
-      75/jump-if-!= break/disp8
-      (allocate Heap *Typeinfo-entry-size *(ebp+0x10))
-      eb/jump $find-or-create-typeinfo-fields:end/disp8
+      0f 85/jump-if-!= break/disp32
+      (allocate Heap *Typeinfo-entry-size %esi)
+#?       (write-buffered Stderr "handle at ")
+#?       (print-int32-buffered Stderr %esi)
+#?       (write-buffered Stderr ": ")
+#?       (print-int32-buffered Stderr *esi)
+#?       (write-buffered Stderr " ")
+#?       (print-int32-buffered Stderr *(esi+4))
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
+#?       (lookup *esi *(esi+4))
+#?       (write-buffered Stderr "created typeinfo fields at ")
+#?       (print-int32-buffered Stderr %esi)
+#?       (write-buffered Stderr " for ")
+#?       (print-int32-buffered Stderr *(ebp+8))
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
     }
-    # otherwise copy it
-    # . edi = out
-    8b/-> *(ebp+0x10) 7/r32/edi
+    # *out = src
+    # . *edi = *src
     8b/-> *esi 0/r32/eax
     89/<- *edi 0/r32/eax
     8b/-> *(esi+4) 0/r32/eax
@@ -6726,6 +6746,14 @@ populate-mu-type:  # in: (addr stream byte), t: (addr typeinfo)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
+    # var v/esi: (handle var)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %esi 4/r32/esp
+    # var r/ebx: (handle typeinfo-entry)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ebx 4/r32/esp
     {
 $populate-mu-type:line-loop:
       (clear-stream %ecx)
@@ -6749,34 +6777,36 @@ $populate-mu-type:line-loop:
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-!= break/disp32
 $populate-mu-type:parse-element:
-      # var v/esi: (handle var) = parse-var-with-type(word-slice, first-line)
-      (parse-var-with-type %edx %ecx)  # => eax
-      89/<- %esi 0/r32/eax
+      # v = parse-var-with-type(word-slice, first-line)
+      # must do this first to strip the trailing ':' from word-slice before
+      # using it in find-or-create-typeinfo-fields below
+      # TODO: clean up that mutation in parse-var-with-type
+      (parse-var-with-type %edx %ecx %esi)  # => eax
+      # var tmp/ecx
+      51/push-ecx
 $populate-mu-type:create-typeinfo-fields:
       # var r/ebx: (handle typeinfo-entry)
-      (find-or-create-typeinfo-fields %edi %edx)  # => eax
-      89/<- %ebx 0/r32/eax
-#?       (write-buffered Stderr "var ")
-#?       (write-buffered Stderr *esi)  # Var-name
-#?       (write-buffered Stderr " is at index ")
-#?       (print-int32-buffered Stderr *(ebp-4))
-#?       (write-buffered Stderr Newline)
-#?       (flush Stderr)
+      (find-or-create-typeinfo-fields %edi %edx %ebx)
       # r->index = curr-index
-      8b/-> *(ebp-4) 0/r32/eax
-      89/<- *(ebx+4) 0/r32/eax  # Typeinfo-entry-index
+      (lookup *ebx *(ebx+4))  # => eax
+      8b/-> *(ebp-4) 1/r32/ecx
+      89/<- *(eax+8) 1/r32/ecx  # Typeinfo-entry-index
       # ++curr-index
       ff 0/subop/increment *(ebp-4)
 $populate-mu-type:set-input-type:
       # r->input-var = v
-      89/<- *ebx 6/r32/esi  # Typeinfo-entry-input-var
+      8b/-> *esi 1/r32/ecx
+      89/<- *eax 1/r32/ecx  # Typeinfo-entry-input-var
+      8b/-> *(esi+4) 1/r32/ecx
+      89/<- *(eax+4) 1/r32/ecx  # Typeinfo-entry-input-var
+      59/pop-to-ecx
       {
 $populate-mu-type:create-output-type:
         # if (r->output-var == 0) create a new var with some placeholder data
-        81 7/subop/compare *(ebx+8) 0/imm32  # Typeinfo-entry-output-var
+        81 7/subop/compare *(ebx+0xc) 0/imm32  # Typeinfo-entry-output-var
         75/jump-if-!= break/disp8
-        (new-literal Heap %edx)  # => eax
-        89/<- *(ebx+8) 0/r32/eax  # Typeinfo-entry-output-var
+        8d/copy-address *(ebx+0xc) 0/r32/eax  # Typeinfo-entry-output-var
+        (new-literal Heap %edx %eax)
       }
       e9/jump loop/disp32
     }
@@ -6784,10 +6814,10 @@ $populate-mu-type:invalidate-total-size-in-bytes:
     # Offsets and total size may not be accurate here since we may not yet
     # have encountered the element types.
     # We'll recompute them separately after parsing the entire program.
-    c7 0/subop/copy *(edi+8) -2/imm32/uninitialized  # Typeinfo-total-size-in-bytes
+    c7 0/subop/copy *(edi+0xc) -2/imm32/uninitialized  # Typeinfo-total-size-in-bytes
 $populate-mu-type:end:
     # . reclaim locals
-    81 0/subop/add %esp 0x214/imm32
+    81 0/subop/add %esp 0x224/imm32
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -6861,35 +6891,32 @@ populate-mu-type-sizes:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # . save registers
-    51/push-ecx
 $populate-mu-type-sizes:total-sizes:
-    # var curr/ecx: (handle typeinfo) = *Program->types
-    8b/-> *_Program-types 1/r32/ecx
+    # var curr/eax: (addr typeinfo) = lookup(Program->types)
+    (lookup *_Program-types *_Program-types->payload)  # => eax
     {
       # if (curr == null) break
-      81 7/subop/compare %ecx 0/imm32
+      3d/compare-eax-and 0/imm32/null
       74/jump-if-= break/disp8
-      (populate-mu-type-sizes-in-type %ecx)
-      # curr = curr->next
-      8b/-> *(ecx+0xc) 1/r32/ecx  # Typeinfo-next
+      (populate-mu-type-sizes-in-type %eax)
+      # curr = lookup(curr->next)
+      (lookup *(eax+0x10) *(eax+0x14))  # Typeinfo-next Typeinfo-next => eax
       eb/jump loop/disp8
     }
 $populate-mu-type-sizes:offsets:
-    # var curr/ecx: (handle typeinfo) = *Program->types
-    8b/-> *_Program-types 1/r32/ecx
+    # curr = *Program->types
+    (lookup *_Program-types *_Program-types->payload)  # => eax
     {
+$bb:
       # if (curr == null) break
-      81 7/subop/compare %ecx 0/imm32
+      3d/compare-eax-and 0/imm32/null
       74/jump-if-= break/disp8
-      (populate-mu-type-offsets %ecx)
+      (populate-mu-type-offsets %eax)
       # curr = curr->next
-      8b/-> *(ecx+0xc) 1/r32/ecx  # Typeinfo-next
+      (lookup *(eax+0x10) *(eax+0x14))  # Typeinfo-next Typeinfo-next => eax
       eb/jump loop/disp8
     }
 $populate-mu-type-sizes:end:
-    # . restore registers
-    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -6911,18 +6938,19 @@ populate-mu-type-sizes-in-type:  # T: (addr typeinfo)
     # esi = T
     8b/-> *(ebp+8) 6/r32/esi
     # if T is already computed, return
-    81 7/subop/compare *(esi+8) 0/imm32  # Typeinfo-total-size-in-bytes
-    7d/jump-if->= $populate-mu-type-sizes-in-type:end/disp8
+    81 7/subop/compare *(esi+0xc) 0/imm32  # Typeinfo-total-size-in-bytes
+    0f 8d/jump-if->= $populate-mu-type-sizes-in-type:end/disp32
     # if T is being computed, abort
-    81 7/subop/compare *(esi+8) -1/imm32/being-computed  # Typeinfo-total-size-in-bytes
-    74/jump-if-= $populate-mu-type-sizes-in-type:abort/disp8
+    81 7/subop/compare *(esi+0xc) -1/imm32/being-computed  # Typeinfo-total-size-in-bytes
+    0f 84/jump-if-= $populate-mu-type-sizes-in-type:abort/disp32
     # tag T (-2 to -1) to avoid infinite recursion
-    c7 0/subop/copy *(esi+8) -1/imm32/being-computed  # Typeinfo-total-size-in-bytes
+    c7 0/subop/copy *(esi+0xc) -1/imm32/being-computed  # Typeinfo-total-size-in-bytes
     # var total-size/edi: int = 0
     bf/copy-to-edi 0/imm32
     # - for every field, if it's a user-defined type, compute its size
-    # var table/ecx: (handle table string_key (handle typeinfo-entry)) = T->fields
-    8b/-> *(esi+4) 1/r32/ecx  # Typeinfo-fields
+    # var table/ecx: (addr table (handle array byte) (handle typeinfo-entry)) = lookup(T->fields)
+    (lookup *(esi+4) *(esi+8))  # Typeinfo-fields Typeinfo-fields => eax
+    89/<- %ecx 0/r32/eax
     # var table-size/edx: int = table->write
     8b/-> *ecx 2/r32/edx  # stream-write
     # var curr/ecx: (addr table_row) = table->data
@@ -6933,20 +6961,21 @@ populate-mu-type-sizes-in-type:  # T: (addr typeinfo)
 $populate-mu-type-sizes-in-type:loop:
       # if (curr >= max) break
       39/compare %ecx 2/r32/edx
-      73/jump-if-addr>= break/disp8
-      # var t/eax: (handle typeinfo-entry) = curr->value
-      8b/-> *(ecx+4) 0/r32/eax
-      # compute size of t
-      (compute-size-of-var *eax)  # Typeinfo-entry-input-var => eax
+      0f 83/jump-if-addr>= break/disp32
+      # var t/eax: (addr typeinfo-entry) = lookup(curr->value)
+      (lookup *(ecx+8) *(ecx+0xc))  # => eax
+      # compute size of t->input-var
+      (lookup *eax *(eax+4))  # Typeinfo-entry-input-var Typeinfo-entry-input-var => eax
+      (compute-size-of-var %eax)  # => eax
       # result += eax
       01/add-to %edi 0/r32/eax
       # curr += row-size
-      81 0/subop/add %ecx 8/imm32
+      81 0/subop/add %ecx 0x10/imm32  # Typeinfo-fields-row-size
       #
-      eb/jump loop/disp8
+      e9/jump loop/disp32
     }
     # - save result
-    89/<- *(esi+8) 7/r32/edi  # Typeinfo-total-size-in-bytes
+    89/<- *(esi+0xc) 7/r32/edi  # Typeinfo-total-size-in-bytes
 $populate-mu-type-sizes-in-type:end:
     # . restore registers
     5f/pop-to-edi
@@ -6978,9 +7007,9 @@ compute-size-of-var:  # in: (addr var) -> result/eax: int
     51/push-ecx
     # var t/ecx: (addr tree type-id) = lookup(v->type)
     8b/-> *(ebp+8) 1/r32/ecx
-    (lookup *(ecx+8) *(ecx+0xc))  # => eax
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
     89/<- %ecx 0/r32/eax
-    # if (t->left-is-atom == false) t = lookup(t->left)
+    # if (t->is-atom == false) t = lookup(t->left)
     {
       81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
       75/jump-if-!= break/disp8
@@ -7020,7 +7049,7 @@ compute-size-of-type-id:  # t: type-id -> result/eax: int
       74/jump-if-= break/disp8
 $compute-size-of-type-id:user-defined:
       (populate-mu-type-sizes %eax)
-      8b/-> *(eax+8) 0/r32/eax  # Typeinfo-total-size-in-bytes
+      8b/-> *(eax+0xc) 0/r32/eax  # Typeinfo-total-size-in-bytes
       eb/jump $compute-size-of-type-id:end/disp8
     }
     # otherwise return the word size
@@ -7072,9 +7101,7 @@ $populate-mu-type-offsets:loop:
       (lookup *(esi+0xc) *(esi+0x10))  # Typeinfo-entry-output-var Typeinfo-entry-output-var => eax
       89/<- *(eax+0x14) 7/r32/edi  # Var-offset
       # curr-offset += size-of(v->input-var)
-      # . eax: (addr var)
       (lookup *esi *(esi+4))  # Typeinfo-entry-input-var Typeinfo-entry-input-var => eax
-      # .
       (size-of %eax)  # => eax
       01/add-to %edi 0/r32/eax
       # ++i
@@ -7150,6 +7177,192 @@ $locate-typeinfo-entry-with-index:abort:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+dump-typeinfos:  # hdr: (addr array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    #
+    (write-buffered Stderr *(ebp+8))
+    (flush Stderr)
+    # var curr/eax: (addr typeinfo) = lookup(Program->types)
+    (lookup *_Program-types *_Program-types->payload)  # => eax
+    {
+      # if (curr == null) break
+      3d/compare-eax-and 0/imm32
+      74/jump-if-= break/disp8
+      (write-buffered Stderr "---\n")
+      (flush Stderr)
+      (dump-typeinfo %eax)
+      # curr = lookup(curr->next)
+      (lookup *(eax+0x10) *(eax+0x14))  # Typeinfo-next Typeinfo-next => eax
+      eb/jump loop/disp8
+    }
+$dump-typeinfos:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+dump-typeinfo:  # in: (addr typeinfo)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = in
+    8b/-> *(ebp+8) 6/r32/esi
+    # var table/ecx: (addr table (handle array byte) (handle typeinfo-entry)) = lookup(T->fields)
+    (lookup *(esi+4) *(esi+8))  # Typeinfo-fields Typeinfo-fields => eax
+    89/<- %ecx 0/r32/eax
+    (write-buffered Stderr "id:")
+    (print-int32-buffered Stderr *esi)
+    (write-buffered Stderr "\n")
+    (write-buffered Stderr "fields @ ")
+    (print-int32-buffered Stderr %ecx)
+    (write-buffered Stderr Newline)
+    (flush Stderr)
+    (write-buffered Stderr "  write: ")
+    (print-int32-buffered Stderr *ecx)
+    (write-buffered Stderr Newline)
+    (flush Stderr)
+    (write-buffered Stderr "  read: ")
+    (print-int32-buffered Stderr *(ecx+4))
+    (write-buffered Stderr Newline)
+    (flush Stderr)
+    (write-buffered Stderr "  size: ")
+    (print-int32-buffered Stderr *(ecx+8))
+    (write-buffered Stderr Newline)
+    (flush Stderr)
+    # var table-size/edx: int = table->write
+    8b/-> *ecx 2/r32/edx  # stream-write
+    # var curr/ecx: (addr table_row) = table->data
+    8d/copy-address *(ecx+0xc) 1/r32/ecx
+    # var max/edx: (addr table_row) = table->data + table->write
+    8d/copy-address *(ecx+edx) 2/r32/edx
+    {
+$dump-typeinfo:loop:
+      # if (curr >= max) break
+      39/compare %ecx 2/r32/edx
+      0f 83/jump-if-addr>= break/disp32
+      (write-buffered Stderr "  row:\n")
+      (write-buffered Stderr "    key: ")
+      (print-int32-buffered Stderr *ecx)
+      (write-buffered Stderr ",")
+      (print-int32-buffered Stderr *(ecx+4))
+      (write-buffered Stderr " = '")
+      (lookup *ecx *(ecx+4))
+      (write-buffered Stderr %eax)
+      (write-buffered Stderr "' @ ")
+      (print-int32-buffered Stderr %eax)
+      (write-buffered Stderr Newline)
+      (flush Stderr)
+      (write-buffered Stderr "    value: ")
+      (print-int32-buffered Stderr *(ecx+8))
+      (write-buffered Stderr ",")
+      (print-int32-buffered Stderr *(ecx+0xc))
+      (write-buffered Stderr " = typeinfo-entry@")
+      (lookup *(ecx+8) *(ecx+0xc))
+      (print-int32-buffered Stderr %eax)
+      (write-buffered Stderr Newline)
+      (flush Stderr)
+      (write-buffered Stderr "        input var@")
+      (print-int32-buffered Stderr *eax)
+      (write-buffered Stderr ",")
+      (print-int32-buffered Stderr *(eax+4))
+      (write-buffered Stderr "->")
+      (lookup *eax *(eax+4))  # Typeinfo-entry-input-var
+      (print-int32-buffered Stderr %eax)
+      {
+        3d/compare-eax-and 0/imm32
+        74/jump-if-= break/disp8
+        (write-buffered Stderr " ")
+#?         (
+      }
+      (write-buffered Stderr Newline)
+      (flush Stderr)
+      (lookup *(ecx+8) *(ecx+0xc))
+      (write-buffered Stderr "        output var@")
+      (print-int32-buffered Stderr *(eax+0xc))
+      (write-buffered Stderr ",")
+      (print-int32-buffered Stderr *(eax+0x10))
+      (write-buffered Stderr "->")
+      (flush Stderr)
+      (lookup *(eax+0xc) *(eax+0x10))  # Typeinfo-entry-output-var
+      (print-int32-buffered Stderr %eax)
+      (write-buffered Stderr Newline)
+      (flush Stderr)
+      {
+        3d/compare-eax-and 0/imm32
+        0f 84/jump-if-= break/disp32
+        (write-buffered Stderr "          name: ")
+        89/<- %ebx 0/r32/eax
+        (print-int32-buffered Stderr *ebx)  # Var-name
+        (write-buffered Stderr ",")
+        (print-int32-buffered Stderr *(ebx+4))  # Var-name
+        (write-buffered Stderr "->")
+        (lookup *ebx *(ebx+4))  # Var-name
+        (print-int32-buffered Stderr %eax)
+        {
+          3d/compare-eax-and 0/imm32
+          74/jump-if-= break/disp8
+          (write-buffered Stderr Space)
+          (write-buffered Stderr %eax)
+        }
+        (write-buffered Stderr Newline)
+        (flush Stderr)
+        (write-buffered Stderr "          block depth: ")
+        (print-int32-buffered Stderr *(ebx+0x10))  # Var-block-depth
+        (write-buffered Stderr Newline)
+        (flush Stderr)
+        (write-buffered Stderr "          stack offset: ")
+        (print-int32-buffered Stderr *(ebx+0x14))  # Var-offset
+        (write-buffered Stderr Newline)
+        (flush Stderr)
+        (write-buffered Stderr "          reg: ")
+        (print-int32-buffered Stderr *(ebx+0x18))  # Var-register
+        (write-buffered Stderr ",")
+        (print-int32-buffered Stderr *(ebx+0x1c))  # Var-register
+        (write-buffered Stderr "->")
+        (flush Stderr)
+        (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register
+        (print-int32-buffered Stderr %eax)
+        {
+          3d/compare-eax-and 0/imm32
+          74/jump-if-= break/disp8
+          (write-buffered Stderr Space)
+          (write-buffered Stderr %eax)
+        }
+        (write-buffered Stderr Newline)
+        (flush Stderr)
+      }
+      (flush Stderr)
+      # curr += row-size
+      81 0/subop/add %ecx 0x10/imm32  # Typeinfo-fields-row-size
+      #
+      e9/jump loop/disp32
+    }
+$dump-typeinfo:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 #######################################################
 # Type-checking
@@ -8867,17 +9080,18 @@ translate-mu-get-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     # var offset/edx: int = get offset of stmt
     (mu-get-offset %ecx)  # => eax
     89/<- %edx 0/r32/eax
-    # var base/eax: (handle var) = stmt->inouts[0]
-    8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
+    # var base/eax: (addr var) = stmt->inouts->value
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     # if base is in a register
-    81 7/subop/compare *(eax+0x10) 0/imm32
+    81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
     {
       0f 84/jump-if-= break/disp32
 $translate-mu-get-stmt:emit-register-input:
-      # "*(" inouts[0]->register " + " offset ")"
+      # emit "*(" base->register " + " offset ") "
       (write-buffered *(ebp+8) "*(")
-      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      (write-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) " + ")
       (print-int32-buffered *(ebp+8) %edx)
       (write-buffered *(ebp+8) ") ")
@@ -8886,18 +9100,20 @@ $translate-mu-get-stmt:emit-register-input:
     # otherwise base is on the stack
     {
 $translate-mu-get-stmt:emit-stack-input:
-      # "*(ebp + " inouts[0]->offset + offset ")"
+      # emit "*(ebp + " inouts[0]->stack-offset + offset ") "
       (write-buffered *(ebp+8) "*(ebp+")
-      03/add *(eax+0xc) 2/r32/edx  # Var-offset
+      03/add *(eax+0x14) 2/r32/edx  # Var-offset
       (print-int32-buffered *(ebp+8) %edx)
       (write-buffered *(ebp+8) ") ")
       eb/jump $translate-mu-get-stmt:emit-output/disp8
     }
 $translate-mu-get-stmt:emit-output:
-    # outputs[0] "/r32"
-    8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
-    (get Registers *(eax+0x10) 0xc "Registers")  # Var-register => eax
+    # var output/eax: (addr var) = stmt->outputs->value
+    (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    # emit offset->register "/r32"
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    (get Registers %eax 0xc "Registers")  # => eax: (addr int)
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-get-stmt:end:
@@ -8963,14 +9179,14 @@ mu-get-offset:  # stmt: (addr stmt) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var second-inout/eax: (handle stmt-var) = stmt->inouts->next
+    # var second-inout/eax: (addr stmt-var) = stmt->inouts->next
     8b/-> *(ebp+8) 0/r32/eax
-    8b/-> *(eax+8) 0/r32/eax  # Stmt1-inouts
-    8b/-> *(eax+4) 0/r32/eax  # Stmt-var-next
-    # var output-var/eax: (handle var) = second-inout->value
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
-    # return output-var->offset
-    8b/-> *(eax+0xc) 0/r32/eax  # Var-offset
+    (lookup *(eax+0xc) *(eax+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+    # var output-var/eax: (addr var) = second-inout->value
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    # return output-var->stack-offset
+    8b/-> *(eax+0x14) 0/r32/eax  # Var-offset
 $emit-get-offset:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
