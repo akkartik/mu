@@ -2964,7 +2964,7 @@ test-convert-function-call-with-arg-of-user-defined-type:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-call-with-arg-of-user-defined-type-register-indirect:
+test-convert-function-call-with-arg-of-user-defined-type-register-indirect:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3028,7 +3028,7 @@ _failing-test-convert-function-call-with-arg-of-user-defined-type-register-indir
 
 # we don't have special support for call-by-reference; just explicitly create
 # a new variable with the address of the arg
-_failing-test-convert-function-call-with-arg-of-user-defined-type-by-reference:
+test-convert-function-call-with-arg-of-user-defined-type-by-reference:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3105,7 +3105,7 @@ _failing-test-convert-function-call-with-arg-of-user-defined-type-by-reference:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-get-of-type-on-stack:
+test-convert-get-of-type-on-stack:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3161,7 +3161,7 @@ _failing-test-convert-get-of-type-on-stack:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-array-of-user-defined-types:
+test-convert-array-of-user-defined-types:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -12415,6 +12415,9 @@ emit-subx-call-operand-register-indirect:  # out: (addr buffered-file), v: (addr
     # var size/ecx: int = size-of-deref(v)
     (size-of-deref %esi)  # => eax
     89/<- %ecx 0/r32/eax
+    # var reg-name/esi: (addr array byte) = lookup(v->register)
+    (lookup *(esi+0x18) *(esi+0x1c))  # Var-register Var-register => eax
+    89/<- %esi 0/r32/eax
     # TODO: assert size is a multiple of 4
     # var i/eax: int = 0
     b8/copy-to-eax 0/imm32
@@ -12425,7 +12428,7 @@ $emit-subx-call-operand-register-indirect:loop:
       7d/jump-if->= break/disp8
       # emit " *(" v->register "+" i ")"
       (write-buffered *(ebp+8) " *(")
-      (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
+      (write-buffered *(ebp+8) %esi)
       (write-buffered *(ebp+8) "+")
       (print-int32-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) ")")
