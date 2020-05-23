@@ -359,6 +359,22 @@ of these invariants is broken it's a bug on my part.
   building general infrastructure here for all of the x86 instruction set.
   SubX is about programming with a small, regular subset of 32-bit x86.
 
+## Getting your editor set up
+
+If you've read this far, it's time to set up your editor. Mu is really
+intended to be read interactively rather than on a browser.
+
+There is rudimentary syntax highlighting support for Mu and SubX files for
+various editors. Look for your editor in `mu.*` and `subx.*`, and follow the
+instructions within.
+
+The Vim files are most developed. In particular, I recommend some optional
+setup in subx.vim to use multiple colors for comments.
+
+If you use [Exuberant Ctags](http://ctags.sourceforge.net) for jumping easily
+from names to their definitions in your editor, copy the contents of `exuberant_ctags_rc`
+into your `.ctags` file.
+
 ## A few hints for debugging
 
 Writing programs in SubX is surprisingly pleasant and addictive. Reading
