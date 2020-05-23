@@ -3105,7 +3105,7 @@ test-convert-function-call-with-arg-of-user-defined-type-by-reference:
     5d/pop-to-ebp
     c3/return
 
-test-convert-get-of-type-on-stack:
+test-convert-get-on-local-variable:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3133,29 +3133,79 @@ test-convert-get-of-type-on-stack:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-get-of-type-on-stack/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-get-of-type-on-stack/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-get-of-type-on-stack/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-get-of-type-on-stack/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-get-of-type-on-stack/4")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-get-of-type-on-stack/5")
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-get-on-local-variable/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-get-on-local-variable/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-get-on-local-variable/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-get-on-local-variable/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-get-on-local-variable/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-get-on-local-variable/5")
     # var a
-    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-get-of-type-on-stack/6")
-    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-get-of-type-on-stack/7")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-get-on-local-variable/6")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-get-on-local-variable/7")
     # var c
-    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-get-of-type-on-stack/8")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-get-on-local-variable/8")
     # get
-    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(ebp+0xfffffffc) 0x00000001/r32"  "F - test-convert-get-of-type-on-stack/9")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(ebp+0xfffffffc) 0x00000001/r32"  "F - test-convert-get-on-local-variable/9")
     # reclaim c
-    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-get-of-type-on-stack/10")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-get-on-local-variable/10")
     # reclaim a
-    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000008/imm32"  "F - test-convert-get-of-type-on-stack/11")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-get-of-type-on-stack/12")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-get-of-type-on-stack/13")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-get-of-type-on-stack/14")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-get-of-type-on-stack/15")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-get-of-type-on-stack/16")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-get-of-type-on-stack/17")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000008/imm32"  "F - test-convert-get-on-local-variable/11")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-get-on-local-variable/12")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-get-on-local-variable/13")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-get-on-local-variable/14")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-get-on-local-variable/15")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-get-on-local-variable/16")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-get-on-local-variable/17")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-get-on-function-argument:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo a: t {\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- get a, y\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-get-on-function-argument/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-get-on-function-argument/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-get-on-function-argument/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-get-on-function-argument/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-get-on-function-argument/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-get-on-function-argument/5")
+    # var c
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-get-on-function-argument/6")
+    # get
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(ebp+0x0000000c) 0x00000001/r32"  "F - test-convert-get-on-function-argument/7")
+    # reclaim c
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-get-on-function-argument/8")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-get-on-function-argument/9")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-get-on-function-argument/10")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-get-on-function-argument/11")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-get-on-function-argument/12")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-get-on-function-argument/13")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-get-on-function-argument/14")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
