@@ -16,12 +16,12 @@ a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .subxComment { color: #005faf; }
 .subxS2Comment { color: #8a8a8a; }
+.subxTest { color: #5f8700; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
 .LineNr { }
 .subxS1Comment { color: #0000af; }
-.subxFunction { color: #af5f00; text-decoration: underline; }
 .Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
 .Constant { color: #008787; }
-.subxTest { color: #5f8700; }
 -->
 </style>
 
@@ -84,8 +84,8 @@ if ('onhashchange' in window) {
 <span id="L25" class="LineNr"> 25 </span>    81          0/subop/add         3/mod/direct    6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esi</span>
 <span id="L26" class="LineNr"> 26 </span>    <span class="subxComment"># edi = s</span>
 <span id="L27" class="LineNr"> 27 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to edi</span>
-<span id="L28" class="LineNr"> 28 </span><span class="Constant">$stream-data-equal?:compare-lengths</span>:
-<span id="L29" class="LineNr"> 29 </span>    <span class="subxComment"># if (f-&gt;write != s-&gt;length) return false</span>
+<span id="L28" class="LineNr"> 28 </span><span class="Constant">$stream-data-equal?:compare-sizes</span>:
+<span id="L29" class="LineNr"> 29 </span>    <span class="subxComment"># if (f-&gt;write != s-&gt;size) return false</span>
 <span id="L30" class="LineNr"> 30 </span>    39/compare                      0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare *edi and eax</span>
 <span id="L31" class="LineNr"> 31 </span>    75/jump-if-!=  $stream-data-equal?:false/disp8
 <span id="L32" class="LineNr"> 32 </span>    <span class="subxComment"># var currs/edi: (addr byte) = s-&gt;data</span>
@@ -208,7 +208,7 @@ if ('onhashchange' in window) {
 <span id="L149" class="LineNr">149 </span>    5d/pop-to-ebp
 <span id="L150" class="LineNr">150 </span>    c3/return
 <span id="L151" class="LineNr">151 </span>
-<span id="L152" class="LineNr">152 </span><span class="subxTest">test-stream-data-equal-length-check</span>:
+<span id="L152" class="LineNr">152 </span><span class="subxTest">test-stream-data-equal-size-check</span>:
 <span id="L153" class="LineNr">153 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L154" class="LineNr">154 </span>    55/push-ebp
 <span id="L155" class="LineNr">155 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -237,7 +237,7 @@ if ('onhashchange' in window) {
 <span id="L178" class="LineNr">178 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L179" class="LineNr">179 </span>    <span class="subxComment"># check-ints-equal(eax, 0, msg)</span>
 <span id="L180" class="LineNr">180 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L181" class="LineNr">181 </span>    68/push  <span class="Constant">&quot;F - test-stream-data-equal-length-check&quot;</span>/imm32
+<span id="L181" class="LineNr">181 </span>    68/push  <span class="Constant">&quot;F - test-stream-data-equal-size-check&quot;</span>/imm32
 <span id="L182" class="LineNr">182 </span>    68/push  0/imm32
 <span id="L183" class="LineNr">183 </span>    50/push-eax
 <span id="L184" class="LineNr">184 </span>    <span class="subxS2Comment"># . . call</span>
@@ -289,30 +289,30 @@ if ('onhashchange' in window) {
 <span id="L230" class="LineNr">230 </span><span class="subxFunction">next-stream-line-equal?</span>:  <span class="subxComment"># f: (addr stream byte), s: (addr array byte) -&gt; eax: boolean</span>
 <span id="L231" class="LineNr">231 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L232" class="LineNr">232 </span>    <span class="subxComment">#   currf = f-&gt;read  # bound: f-&gt;write</span>
-<span id="L233" class="LineNr">233 </span>    <span class="subxComment">#   currs = 0  # bound: s-&gt;length</span>
+<span id="L233" class="LineNr">233 </span>    <span class="subxComment">#   currs = 0  # bound: s-&gt;size</span>
 <span id="L234" class="LineNr">234 </span>    <span class="subxComment">#   while true</span>
 <span id="L235" class="LineNr">235 </span>    <span class="subxComment">#     if currf &gt;= f-&gt;write</span>
-<span id="L236" class="LineNr">236 </span>    <span class="subxComment">#       return currs &gt;= s-&gt;length</span>
+<span id="L236" class="LineNr">236 </span>    <span class="subxComment">#       return currs &gt;= s-&gt;size</span>
 <span id="L237" class="LineNr">237 </span>    <span class="subxComment">#     if f[currf] == '\n'</span>
 <span id="L238" class="LineNr">238 </span>    <span class="subxComment">#       ++currf</span>
-<span id="L239" class="LineNr">239 </span>    <span class="subxComment">#       return currs &gt;= s-&gt;length</span>
-<span id="L240" class="LineNr">240 </span>    <span class="subxComment">#     if (currs &gt;= s-&gt;length) return false  # the current line of f still has data to match</span>
+<span id="L239" class="LineNr">239 </span>    <span class="subxComment">#       return currs &gt;= s-&gt;size</span>
+<span id="L240" class="LineNr">240 </span>    <span class="subxComment">#     if (currs &gt;= s-&gt;size) return false  # the current line of f still has data to match</span>
 <span id="L241" class="LineNr">241 </span>    <span class="subxComment">#     if (f[currf] != s[currs]) return false</span>
 <span id="L242" class="LineNr">242 </span>    <span class="subxComment">#     ++currf</span>
 <span id="L243" class="LineNr">243 </span>    <span class="subxComment">#     ++currs</span>
 <span id="L244" class="LineNr">244 </span>    <span class="subxComment">#</span>
 <span id="L245" class="LineNr">245 </span>    <span class="subxComment"># collapsing the two branches that can return true:</span>
 <span id="L246" class="LineNr">246 </span>    <span class="subxComment">#   currf = f-&gt;read  # bound: f-&gt;write</span>
-<span id="L247" class="LineNr">247 </span>    <span class="subxComment">#   currs = 0  # bound: s-&gt;length</span>
+<span id="L247" class="LineNr">247 </span>    <span class="subxComment">#   currs = 0  # bound: s-&gt;size</span>
 <span id="L248" class="LineNr">248 </span>    <span class="subxComment">#   while true</span>
 <span id="L249" class="LineNr">249 </span>    <span class="subxComment">#     if (currf &gt;= f-&gt;write) break</span>
 <span id="L250" class="LineNr">250 </span>    <span class="subxComment">#     if (f[currf] == '\n') break</span>
-<span id="L251" class="LineNr">251 </span>    <span class="subxComment">#     if (currs &gt;= s-&gt;length) return false  # the current line of f still has data to match</span>
+<span id="L251" class="LineNr">251 </span>    <span class="subxComment">#     if (currs &gt;= s-&gt;size) return false  # the current line of f still has data to match</span>
 <span id="L252" class="LineNr">252 </span>    <span class="subxComment">#     if (f[currf] != s[currs]) return false</span>
 <span id="L253" class="LineNr">253 </span>    <span class="subxComment">#     ++currf</span>
 <span id="L254" class="LineNr">254 </span>    <span class="subxComment">#     ++currs</span>
 <span id="L255" class="LineNr">255 </span>    <span class="subxComment">#   ++currf  # skip '\n'</span>
-<span id="L256" class="LineNr">256 </span>    <span class="subxComment">#   return currs &gt;= s-&gt;length</span>
+<span id="L256" class="LineNr">256 </span>    <span class="subxComment">#   return currs &gt;= s-&gt;size</span>
 <span id="L257" class="LineNr">257 </span>    <span class="subxComment"># Here the final `++currf` is sometimes unnecessary (if we're already at the end of the stream)</span>
 <span id="L258" class="LineNr">258 </span>    <span class="subxComment">#</span>
 <span id="L259" class="LineNr">259 </span>    <span class="subxComment"># registers:</span>
@@ -352,7 +352,7 @@ if ('onhashchange' in window) {
 <span id="L293" class="LineNr">293 </span>    <span class="subxComment"># if (c1 == '\n') break</span>
 <span id="L294" class="LineNr">294 </span>    3d/compare-eax-and  0xa/imm32/newline
 <span id="L295" class="LineNr">295 </span>    74/jump-if-=  $next-stream-line-equal?:<span class="Constant">break</span>/disp8
-<span id="L296" class="LineNr">296 </span>    <span class="subxComment"># if (currs &gt;= s-&gt;length) return false</span>
+<span id="L296" class="LineNr">296 </span>    <span class="subxComment"># if (currs &gt;= s-&gt;size) return false</span>
 <span id="L297" class="LineNr">297 </span>    3b/compare                      0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare edx with *edi</span>
 <span id="L298" class="LineNr">298 </span>    7d/jump-if-&gt;=  $next-stream-line-equal?:false/disp8
 <span id="L299" class="LineNr">299 </span>    <span class="subxComment"># c2 = s-&gt;data[currs]</span>
@@ -368,7 +368,7 @@ if ('onhashchange' in window) {
 <span id="L309" class="LineNr">309 </span><span class="Constant">$next-stream-line-equal?:break</span>:
 <span id="L310" class="LineNr">310 </span>    <span class="subxComment"># ++currf</span>
 <span id="L311" class="LineNr">311 </span>    41/increment-ecx
-<span id="L312" class="LineNr">312 </span>    <span class="subxComment"># if (currs &gt;= s-&gt;length) return true</span>
+<span id="L312" class="LineNr">312 </span>    <span class="subxComment"># if (currs &gt;= s-&gt;size) return true</span>
 <span id="L313" class="LineNr">313 </span>    3b/compare                      0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare edx with *edi</span>
 <span id="L314" class="LineNr">314 </span>    7c/jump-if-&lt;  $next-stream-line-equal?:false/disp8
 <span id="L315" class="LineNr">315 </span><span class="Constant">$next-stream-line-equal?:true</span>:

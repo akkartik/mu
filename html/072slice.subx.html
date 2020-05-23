@@ -16,14 +16,14 @@ a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .subxComment { color: #005faf; }
 .subxS2Comment { color: #8a8a8a; }
-.Folded { color: #080808; background-color: #949494; }
+.subxTest { color: #5f8700; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
 .LineNr { }
 .subxS1Comment { color: #0000af; }
-.subxFunction { color: #af5f00; text-decoration: underline; }
 .Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
-.subxH1Comment { color: #005faf; text-decoration: underline; }
+.Folded { color: #080808; background-color: #949494; }
 .Constant { color: #008787; }
-.subxTest { color: #5f8700; }
+.subxH1Comment { color: #005faf; text-decoration: underline; }
 -->
 </style>
 
@@ -183,7 +183,7 @@ if ('onhashchange' in window) {
 <span id="L122" class="LineNr"> 122 </span>    <span class="subxComment">#   if (p == 0) return (s == 0)</span>
 <span id="L123" class="LineNr"> 123 </span>    <span class="subxComment">#   currs = s-&gt;start</span>
 <span id="L124" class="LineNr"> 124 </span>    <span class="subxComment">#   maxs = s-&gt;end</span>
-<span id="L125" class="LineNr"> 125 </span>    <span class="subxComment">#   if (maxs - currs != p-&gt;length) return false</span>
+<span id="L125" class="LineNr"> 125 </span>    <span class="subxComment">#   if (maxs - currs != p-&gt;size) return false</span>
 <span id="L126" class="LineNr"> 126 </span>    <span class="subxComment">#   currp = p-&gt;data</span>
 <span id="L127" class="LineNr"> 127 </span>    <span class="subxComment">#   while currs &lt; maxs</span>
 <span id="L128" class="LineNr"> 128 </span>    <span class="subxComment">#     if (*currs != *currp) return false</span>
@@ -212,7 +212,7 @@ if ('onhashchange' in window) {
 <span id="L151" class="LineNr"> 151 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
 <span id="L152" class="LineNr"> 152 </span>    <span class="subxComment"># var maxs/esi: (addr byte) = s-&gt;end</span>
 <span id="L153" class="LineNr"> 153 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+4) to esi</span>
-<span id="L154" class="LineNr"> 154 </span>    <span class="subxComment"># var slen/eax: int = maxs - currs</span>
+<span id="L154" class="LineNr"> 154 </span>    <span class="subxComment"># var ssize/eax: int = maxs - currs</span>
 <span id="L155" class="LineNr"> 155 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esi to eax</span>
 <span id="L156" class="LineNr"> 156 </span>    29/subtract                     3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># subtract edx from eax</span>
 <span id="L157" class="LineNr"> 157 </span>    <span class="subxComment"># ebx = p</span>
@@ -226,7 +226,7 @@ if ('onhashchange' in window) {
 <span id="L165" class="LineNr"> 165 </span>    74/jump-if-=  $slice-equal?:true/disp8
 <span id="L166" class="LineNr"> 166 </span>    eb/jump  $slice-equal?:false/disp8
 <span id="L167" class="LineNr"> 167 </span><span class="Constant">$slice-equal?:nonnull-string</span>:
-<span id="L168" class="LineNr"> 168 </span>    <span class="subxComment"># if (slen != p-&gt;length) return false</span>
+<span id="L168" class="LineNr"> 168 </span>    <span class="subxComment"># if (ssize != p-&gt;size) return false</span>
 <span id="L169" class="LineNr"> 169 </span>    39/compare                      0/mod/indirect  3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare *ebx and eax</span>
 <span id="L170" class="LineNr"> 170 </span>    75/jump-if-!=  $slice-equal?:false/disp8
 <span id="L171" class="LineNr"> 171 </span>    <span class="subxComment"># var currp/ebx: (addr byte) = p-&gt;data</span>
@@ -547,12 +547,12 @@ if ('onhashchange' in window) {
 <span id="L486" class="LineNr"> 486 </span>
 <span id="L487" class="LineNr"> 487 </span><span class="subxFunction">slice-starts-with?</span>:  <span class="subxComment"># s: (addr slice), head: (addr array byte) -&gt; eax: boolean</span>
 <span id="L488" class="LineNr"> 488 </span>    <span class="subxComment"># pseudocode</span>
-<span id="L489" class="LineNr"> 489 </span>    <span class="subxComment">#   lenh = head-&gt;length</span>
-<span id="L490" class="LineNr"> 490 </span>    <span class="subxComment">#   if (lenh &gt; s-&gt;end - s-&gt;start) return false</span>
+<span id="L489" class="LineNr"> 489 </span>    <span class="subxComment">#   hsize = head-&gt;size</span>
+<span id="L490" class="LineNr"> 490 </span>    <span class="subxComment">#   if (hsize &gt; s-&gt;end - s-&gt;start) return false</span>
 <span id="L491" class="LineNr"> 491 </span>    <span class="subxComment">#   i = 0</span>
 <span id="L492" class="LineNr"> 492 </span>    <span class="subxComment">#   currs = s-&gt;start</span>
 <span id="L493" class="LineNr"> 493 </span>    <span class="subxComment">#   currp = head-&gt;data</span>
-<span id="L494" class="LineNr"> 494 </span>    <span class="subxComment">#   while i &lt; lenh</span>
+<span id="L494" class="LineNr"> 494 </span>    <span class="subxComment">#   while i &lt; hsize</span>
 <span id="L495" class="LineNr"> 495 </span>    <span class="subxComment">#     if (*currs != *currh) return false</span>
 <span id="L496" class="LineNr"> 496 </span>    <span class="subxComment">#     ++i</span>
 <span id="L497" class="LineNr"> 497 </span>    <span class="subxComment">#     ++currs</span>
@@ -565,7 +565,7 @@ if ('onhashchange' in window) {
 <span id="L504" class="LineNr"> 504 </span>    <span class="subxComment">#   *currs: eax</span>
 <span id="L505" class="LineNr"> 505 </span>    <span class="subxComment">#   *currh: ebx</span>
 <span id="L506" class="LineNr"> 506 </span>    <span class="subxComment">#   i: ecx</span>
-<span id="L507" class="LineNr"> 507 </span>    <span class="subxComment">#   lenh: edx</span>
+<span id="L507" class="LineNr"> 507 </span>    <span class="subxComment">#   hsize: edx</span>
 <span id="L508" class="LineNr"> 508 </span>    <span class="subxComment">#</span>
 <span id="L509" class="LineNr"> 509 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L510" class="LineNr"> 510 </span>    55/push-ebp
@@ -583,9 +583,9 @@ if ('onhashchange' in window) {
 <span id="L522" class="LineNr"> 522 </span>    2b/subtract                     0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># subtract *esi from ecx</span>
 <span id="L523" class="LineNr"> 523 </span>    <span class="subxComment"># edi = head</span>
 <span id="L524" class="LineNr"> 524 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to edi</span>
-<span id="L525" class="LineNr"> 525 </span>    <span class="subxComment"># var lenh/edx: int = head-&gt;length</span>
+<span id="L525" class="LineNr"> 525 </span>    <span class="subxComment"># var hsize/edx: int = head-&gt;size</span>
 <span id="L526" class="LineNr"> 526 </span>    8b/copy                         0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *edi to edx</span>
-<span id="L527" class="LineNr"> 527 </span>    <span class="subxComment"># if (lenh &gt; lens) return false</span>
+<span id="L527" class="LineNr"> 527 </span>    <span class="subxComment"># if (hsize &gt; lens) return false</span>
 <span id="L528" class="LineNr"> 528 </span>    39/compare                      3/mod/direct    2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare edx with ecx</span>
 <span id="L529" class="LineNr"> 529 </span>    7f/jump-if-&gt;  $slice-starts-with?:false/disp8
 <span id="L530" class="LineNr"> 530 </span>    <span class="subxComment"># var currs/esi: (addr byte) = s-&gt;start</span>
@@ -599,7 +599,7 @@ if ('onhashchange' in window) {
 <span id="L538" class="LineNr"> 538 </span>    <span class="subxComment"># var c2/ebx: byte = 0</span>
 <span id="L539" class="LineNr"> 539 </span>    31/xor                          3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear ebx</span>
 <span id="L540" class="LineNr"> 540 </span><span class="Constant">$slice-starts-with?:loop</span>:
-<span id="L541" class="LineNr"> 541 </span>    <span class="subxComment"># if (i &gt;= lenh) return true</span>
+<span id="L541" class="LineNr"> 541 </span>    <span class="subxComment"># if (i &gt;= hsize) return true</span>
 <span id="L542" class="LineNr"> 542 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with edx</span>
 <span id="L543" class="LineNr"> 543 </span>    7d/jump-if-&gt;=  $slice-starts-with?:true/disp8
 <span id="L544" class="LineNr"> 544 </span>    <span class="subxComment"># c1 = *currs</span>
@@ -870,7 +870,7 @@ if ('onhashchange' in window) {
 <span id="L809" class="LineNr"> 809 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+4) to esi</span>
 <span id="L810" class="LineNr"> 810 </span>    <span class="subxComment"># edi = out</span>
 <span id="L811" class="LineNr"> 811 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>                        7/r32/edi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to edi</span>
-<span id="L812" class="LineNr"> 812 </span>    <span class="subxComment"># edx = out-&gt;length</span>
+<span id="L812" class="LineNr"> 812 </span>    <span class="subxComment"># edx = out-&gt;size</span>
 <span id="L813" class="LineNr"> 813 </span>    8b/copy                         1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(edi+8) to edx</span>
 <span id="L814" class="LineNr"> 814 </span>    <span class="subxComment"># ebx = out-&gt;write</span>
 <span id="L815" class="LineNr"> 815 </span>    8b/copy                         0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *edi to ebx</span>
@@ -878,7 +878,7 @@ if ('onhashchange' in window) {
 <span id="L817" class="LineNr"> 817 </span>    <span class="subxComment"># if (curr &gt;= max) break</span>
 <span id="L818" class="LineNr"> 818 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with esi</span>
 <span id="L819" class="LineNr"> 819 </span>    73/jump-if-addr&gt;=  $write-slice:loop-end/disp8
-<span id="L820" class="LineNr"> 820 </span>    <span class="subxComment"># if (out-&gt;write &gt;= out-&gt;length) abort</span>
+<span id="L820" class="LineNr"> 820 </span>    <span class="subxComment"># if (out-&gt;write &gt;= out-&gt;size) abort</span>
 <span id="L821" class="LineNr"> 821 </span>    39/compare                      3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ebx with edx</span>
 <span id="L822" class="LineNr"> 822 </span>    7d/jump-if-&gt;=  $write-slice:abort/disp8
 <span id="L823" class="LineNr"> 823 </span>    <span class="subxComment"># out-&gt;data[out-&gt;write] = *in</span>
@@ -986,7 +986,7 @@ if ('onhashchange' in window) {
 <span id="L925" class="LineNr"> 925 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+4) to esi</span>
 <span id="L926" class="LineNr"> 926 </span>    <span class="subxComment"># edi = out</span>
 <span id="L927" class="LineNr"> 927 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>                        7/r32/edi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to edi</span>
-<span id="L928" class="LineNr"> 928 </span>    <span class="subxComment"># edx = out-&gt;length</span>
+<span id="L928" class="LineNr"> 928 </span>    <span class="subxComment"># edx = out-&gt;size</span>
 <span id="L929" class="LineNr"> 929 </span>    8b/copy                         1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(edi+12) to edx</span>
 <span id="L930" class="LineNr"> 930 </span>    <span class="subxComment"># ebx = out-&gt;write</span>
 <span id="L931" class="LineNr"> 931 </span>    8b/copy                         1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(edi+4) to ebx</span>
@@ -994,7 +994,7 @@ if ('onhashchange' in window) {
 <span id="L933" class="LineNr"> 933 </span>    <span class="subxComment"># if (curr &gt;= max) break</span>
 <span id="L934" class="LineNr"> 934 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with esi</span>
 <span id="L935" class="LineNr"> 935 </span>    73/jump-if-addr&gt;=  $write-slice-buffered:loop-end/disp8
-<span id="L936" class="LineNr"> 936 </span>    <span class="subxComment"># if (out-&gt;write &gt;= out-&gt;length) flush and clear out's stream</span>
+<span id="L936" class="LineNr"> 936 </span>    <span class="subxComment"># if (out-&gt;write &gt;= out-&gt;size) flush and clear out's stream</span>
 <span id="L937" class="LineNr"> 937 </span>    39/compare                      3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ebx with edx</span>
 <span id="L938" class="LineNr"> 938 </span>    7c/jump-if-&lt;  $write-slice-buffered:to-stream/disp8
 <span id="L939" class="LineNr"> 939 </span>    <span class="subxS1Comment"># . persist out-&gt;write</span>
@@ -1102,141 +1102,160 @@ if ('onhashchange' in window) {
 <span id="L1041" class="LineNr">1041 </span>    c3/return
 <span id="L1042" class="LineNr">1042 </span>
 <span id="L1043" class="LineNr">1043 </span><span class="subxComment"># copy a slice into a new (dynamically allocated) string</span>
-<span id="L1044" class="LineNr">1044 </span><span class="subxFunction">slice-to-string</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), in: (addr slice) -&gt; out/eax: (addr array byte)</span>
+<span id="L1044" class="LineNr">1044 </span><span class="subxFunction">slice-to-string</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), in: (addr slice), out: (addr handle array byte)</span>
 <span id="L1045" class="LineNr">1045 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L1046" class="LineNr">1046 </span>    55/push-ebp
 <span id="L1047" class="LineNr">1047 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
 <span id="L1048" class="LineNr">1048 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L1049" class="LineNr">1049 </span>    51/push-ecx
-<span id="L1050" class="LineNr">1050 </span>    52/push-edx
-<span id="L1051" class="LineNr">1051 </span>    53/push-ebx
-<span id="L1052" class="LineNr">1052 </span>    56/push-esi
-<span id="L1053" class="LineNr">1053 </span>    <span class="subxComment"># esi = in</span>
-<span id="L1054" class="LineNr">1054 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to esi</span>
-<span id="L1055" class="LineNr">1055 </span>    <span class="subxComment"># var curr/edx: (addr byte) = in-&gt;start</span>
-<span id="L1056" class="LineNr">1056 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
-<span id="L1057" class="LineNr">1057 </span>    <span class="subxComment"># var max/ebx: (addr byte) = in-&gt;end</span>
-<span id="L1058" class="LineNr">1058 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+4) to ebx</span>
-<span id="L1059" class="LineNr">1059 </span>    <span class="subxComment"># var size/ecx: int = max - curr + 4  # total size of output string (including the initial length)</span>
-<span id="L1060" class="LineNr">1060 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebx to ecx</span>
-<span id="L1061" class="LineNr">1061 </span>    29/subtract                     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># subtract edx from ecx</span>
-<span id="L1062" class="LineNr">1062 </span>    81          0/subop/add         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ecx</span>
-<span id="L1063" class="LineNr">1063 </span>    <span class="subxComment"># var out/eax: (handle array byte) = allocate(ad, size)</span>
-<span id="L1064" class="LineNr">1064 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1065" class="LineNr">1065 </span>    51/push-ecx
-<span id="L1066" class="LineNr">1066 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
-<span id="L1067" class="LineNr">1067 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1068" class="LineNr">1068 </span>    e8/call  <a href='069allocate.subx.html#L59'>allocate</a>/disp32
-<span id="L1069" class="LineNr">1069 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1070" class="LineNr">1070 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L1071" class="LineNr">1071 </span>    <span class="subxComment"># if (eax == 0) abort</span>
-<span id="L1072" class="LineNr">1072 </span>    3d/compare-eax-and  0/imm32
-<span id="L1073" class="LineNr">1073 </span>    74/jump-if-=  $slice-to-string:abort/disp8
-<span id="L1074" class="LineNr">1074 </span>    <span class="subxComment"># out-&gt;length = size-4</span>
-<span id="L1075" class="LineNr">1075 </span>    89/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx to *eax</span>
-<span id="L1076" class="LineNr">1076 </span>    81          5/subop/subtract    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># subtract 4 from *eax</span>
-<span id="L1077" class="LineNr">1077 </span>    <span class="subxComment"># save out</span>
-<span id="L1078" class="LineNr">1078 </span>    50/push-eax
-<span id="L1079" class="LineNr">1079 </span><span class="Constant">$slice-to-string:initialize</span>:
-<span id="L1080" class="LineNr">1080 </span>    <span class="subxComment"># eax = _append-4(eax+4, eax+size, curr, max)  # clobbering ecx</span>
-<span id="L1081" class="LineNr">1081 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1082" class="LineNr">1082 </span>    53/push-ebx
-<span id="L1083" class="LineNr">1083 </span>    52/push-edx
-<span id="L1084" class="LineNr">1084 </span>    <span class="subxS2Comment"># . . push eax+size (clobbering ecx)</span>
-<span id="L1085" class="LineNr">1085 </span>    01/add                          3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># add eax to ecx</span>
-<span id="L1086" class="LineNr">1086 </span>    51/push-ecx
-<span id="L1087" class="LineNr">1087 </span>    <span class="subxS2Comment"># . . push eax+4 (clobbering eax)</span>
-<span id="L1088" class="LineNr">1088 </span>    81          0/subop/add         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to eax</span>
-<span id="L1089" class="LineNr">1089 </span>    50/push-eax
-<span id="L1090" class="LineNr">1090 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1091" class="LineNr">1091 </span>    e8/call  <a href='056trace.subx.html#L897'>_append-4</a>/disp32
-<span id="L1092" class="LineNr">1092 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1093" class="LineNr">1093 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x10/imm32        <span class="subxComment"># add to esp</span>
-<span id="L1094" class="LineNr">1094 </span>    <span class="subxComment"># restore out (assumes _append-4 can't error)</span>
-<span id="L1095" class="LineNr">1095 </span>    58/pop-to-eax
-<span id="L1096" class="LineNr">1096 </span><span class="Constant">$slice-to-string:end</span>:
-<span id="L1097" class="LineNr">1097 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L1098" class="LineNr">1098 </span>    5e/pop-to-esi
-<span id="L1099" class="LineNr">1099 </span>    5b/pop-to-ebx
-<span id="L1100" class="LineNr">1100 </span>    5a/pop-to-edx
-<span id="L1101" class="LineNr">1101 </span>    59/pop-to-ecx
-<span id="L1102" class="LineNr">1102 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1103" class="LineNr">1103 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
-<span id="L1104" class="LineNr">1104 </span>    5d/pop-to-ebp
-<span id="L1105" class="LineNr">1105 </span>    c3/return
-<span id="L1106" class="LineNr">1106 </span>
-<span id="L1107" class="LineNr">1107 </span><span class="Constant">$slice-to-string:abort</span>:
-<span id="L1108" class="LineNr">1108 </span>    <span class="subxS1Comment"># . _write(2/stderr, error)</span>
-<span id="L1109" class="LineNr">1109 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1110" class="LineNr">1110 </span>    68/push  <span class="Constant">&quot;slice-to-string: out of space\n&quot;</span>/imm32
-<span id="L1111" class="LineNr">1111 </span>    68/push  2/imm32/stderr
-<span id="L1112" class="LineNr">1112 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1113" class="LineNr">1113 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
-<span id="L1114" class="LineNr">1114 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1115" class="LineNr">1115 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L1116" class="LineNr">1116 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
-<span id="L1117" class="LineNr">1117 </span>    bb/copy-to-ebx  1/imm32
-<span id="L1118" class="LineNr">1118 </span>    b8/copy-to-eax  1/imm32/exit
-<span id="L1119" class="LineNr">1119 </span>    cd/syscall  0x80/imm8
-<span id="L1120" class="LineNr">1120 </span>    <span class="subxComment"># never gets here</span>
-<span id="L1121" class="LineNr">1121 </span>
-<span id="L1122" class="LineNr">1122 </span><span class="subxTest">test-slice-to-string</span>:
-<span id="L1123" class="LineNr">1123 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1124" class="LineNr">1124 </span>    55/push-ebp
-<span id="L1125" class="LineNr">1125 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
-<span id="L1126" class="LineNr">1126 </span>    <span class="subxComment"># var heap/edx: allocation-descriptor</span>
-<span id="L1127" class="LineNr">1127 </span>    68/push  0/imm32/limit
-<span id="L1128" class="LineNr">1128 </span>    68/push  0/imm32/curr
-<span id="L1129" class="LineNr">1129 </span>    89/copy                         3/mod/direct    2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to edx</span>
-<span id="L1130" class="LineNr">1130 </span>    <span class="subxComment"># heap = new-segment(512)</span>
-<span id="L1131" class="LineNr">1131 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1132" class="LineNr">1132 </span>    52/push-edx
-<span id="L1133" class="LineNr">1133 </span>    68/push  0x200/imm32
-<span id="L1134" class="LineNr">1134 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1135" class="LineNr">1135 </span>    e8/call  <a href='053new-segment.subx.html#L41'>new-segment</a>/disp32
-<span id="L1136" class="LineNr">1136 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1137" class="LineNr">1137 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L1138" class="LineNr">1138 </span>    <span class="subxComment"># (eax..ecx) = &quot;Abc&quot;</span>
-<span id="L1139" class="LineNr">1139 </span>    b8/copy-to-eax  <span class="Constant">&quot;Abc&quot;</span>/imm32
-<span id="L1140" class="LineNr">1140 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to ecx</span>
-<span id="L1141" class="LineNr">1141 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx  <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy eax+ecx+4 to ecx</span>
-<span id="L1142" class="LineNr">1142 </span>    05/add-to-eax  4/imm32
-<span id="L1143" class="LineNr">1143 </span>    <span class="subxComment"># var slice/ecx: slice = {eax, ecx}</span>
-<span id="L1144" class="LineNr">1144 </span>    51/push-ecx
-<span id="L1145" class="LineNr">1145 </span>    50/push-eax
-<span id="L1146" class="LineNr">1146 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L1147" class="LineNr">1147 </span>    <span class="subxComment"># eax = slice-to-string(heap, slice)</span>
-<span id="L1148" class="LineNr">1148 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1149" class="LineNr">1149 </span>    51/push-ecx
-<span id="L1150" class="LineNr">1150 </span>    52/push-edx
-<span id="L1151" class="LineNr">1151 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1152" class="LineNr">1152 </span>    e8/call  <a href='072slice.subx.html#L1044'>slice-to-string</a>/disp32
-<span id="L1153" class="LineNr">1153 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1154" class="LineNr">1154 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L1155" class="Folded">1155 </span><span class="Folded">+-- 26 lines: #?     # dump word-slice --------------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L1181" class="LineNr">1181 </span>    <span class="subxComment"># eax = string-equal?(eax, &quot;Abc&quot;)</span>
-<span id="L1182" class="LineNr">1182 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1183" class="LineNr">1183 </span>    68/push  <span class="Constant">&quot;Abc&quot;</span>/imm32
-<span id="L1184" class="LineNr">1184 </span>    50/push-eax
-<span id="L1185" class="LineNr">1185 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1186" class="LineNr">1186 </span>    e8/call  <a href='054string-equal.subx.html#L16'>string-equal?</a>/disp32
-<span id="L1187" class="LineNr">1187 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1188" class="LineNr">1188 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L1189" class="LineNr">1189 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
-<span id="L1190" class="LineNr">1190 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1191" class="LineNr">1191 </span>    68/push  <span class="Constant">&quot;F - test-slice-to-string&quot;</span>/imm32
-<span id="L1192" class="LineNr">1192 </span>    68/push  1/imm32/true
-<span id="L1193" class="LineNr">1193 </span>    50/push-eax
-<span id="L1194" class="LineNr">1194 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1195" class="LineNr">1195 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
-<span id="L1196" class="LineNr">1196 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1197" class="LineNr">1197 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
-<span id="L1198" class="LineNr">1198 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1199" class="LineNr">1199 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
-<span id="L1200" class="LineNr">1200 </span>    5d/pop-to-ebp
-<span id="L1201" class="LineNr">1201 </span>    c3/return
-<span id="L1202" class="LineNr">1202 </span>
-<span id="L1203" class="LineNr">1203 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L1049" class="LineNr">1049 </span>    50/push-eax
+<span id="L1050" class="LineNr">1050 </span>    51/push-ecx
+<span id="L1051" class="LineNr">1051 </span>    52/push-edx
+<span id="L1052" class="LineNr">1052 </span>    53/push-ebx
+<span id="L1053" class="LineNr">1053 </span>    56/push-esi
+<span id="L1054" class="LineNr">1054 </span>    <span class="subxComment"># esi = in</span>
+<span id="L1055" class="LineNr">1055 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to esi</span>
+<span id="L1056" class="LineNr">1056 </span>    <span class="subxComment"># var curr/edx: (addr byte) = in-&gt;start</span>
+<span id="L1057" class="LineNr">1057 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
+<span id="L1058" class="LineNr">1058 </span>    <span class="subxComment"># var max/ebx: (addr byte) = in-&gt;end</span>
+<span id="L1059" class="LineNr">1059 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+4) to ebx</span>
+<span id="L1060" class="LineNr">1060 </span>    <span class="subxComment"># var size/ecx: int = max - curr + 4  # total size of output string (including the initial 'size' field)</span>
+<span id="L1061" class="LineNr">1061 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebx to ecx</span>
+<span id="L1062" class="LineNr">1062 </span>    29/subtract                     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># subtract edx from ecx</span>
+<span id="L1063" class="LineNr">1063 </span>    81          0/subop/add         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ecx</span>
+<span id="L1064" class="LineNr">1064 </span>    <span class="subxComment"># allocate(ad, size, out)</span>
+<span id="L1065" class="LineNr">1065 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1066" class="LineNr">1066 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0x10/disp8     <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+16)</span>
+<span id="L1067" class="LineNr">1067 </span>    51/push-ecx
+<span id="L1068" class="LineNr">1068 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
+<span id="L1069" class="LineNr">1069 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1070" class="LineNr">1070 </span>    e8/call  <a href='069allocate.subx.html#L67'>allocate</a>/disp32
+<span id="L1071" class="LineNr">1071 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1072" class="LineNr">1072 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L1073" class="LineNr">1073 </span>    <span class="subxComment"># eax = out-&gt;payload</span>
+<span id="L1074" class="LineNr">1074 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   0x10/disp8     <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+16) to eax</span>
+<span id="L1075" class="LineNr">1075 </span>    8b/copy                         1/mod/*+disp8   0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(eax+4) to eax</span>
+<span id="L1076" class="LineNr">1076 </span>    <span class="subxComment"># skip payload-&gt;allocid</span>
+<span id="L1077" class="LineNr">1077 </span>    05/add-to-eax  4/imm32
+<span id="L1078" class="LineNr">1078 </span>    <span class="subxComment"># if (eax == 0) abort</span>
+<span id="L1079" class="LineNr">1079 </span>    3d/compare-eax-and  0/imm32
+<span id="L1080" class="LineNr">1080 </span>    74/jump-if-=  $slice-to-string:abort/disp8
+<span id="L1081" class="LineNr">1081 </span>    <span class="subxComment"># out-&gt;size = size-4</span>
+<span id="L1082" class="LineNr">1082 </span>    89/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx to *eax</span>
+<span id="L1083" class="LineNr">1083 </span>    81          5/subop/subtract    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># subtract 4 from *eax</span>
+<span id="L1084" class="LineNr">1084 </span>    <span class="subxComment"># save out</span>
+<span id="L1085" class="LineNr">1085 </span>    50/push-eax
+<span id="L1086" class="LineNr">1086 </span><span class="Constant">$slice-to-string:initialize</span>:
+<span id="L1087" class="LineNr">1087 </span>    <span class="subxComment"># eax = _append-4(eax+4, eax+size, curr, max)  # clobbering ecx</span>
+<span id="L1088" class="LineNr">1088 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1089" class="LineNr">1089 </span>    53/push-ebx
+<span id="L1090" class="LineNr">1090 </span>    52/push-edx
+<span id="L1091" class="LineNr">1091 </span>    <span class="subxS2Comment"># . . push eax+size (clobbering ecx)</span>
+<span id="L1092" class="LineNr">1092 </span>    01/add                          3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># add eax to ecx</span>
+<span id="L1093" class="LineNr">1093 </span>    51/push-ecx
+<span id="L1094" class="LineNr">1094 </span>    <span class="subxS2Comment"># . . push eax+4 (clobbering eax)</span>
+<span id="L1095" class="LineNr">1095 </span>    81          0/subop/add         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to eax</span>
+<span id="L1096" class="LineNr">1096 </span>    50/push-eax
+<span id="L1097" class="LineNr">1097 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1098" class="LineNr">1098 </span>    e8/call  <a href='056trace.subx.html#L897'>_append-4</a>/disp32
+<span id="L1099" class="LineNr">1099 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1100" class="LineNr">1100 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x10/imm32        <span class="subxComment"># add to esp</span>
+<span id="L1101" class="LineNr">1101 </span>    <span class="subxComment"># restore out (assumes _append-4 can't error)</span>
+<span id="L1102" class="LineNr">1102 </span>    58/pop-to-eax
+<span id="L1103" class="LineNr">1103 </span><span class="Constant">$slice-to-string:end</span>:
+<span id="L1104" class="LineNr">1104 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L1105" class="LineNr">1105 </span>    5e/pop-to-esi
+<span id="L1106" class="LineNr">1106 </span>    5b/pop-to-ebx
+<span id="L1107" class="LineNr">1107 </span>    5a/pop-to-edx
+<span id="L1108" class="LineNr">1108 </span>    59/pop-to-ecx
+<span id="L1109" class="LineNr">1109 </span>    58/pop-to-eax
+<span id="L1110" class="LineNr">1110 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1111" class="LineNr">1111 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
+<span id="L1112" class="LineNr">1112 </span>    5d/pop-to-ebp
+<span id="L1113" class="LineNr">1113 </span>    c3/return
+<span id="L1114" class="LineNr">1114 </span>
+<span id="L1115" class="LineNr">1115 </span><span class="Constant">$slice-to-string:abort</span>:
+<span id="L1116" class="LineNr">1116 </span>    <span class="subxS1Comment"># . _write(2/stderr, error)</span>
+<span id="L1117" class="LineNr">1117 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1118" class="LineNr">1118 </span>    68/push  <span class="Constant">&quot;slice-to-string: out of space\n&quot;</span>/imm32
+<span id="L1119" class="LineNr">1119 </span>    68/push  2/imm32/stderr
+<span id="L1120" class="LineNr">1120 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1121" class="LineNr">1121 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
+<span id="L1122" class="LineNr">1122 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1123" class="LineNr">1123 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L1124" class="LineNr">1124 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L1125" class="LineNr">1125 </span>    bb/copy-to-ebx  1/imm32
+<span id="L1126" class="LineNr">1126 </span>    b8/copy-to-eax  1/imm32/exit
+<span id="L1127" class="LineNr">1127 </span>    cd/syscall  0x80/imm8
+<span id="L1128" class="LineNr">1128 </span>    <span class="subxComment"># never gets here</span>
+<span id="L1129" class="LineNr">1129 </span>
+<span id="L1130" class="LineNr">1130 </span><span class="subxTest">test-slice-to-string</span>:
+<span id="L1131" class="LineNr">1131 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1132" class="LineNr">1132 </span>    55/push-ebp
+<span id="L1133" class="LineNr">1133 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
+<span id="L1134" class="LineNr">1134 </span>    <span class="subxComment"># var heap/edx: allocation-descriptor</span>
+<span id="L1135" class="LineNr">1135 </span>    68/push  0/imm32/limit
+<span id="L1136" class="LineNr">1136 </span>    68/push  0/imm32/curr
+<span id="L1137" class="LineNr">1137 </span>    89/copy                         3/mod/direct    2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to edx</span>
+<span id="L1138" class="LineNr">1138 </span>    <span class="subxComment"># heap = new-segment(512)</span>
+<span id="L1139" class="LineNr">1139 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1140" class="LineNr">1140 </span>    52/push-edx
+<span id="L1141" class="LineNr">1141 </span>    68/push  0x200/imm32
+<span id="L1142" class="LineNr">1142 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1143" class="LineNr">1143 </span>    e8/call  <a href='053new-segment.subx.html#L41'>new-segment</a>/disp32
+<span id="L1144" class="LineNr">1144 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1145" class="LineNr">1145 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L1146" class="LineNr">1146 </span>    <span class="subxComment"># (eax..ecx) = &quot;Abc&quot;</span>
+<span id="L1147" class="LineNr">1147 </span>    b8/copy-to-eax  <span class="Constant">&quot;Abc&quot;</span>/imm32
+<span id="L1148" class="LineNr">1148 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to ecx</span>
+<span id="L1149" class="LineNr">1149 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx  <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy eax+ecx+4 to ecx</span>
+<span id="L1150" class="LineNr">1150 </span>    05/add-to-eax  4/imm32
+<span id="L1151" class="LineNr">1151 </span>    <span class="subxComment"># var slice/ecx: slice = {eax, ecx}</span>
+<span id="L1152" class="LineNr">1152 </span>    51/push-ecx
+<span id="L1153" class="LineNr">1153 </span>    50/push-eax
+<span id="L1154" class="LineNr">1154 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
+<span id="L1155" class="LineNr">1155 </span>    <span class="subxComment"># var h/ebx: (handle array byte)</span>
+<span id="L1156" class="LineNr">1156 </span>    68/push  0/imm32
+<span id="L1157" class="LineNr">1157 </span>    68/push  0/imm32
+<span id="L1158" class="LineNr">1158 </span>    89/copy                         3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebx</span>
+<span id="L1159" class="LineNr">1159 </span>    <span class="subxComment"># slice-to-string(heap, slice, h)</span>
+<span id="L1160" class="LineNr">1160 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1161" class="LineNr">1161 </span>    53/push-ebx
+<span id="L1162" class="LineNr">1162 </span>    51/push-ecx
+<span id="L1163" class="LineNr">1163 </span>    52/push-edx
+<span id="L1164" class="LineNr">1164 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1165" class="LineNr">1165 </span>    e8/call  <a href='072slice.subx.html#L1044'>slice-to-string</a>/disp32
+<span id="L1166" class="LineNr">1166 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1167" class="LineNr">1167 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L1168" class="LineNr">1168 </span>    <span class="subxComment"># eax = h-&gt;payload</span>
+<span id="L1169" class="LineNr">1169 </span>    8b/copy                         1/mod/*+disp8   3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebx+4) to eax</span>
+<span id="L1170" class="LineNr">1170 </span>    <span class="subxComment"># skip payload-&gt;allocid</span>
+<span id="L1171" class="LineNr">1171 </span>    05/add-to-eax  4/imm32
+<span id="L1172" class="Folded">1172 </span><span class="Folded">+-- 26 lines: #?     # dump eax ---------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L1198" class="LineNr">1198 </span>    <span class="subxComment"># eax = string-equal?(eax, &quot;Abc&quot;)</span>
+<span id="L1199" class="LineNr">1199 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1200" class="LineNr">1200 </span>    68/push  <span class="Constant">&quot;Abc&quot;</span>/imm32
+<span id="L1201" class="LineNr">1201 </span>    50/push-eax
+<span id="L1202" class="LineNr">1202 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1203" class="LineNr">1203 </span>    e8/call  <a href='054string-equal.subx.html#L16'>string-equal?</a>/disp32
+<span id="L1204" class="LineNr">1204 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1205" class="LineNr">1205 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L1206" class="LineNr">1206 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
+<span id="L1207" class="LineNr">1207 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1208" class="LineNr">1208 </span>    68/push  <span class="Constant">&quot;F - test-slice-to-string&quot;</span>/imm32
+<span id="L1209" class="LineNr">1209 </span>    68/push  1/imm32/true
+<span id="L1210" class="LineNr">1210 </span>    50/push-eax
+<span id="L1211" class="LineNr">1211 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1212" class="LineNr">1212 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L1213" class="LineNr">1213 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1214" class="LineNr">1214 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L1215" class="LineNr">1215 </span>    <span class="subxS1Comment"># . reclaim locals</span>
+<span id="L1216" class="LineNr">1216 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x18/imm32        <span class="subxComment"># add to esp</span>
+<span id="L1217" class="LineNr">1217 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1218" class="LineNr">1218 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
+<span id="L1219" class="LineNr">1219 </span>    5d/pop-to-ebp
+<span id="L1220" class="LineNr">1220 </span>    c3/return
+<span id="L1221" class="LineNr">1221 </span>
+<span id="L1222" class="LineNr">1222 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>

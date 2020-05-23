@@ -15,16 +15,16 @@ body { font-size:12pt; font-family: monospace; color: #000000; background-color:
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .subxComment { color: #005faf; }
+.subxS2Comment { color: #8a8a8a; }
+.subxTest { color: #5f8700; }
 .subxFunction { color: #af5f00; text-decoration: underline; }
-.subxMinorFunction { color: #875f5f; }
 .LineNr { }
 .subxS1Comment { color: #0000af; }
 .SpecialChar { color: #d70000; }
 .Constant { color: #008787; }
-.subxH1Comment { color: #005faf; text-decoration: underline; }
+.subxMinorFunction { color: #875f5f; }
 .Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
-.subxS2Comment { color: #8a8a8a; }
-.subxTest { color: #5f8700; }
+.subxH1Comment { color: #005faf; text-decoration: underline; }
 -->
 </style>
 
@@ -78,7 +78,7 @@ if ('onhashchange' in window) {
 <span id="L16" class="LineNr"> 16 </span>    0/imm32
 <span id="L17" class="LineNr"> 17 </span>    <span class="subxComment">#   current read index</span>
 <span id="L18" class="LineNr"> 18 </span>    0/imm32
-<span id="L19" class="LineNr"> 19 </span>    <span class="subxComment">#   length</span>
+<span id="L19" class="LineNr"> 19 </span>    <span class="subxComment">#   size</span>
 <span id="L20" class="LineNr"> 20 </span>    8/imm32
 <span id="L21" class="LineNr"> 21 </span>    <span class="subxComment">#   data</span>
 <span id="L22" class="LineNr"> 22 </span>    00 00 00 00 00 00 00 00  <span class="subxComment"># 8 bytes</span>
@@ -103,7 +103,7 @@ if ('onhashchange' in window) {
 <span id="L41" class="LineNr"> 41 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to edi</span>
 <span id="L42" class="LineNr"> 42 </span>    <span class="subxComment"># ecx = f-&gt;write</span>
 <span id="L43" class="LineNr"> 43 </span>    8b/copy                         1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(edi+4) to ecx</span>
-<span id="L44" class="LineNr"> 44 </span>    <span class="subxComment"># if (f-&gt;write &gt;= f-&gt;length) flush and clear f's stream</span>
+<span id="L44" class="LineNr"> 44 </span>    <span class="subxComment"># if (f-&gt;write &gt;= f-&gt;size) flush and clear f's stream</span>
 <span id="L45" class="LineNr"> 45 </span>    3b/compare                      1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with *(edi+12)</span>
 <span id="L46" class="LineNr"> 46 </span>    7c/jump-if-&lt;  $write-byte-buffered:to-stream/disp8
 <span id="L47" class="LineNr"> 47 </span>    <span class="subxS1Comment"># . flush(f)</span>
@@ -278,7 +278,7 @@ if ('onhashchange' in window) {
 <span id="L216" class="LineNr">216 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to edi</span>
 <span id="L217" class="LineNr">217 </span>    <span class="subxComment"># ecx = f-&gt;write</span>
 <span id="L218" class="LineNr">218 </span>    8b/copy                         0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *edi to ecx</span>
-<span id="L219" class="LineNr">219 </span>    <span class="subxComment"># if (f-&gt;write &gt;= f-&gt;length) abort</span>
+<span id="L219" class="LineNr">219 </span>    <span class="subxComment"># if (f-&gt;write &gt;= f-&gt;size) abort</span>
 <span id="L220" class="LineNr">220 </span>    3b/compare                      1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with *(edi+8)</span>
 <span id="L221" class="LineNr">221 </span>    7d/jump-if-&gt;=  $append-byte:abort/disp8
 <span id="L222" class="LineNr">222 </span><span class="Constant">$append-byte:to-stream</span>:
@@ -350,7 +350,7 @@ if ('onhashchange' in window) {
 <span id="L288" class="LineNr">288 </span>    0/imm32
 <span id="L289" class="LineNr">289 </span>    <span class="subxComment"># current read index</span>
 <span id="L290" class="LineNr">290 </span>    0/imm32
-<span id="L291" class="LineNr">291 </span>    <span class="subxComment"># length</span>
+<span id="L291" class="LineNr">291 </span>    <span class="subxComment"># size</span>
 <span id="L292" class="LineNr">292 </span>    0x400/imm32  <span class="subxComment"># 1024 bytes</span>
 <span id="L293" class="LineNr">293 </span>    <span class="subxComment"># data (64 lines x 16 bytes/line)</span>
 <span id="L294" class="LineNr">294 </span>    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -427,7 +427,7 @@ if ('onhashchange' in window) {
 <span id="L365" class="LineNr">365 </span>    0/imm32
 <span id="L366" class="LineNr">366 </span>    <span class="subxComment"># current read index</span>
 <span id="L367" class="LineNr">367 </span>    0/imm32
-<span id="L368" class="LineNr">368 </span>    <span class="subxComment"># length</span>
+<span id="L368" class="LineNr">368 </span>    <span class="subxComment"># size</span>
 <span id="L369" class="LineNr">369 </span>    6/imm32
 <span id="L370" class="LineNr">370 </span>    <span class="subxComment"># data</span>
 <span id="L371" class="LineNr">371 </span>    00 00 00 00 00 00  <span class="subxComment"># 6 bytes</span>
@@ -458,7 +458,7 @@ if ('onhashchange' in window) {
 <span id="L396" class="LineNr">396 </span>    0/imm32
 <span id="L397" class="LineNr">397 </span>    <span class="subxComment"># current read index</span>
 <span id="L398" class="LineNr">398 </span>    0/imm32
-<span id="L399" class="LineNr">399 </span>    <span class="subxComment"># length</span>
+<span id="L399" class="LineNr">399 </span>    <span class="subxComment"># size</span>
 <span id="L400" class="LineNr">400 </span>    6/imm32
 <span id="L401" class="LineNr">401 </span>    <span class="subxComment"># data</span>
 <span id="L402" class="LineNr">402 </span>    00 00 00 00 00 00  <span class="subxComment"># 6 bytes</span>

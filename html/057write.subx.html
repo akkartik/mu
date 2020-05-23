@@ -16,13 +16,13 @@ a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .subxComment { color: #005faf; }
 .subxS2Comment { color: #8a8a8a; }
+.subxTest { color: #5f8700; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
 .LineNr { }
 .subxS1Comment { color: #0000af; }
-.subxFunction { color: #af5f00; text-decoration: underline; }
 .Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
-.subxMinorFunction { color: #875f5f; }
 .Constant { color: #008787; }
-.subxTest { color: #5f8700; }
+.subxMinorFunction { color: #875f5f; }
 -->
 </style>
 
@@ -73,7 +73,7 @@ if ('onhashchange' in window) {
 <span id="L13" class="LineNr"> 13 </span><span class="subxComment"># A stream looks like this:</span>
 <span id="L14" class="LineNr"> 14 </span><span class="subxComment">#   read: int  # index at which to read next</span>
 <span id="L15" class="LineNr"> 15 </span><span class="subxComment">#   write: int  # index at which writes go</span>
-<span id="L16" class="LineNr"> 16 </span><span class="subxComment">#   data: (array byte)  # prefixed by length as usual</span>
+<span id="L16" class="LineNr"> 16 </span><span class="subxComment">#   data: (array byte)  # prefixed by size as usual</span>
 <span id="L17" class="LineNr"> 17 </span>
 <span id="L18" class="LineNr"> 18 </span>== code
 <span id="L19" class="LineNr"> 19 </span><span class="subxComment">#   instruction                     effective address                                                   register    displacement    immediate</span>
@@ -107,12 +107,12 @@ if ('onhashchange' in window) {
 <span id="L47" class="LineNr"> 47 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>                        1/r32/ecx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to ecx</span>
 <span id="L48" class="LineNr"> 48 </span>    <span class="subxComment"># edx = f-&gt;write</span>
 <span id="L49" class="LineNr"> 49 </span>    8b/copy                         0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *ecx to edx</span>
-<span id="L50" class="LineNr"> 50 </span>    <span class="subxComment"># ebx = f-&gt;length</span>
+<span id="L50" class="LineNr"> 50 </span>    <span class="subxComment"># ebx = f-&gt;size</span>
 <span id="L51" class="LineNr"> 51 </span>    8b/copy                         1/mod/*+disp8   1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ecx+8) to ebx</span>
-<span id="L52" class="LineNr"> 52 </span>    <span class="subxComment"># eax = _append-3(&amp;f-&gt;data[f-&gt;write], &amp;f-&gt;data[f-&gt;length], s)</span>
+<span id="L52" class="LineNr"> 52 </span>    <span class="subxComment"># eax = _append-3(&amp;f-&gt;data[f-&gt;write], &amp;f-&gt;data[f-&gt;size], s)</span>
 <span id="L53" class="LineNr"> 53 </span>    <span class="subxS2Comment"># . . push s</span>
 <span id="L54" class="LineNr"> 54 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+12)</span>
-<span id="L55" class="LineNr"> 55 </span>    <span class="subxS2Comment"># . . push &amp;f-&gt;data[f-&gt;length]</span>
+<span id="L55" class="LineNr"> 55 </span>    <span class="subxS2Comment"># . . push &amp;f-&gt;data[f-&gt;size]</span>
 <span id="L56" class="LineNr"> 56 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ecx  3/index/ebx  <span class="Normal"> . </span>          3/r32/ebx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+ebx+12 to ebx</span>
 <span id="L57" class="LineNr"> 57 </span>    53/push-ebx
 <span id="L58" class="LineNr"> 58 </span>    <span class="subxS2Comment"># . . push &amp;f-&gt;data[f-&gt;write]</span>
@@ -210,7 +210,7 @@ if ('onhashchange' in window) {
 <span id="L150" class="LineNr">150 </span>    0/imm32
 <span id="L151" class="LineNr">151 </span>    <span class="subxComment"># current read index</span>
 <span id="L152" class="LineNr">152 </span>    0/imm32
-<span id="L153" class="LineNr">153 </span>    <span class="subxComment"># length</span>
+<span id="L153" class="LineNr">153 </span>    <span class="subxComment"># size</span>
 <span id="L154" class="LineNr">154 </span>    0x10/imm32
 <span id="L155" class="LineNr">155 </span>    <span class="subxComment"># data (2 lines x 8 bytes/line)</span>
 <span id="L156" class="LineNr">156 </span>    00 00 00 00 00 00 00 00

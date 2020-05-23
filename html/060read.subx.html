@@ -16,10 +16,10 @@ a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .subxComment { color: #005faf; }
 .subxS2Comment { color: #8a8a8a; }
-.LineNr { }
-.subxS1Comment { color: #0000af; }
 .subxTest { color: #5f8700; }
 .subxFunction { color: #af5f00; text-decoration: underline; }
+.LineNr { }
+.subxS1Comment { color: #0000af; }
 .Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
 .subxMinorFunction { color: #875f5f; }
 .Constant { color: #008787; }
@@ -99,7 +99,7 @@ if ('onhashchange' in window) {
 <span id="L38" class="LineNr"> 38 </span><span class="subxComment"># As a reminder, a stream looks like this:</span>
 <span id="L39" class="LineNr"> 39 </span><span class="subxComment">#   write: int  # index at which to write to next</span>
 <span id="L40" class="LineNr"> 40 </span><span class="subxComment">#   read: int  # index at which to read next</span>
-<span id="L41" class="LineNr"> 41 </span><span class="subxComment">#   data: (array byte)  # prefixed by length as usual</span>
+<span id="L41" class="LineNr"> 41 </span><span class="subxComment">#   data: (array byte)  # prefixed by size as usual</span>
 <span id="L42" class="LineNr"> 42 </span>
 <span id="L43" class="LineNr"> 43 </span>== code
 <span id="L44" class="LineNr"> 44 </span><span class="subxComment">#   instruction                     effective address                                                   register    displacement    immediate</span>
@@ -131,7 +131,7 @@ if ('onhashchange' in window) {
 <span id="L70" class="LineNr"> 70 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
 <span id="L71" class="LineNr"> 71 </span>    <span class="subxComment"># edi = s</span>
 <span id="L72" class="LineNr"> 72 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to esi</span>
-<span id="L73" class="LineNr"> 73 </span>    <span class="subxComment"># eax = _buffer-4(out = &amp;s-&gt;data[s-&gt;write], outend = &amp;s-&gt;data[s-&gt;length],</span>
+<span id="L73" class="LineNr"> 73 </span>    <span class="subxComment"># eax = _buffer-4(out = &amp;s-&gt;data[s-&gt;write], outend = &amp;s-&gt;data[s-&gt;size],</span>
 <span id="L74" class="LineNr"> 74 </span>    <span class="subxComment">#                 in  = &amp;f-&gt;data[f-&gt;read],  inend  = &amp;f-&gt;data[f-&gt;write])</span>
 <span id="L75" class="LineNr"> 75 </span>    <span class="subxS2Comment"># . . push &amp;f-&gt;data[f-&gt;write]</span>
 <span id="L76" class="LineNr"> 76 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to eax</span>
@@ -141,7 +141,7 @@ if ('onhashchange' in window) {
 <span id="L80" class="LineNr"> 80 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+4) to eax</span>
 <span id="L81" class="LineNr"> 81 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax  <span class="Normal"> . </span>          0/r32/eax   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+eax+12 to eax</span>
 <span id="L82" class="LineNr"> 82 </span>    50/push-eax
-<span id="L83" class="LineNr"> 83 </span>    <span class="subxS2Comment"># . . push &amp;s-&gt;data[s-&gt;length]</span>
+<span id="L83" class="LineNr"> 83 </span>    <span class="subxS2Comment"># . . push &amp;s-&gt;data[s-&gt;size]</span>
 <span id="L84" class="LineNr"> 84 </span>    8b/copy                         1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(edi+8) to eax</span>
 <span id="L85" class="LineNr"> 85 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  0/index/eax  <span class="Normal"> . </span>          0/r32/eax   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy edi+eax+12 to eax</span>
 <span id="L86" class="LineNr"> 86 </span>    50/push-eax
@@ -177,8 +177,8 @@ if ('onhashchange' in window) {
 <span id="L116" class="LineNr">116 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
 <span id="L117" class="LineNr">117 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L118" class="LineNr">118 </span>    51/push-ecx
-<span id="L119" class="LineNr">119 </span>    <span class="subxComment"># eax = _buffer-4(out, outend, &amp;s-&gt;data[0], &amp;s-&gt;data[s-&gt;length])</span>
-<span id="L120" class="LineNr">120 </span>    <span class="subxS2Comment"># . . push &amp;s-&gt;data[s-&gt;length]</span>
+<span id="L119" class="LineNr">119 </span>    <span class="subxComment"># eax = _buffer-4(out, outend, &amp;s-&gt;data[0], &amp;s-&gt;data[s-&gt;size])</span>
+<span id="L120" class="LineNr">120 </span>    <span class="subxS2Comment"># . . push &amp;s-&gt;data[s-&gt;size]</span>
 <span id="L121" class="LineNr">121 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>                        0/r32/eax   0x10/disp8     <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+16) to eax</span>
 <span id="L122" class="LineNr">122 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to ecx</span>
 <span id="L123" class="LineNr">123 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx  <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy eax+ecx+4 to ecx</span>
@@ -269,14 +269,14 @@ if ('onhashchange' in window) {
 <span id="L208" class="LineNr">208 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to esi</span>
 <span id="L209" class="LineNr">209 </span>    <span class="subxComment"># eax = s-&gt;write</span>
 <span id="L210" class="LineNr">210 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to eax</span>
-<span id="L211" class="LineNr">211 </span>    <span class="subxComment"># edx = s-&gt;length</span>
+<span id="L211" class="LineNr">211 </span>    <span class="subxComment"># edx = s-&gt;size</span>
 <span id="L212" class="LineNr">212 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+8) to edx</span>
-<span id="L213" class="LineNr">213 </span>    <span class="subxComment"># syscall(read, fd, &amp;s-&gt;data[s-&gt;write], s-&gt;length - s-&gt;write)</span>
+<span id="L213" class="LineNr">213 </span>    <span class="subxComment"># syscall(read, fd, &amp;s-&gt;data[s-&gt;write], s-&gt;size - s-&gt;write)</span>
 <span id="L214" class="LineNr">214 </span>    <span class="subxS2Comment"># . . fd: ebx</span>
 <span id="L215" class="LineNr">215 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to ebx</span>
 <span id="L216" class="LineNr">216 </span>    <span class="subxS2Comment"># . . data: ecx = &amp;s-&gt;data[s-&gt;write]</span>
 <span id="L217" class="LineNr">217 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax  <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+eax+12 to ecx</span>
-<span id="L218" class="LineNr">218 </span>    <span class="subxS2Comment"># . . size: edx = s-&gt;length - s-&gt;write</span>
+<span id="L218" class="LineNr">218 </span>    <span class="subxS2Comment"># . . size: edx = s-&gt;size - s-&gt;write</span>
 <span id="L219" class="LineNr">219 </span>    29/subtract                     3/mod/direct    2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># subtract eax from edx</span>
 <span id="L220" class="LineNr">220 </span>    <span class="subxS2Comment"># . . syscall</span>
 <span id="L221" class="LineNr">221 </span>    b8/copy-to-eax  3/imm32/read
@@ -298,14 +298,14 @@ if ('onhashchange' in window) {
 <span id="L237" class="LineNr">237 </span>    <span class="subxComment">#   1 (what we have above):</span>
 <span id="L238" class="LineNr">238 </span>    <span class="subxComment">#     ecx = s</span>
 <span id="L239" class="LineNr">239 </span>    <span class="subxComment">#     eax = s-&gt;write</span>
-<span id="L240" class="LineNr">240 </span>    <span class="subxComment">#     edx = s-&gt;length</span>
+<span id="L240" class="LineNr">240 </span>    <span class="subxComment">#     edx = s-&gt;size</span>
 <span id="L241" class="LineNr">241 </span>    <span class="subxComment">#     # syscall</span>
 <span id="L242" class="LineNr">242 </span>    <span class="subxComment">#     ecx = lea ecx+eax+12</span>
 <span id="L243" class="LineNr">243 </span>    <span class="subxComment">#     edx = sub edx eax</span>
 <span id="L244" class="LineNr">244 </span>    <span class="subxComment">#</span>
 <span id="L245" class="LineNr">245 </span>    <span class="subxComment">#   2:</span>
 <span id="L246" class="LineNr">246 </span>    <span class="subxComment">#     ecx = s</span>
-<span id="L247" class="LineNr">247 </span>    <span class="subxComment">#     edx = s-&gt;length</span>
+<span id="L247" class="LineNr">247 </span>    <span class="subxComment">#     edx = s-&gt;size</span>
 <span id="L248" class="LineNr">248 </span>    <span class="subxComment">#     ecx = &amp;s-&gt;data</span>
 <span id="L249" class="LineNr">249 </span>    <span class="subxComment">#     # syscall</span>
 <span id="L250" class="LineNr">250 </span>    <span class="subxComment">#     ecx = add ecx, s-&gt;write</span>
@@ -492,7 +492,7 @@ if ('onhashchange' in window) {
 <span id="L431" class="LineNr">431 </span>    0/imm32
 <span id="L432" class="LineNr">432 </span>    <span class="subxComment"># current read index</span>
 <span id="L433" class="LineNr">433 </span>    0/imm32
-<span id="L434" class="LineNr">434 </span>    <span class="subxComment"># length</span>
+<span id="L434" class="LineNr">434 </span>    <span class="subxComment"># size</span>
 <span id="L435" class="LineNr">435 </span>    8/imm32
 <span id="L436" class="LineNr">436 </span>    <span class="subxComment"># data</span>
 <span id="L437" class="LineNr">437 </span>    00 00 00 00 00 00 00 00  <span class="subxComment"># 8 bytes</span>
