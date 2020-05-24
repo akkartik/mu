@@ -484,6 +484,7 @@ convert-mu:  # in: (addr buffered-file), out: (addr buffered-file)
     #
     (parse-mu *(ebp+8))
     (populate-mu-type-sizes)
+#?     (dump-typeinfos "=== typeinfos\n")
     (check-mu-types)
     (emit-subx *(ebp+0xc))
 $convert-mu:end:
@@ -3211,6 +3212,56 @@ test-convert-get-on-function-argument:
     5d/pop-to-ebp
     c3/return
 
+test-convert-get-on-function-argument-with-known-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn foo a: t {\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- get a, y\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-get-on-function-argument-with-known-type/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-get-on-function-argument-with-known-type/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-get-on-function-argument-with-known-type/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-get-on-function-argument-with-known-type/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-get-on-function-argument-with-known-type/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-get-on-function-argument-with-known-type/5")
+    # var c
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-get-on-function-argument-with-known-type/6")
+    # get
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(ebp+0x0000000c) 0x00000001/r32"  "F - test-convert-get-on-function-argument-with-known-type/7")
+    # reclaim c
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-get-on-function-argument-with-known-type/8")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-get-on-function-argument-with-known-type/9")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-get-on-function-argument-with-known-type/10")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-get-on-function-argument-with-known-type/11")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-get-on-function-argument-with-known-type/12")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-get-on-function-argument-with-known-type/13")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-get-on-function-argument-with-known-type/14")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-array-of-user-defined-types:
     # . prologue
     55/push-ebp
@@ -5659,6 +5710,16 @@ $add-operation-and-inputs-to-stmt:read-inouts:
         3d/compare-eax-and 0/imm32
         74/jump-if-= break/disp8
         (lookup-or-create-constant %eax %ecx %esi)
+#?         (lookup *esi *(esi+4))
+#?         (write-buffered Stderr "creating new output var ")
+#?         (print-int32-buffered Stderr %eax)
+#?         (write-buffered Stderr " for field called ")
+#?         (write-slice-buffered Stderr %ecx)
+#?         (write-buffered Stderr "; var name ")
+#?         (lookup *eax *(eax+4))  # Var-name
+#?         (write-buffered Stderr %eax)
+#?         (write-buffered Stderr Newline)
+#?         (flush Stderr)
         e9/jump $add-operation-and-inputs-to-stmt:save-var/disp32
       }
       # is-deref? = false
@@ -6478,7 +6539,24 @@ lookup-or-create-constant:  # container: (addr stmt-var), field-name: (addr slic
     # var tmp-addr/eax: (addr typeinfo) = lookup(tmp)
     (lookup *eax *(eax+4))  # => eax
     # result = find-or-create-typeinfo-output-var(typeinfo, field-name)
+#?     (write-buffered Stderr "constant: ")
+#?     (write-slice-buffered Stderr *(ebp+0xc))
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
     (find-or-create-typeinfo-output-var %eax *(ebp+0xc) *(ebp+0x10))
+#?     8b/-> *(ebp+0x10) 0/r32/eax
+#?     (write-buffered Stderr "@")
+#?     (lookup *eax *(eax+4))
+#?     (print-int32-buffered Stderr %eax)
+#?     (lookup *eax *(eax+4))
+#?     (write-buffered Stderr %eax)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
+#?     (write-buffered Stderr "offset: ")
+#?     8b/-> *(eax+0x14) 0/r32/eax
+#?     (print-int32-buffered Stderr %eax)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
 $lookup-or-create-constant:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -6636,41 +6714,34 @@ find-or-create-typeinfo-output-var:  # T: (addr typeinfo), f: (addr slice), out:
     50/push-eax
     52/push-edx
     57/push-edi
-    # var tmp-addr/edi: (addr typeinfo-entry) = find-or-create-typeinfo-fields(T, f)
-    # . var tmp/edi: (handle typeinfo-entry)
+    # var dest/edi: (handle typeinfo-entry)
     68/push 0/imm32
     68/push 0/imm32
     89/<- %edi 4/r32/esp
-    # . find-or-create-typeinfo-fields(T, f, tmp)
+    # find-or-create-typeinfo-fields(T, f, dest)
     (find-or-create-typeinfo-fields *(ebp+8) *(ebp+0xc) %edi)
-    # . tmp-addr = lookup(tmp)
+    # var dest-addr/edi: (addr typeinfo-entry) = lookup(dest)
     (lookup *edi *(edi+4))  # => eax
     89/<- %edi 0/r32/eax
-    # if output var doesn't exist, create it
+    # if dest-addr->output-var doesn't exist, create it
     {
-      81 7/subop/compare *(edi+8) 0/imm32  # Typeinfo-entry-output-var
+      81 7/subop/compare *(edi+0xc) 0/imm32  # Typeinfo-entry-output-var
       0f 85/jump-if-!= break/disp32
-      # out/edx = new var(dummy name, type, -1 offset)
+      # dest-addr->output-var = new var(dummy name, type, -1 offset)
       # . var name/eax: (handle array byte) = "field"
       68/push 0/imm32
       68/push 0/imm32
       89/<- %eax 4/r32/esp
       (copy-array Heap "field" %eax)
       # . new var
-      (new-var Heap  *eax *(eax+4)  *(ebp+0x10))
+      8d/copy-address *(edi+0xc) 2/r32/edx
+      (new-var Heap  *eax *(eax+4)  %edx)
       # . reclaim name
       81 0/subop/add %esp 8/imm32
-      # save out in typeinfo
-      8b/-> *(ebp+0x10) 2/r32/edx
-      8b/-> *edx 0/r32/eax
-      89/<- *(edi+0xc) 0/r32/eax  # Typeinfo-entry-output-var
-      8b/-> *(edx+4) 0/r32/eax
-      89/<- *(edi+0x10) 0/r32/eax  # Typeinfo-entry-output-var
-      # initialize out
-      # . var out-addr/edx: (addr var) = lookup(*out)
-      (lookup *edx *(edx+4))  # => eax
+      # var result/edx: (addr var) = lookup(dest-addr->output-var)
+      (lookup *(edi+0xc) *(edi+0x10))  # => eax
       89/<- %edx 0/r32/eax
-      # . out->type = new constant type
+      # result->type = new constant type
       8d/copy-address *(edx+8) 0/r32/eax  # Var-type
       (allocate Heap *Tree-size %eax)
       (lookup *(edx+8) *(edx+0xc))  # => eax
@@ -6679,9 +6750,15 @@ find-or-create-typeinfo-output-var:  # T: (addr typeinfo), f: (addr slice), out:
       c7 0/subop/copy *(eax+8) 0/imm32  # Tree-left
       c7 0/subop/copy *(eax+0xc) 0/imm32  # Tree-right
       c7 0/subop/copy *(eax+0x10) 0/imm32  # Tree-right
-      # . out-addr->offset isn't filled out yet
+      # result->offset isn't filled out yet
       c7 0/subop/copy *(edx+0x14) -1/imm32/uninitialized  # Var-offset
     }
+    # out = dest-addr->output-var
+    8b/-> *(ebp+0x10) 2/r32/edx
+    8b/-> *(edi+0xc) 0/r32/eax  # Typeinfo-entry-output-var
+    89/<- *edx 0/r32/eax
+    8b/-> *(edi+0x10) 0/r32/eax  # Typeinfo-entry-output-var
+    89/<- *(edx+4) 0/r32/eax
 $find-or-create-typeinfo-output-var:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -7782,6 +7859,15 @@ $populate-mu-type-offsets-in-inouts:loop:
       # var v/ebx: (addr var) = lookup(curr->value)
       (lookup *ecx *(ecx+4))  # List-value List-value => eax
       89/<- %ebx 0/r32/eax
+#?       (lookup *ebx *(ebx+4))
+#?       (write-buffered Stderr "setting offset of fn inout ")
+#?       (write-buffered Stderr %eax)
+#?       (write-buffered Stderr "@")
+#?       (print-int32-buffered Stderr %ebx)
+#?       (write-buffered Stderr " to ")
+#?       (print-int32-buffered Stderr %edx)
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
       # v->offset = next-offset
       89/<- *(ebx+0x14) 2/r32/edx  # Var-offset
       # next-offset += size-of(v)
@@ -9261,8 +9347,21 @@ mu-get-offset:  # stmt: (addr stmt) -> result/eax: int
     (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
     # var output-var/eax: (addr var) = second-inout->value
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+#?     (write-buffered Stderr "mu-get-offset: ")
+#?     (print-int32-buffered Stderr %eax)
+#?     (write-buffered Stderr " name: ")
+#?     50/push-eax
+#?     (lookup *eax *(eax+4))  # Var-name
+#?     (write-buffered Stderr %eax)
+#?     58/pop-to-eax
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
     # return output-var->stack-offset
     8b/-> *(eax+0x14) 0/r32/eax  # Var-offset
+#?     (write-buffered Stderr "=> ")
+#?     (print-int32-buffered Stderr %eax)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
 $emit-get-offset:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
