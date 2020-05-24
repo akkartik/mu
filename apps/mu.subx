@@ -2437,7 +2437,7 @@ test-convert-length-of-array:
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-length-of-array/6")
     (check-next-stream-line-equal _test-output-stream "    8b/-> *(ebp+0x00000008) 0x00000000/r32"  "F - test-convert-length-of-array/7")
     (check-next-stream-line-equal _test-output-stream "    8b/-> *eax 0x00000000/r32"  "F - test-convert-length-of-array/8")
-    (check-next-stream-line-equal _test-output-stream "    c1/shift 5/subop/>> %eax 0x00000002/imm32"  "F - test-convert-length-of-array/9")
+    (check-next-stream-line-equal _test-output-stream "    c1/shift 5/subop/>> %eax 0x00000002/imm8"  "F - test-convert-length-of-array/9")
     (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-length-of-array/10")
     (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-length-of-array/11")
     (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-length-of-array/12")
@@ -2485,7 +2485,7 @@ test-convert-length-of-array-on-stack:
     (check-next-stream-line-equal _test-output-stream "    68/push 0x0000000c/imm32"  "F - test-convert-length-of-array-on-stack/7")
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-length-of-array-on-stack/8")
     (check-next-stream-line-equal _test-output-stream "    8b/-> *(ebp+0xfffffff0) 0x00000000/r32"  "F - test-convert-length-of-array-on-stack/9")
-    (check-next-stream-line-equal _test-output-stream "    c1/shift 5/subop/>> %eax 0x00000002/imm32"  "F - test-convert-length-of-array-on-stack/10")
+    (check-next-stream-line-equal _test-output-stream "    c1/shift 5/subop/>> %eax 0x00000002/imm8"  "F - test-convert-length-of-array-on-stack/10")
     (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-length-of-array-on-stack/11")
     (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000010/imm32"  "F - test-convert-length-of-array-on-stack/12")
     (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-length-of-array-on-stack/13")
@@ -8846,71 +8846,112 @@ translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     51/push-ecx
     52/push-edx
     53/push-ebx
-    # ecx = stmt
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    #
-    (emit-indent *(ebp+8) *Curr-block-depth)
-    (write-buffered *(ebp+8) "8b/-> *")
-    # var base/ebx: (addr var) = inouts[0]
-    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    56/push-esi
+    # esi = stmt
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var base/ebx: (addr var) = stmt->inouts[0]->value
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     89/<- %ebx 0/r32/eax
+    # var elemsize/ecx: int = element-size(base)
+    (array-element-type-id %ebx)  # => eax
+    (size-of-type-id %eax)  # => eax
+    89/<- %ecx 0/r32/eax
+    # var outreg/edx: (addr array byte) = stmt->outputs[0]->value->register
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    89/<- %edx 0/r32/eax
+    # if elemsize == 1
+    {
+      81 7/subop/compare %ecx 1/imm32
+      75/jump-if-!= break/disp8
+      (emit-save-size-to *(ebp+8) %ebx %edx)
+      e9/jump $translate-mu-length-stmt:end/disp32
+    }
+    # if elemsize is a power of 2 less than 256
+    {
+      (power-of-2? %ecx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      81 7/subop/compare %ecx 0xff/imm32
+      7f/jump-if-> break/disp8
+      (emit-save-size-to *(ebp+8) %ebx %edx)
+      (emit-divide-by-shift-right *(ebp+8) %edx %ecx)
+      e9/jump $translate-mu-length-stmt:end/disp32
+    }
+    # otherwise, the complex case
+$translate-mu-length-stmt:end:
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-save-size-to:  # out: (addr buffered-file), base: (addr var), outreg: (addr array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    53/push-ebx
+    # ebx = base
+    8b/-> *(ebp+0xc) 3/r32/ebx
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "8b/-> *")
     # if base is an (addr array ...) in a register
     {
       81 7/subop/compare *(ebx+0x18)) 0/imm32  # Var-register
       74/jump-if-= break/disp8
+$emit-save-size-to:emit-base-from-register:
       (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register Var-register => eax
       (write-buffered *(ebp+8) %eax)
-      eb/jump $translate-mu-length-stmt:emit-output/disp8
+      eb/jump $emit-save-size-to:emit-output/disp8
     }
     # otherwise if base is an (array ...) on the stack
     {
       81 7/subop/compare *(ebx+0x14)) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
+$emit-save-size-to:emit-base-from-stack:
       (write-buffered *(ebp+8) "(ebp+")
       (print-int32-buffered *(ebp+8) *(ebx+0x14))  # Var-offset
       (write-buffered *(ebp+8) ")")
     }
-$translate-mu-length-stmt:emit-output:
+$emit-save-size-to:emit-output:
     (write-buffered *(ebp+8) " ")
-    # outputs[0] "/r32"
-    (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
-    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
-    # edx = outputs[0]->register
-    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
-    89/<- %edx 0/r32/eax
-    #
-    (get Registers %edx 0xc "Registers")  # => eax
+    (get Registers *(ebp+0x10) 0xc "Registers")  # => eax
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
-$translate-mu-length-stmt:check-power-of-2:
-    # ecx = size-of(element-type(base))
-    (array-element-type-id %ebx)  # => eax
-    (size-of-type-id %eax)  # => eax
-    89/<- %ecx 0/r32/eax
-    #
-    (power-of-2? %ecx)  # => eax
-    3d/compare-eax-and 0/imm32/false
-    {
-      0f 84/jump-if-= break/disp32
-$translate-mu-length-stmt:is-power-of-2:
-      (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "c1/shift 5/subop/>> %")
-      (write-buffered *(ebp+8) %edx)
-      (write-buffered *(ebp+8) Space)
-      (num-shift-rights %ecx)  # => eax
-      (print-int32-buffered *(ebp+8) %eax)
-      (write-buffered *(ebp+8) "/imm32\n")
-      eb/jump $translate-mu-length-stmt:end/disp8
-    }
-    {
-      75/jump-if-!= break/disp8
-$translate-mu-length-stmt:not-power-of-2:
-    }
-$translate-mu-length-stmt:end:
+$emit-save-size-to:end:
     # . restore registers
     5b/pop-to-ebx
-    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-divide-by-shift-right:  # out: (addr buffered-file), reg: (addr array byte), n: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "c1/shift 5/subop/>> %")
+    (write-buffered *(ebp+8) *(ebp+0xc))
+    (write-buffered *(ebp+8) Space)
+    (num-shift-rights *(ebp+0x10))  # => eax
+    (print-int32-buffered *(ebp+8) %eax)
+    (write-buffered *(ebp+8) "/imm8\n")
+$emit-divide-by-shift-right:end:
+    # . restore registers
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
