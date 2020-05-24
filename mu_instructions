@@ -183,11 +183,35 @@ var/reg: (offset T) <- compute-offset arr: (addr array T), idx: int       # arr 
 var/reg <- index arr/rega: (addr array T), o/rego: offset
   => "8d/copy-address *(" rega "+" rego "+4) " reg "/r32"
 
-Computing the length of an array can get complex.
+Computing the length of an array is complex.
 
 var/reg <- length arr/reg2: (addr array T)
   | if T is byte (TODO)
       => "8b/-> *" reg2 " " reg "/r32"
+  | if size-of(T) is 4 or 8 or 16 or 32 or 64 or 128
+      => "8b/-> *" reg2 " " reg "/r32"
+         "c1/shift 5/subop/logic-right %" reg " " log2(size-of(T)) "/imm8"
+  | otherwise (TODO)
+      x86 has no instruction to divide by a literal, so
+      we need up to 3 extra registers! eax/edx for division and say ecx
+      => if reg is not eax
+          "50/push-eax"
+         if reg is not ecx
+          "51/push-ecx"
+         if reg is not edx
+          "52/push-edx"
+         "8b/-> *" reg2 " eax/r32"
+         "31/xor %edx 2/r32/edx"  # sign-extend, but array size can't be negative
+         "b9/copy-to-ecx " size-of(T) "/imm32"
+         "f7 7/subop/idiv-eax-edx-by %ecx"
+         if reg is not eax
+           "89/<- %" reg " 0/r32/eax"
+         if reg is not edx
+          "5a/pop-to-edx"
+         if reg is not ecx
+          "59/pop-to-ecx"
+         if reg is not eax
+          "58/pop-to-eax"
 
 # User-defined types
 
