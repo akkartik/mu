@@ -166,23 +166,28 @@ var/reg: (addr T) <- address var2: T
 
 Array operations (TODO: bounds-checking)
 
-var/reg <- length arr/reg2: (addr array T)
-  => "8b/-> *" reg2 " " reg "/r32"
-var/reg <- index arr/rega: (addr array T), idx/regi: int  # if size(T) is 4 or 8
-  => "8d/copy-address *(" rega "+" regi "<<" log2(size(T)) "+4) " reg "/r32"
+var/reg <- index arr/rega: (addr array T), idx/regi: int
+  | if size-of(T) is 4 or 8
+      => "8d/copy-address *(" rega "+" regi "<<" log2(size-of(T)) "+4) " reg "/r32"
 var/reg <- index arr: (array T sz), idx/regi: int
-  => "8d/copy-address *(ebp+" regi "<<" log2(size(T)) "+" (arr.stack-offset + 4) ") " reg "/r32"
+  => "8d/copy-address *(ebp+" regi "<<" log2(size-of(T)) "+" (arr.stack-offset + 4) ") " reg "/r32"
 var/reg <- index arr/rega: (addr array T), n
-  => "8d/copy-address *(" rega "+" (n*size(T)+4) ") " reg "/r32"
+  => "8d/copy-address *(" rega "+" (n*size-of(T)+4) ") " reg "/r32"
 var/reg <- index arr: (array T sz), n
-  => "8d/copy-address *(ebp+" (arr.stack-offset+4+n*size(T)) ") " reg "/r32"
+  => "8d/copy-address *(ebp+" (arr.stack-offset+4+n*size-of(T)) ") " reg "/r32"
 
 var/reg: (offset T) <- compute-offset arr: (addr array T), idx/regi: int  # arr can be in reg or mem
-  => "69/multiply %" regi " " size(T) "/imm32 " reg "/r32"
+  => "69/multiply %" regi " " size-of(T) "/imm32 " reg "/r32"
 var/reg: (offset T) <- compute-offset arr: (addr array T), idx: int       # arr can be in reg or mem
-  => "69/multiply *(ebp+" idx.stack-offset ") " size(T) "/imm32 " reg "/r32"
+  => "69/multiply *(ebp+" idx.stack-offset ") " size-of(T) "/imm32 " reg "/r32"
 var/reg <- index arr/rega: (addr array T), o/rego: offset
   => "8d/copy-address *(" rega "+" rego "+4) " reg "/r32"
+
+Computing the length of an array can get complex.
+
+var/reg <- length arr/reg2: (addr array T)
+  | if T is byte (TODO)
+      => "8b/-> *" reg2 " " reg "/r32"
 
 # User-defined types
 
