@@ -4,8 +4,8 @@
 " URL:         http://github.com/akkartik/mu
 " License:     public domain
 "
-" Copy this into your ftplugin directory, and add the following to your vimrc
-" or to .vim/ftdetect/mu.vim:
+" Copy this file into your ftplugin directory, and add the following to your
+" vimrc or to .vim/ftdetect/mu.vim:
 "   autocmd BufReadPost,BufNewFile *.mu set filetype=mu
 
 let s:save_cpo = &cpo

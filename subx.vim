@@ -4,8 +4,8 @@
 " URL:         https://github.com/akkartik/mu
 " License:     public domain
 "
-" Copy this into your ftplugin directory, and add the following to your vimrc
-" or to .vim/ftdetect/subx.vim:
+" Copy this file into your ftplugin directory, and add the following to your
+" vimrc or to .vim/ftdetect/subx.vim:
 "   autocmd BufReadPost,BufNewFile *.subx set filetype=subx
 "
 " Some highlight groups you might want to select colors for in your vimrc:
