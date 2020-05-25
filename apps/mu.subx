@@ -3317,6 +3317,261 @@ test-convert-array-of-user-defined-types:
     5d/pop-to-ebp
     c3/return
 
+test-convert-length-of-array-of-user-defined-types-to-eax:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "type t {\n")  # size = 12, which is not a power of 2
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "  z: int\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array t) <- copy 0\n")
+    (write _test-input-stream "  var x/eax: (addr t) <- length arr\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-length-of-array-of-user-defined-types-to-eax/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-length-of-array-of-user-defined-types-to-eax/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-length-of-array-of-user-defined-types-to-eax/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-length-of-array-of-user-defined-types-to-eax/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-length-of-array-of-user-defined-types-to-eax/5")
+    # var arr
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/7")
+    # length instruction
+    (check-next-stream-line-equal _test-output-stream "    51/push-ecx"         "F - test-convert-length-of-array-of-user-defined-types-to-eax/8")
+    (check-next-stream-line-equal _test-output-stream "    52/push-edx"         "F - test-convert-length-of-array-of-user-defined-types-to-eax/9")
+    (check-next-stream-line-equal _test-output-stream "    8b/-> *eax 0x00000000/r32"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/10")
+    (check-next-stream-line-equal _test-output-stream "    31/xor %edx 2/r32/edx"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/11")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0x0000000c/imm32"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/12")
+    (check-next-stream-line-equal _test-output-stream "    f7 7/subop/idiv-eax-edx-by %ecx"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/13")
+    (check-next-stream-line-equal _test-output-stream "    5a/pop-to-edx"       "F - test-convert-length-of-array-of-user-defined-types-to-eax/14")
+    (check-next-stream-line-equal _test-output-stream "    59/pop-to-ecx"       "F - test-convert-length-of-array-of-user-defined-types-to-eax/15")
+    # reclaim arr
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/16")
+    #
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-length-of-array-of-user-defined-types-to-eax/17")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/18")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-length-of-array-of-user-defined-types-to-eax/19")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-length-of-array-of-user-defined-types-to-eax/20")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-length-of-array-of-user-defined-types-to-eax/21")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-length-of-array-of-user-defined-types-to-eax/22")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-length-of-array-of-user-defined-types-to-ecx:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "type t {\n")  # size = 12, which is not a power of 2
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "  z: int\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array t) <- copy 0\n")
+    (write _test-input-stream "  var x/ecx: (addr t) <- length arr\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-length-of-array-of-user-defined-types-to-ecx/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-length-of-array-of-user-defined-types-to-ecx/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-length-of-array-of-user-defined-types-to-ecx/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-length-of-array-of-user-defined-types-to-ecx/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-length-of-array-of-user-defined-types-to-ecx/5")
+    # var a
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/7")
+    # var x
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/8")
+    # length instruction
+    (check-next-stream-line-equal _test-output-stream "    50/push-eax"         "F - test-convert-length-of-array-of-user-defined-types-to-ecx/9")
+    (check-next-stream-line-equal _test-output-stream "    52/push-edx"         "F - test-convert-length-of-array-of-user-defined-types-to-ecx/10")
+    (check-next-stream-line-equal _test-output-stream "    8b/-> *eax 0x00000000/r32"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/11")
+    (check-next-stream-line-equal _test-output-stream "    31/xor %edx 2/r32/edx"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/12")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0x0000000c/imm32"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/13")
+    (check-next-stream-line-equal _test-output-stream "    f7 7/subop/idiv-eax-edx-by %ecx"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/14")
+    (check-next-stream-line-equal _test-output-stream "    89/<- %ecx 0/r32/eax"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/15")
+    (check-next-stream-line-equal _test-output-stream "    5a/pop-to-edx"       "F - test-convert-length-of-array-of-user-defined-types-to-ecx/16")
+    (check-next-stream-line-equal _test-output-stream "    58/pop-to-eax"       "F - test-convert-length-of-array-of-user-defined-types-to-ecx/17")
+    # reclaim x
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/18")
+    # reclaim a
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/19")
+    #
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-length-of-array-of-user-defined-types-to-ecx/20")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/21")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-length-of-array-of-user-defined-types-to-ecx/22")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-length-of-array-of-user-defined-types-to-ecx/23")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-length-of-array-of-user-defined-types-to-ecx/24")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-length-of-array-of-user-defined-types-to-ecx/25")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-length-of-array-of-user-defined-types-to-edx:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "type t {\n")  # size = 12, which is not a power of 2
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "  z: int\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array t) <- copy 0\n")
+    (write _test-input-stream "  var x/edx: (addr t) <- length arr\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-length-of-array-of-user-defined-types-to-edx/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-length-of-array-of-user-defined-types-to-edx/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-length-of-array-of-user-defined-types-to-edx/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-length-of-array-of-user-defined-types-to-edx/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-length-of-array-of-user-defined-types-to-edx/5")
+    # var a
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/7")
+    # var x
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %edx"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/8")
+    # length instruction
+    (check-next-stream-line-equal _test-output-stream "    50/push-eax"         "F - test-convert-length-of-array-of-user-defined-types-to-edx/9")
+    (check-next-stream-line-equal _test-output-stream "    51/push-ecx"         "F - test-convert-length-of-array-of-user-defined-types-to-edx/10")
+    (check-next-stream-line-equal _test-output-stream "    8b/-> *eax 0x00000000/r32"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/11")
+    (check-next-stream-line-equal _test-output-stream "    31/xor %edx 2/r32/edx"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/12")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0x0000000c/imm32"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/13")
+    (check-next-stream-line-equal _test-output-stream "    f7 7/subop/idiv-eax-edx-by %ecx"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/14")
+    (check-next-stream-line-equal _test-output-stream "    89/<- %edx 0/r32/eax"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/15")
+    (check-next-stream-line-equal _test-output-stream "    59/pop-to-ecx"       "F - test-convert-length-of-array-of-user-defined-types-to-edx/16")
+    (check-next-stream-line-equal _test-output-stream "    58/pop-to-eax"       "F - test-convert-length-of-array-of-user-defined-types-to-edx/17")
+    # reclaim x
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %edx"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/18")
+    # reclaim a
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/19")
+    #
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-length-of-array-of-user-defined-types-to-edx/20")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/21")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-length-of-array-of-user-defined-types-to-edx/22")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-length-of-array-of-user-defined-types-to-edx/23")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-length-of-array-of-user-defined-types-to-edx/24")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-length-of-array-of-user-defined-types-to-edx/25")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-length-of-array-of-user-defined-types:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "type t {\n")  # each t is 8 bytes, which is a power of 2
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "  z: int\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array t) <- copy 0\n")
+    (write _test-input-stream "  var x/ebx: (addr t) <- length arr\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-length-of-array-of-user-defined-types/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-length-of-array-of-user-defined-types/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-length-of-array-of-user-defined-types/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-length-of-array-of-user-defined-types/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-length-of-array-of-user-defined-types/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-length-of-array-of-user-defined-types/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-length-of-array-of-user-defined-types/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"  "F - test-convert-length-of-array-of-user-defined-types/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ebx"  "F - test-convert-length-of-array-of-user-defined-types/8")
+    (check-next-stream-line-equal _test-output-stream "    50/push-eax"         "F - test-convert-length-of-array-of-user-defined-types/9")
+    (check-next-stream-line-equal _test-output-stream "    51/push-ecx"         "F - test-convert-length-of-array-of-user-defined-types/10")
+    (check-next-stream-line-equal _test-output-stream "    52/push-edx"         "F - test-convert-length-of-array-of-user-defined-types/11")
+    (check-next-stream-line-equal _test-output-stream "    8b/-> *eax 0x00000000/r32"  "F - test-convert-length-of-array-of-user-defined-types/12")
+    (check-next-stream-line-equal _test-output-stream "    31/xor %edx 2/r32/edx"  "F - test-convert-length-of-array-of-user-defined-types/13")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0x0000000c/imm32"  "F - test-convert-length-of-array-of-user-defined-types/14")
+    (check-next-stream-line-equal _test-output-stream "    f7 7/subop/idiv-eax-edx-by %ecx"  "F - test-convert-length-of-array-of-user-defined-types/15")
+    (check-next-stream-line-equal _test-output-stream "    89/<- %ebx 0/r32/eax"  "F - test-convert-length-of-array-of-user-defined-types/16")
+    (check-next-stream-line-equal _test-output-stream "    5a/pop-to-edx"       "F - test-convert-length-of-array-of-user-defined-types/17")
+    (check-next-stream-line-equal _test-output-stream "    59/pop-to-ecx"       "F - test-convert-length-of-array-of-user-defined-types/18")
+    (check-next-stream-line-equal _test-output-stream "    58/pop-to-eax"       "F - test-convert-length-of-array-of-user-defined-types/19")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ebx"  "F - test-convert-length-of-array-of-user-defined-types/20")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-length-of-array-of-user-defined-types/21")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-length-of-array-of-user-defined-types/22")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-length-of-array-of-user-defined-types/23")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-length-of-array-of-user-defined-types/24")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-length-of-array-of-user-defined-types/25")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-length-of-array-of-user-defined-types/26")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-length-of-array-of-user-defined-types/27")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
@@ -8836,7 +9091,6 @@ $emit-subx-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO: actually return the length in array elements, rather than the size in bytes
 translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     # . prologue
     55/push-ebp
@@ -8881,6 +9135,69 @@ translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
       e9/jump $translate-mu-length-stmt:end/disp32
     }
     # otherwise, the complex case
+    # . emit register spills
+    {
+      (string-equal? %edx "eax")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/break-if-!= break/disp8
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "50/push-eax\n")
+    }
+    {
+      (string-equal? %edx "ecx")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/break-if-!= break/disp8
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "51/push-ecx\n")
+    }
+    {
+      (string-equal? %edx "edx")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/break-if-!= break/disp8
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "52/push-edx\n")
+    }
+    # .
+    (emit-save-size-to *(ebp+8) %ebx "eax")
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "31/xor %edx 2/r32/edx\n")
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "b9/copy-to-ecx ")
+    (print-int32-buffered *(ebp+8) %ecx)
+    (write-buffered *(ebp+8) "/imm32\n")
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "f7 7/subop/idiv-eax-edx-by %ecx\n")
+    {
+      (string-equal? %edx "eax")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/break-if-!= break/disp8
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "89/<- %")
+      (write-buffered *(ebp+8) %edx)
+      (write-buffered *(ebp+8) " 0/r32/eax\n")
+    }
+    # . emit register restores
+    {
+      (string-equal? %edx "edx")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/break-if-!= break/disp8
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "5a/pop-to-edx\n")
+    }
+    {
+      (string-equal? %edx "ecx")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/break-if-!= break/disp8
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "59/pop-to-ecx\n")
+    }
+    {
+      (string-equal? %edx "eax")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/break-if-!= break/disp8
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "58/pop-to-eax\n")
+    }
 $translate-mu-length-stmt:end:
     # . restore registers
     5e/pop-to-esi
@@ -8936,7 +9253,7 @@ $emit-save-size-to:end:
     5d/pop-to-ebp
     c3/return
 
-emit-divide-by-shift-right:  # out: (addr buffered-file), reg: (addr array byte), n: int
+emit-divide-by-shift-right:  # out: (addr buffered-file), reg: (addr array byte), size: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp

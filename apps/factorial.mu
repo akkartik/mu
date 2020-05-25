@@ -35,8 +35,8 @@ fn main args: (addr array string) -> exit-status/ebx: int {
   var a/eax: (addr array string) <- copy args
   var tmp/ecx: int <- length a
   $main-body: {
-    # if (len(args) <= 4) factorial(5)
-    compare tmp, 4
+    # if (len(args) <= 1) factorial(5)
+    compare tmp, 1
     {
       break-if->
       var tmp/eax: int <- factorial 5
