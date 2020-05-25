@@ -15,7 +15,7 @@ body { font-family: monospace; color: #000000; background-color: #c6c6c6; }
 * { font-size: 1em; }
 .Comment { color: #005faf; }
 .Constant { color: #008787; }
-.Special { color: #ff6060; }
+.Special { color: #d70000; }
 .PreProc { color: #c000c0; }
 .SalientComment { color: #0000af; }
 -->
@@ -191,23 +191,52 @@ var/reg: (addr T) <span class="Special">&lt;-</span> address var2: T
 
 Array operations (TODO: bounds-checking)
 
-var/reg <span class="Special">&lt;-</span> length arr/reg2: (addr array T)
-  =&gt; <span class="Constant">&quot;8b/-&gt; *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
-var/reg <span class="Special">&lt;-</span> index arr/rega: (addr array T), idx/regi: int  <span class="Comment"># if size(T) is 4 or 8</span>
-  =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size(T)) <span class="Constant">&quot;+4) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+var/reg <span class="Special">&lt;-</span> index arr/rega: (addr array T), idx/regi: int
+  | if size-of(T) is <span class="Constant">4</span> or <span class="Constant">8</span>
+      =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size-of(T)) <span class="Constant">&quot;+4) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="Special">&lt;-</span> index arr: (array T sz), idx/regi: int
-  =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size(T)) <span class="Constant">&quot;+&quot;</span> (arr.stack-offset + <span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+  =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size-of(T)) <span class="Constant">&quot;+&quot;</span> (arr.stack-offset + <span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="Special">&lt;-</span> index arr/rega: (addr array T), n
-  =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> (n*size(T)+<span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+  =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> (n*size-of(T)+<span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="Special">&lt;-</span> index arr: (array T sz), n
-  =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> (arr.stack-offset+<span class="Constant">4</span>+n*size(T)) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+  =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> (arr.stack-offset+<span class="Constant">4</span>+n*size-of(T)) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
 var/reg: (offset T) <span class="Special">&lt;-</span> compute-offset arr: (addr array T), idx/regi: int  <span class="Comment"># arr can be in reg or mem</span>
-  =&gt; <span class="Constant">&quot;69/multiply %&quot;</span> regi <span class="Constant">&quot; &quot;</span> size(T) <span class="Constant">&quot;/imm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+  =&gt; <span class="Constant">&quot;69/multiply %&quot;</span> regi <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;/imm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg: (offset T) <span class="Special">&lt;-</span> compute-offset arr: (addr array T), idx: int       <span class="Comment"># arr can be in reg or mem</span>
-  =&gt; <span class="Constant">&quot;69/multiply *(ebp+&quot;</span> idx.stack-offset <span class="Constant">&quot;) &quot;</span> size(T) <span class="Constant">&quot;/imm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+  =&gt; <span class="Constant">&quot;69/multiply *(ebp+&quot;</span> idx.stack-offset <span class="Constant">&quot;) &quot;</span> size-of(T) <span class="Constant">&quot;/imm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="Special">&lt;-</span> index arr/rega: (addr array T), o/rego: offset
   =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> rego <span class="Constant">&quot;+4) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+
+Computing the length of an array is complex.
+
+var/reg <span class="Special">&lt;-</span> length arr/reg2: (addr array T)
+  | if T is byte (TODO)
+      =&gt; <span class="Constant">&quot;8b/-&gt; *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+  | if size-of(T) is <span class="Constant">4</span> or <span class="Constant">8</span> or <span class="Constant">16</span> or <span class="Constant">32</span> or <span class="Constant">64</span> or <span class="Constant">128</span>
+      =&gt; <span class="Constant">&quot;8b/-&gt; *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+         <span class="Constant">&quot;c1/shift 5/subop/logic-right %&quot;</span> reg <span class="Constant">&quot; &quot;</span> log2(size-of(T)) <span class="Constant">&quot;/imm8&quot;</span>
+  | otherwise
+      x86 has no instruction to divide by a literal, so
+      we need up to <span class="Constant">3</span> extra registers! <span class="Constant">eax</span>/<span class="Constant">edx</span> for division and say <span class="Constant">ecx</span>
+      =&gt; if reg is not <span class="Constant">eax</span>
+          <span class="Constant">&quot;50/push-eax&quot;</span>
+         if reg is not <span class="Constant">ecx</span>
+          <span class="Constant">&quot;51/push-ecx&quot;</span>
+         if reg is not <span class="Constant">edx</span>
+          <span class="Constant">&quot;52/push-edx&quot;</span>
+         <span class="Constant">&quot;8b/-&gt; *&quot;</span> reg2 <span class="Constant">&quot; eax/r32&quot;</span>
+         <span class="Constant">&quot;31/xor %edx 2/r32/edx&quot;</span>  <span class="Comment"># sign-extend, but array size can't be negative</span>
+         <span class="Constant">&quot;b9/copy-to-ecx &quot;</span> size-of(T) <span class="Constant">&quot;/imm32&quot;</span>
+         <span class="Constant">&quot;f7 7/subop/idiv-eax-edx-by %ecx&quot;</span>
+         if reg is not <span class="Constant">eax</span>
+           <span class="Constant">&quot;89/&lt;- %&quot;</span> reg <span class="Constant">&quot; 0/r32/eax&quot;</span>
+         if reg is not <span class="Constant">edx</span>
+          <span class="Constant">&quot;5a/pop-to-edx&quot;</span>
+         if reg is not <span class="Constant">ecx</span>
+          <span class="Constant">&quot;59/pop-to-ecx&quot;</span>
+         if reg is not <span class="Constant">eax</span>
+          <span class="Constant">&quot;58/pop-to-eax&quot;</span>
 
 <span class="Comment"># User-defined types</span>
 
