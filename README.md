@@ -240,7 +240,7 @@ reg/mem operand is constructed by expressions of one of these forms:
     and `scale` and `disp` are 2- and 32-bit constants respectively.
 
 Under the hood, SubX turns expressions of these forms into multiple arguments
-with metadata in some complex ways. See [SubX-addressing-modes.md](SubX-addressing-modes.md).
+with metadata in some complex ways. See [subx\_addressing\_modes.md](subx_addressing_modes.md).
 
 That covers the complexities of the reg/mem operand. The second operand is
 simpler. It comes from exactly one of the following argument types:
