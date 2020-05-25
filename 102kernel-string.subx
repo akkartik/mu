@@ -4,7 +4,7 @@
 
 == code
 
-kernel-string-to-string:  # ad: (addr allocation-descriptor), in: (addr kernel-string) -> result/eax: (addr array byte)
+kernel-string-to-string:  # ad: (addr allocation-descriptor), in: (addr kernel-string), out: (addr handle array byte)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -18,22 +18,24 @@ kernel-string-to-string:  # ad: (addr allocation-descriptor), in: (addr kernel-s
     (kernel-string-length *(ebp+0xc))
     89/<- %ecx 0/r32/eax
     # result = allocate-array(ad, len)
-    (allocate-array *(ebp+8) %ecx)  # => eax
+    (allocate-array *(ebp+8) %ecx *(ebp+0x10))
     # var c/edx: byte = 0
     ba/copy-to-edx 0/imm32
     # var src/esi: (addr byte) = in
     8b/-> *(ebp+0xc) 6/r32/esi
     # var dest/edi: (addr byte) = result->data
+    8b/-> *(ebp+0x10) 7/r32/edi
+    (lookup *edi *(edi+4))  # => eax
     8d/copy-address *(eax+4) 7/r32/edi
     {
 $kernel-string-to-string:loop:
       # c = *src
-      8a/byte-> *esi 2/r32/edx
+      8a/byte-> *esi 2/r32/dl
       # if (c == 0) break
       81 7/subop/compare %edx 0/imm32
       74/jump-if-= break/disp8
       # *dest = c
-      88/byte<- *edi 2/r32/edx
+      88/byte<- *edi 2/r32/dl
       # ++src
       46/increment-esi
       # ++dest

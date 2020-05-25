@@ -31,8 +31,8 @@ fn test-factorial {
   check-ints-equal result 0x78 "F - test-factorial"
 }
 
-fn main args: (addr array string) -> exit-status/ebx: int {
-  var a/eax: (addr array string) <- copy args
+fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
+  var a/eax: (addr array (addr array byte)) <- copy args
   var tmp/ecx: int <- length a
   $main-body: {
     # if (len(args) <= 1) factorial(5)
@@ -44,7 +44,7 @@ fn main args: (addr array string) -> exit-status/ebx: int {
       break $main-body
     }
     # if (args[1] == "test") run-tests()
-    var tmp2/ecx: (addr string) <- index a, 1
+    var tmp2/ecx: (addr addr array byte) <- index a, 1
     var tmp3/eax: boolean <- string-equal? *tmp2, "test"
     compare tmp3, 0
     {
