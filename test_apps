@@ -395,4 +395,17 @@ test $NATIVE  &&  {
   test $ret -eq 55
 }
 
+echo factorial.mu
+./translate_mu apps/factorial.mu
+test $EMULATED  &&  {
+  ./bootstrap run a.elf  ||  ret=$?
+  test $ret -eq 120
+  ./bootstrap run a.elf test
+}
+test $NATIVE  &&  {
+  ./a.elf  ||  ret=$?
+  test $ret -eq 120
+  ./a.elf test
+}
+
 exit 0
