@@ -411,7 +411,7 @@ rudimentary but hopefully still workable toolkit:
   running natively.
 
 * As a further refinement, it is possible to render label names in the trace
-  by adding a second flag to both the `translate` and `run` commands:
+  by adding a second flag to the `bootstrap translate` command:
   ```
   $ ./bootstrap --debug translate input.subx -o binary
   $ ./bootstrap --trace run binary arg1 arg2  2>trace
