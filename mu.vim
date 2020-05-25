@@ -7,6 +7,10 @@
 " Copy this file into your ftplugin directory, and add the following to your
 " vimrc or to .vim/ftdetect/mu.vim:
 "   autocmd BufReadPost,BufNewFile *.mu set filetype=mu
+"
+" Some highlight groups you might want to select colors for in your vimrc:
+"   muFunction
+"   muTest
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -53,10 +57,10 @@ syntax keyword muKeyword fn type var
 highlight link muKeyword PreProc
 
 syntax match muFunction "\(fn\s*\)\@<=\(\S\+\)"
-highlight muFunction cterm=underline ctermfg=130
+highlight link muFunction Identifier
 
 syntax match muTest "\(fn\s*\)\@<=\(test-\S\+\)"
-highlight muTest ctermfg=64
+highlight link muTest Identifier
 
 syntax match muData "^type\>"
 syntax match muData "\<eax\>\|\<ecx\>\|\<edx\>\|\<ebx\>\|\<esi\>\|\<edi\>"
