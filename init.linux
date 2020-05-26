@@ -11,57 +11,58 @@
 # Syscalls
 #
 # We don't have libc, so we need to know Linux's precise syscall layout.
+# These are not real functions. Pass arguments in specific registers.
 == code
 
 # http://man7.org/linux/man-pages/man2/exit.2.html
-syscall_exit:  # status/ebx : int
+syscall_exit:  # status/ebx: int
     b8/copy-to-eax 1/imm32
     cd/syscall 0x80/imm8
 
 # http://man7.org/linux/man-pages/man2/read.2.html
-syscall_read:  # fd/ebx : int, buf/ecx : addr, size/edx : int -> nbytes-or-error/eax : int
+syscall_read:  # fd/ebx: int, buf/ecx: addr, size/edx: int -> nbytes-or-error/eax: int
     b8/copy-to-eax 3/imm32
     cd/syscall 0x80/imm8
     c3/return
 
 # http://man7.org/linux/man-pages/man2/write.2.html
-syscall_write:  # fd/ebx : int, buf/ecx : addr, size/edx : int -> nbytes-or-error/eax : int
+syscall_write:  # fd/ebx: int, buf/ecx: addr, size/edx: int -> nbytes-or-error/eax: int
     b8/copy-to-eax 4/imm32
     cd/syscall 0x80/imm8
     c3/return
 
 # http://man7.org/linux/man-pages/man2/open.2.html
-syscall_open:  # filename/ebx : (addr kernel-string), flags/ecx : int -> fd-or-error/eax : int
+syscall_open:  # filename/ebx: (addr kernel-string), flags/ecx: int -> fd-or-error/eax: int
     b8/copy-to-eax 5/imm32
     cd/syscall 0x80/imm8
     c3/return
 
 # http://man7.org/linux/man-pages/man2/close.2.html
-syscall_close:  # fd/ebx : int -> status/eax
+syscall_close:  # fd/ebx: int -> status/eax
     b8/copy-to-eax 6/imm32
     cd/syscall 0x80/imm8
     c3/return
 
 # http://man7.org/linux/man-pages/man2/creat.2.html
-syscall_creat:  # filename/ebx : (addr kernel-string) -> fd-or-error/eax : int
+syscall_creat:  # filename/ebx: (addr kernel-string) -> fd-or-error/eax: int
     b8/copy-to-eax 8/imm32
     cd/syscall 0x80/imm8
     c3/return
 
 # http://man7.org/linux/man-pages/man2/unlink.2.html
-syscall_unlink:  # filename/ebx : (addr kernel-string) -> status/eax : int
+syscall_unlink:  # filename/ebx: (addr kernel-string) -> status/eax: int
     b8/copy-to-eax 0xa/imm32
     cd/syscall 0x80/imm8
     c3/return
 
 # http://man7.org/linux/man-pages/man2/rename.2.html
-syscall_rename:  # source/ebx : (addr kernel-string), dest/ecx : (addr kernel-string) -> status/eax : int
+syscall_rename:  # source/ebx: (addr kernel-string), dest/ecx: (addr kernel-string) -> status/eax: int
     b8/copy-to-eax 0x26/imm32
     cd/syscall 0x80/imm8
     c3/return
 
 # https://github.com/torvalds/linux/blob/fa121bb3fed6313b1f0af23952301e06cf6d32ed/mm/nommu.c#L1352
-syscall_mmap:  # arg/ebx : (addr mmap_arg_struct) -> status/eax : int
+syscall_mmap:  # arg/ebx: (addr mmap_arg_struct) -> status/eax: int
     # the important thing: ebx+4 contains the 32-bit size to be allocated
     b8/copy-to-eax 0x5a/imm32
     cd/syscall 0x80/imm8
