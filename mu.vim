@@ -53,7 +53,7 @@ syntax match muControl "\<loop\>\|\<loop-if[^ ]*"
 highlight link muControl PreProc
 
 syntax match muKeyword " -> "
-syntax keyword muKeyword fn type var
+syntax keyword muKeyword fn type
 highlight link muKeyword PreProc
 
 syntax match muFunction "\(fn\s*\)\@<=\(\S\+\)"

@@ -1,0 +1,309 @@
+# Primitives for screen control.
+# Require Linux and a modern terminal.
+
+== code
+
+enable-screen-grid-mode:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    (flush Stdout)
+    (flush Stderr)
+    # switch to second screen buffer
+    (write 2 Esc)
+    (write 2 "[?1049h")
+    #
+    (clear-screen 0)
+$enable-screen-grid-mode:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+enable-screen-type-mode:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    (flush Stdout)
+    (flush Stderr)
+    # switch to first screen buffer
+    (write 2 Esc)
+    (write 2 "[?1049l")
+$enable-screen-type-mode:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+screen-size:  # -> nrows/eax: int, ncols/ecx: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (_maybe-open-terminal)
+    # var window-size-info/esi: (addr winsize)
+    # winsize is a type from the Linux kernel. We don't care how large it is.
+    81 5/subop/subtract %esp 0x40/imm32
+    89/<- %esi 4/r32/esp
+    # ioctl(*Terminal-file-descriptor, TIOCGWINSZ, window-size-info)
+    89/<- %edx 6/r32/esi
+    b9/copy-to-ecx 0x5413/imm32/TIOCGWINSZ
+    8b/-> *Terminal-file-descriptor 3/r32/ebx
+    e8/call syscall_ioctl/disp32
+    # some bitworking to extract 2 16-bit shorts
+    8b/-> *esi 0/r32/eax
+    81 4/subop/and %eax 0xffff/imm32
+    8b/-> *esi 1/r32/ecx
+    c1/shift 5/subop/logical-right %ecx 0x10/imm8
+$screen-size:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x40/imm32
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+clear-screen:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write 2 Esc)
+    (write 2 "[H")
+    (write 2 Esc)
+    (write 2 "[2J")
+$clear-screen:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+move-cursor:  # row: int, column: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # var buf/ecx: (stream byte 32)
+    81 5/subop/subtract %esp 0x20/imm32
+    68/push 0x20/imm32/size
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %ecx 4/r32/esp
+    # construct directive in buf
+    (write %ecx Esc)
+    (write %ecx "[")
+    (print-int32-decimal %ecx *(ebp+8))
+    (write %ecx ";")
+    (print-int32-decimal %ecx *(ebp+0xc))
+    (write %ecx "H")
+    # flush
+    (write-stream 2 %ecx)
+$move-cursor:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x2c/imm32
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+print-string:  # s: (addr array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write 2 *(ebp+8))
+$print-string:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+print-int32-to-screen:  # n: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (print-int32-buffered Stdout *(ebp+8))
+    (flush Stdout)
+$print-int32-to-screen:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+reset-formatting:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write 2 Esc)
+    (write 2 "(B")
+    (write 2 Esc)
+    (write 2 "[m")
+$reset-formatting:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+start-color:  # fg: int, bg: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # var buf/ecx: (stream byte 32)
+    81 5/subop/subtract %esp 0x20/imm32
+    68/push 0x20/imm32/size
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %ecx 4/r32/esp
+    # construct directive in buf
+    # . set fg
+    (write %ecx Esc)
+    (write %ecx "[38;5;")
+    (print-int32-decimal %ecx *(ebp+8))
+    (write %ecx "m")
+    # . set bg
+    (write %ecx Esc)
+    (write %ecx "[48;5;")
+    (print-int32-decimal %ecx *(ebp+0xc))
+    (write %ecx "m")
+    # flush
+    (write-stream 2 %ecx)
+$start-color:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x2c/imm32
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+start-bold:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write 2 Esc)
+    (write 2 "[1m")
+$start-bold:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+start-underline:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write 2 Esc)
+    (write 2 "[4m")
+$start-underline:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+start-reverse-video:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write 2 Esc)
+    (write 2 "[7m")
+$start-reverse-video:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# might require enabling blinking in your terminal program
+start-blinking:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write 2 Esc)
+    (write 2 "[5m")
+$start-blinking:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+hide-cursor:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write 2 Esc)
+    (write 2 "[?25l")
+$hide-cursor:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+show-cursor:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write 2 Esc)
+    (write 2 "[?12l")
+    (write 2 Esc)
+    (write 2 "[?25h")
+$show-cursor:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# This is a low-level detail; I don't think everything should be a file.
+#
+# Open "/dev/tty" if necessary and cache its file descriptor in Terminal-file-descriptor
+# where later primitives can use it.
+_maybe-open-terminal:
+    81 7/subop/compare *Terminal-file-descriptor -1/imm32
+    75/jump-if-!= $_maybe-open-terminal:epilogue/disp8
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    53/push-ebx
+    # open("/dev/tty", O_RDWR)
+    bb/copy-to-ebx Terminal-filename/imm32
+    b9/copy-to-ecx 2/imm32/O_RDWR
+    e8/call syscall_open/disp32
+    89/<- *Terminal-file-descriptor 0/r32/eax
+$_maybe-open-terminal:end:
+    # . restore registers
+    5b/pop-to-ebx
+    59/pop-to-ecx
+    58/pop-to-eax
+$_maybe-open-terminal:epilogue:
+    c3/return
+
+== data
+
+Terminal-file-descriptor:  # (addr int)
+  -1/imm32
+
+Esc:  # (addr array byte)
+  # size
+  1/imm32
+  # data
+  0x1b
+
+Terminal-filename:  # (addr kernel-string)
+  # "/dev/null"
+  2f/slash 64/d 65/e 76/v 2f/slash 74/t 74/t 79/y 0/nul
