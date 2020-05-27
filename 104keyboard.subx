@@ -1,0 +1,196 @@
+# Primitives for keyboard control.
+# Require Linux and a modern terminal.
+
+== code
+
+enable-keyboard-immediate-mode:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    #
+    (_maybe-open-terminal)
+    # var terminal-info/esi: (addr termios)
+    # termios is a type from the Linux kernel. We don't care how large it is.
+    81 5/subop/subtract %esp 0x100/imm32
+    89/<- %esi 4/r32/esp
+    # ioctl(*Terminal-file-descriptor, TCGETS, terminal-info)
+    89/<- %edx 6/r32/esi
+    b9/copy-to-ecx 0x5401/imm32/TCGETS
+    8b/-> *Terminal-file-descriptor 3/r32/ebx
+    e8/call syscall_ioctl/disp32
+    # terminal-info->c_iflags &= Keyboard-immediate-mode-iflags
+#?     (write-buffered Stderr "iflags before: ")
+#?     (print-int32-buffered Stderr *esi)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
+    8b/-> *esi 0/r32/eax  # Termios-c_iflag
+    23/and *Keyboard-immediate-mode-iflags 0/r32/eax
+    89/<- *esi 0/r32/eax  # Termios-c_iflag
+#?     (write-buffered Stderr "iflags after: ")
+#?     (print-int32-buffered Stderr *esi)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
+    # terminal-info->c_lflags &= Keyboard-immediate-mode-lflags
+#?     (write-buffered Stderr "lflags before: ")
+#?     (print-int32-buffered Stderr *(esi+0xc))
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
+    8b/-> *(esi+0xc) 0/r32/eax  # Termios-c_lflag
+    23/and *Keyboard-immediate-mode-lflags 0/r32/eax
+    89/<- *(esi+0xc) 0/r32/eax  # Termios-c_lflag
+#?     (write-buffered Stderr "lflags after: ")
+#?     (print-int32-buffered Stderr *(esi+0xc))
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
+    # ioctl(*Terminal-file-descriptor, TCSETS, terminal-info)
+    89/<- %edx 6/r32/esi
+    b9/copy-to-ecx 0x5402/imm32/TCSETS
+    8b/-> *Terminal-file-descriptor 3/r32/ebx
+    e8/call syscall_ioctl/disp32
+$enable-keyboard-immediate-mode:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x100/imm32
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+enable-keyboard-type-mode:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    #
+    (_maybe-open-terminal)
+    # var terminal-info/esi: (addr termios)
+    # termios is a type from the Linux kernel. We don't care how large it is.
+    81 5/subop/subtract %esp 0x100/imm32
+    89/<- %esi 4/r32/esp
+    # ioctl(*Terminal-file-descriptor, TCGETS, terminal-info)
+    89/<- %edx 6/r32/esi
+    b9/copy-to-ecx 0x5401/imm32/TCGETS
+    8b/-> *Terminal-file-descriptor 3/r32/ebx
+    e8/call syscall_ioctl/disp32
+    # terminal-info->c_iflags |= Keyboard-type-mode-iflags
+    8b/-> *esi 0/r32/eax  # Termios-c_iflag
+    0b/or *Keyboard-type-mode-iflags 0/r32/eax
+    89/<- *esi 0/r32/eax  # Termios-c_iflag
+    # terminal-info->c_lflags |= Keyboard-type-mode-lflags
+    8b/-> *(esi+0xc) 0/r32/eax  # Termios-c_lflag
+    0b/or *Keyboard-type-mode-lflags 0/r32/eax
+    89/<- *(esi+0xc) 0/r32/eax  # Termios-c_lflag
+    # ioctl(*Terminal-file-descriptor, TCSETS, terminal-info)
+    89/<- %edx 6/r32/esi
+    b9/copy-to-ecx 0x5402/imm32/TCSETS
+    8b/-> *Terminal-file-descriptor 3/r32/ebx
+    e8/call syscall_ioctl/disp32
+$enable-keyboard-type-mode:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x100/imm32
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+read-key:  # -> eax: byte
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var buf/ecx: (stream byte 1)
+    68/push 0/imm32/data
+    68/push 1/imm32/size  # 3 bytes of data unused
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %ecx 4/r32/esp
+    #
+    (read 2 %ecx)  # => eax
+    8b/-> *(ecx+0xc) 0/r32/eax
+$read-key:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x10/imm32
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+== data
+
+# iflags:   octal     hex
+#  IGNBRK  0000001   0x0001
+#  BRKINT  0000002   0x0002
+#  IGNPAR  0000004   0x0004
+#  PARMRK  0000010   0x0008
+#  INPCK   0000020   0x0010
+#  ISTRIP  0000040   0x0020
+#  INLCR   0000100   0x0040
+#  IGNCR   0000200   0x0080
+#  ICRNL   0000400   0x0100
+#  IUCLC   0001000   0x0200
+#  IXON    0002000   0x0400
+#  IXANY   0004000   0x0800
+#  IXOFF   0010000   0x1000
+#  IMAXBEL 0020000   0x2000
+#  IUTF8   0040000   0x4000
+
+# lflags:
+#  ISIG   0000001     0x0001
+#  ICANON 0000002     0x0002
+#  ECHO   0000010     0x0008
+#  ECHOE  0000020     0x0010
+#  ECHOK  0000040     0x0020
+#  ECHONL 0000100     0x0040
+#  NOFLSH 0000200     0x0080
+#  TOSTOP 0000400     0x0100
+#  IEXTEN 0100000     0x8000
+
+# recipe for raw mode according to the termios.3 manpage on Linux:
+#   termios_p->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+#   termios_p->c_oflag &= ~OPOST;
+#   termios_p->c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+#   termios_p->c_cflag &= ~(CSIZE | PARENB);
+#   termios_p->c_cflag |= CS8;
+
+Keyboard-immediate-mode-iflags:  # (addr tcflag_t)
+#?     0xfffffa14  # ~IGNBRK & ~BRKINT & ~PARMRK & ~ISTRIP & ~INLCR & ~IGNCR & ~ICRNL & ~IXON
+    0xffffffff/imm32
+
+Keyboard-immediate-mode-lflags:  # (addr tcflag_t)
+#?     0xffff7fb4/imm32  # ~ICANON & ~ISIG & ~IEXTEN & ~ECHO & ~ECHONL
+    0xffffffb5/imm32  # ~ICANON & ~ECHO & ~ECHONL
+
+Keyboard-type-mode-iflags:  # (addr tcflag_t)
+    0x00000000/imm32  # ~Keyboard-immediate-mode-iflags
+
+Keyboard-type-mode-lflags:  # (addr tcflag_t)
+    0x0000004a/imm32  # ~Keyboard-immediate-mode-lflags

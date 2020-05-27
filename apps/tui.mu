@@ -16,5 +16,14 @@ fn main -> exit-status/ebx: int {
   print-string " rows, "
   print-int32-to-screen ncols
   print-string " rows\n"
+
+  print-string "press a key to see its code: "
+  enable-keyboard-immediate-mode
+  var x/eax: byte <- read-key
+  enable-keyboard-type-mode
+  enable-screen-type-mode
+  print-string "You pressed "
+  print-int32-to-screen x
+  print-string "\n"
   exit-status <- copy 0
 }
