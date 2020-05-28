@@ -7,13 +7,14 @@ enable-screen-grid-mode:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    #
     (flush Stdout)
     (flush Stderr)
     # switch to second screen buffer
     (write 2 Esc)
     (write 2 "[?1049h")
     #
-    (clear-screen 0)
+    (clear-screen)
 $enable-screen-grid-mode:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -24,8 +25,6 @@ enable-screen-type-mode:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    (flush Stdout)
-    (flush Stderr)
     # switch to first screen buffer
     (write 2 Esc)
     (write 2 "[?1049l")
@@ -39,6 +38,13 @@ screen-size:  # -> nrows/eax: int, ncols/ecx: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-edx
+    56/push-esi
+    57/push-edi
     #
     (_maybe-open-terminal)
     # var window-size-info/esi: (addr winsize)
@@ -58,6 +64,13 @@ screen-size:  # -> nrows/eax: int, ncols/ecx: int
 $screen-size:end:
     # . reclaim locals
     81 0/subop/add %esp 0x40/imm32
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -83,7 +96,6 @@ move-cursor:  # row: int, column: int
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    50/push-eax
     51/push-ecx
     # var buf/ecx: (stream byte 32)
     81 5/subop/subtract %esp 0x20/imm32
@@ -105,7 +117,6 @@ $move-cursor:end:
     81 0/subop/add %esp 0x2c/imm32
     # . restore registers
     59/pop-to-ecx
-    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -156,7 +167,6 @@ start-color:  # fg: int, bg: int
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    50/push-eax
     51/push-ecx
     # var buf/ecx: (stream byte 32)
     81 5/subop/subtract %esp 0x20/imm32
@@ -182,7 +192,6 @@ $start-color:end:
     81 0/subop/add %esp 0x2c/imm32
     # . restore registers
     59/pop-to-ecx
-    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
