@@ -3,8 +3,6 @@
 fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   var filename/eax: (addr array byte) <- first-arg args
   var file/eax: (addr buffered-file) <- load-file filename
-#?   dump file
-#?   flush-stdout
   enable-screen-grid-mode
   enable-keyboard-immediate-mode
   {
