@@ -34,17 +34,23 @@ augroup END
 "   opening a second file in a new or existing window (shouldn't mess up existing highlighting)
 "   reloading an existing file (shouldn't mess up existing highlighting)
 
-command! -nargs=1 E call EditSubx("edit", <f-args>)
+command! -nargs=1 E call EditMuFile("edit", <f-args>)
 if exists("&splitvertical")
-  command! -nargs=1 S call EditSubx("vert split", <f-args>)
-  command! -nargs=1 H call EditSubx("hor split", <f-args>)
+  command! -nargs=1 S call EditMuFile("vert split", <f-args>)
+  command! -nargs=1 H call EditMuFile("hor split", <f-args>)
 else
-  command! -nargs=1 S call EditSubx("vert split", <f-args>)
-  command! -nargs=1 H call EditSubx("split", <f-args>)
+  command! -nargs=1 S call EditMuFile("vert split", <f-args>)
+  command! -nargs=1 H call EditMuFile("split", <f-args>)
 endif
 
-function! EditSubx(cmd, arg)
-  exec "silent! " . a:cmd . " apps/" . a:arg . ".subx"
+function! EditMuFile(cmd, arg)
+  let l:full_path = "apps/" . a:arg
+  if filereadable(l:full_path . ".mu")
+    let l:full_path = l:full_path . ".mu"
+  else
+    let l:full_path = l:full_path . ".subx"
+  endif
+  exec "silent! " . a:cmd . " " . l:full_path
 endfunction
 
 " we often want to crib lines of machine code from other files
