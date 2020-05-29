@@ -136,9 +136,18 @@ print-byte:  # c: byte
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    #
-    (write-byte-buffered Stdout *(ebp+8))
+    # . save registers
+    51/push-ecx
+    # var s/ecx: (addr array byte)
+    ff 6/subop/push *(ebp+8)
+    68/push 4/imm32/size
+    89/<- %ecx 4/r32/esp
+    (write 2 %ecx)
 $print-byte:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp

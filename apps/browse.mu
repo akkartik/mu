@@ -73,11 +73,9 @@ $line-loop:  {
       col <- increment
       loop
     }
-    flush-stdout
     row <- increment
     loop
   }
-  flush-stdout
 }
 
 fn clear toprow: int, leftcol: int, botrow: int, rightcol: int {
