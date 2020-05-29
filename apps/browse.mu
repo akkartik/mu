@@ -33,10 +33,13 @@ $line-loop:  {
       var c/eax: byte <- read-byte-buffered in
       compare c, 0xffffffff  # EOF marker
       break-if-= $line-loop
+      compare c, 0xa  # newline
+      break-if-=  # no need to print newlines
       print-byte c
       col <- increment
       loop
     }
+    flush-stdout
     row <- increment
     loop
   }
