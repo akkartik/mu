@@ -8,7 +8,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   enable-screen-grid-mode
   enable-keyboard-immediate-mode
   {
-    render file, 5, 5, 30, 30
+    render file, 0x20, 0x30  # nrows, ncols
     var key/eax: byte <- read-key
     compare key, 0x71  # 'q'
     loop-if-!=
@@ -18,7 +18,18 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   exit-status <- copy 0
 }
 
-fn render in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int {
+fn render in: (addr buffered-file), nrows: int, ncols: int {
+  # hardcoded parameter: text-width
+  var toprow/eax: int <- copy 2
+  var botrow/ecx: int <- copy toprow
+  botrow <- add nrows
+  var leftcol/edx: int <- copy 5
+  var rightcol/ebx: int <- copy leftcol
+  rightcol <- add ncols
+  render-page in, toprow, leftcol, botrow, rightcol
+}
+
+fn render-page in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int {
   clear toprow, leftcol, botrow, rightcol
   # render screen rows
   var row/ecx: int <- copy toprow
