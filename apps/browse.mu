@@ -2,13 +2,13 @@
 
 fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   var filename/eax: (addr array byte) <- first-arg args
-  var file-contents/eax: (addr buffered-file) <- load-file filename
-#?   dump file-contents
+  var file/eax: (addr buffered-file) <- load-file filename
+#?   dump file
 #?   flush-stdout
   enable-screen-grid-mode
   enable-keyboard-immediate-mode
   {
-    render file-contents, 5, 5, 30, 30
+    render file, 5, 5, 30, 30
     var key/eax: byte <- read-key
     compare key, 0x71  # 'q'
     loop-if-!=
