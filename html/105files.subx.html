@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 105files.subx</title>
+<meta name="Generator" content="Vim/8.1">
+<meta name="plugin-version" content="vim8.1_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal-light">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.subxComment { color: #005faf; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
+.LineNr { }
+.subxS1Comment { color: #0000af; }
+.SpecialChar { color: #d70000; }
+.Constant { color: #008787; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/105files.subx'>https://github.com/akkartik/mu/blob/master/105files.subx</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span>== code
+<span id="L2" class="LineNr"> 2 </span>
+<span id="L3" class="LineNr"> 3 </span><span class="subxFunction">open</span>:  <span class="subxComment"># filename: (addr array byte), write?: boolean, out: (addr handle buffered-file)</span>
+<span id="L4" class="LineNr"> 4 </span>    <span class="subxComment"># hard-coded parameter: file-buffer-size of created buffered-file</span>
+<span id="L5" class="LineNr"> 5 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L6" class="LineNr"> 6 </span>    55/push-ebp
+<span id="L7" class="LineNr"> 7 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L8" class="LineNr"> 8 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L9" class="LineNr"> 9 </span>    50/push-eax
+<span id="L10" class="LineNr">10 </span>    51/push-ecx
+<span id="L11" class="LineNr">11 </span>    52/push-edx
+<span id="L12" class="LineNr">12 </span>    53/push-ebx
+<span id="L13" class="LineNr">13 </span>    56/push-esi
+<span id="L14" class="LineNr">14 </span>    57/push-edi
+<span id="L15" class="LineNr">15 </span>    <span class="subxComment"># ecx = filename</span>
+<span id="L16" class="LineNr">16 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
+<span id="L17" class="LineNr">17 </span>    <span class="subxComment"># var size/edx: int = filename-&gt;length + 1 for the trailing null character</span>
+<span id="L18" class="LineNr">18 </span>    8b/-&gt; *ecx 2/r32/edx
+<span id="L19" class="LineNr">19 </span>    42/increment-edx
+<span id="L20" class="LineNr">20 </span>    <span class="subxComment"># var s/esi: (stream size)</span>
+<span id="L21" class="LineNr">21 </span>    29/subtract-from %esp 2/r32/edx
+<span id="L22" class="LineNr">22 </span>    52/push-edx  <span class="subxComment"># size</span>
+<span id="L23" class="LineNr">23 </span>    68/push 0/imm32/read
+<span id="L24" class="LineNr">24 </span>    68/push 0/imm32/write
+<span id="L25" class="LineNr">25 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L26" class="LineNr">26 </span>    <span class="subxComment"># copy filename and a final null character</span>
+<span id="L27" class="LineNr">27 </span>    (<a href='055stream.subx.html#L17'>clear-stream</a> %esi)
+<span id="L28" class="LineNr">28 </span>    (<a href='057write.subx.html#L24'>write</a> %esi %ecx)
+<span id="L29" class="LineNr">29 </span>    <span class="subxComment"># spill edx</span>
+<span id="L30" class="LineNr">30 </span>    52/push-edx
+<span id="L31" class="LineNr">31 </span>    <span class="subxComment"># var fd/ecx: fd = open(filename)</span>
+<span id="L32" class="LineNr">32 </span>    8d/copy-address *(esi+0xc) 3/r32/ebx
+<span id="L33" class="LineNr">33 </span>    8b/-&gt; *(ebp+0xc) 1/r32/ecx/flags
+<span id="L34" class="LineNr">34 </span>    ba/copy-to-edx 0x180/imm32/permissions
+<span id="L35" class="LineNr">35 </span>    e8/call syscall_open/disp32
+<span id="L36" class="LineNr">36 </span>    89/&lt;- %ecx 0/r32/eax
+<span id="L37" class="LineNr">37 </span>    <span class="subxComment"># restore edx</span>
+<span id="L38" class="LineNr">38 </span>    5a/pop-to-edx
+<span id="L39" class="LineNr">39 </span>    <span class="subxComment"># allocate a buffered-file</span>
+<span id="L40" class="LineNr">40 </span>    (<a href='069allocate.subx.html#L67'>allocate</a> <span class="SpecialChar"><a href='069allocate.subx.html#L27'>Heap</a></span> 0x1010 *(ebp+0x10))  <span class="subxComment"># file-buffer-size + 16 for other fields</span>
+<span id="L41" class="LineNr">41 </span>    <span class="subxComment"># var out-addr/edi: (addr buffered-file)</span>
+<span id="L42" class="LineNr">42 </span>    8b/-&gt; *(ebp+0x10) 7/r32/edi
+<span id="L43" class="LineNr">43 </span>    (<a href='069allocate.subx.html#L258'>lookup</a> *edi *(edi+4))  <span class="subxComment"># =&gt; eax</span>
+<span id="L44" class="LineNr">44 </span>    89/&lt;- %edi 0/r32/eax
+<span id="L45" class="LineNr">45 </span>    <span class="subxComment"># out-addr-&gt;size = 4KB</span>
+<span id="L46" class="LineNr">46 </span>    c7 0/subop/copy *(edi+0xc) 0x1000/imm32/file-buffer-size  <span class="subxComment"># Stream-size + 4 for fd</span>
+<span id="L47" class="LineNr">47 </span>    <span class="subxComment"># out-addr-&gt;fd = fd</span>
+<span id="L48" class="LineNr">48 </span>    89/&lt;- *edi 1/r32/ecx
+<span id="L49" class="LineNr">49 </span><span class="Constant">$open:end</span>:
+<span id="L50" class="LineNr">50 </span>    <span class="subxS1Comment"># . reclaim locals</span>
+<span id="L51" class="LineNr">51 </span>    01/add-to %esp 2/r32/edx
+<span id="L52" class="LineNr">52 </span>    81 0/subop/add %esp 0xc/imm32
+<span id="L53" class="LineNr">53 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L54" class="LineNr">54 </span>    5f/pop-to-edi
+<span id="L55" class="LineNr">55 </span>    5e/pop-to-esi
+<span id="L56" class="LineNr">56 </span>    5b/pop-to-ebx
+<span id="L57" class="LineNr">57 </span>    5a/pop-to-edx
+<span id="L58" class="LineNr">58 </span>    59/pop-to-ecx
+<span id="L59" class="LineNr">59 </span>    58/pop-to-eax
+<span id="L60" class="LineNr">60 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L61" class="LineNr">61 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L62" class="LineNr">62 </span>    5d/pop-to-ebp
+<span id="L63" class="LineNr">63 </span>    c3/return
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
