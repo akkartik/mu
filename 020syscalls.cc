@@ -100,7 +100,7 @@ void check_flags(int reg) {
 
 void check_mode(int reg) {
   if (Reg[reg].u != 0600) {
-    cerr << HEXWORD << EIP << ": SubX is oblivious to file permissions; register " << reg << " must be 0.\n";
+    cerr << HEXWORD << EIP << ": SubX is oblivious to file permissions; register " << reg << " must be 0x180.\n";
     exit(1);
   }
 }

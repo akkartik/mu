@@ -7943,10 +7943,17 @@ size-of-type-id:  # t: type-id -> result/eax: int
     89/<- %ecx 4/r32/esp
     # eax = t
     8b/-> *(ebp+8) 0/r32/eax
-    # if v is a literal, return 0
+    # if t is a literal, return 0
     3d/compare-eax-and 0/imm32
     74/jump-if-= $size-of-type-id:end/disp8  # eax changes type from type-id to int
-    # if v has a user-defined type, return its size
+    # if t is a handle, return 8
+    3d/compare-eax-and 4/imm32/handle
+    {
+      75/jump-if-!= break/disp8
+      b8/copy-to-eax 8/imm32
+      eb/jump $size-of-type-id:end/disp8  # eax changes type from type-id to int
+    }
+    # if t is a user-defined type, return its size
     # TODO: support non-atom type
     (find-typeinfo %eax %ecx)
     {

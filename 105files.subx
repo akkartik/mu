@@ -18,19 +18,24 @@ open:  # filename: (addr array byte), write?: boolean, out: (addr handle buffere
     8b/-> *ecx 2/r32/edx
     42/increment-edx
     # var s/esi: (stream size)
-    29/subtract-from %esp 0/r32/eax
-    50/push-eax  # size
+    29/subtract-from %esp 2/r32/edx
+    52/push-edx  # size
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %esi 4/r32/esp
     # copy filename and a final null character
     (clear-stream %esi)
     (write %esi %ecx)
+    # spill edx
+    52/push-edx
     # var fd/ecx: fd = open(filename)
     8d/copy-address *(esi+0xc) 3/r32/ebx
     8b/-> *(ebp+0xc) 1/r32/ecx/flags
+    ba/copy-to-edx 0x180/imm32/permissions
     e8/call syscall_open/disp32
     89/<- %ecx 0/r32/eax
+    # restore edx
+    5a/pop-to-edx
     # allocate a buffered-file
     (allocate Heap 0x1010 *(ebp+0x10))  # file-buffer-size + 16 for other fields
     # var out-addr/edi: (addr buffered-file)
