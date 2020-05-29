@@ -3,9 +3,63 @@
 fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   var filename/eax: (addr array byte) <- first-arg args
   var file-contents/eax: (addr buffered-file) <- load-file filename
-  dump file-contents
-  flush-stdout
+#?   dump file-contents
+#?   flush-stdout
+  enable-screen-grid-mode
+  enable-keyboard-immediate-mode
+  {
+    render file-contents, 5, 5, 30, 30
+    var key/eax: byte <- read-key
+    compare key, 0x71  # 'q'
+    loop-if-!=
+  }
+  enable-keyboard-type-mode
+  enable-screen-type-mode
   exit-status <- copy 0
+}
+
+fn render in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int {
+  clear toprow, leftcol, botrow, rightcol
+  # render screen rows
+  var row/ecx: int <- copy toprow
+$line-loop:  {
+    compare row, botrow
+    break-if->=
+    var col/edx: int <- copy leftcol
+    move-cursor row, col
+    {
+      compare col, rightcol
+      break-if->=
+      var c/eax: byte <- read-byte-buffered in
+      compare c, 0xffffffff  # EOF marker
+      break-if-= $line-loop
+      print-byte c
+      col <- increment
+      loop
+    }
+    row <- increment
+    loop
+  }
+  flush-stdout
+}
+
+fn clear toprow: int, leftcol: int, botrow: int, rightcol: int {
+  var row/ecx: int <- copy toprow
+  {
+    compare row, botrow
+    break-if->=
+    var col/edx: int <- copy leftcol
+    move-cursor row, col
+    {
+      compare col, rightcol
+      break-if->=
+      print-string " "
+      col <- increment
+      loop
+    }
+    row <- increment
+    loop
+  }
 }
 
 fn first-arg args-on-stack: (addr array (addr array byte)) -> out/eax: (addr array byte) {
