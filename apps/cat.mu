@@ -4,7 +4,7 @@
 fn main _args: (addr array (addr array byte)) -> exit-status/ebx: int {
   var args/eax: (addr array (addr array byte)) <- copy _args
 $main-body: {
-    var n/eax: int <- length args
+    var n/ecx: int <- length args
     compare n, 1
     {
       break-if->
@@ -13,7 +13,10 @@ $main-body: {
     }
     {
       break-if-<=
-      print-string "success\n"
+      var filename/edx: (addr addr array byte) <- index args 1
+      print-string "filename: "
+      print-string *filename
+      print-string "\n"
     }
   }
   exit-status <- copy 0
