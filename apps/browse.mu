@@ -24,11 +24,9 @@ fn load-file filename: (addr array byte) -> out/eax: (addr buffered-file) {
 }
 
 fn dump in: (addr buffered-file) {
-  {
-    var c/eax: byte <- read-byte-buffered in
-    compare c, 0xffffffff  # EOF marker
-    break-if-=
-    print-byte c
-    loop
-  }
+  var c/eax: byte <- read-byte-buffered in
+  compare c, 0xffffffff  # EOF marker
+  break-if-=
+  print-byte c
+  loop
 }
