@@ -21,14 +21,35 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
 
 # decide how to lay out pages on screen
 fn render in: (addr buffered-file), nrows: int, ncols: int {
-  # hardcoded parameter: text-width
-  var toprow/eax: int <- copy 2
-  var botrow/ecx: int <- copy toprow
-  botrow <- add 0x20
-  var leftcol/edx: int <- copy 5
+  # Fit n pages on screen on separate columns, each wide enough to read
+  # comfortably.
+  # Pages are separated horizontally by a 'page margin'. Among other reasons,
+  # this allows the odd line to bleed out on the right if necessary.
+  #
+  # hardcoded parameters:
+  #   top-margin
+  #   page-margin
+  #   text-width
+  var npages/eax: int <- num-pages ncols, 0x40, 5  # text-width, page-margin
+  var toprow/eax: int <- copy 2  # top-margin
+  var botrow/ecx: int <- copy nrows
+  var leftcol/edx: int <- copy 5  # page-margin
   var rightcol/ebx: int <- copy leftcol
-  rightcol <- add 0x30
-  render-page in, toprow, leftcol, botrow, rightcol
+  rightcol <- add 0x40  # text-width = 64 characters
+  {
+    compare rightcol, ncols
+    break-if->=
+    render-page in, toprow, leftcol, botrow, rightcol
+    leftcol <- copy rightcol
+    leftcol <- add 5  # page-margin
+    rightcol <- copy leftcol
+    rightcol <- add 0x40  # text-width
+    loop
+  }
+}
+
+fn num-pages ncols: int, text-width: int, page-margin: int -> result/eax: int {
+  result <- copy 3
 }
 
 fn render-page in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int {
