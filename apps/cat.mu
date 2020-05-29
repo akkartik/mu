@@ -3,6 +3,18 @@
 
 fn main _args: (addr array (addr array byte)) -> exit-status/ebx: int {
   var args/eax: (addr array (addr array byte)) <- copy _args
-  var n/eax: int <- length args
-  exit-status <- copy n
+$main-body: {
+    var n/eax: int <- length args
+    compare n, 1
+    {
+      break-if->
+      print-string "usage: cat <filename>\n"
+      break $main-body
+    }
+    {
+      break-if-<=
+      print-string "success\n"
+    }
+  }
+  exit-status <- copy 0
 }
