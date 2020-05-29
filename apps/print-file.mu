@@ -19,13 +19,17 @@ $main-body: {
         var addr-in/eax: (addr handle buffered-file) <- address in
         open *filename, 0, addr-in
       }
-      var in-addr/eax: (addr buffered-file) <- lookup in
-      print-string "filename: "
-      print-string *filename
-      print-string ": "
-      print-int32-to-screen in-addr
-      print-string "\n"
+      var _in-addr/eax: (addr buffered-file) <- lookup in
+      var in-addr/ecx: (addr buffered-file) <- copy _in-addr
+      {
+        var c/eax: byte <- read-byte-buffered in-addr
+        compare c, 0xffffffff
+        break-if-=
+        print-byte c
+        loop
+      }
     }
   }
+  flush-stdout
   exit-status <- copy 0
 }
