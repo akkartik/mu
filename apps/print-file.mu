@@ -29,7 +29,7 @@ $main-body: {
       var in-addr/ecx: (addr buffered-file) <- copy _in-addr
       {
         var c/eax: byte <- read-byte-buffered in-addr
-        compare c, 0xffffffff
+        compare c, 0xffffffff  # EOF marker
         break-if-=
         print-byte c
         loop
