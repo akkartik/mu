@@ -36,6 +36,5 @@ $main-body: {
       }
     }
   }
-  flush-stdout
   exit-status <- copy 0
 }
