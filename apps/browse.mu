@@ -1,4 +1,10 @@
-# render text with word-wrap
+# Render text with word-wrap.
+#
+# To run:
+#   $ ./translate_mu apps/browse.mu
+#   $ ./a.elf __text_file__
+#
+# Press 'q' to quit. All other keys scroll down.
 
 fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   var filename/eax: (addr array byte) <- first-arg args

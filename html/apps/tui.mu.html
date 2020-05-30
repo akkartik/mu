@@ -56,35 +56,39 @@ if ('onhashchange' in window) {
 <body onload='JumpToLine();'>
 <a href='https://github.com/akkartik/mu/blob/master/apps/tui.mu'>https://github.com/akkartik/mu/blob/master/apps/tui.mu</a>
 <pre id='vimCodeElement'>
-<span id="L1" class="LineNr"> 1 </span><span class="Comment"># test some primitives for text-mode </span>
-<span id="L2" class="LineNr"> 2 </span>
-<span id="L3" class="LineNr"> 3 </span><span class="PreProc">fn</span> <span class="muFunction">main</span><span class="PreProc"> -&gt; </span>exit-status/<span class="Constant">ebx</span>: int <span class="Delimiter">{</span>
-<span id="L4" class="LineNr"> 4 </span>  var nrows/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L5" class="LineNr"> 5 </span>  var ncols/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L6" class="LineNr"> 6 </span>  nrows, ncols <span class="SpecialChar">&lt;-</span> <a href='../103screen.subx.html#L38'>screen-size</a>
-<span id="L7" class="LineNr"> 7 </span>  <a href='../103screen.subx.html#L6'>enable-screen-grid-mode</a>
-<span id="L8" class="LineNr"> 8 </span>  <a href='../103screen.subx.html#L81'>move-cursor</a> <span class="Constant">5</span>, <span class="Constant">35</span>
-<span id="L9" class="LineNr"> 9 </span>  <a href='../103screen.subx.html#L154'>start-color</a> <span class="Constant">1</span>, <span class="Constant">0x7a</span>
-<span id="L10" class="LineNr">10 </span>  <a href='../103screen.subx.html#L231'>start-blinking</a>
-<span id="L11" class="LineNr">11 </span>  <a href='../103screen.subx.html#L114'>print-string</a> <span class="Constant">&quot;Hello world!&quot;</span>
-<span id="L12" class="LineNr">12 </span>  <a href='../103screen.subx.html#L139'>reset-formatting</a>
-<span id="L13" class="LineNr">13 </span>  <a href='../103screen.subx.html#L81'>move-cursor</a> <span class="Constant">6</span>, <span class="Constant">35</span>
-<span id="L14" class="LineNr">14 </span>  <a href='../103screen.subx.html#L114'>print-string</a> <span class="Constant">&quot;tty dimensions: &quot;</span>
-<span id="L15" class="LineNr">15 </span>  <a href='../103screen.subx.html#L126'>print-int32-to-screen</a> nrows
-<span id="L16" class="LineNr">16 </span>  <a href='../103screen.subx.html#L114'>print-string</a> <span class="Constant">&quot; rows, &quot;</span>
-<span id="L17" class="LineNr">17 </span>  <a href='../103screen.subx.html#L126'>print-int32-to-screen</a> ncols
-<span id="L18" class="LineNr">18 </span>  <a href='../103screen.subx.html#L114'>print-string</a> <span class="Constant">&quot; rows\n&quot;</span>
-<span id="L19" class="LineNr">19 </span>
-<span id="L20" class="LineNr">20 </span>  <a href='../103screen.subx.html#L114'>print-string</a> <span class="Constant">&quot;press a key to see its code: &quot;</span>
-<span id="L21" class="LineNr">21 </span>  <a href='../104keyboard.subx.html#L6'>enable-keyboard-immediate-mode</a>
-<span id="L22" class="LineNr">22 </span>  var x/<span class="Constant">eax</span>: byte <span class="SpecialChar">&lt;-</span> <a href='../104keyboard.subx.html#L122'>read-key</a>
-<span id="L23" class="LineNr">23 </span>  <a href='../104keyboard.subx.html#L72'>enable-keyboard-type-mode</a>
-<span id="L24" class="LineNr">24 </span>  <a href='../103screen.subx.html#L23'>enable-screen-type-mode</a>
-<span id="L25" class="LineNr">25 </span>  <a href='../103screen.subx.html#L114'>print-string</a> <span class="Constant">&quot;You pressed &quot;</span>
-<span id="L26" class="LineNr">26 </span>  <a href='../103screen.subx.html#L126'>print-int32-to-screen</a> x
-<span id="L27" class="LineNr">27 </span>  <a href='../103screen.subx.html#L114'>print-string</a> <span class="Constant">&quot;\n&quot;</span>
-<span id="L28" class="LineNr">28 </span>  exit-status <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L29" class="LineNr">29 </span><span class="Delimiter">}</span>
+<span id="L1" class="LineNr"> 1 </span><span class="Comment"># Test some primitives for text-mode.</span>
+<span id="L2" class="LineNr"> 2 </span><span class="Comment">#</span>
+<span id="L3" class="LineNr"> 3 </span><span class="Comment"># To run:</span>
+<span id="L4" class="LineNr"> 4 </span><span class="Comment">#   $ ./translate_mu apps/tui.mu</span>
+<span id="L5" class="LineNr"> 5 </span><span class="Comment">#   $ ./a.elf</span>
+<span id="L6" class="LineNr"> 6 </span>
+<span id="L7" class="LineNr"> 7 </span><span class="PreProc">fn</span> <span class="muFunction">main</span><span class="PreProc"> -&gt; </span>exit-status/<span class="Constant">ebx</span>: int <span class="Delimiter">{</span>
+<span id="L8" class="LineNr"> 8 </span>  <span class="PreProc">var</span> nrows/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L9" class="LineNr"> 9 </span>  <span class="PreProc">var</span> ncols/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L10" class="LineNr">10 </span>  nrows, ncols <span class="SpecialChar">&lt;-</span> <a href='../103screen.subx.html#L37'>screen-size</a>
+<span id="L11" class="LineNr">11 </span>  <a href='../103screen.subx.html#L6'>enable-screen-grid-mode</a>
+<span id="L12" class="LineNr">12 </span>  <a href='../103screen.subx.html#L91'>move-cursor</a> <span class="Constant">5</span>, <span class="Constant">35</span>
+<span id="L13" class="LineNr">13 </span>  <a href='../103screen.subx.html#L185'>start-color</a> <span class="Constant">1</span>, <span class="Constant">0x7a</span>
+<span id="L14" class="LineNr">14 </span>  <a href='../103screen.subx.html#L260'>start-blinking</a>
+<span id="L15" class="LineNr">15 </span>  <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot;Hello world!&quot;</span>
+<span id="L16" class="LineNr">16 </span>  <a href='../103screen.subx.html#L170'>reset-formatting</a>
+<span id="L17" class="LineNr">17 </span>  <a href='../103screen.subx.html#L91'>move-cursor</a> <span class="Constant">6</span>, <span class="Constant">35</span>
+<span id="L18" class="LineNr">18 </span>  <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot;tty dimensions: &quot;</span>
+<span id="L19" class="LineNr">19 </span>  <a href='../103screen.subx.html#L157'>print-int32-to-screen</a> nrows
+<span id="L20" class="LineNr">20 </span>  <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot; rows, &quot;</span>
+<span id="L21" class="LineNr">21 </span>  <a href='../103screen.subx.html#L157'>print-int32-to-screen</a> ncols
+<span id="L22" class="LineNr">22 </span>  <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot; rows\n&quot;</span>
+<span id="L23" class="LineNr">23 </span>
+<span id="L24" class="LineNr">24 </span>  <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot;press a key to see its code: &quot;</span>
+<span id="L25" class="LineNr">25 </span>  <a href='../104keyboard.subx.html#L6'>enable-keyboard-immediate-mode</a>
+<span id="L26" class="LineNr">26 </span>  <span class="PreProc">var</span> x/<span class="Constant">eax</span>: byte <span class="SpecialChar">&lt;-</span> <a href='../104keyboard.subx.html#L122'>read-key</a>
+<span id="L27" class="LineNr">27 </span>  <a href='../104keyboard.subx.html#L72'>enable-keyboard-type-mode</a>
+<span id="L28" class="LineNr">28 </span>  <a href='../103screen.subx.html#L24'>enable-screen-type-mode</a>
+<span id="L29" class="LineNr">29 </span>  <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot;You pressed &quot;</span>
+<span id="L30" class="LineNr">30 </span>  <a href='../103screen.subx.html#L157'>print-int32-to-screen</a> x
+<span id="L31" class="LineNr">31 </span>  <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot;\n&quot;</span>
+<span id="L32" class="LineNr">32 </span>  exit-status <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L33" class="LineNr">33 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

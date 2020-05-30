@@ -1,4 +1,8 @@
-# test some primitives for text-mode 
+# Test some primitives for text-mode.
+#
+# To run:
+#   $ ./translate_mu apps/tui.mu
+#   $ ./a.elf
 
 fn main -> exit-status/ebx: int {
   var nrows/eax: int <- copy 0
