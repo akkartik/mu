@@ -77,7 +77,7 @@ $char-loop: {
       var c/eax: byte <- read-byte-buffered in
       compare c, 0xffffffff  # EOF marker
       break-if-= $line-loop
-$update-attributes:check-state: {
+$change-state: {
         compare *state, 0  # normal
         {
           break-if-!=
@@ -87,7 +87,7 @@ $update-attributes:check-state: {
             # r->current-state == 0 && c == '*' => bold text
             start-bold
             copy-to *state, 1
-            break $update-attributes:check-state
+            break $change-state
           }
           compare c, 0x5f  # '_'
           {
@@ -95,9 +95,9 @@ $update-attributes:check-state: {
             # r->current-state == 0 && c == '_' => bold text
             start-bold
             copy-to *state, 1
-            break $update-attributes:check-state
+            break $change-state
           }
-          break $update-attributes:check-state
+          break $change-state
         }
         compare *state, 1  # bold
         {
@@ -124,7 +124,7 @@ $update-attributes:check-state: {
             copy-to *state, 0
             loop $char-loop
           }
-          break $update-attributes:check-state
+          break $change-state
         }
       }
       compare c, 0xa  # newline
