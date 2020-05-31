@@ -60,22 +60,68 @@ fn render in: (addr buffered-file), nrows: int, ncols: int {
   }
 }
 
-fn render-page in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int, r: (addr render-state) {
+fn render-page in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int, _r: (addr render-state) {
+  var r/edi: (addr render-state) <- copy _r
+  var state/esi: (addr int) <- get r, current-state
   clear toprow, leftcol, botrow, rightcol
   # render screen rows
   var row/ecx: int <- copy toprow
-$line-loop:  {
+$line-loop: {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
     move-cursor row, col
-    {
+$char-loop: {
       compare col, rightcol
       break-if->=
       var c/eax: byte <- read-byte-buffered in
       compare c, 0xffffffff  # EOF marker
       break-if-= $line-loop
-      update-attributes c, r
+$update-attributes:check-state: {
+        compare *state, 0  # normal
+        {
+          break-if-!=
+          compare c, 0x2a  # '*'
+          {
+            break-if-!=
+            # r->current-state == 0 && c == '*'
+            start-bold
+            copy-to *state, 1
+            break $update-attributes:check-state
+          }
+          compare c, 0x5f  # '_'
+          {
+            break-if-!=
+            # r->current-state == 0 && c == '_'
+            start-bold
+            copy-to *state, 1
+            break $update-attributes:check-state
+          }
+          break $update-attributes:check-state
+        }
+        {
+          break-if-=
+          compare c, 0x2a  # '*'
+          {
+            break-if-!=
+            # r->current-state == 1 && c == '*'
+            reset-formatting
+            start-color 0xec, 7  # 236 = darkish gray
+            copy-to *state, 0
+            break $update-attributes:check-state
+          }
+          compare c, 0x5f  # '_'
+          {
+            break-if-!=
+            # r->current-state == 1 && c == '_'
+            reset-formatting
+            start-color 0xec, 7  # 236 = darkish gray
+            copy-to *state, 0
+            break $update-attributes:check-state
+          }
+          break $update-attributes:check-state
+        }
+      }
       compare c, 0xa  # newline
       break-if-=  # no need to print newlines
       print-byte c
@@ -84,54 +130,6 @@ $line-loop:  {
     }
     row <- increment
     loop
-  }
-}
-
-fn update-attributes c: byte, _r: (addr render-state) {
-  var r/edi: (addr render-state) <- copy _r
-  var state/esi: (addr int) <- get r, current-state
-$update-attributes:check-state: {
-    compare *state, 0  # normal
-    {
-      break-if-!=
-      compare c, 0x2a  # '*'
-      {
-        break-if-!=
-        # r->current-state == 0 && c == '*'
-        start-bold
-        copy-to *state, 1
-        break $update-attributes:check-state
-      }
-      compare c, 0x5f  # '_'
-      {
-        break-if-!=
-        # r->current-state == 0 && c == '_'
-        start-bold
-        copy-to *state, 1
-        break $update-attributes:check-state
-      }
-      break $update-attributes:check-state
-    }
-    {
-      break-if-=
-      compare c, 0x2a  # '*'
-      {
-        break-if-!=
-        # r->current-state == 1 && c == '*'
-        reset-formatting
-        copy-to *state, 0
-        break $update-attributes:check-state
-      }
-      compare c, 0x5f  # '_'
-      {
-        break-if-!=
-        # r->current-state == 1 && c == '_'
-        reset-formatting
-        copy-to *state, 0
-        break $update-attributes:check-state
-      }
-      break $update-attributes:check-state
-    }
   }
 }
 
