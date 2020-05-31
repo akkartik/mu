@@ -25,6 +25,10 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   exit-status <- copy 0
 }
 
+type render-state {
+  current-state: int  # enum 0: normal, 1: bold
+}
+
 # decide how to lay out pages on screen
 fn render in: (addr buffered-file), nrows: int, ncols: int {
   # Fit multiple pages on screen on separate columns, each wide enough to read
@@ -36,15 +40,18 @@ fn render in: (addr buffered-file), nrows: int, ncols: int {
   #   top-margin
   #   page-margin
   #   text-width
+  var _r: render-state
+  var r/edi: (addr render-state) <- address _r
   var toprow/eax: int <- copy 2  # top-margin
   var botrow/ecx: int <- copy nrows
   var leftcol/edx: int <- copy 5  # page-margin
   var rightcol/ebx: int <- copy leftcol
   rightcol <- add 0x40  # text-width = 64 characters
+  start-color 0xec, 7  # 236 = darkish gray
   {
     compare rightcol, ncols
     break-if->=
-    render-page in, toprow, leftcol, botrow, rightcol
+    render-page in, toprow, leftcol, botrow, rightcol, r
     leftcol <- copy rightcol
     leftcol <- add 5  # page-margin
     rightcol <- copy leftcol
@@ -53,7 +60,7 @@ fn render in: (addr buffered-file), nrows: int, ncols: int {
   }
 }
 
-fn render-page in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int {
+fn render-page in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int, r: (addr render-state) {
   clear toprow, leftcol, botrow, rightcol
   # render screen rows
   var row/ecx: int <- copy toprow
@@ -68,6 +75,7 @@ $line-loop:  {
       var c/eax: byte <- read-byte-buffered in
       compare c, 0xffffffff  # EOF marker
       break-if-= $line-loop
+      update-attributes c, r
       compare c, 0xa  # newline
       break-if-=  # no need to print newlines
       print-byte c
@@ -76,6 +84,35 @@ $line-loop:  {
     }
     row <- increment
     loop
+  }
+}
+
+fn update-attributes c: byte, _r: (addr render-state) {
+  var r/edi: (addr render-state) <- copy _r
+  var state/esi: (addr int) <- get r, current-state
+$update-attributes:check-state: {
+    compare *state, 0  # normal
+    {
+      break-if-!=
+      compare c, 0x2a  # '*'
+      {
+        break-if-!=
+        # r->current-state == 0 && c == '*'
+        start-bold
+        copy-to *state, 1
+      }
+      break $update-attributes:check-state
+    }
+    {
+      break-if-=
+      compare c, 0x2a  # '*'
+      {
+        break-if-!=
+        # r->current-state == 1 && c == '*'
+        reset-formatting
+        copy-to *state, 0
+      }
+    }
   }
 }
 
