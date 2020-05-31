@@ -104,20 +104,24 @@ $update-attributes:check-state: {
           compare c, 0x2a  # '*'
           {
             break-if-!=
+            print-byte c
+            col <- increment
             # r->current-state == 1 && c == '*'
             reset-formatting
             start-color 0xec, 7  # 236 = darkish gray
             copy-to *state, 0
-            break $update-attributes:check-state
+            loop $char-loop
           }
           compare c, 0x5f  # '_'
           {
             break-if-!=
+            print-byte c
+            col <- increment
             # r->current-state == 1 && c == '_'
             reset-formatting
             start-color 0xec, 7  # 236 = darkish gray
             copy-to *state, 0
-            break $update-attributes:check-state
+            loop $char-loop
           }
           break $update-attributes:check-state
         }
