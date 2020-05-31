@@ -27,6 +27,8 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
 
 type render-state {
   current-state: int  # enum 0: normal, 1: bold, 2: heading
+  start-of-line?: boolean
+  num-hashes-seen?: int
 }
 
 # decide how to lay out pages on screen
@@ -42,6 +44,9 @@ fn render in: (addr buffered-file), nrows: int, ncols: int {
   #   text-width
   var _r: render-state
   var r/edi: (addr render-state) <- address _r
+  # r->start-of-line? = true
+  var s/eax: (addr boolean) <- get r, start-of-line?
+  copy-to *s, 1  # true
   var toprow/eax: int <- copy 2  # top-margin
   var botrow/ecx: int <- copy nrows
   var leftcol/edx: int <- copy 5  # page-margin
@@ -97,6 +102,20 @@ $change-state: {
             copy-to *state, 1
             break $change-state
           }
+          compare c, 0x23  # '#'
+          {
+            break-if-!=
+            var s/eax: (addr boolean) <- get r, start-of-line?
+            compare *s, 1
+            {
+              break-if-!=
+              # r->current-state == 0 && c == '#' && at start of line => count '#'s
+              var h/eax: (addr int) <- get r, num-hashes-seen?
+              increment *h
+              break $change-state
+            }
+            break $change-state
+          }
           break $change-state
         }
         compare *state, 1  # bold
@@ -116,9 +135,9 @@ $change-state: {
           compare c, 0x5f  # '_'
           {
             break-if-!=
+            # r->current-state == 1 && c == '_' => print c, then normal text
             print-byte c
             col <- increment
-            # r->current-state == 1 && c == '_' => print c, then normal text
             reset-formatting
             start-color 0xec, 7  # 236 = darkish gray
             copy-to *state, 0
@@ -126,9 +145,28 @@ $change-state: {
           }
           break $change-state
         }
-      }
+      }  # $change-state
+      # update a few attributes of the state based on c without changing the state itself
       compare c, 0xa  # newline
-      break-if-=  # no need to print newlines
+      {
+        break-if-!=
+        # c is newline
+        var s/eax: (addr boolean) <- get r, start-of-line?
+        copy-to *s, 1  # true
+        # switch to normal text
+        reset-formatting
+        start-color 0xec, 7  # 236 = darkish gray
+        # no need to print newlines
+        break $char-loop
+      }
+      compare c, 0x20  # space
+      {
+        break-if-=
+        # c is not newline or space
+        var s/eax: (addr boolean) <- get r, start-of-line?
+        copy-to *s, 0  # false
+      }
+      # print c
       print-byte c
       col <- increment
       loop
