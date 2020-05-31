@@ -100,6 +100,15 @@ $update-attributes:check-state: {
         # r->current-state == 0 && c == '*'
         start-bold
         copy-to *state, 1
+        break $update-attributes:check-state
+      }
+      compare c, 0x5f  # '_'
+      {
+        break-if-!=
+        # r->current-state == 0 && c == '_'
+        start-bold
+        copy-to *state, 1
+        break $update-attributes:check-state
       }
       break $update-attributes:check-state
     }
@@ -111,7 +120,17 @@ $update-attributes:check-state: {
         # r->current-state == 1 && c == '*'
         reset-formatting
         copy-to *state, 0
+        break $update-attributes:check-state
       }
+      compare c, 0x5f  # '_'
+      {
+        break-if-!=
+        # r->current-state == 1 && c == '_'
+        reset-formatting
+        copy-to *state, 0
+        break $update-attributes:check-state
+      }
+      break $update-attributes:check-state
     }
   }
 }
