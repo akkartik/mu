@@ -26,7 +26,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
 }
 
 type render-state {
-  current-state: int  # enum 0: normal, 1: bold
+  current-state: int  # enum 0: normal, 1: bold, 2: heading
 }
 
 # decide how to lay out pages on screen
@@ -84,7 +84,7 @@ $update-attributes:check-state: {
           compare c, 0x2a  # '*'
           {
             break-if-!=
-            # r->current-state == 0 && c == '*'
+            # r->current-state == 0 && c == '*' => bold text
             start-bold
             copy-to *state, 1
             break $update-attributes:check-state
@@ -92,21 +92,22 @@ $update-attributes:check-state: {
           compare c, 0x5f  # '_'
           {
             break-if-!=
-            # r->current-state == 0 && c == '_'
+            # r->current-state == 0 && c == '_' => bold text
             start-bold
             copy-to *state, 1
             break $update-attributes:check-state
           }
           break $update-attributes:check-state
         }
+        compare *state, 1  # bold
         {
-          break-if-=
+          break-if-!=
           compare c, 0x2a  # '*'
           {
             break-if-!=
+            # r->current-state == 1 && c == '*' => print c, then normal text
             print-byte c
             col <- increment
-            # r->current-state == 1 && c == '*'
             reset-formatting
             start-color 0xec, 7  # 236 = darkish gray
             copy-to *state, 0
@@ -117,7 +118,7 @@ $update-attributes:check-state: {
             break-if-!=
             print-byte c
             col <- increment
-            # r->current-state == 1 && c == '_'
+            # r->current-state == 1 && c == '_' => print c, then normal text
             reset-formatting
             start-color 0xec, 7  # 236 = darkish gray
             copy-to *state, 0
