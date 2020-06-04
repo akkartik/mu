@@ -6196,7 +6196,7 @@ lookup-var-helper:  # name: (addr slice), vars: (addr stack (handle var)), out: 
     # var min/edx: (addr handle var) = vars->data
     8d/copy-address *(esi+8) 2/r32/edx
     # var curr/ebx: (addr handle var) = &vars->data[vars->top - 8]
-    8d/copy-address *(esi+ebx) 3/r32/ebx
+    8d/copy-address *(esi+ebx) 3/r32/ebx  # vars + 8 + vars->type - 8
     {
       # if (curr < min) return
       39/compare %ebx 2/r32/edx
@@ -8552,7 +8552,7 @@ emit-unconditional-jump-to-depth:  # out: (addr buffered-file), vars: (addr stac
     # var curr/esi: (addr handle var) = &vars->data[vars->top - 8]
     8d/copy-address *(ecx+eax) 6/r32/esi  # vars + 8 + vars->top - 8
     # var min/ecx: (addr handle var) = vars->data
-    81 0/subop/add %ecx 8/imm32
+    8d/copy-address *(ecx+8) 1/r32/ecx
     # edx = depth
     8b/-> *(ebp+0x10) 2/r32/edx
     {
@@ -8789,11 +8789,10 @@ already-spilled-this-block?:  # v: (addr var), vars: (addr stack (handle var)) -
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var eax: int = vars->top
     8b/-> *ecx 0/r32/eax
-    # var min/ecx: (addr handle var) = vars->data
-    81 0/subop/add %ecx 8/imm32
     # var curr/edx: (addr handle var) = &vars->data[vars->top - 8]
-    81 5/subop/subtract %eax 8/imm32
-    8d/copy-address *(ecx+eax) 2/r32/edx
+    8d/copy-address *(ecx+eax) 2/r32/edx  # vars + 8 + vars->top - 8
+    # var min/ecx: (addr handle var) = vars->data
+    8d/copy-address *(ecx+8) 1/r32/ecx
     # var depth/ebx: int = v->block-depth
     8b/-> *(ebp+8) 3/r32/ebx
     8b/-> *(ebx+0x10) 3/r32/ebx  # Var-block-depth
@@ -8870,7 +8869,7 @@ same-register-spilled-before?:  # v: (addr var), vars: (addr stack (handle var))
     8b/-> *(ecx+0x10) 3/r32/ebx  # Var-block-depth
     # var min/ecx: (addr handle var) = vars->data
     8b/-> *(ebp+0xc) 1/r32/ecx
-    81 0/subop/add %ecx 8/imm32
+    8d/copy-address *(ecx+8) 1/r32/ecx
     # TODO: check that start >= min and start < &vars->data[top]
     # TODO: check that *start == v
     # var curr/esi: (addr handle var) = start
