@@ -8376,10 +8376,10 @@ push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
     # ensure that v is in a register
     81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
     0f 84/jump-if-= $push-output-and-maybe-emit-spill:abort/disp32
-    # if !already-spilled-this-block?(reg, vars) emit code to spill reg
-    (already-spilled-this-block? %ecx *(ebp+0x10))  # => eax
+    # if not-yet-spilled-this-block?(reg, vars) emit code to spill reg
+    (not-yet-spilled-this-block? %ecx *(ebp+0x10))  # => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $push-output-and-maybe-emit-spill:push/disp8
+    74/jump-if-= $push-output-and-maybe-emit-spill:push/disp8
     # TODO: assert(size-of(output) == 4)
     # *Curr-local-stack-offset -= 4
     81 5/subop/subtract *Curr-local-stack-offset 4/imm32
@@ -8773,9 +8773,10 @@ $emit-cleanup-code-until-target:end:
     5d/pop-to-ebp
     c3/return
 
-# is there already a var with the same block-depth and register as 'v' on the 'vars' stack?
-# v is guaranteed not to be within vars
-already-spilled-this-block?:  # v: (addr var), vars: (addr stack (handle var)) -> result/eax: boolean
+# Return true if there isn't a variable in 'vars' with the same block-depth
+# and register as 'v'.
+# 'v' is guaranteed not to be within 'vars'.
+not-yet-spilled-this-block?:  # v: (addr var), vars: (addr stack (handle var)) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8801,7 +8802,7 @@ already-spilled-this-block?:  # v: (addr var), vars: (addr stack (handle var)) -
     (lookup *(esi+0x18) *(esi+0x1c))  # Var-register Var-register => eax
     89/<- %esi 0/r32/eax
     {
-$already-spilled-this-block?:loop:
+$not-yet-spilled-this-block?:loop:
       # if (curr < min) break
       39/compare %edx 1/r32/ecx
       0f 82/jump-if-addr< break/disp32
@@ -8816,25 +8817,26 @@ $already-spilled-this-block?:loop:
       89/<- %edi 0/r32/eax
       # if (cand-reg == null) continue
       {
-$already-spilled-this-block?:check-reg:
+$not-yet-spilled-this-block?:check-reg:
         81 7/subop/compare %edi 0/imm32
         0f 84/jump-if-= break/disp32
         # if (cand-reg == needle) return true
         (string-equal? %esi %edi)  # => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
-$already-spilled-this-block?:return-true:
-        b8/copy-to-eax 1/imm32/true
-        eb/jump $already-spilled-this-block?:end/disp8
+$not-yet-spilled-this-block?:return-false:
+        b8/copy-to-eax 0/imm32/false
+        eb/jump $not-yet-spilled-this-block?:end/disp8
       }
-$already-spilled-this-block?:continue:
+$not-yet-spilled-this-block?:continue:
       # curr -= 8
       81 5/subop/subtract %edx 8/imm32
       e9/jump loop/disp32
     }
-    # return false
-    b8/copy-to-eax 0/imm32/false
-$already-spilled-this-block?:end:
+$not-yet-spilled-this-block?:return-true:
+    # return true
+    b8/copy-to-eax 1/imm32/true
+$not-yet-spilled-this-block?:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
