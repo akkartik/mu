@@ -1619,6 +1619,50 @@ test-local-clobbered-by-output:
     5d/pop-to-ebp
     c3/return
 
+test-read-output:
+    # also doesn't spill
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo -> x/ecx: int {\n")
+    (write _test-input-stream "  x <- copy 0x34\n")
+    (write _test-input-stream "  compare x, 0x35\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-read-output/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-read-output/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-read-output/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-read-output/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-read-output/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-read-output/5")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0x34/imm32"  "F - test-read-output/6")
+    (check-next-stream-line-equal _test-output-stream "    81 7/subop/compare %ecx 0x35/imm32"  "F - test-read-output/7")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-read-output/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-read-output/9")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-read-output/10")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-read-output/11")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-read-output/12")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-read-output/13")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-branches-in-block:
     # . prologue
     55/push-ebp
@@ -6284,6 +6328,10 @@ lookup-or-define-var:  # name: (addr slice), vars: (addr stack live-var), fn: (a
         81 7/subop/compare *eax 0/imm32
         # otherwise abort
         0f 84/jump-if-= $lookup-var:abort/disp32
+        # update vars
+        (push *(ebp+0xc) *eax)
+        (push *(ebp+0xc) *(eax+4))
+        (push *(ebp+0xc) 0)  # never spill fn-outputs
       }
     }
 $lookup-or-define-var:end:
