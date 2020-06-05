@@ -37,7 +37,7 @@ fn render-normal fs: (addr file-state), state: (addr screen-position-state) {
     compare c, 0xffffffff  # EOF marker
     break-if-=
     #
-    print-byte c
+    add-char state, c
     #
     loop
   }

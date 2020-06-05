@@ -37,7 +37,7 @@ fn init-screen-position-state _self: (addr screen-position-state) {
   copy-to *dest, 5  # left-margin
   # self->rightcol = self->leftcol + text-width
   dest <- get self, rightcol
-  copy-to *dest, 0x45  # left-margin + text-width
+  copy-to *dest, 0xa  # left-margin + text-width
   #
   start-drawing self
 }
@@ -80,11 +80,18 @@ fn add-char _self: (addr screen-position-state), c: byte {
 
 fn next-line _self: (addr screen-position-state) {
   var self/esi: (addr screen-position-state) <- copy _self
+  var tmp/eax: (addr int) <- copy 0
+  var tmp2/ecx: int <- copy 0
+  # self->col = self->leftcol
+  tmp <- get self, leftcol
+  tmp2 <- copy *tmp
+  tmp <- get self, col
+  copy-to *tmp, tmp2
   # self->row++
-  var tmp/eax: (addr int) <- get self, row
+  tmp <- get self, row
   increment *tmp
   # if (self->row > self->botrow) next-page(self)
-  var tmp2/ecx: int <- copy *tmp
+  tmp2 <- copy *tmp
   tmp <- get self, botrow
   compare tmp2, *tmp
   {
