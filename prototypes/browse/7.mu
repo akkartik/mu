@@ -19,7 +19,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
 
 # decide how to lay out pages on screen
 fn render in: (addr buffered-file), nrows: int, ncols: int {
-  # hardcoded parameter: text-width
+  # hardcoded parameter: page-width
   var toprow/eax: int <- copy 2
   var botrow/ecx: int <- copy toprow
   botrow <- add 0x20

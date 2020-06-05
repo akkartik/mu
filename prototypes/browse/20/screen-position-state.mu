@@ -13,7 +13,7 @@ fn init-screen-position-state _self: (addr screen-position-state) {
   # hardcoded parameters:
   #   top-margin
   #   page-margin
-  #   text-width
+  #   page-width
   #   page-height (temporary)
   var self/esi: (addr screen-position-state) <- copy _self
   var nrows/eax: int <- copy 0
@@ -35,9 +35,9 @@ fn init-screen-position-state _self: (addr screen-position-state) {
   # self->leftcol = page-margin
   dest <- get self, leftcol
   copy-to *dest, 5  # left-margin
-  # self->rightcol = self->leftcol + text-width
+  # self->rightcol = self->leftcol + page-width
   dest <- get self, rightcol
-  copy-to *dest, 0x45  # left-margin + text-width
+  copy-to *dest, 0x45  # left-margin + page-width
   #
   start-drawing self
 }

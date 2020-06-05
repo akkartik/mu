@@ -127,14 +127,14 @@ fn init-screen-position-state self: (addr screen-position-state), nrows: int, nc
   # hardcoded parameters:
   #   top-margin
   #   page-margin
-  #   text-width
+  #   page-width
   var dest/eax: (addr int) <- copy 0
   # self->nrows = nrows
   # self->ncols = ncols
   # self->toprow = top-margin
   # self->botrow = nrows
   # self->leftcol = page-margin
-  # self->rightcol = self->leftcol + text-width
+  # self->rightcol = self->leftcol + page-width
   # start-drawing(self)
 }
 
@@ -156,7 +156,7 @@ fn next-line self: (addr screen-position-state) {
 
 fn next-page self: (addr screen-position-state) {
   # self->leftcol = self->rightcol + 5
-  # self->rightcol = self->leftcol + text-width
+  # self->rightcol = self->leftcol + page-width
 }
 
 fn done-drawing? self: (addr screen-position-state) -> result/eax: boolean {

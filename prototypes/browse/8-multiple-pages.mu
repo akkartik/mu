@@ -27,12 +27,12 @@ fn render in: (addr buffered-file), nrows: int, ncols: int {
   # hardcoded parameters:
   #   top-margin
   #   page-margin
-  #   text-width
+  #   page-width
   var toprow/eax: int <- copy 2  # top-margin
   var botrow/ecx: int <- copy nrows
   var leftcol/edx: int <- copy 5  # page-margin
   var rightcol/ebx: int <- copy leftcol
-  rightcol <- add 0x40  # text-width = 64 characters
+  rightcol <- add 0x40  # page-width = 64 characters
   {
     compare rightcol, ncols
     break-if->=
@@ -40,7 +40,7 @@ fn render in: (addr buffered-file), nrows: int, ncols: int {
     leftcol <- copy rightcol
     leftcol <- add 5  # page-margin
     rightcol <- copy leftcol
-    rightcol <- add 0x40  # text-width
+    rightcol <- add 0x40  # page-width
     loop
   }
 }
