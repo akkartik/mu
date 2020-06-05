@@ -1575,7 +1575,7 @@ test-shadow-live-output:
     5d/pop-to-ebp
     c3/return
 
-_pending-test-local-clobbered-by-output:
+test-local-clobbered-by-output:
     # also doesn't spill
     # . prologue
     55/push-ebp
@@ -8080,6 +8080,7 @@ emit-subx-function:  # out: (addr buffered-file), f: (addr function)
     50/push-eax
     51/push-ecx
     52/push-edx
+    57/push-edi
     # initialize some global state
     c7 0/subop/copy *Curr-block-depth 1/imm32
     c7 0/subop/copy *Curr-local-stack-offset 0/imm32
@@ -8096,10 +8097,13 @@ emit-subx-function:  # out: (addr buffered-file), f: (addr function)
     (write-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) ":\n")
     (emit-subx-prologue *(ebp+8))
+    # var outputs/edi: (addr list var) = lookup(f->outputs)
+    (lookup *(ecx+0x10) *(ecx+0x14))  # Function-outputs Function-outputs => eax
+    89/<- %edi 0/r32/eax
     # var body/eax: (addr block) = lookup(f->body)
     (lookup *(ecx+0x18) *(ecx+0x1c))  # Function-body Function-body => eax
     #
-    (emit-subx-block *(ebp+8) %eax %edx)
+    (emit-subx-block *(ebp+8) %eax %edx %edi)
     (emit-subx-epilogue *(ebp+8))
     # TODO: validate that *Curr-block-depth and *Curr-local-stack-offset have
     # been cleaned up
@@ -8107,6 +8111,7 @@ $emit-subx-function:end:
     # . reclaim locals
     81 0/subop/add %esp 0xc08/imm32
     # . restore registers
+    5f/pop-to-edi
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
@@ -8170,7 +8175,7 @@ $populate-mu-type-offsets-in-inouts:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-stmt-list:  # out: (addr buffered-file), stmts: (addr list stmt), vars: (addr stack live-var)
+emit-subx-stmt-list:  # out: (addr buffered-file), stmts: (addr list stmt), vars: (addr stack live-var), fn-outputs: (addr list var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8197,7 +8202,7 @@ $emit-subx-stmt-list:check-for-block:
         81 7/subop/compare *ecx 0/imm32/block  # Stmt-tag
         75/jump-if-!= break/disp8
 $emit-subx-stmt-list:block:
-        (emit-subx-block *(ebp+8) %ecx *(ebp+0x10))
+        (emit-subx-block *(ebp+8) %ecx *(ebp+0x10) *(ebp+0x14))
       }
       {
 $emit-subx-stmt-list:check-for-stmt:
@@ -8337,7 +8342,7 @@ $emit-subx-stmt-list:check-for-reg-var-def:
         0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:reg-var-def:
         # TODO: ensure that there's exactly one output
-        (push-output-and-maybe-emit-spill *(ebp+8) %ecx *(ebp+0x10))
+        (push-output-and-maybe-emit-spill *(ebp+8) %ecx *(ebp+0x10) %esi *(ebp+0x14))
         # emit the instruction as usual
         (emit-subx-stmt *(ebp+8) %ecx Primitives)
         # var-seen? = true
@@ -8366,7 +8371,8 @@ $emit-subx-stmt-list:end:
     5d/pop-to-ebp
     c3/return
 
-push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-var-def), vars: (addr stack live-var)
+# 'later-stmts' includes 'stmt', but will behave the same even without it; reg-var-def stmts are guaranteed not to write to function outputs.
+push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-var-def), vars: (addr stack (handle var)), later-stmts: (addr list stmt), fn-outputs: (addr list var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8395,12 +8401,16 @@ push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
     # ensure that v is in a register
     81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
     0f 84/jump-if-= $push-output-and-maybe-emit-spill:abort/disp32
-    # var emit-spill?/edx: boolean = not-yet-spilled-this-block?(reg, vars)
+    # var emit-spill?/edx: boolean = not-yet-spilled-this-block? && will-not-write-some-register?(fn-outputs)
     (not-yet-spilled-this-block? %ecx *(ebp+0x10))  # => eax
     89/<- %edx 0/r32/eax
-    # if emit-spill? then emit code to spill reg
     3d/compare-eax-and 0/imm32/false
-    74/jump-if-= $push-output-and-maybe-emit-spill:push/disp8
+    0f 84/jump-if-= $push-output-and-maybe-emit-spill:push/disp32
+    (will-not-write-some-register? %ecx *(ebp+0x14) *(ebp+0x18))  # => eax
+    89/<- %edx 0/r32/eax
+    # check emit-spill?
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $push-output-and-maybe-emit-spill:push/disp32
     # TODO: assert(size-of(output) == 4)
     # *Curr-local-stack-offset -= 4
     81 5/subop/subtract *Curr-local-stack-offset 4/imm32
@@ -8860,6 +8870,247 @@ $not-yet-spilled-this-block?:return-true:
     # return true
     b8/copy-to-eax 1/imm32/true
 $not-yet-spilled-this-block?:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# could the register of 'v' ever be written to by one of the vars in fn-outputs?
+will-not-write-some-register?:  # v: (addr var), stmts: (addr list stmt), fn-outputs: (addr list var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax = v
+    8b/-> *(ebp+8) 0/r32/eax
+    # var reg/eax: (addr array byte) = lookup(v->register)
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    # var target/eax: (addr var) = find-register(fn-outputs, reg)
+    (find-register *(ebp+0x10) %eax)  # => eax
+    # if (target == 0) return true
+    {
+      3d/compare-eax-and 0/imm32
+      75/jump-if-!= break/disp8
+      b8/copy-to-eax 1/imm32/true
+      eb/jump $will-not-write-some-register?:end/disp8
+    }
+    # return !assigns-in-stmts?(stmts, target)
+    (assigns-in-stmts? *(ebp+0xc) %eax)  # => eax
+    3d/compare-eax-and 0/imm32/false
+    # assume: true = 1, so no need to mask with 0x000000ff
+    0f 94/set-if-= %al
+$will-not-write-some-register?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# return output var with matching register
+# always returns false if 'reg' is null
+find-register:  # fn-outputs: (addr list var), reg: (addr array byte) -> result/eax: (addr var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var curr/ecx: (addr list var) = fn-outputs
+    8b/-> *(ebp+8) 1/r32/ecx
+    {
+$find-register:loop:
+      # if (curr == 0) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      # eax = curr->value->register
+      (lookup *ecx *(ecx+4))  # List-value List-value => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      # if (eax == reg) return curr->value
+$find-register:compare:
+      (string-equal? *(ebp+0xc) %eax)  # => eax
+      {
+        3d/compare-eax-and 0/imm32/false
+        74/jump-if-= break/disp8
+$find-register:found:
+        (lookup *ecx *(ecx+4))  # List-value List-value => eax
+        eb/jump $find-register:end/disp8
+      }
+      # curr = lookup(curr->next)
+      (lookup *(ecx+8) *(ecx+0xc))  # List-next List-next => eax
+      89/<- %ecx 0/r32/eax
+      #
+      eb/jump loop/disp8
+    }
+$find-register:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+assigns-in-stmts?:  # stmts: (addr list stmt), v: (addr var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var curr/ecx: (addr list stmt) = stmts
+    8b/-> *(ebp+8) 1/r32/ecx
+    {
+      # if (curr == 0) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      # if assigns-in-stmt?(curr->value, v) return true
+      (lookup *ecx *(ecx+4))  # List-value List-value => eax
+      (assigns-in-stmt? %eax *(ebp+0xc))  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= break/disp8
+      # curr = lookup(curr->next)
+      (lookup *(ecx+8) *(ecx+0xc))  # List-next List-next => eax
+      89/<- %ecx 0/r32/eax
+      #
+      eb/jump loop/disp8
+    }
+$assigns-in-stmts?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+assigns-in-stmt?:  # stmt: (addr stmt), v: (addr var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # ecx = stmt
+    8b/-> *(ebp+8) 1/r32/ecx
+    # if stmt is a stmt1, return assigns-in-stmt-vars?(stmt->outputs, v)
+    {
+      81 7/subop/compare *ecx 1/imm32/stmt1  # Stmt-tag
+      75/jump-if-!= break/disp8
+      (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+      (assigns-in-stmt-vars? %eax *(ebp+0xc))  # => eax
+      eb/jump $assigns-in-stmt?:end/disp8
+    }
+    # if stmt is a block, return assigns-in-stmts?(stmt->stmts, v)
+    {
+      81 7/subop/compare *ecx 0/imm32/block  # Stmt-tag
+      75/jump-if-!= break/disp8
+      (lookup *(ecx+4) *(ecx+8))  # Block-stmts Block-stmts => eax
+      (assigns-in-stmts? %eax *(ebp+0xc))  # => eax
+      eb/jump $assigns-in-stmt?:end/disp8
+    }
+    # otherwise return false
+    b8/copy 0/imm32/false
+$assigns-in-stmt?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+assigns-in-stmt-vars?:  # stmt-var: (addr stmt-var), v: (addr var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var curr/ecx: (addr stmt-var) = stmt-var
+    8b/-> *(ebp+8) 1/r32/ecx
+    {
+      # if (curr == 0) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      # eax = lookup(curr->value)
+      (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+      # if (eax == v  &&  curr->is-deref? == false) return true
+      {
+        39/compare *(ebp+0xc) 0/r32/eax
+        75/jump-if-!= break/disp8
+        81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
+        75/jump-if-!= break/disp8
+        b8/copy-to-eax 1/imm32/true
+        eb/jump $assigns-in-stmt-vars?:end/disp8
+      }
+      # curr = lookup(curr->next)
+      (lookup *(ecx+8) *(ecx+0xc))  # Stmt-var-next Stmt-var-next => eax
+      89/<- %ecx 0/r32/eax
+      #
+      eb/jump loop/disp8
+    }
+$assigns-in-stmt-vars?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# is there a var before 'v' with the same block-depth and register on the 'vars' stack?
+# v is guaranteed to be within vars
+# 'start' is provided as an optimization, a pointer within vars
+# *start == v
+same-register-spilled-before?:  # v: (addr var), vars: (addr stack (handle var)), start: (addr var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # ecx = v
+    8b/-> *(ebp+8) 1/r32/ecx
+    # var reg/edx: (addr array byte) = lookup(v->register)
+    (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
+    89/<- %edx 0/r32/eax
+    # var depth/ebx: int = v->block-depth
+    8b/-> *(ecx+0x10) 3/r32/ebx  # Var-block-depth
+    # var min/ecx: (addr handle var) = vars->data
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    81 0/subop/add %ecx 8/imm32
+    # TODO: check that start >= min and start < &vars->data[top]
+    # TODO: check that *start == v
+    # var curr/esi: (addr handle var) = start
+    8b/-> *(ebp+0x10) 6/r32/esi
+    # curr -= 8
+    81 5/subop/subtract %esi 8/imm32
+    {
+$same-register-spilled-before?:loop:
+      # if (curr < min) break
+      39/compare %esi 1/r32/ecx
+      0f 82/jump-if-addr< break/disp32
+      # var x/eax: (addr var) = lookup(*curr)
+      (lookup *esi *(esi+4))  # => eax
+      # if (x->block-depth < depth) break
+      39/compare *(eax+0x10) 3/r32/ebx  # Var-block-depth
+      0f 8c/jump-if-< break/disp32
+      # if (x->register == 0) continue
+      81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
+      74/jump-if-= $same-register-spilled-before?:continue/disp8
+      # if (x->register == reg) return true
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      (string-equal? %eax %edx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      b8/copy-to-eax 1/imm32/true
+      75/jump-if-!= $same-register-spilled-before?:end/disp8
+$same-register-spilled-before?:continue:
+      # curr -= 8
+      81 5/subop/subtract %esi 8/imm32
+      e9/jump loop/disp32
+    }
+$same-register-spilled-before?:false:
+    b8/copy-to-eax 0/imm32/false
+$same-register-spilled-before?:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -9763,7 +10014,7 @@ $emit-get-offset:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-block:  # out: (addr buffered-file), block: (addr block), vars: (addr stack live-var)
+emit-subx-block:  # out: (addr buffered-file), block: (addr block), vars: (addr stack live-var), fn-outputs: (addr list var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -9799,7 +10050,7 @@ $emit-subx-block:check-empty:
       (push *(ebp+0x10) 0)  # false
       # emit block->statements
       (lookup *(esi+4) *(esi+8))  # Block-stmts Block-stmts => eax
-      (emit-subx-stmt-list *(ebp+8) %eax *(ebp+0x10))
+      (emit-subx-stmt-list *(ebp+8) %eax *(ebp+0x10) *(ebp+0x14))
       (pop *(ebp+0x10))  # => eax
       (pop *(ebp+0x10))  # => eax
       (pop *(ebp+0x10))  # => eax
