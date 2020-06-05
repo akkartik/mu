@@ -1,8 +1,6 @@
 fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   # initialize fs from args[1]
   var filename/eax: (addr array byte) <- first-arg args
-#?   print-string filename
-#?   print-string "\n"
   var file-state-storage: file-state
   var fs/esi: (addr file-state) <- address file-state-storage
   init-file-state fs, filename
