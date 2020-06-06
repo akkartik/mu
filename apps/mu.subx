@@ -2315,6 +2315,64 @@ test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-3:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  a: {\n")
+    (write _test-input-stream "    var x/esi: int <- copy 0\n")
+    (write _test-input-stream "    {\n")
+    (write _test-input-stream "      break a\n")
+    (write _test-input-stream "    }\n")
+    (write _test-input-stream "  }\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/6")
+    (check-next-stream-line-equal _test-output-stream "a:loop:"                 "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/7")
+    (check-next-stream-line-equal _test-output-stream "      ff 6/subop/push %esi"  "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/8")
+    (check-next-stream-line-equal _test-output-stream "      be/copy-to-esi 0/imm32"  "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/9")
+    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000003:loop:"   "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/11")
+    (check-next-stream-line-equal _test-output-stream "        8f 0/subop/pop %esi"  "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/12")
+    (check-next-stream-line-equal _test-output-stream "        e9/jump a:break/disp32"  "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/13")
+    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/14")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000003:break:"  "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/15")
+    (check-next-stream-line-equal _test-output-stream "      8f 0/subop/pop %esi"  "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/16")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/17")
+    (check-next-stream-line-equal _test-output-stream "a:break:"                "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/18")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/19")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/20")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/21")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/22")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/23")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4/24")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-nonlocal-unconditional-break-and-local-vars:
     # . prologue
     55/push-ebp
@@ -8933,7 +8991,7 @@ $emit-cleanup-code-until-target:loop:
         0f 84/jump-if-= break/disp32
         {
 $emit-cleanup-code-until-target:check-for-previous-spill:
-          8b/-> *(esi+8) 0/r32/eax  # Live-var-register-spilled
+          8b/-> *(edx+8) 0/r32/eax  # Live-var-register-spilled
           3d/compare-eax-and 0/imm32/false
           74/jump-if-= break/disp8
 $emit-cleanup-code-until-target:reclaim-var-in-register:
