@@ -40,7 +40,8 @@ $render-normal:loop: {
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
-    # if (c == newline)
+
+    ## if (c == newline) perform some fairly sophisticated parsing for soft newlines
     compare c, 0xa  # newline
     {
       break-if-!=
@@ -80,6 +81,8 @@ $render-normal:flush-buffered-newline: {
       add-char state, 0x20  # space
       # fall through to print c
     }
+    ## end soft newline support
+
     # if (c == '*') switch to bold
     compare c, 0x2a  # '*'
     {

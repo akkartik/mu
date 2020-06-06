@@ -30,6 +30,7 @@ fn render fs: (addr file-state), state: (addr screen-position-state) {
 
 fn render-normal fs: (addr file-state), state: (addr screen-position-state) {
     var newline-seen?/esi: boolean <- copy 0  # false
+    var start-of-paragraph?/edi: boolean <- copy 1  # true
 $render-normal:loop: {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
@@ -40,7 +41,8 @@ $render-normal:loop: {
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
-    # if (c == newline)
+
+    ## if (c == newline) perform some fairly sophisticated parsing for soft newlines
     compare c, 0xa  # newline
     {
       break-if-!=
@@ -57,6 +59,7 @@ $render-normal:loop: {
         add-char state, 0xa  # newline
         add-char state, 0xa  # newline
         newline-seen? <- copy 0  # false
+        start-of-paragraph? <- copy 1  # true
         loop $render-normal:loop
       }
     }
@@ -80,6 +83,17 @@ $render-normal:flush-buffered-newline: {
       add-char state, 0x20  # space
       # fall through to print c
     }
+    ## end soft newline support
+
+    # if start of paragraph and c == '#', switch to header
+    compare c, 0x23  # '#'
+    {
+      break-if-!=
+      render-header-line fs, state
+      newline-seen? <- copy 1  # true
+      loop $render-normal:loop
+    }
+
     # if (c == '*') switch to bold
     compare c, 0x2a  # '*'
     {
@@ -105,6 +119,81 @@ $render-normal:flush-buffered-newline: {
     #
     loop
   }
+}
+
+fn render-header-line fs: (addr file-state), state: (addr screen-position-state) {
+$render-header-line:body: {
+  # compute color based on number of '#'s
+  var header-level/esi: int <- copy 1  # caller already grabbed one
+  var c/eax: byte <- copy 0
+  {
+    # if done-drawing?(state) return
+    var done?/eax: boolean <- done-drawing? state
+    compare done?, 0  # false
+    break-if-!= $render-header-line:body
+    #
+    c <- next-char fs
+    # if (c != '#') break
+    compare c, 0x23  # '#'
+    break-if-!=
+    #
+    header-level <- increment
+    #
+    loop
+  }
+  start-heading header-level
+  {
+    # if done-drawing?(state) break
+    var done?/eax: boolean <- done-drawing? state
+    compare done?, 0  # false
+    break-if-!=
+    #
+    c <- next-char fs
+    # if (c == EOF) break
+    compare c, 0xffffffff  # EOF marker
+    break-if-=
+    # if (c == newline) break
+    compare c, 0xa  # newline
+    break-if-=
+    #
+    add-char state, c
+    #
+    loop
+  }
+  normal-text
+}
+}
+
+# colors for a light background, going from bright to dark (meeting up with bold-text)
+fn start-heading header-level: int {
+$start-heading:body: {
+  start-bold
+  compare header-level, 1
+  {
+    break-if-!=
+    start-color 0xa0, 7
+    break $start-heading:body
+  }
+  compare header-level, 2
+  {
+    break-if-!=
+    start-color 0x7c, 7
+    break $start-heading:body
+  }
+  compare header-level, 3
+  {
+    break-if-!=
+    start-color 0x58, 7
+    break $start-heading:body
+  }
+  compare header-level, 4
+  {
+    break-if-!=
+    start-color 0x34, 7
+    break $start-heading:body
+  }
+  start-color 0xe8, 7
+}
 }
 
 fn render-until-asterisk fs: (addr file-state), state: (addr screen-position-state) {
