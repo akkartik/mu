@@ -100,25 +100,35 @@ $render-normal:flush-buffered-newline: {
         }
         ## end soft newline support
 
-        # if (c == '*') switch to bold
-        compare c, 0x2a  # '*'
-        {
-          break-if-!=
-          start-bold
-            render-until-asterisk fs, state
-          normal-text
-          break $render-normal:loop-body
-        }
-        # if (c == '_') switch to bold
-        compare c, 0x5f  # '_'
-        {
-          break-if-!=
-          start-color 0xec, 7  # 236 = darkish gray
-          start-bold
-            render-until-underscore fs, state
-          reset-formatting
-          start-color 0xec, 7  # 236 = darkish gray
-          break $render-normal:loop-body
+$render-normal:whitespace-separated-regions: {
+          # if previous-char wasn't whitespace, skip this block
+          {
+            compare previous-char, 0x20  # space
+            break-if-=
+            compare previous-char, 0xa  # newline
+            break-if-=
+            break $render-normal:whitespace-separated-regions
+          }
+          # if (c == '*') switch to bold
+          compare c, 0x2a  # '*'
+          {
+            break-if-!=
+            start-bold
+              render-until-asterisk fs, state
+            normal-text
+            break $render-normal:loop-body
+          }
+          # if (c == '_') switch to bold
+          compare c, 0x5f  # '_'
+          {
+            break-if-!=
+            start-color 0xec, 7  # 236 = darkish gray
+            start-bold
+              render-until-underscore fs, state
+            reset-formatting
+            start-color 0xec, 7  # 236 = darkish gray
+            break $render-normal:loop-body
+          }
         }
         #
         add-char state, c
