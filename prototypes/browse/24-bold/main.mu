@@ -45,7 +45,6 @@ $render-normal:body: {
       break-if-!=
       start-color 0xec, 7  # 236 = darkish gray
       start-bold
-        add-char state, c
         render-until-asterisk fs, state
       reset-formatting
       start-color 0xec, 7  # 236 = darkish gray
@@ -56,7 +55,6 @@ $render-normal:body: {
       break-if-!=
       start-color 0xec, 7  # 236 = darkish gray
       start-bold
-        add-char state, c
         render-until-underscore fs, state
       reset-formatting
       start-color 0xec, 7  # 236 = darkish gray
@@ -70,7 +68,7 @@ $render-normal:body: {
 }
 
 fn render-until-asterisk fs: (addr file-state), state: (addr screen-position-state) {
-$render-until-asterisk:body: {
+  {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
     compare done?, 0  # false
@@ -80,13 +78,9 @@ $render-until-asterisk:body: {
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
-    # if (c == '*') print it and break
+    # if (c == '*') break
     compare c, 0x2a  # '*'
-    {
-      break-if-!=
-      add-char state, c
-      break $render-until-asterisk:body
-    }
+    break-if-=
     #
     add-char state, c
     #
@@ -95,7 +89,7 @@ $render-until-asterisk:body: {
 }
 
 fn render-until-underscore fs: (addr file-state), state: (addr screen-position-state) {
-$render-until-underscore:body: {
+  {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
     compare done?, 0  # false
@@ -105,13 +99,9 @@ $render-until-underscore:body: {
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
-    # if (c == '_') print it and break
+    # if (c == '_') break
     compare c, 0x5f  # '_'
-    {
-      break-if-!=
-      add-char state, c
-      break $render-until-underscore:body
-    }
+    break-if-=
     #
     add-char state, c
     #
