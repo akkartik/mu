@@ -15,9 +15,9 @@ fn init-screen-position-state _self: (addr screen-position-state) {
   #   page-margin
   #   page-width
   var self/esi: (addr screen-position-state) <- copy _self
-  var nrows/eax: int <- copy 0
-  var ncols/ecx: int <- copy 0
-  nrows, ncols <- screen-size
+  var nrows/eax: int <- copy 0xa
+  var ncols/ecx: int <- copy 0x20
+  nrows, ncols <- screen-size  # Comment this out to debug with a tiny page. You'll also need to adjust rightcol below.
   var dest/edx: (addr int) <- copy 0
   # self->nrows = nrows
   dest <- get self, nrows
@@ -45,6 +45,7 @@ fn start-drawing _self: (addr screen-position-state) {
   copy-to *tmp, 5  # left-margin
   # self->rightcol = self->leftcol + page-width
   tmp <- get self, rightcol
+#?   copy-to *tmp, 0x1f  # ncols - 1
   copy-to *tmp, 0x45  # left-margin + page-width
   # self->row = self->toprow
   tmp <- get self, toprow
@@ -113,6 +114,12 @@ fn next-page _self: (addr screen-position-state) {
   var self/esi: (addr screen-position-state) <- copy _self
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
+#?   # temporary: stop
+#?   tmp <- get self, ncols
+#?   tmp2 <- copy *tmp
+#?   tmp <- get self, rightcol
+#?   copy-to *tmp, tmp2
+  # real: multiple pages
   # self->leftcol = self->rightcol + page-margin
   tmp <- get self, rightcol
   tmp2 <- copy *tmp

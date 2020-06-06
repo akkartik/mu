@@ -29,7 +29,8 @@ fn render fs: (addr file-state), state: (addr screen-position-state) {
 }
 
 fn render-normal fs: (addr file-state), state: (addr screen-position-state) {
-$render-normal:body: {
+    var newline-seen?/esi: boolean <- copy 0  # false
+$render-normal:loop: {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
     compare done?, 0  # false
@@ -39,6 +40,46 @@ $render-normal:body: {
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
+    # if (c == newline)
+    compare c, 0xa  # newline
+    {
+      break-if-!=
+      # if it's the first newline, buffer it
+      compare newline-seen?, 0
+      {
+        break-if-!=
+        newline-seen? <- copy 1  # true
+        loop $render-normal:loop
+      }
+      # otherwise render two newlines
+      {
+        break-if-=
+        add-char state, 0xa  # newline
+        add-char state, 0xa  # newline
+        newline-seen? <- copy 0  # false
+        loop $render-normal:loop
+      }
+    }
+    # if c is unprintable (particularly a '\r' CR), skip it
+    compare c, 0x20
+    loop-if-<
+    # If there's a newline buffered and c is a space, print the buffered
+    # newline (hard newline).
+    # If there's a newline buffered and c is not a newline or space, print a
+    # space (soft newline).
+    compare newline-seen?, 0  # false
+$render-normal:flush-buffered-newline: {
+      break-if-=
+      newline-seen? <- copy 0  # false
+      {
+        compare c, 0x20
+        break-if-!=
+        add-char state, 0xa  # newline
+        break $render-normal:flush-buffered-newline
+      }
+      add-char state, 0x20  # space
+      # fall through to print c
+    }
     # if (c == '*') switch to bold
     compare c, 0x2a  # '*'
     {
@@ -46,7 +87,7 @@ $render-normal:body: {
       start-bold
         render-until-asterisk fs, state
       normal-text
-      loop $render-normal:body
+      loop $render-normal:loop
     }
     # if (c == '_') switch to bold
     compare c, 0x5f  # '_'
@@ -57,7 +98,7 @@ $render-normal:body: {
         render-until-underscore fs, state
       reset-formatting
       start-color 0xec, 7  # 236 = darkish gray
-      loop $render-normal:body
+      loop $render-normal:loop
     }
     #
     add-char state, c
