@@ -30,7 +30,6 @@ fn render fs: (addr file-state), state: (addr screen-position-state) {
 
 fn render-normal fs: (addr file-state), state: (addr screen-position-state) {
     var newline-seen?/esi: boolean <- copy 0  # false
-    var start-of-paragraph?/edi: boolean <- copy 1  # true
 $render-normal:loop: {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
@@ -59,7 +58,6 @@ $render-normal:loop: {
         add-char state, 0xa  # newline
         add-char state, 0xa  # newline
         newline-seen? <- copy 0  # false
-        start-of-paragraph? <- copy 1  # true
         loop $render-normal:loop
       }
     }
