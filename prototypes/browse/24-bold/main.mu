@@ -11,7 +11,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   var screen-position-state-storage: screen-position-state
   var screen-position-state/eax: (addr screen-position-state) <- address screen-position-state-storage
   init-screen-position-state screen-position-state
-  start-color 0xec, 7  # 236 = darkish gray
+  normal-text
   {
     render fs, screen-position-state
     var key/eax: byte <- read-key
@@ -39,17 +39,16 @@ $render-normal:body: {
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
-    # if (c == '*') print it and break
+    # if (c == '*') switch to bold
     compare c, 0x2a  # '*'
     {
       break-if-!=
-      start-color 0xec, 7  # 236 = darkish gray
       start-bold
         render-until-asterisk fs, state
-      reset-formatting
-      start-color 0xec, 7  # 236 = darkish gray
+      normal-text
       loop $render-normal:body
     }
+    # if (c == '_') switch to bold
     compare c, 0x5f  # '_'
     {
       break-if-!=
@@ -113,4 +112,9 @@ fn first-arg args-on-stack: (addr array (addr array byte)) -> out/eax: (addr arr
   var args/eax: (addr array (addr array byte)) <- copy args-on-stack
   var result/eax: (addr addr array byte) <- index args, 1
   out <- copy *result
+}
+
+fn normal-text {
+  reset-formatting
+  start-color 0xec, 7  # 236 = darkish gray
 }
