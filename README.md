@@ -27,32 +27,32 @@ just a Unix-like kernel and nothing else. (There are more details in [this paper
 
 In priority order:
 
-* [Reward curiosity.](http://akkartik.name/about)
-  * Easy to build, easy to run. [Minimal dependencies](https://news.ycombinator.com/item?id=16882140#16882555),
+- [Reward curiosity.](http://akkartik.name/about)
+  - Easy to build, easy to run. [Minimal dependencies](https://news.ycombinator.com/item?id=16882140#16882555),
     so that installation is always painless.
-  * All design decisions comprehensible to a single individual. (On demand.)
-  * All design decisions comprehensible without needing to talk to anyone.
+  - All design decisions comprehensible to a single individual. (On demand.)
+  - All design decisions comprehensible without needing to talk to anyone.
     (I always love talking to you, but I try hard to make myself redundant.)
-  * [A globally comprehensible _codebase_ rather than locally clean code.](http://akkartik.name/post/readable-bad)
-  * Clear error messages over expressive syntax.
-* Safe.
-  * Thorough test coverage. If you break something you should immediately see
+  - [A globally comprehensible _codebase_ rather than locally clean code.](http://akkartik.name/post/readable-bad)
+  - Clear error messages over expressive syntax.
+- Safe.
+  - Thorough test coverage. If you break something you should immediately see
     an error message. If you can manually test for something you should be
     able to write an automated test for it.
-  * Memory leaks over memory corruption.
-* Teach the computer bottom-up.
+  - Memory leaks over memory corruption.
+- Teach the computer bottom-up.
 
 ## Non-goals
 
-* Speed. Staying close to machine code should naturally keep Mu fast enough.
-* Efficiency. Controlling the number of abstractions should naturally keep Mu
+- Speed. Staying close to machine code should naturally keep Mu fast enough.
+- Efficiency. Controlling the number of abstractions should naturally keep Mu
   using far less than the gigabytes of memory modern computers have.
-* Portability. Mu will run on any computer as long as it's x86. I will
+- Portability. Mu will run on any computer as long as it's x86. I will
   enthusiastically contribute to support for other processors -- in separate
   forks. Readers shouldn't have to think about processors they don't have.
-* Compatibility. The goal is to get off mainstream stacks, not to perpetuate
+- Compatibility. The goal is to get off mainstream stacks, not to perpetuate
   them. Sometimes the right long-term solution is to [bump the major version number](http://akkartik.name/post/versioning).
-* Syntax. Mu code is meant to be comprehended by [running, not just reading](http://akkartik.name/post/comprehension).
+- Syntax. Mu code is meant to be comprehended by [running, not just reading](http://akkartik.name/post/comprehension).
   For now it's a thin veneer over machine code. I'm working on memory safety
   before expressive syntax.
 
@@ -211,9 +211,9 @@ memory. For a complete list of supported instructions, run `bootstrap help opcod
 
 The registers instructions operate on are as follows:
 
-* Six general-purpose 32-bit registers: `0/eax`, `1/ebx`, `2/ecx`, `3/edx`,
+- Six general-purpose 32-bit registers: `0/eax`, `1/ebx`, `2/ecx`, `3/edx`,
   `6/esi` and `7/edi`.
-* Two additional 32-bit registers: `4/esp` and `5/ebp`. (I suggest you only
+- Two additional 32-bit registers: `4/esp` and `5/ebp`. (I suggest you only
   use these to manage the call stack.)
 
 (SubX doesn't support floating-point registers yet. Intel processors support
@@ -233,10 +233,10 @@ Intel processors typically operate on no more than two operands, and at most
 one of them (the 'reg/mem' operand) can access memory. The address of the
 reg/mem operand is constructed by expressions of one of these forms:
 
-  * `%reg`: operate on just a register, not memory
-  * `*reg`: look up memory with the address in some register
-  * `*(reg + disp)`: add a constant to the address in some register
-  * `*(base + (index << scale) + disp)` where `base` and `index` are registers,
+  - `%reg`: operate on just a register, not memory
+  - `*reg`: look up memory with the address in some register
+  - `*(reg + disp)`: add a constant to the address in some register
+  - `*(base + (index << scale) + disp)` where `base` and `index` are registers,
     and `scale` and `disp` are 2- and 32-bit constants respectively.
 
 Under the hood, SubX turns expressions of these forms into multiple arguments
@@ -345,14 +345,14 @@ of these invariants is broken it's a bug on my part.
 
 `bootstrap` currently has the following sub-commands:
 
-* `bootstrap help`: some helpful documentation to have at your fingertips.
+- `bootstrap help`: some helpful documentation to have at your fingertips.
 
-* `bootstrap test`: runs all automated tests.
+- `bootstrap test`: runs all automated tests.
 
-* `bootstrap translate <input files> -o <output ELF binary>`: translates `.subx`
+- `bootstrap translate <input files> -o <output ELF binary>`: translates `.subx`
   files into an executable ELF binary.
 
-* `bootstrap run <ELF binary> <args>`: simulates running the ELF binaries emitted
+- `bootstrap run <ELF binary> <args>`: simulates running the ELF binaries emitted
   by `bootstrap translate`. Useful for testing and debugging.
 
   Remember, not all 32-bit Linux binaries are guaranteed to run. I'm not
@@ -388,19 +388,19 @@ since SubX's simplistic ELF binaries contain no debugging information. So
 debugging requires returning to basics and practicing with a new, more
 rudimentary but hopefully still workable toolkit:
 
-* Start by nailing down a concrete set of steps for reproducibly obtaining the
+- Start by nailing down a concrete set of steps for reproducibly obtaining the
   error or erroneous behavior.
 
-* If possible, turn the steps into a failing test. It's not always possible,
+- If possible, turn the steps into a failing test. It's not always possible,
   but SubX's primary goal is to keep improving the variety of tests one can
   write.
 
-* Start running the single failing test alone. This involves modifying the top
+- Start running the single failing test alone. This involves modifying the top
   of the program (or the final `.subx` file passed in to `bootstrap translate`) by
   replacing the call to `run-tests` with a call to the appropriate `test-`
   function.
 
-* Generate a trace for the failing test while running your program in emulated
+- Generate a trace for the failing test while running your program in emulated
   mode (`bootstrap run`):
   ```
   $ ./bootstrap translate input.subx -o binary
@@ -410,7 +410,7 @@ rudimentary but hopefully still workable toolkit:
   `bootstrap run` mode. It gives far better visibility into program internals than
   running natively.
 
-* As a further refinement, it is possible to render label names in the trace
+- As a further refinement, it is possible to render label names in the trace
   by adding a second flag to the `bootstrap translate` command:
   ```
   $ ./bootstrap --debug translate input.subx -o binary
@@ -433,7 +433,7 @@ rudimentary but hopefully still workable toolkit:
   address `0x0900005e` maps to label `$loop` and presumably marks the start of
   some loop. Function names get similar `run: == label` lines.
 
-* One trick when emitting traces with labels:
+- One trick when emitting traces with labels:
   ```
   $ grep label trace
   ```
@@ -443,7 +443,7 @@ rudimentary but hopefully still workable toolkit:
   oriented on the control flow. Did it get to the loop I just modified? How
   many times did it go through the loop?
 
-* Once you have SubX displaying labels in traces, it's a short step to modify
+- Once you have SubX displaying labels in traces, it's a short step to modify
   the program to insert more labels just to gain more insight. For example,
   consider the following function:
 
@@ -460,13 +460,13 @@ rudimentary but hopefully still workable toolkit:
   Now the trace should have a lot more detail on which of these labels was
   reached, and precisely when the exit was taken.
 
-* If you find yourself wondering, "when did the contents of this memory
+- If you find yourself wondering, "when did the contents of this memory
   address change?", `bootstrap run` has some rudimentary support for _watch
   points_. Just insert a label starting with `$watch-` before an instruction
   that writes to the address, and its value will start getting dumped to the
   trace after every instruction thereafter.
 
-* Once we have a sense for precisely which instructions we want to look at,
+- Once we have a sense for precisely which instructions we want to look at,
   it's time to look at the trace as a whole. Key is the state of registers
   before each instruction. If a function is receiving bad arguments it becomes
   natural to inspect what values were pushed on the stack before calling it,
@@ -477,10 +477,10 @@ rudimentary but hopefully still workable toolkit:
   layer. It makes the trace a lot more verbose and a lot less dense, necessitating
   a lot more scrolling around, so I keep it turned off most of the time.
 
-* If the trace seems overwhelming, try [browsing it](https://github.com/akkartik/mu/blob/master/tools/browse_trace.readme.md)
+- If the trace seems overwhelming, try [browsing it](https://github.com/akkartik/mu/blob/master/tools/browse_trace.readme.md)
   in the 'time-travel debugger'.
 
-* Don't be afraid to slice and dice the trace using Unix tools. For example,
+- Don't be afraid to slice and dice the trace using Unix tools. For example,
   say you have a SubX binary that dies while running tests. You can see what
   test it's segfaulting at by compiling it with debug information using
   `./translate_subx_debug`, and then running:
@@ -502,35 +502,35 @@ trace, or if you have questions or complaints.
 
 ### Data Structures
 
-* Kernel strings: null-terminated regions of memory. Unsafe and to be avoided,
+- Kernel strings: null-terminated regions of memory. Unsafe and to be avoided,
   but needed for interacting with the kernel.
 
-* Arrays: length-prefixed regions of memory containing multiple elements of a
+- Arrays: length-prefixed regions of memory containing multiple elements of a
   single type. Contents are preceded by 4 bytes (32 bits) containing the
   `length` of the array in bytes.
 
-* Slices: a pair of 32-bit addresses denoting a [half-open](https://en.wikipedia.org/wiki/Interval_(mathematics))
+- Slices: a pair of 32-bit addresses denoting a [half-open](https://en.wikipedia.org/wiki/Interval_(mathematics))
   \[`start`, `end`) interval to live memory with a consistent lifetime.
 
   Invariant: `start` <= `end`
 
-* Streams: strings prefixed by 32-bit `write` and `read` indexes that the next
+- Streams: strings prefixed by 32-bit `write` and `read` indexes that the next
   write or read goes to, respectively.
 
-  * offset 0: write index
-  * offset 4: read index
-  * offset 8: length of array (in bytes)
-  * offset 12: start of array data
+  - offset 0: write index
+  - offset 4: read index
+  - offset 8: length of array (in bytes)
+  - offset 12: start of array data
 
   Invariant: 0 <= `read` <= `write` <= `length`
 
-* File descriptors (fd): Low-level 32-bit integers that the kernel uses to
+- File descriptors (fd): Low-level 32-bit integers that the kernel uses to
   track files opened by the program.
 
-* File: 32-bit value containing either a fd or an address to a stream (fake
+- File: 32-bit value containing either a fd or an address to a stream (fake
   file).
 
-* Buffered files (buffered-file): Contain a file descriptor and a stream for
+- Buffered files (buffered-file): Contain a file descriptor and a stream for
   buffering reads/writes. Each `buffered-file` must exclusively perform either
   reads or writes.
 
@@ -545,7 +545,7 @@ it's possible to insert fake hardware in tests.
 
 But those are big goals. Here are the syscalls I have so far:
 
-* `write`: takes two arguments, a file `f` and an address to array `s`.
+- `write`: takes two arguments, a file `f` and an address to array `s`.
 
   Comparing this interface with the Unix `write()` syscall shows two benefits:
 
@@ -556,7 +556,7 @@ But those are big goals. Here are the syscalls I have so far:
      SubX's wrapper keeps the two together to increase the chances that we
      never accidentally go out of array bounds.
 
-* `read`: takes two arguments, a file `f` and an address to stream `s`. Reads
+- `read`: takes two arguments, a file `f` and an address to stream `s`. Reads
   as much data from `f` as can fit in (the free space of) `s`.
 
   Like with `write()`, this wrapper around the Unix `read()` syscall adds the
@@ -567,7 +567,7 @@ But those are big goals. Here are the syscalls I have so far:
   to another. See [the comments before the implementation](http://akkartik.github.io/mu/html/060read.subx.html)
   for a discussion of alternative interfaces.
 
-* `stop`: takes two arguments:
+- `stop`: takes two arguments:
   - `ed` is an address to an _exit descriptor_. Exit descriptors allow us to
     `exit()` the program in production, but return to the test harness within
     tests. That allows tests to make assertions about when `exit()` is called.
@@ -576,13 +576,13 @@ But those are big goals. Here are the syscalls I have so far:
   For more details on exit descriptors and how to create one, see [the
   comments before the implementation](http://akkartik.github.io/mu/html/059stop.subx.html).
 
-* `new-segment`
+- `new-segment`
 
   Allocates a whole new segment of memory for the program, discontiguous with
   both existing code and data (heap) segments. Just a more opinionated form of
   [`mmap`](http://man7.org/linux/man-pages/man2/mmap.2.html).
 
-* `allocate`: takes two arguments, an address to allocation-descriptor `ad`
+- `allocate`: takes two arguments, an address to allocation-descriptor `ad`
   and an integer `n`
 
   Allocates a contiguous range of memory that is guaranteed to be exclusively
@@ -595,7 +595,7 @@ But those are big goals. Here are the syscalls I have so far:
   management, where a sub-system gets a chunk of memory and further parcels it
   out to individual allocations. Particularly helpful for (surprise) tests.
 
-* ... _(to be continued)_
+- ... _(to be continued)_
 
 I will continue to import syscalls over time from [the old Mu VM in the parent
 directory](https://github.com/akkartik/mu), which has experimented with
@@ -608,111 +608,111 @@ compound objects that don't fit in a register, the caller usually passes in
 allocated memory for it.)_
 
 #### assertions for tests
-* `check-ints-equal`: fails current test if given ints aren't equal
-* `check-stream-equal`: fails current test if stream doesn't match string
-* `check-next-stream-line-equal`: fails current test if next line of stream
+- `check-ints-equal`: fails current test if given ints aren't equal
+- `check-stream-equal`: fails current test if stream doesn't match string
+- `check-next-stream-line-equal`: fails current test if next line of stream
   until newline doesn't match string
 
 #### error handling
-* `error`: takes three arguments, an exit-descriptor, a file and a string (message)
+- `error`: takes three arguments, an exit-descriptor, a file and a string (message)
 
   Prints out the message to the file and then exits using the provided
   exit-descriptor.
 
-* `error-byte`: like `error` but takes an extra byte value that it prints out
+- `error-byte`: like `error` but takes an extra byte value that it prints out
   at the end of the message.
 
 #### predicates
-* `kernel-string-equal?`: compares a kernel string with a string
-* `string-equal?`: compares two strings
-* `stream-data-equal?`: compares a stream with a string
-* `next-stream-line-equal?`: compares with string the next line in a stream, from
+- `kernel-string-equal?`: compares a kernel string with a string
+- `string-equal?`: compares two strings
+- `stream-data-equal?`: compares a stream with a string
+- `next-stream-line-equal?`: compares with string the next line in a stream, from
   `read` index to newline
 
-* `slice-empty?`: checks if the `start` and `end` of a slice are equal
-* `slice-equal?`: compares a slice with a string
-* `slice-starts-with?`: compares the start of a slice with a string
-* `slice-ends-with?`: compares the end of a slice with a string
+- `slice-empty?`: checks if the `start` and `end` of a slice are equal
+- `slice-equal?`: compares a slice with a string
+- `slice-starts-with?`: compares the start of a slice with a string
+- `slice-ends-with?`: compares the end of a slice with a string
 
 #### writing to disk
-* `write`: string -> file
+- `write`: string -> file
   - Can also be used to cat a string into a stream.
   - Will abort the entire program if destination is a stream and doesn't have
     enough room.
-* `write-stream`: stream -> file
+- `write-stream`: stream -> file
   - Can also be used to cat one stream into another.
   - Will abort the entire program if destination is a stream and doesn't have
     enough room.
-* `write-slice`: slice -> stream
+- `write-slice`: slice -> stream
   - Will abort the entire program if there isn't enough room in the
     destination stream.
-* `append-byte`: int -> stream
+- `append-byte`: int -> stream
   - Will abort the entire program if there isn't enough room in the
     destination stream.
-* `append-byte-hex`: int -> stream
+- `append-byte-hex`: int -> stream
   - textual representation in hex, no '0x' prefix
   - Will abort the entire program if there isn't enough room in the
     destination stream.
-* `print-int32`: int -> stream
+- `print-int32`: int -> stream
   - textual representation in hex, including '0x' prefix
   - Will abort the entire program if there isn't enough room in the
     destination stream.
-* `write-buffered`: string -> buffered-file
-* `write-slice-buffered`: slice -> buffered-file
-* `flush`: buffered-file
-* `write-byte-buffered`: int -> buffered-file
-* `print-byte-buffered`: int -> buffered-file
+- `write-buffered`: string -> buffered-file
+- `write-slice-buffered`: slice -> buffered-file
+- `flush`: buffered-file
+- `write-byte-buffered`: int -> buffered-file
+- `print-byte-buffered`: int -> buffered-file
   - textual representation in hex, no '0x' prefix
-* `print-int32-buffered`: int -> buffered-file
+- `print-int32-buffered`: int -> buffered-file
   - textual representation in hex, including '0x' prefix
 
 #### reading from disk
-* `read`: file -> stream
+- `read`: file -> stream
   - Can also be used to cat one stream into another.
   - Will silently stop reading when destination runs out of space.
-* `read-byte-buffered`: buffered-file -> byte
-* `read-line-buffered`: buffered-file -> stream
+- `read-byte-buffered`: buffered-file -> byte
+- `read-line-buffered`: buffered-file -> stream
   - Will abort the entire program if there isn't enough room.
 
 #### non-IO operations on streams
-* `new-stream`: allocates space for a stream of `n` elements, each occupying
+- `new-stream`: allocates space for a stream of `n` elements, each occupying
   `b` bytes.
   - Will abort the entire program if `n*b` requires more than 32 bits.
-* `clear-stream`: resets everything in the stream to `0` (except its `length`).
-* `rewind-stream`: resets the read index of the stream to `0` without modifying
+- `clear-stream`: resets everything in the stream to `0` (except its `length`).
+- `rewind-stream`: resets the read index of the stream to `0` without modifying
   its contents.
 
 #### reading/writing hex representations of integers
-* `is-hex-int?`: takes a slice argument, returns boolean result in `eax`
-* `parse-hex-int`: takes a slice argument, returns int result in `eax`
-* `is-hex-digit?`: takes a 32-bit word containing a single byte, returns
+- `is-hex-int?`: takes a slice argument, returns boolean result in `eax`
+- `parse-hex-int`: takes a slice argument, returns int result in `eax`
+- `is-hex-digit?`: takes a 32-bit word containing a single byte, returns
   boolean result in `eax`.
-* `from-hex-char`: takes a hexadecimal digit character in `eax`, returns its
+- `from-hex-char`: takes a hexadecimal digit character in `eax`, returns its
   numeric value in `eax`
-* `to-hex-char`: takes a single-digit numeric value in `eax`, returns its
+- `to-hex-char`: takes a single-digit numeric value in `eax`, returns its
   corresponding hexadecimal character in `eax`
 
 #### tokenization
 
 from a stream:
-* `next-token`: stream, delimiter byte -> slice
-* `skip-chars-matching`: stream, delimiter byte
-* `skip-chars-not-matching`: stream, delimiter byte
+- `next-token`: stream, delimiter byte -> slice
+- `skip-chars-matching`: stream, delimiter byte
+- `skip-chars-not-matching`: stream, delimiter byte
 
 from a slice:
-* `next-token-from-slice`: start, end, delimiter byte -> slice
+- `next-token-from-slice`: start, end, delimiter byte -> slice
   - Given a slice and a delimiter byte, returns a new slice inside the input
     that ends at the delimiter byte.
 
-* `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `eax`)
-* `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `eax`)
+- `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `eax`)
+- `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `eax`)
 
 ## Resources
 
-* [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
+- [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
   (pdf; [cached local copy](https://github.com/akkartik/mu/blob/master/cheatsheet.pdf))
-* [Concise reference for the x86 ISA](https://c9x.me/x86)
-* [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf) (pdf)
+- [Concise reference for the x86 ISA](https://c9x.me/x86)
+- [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf) (pdf)
 - [&ldquo;Bootstrapping a compiler from nothing&rdquo;](http://web.archive.org/web/20061108010907/http://www.rano.org/bcompiler.html) by Edmund Grumley-Evans.
 - [&ldquo;Creating tiny ELF executables&rdquo;](https://www.muppetlabs.com/~breadbox/software/tiny/teensy.html) by Brian Raiter.
 - [StoneKnifeForth](https://github.com/kragen/stoneknifeforth) by [Kragen Sitaker](http://canonical.org/~kragen).
@@ -723,7 +723,7 @@ Forks of Mu are encouraged. If you don't like something about this repo, feel
 free to make a fork. If you show it to me, I'll link to it here, so others can
 use it. I might even pull your changes into this repo!
 
-* [mu-normie](https://git.sr.ht/~akkartik/mu-normie): with a more standard
+- [mu-normie](https://git.sr.ht/~akkartik/mu-normie): with a more standard
   build system and C++ modules.
 
 ## Conclusion
@@ -733,35 +733,35 @@ testable from day 1 and from the ground up would radically impact the culture
 of the eco-system in a way that no bolted-on tool or service at higher levels
 can replicate:
 
-* Tests would make it easier to write programs that can be easily understood
+- Tests would make it easier to write programs that can be easily understood
   by newcomers.
 
-* More broad-based understanding would lead to more forks.
+- More broad-based understanding would lead to more forks.
 
-* Tests would make it easy to share code across forks. Copy the tests over,
+- Tests would make it easy to share code across forks. Copy the tests over,
   and then copy code over and polish it until the tests pass. Manual work, but
   tractable and without major risks.
 
-* The community would gain a diversified portfolio of forks for each program,
+- The community would gain a diversified portfolio of forks for each program,
   a “wavefront” of possible combinations of features and alternative
   implementations of features. Application writers who wrote thorough tests
   for their apps (something they just can’t do today) would be able to bounce
   around between forks more easily without getting locked in to a single one
   as currently happens.
 
-* There would be a stronger culture of reviewing the code for programs you use
+- There would be a stronger culture of reviewing the code for programs you use
   or libraries you depend on. [More eyeballs would make more bugs shallow.](https://en.wikipedia.org/wiki/Linus%27s_Law)
 
 To falsify these hypotheses, here's a roadmap of the next few planned features:
 
-* Testable, dependency-injected vocabulary of primitives
+- Testable, dependency-injected vocabulary of primitives
   - Streams: `read()`, `write()`. (✓)
   - `exit()` (✓)
   - Client-like non-blocking socket/file primitives: `load`, `save`
   - Concurrency, and a framework for testing blocking code
   - Server-like blocking socket/file primitives
 
-* Gradually streamline the bundled kernel, stripping away code we don't need.
+- Gradually streamline the bundled kernel, stripping away code we don't need.
 
 ---
 
@@ -826,5 +826,5 @@ Mu builds on many ideas that have come before, especially:
 
 ## Coda
 
-* [Some details on the unconventional organization of this project.](http://akkartik.name/post/four-repos)
-* Previous prototypes: [mu0](https://github.com/akkartik/mu0), [mu1](https://github.com/akkartik/mu1).
+- [Some details on the unconventional organization of this project.](http://akkartik.name/post/four-repos)
+- Previous prototypes: [mu0](https://github.com/akkartik/mu0), [mu1](https://github.com/akkartik/mu1).

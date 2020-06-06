@@ -22,17 +22,17 @@ operands is `/mod`, the _addressing mode_. This is a 2-bit argument that can
 take 4 possible values, and it determines what other arguments are required,
 and how to interpret them.
 
-* If `/mod` is `3`: the operand is in the register described by the 3-bit
+- If `/mod` is `3`: the operand is in the register described by the 3-bit
   `/rm32` argument.
 
-* If `/mod` is `0`: the operand is in the address provided in the register
+- If `/mod` is `0`: the operand is in the address provided in the register
   described by `/rm32`. That's `*rm32` in C syntax.
 
-* If `/mod` is `1`: the operand is in the address provided by adding the
+- If `/mod` is `1`: the operand is in the address provided by adding the
   register in `/rm32` with the (1-byte) displacement. That's `*(rm32 + /disp8)`
   in C syntax.
 
-* If `/mod` is `2`: the operand is in the address provided by adding the
+- If `/mod` is `2`: the operand is in the address provided by adding the
   register in `/rm32` with the (4-byte) displacement. That's `*(/rm32 +
   /disp32)` in C syntax.
 
@@ -55,20 +55,20 @@ and digest it:
    and `/rm32` must be `0`. There must be no `/base`, `/index` or `/scale`
    arguments.
 
-1. To read from `*eax` (in C syntax), `/mod` must be `0` (indirect mode), and
+2. To read from `*eax` (in C syntax), `/mod` must be `0` (indirect mode), and
    the `/rm32` argument must be `0`. There must be no `/base`, `/index` or
    `/scale` arguments (Intel calls the trio the 'SIB byte'.).
 
-1. To read from `*(eax+4)`, `/mod` must be `1` (indirect + disp8 mode),
+3. To read from `*(eax+4)`, `/mod` must be `1` (indirect + disp8 mode),
    `/rm32` must be `0`, there must be no SIB byte, and there must be a single
    displacement byte containing `4`.
 
-1. To read from `*(eax+ecx+4)`, one approach would be to set `/mod` to `1` as
+4. To read from `*(eax+ecx+4)`, one approach would be to set `/mod` to `1` as
    above, `/rm32` to `4` (SIB byte next), `/base` to `0`, `/index` to `1`
    (`ecx`) and a single displacement byte to `4`. (What should the `scale` bits
    be? Can you think of another approach?)
 
-1. To read from `*(eax+ecx+1000)`, one approach would be:
+5. To read from `*(eax+ecx+1000)`, one approach would be:
    - `/mod`: `2` (indirect + disp32)
    - `/rm32`: `4` (`/base`, `/index` and `/scale` arguments required)
    - `/base`: `0` (eax)
