@@ -31,99 +31,101 @@ fn render fs: (addr file-state), state: (addr screen-position-state) {
 fn render-normal fs: (addr file-state), state: (addr screen-position-state) {
     var newline-seen?/esi: boolean <- copy 0  # false
     var start-of-paragraph?/edi: boolean <- copy 1  # true
+    var previous-char/ebx: byte <- copy 0
 $render-normal:loop: {
-    # if done-drawing?(state) break
-    var done?/eax: boolean <- done-drawing? state
-    compare done?, 0  # false
-    break-if-!=
-    #
-    var c/eax: byte <- next-char fs
-    # if (c == EOF) break
-    compare c, 0xffffffff  # EOF marker
-    break-if-=
-
-    ## if (c == newline) perform some fairly sophisticated parsing for soft newlines
-    compare c, 0xa  # newline
-    {
+      # if done-drawing?(state) break
+      var done?/eax: boolean <- done-drawing? state
+      compare done?, 0  # false
       break-if-!=
-      # if it's the first newline, buffer it
-      compare newline-seen?, 0
-      {
-        break-if-!=
-        newline-seen? <- copy 1  # true
-        loop $render-normal:loop
-      }
-      # otherwise render two newlines
-      {
-        break-if-=
-        add-char state, 0xa  # newline
-        add-char state, 0xa  # newline
-        newline-seen? <- copy 0  # false
-        start-of-paragraph? <- copy 1  # true
-        loop $render-normal:loop
-      }
-    }
-    # if start of paragraph and c == '#', switch to header
-    compare start-of-paragraph?, 0
-    {
-      break-if-=
-      compare c, 0x23  # '#'
-      {
-        break-if-!=
-        render-header-line fs, state
-        newline-seen? <- copy 1  # true
-        loop $render-normal:loop
-      }
-    }
-    # c is not a newline
-    start-of-paragraph? <- copy 0  # false
-    # if c is unprintable (particularly a '\r' CR), skip it
-    compare c, 0x20
-    loop-if-<
-    # If there's a newline buffered and c is a space, print the buffered
-    # newline (hard newline).
-    # If there's a newline buffered and c is not a newline or space, print a
-    # space (soft newline).
-    compare newline-seen?, 0  # false
-$render-normal:flush-buffered-newline: {
-      break-if-=
-      newline-seen? <- copy 0  # false
-      {
+      var c/eax: byte <- next-char fs
+$render-normal:loop-body: {
+        # if (c == EOF) break
+        compare c, 0xffffffff  # EOF marker
+        break-if-= $render-normal:loop
+
+        ## if (c == newline) perform some fairly sophisticated parsing for soft newlines
+        compare c, 0xa  # newline
+        {
+          break-if-!=
+          # if it's the first newline, buffer it
+          compare newline-seen?, 0
+          {
+            break-if-!=
+            newline-seen? <- copy 1  # true
+            break $render-normal:loop-body
+          }
+          # otherwise render two newlines
+          {
+            break-if-=
+            add-char state, 0xa  # newline
+            add-char state, 0xa  # newline
+            newline-seen? <- copy 0  # false
+            start-of-paragraph? <- copy 1  # true
+            break $render-normal:loop-body
+          }
+        }
+        # if start of paragraph and c == '#', switch to header
+        compare start-of-paragraph?, 0
+        {
+          break-if-=
+          compare c, 0x23  # '#'
+          {
+            break-if-!=
+            render-header-line fs, state
+            newline-seen? <- copy 1  # true
+            break $render-normal:loop-body
+          }
+        }
+        # c is not a newline
+        start-of-paragraph? <- copy 0  # false
+        # if c is unprintable (particularly a '\r' CR), skip it
         compare c, 0x20
-        break-if-!=
-        add-char state, 0xa  # newline
-        break $render-normal:flush-buffered-newline
-      }
-      add-char state, 0x20  # space
-      # fall through to print c
-    }
-    ## end soft newline support
+        loop-if-<
+        # If there's a newline buffered and c is a space, print the buffered
+        # newline (hard newline).
+        # If there's a newline buffered and c is not a newline or space, print a
+        # space (soft newline).
+        compare newline-seen?, 0  # false
+    $render-normal:flush-buffered-newline: {
+          break-if-=
+          newline-seen? <- copy 0  # false
+          {
+            compare c, 0x20
+            break-if-!=
+            add-char state, 0xa  # newline
+            break $render-normal:flush-buffered-newline
+          }
+          add-char state, 0x20  # space
+          # fall through to print c
+        }
+        ## end soft newline support
 
-    # if (c == '*') switch to bold
-    compare c, 0x2a  # '*'
-    {
-      break-if-!=
-      start-bold
-        render-until-asterisk fs, state
-      normal-text
-      loop $render-normal:loop
+        # if (c == '*') switch to bold
+        compare c, 0x2a  # '*'
+        {
+          break-if-!=
+          start-bold
+            render-until-asterisk fs, state
+          normal-text
+          break $render-normal:loop-body
+        }
+        # if (c == '_') switch to bold
+        compare c, 0x5f  # '_'
+        {
+          break-if-!=
+          start-color 0xec, 7  # 236 = darkish gray
+          start-bold
+            render-until-underscore fs, state
+          reset-formatting
+          start-color 0xec, 7  # 236 = darkish gray
+          break $render-normal:loop-body
+        }
+        #
+        add-char state, c
+      }
+      previous-char <- copy c
+      loop
     }
-    # if (c == '_') switch to bold
-    compare c, 0x5f  # '_'
-    {
-      break-if-!=
-      start-color 0xec, 7  # 236 = darkish gray
-      start-bold
-        render-until-underscore fs, state
-      reset-formatting
-      start-color 0xec, 7  # 236 = darkish gray
-      loop $render-normal:loop
-    }
-    #
-    add-char state, c
-    #
-    loop
-  }
 }
 
 fn render-header-line fs: (addr file-state), state: (addr screen-position-state) {

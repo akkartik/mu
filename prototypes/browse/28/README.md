@@ -1,1 +1,1 @@
-Be more selective about bold sections.
+Start including state about previous character.
