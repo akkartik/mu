@@ -63,6 +63,20 @@ $render-normal:loop: {
         loop $render-normal:loop
       }
     }
+    # if start of paragraph and c == '#', switch to header
+    compare start-of-paragraph?, 0
+    {
+      break-if-=
+      compare c, 0x23  # '#'
+      {
+        break-if-!=
+        render-header-line fs, state
+        newline-seen? <- copy 1  # true
+        loop $render-normal:loop
+      }
+    }
+    # c is not a newline
+    start-of-paragraph? <- copy 0  # false
     # if c is unprintable (particularly a '\r' CR), skip it
     compare c, 0x20
     loop-if-<
@@ -84,15 +98,6 @@ $render-normal:flush-buffered-newline: {
       # fall through to print c
     }
     ## end soft newline support
-
-    # if start of paragraph and c == '#', switch to header
-    compare c, 0x23  # '#'
-    {
-      break-if-!=
-      render-header-line fs, state
-      newline-seen? <- copy 1  # true
-      loop $render-normal:loop
-    }
 
     # if (c == '*') switch to bold
     compare c, 0x2a  # '*'

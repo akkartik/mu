@@ -83,7 +83,7 @@ $render-normal:flush-buffered-newline: {
     }
     ## end soft newline support
 
-    # if start of paragraph and c == '#', switch to header
+    # if c == '#', switch to header
     compare c, 0x23  # '#'
     {
       break-if-!=
