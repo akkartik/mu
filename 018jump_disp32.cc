@@ -168,7 +168,7 @@ case 0x8f: {  // jump disp32 if !SF and !ZF
   break;
 }
 case 0x87: {  // jump disp32 if !CF and !ZF
-  const int32_t offset = next();
+  const int32_t offset = next32();
   if (!CF && !ZF) {
     trace(Callstack_depth+1, "run") << "jump " << offset << end();
     EIP += offset;
