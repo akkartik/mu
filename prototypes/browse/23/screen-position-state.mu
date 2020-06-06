@@ -31,12 +31,6 @@ fn init-screen-position-state _self: (addr screen-position-state) {
   # self->botrow = nrows
   dest <- get self, botrow
   copy-to *dest, nrows
-  # self->leftcol = page-margin
-  dest <- get self, leftcol
-  copy-to *dest, 5  # left-margin
-  # self->rightcol = self->leftcol + page-width
-  dest <- get self, rightcol
-  copy-to *dest, 0x45  # left-margin + page-width
   #
   start-drawing self
 }
@@ -45,6 +39,13 @@ fn start-drawing _self: (addr screen-position-state) {
   var self/esi: (addr screen-position-state) <- copy _self
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
+  clear-screen
+  # self->leftcol = page-margin
+  tmp <- get self, leftcol
+  copy-to *tmp, 5  # left-margin
+  # self->rightcol = self->leftcol + page-width
+  tmp <- get self, rightcol
+  copy-to *tmp, 0x45  # left-margin + page-width
   # self->row = self->toprow
   tmp <- get self, toprow
   tmp2 <- copy *tmp

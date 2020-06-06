@@ -14,6 +14,8 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   {
     render fs, screen-position-state
     var key/eax: byte <- read-key
+    compare key, 0x71  # 'q'
+    loop-if-!=
   }
   enable-keyboard-type-mode
   enable-screen-type-mode
