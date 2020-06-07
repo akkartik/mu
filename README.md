@@ -21,7 +21,7 @@ Running the code you want to run, and nothing else.
 Mu requires just a Unix-like OS and nothing else. The Mu translator is built
 up from machine code. You can also bootstrap it from C++. Both C++ and
 self-hosted versions emit identical binaries. The generated binaries require
-just a Unix-like kernel and nothing else. (There are more details in [this paper](http://akkartik.name/akkartik-convivial-20200315.pdf).)
+just a Unix-like kernel and nothing else. (There are more details in [this paper](http://akkartik.name/akkartik-convivial-20200607.pdf).)
 
 ## Goals
 
@@ -69,7 +69,7 @@ variables. Most statements in Mu translate to [a single machine-code instruction
 Variables reside in memory by default. Programs must specify registers when
 they want to use them. Functions must return results in registers. Execution
 begins at the function `main`, which always returns its result in register
-`ebx`. [The paper](http://akkartik.name/akkartik-convivial-20200315.pdf) has
+`ebx`. [The paper](http://akkartik.name/akkartik-convivial-20200607.pdf) has
 more details, and there's a [summary](mu_summary) of all supported instructions.
 
 ## SubX
