@@ -29,8 +29,8 @@ fn render fs: (addr file-state), state: (addr screen-position-state) {
 }
 
 fn render-normal fs: (addr file-state), state: (addr screen-position-state) {
-    var newline-seen?/esi: boolean <- copy 0  # false
-    var start-of-paragraph?/edi: boolean <- copy 1  # true
+  var newline-seen?/esi: boolean <- copy 0  # false
+  var start-of-paragraph?/edi: boolean <- copy 1  # true
 $render-normal:loop: {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
@@ -123,7 +123,7 @@ $render-normal:flush-buffered-newline: {
     add-char state, c
     #
     loop
-  }
+  }  # $render-normal:loop
 }
 
 fn render-header-line fs: (addr file-state), state: (addr screen-position-state) {
