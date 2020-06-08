@@ -55,22 +55,14 @@ Entry:  # run tests if necessary, convert stdin if not
     eb/jump  $subx-pack-main:end/disp8
 $subx-pack-main:interactive:
     # - otherwise convert stdin
-    # var ed/eax: exit-descriptor
-    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
-    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
-    # configure ed to really exit()
-    # . ed->target = 0
-    c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # subx-pack(Stdin, Stdout, Stderr, ed)
+    # subx-pack(Stdin, Stdout)
     # . . push args
-    50/push-eax/ed
-    68/push  Stderr/imm32
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
     e8/call  subx-pack/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x8/imm32         # add to esp
     # syscall(exit, 0)
     bb/copy-to-ebx  0/imm32
 $subx-pack-main:end:
