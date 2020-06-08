@@ -80,7 +80,7 @@ $render-normal:loop-body: {
       start-of-paragraph? <- copy 0  # false
       # if c is unprintable (particularly a '\r' CR), skip it
       compare c, 0x20
-      loop-if-<
+      loop-if-< $render-normal:loop
       # If there's a newline buffered and c is a space, print the buffered
       # newline (hard newline).
       # If there's a newline buffered and c is not a newline or space, print a
