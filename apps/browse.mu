@@ -64,7 +64,7 @@ fn render-page in: (addr buffered-file), toprow: int, leftcol: int, botrow: int,
   clear toprow, leftcol, botrow, rightcol
   # render screen rows
   var row/ecx: int <- copy toprow
-$line-loop:  {
+$line-loop: {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol

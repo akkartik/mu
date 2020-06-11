@@ -48,7 +48,7 @@ fn render in: (addr buffered-file), nrows: int, ncols: int {
 fn render-page in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int {
   clear toprow, leftcol, botrow, rightcol
   var row/ecx: int <- copy toprow
-$line-loop:  {
+$line-loop: {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol

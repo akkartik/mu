@@ -17,7 +17,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
 fn render in: (addr buffered-file), toprow: int, leftcol: int, botrow: int, rightcol: int {
   clear toprow, leftcol, botrow, rightcol
   var row/ecx: int <- copy toprow
-$line-loop:  {
+$line-loop: {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
