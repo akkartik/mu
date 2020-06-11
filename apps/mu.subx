@@ -473,8 +473,7 @@ Entry:
     # syscall(exit, 0)
     bb/copy-to-ebx 0/imm32
 $mu-main:end:
-    b8/copy-to-eax 1/imm32/exit
-    cd/syscall 0x80/imm8
+    e8/call syscall_exit/disp32
 
 convert-mu:  # in: (addr buffered-file), out: (addr buffered-file)
     # . prologue
@@ -3986,8 +3985,7 @@ $parse-mu:error1:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 $parse-mu:error2:
@@ -3999,8 +3997,7 @@ $parse-mu:error2:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 # scenarios considered:
@@ -4169,8 +4166,7 @@ $populate-mu-function-header:error1:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 $populate-mu-function-header:error2:
@@ -4181,8 +4177,7 @@ $populate-mu-function-header:error2:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 $populate-mu-function-header:error3:
@@ -4199,8 +4194,7 @@ $populate-mu-function-header:error3:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 test-function-header-with-arg:
@@ -4518,8 +4512,7 @@ $parse-var-with-type:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle tree type-id)
@@ -4637,8 +4630,7 @@ $parse-type:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 parse-type-tree:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle tree type-id)
@@ -5698,8 +5690,7 @@ $parse-mu-block:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 new-block-name:  # fn: (addr function), out: (addr handle var)
@@ -5807,8 +5798,7 @@ check-no-tokens-left:  # line: (addr stream byte)
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 $check-no-tokens-left:end:
     # . reclaim locals
@@ -5949,8 +5939,7 @@ $parse-mu-var-def:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 test-parse-mu-var-def:
@@ -6151,8 +6140,7 @@ $parse-mu-stmt:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 add-operation-and-inputs-to-stmt:  # stmt: (addr stmt), line: (addr stream byte), vars: (addr stack live-var)
@@ -6269,8 +6257,7 @@ $add-operation-and-inputs-to-stmt:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 stmt-has-outputs?:  # line: (addr stream byte) -> result/eax: boolean
@@ -6373,8 +6360,7 @@ $lookup-var-or-literal:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 # return first 'name' from the top (back) of 'vars' and abort if not found
@@ -6405,8 +6391,7 @@ $lookup-var:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 # return first 'name' from the top (back) of 'vars', and 0/null if not found
@@ -6489,8 +6474,7 @@ $lookup-var-helper:error1:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 # return first 'name' from the top (back) of 'vars' and create a new var for a fn output if not found
@@ -6769,8 +6753,7 @@ $new-literal-integer:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 new-literal:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr handle var)
@@ -7482,8 +7465,7 @@ $populate-mu-type:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 type-name:  # index: int -> result/eax: (addr array byte)
@@ -7633,8 +7615,7 @@ $populate-mu-type-sizes-in-type:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 # Analogous to size-of, except we need to compute what size-of can just read
@@ -7831,8 +7812,7 @@ $locate-typeinfo-entry-with-index:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 dump-typeinfos:  # hdr: (addr array byte)
@@ -8669,8 +8649,7 @@ $push-output-and-maybe-emit-spill:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file), stmt: (addr stmt1), vars: (addr stack live-var)
@@ -9762,8 +9741,7 @@ $translate-mu-index-stmt-with-array:error1:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 $translate-mu-index-stmt-with-array:error2:
@@ -9771,8 +9749,7 @@ $translate-mu-index-stmt-with-array:error2:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), stmt: (addr stmt)
@@ -10176,8 +10153,7 @@ $power-of-2?:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 num-shift-rights:  # n: int -> result/eax: int
@@ -13217,8 +13193,7 @@ $get-stmt-operand-from-arg-location:abort:
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call syscall_exit/disp32
     # never gets here
 
 emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)

@@ -35,8 +35,7 @@ Entry:   # manual test
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0x34/imm32        # copy to *eax
     # syscall(exit, eax)
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call  syscall_exit/disp32
 
 new-segment:  # len: int, ad: (addr allocation-descriptor)
     # . prologue
@@ -50,8 +49,7 @@ new-segment:  # len: int, ad: (addr allocation-descriptor)
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   $_mmap-new-segment:len/disp32     # copy eax to *$_mmap-new-segment:len
     # mmap(_mmap-new-segment)
     bb/copy-to-ebx  _mmap-new-segment/imm32
-    b8/copy-to-eax  0x5a/imm32/mmap
-    cd/syscall  0x80/imm8
+    e8/call  syscall_mmap/disp32
     # copy {eax, eax+len} to *ad
     # . ebx = ad
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   0xc/disp8       .                 # copy *(ebp+12) to ebx

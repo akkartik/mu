@@ -12,8 +12,7 @@
 #?     e8/call write-stream/disp32
 #?     # syscall(exit, Num-test-failures)
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
-#?     b8/copy-to-eax  1/imm32/exit
-#?     cd/syscall  0x80/imm8
+#?     e8/call  syscall_exit/disp32
 
 write-stream:  # f: fd or (addr stream byte), s: (addr stream byte)
     # . prologue
@@ -100,8 +99,7 @@ _write-stream:  # fd: int, s: (addr stream byte)
     # . . size: edx = s->write - s->read
     29/subtract                     3/mod/direct    2/rm32/edx    .           .             .           7/r32/edi   .               .                 # subtract edi from edx
     # . . syscall
-    b8/copy-to-eax  4/imm32/write
-    cd/syscall  0x80/imm8
+    e8/call  syscall_write/disp32
     # if (eax < 0) abort
     3d/compare-eax-with  0/imm32
     0f 8c/jump-if-<  $_write-stream:abort/disp32
@@ -130,8 +128,7 @@ $_write-stream:abort:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call  syscall_exit/disp32
     # never gets here
 
 test-write-stream-single:

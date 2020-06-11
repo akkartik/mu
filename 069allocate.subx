@@ -59,8 +59,7 @@ Entry:
 $array-equal-main:end:
     # syscall(exit, Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call  syscall_exit/disp32
 
 # Allocate and clear 'n' bytes of memory from an allocation-descriptor 'ad'.
 # Abort if there isn't enough memory in 'ad'.
@@ -164,8 +163,7 @@ $allocate-raw:abort:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call  syscall_exit/disp32
     # never gets here
 
 test-allocate-raw-success:
@@ -294,8 +292,7 @@ $lookup:abort:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32/exit-status
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call  syscall_exit/disp32
 
 test-lookup-success:
     # . prologue
@@ -571,8 +568,7 @@ $allocate-region:abort:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call  syscall_exit/disp32
     # never gets here
 
 # Claim the next 'n+4' bytes of memory and initialize the first 4 to n.
