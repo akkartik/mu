@@ -93,21 +93,28 @@ stop:  # ed: (addr exit-descriptor), value: int
     # no prologue; one way or another, we're going to clobber registers
     # eax = ed
     8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           0/r32/eax   4/disp8         .                 # copy *(esp+4) to eax
+    # if (ed == 0) really exit
+    3d/compare-eax-and 0/imm32
+    74/jump-if-=  $stop:real/disp8
     # if (ed->target == 0) really exit
     81          7/subop/compare     0/mod/indirect  0/rm32/eax    .           .             .           .           .               0/imm32           # compare *eax
-    75/jump-if-!=  $stop:fake/disp8
-    # . syscall(exit, value)
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           3/r32/ebx   8/disp8         .                 # copy *(esp+8) to ebx
-    e8/call  syscall_exit/disp32
+    74/jump-if-=  $stop:real/disp8
 $stop:fake:
-    # otherwise:
     # ed->value = value+1
     8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           1/r32/ecx   8/disp8         .                 # copy *(esp+8) to ecx
     41/increment-ecx
     89/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy ecx to *(eax+4)
     # perform a non-local jump to ed->target
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy *eax to esp
-$stop:end:
+$stop:end1:
+    # never gets here
+    c3/return  # doesn't return to caller
+$stop:real:
+    # . syscall(exit, value)
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           3/r32/ebx   8/disp8         .                 # copy *(esp+8) to ebx
+    e8/call  syscall_exit/disp32
+$stop:end2:
+    # never gets here
     c3/return  # doesn't return to caller
 
 test-stop-skips-returns-on-exit:

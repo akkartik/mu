@@ -67,15 +67,9 @@ Entry:  # run tests if necessary, call 'compile' if not
     eb/jump  $main:end/disp8
 $run-main:
     # - otherwise read a program from stdin and emit its translation to stdout
-    # var ed/eax: exit-descriptor
-    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
-    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
-    # configure ed to really exit()
-    # . ed->target = 0
-    c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # compile(Stdin, 1/stdout, 2/stderr, ed)
+    # . compile(Stdin, 1/stdout, 2/stderr, 0)
     # . . push args
-    50/push-eax/ed
+    68/push  0/imm32/exit-descriptor
     68/push  2/imm32/stderr
     68/push  1/imm32/stdout
     68/push  Stdin/imm32
