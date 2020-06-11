@@ -468,14 +468,14 @@ Entry:
       eb/jump $mu-main:end/disp8
     }
     # otherwise convert Stdin
-    (convert-mu Stdin Stdout)
+    (convert-mu Stdin Stdout Stderr 0)
     (flush Stdout)
     # syscall(exit, 0)
     bb/copy-to-ebx 0/imm32
 $mu-main:end:
     e8/call syscall_exit/disp32
 
-convert-mu:  # in: (addr buffered-file), out: (addr buffered-file)
+convert-mu:  # in: (addr buffered-file), out: (addr buffered-file), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -487,11 +487,11 @@ convert-mu:  # in: (addr buffered-file), out: (addr buffered-file)
     c7 0/subop/copy *_Program-types 0/imm32
     c7 0/subop/copy *_Program-types->payload 0/imm32
     #
-    (parse-mu *(ebp+8))
-    (populate-mu-type-sizes)
+    (parse-mu *(ebp+8) *(ebp+0x10) *(ebp+0x14))
+    (populate-mu-type-sizes *(ebp+0x10) *(ebp+0x14))
 #?     (dump-typeinfos "=== typeinfos\n")
     (check-mu-types)
-    (emit-subx *(ebp+0xc))
+    (emit-subx *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
 $convert-mu:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -509,7 +509,7 @@ test-convert-empty-input:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
     #
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
     (check-stream-equal _test-output-stream "" "F - test-convert-empty-input")
     # . epilogue
@@ -530,7 +530,7 @@ test-convert-function-skeleton:
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -567,7 +567,7 @@ test-convert-multiple-function-skeletons:
     (write _test-input-stream "fn bar {\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -611,7 +611,7 @@ test-convert-function-with-arg:
     (write _test-input-stream "fn foo n: int {\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -647,7 +647,7 @@ test-convert-function-with-arg-and-body:
     (write _test-input-stream "  increment n\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -688,7 +688,7 @@ test-convert-function-distinguishes-args:
     (write _test-input-stream "  increment b\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -730,7 +730,7 @@ test-convert-function-returns-result:
     (write _test-input-stream "  result <- increment\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -773,7 +773,7 @@ test-convert-function-with-literal-arg:
     (write _test-input-stream "  result <- add 1\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -816,7 +816,7 @@ test-convert-function-with-literal-arg-2:
     (write _test-input-stream "  result <- add 1\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -862,7 +862,7 @@ test-convert-function-call-with-literal-arg:
     (write _test-input-stream "  result <- add b\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -918,7 +918,7 @@ test-convert-function-with-local-var-in-mem:
     (write _test-input-stream "  increment x\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -962,7 +962,7 @@ test-convert-function-with-local-var-with-compound-type-in-mem:
     (write _test-input-stream "  copy-to x, 0\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1006,7 +1006,7 @@ test-convert-function-with-local-var-in-reg:
     (write _test-input-stream "  x <- increment\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1052,7 +1052,7 @@ test-convert-function-with-second-local-var-in-same-reg:
     (write _test-input-stream "  y <- increment\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1098,7 +1098,7 @@ test-convert-function-with-local-var-dereferenced:
     (write _test-input-stream "  increment *x\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1143,7 +1143,7 @@ test-convert-compare-register-with-literal:
     (write _test-input-stream "  compare x, 0\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1190,7 +1190,7 @@ test-convert-function-with-local-var-in-block:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1240,7 +1240,7 @@ test-convert-function-with-local-var-in-named-block:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1287,7 +1287,7 @@ test-always-shadow-outermost-reg-vars-in-function:
     (write _test-input-stream "  var x/ecx: int <- copy 3\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1333,7 +1333,7 @@ _pending-test-clobber-dead-local:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1385,7 +1385,7 @@ test-shadow-live-local:
     (write _test-input-stream "  x <- increment\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1438,7 +1438,7 @@ test-do-not-spill-same-register-in-block:
     (write _test-input-stream "  y <- increment\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1485,7 +1485,7 @@ test-spill-different-register-in-block:
     (write _test-input-stream "  y <- increment\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1536,7 +1536,7 @@ test-shadow-live-output:
     (write _test-input-stream "  x <- increment\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1587,7 +1587,7 @@ test-local-clobbered-by-output:
     (write _test-input-stream "  x <- copy y\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1631,7 +1631,7 @@ test-read-output:
     (write _test-input-stream "  compare x, 0x35\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1678,7 +1678,7 @@ test-convert-function-with-branches-in-block:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1737,7 +1737,7 @@ test-convert-function-with-branches-in-named-block:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1796,7 +1796,7 @@ test-convert-function-with-var-in-nested-block:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1853,7 +1853,7 @@ test-convert-function-with-multiple-vars-in-nested-blocks:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1914,7 +1914,7 @@ test-convert-function-with-branches-and-local-vars:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1973,7 +1973,7 @@ test-convert-function-with-conditional-loops-and-local-vars:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2032,7 +2032,7 @@ test-convert-function-with-unconditional-loops-and-local-vars:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2085,7 +2085,7 @@ test-convert-function-with-branches-and-loops-and-local-vars:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2146,7 +2146,7 @@ test-convert-function-with-nonlocal-branches-and-loops-and-local-vars:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2212,7 +2212,7 @@ test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-2:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2273,7 +2273,7 @@ test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-3:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2330,7 +2330,7 @@ test-convert-function-with-nonlocal-branches-and-loops-and-local-vars-4:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2390,7 +2390,7 @@ test-convert-function-with-nonlocal-unconditional-break-and-local-vars:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2451,7 +2451,7 @@ test-convert-function-with-unconditional-break-and-local-vars:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2510,7 +2510,7 @@ test-convert-function-with-nonlocal-unconditional-loop-and-local-vars:
     (write _test-input-stream "  }\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2564,7 +2564,7 @@ test-convert-function-with-local-array-var-in-mem:
     (write _test-input-stream "  var x: (array int 3)\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2611,7 +2611,7 @@ test-convert-address:
     (write _test-input-stream "  var b/eax: (addr int) <- address a\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2657,7 +2657,7 @@ test-convert-length-of-array:
     (write _test-input-stream "  var c/eax: int <- length b\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2703,7 +2703,7 @@ test-convert-length-of-array-on-stack:
     (write _test-input-stream "  var b/eax: int <- length a\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2753,7 +2753,7 @@ test-convert-index-into-array:
     (write _test-input-stream "  var x/eax: (addr int) <- index arr, idx\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2801,7 +2801,7 @@ test-convert-index-into-array-with-literal:
     (write _test-input-stream "  var x/eax: (addr int) <- index arr, 2\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2848,7 +2848,7 @@ test-convert-index-into-array-on-stack:
     (write _test-input-stream "  var x/eax: (addr int) <- index arr, idx\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2902,7 +2902,7 @@ test-convert-index-into-array-on-stack-with-literal:
     (write _test-input-stream "  var x/eax: (addr int) <- index arr, 2\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -2957,7 +2957,7 @@ test-convert-index-into-array-using-offset:
     (write _test-input-stream "  var x/eax: (addr int) <- index arr, off\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3008,7 +3008,7 @@ test-convert-index-into-array-using-offset-on-stack:
     (write _test-input-stream "  var x/eax: (addr int) <- index arr, off\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3063,7 +3063,7 @@ test-convert-function-and-type-definition:
     (write _test-input-stream "  y: int\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3114,7 +3114,7 @@ test-convert-function-with-local-var-with-user-defined-type:
     (write _test-input-stream "  y: int\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3164,7 +3164,7 @@ test-convert-function-call-with-arg-of-user-defined-type:
     (write _test-input-stream "  y: int\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3226,7 +3226,7 @@ test-convert-function-call-with-arg-of-user-defined-type-register-indirect:
     (write _test-input-stream "  y: int\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3293,7 +3293,7 @@ test-convert-function-call-with-arg-of-user-defined-type-by-reference:
     (write _test-input-stream "  y: int\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3365,7 +3365,7 @@ test-convert-get-on-local-variable:
     (write _test-input-stream "  y: int\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3420,7 +3420,7 @@ test-convert-get-on-function-argument:
     (write _test-input-stream "  y: int\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3470,7 +3470,7 @@ test-convert-get-on-function-argument-with-known-type:
     (write _test-input-stream "  var c/ecx: (addr int) <- get a, y\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3522,7 +3522,7 @@ test-convert-array-of-user-defined-types:
     (write _test-input-stream "  var x/eax: (addr int) <- index arr, idx\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3575,7 +3575,7 @@ test-convert-length-of-array-of-user-defined-types-to-eax:
     (write _test-input-stream "  var x/eax: (addr t) <- length arr\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3636,7 +3636,7 @@ test-convert-length-of-array-of-user-defined-types-to-ecx:
     (write _test-input-stream "  var x/ecx: (addr t) <- length arr\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3702,7 +3702,7 @@ test-convert-length-of-array-of-user-defined-types-to-edx:
     (write _test-input-stream "  var x/edx: (addr t) <- length arr\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3768,7 +3768,7 @@ test-convert-length-of-array-of-user-defined-types:
     (write _test-input-stream "  var x/ebx: (addr t) <- length arr\n")
     (write _test-input-stream "}\n")
     # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3814,7 +3814,7 @@ test-convert-length-of-array-of-user-defined-types:
 # Parsing
 #######################################################
 
-parse-mu:  # in: (addr buffered-file)
+parse-mu:  # in: (addr buffered-file), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode
     #   var curr-function: (addr handle function) = Program->functions
     #   var curr-type: (addr handle typeinfo) = Program->types
@@ -3914,8 +3914,8 @@ $parse-mu:fn:
         # var new-function-addr/eax: (addr function)
         (lookup *esi *(esi+4))  # => eax
         (clear-stack %ebx)
-        (populate-mu-function-header %ecx %eax %ebx)
-        (populate-mu-function-body *(ebp+8) %eax %ebx)
+        (populate-mu-function-header %ecx %eax %ebx *(ebp+0xc) *(ebp+0x10))
+        (populate-mu-function-body *(ebp+8) %eax %ebx *(ebp+0xc) *(ebp+0x10))
         # *curr-function = new-function
         8b/-> *esi 0/r32/eax
         89/<- *edi 0/r32/eax
@@ -3951,7 +3951,7 @@ $parse-mu:type:
         (lookup *ecx *(ecx+4))  # => eax
         # TODO: ensure that 'line' has nothing else but '{'
 #? (dump-typeinfos "=== aaa\n")
-        (populate-mu-type *(ebp+8) %eax)  # => eax
+        (populate-mu-type *(ebp+8) %eax *(ebp+0xc) *(ebp+0x10))  # => eax
 #? (dump-typeinfos "=== zzz\n")
         # reclaim new-type
         81 0/subop/add %esp 8/imm32
@@ -3979,25 +3979,21 @@ $parse-mu:end:
 
 $parse-mu:error1:
     # error("unexpected top-level command: " word-slice "\n")
-    (write-buffered Stderr "unexpected top-level command: ")
-    (write-slice-buffered Stderr %edx)
-    (write-buffered Stderr "\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0xc) "unexpected top-level command: ")
+    (write-slice-buffered *(ebp+0xc) %edx)
+    (write-buffered *(ebp+0xc) "\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
     # never gets here
 
 $parse-mu:error2:
     # error(vars->top " vars not reclaimed after fn '" new-function->name "'\n")
-    (print-int32-buffered Stderr *ebx)
-    (write-buffered Stderr " vars not reclaimed after fn '")
-    (write-slice-buffered Stderr *eax)  # Function-name
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (print-int32-buffered *(ebp+0xc) *ebx)
+    (write-buffered *(ebp+0xc) " vars not reclaimed after fn '")
+    (write-slice-buffered *(ebp+0xc) *eax)  # Function-name
+    (write-buffered *(ebp+0xc) "'\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
     # never gets here
 
 # scenarios considered:
@@ -4011,7 +4007,7 @@ $parse-mu:error2:
 # ✓ fn foo x: int {
 # ✓ fn foo x: int {
 # ✓ fn foo x: int -> y/eax: int {
-populate-mu-function-header:  # first-line: (addr stream byte), out: (addr function), vars: (addr stack live-var)
+populate-mu-function-header:  # first-line: (addr stream byte), out: (addr function), vars: (addr stack live-var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var name: slice
     #   next-mu-token(first-line, name)
@@ -4093,7 +4089,7 @@ $populate-mu-function-header:check-for-inout:
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       # v = parse-var-with-type(word-slice, first-line)
-      (parse-var-with-type %ecx *(ebp+8) %ebx)
+      (parse-var-with-type %ecx *(ebp+8) %ebx *(ebp+0x14) *(ebp+0x18))
       # assert(v->register == null)
       # . eax: (addr var) = lookup(v)
       (lookup *ebx *(ebx+4))  # => eax
@@ -4128,7 +4124,7 @@ $populate-mu-function-header:check-for-out:
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       # v = parse-var-with-type(word-slice, first-line)
-      (parse-var-with-type %ecx *(ebp+8) %ebx)
+      (parse-var-with-type %ecx *(ebp+8) %ebx *(ebp+0x14) *(ebp+0x18))
       # assert(var->register != null)
       # . eax: (addr var) = lookup(v)
       (lookup *ebx *(ebx+4))  # => eax
@@ -4158,43 +4154,37 @@ $populate-mu-function-header:end:
 
 $populate-mu-function-header:error1:
     # error("function header not in form 'fn <name> {'")
-    (write-buffered Stderr "function header not in form 'fn <name> [inouts] [-> outputs] {' -- '")
-    (flush Stderr)
+    (write-buffered *(ebp+0x14) "function header not in form 'fn <name> [inouts] [-> outputs] {' -- '")
+    (flush *(ebp+0x14))
     (rewind-stream *(ebp+8))
     (write-stream 2 *(ebp+8))
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 $populate-mu-function-header:error2:
     # error("function input '" var "' cannot be in a register")
-    (write-buffered Stderr "function input '")
-    (write-buffered Stderr *ebx)  # Var-name
-    (write-buffered Stderr "' cannot be in a register")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "function input '")
+    (write-buffered *(ebp+0x14) *ebx)  # Var-name
+    (write-buffered *(ebp+0x14) "' cannot be in a register")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 $populate-mu-function-header:error3:
     # error("function input '" var "' must be in a register")
-    (write-buffered Stderr "function input '")
+    (write-buffered *(ebp+0x14) "function input '")
     (lookup *ebx *(ebx+4))  # => eax
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
-    (write-buffered Stderr %eax)
-    (write-buffered Stderr "' must be in a register, in instruction '")
-    (flush Stderr)
+    (write-buffered *(ebp+0x14) %eax)
+    (write-buffered *(ebp+0x14) "' must be in a register, in instruction '")
+    (flush *(ebp+0x14))
     (rewind-stream *(ebp+8))
     (write-stream 2 *(ebp+8))
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 test-function-header-with-arg:
@@ -4214,7 +4204,7 @@ test-function-header-with-arg:
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     # convert
-    (populate-mu-function-header _test-input-stream %ecx %ebx)
+    (populate-mu-function-header _test-input-stream %ecx %ebx Stderr 0)
     # check result->name
     (lookup *ecx *(ecx+4))  # Function-name Function-name => eax
     (check-strings-equal %eax "foo" "F - test-function-header-with-arg/name")
@@ -4252,7 +4242,7 @@ test-function-header-with-multiple-args:
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     # convert
-    (populate-mu-function-header _test-input-stream %ecx %ebx)
+    (populate-mu-function-header _test-input-stream %ecx %ebx Stderr 0)
     # check result->name
     (lookup *ecx *(ecx+4))  # Function-name Function-name => eax
     (check-strings-equal %eax "foo" "F - test-function-header-with-multiple-args/name")
@@ -4323,7 +4313,7 @@ test-function-header-with-multiple-args-and-outputs:
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     # convert
-    (populate-mu-function-header _test-input-stream %ecx %ebx)
+    (populate-mu-function-header _test-input-stream %ecx %ebx Stderr 0)
     # check result->name
     (lookup *ecx *(ecx+4))  # Function-name Function-name => eax
     (check-strings-equal %eax "foo" "F - test-function-header-with-multiple-args-and-outputs/name")
@@ -4420,7 +4410,7 @@ $test-function-header-with-multiple-args-and-outputs:out1:
 #   x/eax: int,
 # ignores at most one trailing comma
 # WARNING: modifies name
-parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte), out: (addr handle var)
+parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var s: slice
     #   if (!slice-ends-with(name, ":"))
@@ -4486,7 +4476,7 @@ $parse-var-with-type:write-register:
     }
 $parse-var-with-type:save-type:
     8d/copy-address *(edi+8) 0/r32/eax  # Var-type
-    (parse-type Heap *(ebp+0xc) %eax)
+    (parse-type Heap *(ebp+0xc) %eax *(ebp+0x14) *(ebp+0x18))
 $parse-var-with-type:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -4504,18 +4494,16 @@ $parse-var-with-type:end:
 
 $parse-var-with-type:abort:
     # error("var should have form 'name: type' in '" line "'\n")
-    (write-buffered Stderr "var should have form 'name: type' in '")
-    (flush Stderr)
+    (write-buffered *(ebp+0x14) "var should have form 'name: type' in '")
+    (flush *(ebp+0x14))
     (rewind-stream *(ebp+0xc))
     (write-stream 2 *(ebp+0xc))
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
-parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle tree type-id)
+parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle tree type-id), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var s: slice = next-mu-token(in)
     #   assert s != ""
@@ -4606,10 +4594,10 @@ $parse-type:non-atom:
     # otherwise s == "("
     # out->left = parse-type(ad, in)
     8d/copy-address *(edx+4) 0/r32/eax  # Tree-left
-    (parse-type *(ebp+8) *(ebp+0xc) %eax)
+    (parse-type *(ebp+8) *(ebp+0xc) %eax *(ebp+0x14) *(ebp+0x18))
     # out->right = parse-type-tree(ad, in)
     8d/copy-address *(edx+0xc) 0/r32/eax  # Tree-right
-    (parse-type-tree *(ebp+8) *(ebp+0xc) %eax)
+    (parse-type-tree *(ebp+8) *(ebp+0xc) %eax *(ebp+0x14) *(ebp+0x18))
 $parse-type:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -4624,16 +4612,14 @@ $parse-type:end:
 
 $parse-type:abort:
     # error("unexpected token when parsing type: '" s "'\n")
-    (write-buffered Stderr "unexpected token when parsing type: '")
-    (write-slice-buffered Stderr %ecx)
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "unexpected token when parsing type: '")
+    (write-slice-buffered *(ebp+0x14) %ecx)
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
-parse-type-tree:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle tree type-id)
+parse-type-tree:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle tree type-id), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var tmp: (handle tree type-id) = parse-type(ad, in)
     #   if tmp == 0
@@ -4656,7 +4642,7 @@ parse-type-tree:  # ad: (addr allocation-descriptor), in: (addr stream byte), ou
     68/push 0/imm32
     89/<- %ecx 4/r32/esp
     # tmp = parse-type(ad, in)
-    (parse-type *(ebp+8) *(ebp+0xc) %ecx)
+    (parse-type *(ebp+8) *(ebp+0xc) %ecx *(ebp+0x14) *(ebp+0x18))
     # if (tmp == 0) return
     81 7/subop/compare *ecx 0/imm32
     74/jump-if-= $parse-type-tree:end/disp8
@@ -4673,7 +4659,7 @@ parse-type-tree:  # ad: (addr allocation-descriptor), in: (addr stream byte), ou
     89/<- *(edx+8) 0/r32/eax  # Tree-left
     # out->right = parse-type-tree(ad, in)
     8d/copy-address *(edx+0xc) 0/r32/eax  # Tree-right
-    (parse-type-tree *(ebp+8) *(ebp+0xc) %eax)
+    (parse-type-tree *(ebp+8) *(ebp+0xc) %eax *(ebp+0x14) *(ebp+0x18))
 $parse-type-tree:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -4963,7 +4949,7 @@ test-parse-var-with-type:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx)
+    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -5001,7 +4987,7 @@ test-parse-var-with-type-and-register:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx)
+    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -5042,7 +5028,7 @@ test-parse-var-with-trailing-characters:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx)
+    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -5082,7 +5068,7 @@ test-parse-var-with-register-and-trailing-characters:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx)
+    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -5123,7 +5109,7 @@ test-parse-var-with-compound-type:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx)
+    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -5453,7 +5439,7 @@ test-is-identifier-hyphen:
     5d/pop-to-ebp
     c3/return
 
-populate-mu-function-body:  # in: (addr buffered-file), out: (addr function), vars: (addr stack live-var)
+populate-mu-function-body:  # in: (addr buffered-file), out: (addr function), vars: (addr stack live-var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5467,7 +5453,7 @@ populate-mu-function-body:  # in: (addr buffered-file), out: (addr function), va
     8b/-> *(ebp+0xc) 7/r32/edi
     # parse-mu-block(in, vars, out, out->body)
     8d/copy-address *(edi+0x18) 0/r32/eax  # Function-body
-    (parse-mu-block %esi *(ebp+0x10) %edi %eax)
+    (parse-mu-block %esi *(ebp+0x10) %edi %eax *(ebp+0x14) *(ebp+0x18))
 $populate-mu-function-body:end:
     # . restore registers
     5f/pop-to-edi
@@ -5479,7 +5465,7 @@ $populate-mu-function-body:end:
     c3/return
 
 # parses a block, assuming that the leading '{' has already been read by the caller
-parse-mu-block:  # in: (addr buffered-file), vars: (addr stack live-var), fn: (addr function), out: (addr handle block)
+parse-mu-block:  # in: (addr buffered-file), vars: (addr stack live-var), fn: (addr function), out: (addr handle block), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var line: (stream byte 512)
     #   var word-slice: slice
@@ -5592,7 +5578,7 @@ $parse-mu-block:check-for-block:
         68/push 0/imm32
         89/<- %eax 4/r32/esp
         # .
-        (parse-mu-block *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)
+        (parse-mu-block *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax *(ebp+0x18) *(ebp+0x1c))
         (append-to-block Heap %edi  *eax *(eax+4))
         # . reclaim tmp
         81 0/subop/add %esp 8/imm32
@@ -5642,7 +5628,7 @@ $parse-mu-block:check-for-var:
         68/push 0/imm32
         89/<- %eax 4/r32/esp
         #
-        (parse-mu-var-def %ecx *(ebp+0xc) %eax)
+        (parse-mu-var-def %ecx *(ebp+0xc) %eax *(ebp+0x18) *(ebp+0x1c))
         (append-to-block Heap %edi  *eax *(eax+4))
         # reclaim tmp
         81 0/subop/add %esp 8/imm32
@@ -5683,14 +5669,12 @@ $parse-mu-block:end:
 
 $parse-mu-block:abort:
     # error("'{' or '}' should be on its own line, but got '")
-    (write-buffered Stderr "'{' or '}' should be on its own line, but got '")
+    (write-buffered *(ebp+0x18) "'{' or '}' should be on its own line, but got '")
     (rewind-stream %ecx)
     (write-stream 2 %ecx)
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x18) "'\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
     # never gets here
 
 new-block-name:  # fn: (addr function), out: (addr handle var)
@@ -5811,7 +5795,7 @@ $check-no-tokens-left:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (addr stack live-var), fn: (addr function), out: (addr handle stmt)
+parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (addr stack live-var), fn: (addr function), out: (addr handle stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var v: (handle var)
     #   new-literal(name, v)
@@ -5839,7 +5823,7 @@ parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (ad
     (push *(ebp+0x10) *(ecx+4))
     (push *(ebp+0x10) 0)  # false
     #
-    (parse-mu-block *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
+    (parse-mu-block *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20))
     # pop v off vars
     (pop *(ebp+0x10))  # => eax
     (pop *(ebp+0x10))  # => eax
@@ -5867,7 +5851,7 @@ $parse-mu-named-block:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out: (addr handle stmt)
+parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out: (addr handle stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5888,7 +5872,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
     89/<- %edx 4/r32/esp
     # v = parse-var-with-type(next-mu-token(line))
     (next-mu-token *(ebp+8) %ecx)
-    (parse-var-with-type %ecx *(ebp+8) %edx)
+    (parse-var-with-type %ecx *(ebp+8) %edx *(ebp+0x14) *(ebp+0x18))
     #
     (push *(ebp+0xc) *edx)
     (push *(ebp+0xc) *(edx+4))
@@ -5932,14 +5916,12 @@ $parse-mu-var-def:end:
 $parse-mu-var-def:abort:
     (rewind-stream *(ebp+8))
     # error("register variable requires a valid instruction to initialize but got '" line "'\n")
-    (write-buffered Stderr "register variable requires a valid instruction to initialize but got '")
-    (flush Stderr)
+    (write-buffered *(ebp+0x14) "register variable requires a valid instruction to initialize but got '")
+    (flush *(ebp+0x14))
     (write-stream 2 *(ebp+8))
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 test-parse-mu-var-def:
@@ -6035,7 +6017,7 @@ test-parse-mu-reg-var-def:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack live-var), fn: (addr function), out: (addr handle stmt)
+parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack live-var), fn: (addr function), out: (addr handle stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var name: slice
     #   allocate(Heap, Stmt-size, out)
@@ -6110,7 +6092,7 @@ $parse-mu-stmt:read-outputs:
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= $parse-mu-stmt:abort/disp32
         #
-        (lookup-or-define-var %ecx *(ebp+0xc) *(ebp+0x10) %ebx)
+        (lookup-or-define-var %ecx *(ebp+0xc) *(ebp+0x10) %ebx *(ebp+0x18) *(ebp+0x1c))
         8d/copy-address *(edi+0x14) 0/r32/eax  # Stmt1-outputs
         (append-stmt-var Heap  *ebx *(ebx+4)  *(edi+0x14) *(edi+0x18)  %edx  %eax)  # Stmt1-outputs
         #
@@ -6134,16 +6116,14 @@ $parse-mu-stmt:end:
 
 $parse-mu-stmt:abort:
     # error("invalid identifier '" name "'\n")
-    (write-buffered Stderr "invalid identifier '")
-    (write-slice-buffered Stderr %ecx)
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x18) "invalid identifier '")
+    (write-slice-buffered *(ebp+0x18) %ecx)
+    (write-buffered *(ebp+0x18) "'\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
     # never gets here
 
-add-operation-and-inputs-to-stmt:  # stmt: (addr stmt), line: (addr stream byte), vars: (addr stack live-var)
+add-operation-and-inputs-to-stmt:  # stmt: (addr stmt), line: (addr stream byte), vars: (addr stack live-var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   stmt->name = slice-to-string(next-mu-token(line))
     #   while true
@@ -6250,14 +6230,12 @@ $add-operation-and-inputs-to-stmt:end:
 $add-operation-and-inputs-to-stmt:abort:
     # error("invalid statement '" line "'\n")
     (rewind-stream *(ebp+8))
-    (write-buffered Stderr "invalid identifier '")
-    (flush Stderr)
+    (write-buffered *(ebp+0x14) "invalid identifier '")
+    (flush *(ebp+0x14))
     (write-stream 2 *(ebp+8))
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 stmt-has-outputs?:  # line: (addr stream byte) -> result/eax: boolean
@@ -6308,7 +6286,7 @@ $stmt-has-outputs:end:
 
 # if 'name' starts with a digit, create a new literal var for it
 # otherwise return first 'name' from the top (back) of 'vars' and abort if not found
-lookup-var-or-literal:  # name: (addr slice), vars: (addr stack live-var), out: (addr handle var)
+lookup-var-or-literal:  # name: (addr slice), vars: (addr stack live-var), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6331,7 +6309,7 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack live-var), out: 
       (is-decimal-digit? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
-      (new-literal-integer Heap %esi *(ebp+0x10))
+      (new-literal-integer Heap %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
       eb/jump $lookup-var-or-literal:end/disp8
     }
     # else if (c == '"') return new var(name)
@@ -6356,15 +6334,13 @@ $lookup-var-or-literal:end:
     c3/return
 
 $lookup-var-or-literal:abort:
-    (write-buffered Stderr "empty variable!")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "empty variable!")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 # return first 'name' from the top (back) of 'vars' and abort if not found
-lookup-var:  # name: (addr slice), vars: (addr stack live-var), out: (addr handle var)
+lookup-var:  # name: (addr slice), vars: (addr stack live-var), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6385,17 +6361,15 @@ $lookup-var:end:
     c3/return
 
 $lookup-var:abort:
-    (write-buffered Stderr "unknown variable '")
-    (write-slice-buffered Stderr *(ebp+8))
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "unknown variable '")
+    (write-slice-buffered *(ebp+0x14) *(ebp+8))
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 # return first 'name' from the top (back) of 'vars', and 0/null if not found
-lookup-var-helper:  # name: (addr slice), vars: (addr stack live-var), out: (addr handle var)
+lookup-var-helper:  # name: (addr slice), vars: (addr stack live-var), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var curr: (addr handle var) = &vars->data[vars->top - 12]
     #   var min = vars->data
@@ -6468,17 +6442,15 @@ $lookup-var-helper:end:
     c3/return
 
 $lookup-var-helper:error1:
-    (write-buffered Stderr "malformed stack when looking up '")
-    (write-slice-buffered Stderr *(ebp+8))
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "malformed stack when looking up '")
+    (write-slice-buffered *(ebp+0x14) *(ebp+8))
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 # return first 'name' from the top (back) of 'vars' and create a new var for a fn output if not found
-lookup-or-define-var:  # name: (addr slice), vars: (addr stack live-var), fn: (addr function), out: (addr handle var)
+lookup-or-define-var:  # name: (addr slice), vars: (addr stack live-var), fn: (addr function), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6497,7 +6469,7 @@ lookup-or-define-var:  # name: (addr slice), vars: (addr stack live-var), fn: (a
         8b/-> *(ebp+0x14) 0/r32/eax
         81 7/subop/compare *eax 0/imm32
         # otherwise abort
-        0f 84/jump-if-= $lookup-var:abort/disp32
+        0f 84/jump-if-= $lookup-or-define-var:abort/disp32
         # update vars
         (push *(ebp+0xc) *eax)
         (push *(ebp+0xc) *(eax+4))
@@ -6511,6 +6483,14 @@ $lookup-or-define-var:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$lookup-or-define-var:abort:
+    (write-buffered *(ebp+0x18) "unknown variable '")
+    (write-slice-buffered *(ebp+0x18) *(ebp+8))
+    (write-buffered *(ebp+0x18) "'\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
+    # never gets here
 
 find-in-function-outputs:  # fn: (addr function), name: (addr slice), out: (addr handle var)
     # . prologue
@@ -6712,7 +6692,7 @@ $new-var:end:
     5d/pop-to-ebp
     c3/return
 
-new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr handle var)
+new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6747,13 +6727,11 @@ $new-literal-integer:end:
     c3/return
 
 $new-literal-integer:abort:
-    (write-buffered Stderr "variable cannot begin with a digit '")
-    (write-slice-buffered Stderr *(ebp+0xc))
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x14) "variable cannot begin with a digit '")
+    (write-slice-buffered *(ebp+0x14) *(ebp+0xc))
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 new-literal:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr handle var)
@@ -7315,7 +7293,7 @@ $find-or-create-typeinfo-fields:end:
     5d/pop-to-ebp
     c3/return
 
-populate-mu-type:  # in: (addr stream byte), t: (addr typeinfo)
+populate-mu-type:  # in: (addr stream byte), t: (addr typeinfo), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var line: (stream byte 512)
     #   curr-index = 0
@@ -7399,7 +7377,7 @@ $populate-mu-type:parse-element:
       # must do this first to strip the trailing ':' from word-slice before
       # using it in find-or-create-typeinfo-fields below
       # TODO: clean up that mutation in parse-var-with-type
-      (parse-var-with-type %edx %ecx %esi)  # => eax
+      (parse-var-with-type %edx %ecx %esi *(ebp+0x10) *(ebp+0x14))  # => eax
       # var tmp/ecx
       51/push-ecx
 $populate-mu-type:create-typeinfo-fields:
@@ -7458,14 +7436,12 @@ $populate-mu-type:end:
 
 $populate-mu-type:abort:
     # error("unexpected top-level command: " word-slice "\n")
-    (write-buffered Stderr "incomplete type definition '")
+    (write-buffered *(ebp+0x10) "incomplete type definition '")
     (type-name *edi)  # Typeinfo-id => eax
-    (write-buffered Stderr %eax)
-    (write-buffered Stderr "\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
     # never gets here
 
 type-name:  # index: int -> result/eax: (addr array byte)
@@ -7510,7 +7486,7 @@ $index:end:
 # types, which we will compute as needed.
 
 # Initially, all user-defined types have their sizes set to -2 (invalid)
-populate-mu-type-sizes:
+populate-mu-type-sizes:  # err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7521,7 +7497,7 @@ $populate-mu-type-sizes:total-sizes:
       # if (curr == null) break
       3d/compare-eax-and 0/imm32/null
       74/jump-if-= break/disp8
-      (populate-mu-type-sizes-in-type %eax)
+      (populate-mu-type-sizes-in-type %eax *(ebp+8) *(ebp+0xc))
       # curr = lookup(curr->next)
       (lookup *(eax+0x10) *(eax+0x14))  # Typeinfo-next Typeinfo-next => eax
       eb/jump loop/disp8
@@ -7533,7 +7509,7 @@ $populate-mu-type-sizes:offsets:
       # if (curr == null) break
       3d/compare-eax-and 0/imm32/null
       74/jump-if-= break/disp8
-      (populate-mu-type-offsets %eax)
+      (populate-mu-type-offsets %eax *(ebp+8) *(ebp+0xc))
       # curr = curr->next
       (lookup *(eax+0x10) *(eax+0x14))  # Typeinfo-next Typeinfo-next => eax
       eb/jump loop/disp8
@@ -7547,7 +7523,7 @@ $populate-mu-type-sizes:end:
 # compute sizes of all fields, recursing as necessary
 # sum up all their sizes to arrive at total size
 # fields may be out of order, but that doesn't affect the answer
-populate-mu-type-sizes-in-type:  # T: (addr typeinfo)
+populate-mu-type-sizes-in-type:  # T: (addr typeinfo), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7611,11 +7587,9 @@ $populate-mu-type-sizes-in-type:end:
     c3/return
 
 $populate-mu-type-sizes-in-type:abort:
-    (write-buffered Stderr "cycle in type definitions\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0xc) "cycle in type definitions\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
     # never gets here
 
 # Analogous to size-of, except we need to compute what size-of can just read
@@ -7688,7 +7662,7 @@ $compute-size-of-type-id:end:
 # at this point we have total sizes for all user-defined types
 # compute offsets for each element
 # complication: fields may be out of order
-populate-mu-type-offsets:  # in: (addr typeinfo)
+populate-mu-type-offsets:  # in: (addr typeinfo), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7722,7 +7696,7 @@ $populate-mu-type-offsets:loop:
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
       # var v/esi: (addr typeinfo-entry)
-      (locate-typeinfo-entry-with-index %ecx %ebx)  # => eax
+      (locate-typeinfo-entry-with-index %ecx %ebx *(ebp+0xc) *(ebp+0x10))  # => eax
       89/<- %esi 0/r32/eax
       # v->output-var->offset = curr-offset
       # . eax: (addr var)
@@ -7749,7 +7723,7 @@ $populate-mu-type-offsets:end:
     5d/pop-to-ebp
     c3/return
 
-locate-typeinfo-entry-with-index:  # table: (addr table (handle array byte) (handle typeinfo-entry)), idx: int -> result/eax: (addr typeinfo-entry)
+locate-typeinfo-entry-with-index:  # table: (addr table (handle array byte) (handle typeinfo-entry)), idx: int, err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: (addr typeinfo-entry)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7806,13 +7780,11 @@ $locate-typeinfo-entry-with-index:end:
     c3/return
 
 $locate-typeinfo-entry-with-index:abort:
-    (write-buffered Stderr "overflowing typeinfo-entry->index ")
-    (print-int32-buffered Stderr %ecx)
-    (write-buffered Stderr "\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x10) "overflowing typeinfo-entry->index ")
+    (print-int32-buffered *(ebp+0x10) %ecx)
+    (write-buffered *(ebp+0x10) "\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
     # never gets here
 
 dump-typeinfos:  # hdr: (addr array byte)
@@ -8259,7 +8231,7 @@ Curr-local-stack-offset:  # (addr int)
 
 == code
 
-emit-subx:  # out: (addr buffered-file)
+emit-subx:  # out: (addr buffered-file), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8271,7 +8243,7 @@ emit-subx:  # out: (addr buffered-file)
       # if (curr == null) break
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (emit-subx-function *(ebp+8) %eax)
+      (emit-subx-function *(ebp+8) %eax *(ebp+0xc) *(ebp+0x10))
       # curr = lookup(curr->next)
       (lookup *(eax+0x20) *(eax+0x24))  # Function-next Function-next => eax
       e9/jump loop/disp32
@@ -8284,7 +8256,7 @@ $emit-subx:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-function:  # out: (addr buffered-file), f: (addr function)
+emit-subx-function:  # out: (addr buffered-file), f: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8317,7 +8289,7 @@ emit-subx-function:  # out: (addr buffered-file), f: (addr function)
     # var body/eax: (addr block) = lookup(f->body)
     (lookup *(ecx+0x18) *(ecx+0x1c))  # Function-body Function-body => eax
     #
-    (emit-subx-block *(ebp+8) %eax %edx %edi)
+    (emit-subx-block *(ebp+8) %eax %edx %edi *(ebp+0x10) *(ebp+0x14))
     (emit-subx-epilogue *(ebp+8))
     # TODO: validate that *Curr-block-depth and *Curr-local-stack-offset have
     # been cleaned up
@@ -8389,7 +8361,7 @@ $populate-mu-type-offsets-in-inouts:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-stmt-list:  # out: (addr buffered-file), stmts: (addr list stmt), vars: (addr stack live-var), fn-outputs: (addr list var)
+emit-subx-stmt-list:  # out: (addr buffered-file), stmts: (addr list stmt), vars: (addr stack live-var), fn-outputs: (addr list var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8413,7 +8385,7 @@ $emit-subx-stmt-list:check-for-block:
         81 7/subop/compare *ecx 0/imm32/block  # Stmt-tag
         75/jump-if-!= break/disp8
 $emit-subx-stmt-list:block:
-        (emit-subx-block *(ebp+8) %ecx *(ebp+0x10) *(ebp+0x14))
+        (emit-subx-block *(ebp+8) %ecx *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
       }
       {
 $emit-subx-stmt-list:check-for-stmt:
@@ -8527,7 +8499,7 @@ $emit-subx-stmt-list:conditional-branch-with-target:
           # }}}
         }
 $emit-subx-stmt-list:1-to-1:
-        (emit-subx-stmt *(ebp+8) %ecx Primitives)
+        (emit-subx-stmt *(ebp+8) %ecx Primitives *(ebp+0x18) *(ebp+0x1c))
         e9/jump $emit-subx-stmt-list:continue/disp32
       }
       {
@@ -8548,9 +8520,9 @@ $emit-subx-stmt-list:check-for-reg-var-def:
         0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:reg-var-def:
         # TODO: ensure that there's exactly one output
-        (push-output-and-maybe-emit-spill *(ebp+8) %ecx *(ebp+0x10) %esi *(ebp+0x14))
+        (push-output-and-maybe-emit-spill *(ebp+8) %ecx *(ebp+0x10) %esi *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
         # emit the instruction as usual
-        (emit-subx-stmt *(ebp+8) %ecx Primitives)
+        (emit-subx-stmt *(ebp+8) %ecx Primitives *(ebp+0x18) *(ebp+0x1c))
         #
         eb/jump $emit-subx-stmt-list:continue/disp8
       }
@@ -8576,7 +8548,7 @@ $emit-subx-stmt-list:end:
     c3/return
 
 # 'later-stmts' includes 'stmt', but will behave the same even without it; reg-var-def stmts are guaranteed not to write to function outputs.
-push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-var-def), vars: (addr stack (handle var)), later-stmts: (addr list stmt), fn-outputs: (addr list var)
+push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-var-def), vars: (addr stack (handle var)), later-stmts: (addr list stmt), fn-outputs: (addr list var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8643,13 +8615,11 @@ $push-output-and-maybe-emit-spill:end:
 
 $push-output-and-maybe-emit-spill:abort:
     # error("var '" var->name "' initialized from an instruction must live in a register\n")
-    (write-buffered Stderr "var '")
-    (write-buffered Stderr *eax)  # Var-name
-    (write-buffered Stderr "' initialized from an instruction must live in a register\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x1c) "var '")
+    (write-buffered *(ebp+0x1c) *eax)  # Var-name
+    (write-buffered *(ebp+0x1c) "' initialized from an instruction must live in a register\n")
+    (flush *(ebp+0x1c))
+    (stop *(ebp+0x20) 1)
     # never gets here
 
 emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file), stmt: (addr stmt1), vars: (addr stack live-var)
@@ -9444,7 +9414,7 @@ $emit-subx-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (addr primitive)
+emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (addr primitive), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -9471,7 +9441,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "index")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-index-stmt *(ebp+8) *(ebp+0xc))
+      (translate-mu-index-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # compute-offset for index into array
@@ -9516,7 +9486,7 @@ $emit-subx-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
+translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -9550,7 +9520,7 @@ translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     }
     # if elemsize is a power of 2 less than 256
     {
-      (power-of-2? %ecx)  # => eax
+      (power-of-2? %ecx *(ebp+0x10) *(ebp+0x14))  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       81 7/subop/compare %ecx 0xff/imm32
@@ -9700,7 +9670,7 @@ $emit-divide-by-shift-right:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
+translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -9717,7 +9687,7 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
       81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
-      (translate-mu-index-stmt-with-array-in-register *(ebp+8) *(ebp+0xc))
+      (translate-mu-index-stmt-with-array-in-register *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       eb/jump $translate-mu-index-stmt:end/disp8
     }
     # if (var->offset) do a different thing
@@ -9725,7 +9695,7 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
       81 7/subop/compare *(ecx+0x14) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
-      (translate-mu-index-stmt-with-array-on-stack *(ebp+8) *(ebp+0xc))
+      (translate-mu-index-stmt-with-array-on-stack *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       eb/jump $translate-mu-index-stmt:end/disp8
     }
 $translate-mu-index-stmt:end:
@@ -9737,22 +9707,18 @@ $translate-mu-index-stmt:end:
     c3/return
 
 $translate-mu-index-stmt-with-array:error1:
-    (write-buffered Stderr "couldn't translate an index instruction. second (index) input must either lie in a register or be a literal\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x10) "couldn't translate an index instruction. second (index) input must either lie in a register or be a literal\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
     # never gets here
 
 $translate-mu-index-stmt-with-array:error2:
-    (write-buffered Stderr "couldn't translate an index instruction. second (index) input when in a register must be an int or offset\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x10) "couldn't translate an index instruction. second (index) input when in a register must be an int or offset\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
     # never gets here
 
-translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), stmt: (addr stmt)
+translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -9870,7 +9836,7 @@ $translate-mu-index-stmt-with-array-in-register:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-index-stmt-with-array-on-stack:  # out: (addr buffered-file), stmt: (addr stmt)
+translate-mu-index-stmt-with-array-on-stack:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10124,7 +10090,7 @@ $array-element-type-id:end:
     5d/pop-to-ebp
     c3/return
 
-power-of-2?:  # n: int -> result/eax: boolean
+power-of-2?:  # n: int, err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: boolean
     # precondition: n is positive
     # . prologue
     55/push-ebp
@@ -10149,11 +10115,9 @@ $power-of-2?:end:
     c3/return
 
 $power-of-2?:abort:
-    (write-buffered Stderr "power-of-2?: negative number\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0xc) "power-of-2?: negative number\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
     # never gets here
 
 num-shift-rights:  # n: int -> result/eax: int
@@ -10214,7 +10178,7 @@ $emit-get-offset:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-block:  # out: (addr buffered-file), block: (addr block), vars: (addr stack live-var), fn-outputs: (addr list var)
+emit-subx-block:  # out: (addr buffered-file), block: (addr block), vars: (addr stack live-var), fn-outputs: (addr list var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10250,7 +10214,7 @@ $emit-subx-block:check-empty:
       (push *(ebp+0x10) 0)  # false
       # emit block->statements
       (lookup *(esi+4) *(esi+8))  # Block-stmts Block-stmts => eax
-      (emit-subx-stmt-list *(ebp+8) %eax *(ebp+0x10) *(ebp+0x14))
+      (emit-subx-stmt-list *(ebp+8) %eax *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
       (pop *(ebp+0x10))  # => eax
       (pop *(ebp+0x10))  # => eax
       (pop *(ebp+0x10))  # => eax
@@ -13089,7 +13053,7 @@ Type-addr:  # (payload tree type-id)
     0/imm32/right:null
 
 == code
-emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive: (addr primitive)
+emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive: (addr primitive), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -13103,13 +13067,13 @@ emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive:
     (lookup *(ecx+0x18) *(ecx+0x1c))  # Primitive-subx-name Primitive-subx-name => eax
     (write-buffered *(ebp+8) %eax)
     # emit rm32 if necessary
-    (emit-subx-rm32 *(ebp+8) *(ecx+0x20) *(ebp+0xc))  # out, Primitive-subx-rm32, stmt
+    (emit-subx-rm32 *(ebp+8) *(ecx+0x20) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))  # Primitive-subx-rm32
     # emit r32 if necessary
-    (emit-subx-r32 *(ebp+8) *(ecx+0x24) *(ebp+0xc))  # out, Primitive-subx-r32, stmt
+    (emit-subx-r32 *(ebp+8) *(ecx+0x24) *(ebp+0xc))  # Primitive-subx-r32
     # emit imm32 if necessary
-    (emit-subx-imm32 *(ebp+8) *(ecx+0x28) *(ebp+0xc))  # out, Primitive-subx-imm32, stmt
+    (emit-subx-imm32 *(ebp+8) *(ecx+0x28) *(ebp+0xc))  # Primitive-subx-imm32
     # emit disp32 if necessary
-    (emit-subx-disp32 *(ebp+8) *(ecx+0x2c) *(ebp+0xc))  # out, Primitive-subx-disp32, stmt
+    (emit-subx-disp32 *(ebp+8) *(ecx+0x2c) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))  # Primitive-subx-disp32
     (write-buffered *(ebp+8) Newline)
 $emit-subx-primitive:end:
     # . restore registers
@@ -13120,7 +13084,7 @@ $emit-subx-primitive:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
+emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -13130,7 +13094,7 @@ emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     81 7/subop/compare *(ebp+0xc) 0/imm32
     74/jump-if-= $emit-subx-rm32:end/disp8
     # var v/eax: (addr stmt-var)
-    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))  # => eax
     (emit-subx-var-as-rm32 *(ebp+8) %eax)
 $emit-subx-rm32:end:
     # . restore registers
@@ -13140,7 +13104,7 @@ $emit-subx-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-get-stmt-operand-from-arg-location:  # stmt: (addr stmt), l: arg-location -> var/eax: (addr stmt-var)
+get-stmt-operand-from-arg-location:  # stmt: (addr stmt), l: arg-location, err: (addr buffered-file), ed: (addr exit-descriptor) -> var/eax: (addr stmt-var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -13187,13 +13151,11 @@ $get-stmt-operand-from-arg-location:end:
 
 $get-stmt-operand-from-arg-location:abort:
     # error("invalid arg-location " eax)
-    (write-buffered Stderr "invalid arg-location ")
-    (print-int32-buffered Stderr %eax)
-    (write-buffered Stderr Newline)
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call syscall_exit/disp32
+    (write-buffered *(ebp+0x10) "invalid arg-location ")
+    (print-int32-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) Newline)
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
     # never gets here
 
 emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
@@ -13249,7 +13211,7 @@ $emit-subx-imm32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
+emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -13260,7 +13222,7 @@ emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stm
     81 7/subop/compare *(ebp+0xc) 0/imm32
     0f 84/jump-if-= $emit-subx-disp32:end/disp32
     # var v/eax: (addr stmt-var)
-    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))  # => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
     (write-buffered *(ebp+8) Space)
@@ -13976,7 +13938,7 @@ $test-emit-subx-stmt-primitive:initialize-primitive-subx-name:
     (copy-array Heap "ff 0/subop/increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -14120,7 +14082,7 @@ $test-emit-subx-stmt-primitive-register:initialize-primitive-subx-name:
     (copy-array Heap "ff 0/subop/increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -14294,7 +14256,7 @@ $test-emit-subx-stmt-select-primitive:initialize-primitive-subx-name:
     (copy-array Heap "ff 0/subop/increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -14468,7 +14430,7 @@ $test-emit-subx-stmt-select-primitive-2:initialize-primitive-subx-name:
     (copy-array Heap "ff 0/subop/increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -14556,7 +14518,7 @@ $test-increment-register:initialize-stmt-operation:
     (copy-array Heap "increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -14667,7 +14629,7 @@ $test-add-reg-to-reg:initialize-stmt-operation:
     (copy-array Heap "add" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -14773,7 +14735,7 @@ $test-add-reg-to-mem:initialize-stmt-operation:
     (copy-array Heap "add-to" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -14880,7 +14842,7 @@ $test-add-mem-to-reg:initialize-stmt-operation:
     (copy-array Heap "add" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -14996,7 +14958,7 @@ $test-add-literal-to-eax:initialize-stmt-operation:
     (copy-array Heap "add" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -15112,7 +15074,7 @@ $test-add-literal-to-reg:initialize-stmt-operation:
     (copy-array Heap "add" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -15223,7 +15185,7 @@ $test-add-literal-to-mem:initialize-stmt-operation:
     (copy-array Heap "add-to" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -15329,7 +15291,7 @@ $test-compare-mem-with-reg:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -15435,7 +15397,7 @@ $test-compare-reg-with-mem:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -15546,7 +15508,7 @@ $test-compare-mem-with-literal:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -15661,7 +15623,7 @@ $test-compare-eax-with-literal:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -15776,7 +15738,7 @@ $test-compare-reg-with-literal:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -15864,7 +15826,7 @@ $test-emit-subx-function-call:initialize-stmt-operation:
     (copy-array Heap "f" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi 0)
+    (emit-subx-stmt _test-output-buffered-file %esi 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -15941,7 +15903,7 @@ $test-emit-subx-function-call-with-literal-arg:initialize-stmt-operation:
     (copy-array Heap "f" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi 0 %ebx)
+    (emit-subx-stmt _test-output-buffered-file %esi 0 %ebx Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
