@@ -947,6 +947,51 @@ test-convert-function-with-local-var-in-mem:
     5d/pop-to-ebp
     c3/return
 
+test-local-var-in-mem-has-no-initializer:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: int <- copy 0\n")
+    (write _test-input-stream "  increment x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-var-in-mem-has-no-initializer: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: var x: variables on the stack can't take an initializer"  "F - test-var-in-mem-has-no-initializer: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-var-in-mem-has-no-initializer: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-local-var-with-compound-type-in-mem:
     # . prologue
     55/push-ebp
@@ -5495,7 +5540,7 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack live-var), fn: (a
     #       named-block = parse-mu-named-block(word-slice, in, vars, fn)
     #       append-to-block(out-addr, named-block)
     #     else if slice-equal?(word-slice, "var")
-    #       var-def = parse-mu-var-def(line, vars)
+    #       var-def = parse-mu-var-def(line, vars, fn)
     #       append-to-block(out-addr, var-def)
     #     else
     #       stmt = parse-mu-stmt(line, vars, fn)
@@ -5628,7 +5673,7 @@ $parse-mu-block:check-for-var:
         68/push 0/imm32
         89/<- %eax 4/r32/esp
         #
-        (parse-mu-var-def %ecx *(ebp+0xc) %eax *(ebp+0x18) *(ebp+0x1c))
+        (parse-mu-var-def %ecx *(ebp+0xc) %eax *(ebp+0x10) *(ebp+0x18) *(ebp+0x1c))
         (append-to-block Heap %edi  *eax *(eax+4))
         # reclaim tmp
         81 0/subop/add %esp 8/imm32
@@ -5642,7 +5687,7 @@ $parse-mu-block:regular-stmt:
       68/push 0/imm32
       89/<- %eax 4/r32/esp
       #
-      (parse-mu-stmt %ecx *(ebp+0xc) *(ebp+0x10) %eax)
+      (parse-mu-stmt %ecx *(ebp+0xc) *(ebp+0x10) %eax *(ebp+0x18) *(ebp+0x1c))
       (append-to-block Heap %edi  *eax *(eax+4))
       # reclaim tmp
       81 0/subop/add %esp 8/imm32
@@ -5851,7 +5896,7 @@ $parse-mu-named-block:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out: (addr handle stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out: (addr handle stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5872,7 +5917,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
     89/<- %edx 4/r32/esp
     # v = parse-var-with-type(next-mu-token(line))
     (next-mu-token *(ebp+8) %ecx)
-    (parse-var-with-type %ecx *(ebp+8) %edx *(ebp+0x14) *(ebp+0x18))
+    (parse-var-with-type %ecx *(ebp+8) %edx *(ebp+0x18) *(ebp+0x1c))
     #
     (push *(ebp+0xc) *edx)
     (push *(ebp+0xc) *(edx+4))
@@ -5883,7 +5928,12 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
     3d/compare-eax-and 0/imm32
     {
       75/jump-if-!= break/disp8
-      # TODO: ensure that there's nothing else on this line
+      # ensure that there's nothing else on this line
+      (next-mu-token *(ebp+8) %ecx)
+      (slice-empty? %ecx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= $parse-mu-var-def:error2/disp32
+      #
       (new-var-def Heap  *edx *(edx+4)  %edi)
       eb/jump $parse-mu-var-def:end/disp8
     }
@@ -5894,7 +5944,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
       (next-mu-token *(ebp+8) %ecx)
       (slice-equal? %ecx "<-")  # => eax
       3d/compare-eax-and 0/imm32/false
-      74/jump-if-= $parse-mu-var-def:abort/disp8
+      74/jump-if-= $parse-mu-var-def:error1/disp8
       #
       (new-reg-var-def Heap  *edx *(edx+4)  %edi)
       (lookup *edi *(edi+4))  # => eax
@@ -5913,15 +5963,32 @@ $parse-mu-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-$parse-mu-var-def:abort:
+$parse-mu-var-def:error1:
     (rewind-stream *(ebp+8))
     # error("register variable requires a valid instruction to initialize but got '" line "'\n")
-    (write-buffered *(ebp+0x14) "register variable requires a valid instruction to initialize but got '")
-    (flush *(ebp+0x14))
+    (write-buffered *(ebp+0x18) "register variable requires a valid instruction to initialize but got '")
+    (flush *(ebp+0x18))
     (write-stream 2 *(ebp+8))
-    (write-buffered *(ebp+0x14) "'\n")
-    (flush *(ebp+0x14))
-    (stop *(ebp+0x18) 1)
+    (write-buffered *(ebp+0x18) "'\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
+    # never gets here
+
+$parse-mu-var-def:error2:
+    (rewind-stream *(ebp+8))
+    # error("fn " fn ": var " var ": variables on the stack can't take an initializer\n")
+    (write-buffered *(ebp+0x18) "fn ")
+    8b/-> *(ebp+0x14) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x18) %eax)
+    (write-buffered *(ebp+0x18) ": var ")
+    # var v-addr/eax: (addr var) = lookup(v)
+    (lookup *edx *(edx+4))  # => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x18) %eax)  # HERE: stream overflow
+    (write-buffered *(ebp+0x18) ": variables on the stack can't take an initializer\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
     # never gets here
 
 test-parse-mu-var-def:
@@ -5943,7 +6010,7 @@ test-parse-mu-var-def:
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
     # convert
-    (parse-mu-var-def _test-input-stream %ecx %esi)
+    (parse-mu-var-def _test-input-stream %ecx %esi 0 Stderr 0)
     # var out-addr/esi: (addr stmt)
     (lookup *esi *(esi+4))  # => eax
     89/<- %esi 0/r32/eax
@@ -5986,7 +6053,7 @@ test-parse-mu-reg-var-def:
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
     # convert
-    (parse-mu-var-def _test-input-stream %ecx %esi)
+    (parse-mu-var-def _test-input-stream %ecx %esi 0 Stderr 0)
     # var out-addr/esi: (addr stmt)
     (lookup *esi *(esi+4))  # => eax
     89/<- %esi 0/r32/eax
@@ -6577,7 +6644,7 @@ test-parse-mu-stmt:
     68/push 0/imm32
     89/<- %eax 4/r32/esp
     # convert
-    (parse-mu-stmt _test-input-stream %ecx 0 %eax)
+    (parse-mu-stmt _test-input-stream %ecx 0 %eax Stderr 0)
     # var out-addr/edx: (addr stmt) = lookup(*out)
     (lookup *eax *(eax+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -6633,7 +6700,7 @@ test-parse-mu-stmt-with-comma:
     68/push 0/imm32
     89/<- %eax 4/r32/esp
     # convert
-    (parse-mu-stmt _test-input-stream %ecx 0 %eax)
+    (parse-mu-stmt _test-input-stream %ecx 0 %eax Stderr 0)
     # var out-addr/edx: (addr stmt) = lookup(*out)
     (lookup *eax *(eax+4))  # => eax
     89/<- %edx 0/r32/eax
