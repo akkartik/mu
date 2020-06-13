@@ -481,7 +481,7 @@ convert-mu:  # in: (addr buffered-file), out: (addr buffered-file), err: (addr b
     89/<- %ebp 4/r32/esp
     # initialize global data structures
     c7 0/subop/copy *Next-block-index 1/imm32
-    c7 0/subop/copy *Type-id 0x1c/imm32  # stream-write
+    c7 0/subop/copy *Type-id 0x20/imm32  # stream-write
     c7 0/subop/copy *_Program-functions 0/imm32
     c7 0/subop/copy *_Program-functions->payload 0/imm32
     c7 0/subop/copy *_Program-types 0/imm32
@@ -3547,6 +3547,54 @@ test-convert-get-on-function-argument-with-known-type:
     5d/pop-to-ebp
     c3/return
 
+test-get-with-wrong-field:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: t\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- get a, y\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-get-with-wrong-field: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "type 't' has no member called 'y'"  "F - test-get-with-wrong-field: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-var-in-mem-has-no-initializer: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-array-of-user-defined-types:
     # . prologue
     55/push-ebp
@@ -5985,7 +6033,7 @@ $parse-mu-var-def:error2:
     # var v-addr/eax: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
-    (write-buffered *(ebp+0x18) %eax)  # HERE: stream overflow
+    (write-buffered *(ebp+0x18) %eax)
     (write-buffered *(ebp+0x18) ": variables on the stack can't take an initializer\n")
     (flush *(ebp+0x18))
     (stop *(ebp+0x1c) 1)
@@ -7384,6 +7432,7 @@ populate-mu-type:  # in: (addr stream byte), t: (addr typeinfo), err: (addr buff
     #       r->output-var = new literal
     #     TODO: ensure nothing else in line
     # t->total-size-in-bytes = -2 (not yet initialized)
+    # check-input-vars(t, err, ed)
     #
     # . prologue
     55/push-ebp
@@ -7484,6 +7533,8 @@ $populate-mu-type:invalidate-total-size-in-bytes:
     # have encountered the element types.
     # We'll recompute them separately after parsing the entire program.
     c7 0/subop/copy *(edi+0xc) -2/imm32/uninitialized  # Typeinfo-total-size-in-bytes
+$populate-mu-type:validate:
+    (check-input-vars *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
 $populate-mu-type:end:
     # . reclaim locals
     81 0/subop/add %esp 0x224/imm32
@@ -7509,6 +7560,70 @@ $populate-mu-type:abort:
     (write-buffered *(ebp+0x10) "\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
+    # never gets here
+
+check-input-vars:  # t: (addr typeinfo), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    # var table/ecx: (addr table (handle array byte) (handle typeinfo-entry)) = lookup(t->fields)
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *(eax+4) *(eax+8))  # Typeinfo-fields Typeinfo-fields => eax
+    89/<- %ecx 0/r32/eax
+    # var table-size/edx: int = table->write
+    8b/-> *ecx 2/r32/edx  # stream-write
+    # var curr/ecx: (addr table_row) = table->data
+    8d/copy-address *(ecx+0xc) 1/r32/ecx
+    # var max/edx: (addr table_row) = table->data + table->write
+    8d/copy-address *(ecx+edx) 2/r32/edx
+    {
+$check-input-vars:loop:
+      # if (curr >= max) break
+      39/compare %ecx 2/r32/edx
+      73/jump-if-addr>= break/disp8
+      (lookup *ecx *(ecx+4))  # => eax
+      # var t2/eax: (addr typeinfo-entry) = lookup(curr->value)
+      (lookup *(ecx+8) *(ecx+0xc))  # => eax
+      # if (t2->input-var == null) raise an error
+      8b/-> *eax 0/r32/eax  # Typeinfo-entry-input-var
+      3d/compare-eax-and 0/imm32/null
+      0f 84/jump-if-= $check-input-vars:abort/disp32
+      # curr += row-size
+      81 0/subop/add %ecx 0x10/imm32  # Typeinfo-fields-row-size
+      #
+      eb/jump loop/disp8
+    }
+$check-input-vars:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$check-input-vars:abort:
+    # error("type " type " has no member called '" curr->name "'\n")
+    (write-buffered *(ebp+0xc) "type '")
+    # . var tmp/edx: int = t->id << 2
+    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *eax 2/r32/edx  # Typeinfo-id
+    c1/shift 4/subop/left %edx 2/imm8
+    # . var a/edx: (addr array byte) = Type-id->data[tmp]
+    b8/copy-to-eax Type-id/imm32
+    8b/-> *(eax+edx+0xc) 2/r32/edx
+    (write-buffered *(ebp+0xc) %edx)
+    (write-buffered *(ebp+0xc) "' has no member called '")
+    (lookup *ecx *(ecx+4))  # => eax
+    (write-buffered *(ebp+0xc) %eax)
+    (write-buffered *(ebp+0xc) "'\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
     # never gets here
 
 type-name:  # index: int -> result/eax: (addr array byte)
