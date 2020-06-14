@@ -1276,6 +1276,50 @@ test-convert-compare-register-with-literal:
     5d/pop-to-ebp
     c3/return
 
+test-unknown-variable:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  compare x, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-unknown-variable: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "unknown variable 'x'"  "F - test-unknown-variable: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-unknown-variable: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-local-var-in-block:
     # . prologue
     55/push-ebp
@@ -6042,11 +6086,11 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
       0f 84/jump-if-= $parse-mu-var-def:error2/disp32
       #
       (new-var-def Heap  *edx *(edx+4)  %edi)
-      eb/jump $parse-mu-var-def:end/disp8
+      e9/jump $parse-mu-var-def:end/disp32
     }
     # or v has a register and there's more to this line
     {
-      74/jump-if-= break/disp8
+      0f 84/jump-if-= break/disp32
       # TODO: disallow vars of type 'byte' in registers 'esi' or 'edi'
       # ensure that the next word is '<-'
       (next-mu-token *(ebp+8) %ecx)
@@ -6056,7 +6100,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
       #
       (new-reg-var-def Heap  *edx *(edx+4)  %edi)
       (lookup *edi *(edi+4))  # => eax
-      (add-operation-and-inputs-to-stmt %eax *(ebp+8) *(ebp+0xc))
+      (add-operation-and-inputs-to-stmt %eax *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
     }
 $parse-mu-var-def:end:
     # . reclaim locals
@@ -6274,7 +6318,7 @@ $parse-mu-stmt:read-outputs:
         e9/jump loop/disp32
       }
     }
-    (add-operation-and-inputs-to-stmt %edi *(ebp+8) *(ebp+0xc))
+    (add-operation-and-inputs-to-stmt %edi *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
 $parse-mu-stmt:end:
     # . reclaim locals
     81 0/subop/add %esp 0x10/imm32
@@ -6380,7 +6424,7 @@ $add-operation-and-inputs-to-stmt:inout-is-deref:
         ff 0/subop/increment *ecx
         ba/copy-to-edx 1/imm32/true
       }
-      (lookup-var-or-literal %ecx *(ebp+0x10) %esi)
+      (lookup-var-or-literal %ecx *(ebp+0x10) %esi *(ebp+0x14) *(ebp+0x18))
 $add-operation-and-inputs-to-stmt:save-var:
       8d/copy-address *(edi+0xc) 0/r32/eax
       (append-stmt-var Heap  *esi *(esi+4)  *(edi+0xc) *(edi+0x10)  %edx  %eax)  # Stmt1-inouts or Regvardef-inouts
@@ -6484,6 +6528,7 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack live-var), out: 
       (is-decimal-digit? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
+$lookup-var-or-literal:literal:
       (new-literal-integer Heap %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
       eb/jump $lookup-var-or-literal:end/disp8
     }
@@ -6491,12 +6536,14 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack live-var), out: 
     {
       81 7/subop/compare %ecx 0x22/imm32/dquote
       75/jump-if-!= break/disp8
+$lookup-var-or-literal:literal-string:
       (new-literal Heap %esi *(ebp+0x10))
       eb/jump $lookup-var-or-literal:end/disp8
     }
     # otherwise return lookup-var(name, vars)
     {
-      (lookup-var %esi *(ebp+0xc))  # => eax
+$lookup-var-or-literal:var:
+      (lookup-var %esi *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
     }
 $lookup-var-or-literal:end:
     # . restore registers
@@ -6522,7 +6569,7 @@ lookup-var:  # name: (addr slice), vars: (addr stack live-var), out: (addr handl
     # . save registers
     50/push-eax
     #
-    (lookup-var-helper *(ebp+8) *(ebp+0xc) *(ebp+0x10))
+    (lookup-var-helper *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
     # if (*out == 0) abort
     8b/-> *(ebp+0x10) 0/r32/eax
     81 7/subop/compare *eax 0/imm32
