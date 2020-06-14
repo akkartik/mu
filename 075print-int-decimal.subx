@@ -402,4 +402,65 @@ test-is-decimal-digit-above-9:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     c3/return
 
+to-decimal-digit:  # in: byte -> out/eax: int
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # eax = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+$to-decimal-digit:check0:
+    # if (eax < '0') goto abort
+    3d/compare-eax-with  0x30/imm32/0
+    7c/jump-if-<  $to-decimal-digit:abort/disp8
+$to-decimal-digit:check1:
+    # if (eax > '9') goto abort
+    3d/compare-eax-with  0x39/imm32/f
+    7f/jump-if->  $to-decimal-digit:abort/disp8
+$to-decimal-digit:digit:
+    # return eax - '0'
+    2d/subtract-from-eax  0x30/imm32/0
+$to-decimal-digit:end:
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$to-decimal-digit:abort:
+    # . write-buffered(stderr, error)
+    # . . push args
+    68/push  "to-decimal-digit: not a digit character: "/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-byte-buffered(stderr, %eax)
+    # . . push args
+    50/push-eax
+    68/push  Stderr/imm32
+    # . . call
+#?     e8/call  write-byte-buffered/disp32
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-buffered(stderr, "\n")
+    # . . push args
+    68/push  Newline/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . flush(Stderr)
+    # . . push args
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
 # . . vim:nowrap:textwidth=0
