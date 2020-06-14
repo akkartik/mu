@@ -382,9 +382,9 @@ Tree-size:  # (addr int)
 
 # Types
 
-# TODO: heap allocations here can't be reclaimed
+# TODO: Turn this data structure into valid Mu, with (fake) handles rather than addrs.
 Type-id:  # (stream (addr array byte))
-  0x1c/imm32/write
+  0x20/imm32/write
   0/imm32/read
   0x100/imm32/size
   # data
@@ -396,9 +396,9 @@ Type-id:  # (stream (addr array byte))
   "boolean"/imm32  # 5
   "constant"/imm32  # 6: like a literal, but value is an int in Var-offset
   "offset"/imm32  # 7: (offset T) is guaranteed to be a 32-bit multiple of size-of(T)
-  0/imm32
   # 0x20
-  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  "byte"/imm32  # 8
+          0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
@@ -481,7 +481,7 @@ convert-mu:  # in: (addr buffered-file), out: (addr buffered-file), err: (addr b
     89/<- %ebp 4/r32/esp
     # initialize global data structures
     c7 0/subop/copy *Next-block-index 1/imm32
-    c7 0/subop/copy *Type-id 0x20/imm32  # stream-write
+    c7 0/subop/copy *Type-id 0x24/imm32  # stream-write
     c7 0/subop/copy *_Program-functions 0/imm32
     c7 0/subop/copy *_Program-functions->payload 0/imm32
     c7 0/subop/copy *_Program-types 0/imm32
@@ -1168,6 +1168,64 @@ test-convert-function-with-local-var-dereferenced:
     (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-dereferenced/13")
     (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-dereferenced/14")
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-dereferenced/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# variables of type 'byte' are not allowed on the stack
+test-convert-function-with-byte-operations:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: byte <- copy 0\n")
+    (write _test-input-stream "  var y/ecx: byte <- copy 0\n")
+    (write _test-input-stream "  y <- copy-byte x\n")
+    (write _test-input-stream "  var z/edx: (addr byte) <- copy 0\n")
+    (write _test-input-stream "  y <- copy-byte *z\n")
+    (write _test-input-stream "  copy-byte-to *z, x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-convert-function-with-byte-operations/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                              "F - test-convert-function-with-byte-operations/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                               "F - test-convert-function-with-byte-operations/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                      "F - test-convert-function-with-byte-operations/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                         "F - test-convert-function-with-byte-operations/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-convert-function-with-byte-operations/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-function-with-byte-operations/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                  "F - test-convert-function-with-byte-operations/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"                    "F - test-convert-function-with-byte-operations/8")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0/imm32"                  "F - test-convert-function-with-byte-operations/9")
+    (check-next-stream-line-equal _test-output-stream "    8a/byte-> %eax 0x00000001/r32"           "F - test-convert-function-with-byte-operations/10")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %edx"                    "F - test-convert-function-with-byte-operations/11")
+    (check-next-stream-line-equal _test-output-stream "    ba/copy-to-edx 0/imm32"                  "F - test-convert-function-with-byte-operations/12")
+    (check-next-stream-line-equal _test-output-stream "    8a/byte-> *edx 0x00000001/r32"           "F - test-convert-function-with-byte-operations/13")
+    (check-next-stream-line-equal _test-output-stream "    88/byte<- *edx 0x00000000/r32"           "F - test-convert-function-with-byte-operations/14")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %edx"                     "F - test-convert-function-with-byte-operations/15")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"                     "F - test-convert-function-with-byte-operations/16")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-function-with-byte-operations/17")
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-function-with-byte-operations/18")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-function-with-byte-operations/19")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-function-with-byte-operations/20")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-function-with-byte-operations/21")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-function-with-byte-operations/22")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-function-with-byte-operations/23")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5976,6 +6034,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
     3d/compare-eax-and 0/imm32
     {
       75/jump-if-!= break/disp8
+      # TODO: disallow vars of type 'byte' on the stack
       # ensure that there's nothing else on this line
       (next-mu-token *(ebp+8) %ecx)
       (slice-empty? %ecx)  # => eax
@@ -5988,6 +6047,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
     # or v has a register and there's more to this line
     {
       74/jump-if-= break/disp8
+      # TODO: disallow vars of type 'byte' in registers 'esi' or 'edi'
       # ensure that the next word is '<-'
       (next-mu-token *(ebp+8) %ecx)
       (slice-equal? %ecx "<-")  # => eax
@@ -7816,8 +7876,15 @@ compute-size-of-type-id:  # t: type-id -> result/eax: int
     # eax = t
     8b/-> *(ebp+8) 0/r32/eax
     # if v is a literal, return 0
-    3d/compare-eax-and 0/imm32
+    3d/compare-eax-and 0/imm32/literal
     74/jump-if-= $compute-size-of-type-id:end/disp8  # eax changes type from type-id to int
+    # if v is a byte, return 1
+    {
+      3d/compare-eax-and 8/imm32/byte
+      75/jump-if-!= break/disp8
+      b8/copy-to-eax 1/imm32
+      eb/jump $compute-size-of-type-id:end/disp8
+    }
     # if v has a user-defined type, compute its size
     # TODO: support non-atom type
     (find-typeinfo %eax %ecx)
@@ -11499,6 +11566,61 @@ _Primitive-copy-lit-to-mem:  # (payload primitive)
     0/imm32/no-disp32
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
+    _Primitive-copy-byte-from-reg/imm32/next
+# - copy byte
+_Primitive-copy-byte-from-reg:
+    0x11/imm32/alloc-id:fake:payload
+    # var/reg <- copy-byte var2/reg2 => 8a/byte-> %var2 var/r32
+    0x11/imm32/alloc-id:fake
+    _string-copy-byte/imm32/name
+    0x11/imm32/alloc-id:fake
+    Single-byte-var-in-some-register/imm32/inouts
+    0x11/imm32/alloc-id:fake
+    Single-byte-var-in-some-register/imm32/outputs
+    0x11/imm32/alloc-id:fake
+    _string_8a_copy_byte/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    3/imm32/r32-is-first-output
+    0/imm32/no-imm32
+    0/imm32/no-disp32
+    1/imm32/output-is-write-only
+    0x11/imm32/alloc-id:fake
+    _Primitive-copy-byte-from-mem/imm32/next
+_Primitive-copy-byte-from-mem:
+    0x11/imm32/alloc-id:fake:payload
+    # var/reg <- copy-byte *var2/reg2 => 8a/byte-> *var2 var/r32
+    0x11/imm32/alloc-id:fake
+    _string-copy-byte/imm32/name
+    0x11/imm32/alloc-id:fake
+    Single-byte-var-in-mem/imm32/inouts
+    0x11/imm32/alloc-id:fake
+    Single-byte-var-in-some-register/imm32/outputs
+    0x11/imm32/alloc-id:fake
+    _string_8a_copy_byte/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    3/imm32/r32-is-first-output
+    0/imm32/no-imm32
+    0/imm32/no-disp32
+    1/imm32/output-is-write-only
+    0x11/imm32/alloc-id:fake
+    _Primitive-copy-byte-to-mem/imm32/next
+_Primitive-copy-byte-to-mem:
+    0x11/imm32/alloc-id:fake:payload
+    # copy-byte-to *var1/reg1, var2/reg2 => 88/byte<- *reg1 reg2/r32
+    0x11/imm32/alloc-id:fake
+    _string-copy-byte-to/imm32/name
+    0x11/imm32/alloc-id:fake
+    Two-args-byte-stack-byte-reg/imm32/inouts
+    0/imm32/no-outputs
+    0/imm32/no-outputs
+    0x11/imm32/alloc-id:fake
+    _string_88_copy_byte/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    2/imm32/r32-is-second-inout
+    0/imm32/no-imm32
+    0/imm32/no-disp32
+    0/imm32/output-is-write-only
+    0x11/imm32/alloc-id:fake
     _Primitive-address/imm32/next
 # - address
 _Primitive-address:  # (payload primitive)
@@ -12476,6 +12598,16 @@ _string-copy-to:  # (payload array byte)
     # "copy-to"
     0x7/imm32/size
     0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x74/t 0x6f/o
+_string-copy-byte:
+    0x11/imm32/alloc-id:fake:payload
+    # "copy-byte"
+    0x9/imm32/size
+    0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/- 0x62/b 0x79/y 0x74/t 0x65/e
+_string-copy-byte-to:
+    0x11/imm32/alloc-id:fake:payload
+    # "copy-byte-to"
+    0xc/imm32/size
+    0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/- 0x62/b 0x79/y 0x74/t 0x65/e 0x2d/- 0x74/t 0x6f/o
 _string-decrement:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "decrement"
@@ -12923,6 +13055,16 @@ _string_8b_->:  # (payload array byte)
     # "8b/->"
     0x5/imm32/size
     0x38/8 0x62/b 0x2f/slash 0x2d/dash 0x3e/>
+_string_8a_copy_byte:
+    0x11/imm32/alloc-id:fake:payload
+    # "8a/byte->"
+    0x9/imm32/size
+    0x38/8 0x61/a 0x2f// 0x62/b 0x79/y 0x74/t 0x65/e 0x2d/- 0x3e/>
+_string_88_copy_byte:
+    0x11/imm32/alloc-id:fake:payload
+    # "88/byte<-"
+    0x9/imm32/size
+    0x38/8 0x38/8 0x2f// 0x62/b 0x79/y 0x74/t 0x65/e 0x3c/< 0x2d/-
 _string_8d_copy_address:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "8d/copy-address"
@@ -13007,12 +13149,40 @@ Int-var-in-mem:  # (payload var)
     0/imm32/no-register
     0/imm32/no-register
 
+# Not really legal, but closest we can currently represent a dereference of an (addr byte)
+Single-byte-var-in-mem:  # (payload list var)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    Byte-var-in-mem/imm32
+    0/imm32/next
+    0/imm32/next
+
+# Not really legal, but closest we can currently represent a dereference of an (addr byte)
+Byte-var-in-mem:  # (payload var)
+    0x11/imm32/alloc-id:fake:payload
+    0/imm32/name
+    0/imm32/name
+    0x11/imm32/alloc-id:fake
+    Type-byte/imm32
+    1/imm32/some-block-depth
+    1/imm32/some-stack-offset
+    0/imm32/no-register
+    0/imm32/no-register
+
 Two-args-int-stack-int-reg:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-mem/imm32
     0x11/imm32/alloc-id:fake
     Single-int-var-in-some-register/imm32/next
+
+# Not really legal, but closest we can currently represent a dereference of an (addr byte)
+Two-args-byte-stack-byte-reg:  # (payload list var)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    Byte-var-in-mem/imm32
+    0x11/imm32/alloc-id:fake
+    Single-byte-var-in-some-register/imm32/next
 
 Two-args-int-reg-int-stack:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
@@ -13056,6 +13226,13 @@ Single-addr-var-in-some-register:  # (payload list var)
     0/imm32/next
     0/imm32/next
 
+Single-byte-var-in-some-register:  # (payload list var)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    Byte-var-in-some-register/imm32
+    0/imm32/next
+    0/imm32/next
+
 Int-var-in-some-register:  # (payload var)
     0x11/imm32/alloc-id:fake:payload
     0/imm32/name
@@ -13068,10 +13245,10 @@ Int-var-in-some-register:  # (payload var)
     Any-register/imm32
 
 Any-register:  # (payload array byte)
-  0x11/imm32/alloc-id:fake:payload
-  1/imm32/size
-  # data
-  2a/asterisk
+    0x11/imm32/alloc-id:fake:payload
+    1/imm32/size
+    # data
+    2a/asterisk
 
 Addr-var-in-some-register:  # (payload var)
     0x11/imm32/alloc-id:fake:payload
@@ -13079,6 +13256,17 @@ Addr-var-in-some-register:  # (payload var)
     0/imm32/name
     0x11/imm32/alloc-id:fake
     Type-addr/imm32
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    0x11/imm32/alloc-id:fake
+    Any-register/imm32
+
+Byte-var-in-some-register:  # (payload var)
+    0x11/imm32/alloc-id:fake:payload
+    0/imm32/name
+    0/imm32/name
+    0x11/imm32/alloc-id:fake
+    Type-byte/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     0x11/imm32/alloc-id:fake
@@ -13230,6 +13418,14 @@ Type-addr:  # (payload tree type-id)
     0x11/imm32/alloc-id:fake:payload
     1/imm32/is-atom
     2/imm32/value:addr
+    0/imm32/left:unused
+    0/imm32/right:null
+    0/imm32/right:null
+
+Type-byte:  # (payload tree type-id)
+    0x11/imm32/alloc-id:fake:payload
+    1/imm32/is-atom
+    8/imm32/value:byte
     0/imm32/left:unused
     0/imm32/right:null
     0/imm32/right:null

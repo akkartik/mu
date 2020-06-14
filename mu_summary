@@ -98,7 +98,7 @@ register):
   var/reg <- xor n
   xor-with var, n
 
-  var1/reg1 <- copy var2/reg2
+  var/reg <- copy var2/reg2
   copy-to var1, var2/reg
   var/reg <- copy var2
   var/reg <- copy n
@@ -117,6 +117,23 @@ memory. That's a restriction of the underlying x86 processor.
 Any instruction above that takes a variable in memory can be replaced with a
 dereference (`*`) of an address variable in a register. But you can't dereference
 variables in memory.
+
+## Byte operations
+
+A special-case is variables of type 'byte'. Mu is a 32-bit platform so for the
+most part only supports types that are multiples of 32 bits. However, we do
+want to support strings in ASCII and UTF-8, which will be arrays of bytes.
+
+Since most x86 instructions implicitly load 32 bits at a time from memory,
+variables of type 'byte' are only allowed in registers, not on the stack. Here
+are the possible instructions for reading bytes to/from memory:
+
+  var/reg <- copy-byte var2/reg2      # var: byte, var2: byte
+  var/reg <- copy-byte *var2/reg2     # var: byte, var2: (addr byte)
+  copy-byte-to *var1/reg1, var2/reg2  # var1: (addr byte), var2: byte
+
+In addition, variables of type 'byte' are restricted to (the lowest bytes of)
+just 4 registers: eax, ecx, edx and ebx.
 
 ## Primitive jump instructions
 
