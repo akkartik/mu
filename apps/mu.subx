@@ -1231,6 +1231,52 @@ test-convert-function-with-byte-operations:
     5d/pop-to-ebp
     c3/return
 
+# variables of type 'byte' _can_ be function args. They then occupy 4 bytes.
+test-copy-byte-var-from-fn-arg:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo x: byte, y: int {\n")
+    (write _test-input-stream "  var a/eax: byte <- copy x\n")
+    (write _test-input-stream "  var b/eax: int <- copy y\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-copy-byte-from-fn-arg/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-copy-byte-from-fn-arg/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-copy-byte-from-fn-arg/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-copy-byte-from-fn-arg/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-copy-byte-from-fn-arg/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-copy-byte-from-fn-arg/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-copy-byte-from-fn-arg/6")
+    (check-next-stream-line-equal _test-output-stream "    8b/-> *(ebp+0x00000008) 0x00000000/r32"  "F - test-copy-byte-from-fn-arg/7")
+    (check-next-stream-line-equal _test-output-stream "    8b/-> *(ebp+0x0000000c) 0x00000000/r32"  "F - test-copy-byte-from-fn-arg/8")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"   "F - test-copy-byte-from-fn-arg/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-copy-byte-from-fn-arg/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-copy-byte-from-fn-arg/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-copy-byte-from-fn-arg/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-copy-byte-from-fn-arg/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-copy-byte-from-fn-arg/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-copy-byte-from-fn-arg/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-compare-register-with-literal:
     # . prologue
     55/push-ebp
@@ -7972,11 +8018,11 @@ compute-size-of-type-id:  # t: type-id -> result/eax: int
     # if t is a literal, return 0
     3d/compare-eax-and 0/imm32/literal
     0f 84/jump-if-= $compute-size-of-type-id:end/disp32  # eax changes type from type-id to int
-    # if t is a byte, return 1
+    # if t is a byte, return 4 (because we don't really support non-multiples of 4)
     3d/compare-eax-and 8/imm32/byte
     {
       75/jump-if-!= break/disp8
-      b8/copy-to-eax 1/imm32
+      b8/copy-to-eax 4/imm32
       eb/jump $compute-size-of-type-id:end/disp8
     }
     # if t is a handle, return 8
@@ -8499,11 +8545,11 @@ size-of-type-id:  # t: type-id -> result/eax: int
     # if t is a literal, return 0
     3d/compare-eax-and 0/imm32
     0f 84/jump-if-= $size-of-type-id:end/disp32  # eax changes type from type-id to int
-    # if v is a byte, return 1
+    # if t is a byte, return 4 (because we don't really support non-multiples of 4)
     3d/compare-eax-and 8/imm32/byte
     {
       75/jump-if-!= break/disp8
-      b8/copy-to-eax 1/imm32
+      b8/copy-to-eax 4/imm32
       eb/jump $size-of-type-id:end/disp8
     }
     # if t is a handle, return 8
@@ -9859,9 +9905,8 @@ translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: 
     (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     89/<- %ebx 0/r32/eax
-    # var elemsize/ecx: int = element-size(base)
-    (array-element-type-id %ebx)  # => eax
-    (size-of-type-id %eax)  # => eax
+    # var elemsize/ecx: int = array-element-size(base)
+    (array-element-size %ebx)  # => eax
     89/<- %ecx 0/r32/eax
     # var outreg/edx: (addr array byte) = stmt->outputs[0]->value->register
     (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
@@ -9960,6 +10005,31 @@ $translate-mu-length-stmt:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+array-element-size:  # arr: (addr var) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax = arr
+    8b/-> *(ebp+8) 0/r32/eax
+    #
+    (array-element-type-id %eax)  # => eax
+    # if array element is 'byte', size is 1
+    3d/compare-eax-and 8/imm32/byte
+    {
+      75/jump-if-!= break/disp8
+      b8/copy-to-eax 1/imm32
+      eb/jump $array-element-size:end/disp8
+    }
+    {
+      74/jump-if-= break/disp8
+      (size-of-type-id %eax)  # => eax
+    }
+$array-element-size:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -10119,15 +10189,14 @@ $translate-mu-index-stmt-with-array-in-register:emit-register-index:
       {
         0f 84/jump-if-= break/disp32
 $translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
-        # print index->register "<<" log2(size-of(element(base->type))) " + 4) "
+        # print index->register "<<" log2(array-element-size(base)) " + 4) "
         # . index->register "<<"
         (lookup *(edx+0x18) *(edx+0x1c))  # Var-register Var-register => eax
         (write-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) "<<")
         # . log2(size-of(element(base->type)))
         # TODO: ensure size is a power of 2
-        (array-element-type-id %ebx)  # => eax
-        (size-of-type-id %eax)  # => eax
+        (array-element-size %ebx)  # => eax
         (num-shift-rights %eax)  # => eax
         (print-int32-buffered *(ebp+8) %eax)
         e9/jump $translate-mu-index-stmt-with-array-in-register:emit-register-index-done/disp32
@@ -10232,15 +10301,14 @@ $translate-mu-index-stmt-with-array-on-stack:emit-register-index:
       {
         0f 84/jump-if-= break/disp32
 $translate-mu-index-stmt-with-array-on-stack:emit-int-register-index:
-        # print index->register "<<" log2(size-of(element-type(base))) " + " base->offset+4
+        # print index->register "<<" log2(array-element-size(base)) " + " base->offset+4
         # . inouts[1]->register "<<"
         (lookup *(edx+0x18) *(edx+0x1c))  # Var-register Var-register => eax
         (write-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) "<<")
         # . log2(size-of(element(base)))
         # TODO: ensure size is a power of 2
-        (array-element-type-id %ecx)  # => eax
-        (size-of-type-id %eax)  # => eax
+        (array-element-size %ecx)  # => eax
         (num-shift-rights %eax)  # => eax
         (print-int32-buffered *(ebp+8) %eax)
         #
