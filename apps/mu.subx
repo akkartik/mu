@@ -3213,6 +3213,52 @@ test-convert-index-into-array-with-literal:
     5d/pop-to-ebp
     c3/return
 
+test-convert-index-into-array-of-bytes-with-literal:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array byte) <- copy 0\n")
+    (write _test-input-stream "  var x/eax: (addr byte) <- index arr, 2\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-convert-index-into-array-of-bytes-with-literal/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                              "F - test-convert-index-into-array-of-bytes-with-literal/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                               "F - test-convert-index-into-array-of-bytes-with-literal/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                      "F - test-convert-index-into-array-of-bytes-with-literal/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                         "F - test-convert-index-into-array-of-bytes-with-literal/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-convert-index-into-array-of-bytes-with-literal/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-index-into-array-of-bytes-with-literal/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                  "F - test-convert-index-into-array-of-bytes-with-literal/7")
+                                                                                 # 2 * 1 byte/elem + 4 bytes for size = offset 6
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + 0x00000006) 0x00000000/r32"  "F - test-convert-index-into-array-of-bytes-with-literal/8")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array-of-bytes-with-literal/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-index-into-array-of-bytes-with-literal/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-index-into-array-of-bytes-with-literal/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-index-into-array-of-bytes-with-literal/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-index-into-array-of-bytes-with-literal/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-index-into-array-of-bytes-with-literal/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-index-into-array-of-bytes-with-literal/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-index-into-array-on-stack:
     # . prologue
     55/push-ebp
@@ -3372,6 +3418,57 @@ test-convert-index-into-array-using-offset:
     5d/pop-to-ebp
     c3/return
 
+test-convert-index-into-array-of-bytes-using-offset:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array byte) <- copy 0\n")
+    (write _test-input-stream "  var idx/ecx: int <- copy 3\n")
+    (write _test-input-stream "  var off/ecx: (offset byte) <- compute-offset arr, idx\n")
+    (write _test-input-stream "  var x/eax: (addr byte) <- index arr, off\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-convert-index-into-array-of-bytes-using-offset/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                              "F - test-convert-index-into-array-of-bytes-using-offset/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                               "F - test-convert-index-into-array-of-bytes-using-offset/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                      "F - test-convert-index-into-array-of-bytes-using-offset/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                         "F - test-convert-index-into-array-of-bytes-using-offset/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-convert-index-into-array-of-bytes-using-offset/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-index-into-array-of-bytes-using-offset/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                  "F - test-convert-index-into-array-of-bytes-using-offset/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"                    "F - test-convert-index-into-array-of-bytes-using-offset/8")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"                  "F - test-convert-index-into-array-of-bytes-using-offset/9")
+    (check-next-stream-line-equal _test-output-stream "    69/multiply %ecx 0x00000001/imm32 0x00000001/r32"  "F - test-convert-index-into-array-of-bytes-using-offset/10")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + ecx + 4) 0x00000000/r32"  "F - test-convert-index-into-array-of-bytes-using-offset/11")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"                     "F - test-convert-index-into-array-of-bytes-using-offset/12")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array-of-bytes-using-offset/13")
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-index-into-array-of-bytes-using-offset/14")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-index-into-array-of-bytes-using-offset/15")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-index-into-array-of-bytes-using-offset/16")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-index-into-array-of-bytes-using-offset/17")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-index-into-array-of-bytes-using-offset/18")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-index-into-array-of-bytes-using-offset/19")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-index-into-array-using-offset-on-stack:
     # . prologue
     55/push-ebp
@@ -3419,6 +3516,58 @@ test-convert-index-into-array-using-offset-on-stack:
     (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-index-into-array-using-offset-on-stack/18")
     (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-index-into-array-using-offset-on-stack/19")
     (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-index-into-array-using-offset-on-stack/20")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-index-into-array-of-bytes-using-offset-on-stack:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array byte) <- copy 0\n")
+    (write _test-input-stream "  var idx: int\n")
+    (write _test-input-stream "  var off/ecx: (offset byte) <- compute-offset arr, idx\n")
+    (write _test-input-stream "  var x/eax: (addr byte) <- index arr, off\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                              "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                               "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                      "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                         "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                  "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/7")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"                         "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/8")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"                    "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/9")
+    (check-next-stream-line-equal _test-output-stream "    69/multiply *(ebp+0xfffffff8) 0x00000001/imm32 0x00000001/r32"  "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/10")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + ecx + 4) 0x00000000/r32"  "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/11")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"                     "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/12")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"    "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/13")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/14")
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/15")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/16")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/17")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/18")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/19")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-index-into-array-of-bytes-using-offset-on-stack/20")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -10347,7 +10496,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
         (lookup *(edx+0x18) *(edx+0x1c))  # Var-register Var-register => eax
         (write-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) "<<")
-        # . log2(size-of(element(base->type)))
+        # . log2(array-element-size(base->type))
         # TODO: ensure size is a power of 2
         (array-element-size %ebx)  # => eax
         (num-shift-rights %eax)  # => eax
@@ -10384,9 +10533,8 @@ $translate-mu-index-stmt-with-array-in-register:emit-literal-index:
       (lookup *edx *(edx+4))  # Var-name Var-name => eax
       (parse-hex-int %eax)  # => eax
       89/<- %edx 0/r32/eax
-      # offset = idx-value * size-of(element(base->type))
-      (array-element-type-id %ebx)  # => eax
-      (size-of-type-id %eax)  # => eax
+      # offset = idx-value * array-element-size(base->type)
+      (array-element-size %ebx)  # => eax
       f7 4/subop/multiply-into-eax %edx  # clobbers edx
       # offset += 4 for array size
       05/add-to-eax 4/imm32
@@ -10459,7 +10607,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-int-register-index:
         (lookup *(edx+0x18) *(edx+0x1c))  # Var-register Var-register => eax
         (write-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) "<<")
-        # . log2(size-of(element(base)))
+        # . log2(array-element-size(base))
         # TODO: ensure size is a power of 2
         (array-element-size %ecx)  # => eax
         (num-shift-rights %eax)  # => eax
@@ -10502,9 +10650,8 @@ $translate-mu-index-stmt-with-array-on-stack:emit-literal-index:
       (lookup *edx *(edx+4))  # Var-name Var-name => eax
       (parse-hex-int %eax)  # Var-name => eax
       89/<- %edx 0/r32/eax
-      # offset = idx-value * size-of(element-type(base->type))
-      (array-element-type-id %ecx)  # => eax
-      (size-of-type-id %eax)  # => eax
+      # offset = idx-value * array-element-size(base)
+      (array-element-size %ecx)  # => eax
       f7 4/subop/multiply-into-eax %edx  # clobbers edx
       # offset += base->offset
       03/add *(ecx+0x14) 0/r32/eax  # Var-offset
@@ -10563,9 +10710,8 @@ $translate-mu-compute-index-stmt:emit-elem-size:
     # var base/ebx: (addr var)
     (lookup *ebx *(ebx+4))  # Stmt-var-value Stmt-var-value => eax
     89/<- %ebx 0/r32/eax
-    # print size-of(element(base->type))
-    (array-element-type-id %ebx)  # => eax
-    (size-of-type-id %eax)  # => eax
+    # print array-element-size(base)
+    (array-element-size %ebx)  # => eax
     (print-int32-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) "/imm32 ")
 $translate-mu-compute-index-stmt:emit-output:
