@@ -2835,6 +2835,53 @@ test-convert-function-with-local-array-var-in-mem:
     5d/pop-to-ebp
     c3/return
 
+# special-case for size(byte) when allocating array
+test-convert-function-with-local-array-of-bytes-in-mem:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: (array byte 3)\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-local-array-of-bytes-in-mem/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-local-array-of-bytes-in-mem/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-array-of-bytes-in-mem/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-array-of-bytes-in-mem/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-array-of-bytes-in-mem/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-array-of-bytes-in-mem/5")
+    # define x
+    (check-next-stream-line-equal _test-output-stream "    (push-n-zero-bytes 0x00000003)"  "F - test-convert-function-with-local-array-of-bytes-in-mem/7")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0x00000003/imm32"  "F - test-convert-function-with-local-array-of-bytes-in-mem/8")
+    # reclaim x
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000007/imm32"  "F - test-convert-function-with-local-array-of-bytes-in-mem/9")
+    #
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-array-of-bytes-in-mem/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-array-of-bytes-in-mem/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-array-of-bytes-in-mem/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-array-of-bytes-in-mem/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-array-of-bytes-in-mem/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-array-of-bytes-in-mem/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-address:
     # . prologue
     55/push-ebp
@@ -8613,7 +8660,7 @@ size-of-array:  # a: (addr tree type-id) -> result/eax: int
     (lookup *(eax+4) *(eax+8))  # Tree-left Tree-left => eax
     8b/-> *(eax+4) 1/r32/ecx  # Tree-value
     # return array-size * size-of(elem-type)
-    (size-of-type-id %edx)  # => eax
+    (size-of-type-id-as-array-element %edx)  # => eax
     f7 4/subop/multiply-into-eax %ecx
     05/add-to-eax 4/imm32  # for array size
 $size-of-array:end:
@@ -10113,18 +10160,29 @@ array-element-size:  # arr: (addr var) -> result/eax: int
     8b/-> *(ebp+8) 0/r32/eax
     #
     (array-element-type-id %eax)  # => eax
-    # if array element is 'byte', size is 1
+    (size-of-type-id-as-array-element %eax)  # => eax
+$array-element-size:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+size-of-type-id-as-array-element:  # t: type-id -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax = t
+    8b/-> *(ebp+8) 0/r32/eax
+    # if t is 'byte', size is 1
     3d/compare-eax-and 8/imm32/byte
     {
       75/jump-if-!= break/disp8
       b8/copy-to-eax 1/imm32
       eb/jump $array-element-size:end/disp8
     }
-    {
-      74/jump-if-= break/disp8
-      (size-of-type-id %eax)  # => eax
-    }
-$array-element-size:end:
+    # otherwise proceed as usual
+    (size-of-type-id %eax)  # => eax
+$size-of-type-id-as-array-element:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
