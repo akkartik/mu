@@ -208,7 +208,7 @@ fn operator _look: byte -> op/ecx: byte, look/esi: byte {
 }
 
 fn num _look: byte -> result/eax: int, look/esi: byte {
-  look <- copy _look  # should be a no-op; guaranteed to be a digit
+  look <- copy _look  # should be a no-op
   var out/edi: int <- copy 0
   {
     var first-digit/eax: int <- to-decimal-digit look
