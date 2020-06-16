@@ -23,7 +23,7 @@ fn simplify -> result/eax: int, look/esi: byte {
   # prime the pump
   look <- get-char  # prime the pump
   look <- skip-spaces look
-  result, look <- num look
+  result, look <- term look
   $simplify:loop: {
     # operator
     var op/ecx: byte <- copy 0
@@ -38,7 +38,7 @@ fn simplify -> result/eax: int, look/esi: byte {
     look <- skip-spaces look
     {
       var tmp/eax: int <- copy 0
-      tmp, look <- num look
+      tmp, look <- term look
       second <- copy tmp
     }
     # perform op
@@ -59,6 +59,11 @@ fn simplify -> result/eax: int, look/esi: byte {
     loop
   }
   look <- skip-spaces look
+}
+
+fn term _look: byte -> result/eax: int, look/esi: byte {
+  look <- copy _look  # should be a no-op
+  result, look <- num look
 }
 
 fn operator _look: byte -> op/ecx: byte, look/esi: byte {
