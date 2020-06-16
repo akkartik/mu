@@ -23,8 +23,13 @@ fn simplify -> result/eax: int, look/esi: byte {
   # prime the pump
   look <- get-char  # prime the pump
   look <- skip-spaces look
+  result, look <- expression look
+}
+
+fn expression _look: byte -> result/eax: int, look/esi: byte {
+  look <- copy _look  # should be a no-op
   result, look <- term look
-  $simplify:loop: {
+  $expression:loop: {
     # operator
     var op/ecx: byte <- copy 0
     look <- skip-spaces look
@@ -32,6 +37,11 @@ fn simplify -> result/eax: int, look/esi: byte {
     break-if-=
     compare look, 0xa
     break-if-=
+    {
+      var continue?/eax: boolean <- is-add-or-sub? look
+      compare continue?, 0  # false
+      break-if-= $expression:loop
+    }
     op, look <- operator look
     # second arg
     var second/edx: int <- copy 0
@@ -42,18 +52,18 @@ fn simplify -> result/eax: int, look/esi: byte {
       second <- copy tmp
     }
     # perform op
-    $simplify:perform-op: {
+    $expression:perform-op: {
       {
         compare op, 0x2b  # '+'
         break-if-!=
         result <- add second
-        break $simplify:perform-op
+        break $expression:perform-op
       }
       {
         compare op, 0x2d  # '-'
         break-if-!=
         result <- subtract second
-        break $simplify:perform-op
+        break $expression:perform-op
       }
     }
     loop
@@ -107,14 +117,27 @@ fn term _look: byte -> result/eax: int, look/esi: byte {
 }
 
 fn factor _look: byte -> result/eax: int, look/esi: byte {
+$factor:body: {
   look <- copy _look  # should be a no-op
   look <- skip-spaces look
-  result, look <- num look
+  # if next char is not '(' just parse a number
+  compare look, 0x28  # '('
+  {
+    break-if-=
+    result, look <- num look
+    break $factor:body
+  }
+  # otherwise recurse
+  look <- get-char look  # '('
+  result, look <- expression look
+  look <- skip-spaces look
+  look <- get-char look  # ')'
+}  # $factor:body
 }
 
 fn is-mul-or-div? c: byte -> result/eax: bool {
 $is-mul-or-div?:body: {
-  compare c, 0x2a
+  compare c, 0x2a  # '*'
   {
     break-if-!=
     result <- copy 1  # true
@@ -122,6 +145,24 @@ $is-mul-or-div?:body: {
   }
   result <- copy 0  # false
 }  # $is-mul-or-div?:body
+}
+
+fn is-add-or-sub? c: byte -> result/eax: bool {
+$is-add-or-sub?:body: {
+  compare c, 0x2b  # '+'
+  {
+    break-if-!=
+    result <- copy 1  # true
+    break $is-add-or-sub?:body
+  }
+  compare c, 0x2d  # '-'
+  {
+    break-if-!=
+    result <- copy 1  # true
+    break $is-add-or-sub?:body
+  }
+  result <- copy 0  # false
+}  # $is-add-or-sub?:body
 }
 
 fn operator _look: byte -> op/ecx: byte, look/esi: byte {
