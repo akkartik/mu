@@ -6,9 +6,27 @@
 #
 # Press 'q' to quit. All other keys scroll down.
 
-fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
-  var filename/eax: (addr array byte) <- first-arg args
-  var file/esi: (addr buffered-file) <- load-file filename
+fn main args-on-stack: (addr array (addr array byte)) -> exit-status/ebx: int {
+  # var file/esi: (addr buffered-file) = open args-on-stack[1] for reading {{{
+  var file/esi: (addr buffered-file) <- copy 0
+  {
+    var file-handle: (handle buffered-file)
+    {
+      var address-of-file-handle/esi: (addr handle buffered-file) <- address file-handle
+      # var filename/ecx: (addr array byte) = args-on-stack[1] {{{
+      var filename/ecx: (addr array byte) <- copy 0
+      {
+        var args/eax: (addr array (addr array byte)) <- copy args-on-stack
+        var tmp/eax: (addr addr array byte) <- index args, 1
+        filename <- copy *tmp
+      }
+      # }}}
+      open filename, 0, address-of-file-handle
+    }
+    var tmp/eax: (addr buffered-file) <- lookup file-handle
+    file <- copy tmp
+  }
+  # }}}
   enable-screen-grid-mode
   var nrows/eax: int <- copy 0
   var ncols/ecx: int <- copy 0
@@ -152,22 +170,6 @@ fn clear toprow: int, leftcol: int, botrow: int, rightcol: int {
     row <- increment
     loop
   }
-}
-
-fn first-arg args-on-stack: (addr array (addr array byte)) -> out/eax: (addr array byte) {
-  var args/eax: (addr array (addr array byte)) <- copy args-on-stack
-  var result/eax: (addr addr array byte) <- index args, 1
-  out <- copy *result
-}
-
-fn load-file filename: (addr array byte) -> out/esi: (addr buffered-file) {
-  var result: (handle buffered-file)
-  {
-    var tmp1/eax: (addr handle buffered-file) <- address result
-    open filename, 0, tmp1
-  }
-  var tmp2/eax: (addr buffered-file) <- lookup result
-  out <- copy tmp2
 }
 
 fn dump in: (addr buffered-file) {
