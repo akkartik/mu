@@ -24,14 +24,7 @@ fn simplify -> result/eax: int, look/esi: byte {
     look <- get-char  # prime the pump
     # first arg
     look <- skip-spaces look
-    {
-      {
-        var is-digit?/eax: boolean <- is-decimal-digit? look
-        compare is-digit?, 0  # false
-        break-if-= $simplify:body
-      }
-      result, look <- num look
-    }
+    result, look <- num look
     # operator
     var op/ecx: byte <- copy 0
     look <- skip-spaces look
@@ -106,4 +99,10 @@ fn skip-spaces _look: byte -> look/esi: byte {
 fn get-char -> look/esi: byte {
   var tmp/eax: byte <- read-key
   look <- copy tmp
+  compare look, 0
+  {
+    break-if-!=
+    print-string "^D\n"
+    syscall_exit
+  }
 }
