@@ -1,16 +1,28 @@
 fn main -> exit-status/ebx: int {
-  var val/eax: int <- num
-  print-int32-to-screen val
-  print-string "\n"
+  {
+    var c/eax: byte <- read-key
+    # if (c == 0) break
+    compare c, 0
+    break-if-=
+    # parse an int from screen and print it out
+    var n/eax: int <- num c
+    print-int32-to-screen n
+    print-string "\n"
+    loop
+  }
   exit-status <- copy 0
 }
 
-fn num -> result/eax: int {
+fn num firstc: byte -> result/eax: int {
   var out/edi: int <- copy 0
   {
+    var first-digit/eax: int <- to-decimal-digit firstc
+    out <- copy first-digit
+  }
+  {
     var c/eax: byte <- read-key
-    # if (c == EOF) break
-    compare c, 0xffffffff  # EOF marker
+    # if (c == 0) break
+    compare c, 0
     break-if-=
     # if (c == ' ') break
     compare c, 0x20  # space
