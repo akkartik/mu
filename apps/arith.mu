@@ -20,37 +20,37 @@ fn main -> exit-status/ebx: int {
 }
 
 fn simplify -> result/eax: int, look/esi: byte {
-  $simplify:body: {
-    look <- get-char  # prime the pump
-    # first arg
-    look <- skip-spaces look
-    result, look <- num look
-    # operator
-    var op/ecx: byte <- copy 0
-    look <- skip-spaces look
-    op, look <- operator look
-    # second arg
-    var second/edx: int <- copy 0
-    look <- skip-spaces look
-    {
-      var tmp/eax: int <- copy 0
-      tmp, look <- num look
-      second <- copy tmp
-    }
-    # perform op
+  look <- get-char  # prime the pump
+  # first arg
+  look <- skip-spaces look
+  result, look <- num look
+  # operator
+  var op/ecx: byte <- copy 0
+  look <- skip-spaces look
+  op, look <- operator look
+  # second arg
+  var second/edx: int <- copy 0
+  look <- skip-spaces look
+  {
+    var tmp/eax: int <- copy 0
+    tmp, look <- num look
+    second <- copy tmp
+  }
+  # perform op
+  $simplify:perform-op: {
     {
       compare op, 0x2b  # '+'
       break-if-!=
       result <- add second
-      break $simplify:body
+      break $simplify:perform-op
     }
     {
       compare op, 0x2d  # '-'
       break-if-!=
       result <- subtract second
-      break $simplify:body
+      break $simplify:perform-op
     }
-  }  # $simplify:body
+  }
   # trailing spaces
   look <- skip-spaces look
 }
