@@ -64,7 +64,7 @@ fn simplify -> result/eax: int, look/esi: byte {
 fn term _look: byte -> result/eax: int, look/esi: byte {
   look <- copy _look  # should be a no-op
   look <- skip-spaces look
-  result, look <- num look
+  result, look <- factor look
   $term:loop: {
     # operator
     var op/ecx: byte <- copy 0
@@ -84,7 +84,7 @@ fn term _look: byte -> result/eax: int, look/esi: byte {
     look <- skip-spaces look
     {
       var tmp/eax: int <- copy 0
-      tmp, look <- num look
+      tmp, look <- factor look
       second <- copy tmp
     }
     # perform op
@@ -104,6 +104,12 @@ fn term _look: byte -> result/eax: int, look/esi: byte {
     }
     loop
   }
+}
+
+fn factor _look: byte -> result/eax: int, look/esi: byte {
+  look <- copy _look  # should be a no-op
+  look <- skip-spaces look
+  result, look <- num look
 }
 
 fn is-mul-or-div? c: byte -> result/eax: bool {
