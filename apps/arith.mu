@@ -1,44 +1,75 @@
 fn main -> exit-status/ebx: int {
+  var look/esi: byte <- copy 0  # lookahead
+  var n/eax: int <- copy 0  # result of each expression
+  # read-eval-print loop
   {
-    var c/eax: byte <- read-key
-    # if (c == 0) break
-    compare c, 0
+    # print prompt
+    print-string "> "
+    # read and eval
+    n, look <- simplify
+    # if (look == 0) break
+    compare look, 0
     break-if-=
-    # parse an int from screen and print it out
-    var n/eax: int <- num c
+    # print
     print-int32-to-screen n
     print-string "\n"
+    #
     loop
   }
   exit-status <- copy 0
 }
 
-fn num firstc: byte -> result/eax: int {
+fn simplify -> result/eax: int, look/esi: byte {
+  look <- get-char  # prime the pump
+  # first arg
+  look <- skip-spaces look
+  {
+    var is-digit?/eax: boolean <- is-decimal-digit? look
+    compare is-digit?, 0  # false
+    break-if-=
+    result, look <- num look
+  }
+  # trailing spaces
+  look <- skip-spaces look
+}
+
+fn num _look: byte -> result/eax: int, look/esi: byte {
+  look <- copy _look  # should be a no-op; guaranteed to be a digit
   var out/edi: int <- copy 0
   {
-    var first-digit/eax: int <- to-decimal-digit firstc
+    var first-digit/eax: int <- to-decimal-digit look
     out <- copy first-digit
   }
   {
-    var c/eax: byte <- read-key
-    # if (c == 0) break
-    compare c, 0
-    break-if-=
-    # if (c == ' ') break
-    compare c, 0x20  # space
-    break-if-=
-    # if (c == '\n') break
-    compare c, 0xa  # newline
+    look <- get-char
+    # done?
+    var digit?/eax: bool <- is-decimal-digit? look
+    compare digit?, 0  # false
     break-if-=
     # out *= 10
     {
       var ten/eax: int <- copy 0xa
       out <- multiply ten
     }
-    # out += digit(c)
-    var digit/eax: int <- to-decimal-digit c
+    # out += digit(look)
+    var digit/eax: int <- to-decimal-digit look
     out <- add digit
     loop
   }
   result <- copy out
+}
+
+fn skip-spaces _look: byte -> look/esi: byte {
+  look <- copy _look  # should be a no-op
+  {
+    compare look, 0x20
+    break-if-!=
+    look <- get-char
+    loop
+  }
+}
+
+fn get-char -> look/esi: byte {
+  var tmp/eax: byte <- read-key
+  look <- copy tmp
 }
