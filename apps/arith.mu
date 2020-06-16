@@ -28,22 +28,20 @@ fn simplify -> result/eax: int, look/esi: byte {
 
 fn expression _look: byte -> result/eax: int, look/esi: byte {
   look <- copy _look  # should be a no-op
+  # read arg
   result, look <- term look
   $expression:loop: {
-    # operator
-    var op/ecx: byte <- copy 0
+    # while next non-space char in ['+', '-']
     look <- skip-spaces look
-    compare look, 0
-    break-if-=
-    compare look, 0xa
-    break-if-=
     {
       var continue?/eax: boolean <- is-add-or-sub? look
       compare continue?, 0  # false
       break-if-= $expression:loop
     }
+    # read operator
+    var op/ecx: byte <- copy 0
     op, look <- operator look
-    # second arg
+    # read next arg
     var second/edx: int <- copy 0
     look <- skip-spaces look
     {
@@ -51,7 +49,7 @@ fn expression _look: byte -> result/eax: int, look/esi: byte {
       tmp, look <- term look
       second <- copy tmp
     }
-    # perform op
+    # reduce
     $expression:perform-op: {
       {
         compare op, 0x2b  # '+'
@@ -73,23 +71,21 @@ fn expression _look: byte -> result/eax: int, look/esi: byte {
 
 fn term _look: byte -> result/eax: int, look/esi: byte {
   look <- copy _look  # should be a no-op
+  # read arg
   look <- skip-spaces look
   result, look <- factor look
   $term:loop: {
-    # operator
-    var op/ecx: byte <- copy 0
+    # while next non-space char in ['*', '/']
     look <- skip-spaces look
-    compare look, 0
-    break-if-=
-    compare look, 0xa
-    break-if-=
     {
       var continue?/eax: boolean <- is-mul-or-div? look
       compare continue?, 0  # false
       break-if-= $term:loop
     }
+    # read operator
+    var op/ecx: byte <- copy 0
     op, look <- operator look
-    # second arg
+    # read next arg
     var second/edx: int <- copy 0
     look <- skip-spaces look
     {
@@ -97,7 +93,7 @@ fn term _look: byte -> result/eax: int, look/esi: byte {
       tmp, look <- factor look
       second <- copy tmp
     }
-    # perform op
+    # reduce
     $term:perform-op: {
       {
         compare op, 0x2a  # '*'
@@ -120,7 +116,7 @@ fn factor _look: byte -> result/eax: int, look/esi: byte {
 $factor:body: {
   look <- copy _look  # should be a no-op
   look <- skip-spaces look
-  # if next char is not '(' just parse a number
+  # if next char is not '(', parse a number
   compare look, 0x28  # '('
   {
     break-if-=
