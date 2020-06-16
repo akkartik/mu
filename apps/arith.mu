@@ -1,12 +1,47 @@
+# Integer arithmetic using conventional precedence.
+#
+# Follows part 2 of Jack Crenshaw's "Let's build a compiler!"
+#   https://compilers.iecc.com/crenshaw
+#
+# Limitations:
+#   Reads numbers in decimal, but prints numbers in hex :(
+#   No division yet.
+#
+# To build:
+#   $ ./translate_mu apps/arith.mu
+#
+# Example session:
+#   $ ./a.elf
+#   press ctrl-c or ctrl-d to exit
+#   > 1
+#   0x00000001
+#   > 1+1
+#   0x00000002
+#   > 1 + 1
+#   0x00000002
+#   > 1+2 +3
+#   0x00000006
+#   > 1+2 *3
+#   0x00000007
+#   > (1+2) *3
+#   0x00000009
+#   > 1 + 3*4
+#   0x0000000d
+#   > ^D
+#   $
+#
+# Error handling is non-existent. This is just a prototype.
+
 fn main -> exit-status/ebx: int {
   var look/esi: byte <- copy 0  # lookahead
   var n/eax: int <- copy 0  # result of each expression
+  print-string "press ctrl-c or ctrl-d to exit\n"
   # read-eval-print loop
   {
     # print prompt
     print-string "> "
     # read and eval
-    n, look <- simplify
+    n, look <- simplify  # we explicitly thread 'look' everywhere
     # if (look == 0) break
     compare look, 0
     break-if-=
@@ -23,6 +58,7 @@ fn simplify -> result/eax: int, look/esi: byte {
   # prime the pump
   look <- get-char  # prime the pump
   look <- skip-spaces look
+  # do it
   result, look <- expression look
 }
 
@@ -134,6 +170,12 @@ $factor:body: {
 fn is-mul-or-div? c: byte -> result/eax: bool {
 $is-mul-or-div?:body: {
   compare c, 0x2a  # '*'
+  {
+    break-if-!=
+    result <- copy 1  # true
+    break $is-mul-or-div?:body
+  }
+  compare c, 0x2f  # '/'
   {
     break-if-!=
     result <- copy 1  # true
