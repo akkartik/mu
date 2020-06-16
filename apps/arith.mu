@@ -63,7 +63,59 @@ fn simplify -> result/eax: int, look/esi: byte {
 
 fn term _look: byte -> result/eax: int, look/esi: byte {
   look <- copy _look  # should be a no-op
+  look <- skip-spaces look
   result, look <- num look
+  $term:loop: {
+    # operator
+    var op/ecx: byte <- copy 0
+    look <- skip-spaces look
+    compare look, 0
+    break-if-=
+    compare look, 0xa
+    break-if-=
+    {
+      var continue?/eax: boolean <- is-mul-or-div? look
+      compare continue?, 0  # false
+      break-if-= $term:loop
+    }
+    op, look <- operator look
+    # second arg
+    var second/edx: int <- copy 0
+    look <- skip-spaces look
+    {
+      var tmp/eax: int <- copy 0
+      tmp, look <- num look
+      second <- copy tmp
+    }
+    # perform op
+    $term:perform-op: {
+      {
+        compare op, 0x2a  # '*'
+        break-if-!=
+        result <- multiply second
+        break $term:perform-op
+      }
+#?       {
+#?         compare op, 0x2f  # '/'
+#?         break-if-!=
+#?         result <- divide second  # not in Mu yet
+#?         break $term:perform-op
+#?       }
+    }
+    loop
+  }
+}
+
+fn is-mul-or-div? c: byte -> result/eax: bool {
+$is-mul-or-div?:body: {
+  compare c, 0x2a
+  {
+    break-if-!=
+    result <- copy 1  # true
+    break $is-mul-or-div?:body
+  }
+  result <- copy 0  # false
+}  # $is-mul-or-div?:body
 }
 
 fn operator _look: byte -> op/ecx: byte, look/esi: byte {
