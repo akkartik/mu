@@ -159,14 +159,14 @@ $factor:body: {
     break $factor:body
   }
   # otherwise recurse
-  look <- get-char look  # '('
+  look <- get-char  # '('
   result, look <- expression look
   look <- skip-spaces look
-  look <- get-char look  # ')'
+  look <- get-char  # ')'
 }  # $factor:body
 }
 
-fn is-mul-or-div? c: byte -> result/eax: bool {
+fn is-mul-or-div? c: byte -> result/eax: boolean {
 $is-mul-or-div?:body: {
   compare c, 0x2a  # '*'
   {
@@ -184,7 +184,7 @@ $is-mul-or-div?:body: {
 }  # $is-mul-or-div?:body
 }
 
-fn is-add-or-sub? c: byte -> result/eax: bool {
+fn is-add-or-sub? c: byte -> result/eax: boolean {
 $is-add-or-sub?:body: {
   compare c, 0x2b  # '+'
   {
@@ -217,7 +217,7 @@ fn num _look: byte -> result/eax: int, look/esi: byte {
   {
     look <- get-char
     # done?
-    var digit?/eax: bool <- is-decimal-digit? look
+    var digit?/eax: boolean <- is-decimal-digit? look
     compare digit?, 0  # false
     break-if-=
     # out *= 10

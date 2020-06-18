@@ -490,7 +490,7 @@ convert-mu:  # in: (addr buffered-file), out: (addr buffered-file), err: (addr b
     (parse-mu *(ebp+8) *(ebp+0x10) *(ebp+0x14))
     (populate-mu-type-sizes *(ebp+0x10) *(ebp+0x14))
 #?     (dump-typeinfos "=== typeinfos\n")
-    (check-mu-types)
+    (check-mu-types *(ebp+0x10) *(ebp+0x14))
     (emit-subx *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
 $convert-mu:end:
     # . epilogue
@@ -1125,6 +1125,380 @@ test-convert-function-with-second-local-var-in-same-reg:
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-second-local-var-in-same-reg/16")
     # . epilogue
     89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn main -> result/ebx: int {\n")
+    (write _test-input-stream "  result <- foo\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn foo -> result/ebx: int {\n")
+    (write _test-input-stream "  result <- copy 3\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "main:"                   "F - test-convert-function-call/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call/4")
+    (check-next-stream-line-equal _test-output-stream "$main:0x00000001:loop:"  "F - test-convert-function-call/5")
+    (check-next-stream-line-equal _test-output-stream "    (foo)"               "F - test-convert-function-call/6")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call/7")
+    (check-next-stream-line-equal _test-output-stream "$main:0x00000001:break:" "F - test-convert-function-call/8")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call/9")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call/10")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call/11")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call/12")
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-call/13")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call/14")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call/16")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call/17")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"  "F - test-convert-function-call/18")
+    (check-next-stream-line-equal _test-output-stream "    bb/copy-to-ebx 3/imm32"  "F - test-convert-function-call/19")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call/20")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-call/21")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call/22")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call/23")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call/24")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call/25")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-incorrect-inout-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x: int\n")
+    (write _test-input-stream "  g x\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g a: foo {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-incorrect-inout-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "call g: type for inout 'x' is not right"  "F - test-convert-function-call-with-incorrect-inout-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-convert-function-call-with-incorrect-inout-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-too-few-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  g\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g a: int {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-too-few-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "call g: too few inouts"  "F - test-convert-function-call-with-too-few-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-convert-function-call-with-too-few-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-too-many-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x: int\n")
+    (write _test-input-stream "  g x\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-too-many-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "call g: too many inouts"  "F - test-convert-function-call-with-too-many-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-convert-function-call-with-too-many-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-incorrect-output-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x/eax: int <- g\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g -> a/eax: foo {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-incorrect-output-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "call g: type for output 'x' is not right"  "F - test-convert-function-call-with-incorrect-output-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-convert-function-call-with-incorrect-output-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-too-few-outputs:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  g\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g -> a/eax: int {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-too-few-outputs: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "call g: too few outputs"  "F - test-convert-function-call-with-too-few-outputs: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-convert-function-call-with-too-few-outputs: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-too-many-outputs:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x/eax: int <- g\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-too-many-outputs: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "call g: too many outputs"  "F - test-convert-function-call-with-too-many-outputs: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-convert-function-call-with-too-many-outputs: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-incorrect-output-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x/ecx: int <- g\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g -> a/eax: int {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-incorrect-output-register: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "call g: register for output 'x' is not right"  "F - test-convert-function-call-with-incorrect-output-register: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-convert-function-call-with-incorrect-output-register: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
     5d/pop-to-ebp
     c3/return
 
@@ -4791,15 +5165,15 @@ $populate-mu-function-header:error1:
     (write-buffered *(ebp+0x14) "function header not in form 'fn <name> [inouts] [-> outputs] {' -- '")
     (flush *(ebp+0x14))
     (rewind-stream *(ebp+8))
-    (write-stream 2 *(ebp+8))
+    (write-stream-data *(ebp+0x14) *(ebp+8))
     (write-buffered *(ebp+0x14) "'\n")
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
     # never gets here
 
 $populate-mu-function-header:error2:
-    # error("function input '" var "' cannot be in a register")
-    (write-buffered *(ebp+0x14) "function input '")
+    # error("function inout '" var "' cannot be in a register")
+    (write-buffered *(ebp+0x14) "function inout '")
     (write-buffered *(ebp+0x14) *ebx)  # Var-name
     (write-buffered *(ebp+0x14) "' cannot be in a register")
     (flush *(ebp+0x14))
@@ -4807,15 +5181,14 @@ $populate-mu-function-header:error2:
     # never gets here
 
 $populate-mu-function-header:error3:
-    # error("function input '" var "' must be in a register")
-    (write-buffered *(ebp+0x14) "function input '")
+    # error("function output '" var "' must be in a register")
+    (write-buffered *(ebp+0x14) "function output '")
     (lookup *ebx *(ebx+4))  # => eax
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
     (write-buffered *(ebp+0x14) %eax)
     (write-buffered *(ebp+0x14) "' must be in a register, in instruction '")
-    (flush *(ebp+0x14))
     (rewind-stream *(ebp+8))
-    (write-stream 2 *(ebp+8))
+    (write-stream-data *(ebp+0x14) *(ebp+8))
     (write-buffered *(ebp+0x14) "'\n")
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
@@ -5131,7 +5504,7 @@ $parse-var-with-type:abort:
     (write-buffered *(ebp+0x14) "var should have form 'name: type' in '")
     (flush *(ebp+0x14))
     (rewind-stream *(ebp+0xc))
-    (write-stream 2 *(ebp+0xc))
+    (write-stream-data *(ebp+0x14) *(ebp+0xc))
     (write-buffered *(ebp+0x14) "'\n")
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
@@ -6305,7 +6678,7 @@ $parse-mu-block:abort:
     # error("'{' or '}' should be on its own line, but got '")
     (write-buffered *(ebp+0x18) "'{' or '}' should be on its own line, but got '")
     (rewind-stream %ecx)
-    (write-stream 2 %ecx)
+    (write-stream-data *(ebp+0x18) %ecx)
     (write-buffered *(ebp+0x18) "'\n")
     (flush *(ebp+0x18))
     (stop *(ebp+0x1c) 1)
@@ -6560,7 +6933,7 @@ $parse-mu-var-def:error1:
     # error("register variable requires a valid instruction to initialize but got '" line "'\n")
     (write-buffered *(ebp+0x18) "register variable requires a valid instruction to initialize but got '")
     (flush *(ebp+0x18))
-    (write-stream 2 *(ebp+8))
+    (write-stream-data *(ebp+0x18) *(ebp+8))
     (write-buffered *(ebp+0x18) "'\n")
     (flush *(ebp+0x18))
     (stop *(ebp+0x1c) 1)
@@ -6890,8 +7263,7 @@ $add-operation-and-inputs-to-stmt:abort:
     # error("invalid statement '" line "'\n")
     (rewind-stream *(ebp+8))
     (write-buffered *(ebp+0x14) "invalid identifier '")
-    (flush *(ebp+0x14))
-    (write-stream 2 *(ebp+8))
+    (write-stream-data *(ebp+0x14) *(ebp+8))
     (write-buffered *(ebp+0x14) "'\n")
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
@@ -8723,12 +9095,386 @@ $dump-typeinfo:end:
 # Type-checking
 #######################################################
 
-check-mu-types:
+check-mu-types:  # err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    #
+    # . save registers
+    50/push-eax
+    # var curr/eax: (addr function) = *Program->functions
+    (lookup *_Program-functions *_Program-functions->payload)  # => eax
+    {
+$check-mu-types:loop:
+      # if (curr == null) break
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      (check-mu-function %eax *(ebp+8) *(ebp+0xc))
+      # curr = lookup(curr->next)
+      (lookup *(eax+0x20) *(eax+0x24))  # Function-next Function-next => eax
+      e9/jump loop/disp32
+    }
 $check-mu-types:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-function:  # fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # eax = f
+    8b/-> *(ebp+8) 0/r32/eax
+    # TODO: anything to check in header?
+    # var body/eax: (addr block) = lookup(f->body)
+    (lookup *(eax+0x18) *(eax+0x1c))  # Function-body Function-body => eax
+    (check-mu-block %eax *(ebp+0xc) *(ebp+0x10))
+$check-mu-function:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-block:  # block: (addr block), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # eax = block
+    8b/-> *(ebp+8) 0/r32/eax
+    # var stmts/eax: (addr list stmt) = lookup(block->statements)
+    (lookup *(eax+4) *(eax+8))  # Block-stmts Block-stmts => eax
+    #
+    {
+$check-mu-block:check-empty:
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      # emit block->statements
+      (check-mu-stmt-list %eax *(ebp+0xc) *(ebp+0x10))
+    }
+$check-mu-block:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-stmt-list:  # stmts: (addr list stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    56/push-esi
+    # esi = stmts
+    8b/-> *(ebp+8) 6/r32/esi
+    {
+$check-mu-stmt-list:loop:
+      81 7/subop/compare %esi 0/imm32
+      0f 84/jump-if-= break/disp32
+      # var curr-stmt/eax: (addr stmt) = lookup(stmts->value)
+      (lookup *esi *(esi+4))  # List-value List-value => eax
+      {
+$check-mu-stmt-list:check-for-block:
+        81 7/subop/compare *eax 0/imm32/block  # Stmt-tag
+        75/jump-if-!= break/disp8
+$check-mu-stmt-list:block:
+        (check-mu-block %eax *(ebp+0xc) *(ebp+0x10))
+        eb/jump $check-mu-stmt-list:continue/disp8
+      }
+      {
+$check-mu-stmt-list:check-for-stmt1:
+        81 7/subop/compare *eax 1/imm32/stmt1  # Stmt-tag
+        0f 85/jump-if-!= break/disp32
+$check-mu-stmt-list:stmt1:
+        (check-mu-stmt %eax *(ebp+0xc) *(ebp+0x10))
+        eb/jump $check-mu-stmt-list:continue/disp8
+      }
+      {
+$check-mu-stmt-list:check-for-reg-var-def:
+        81 7/subop/compare *eax 3/imm32/reg-var-def  # Stmt-tag
+        0f 85/jump-if-!= break/disp32
+$check-mu-stmt-list:reg-var-def:
+        (check-mu-stmt %eax *(ebp+0xc) *(ebp+0x10))
+        eb/jump $check-mu-stmt-list:continue/disp8
+      }
+$check-mu-stmt-list:continue:
+      # TODO: raise an error on unrecognized Stmt-tag
+      (lookup *(esi+8) *(esi+0xc))  # List-next List-next => eax
+      89/<- %esi 0/r32/eax
+      e9/jump loop/disp32
+    }
+$check-mu-stmt-list:end:
+    # . restore registers
+    5e/pop-to-esi
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-stmt:  # stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+8) 6/r32/esi
+    # var f/edi: (addr function) = lookup(*Program->functions)
+    (lookup *_Program-functions *_Program-functions->payload)  # => eax
+    (find-matching-function %eax *(ebp+8))  # => eax
+    89/<- %edi 0/r32/eax
+    {
+$check-mu-stmt:check-for-call:
+      81 7/subop/compare %edi 0/imm32
+      0f 84/jump-if-= break/disp32
+$check-mu-stmt:is-call:
+      # var inouts/ecx: (addr stmt-var) = lookup(stmt->inouts)
+      (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+      89/<- %ecx 0/r32/eax
+      # var expected/edx: (addr list var) = lookup(f->inouts)
+      (lookup *(edi+8) *(edi+0xc))  # Function-inouts Function-inouts => eax
+      89/<- %edx 0/r32/eax
+      {
+$check-mu-stmt:check-for-inouts:
+        # if (inouts == 0) break
+        81 7/subop/compare %ecx 0/imm32
+        0f 84/jump-if-= break/disp32
+        # if (expected == 0) error
+        81 7/subop/compare %edx 0/imm32
+        0f 84/jump-if-= break/disp32
+$check-mu-stmt:check-inout-type:
+        # var v/eax: (addr v) = lookup(inouts->value)
+        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+        # var t/ebx: (addr tree type-id) = lookup(v->type)
+        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+        89/<- %ebx 0/r32/eax
+        # if (inouts->is-deref?) t = t->right  # TODO: check that t->left is an addr
+        81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
+        {
+          74/jump-if-= break/disp8
+          (lookup *(ebx+0xc) *(ebx+0x10))  # Tree-right Tree-right => eax
+          89/<- %ebx 0/r32/eax
+          # if t->right is null, t = t->left
+          81 7/subop/compare *(ebx+0xc) 0/imm32  # Tree-right
+          75/jump-if-!= break/disp8
+          (lookup *(ebx+4) *(ebx+8))  # Tree-left Tree-left => eax
+          89/<- %ebx 0/r32/eax
+        }
+        # var v2/eax: (addr v) = lookup(expected->value)
+        (lookup *edx *(edx+4))  # List-value List-value => eax
+        # var t2/eax: (addr tree type-id) = lookup(v2->type)
+        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+        # if (t != t2) error
+        (type-match? %eax %ebx)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        {
+          0f 85/jump-if-!= break/disp32
+          (write-buffered *(ebp+0xc) "call ")
+          (lookup *edi *(edi+4))  # Function-name Function-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) ": type for inout '")
+          (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+          (lookup *eax *(eax+4))  # Var-name Var-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) "' is not right\n")
+          (flush *(ebp+0xc))
+          (stop *(ebp+0x10) 1)
+        }
+$check-mu-stmt:continue-to-next-inout:
+        # inouts = lookup(inouts->next)
+        (lookup *(ecx+8) *(ecx+0xc))  # Stmt-var-next Stmt-var-next => eax
+        89/<- %ecx 0/r32/eax
+        # expected = lookup(expected->next)
+        (lookup *(edx+8) *(edx+0xc))  # List-next List-next => eax
+        89/<- %edx 0/r32/eax
+        #
+        e9/jump loop/disp32
+      }
+$check-mu-stmt:check-inout-count:
+      # if (inouts == expected) proceed
+      39/compare %ecx 2/r32/edx
+      {
+        0f 84/jump-if-= break/disp32
+        # exactly one of the two is null
+        # if (inouts == 0) error("too many args")
+        {
+          81 7/subop/compare %ecx 0/imm32
+          74/jump-if-= break/disp8
+          (write-buffered *(ebp+0xc) "call ")
+          (lookup *edi *(edi+4))  # Function-name Function-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) ": too many inouts\n")
+          (flush *(ebp+0xc))
+          (stop *(ebp+0x10) 1)
+        }
+        # if (expected == 0) error("too few args")
+        {
+          81 7/subop/compare %edx 0/imm32
+          74/jump-if-= break/disp8
+          (write-buffered *(ebp+0xc) "call ")
+          (lookup *edi *(edi+4))  # Function-name Function-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) ": too few inouts\n")
+          (flush *(ebp+0xc))
+          (stop *(ebp+0x10) 1)
+        }
+      }
+$check-mu-stmt:check-outputs:
+      # var outputs/ecx: (addr stmt-var) = lookup(stmt->outputs)
+      (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+      89/<- %ecx 0/r32/eax
+      # var expected/edx: (addr list var) = lookup(f->outputs)
+      (lookup *(edi+0x10) *(edi+0x14))  # Function-outputs Function-outputs => eax
+      89/<- %edx 0/r32/eax
+      {
+$check-mu-stmt:check-for-outputs:
+        # if (outputs == 0) break
+        81 7/subop/compare %ecx 0/imm32
+        0f 84/jump-if-= break/disp32
+        # if (expected == 0) error
+        81 7/subop/compare %edx 0/imm32
+        0f 84/jump-if-= break/disp32
+$check-mu-stmt:check-output-type:
+        # var v/eax: (addr v) = lookup(outputs->value)
+        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+        # var t/ebx: (addr tree type-id) = lookup(v->type)
+        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+        89/<- %ebx 0/r32/eax
+        # if (outputs->is-deref?) t = t->right  # TODO: check that t->left is an addr
+        81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
+        {
+          74/jump-if-= break/disp8
+          (lookup *(ebx+0xc) *(ebx+0x10))  # Tree-right Tree-right => eax
+          89/<- %ebx 0/r32/eax
+        }
+        # var v2/eax: (addr v) = lookup(expected->value)
+        (lookup *edx *(edx+4))  # List-value List-value => eax
+        # var t2/eax: (addr tree type-id) = lookup(v2->type)
+        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+        # if (t != t2) error
+        (type-equal? %eax %ebx)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        {
+          0f 85/jump-if-!= break/disp32
+          (write-buffered *(ebp+0xc) "call ")
+          (lookup *edi *(edi+4))  # Function-name Function-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) ": type for output '")
+          (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+          (lookup *eax *(eax+4))  # Var-name Var-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) "' is not right\n")
+          (flush *(ebp+0xc))
+          (stop *(ebp+0x10) 1)
+        }
+$check-mu-stmt:check-output-register:
+        # var v/eax: (addr v) = lookup(outputs->value)
+        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+        # var r/ebx: (addr array byte) = lookup(v->register)
+        (lookup *(eax+18) *(eax+0x1c))  # Var-register Var-register => eax
+        89/<- %ebx 0/r32/eax
+        # var v2/eax: (addr v) = lookup(expected->value)
+        (lookup *edx *(edx+4))  # Stmt-var-value Stmt-var-value => eax
+        # var r2/eax: (addr array byte) = lookup(v2->register)
+        (lookup *(eax+18) *(eax+0x1c))  # Var-register Var-register => eax
+        # if (r != r2) error
+        (string-equal? %eax %ebx)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        {
+          0f 85/jump-if-!= break/disp32
+          (write-buffered *(ebp+0xc) "call ")
+          (lookup *edi *(edi+4))  # Function-name Function-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) ": register for output '")
+          (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+          (lookup *eax *(eax+4))  # Var-name Var-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) "' is not right\n")
+          (flush *(ebp+0xc))
+          (stop *(ebp+0x10) 1)
+        }
+$check-mu-stmt:continue-to-next-output:
+        # outputs = lookup(outputs->next)
+        (lookup *(ecx+8) *(ecx+0xc))  # Stmt-var-next Stmt-var-next => eax
+        89/<- %ecx 0/r32/eax
+        # expected = lookup(expected->next)
+        (lookup *(edx+8) *(edx+0xc))  # List-next List-next => eax
+        89/<- %edx 0/r32/eax
+        #
+        e9/jump loop/disp32
+      }
+$check-mu-stmt:check-output-count:
+      # if (outputs == expected) proceed
+      39/compare %ecx 2/r32/edx
+      {
+        0f 84/jump-if-= break/disp32
+        # exactly one of the two is null
+        # if (outputs == 0) error("too many outputs")
+        {
+          81 7/subop/compare %ecx 0/imm32
+          74/jump-if-= break/disp8
+          (write-buffered *(ebp+0xc) "call ")
+          (lookup *edi *(edi+4))  # Function-name Function-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) ": too many outputs\n")
+          (flush *(ebp+0xc))
+          (stop *(ebp+0x10) 1)
+        }
+        # if (expected == 0) error("too few outputs")
+        {
+          81 7/subop/compare %edx 0/imm32
+          74/jump-if-= break/disp8
+          (write-buffered *(ebp+0xc) "call ")
+          (lookup *edi *(edi+4))  # Function-name Function-name => eax
+          (write-buffered *(ebp+0xc) %eax)
+          (write-buffered *(ebp+0xc) ": too few outputs\n")
+          (flush *(ebp+0xc))
+          (stop *(ebp+0x10) 1)
+        }
+      }
+    }
+$check-mu-stmt:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# like type-equal? but takes literals into account
+type-match?:  # def: (addr tree type-id), call: (addr tree type-id) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # if (call == literal) return true  # TODO: more precise
+    (is-simple-mu-type? *(ebp+0xc) 0)  # literal => eax
+    3d/compare-eax-and 0/imm32/false
+    b8/copy-to-eax 1/imm32/true
+    75/jump-if-!= $type-match?:end/disp8
+$type-match?:baseline:
+    # otherwise fall back
+    (type-equal? *(ebp+8) *(ebp+0xc))  # => eax
+$type-match?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -8936,31 +9682,52 @@ type-equal?:  # a: (addr tree type-id), b: (addr tree type-id) -> result/eax: bo
     # . save registers
     51/push-ecx
     52/push-edx
+    53/push-ebx
     # ecx = a
     8b/-> *(ebp+8) 1/r32/ecx
     # edx = b
     8b/-> *(ebp+0xc) 2/r32/edx
+$type-equal?:compare-addr:
     # if (a == b) return true
     8b/-> %ecx 0/r32/eax  # Var-type
     39/compare %edx 0/r32/eax  # Var-type
     b8/copy-to-eax 1/imm32/true
-    74/jump-if-= $type-equal?:end/disp8
-    # if (a < MAX_TYPE_ID) return false
-    81 7/subop/compare %ecx 0x10000/imm32
+    0f 84/jump-if-= $type-equal?:end/disp32
+$type-equal?:compare-atom-state:
+    # if (a->is-atom? != b->is-atom?) return false
+    8b/-> *ecx 3/r32/ebx  # Tree-value
+    39/compare *edx 3/r32/ebx  # Tree-value
     b8/copy-to-eax 0/imm32/false
-    72/jump-if-addr< $type-equal?:end/disp8
-    # if (b < MAX_TYPE_ID) return false
-    81 7/subop/compare %edx 0x10000/imm32
-    b8/copy-to-eax 0/imm32/false
-    72/jump-if-addr< $type-equal?:end/disp8
+    0f 85/jump-if-!= $type-equal?:end/disp32
+    # if a->is-atom? return (a->value == b->value)
+    {
+$type-equal?:check-atom:
+      81 7/subop/compare %ebx 0/imm32/false
+      74/jump-if-= break/disp8
+$type-equal?:is-atom:
+      8b/-> *(ecx+4) 0/r32/eax  # Tree-value
+      39/compare *(edx+4) 0/r32/eax  # Tree-value
+      0f 94/set-if-= %al
+      81 4/subop/and %eax 0xff/imm32
+      e9/jump $type-equal?:end/disp32
+    }
+$type-equal?:check-left:
     # if (!type-equal?(a->left, b->left)) return false
-    (type-equal? *(ecx+4) *(edx+4))  # Tree-left, Tree-left => eax
+    (lookup *(ecx+4) *(ecx+8))  # Tree-left Tree-left => eax
+    89/<- %ebx 0/r32/eax
+    (lookup *(edx+4) *(edx+8))  # Tree-left Tree-left => eax
+    (type-equal? %eax %ebx)  # => eax
     3d/compare-eax-and 0/imm32/false
     74/jump-if-= $type-equal?:end/disp8
+$type-equal?:check-right:
     # return type-equal?(a->right, b->right)
-    (type-equal? *(ecx+8) *(edx+8))  # Tree-right, Tree-right => eax
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Tree-right Tree-right => eax
+    89/<- %ebx 0/r32/eax
+    (lookup *(edx+0xc) *(edx+0x10))  # Tree-right Tree-right => eax
+    (type-equal? %eax %ebx)  # => eax
 $type-equal?:end:
     # . restore registers
+    5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
     # . epilogue
@@ -14819,6 +15586,68 @@ $operand-matches-primitive?:end:
     5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+find-matching-function:  # functions: (addr function), stmt: (addr stmt) -> result/eax: (addr function)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var curr/ecx: (handle function) = functions
+    8b/-> *(ebp+8) 1/r32/ecx
+    {
+      # if (curr == null) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+#?       (write-buffered Stderr "iter\n")
+#?       (flush Stderr)
+      # if match(stmt, curr) return curr
+      {
+        (mu-stmt-matches-function? *(ebp+0xc) %ecx)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        74/jump-if-= break/disp8
+        89/<- %eax 1/r32/ecx
+        eb/jump $find-matching-function:end/disp8
+      }
+      # curr = curr->next
+      (lookup *(ecx+0x20) *(ecx+0x24))  # Function-next Function-next => eax
+      89/<- %ecx 0/r32/eax
+      #
+      eb/jump loop/disp8
+    }
+    # return null
+    b8/copy-to-eax 0/imm32
+$find-matching-function:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# Just compare names; user-defined functions don't support overloading yet.
+mu-stmt-matches-function?:  # stmt: (addr stmt1), function: (addr function) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # return function->name == stmt->operation
+    # ecx = lookup(stmt->operation)
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *(eax+4) *(eax+8))  # Stmt1-operation Stmt1-operation => eax
+    89/<- %ecx 0/r32/eax
+    # eax = lookup(function->name)
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (string-equal? %eax %ecx)  # => eax
+$mu-stmt-matches-function?:end:
+    # . restore registers
     59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
