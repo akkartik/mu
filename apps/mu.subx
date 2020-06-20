@@ -3489,6 +3489,68 @@ test-convert-length-of-array-on-stack:
     5d/pop-to-ebp
     c3/return
 
+test-reg-var-def-with-read-of-same-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)  # bytes of args in call to convert-mu
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array int) <- copy 0\n")
+    (write _test-input-stream "  var idx/ecx: int <- copy 3\n")
+    (write _test-input-stream "  var x/eax: (addr int) <- index arr, idx\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp could be clobbered at this point (though they shouldn't be)
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    (check-stream-equal _test-error-stream  ""  "F - test-reg-var-def-with-read-of-same-register: error stream should be empty")
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-reg-var-def-with-read-of-same-register/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                              "F - test-reg-var-def-with-read-of-same-register/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                               "F - test-reg-var-def-with-read-of-same-register/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                      "F - test-reg-var-def-with-read-of-same-register/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                         "F - test-reg-var-def-with-read-of-same-register/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-reg-var-def-with-read-of-same-register/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-reg-var-def-with-read-of-same-register/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                  "F - test-reg-var-def-with-read-of-same-register/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"                    "F - test-reg-var-def-with-read-of-same-register/8")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"                  "F - test-reg-var-def-with-read-of-same-register/9")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + ecx<<0x00000002 + 4) 0x00000000/r32"  "F - test-reg-var-def-with-read-of-same-register/11")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"                     "F - test-reg-var-def-with-read-of-same-register/13")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-reg-var-def-with-read-of-same-register/14")
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-reg-var-def-with-read-of-same-register/15")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-reg-var-def-with-read-of-same-register/16")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-reg-var-def-with-read-of-same-register/17")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-reg-var-def-with-read-of-same-register/18")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-reg-var-def-with-read-of-same-register/19")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-reg-var-def-with-read-of-same-register/20")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-index-into-array:
     # . prologue
     55/push-ebp
@@ -3524,15 +3586,15 @@ test-convert-index-into-array:
     (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                  "F - test-convert-index-into-array/7")
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"                    "F - test-convert-index-into-array/8")
     (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"                  "F - test-convert-index-into-array/9")
-    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + ecx<<0x00000002 + 4) 0x00000000/r32"  "F - test-convert-index-into-array/11")
-    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"                     "F - test-convert-index-into-array/13")
-    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array/14")
-    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-index-into-array/15")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-index-into-array/16")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-index-into-array/17")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-index-into-array/18")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-index-into-array/19")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-index-into-array/20")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + ecx<<0x00000002 + 4) 0x00000000/r32"  "F - test-convert-index-into-array/10")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"                     "F - test-convert-index-into-array/11")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array/12")
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-index-into-array/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-index-into-array/14")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-index-into-array/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-index-into-array/16")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-index-into-array/17")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-index-into-array/18")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -6926,10 +6988,6 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
     # v = parse-var-with-type(next-mu-token(line))
     (next-mu-token *(ebp+8) %ecx)
     (parse-var-with-type %ecx *(ebp+8) %edx *(ebp+0x18) *(ebp+0x1c))
-    #
-    (push *(ebp+0xc) *edx)
-    (push *(ebp+0xc) *(edx+4))
-    (push *(ebp+0xc) 0)  # Live-var-register-spilled is unused during parsing
     # either v has no register and there's no more to this line
     (lookup *edx *(edx+4))  # => eax
     8b/-> *(eax+0x18) 0/r32/eax  # Var-register
@@ -6944,7 +7002,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
       0f 84/jump-if-= $parse-mu-var-def:error2/disp32
       #
       (new-var-def Heap  *edx *(edx+4)  %edi)
-      e9/jump $parse-mu-var-def:end/disp32
+      e9/jump $parse-mu-var-def:update-vars/disp32
     }
     # or v has a register and there's more to this line
     {
@@ -6955,12 +7013,17 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
       (next-mu-token *(ebp+8) %ecx)
       (slice-equal? %ecx "<-")  # => eax
       3d/compare-eax-and 0/imm32/false
-      74/jump-if-= $parse-mu-var-def:error1/disp8
+      0f 84/jump-if-= $parse-mu-var-def:error1/disp32
       #
       (new-reg-var-def Heap  *edx *(edx+4)  %edi)
       (lookup *edi *(edi+4))  # => eax
       (add-operation-and-inputs-to-stmt %eax *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
     }
+$parse-mu-var-def:update-vars:
+    # push 'v' at end of function
+    (push *(ebp+0xc) *edx)
+    (push *(ebp+0xc) *(edx+4))
+    (push *(ebp+0xc) 0)  # Live-var-register-spilled is unused during parsing
 $parse-mu-var-def:end:
     # . reclaim locals
     81 0/subop/add %esp 0x10/imm32
