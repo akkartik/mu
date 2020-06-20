@@ -1128,6 +1128,52 @@ test-convert-function-with-second-local-var-in-same-reg:
     5d/pop-to-ebp
     c3/return
 
+test-read-clobbered-reg-var:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)  # bytes of args in call to convert-mu
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: int <- copy 3\n")
+    (write _test-input-stream "  var y/ecx: int <- copy 4\n")
+    (write _test-input-stream "  x <- increment\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-read-clobbered-reg-var: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "register ecx reads var 'x' after writing var 'y'"  "F - test-read-clobbered-reg-var: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-read-clobbered-reg-var: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-call:
     # . prologue
     55/push-ebp
@@ -7049,6 +7095,7 @@ test-parse-mu-reg-var-def:
     5d/pop-to-ebp
     c3/return
 
+# HERE: we push outputs on the vars stack before we read the inputs that may conflict with them
 parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack live-var), fn: (addr function), out: (addr handle stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var name: slice
@@ -7403,6 +7450,7 @@ $lookup-var:abort:
     # never gets here
 
 # return first 'name' from the top (back) of 'vars', and 0/null if not found
+# ensure that 'name' if in a register is the topmost variable in that register
 lookup-var-helper:  # name: (addr slice), vars: (addr stack live-var), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var curr: (addr handle var) = &vars->data[vars->top - 12]
@@ -7422,6 +7470,7 @@ lookup-var-helper:  # name: (addr slice), vars: (addr stack live-var), out: (add
     52/push-edx
     53/push-ebx
     56/push-esi
+    57/push-edi
     # clear out
     (zero-out *(ebp+0x10) *Handle-size)
     # esi = vars
@@ -7435,7 +7484,18 @@ lookup-var-helper:  # name: (addr slice), vars: (addr stack live-var), out: (add
     8d/copy-address *(esi+8) 2/r32/edx
     # var curr/ebx: (addr handle var) = &vars->data[vars->top - 12]
     8d/copy-address *(esi+ebx-4) 3/r32/ebx  # vars + 8 + vars->type - 12
+    # var var-in-reg/edi: 8 addrs
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edi 4/r32/esp
     {
+$lookup-var-helper:loop:
       # if (curr < min) return
       39/compare %ebx 2/r32/edx
       0f 82/jump-if-addr< break/disp32
@@ -7449,6 +7509,22 @@ lookup-var-helper:  # name: (addr slice), vars: (addr stack live-var), out: (add
       3d/compare-eax-and 0/imm32/false
       {
         74/jump-if-= break/disp8
+$lookup-var-helper:found:
+        # var vr/eax: (addr array byte) = lookup(v->register)
+        (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
+        3d/compare-eax-and 0/imm32
+        {
+          74/jump-if-= break/disp8
+$lookup-var-helper:found-register:
+          # var reg/eax: int = get(Registers, vr)
+          (get Mu-registers %eax 0xc "Mu-registers")  # => eax
+          8b/-> *eax 0/r32/eax
+          # if (var-in-reg[reg]) error
+          8b/-> *(edi+eax<<2) 0/r32/eax
+          3d/compare-eax-and 0/imm32
+          0f 85/jump-if-!= $lookup-var-helper:error2/disp32
+        }
+$lookup-var-helper:return:
         # esi = out
         8b/-> *(ebp+0x10) 6/r32/esi
         # *out = *curr
@@ -7459,12 +7535,29 @@ lookup-var-helper:  # name: (addr slice), vars: (addr stack live-var), out: (add
         # return
         eb/jump $lookup-var-helper:end/disp8
       }
+      # 'name' not yet found; update var-in-reg if v in register
+      # . var vr/eax: (addr array byte) = lookup(v->register)
+      (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
+      # . if (var == 0) continue
+      3d/compare-eax-and 0/imm32
+      74/jump-if-= $lookup-var-helper:continue/disp8
+      # . var reg/eax: int = get(Registers, vr)
+      (get Mu-registers %eax 0xc "Mu-registers")  # => eax
+      8b/-> *eax 0/r32/eax
+      # . if (var-in-reg[reg] == 0) var-in-reg[reg] = v
+      81 7/subop/compare *(edi+eax<<2) 0/imm32
+      75/jump-if-!= $lookup-var-helper:continue/disp8
+      89/<- *(edi+eax<<2) 1/r32/ecx
+$lookup-var-helper:continue:
       # curr -= 12
       81 5/subop/subtract %ebx 0xc/imm32
       e9/jump loop/disp32
     }
 $lookup-var-helper:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x20/imm32
     # . restore registers
+    5f/pop-to-edi
     5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
@@ -7478,6 +7571,23 @@ $lookup-var-helper:end:
 $lookup-var-helper:error1:
     (write-buffered *(ebp+0x14) "malformed stack when looking up '")
     (write-slice-buffered *(ebp+0x14) *(ebp+8))
+    (write-buffered *(ebp+0x14) "'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
+    # never gets here
+
+$lookup-var-helper:error2:
+    # eax contains the conflicting var at this point
+    (write-buffered *(ebp+0x14) "register ")
+    50/push-eax
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    (write-buffered *(ebp+0x14) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0x14) " reads var '")
+    (write-slice-buffered *(ebp+0x14) *(ebp+8))
+    (write-buffered *(ebp+0x14) "' after writing var '")
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x14) %eax)
     (write-buffered *(ebp+0x14) "'\n")
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
@@ -7509,7 +7619,7 @@ lookup-or-define-var:  # name: (addr slice), vars: (addr stack live-var), fn: (a
     # . save registers
     50/push-eax
     #
-    (lookup-var-helper *(ebp+8) *(ebp+0xc) *(ebp+0x14))
+    (lookup-var-helper *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
     {
       # if (out != 0) return
       8b/-> *(ebp+0x14) 0/r32/eax
