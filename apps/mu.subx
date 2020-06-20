@@ -7483,6 +7483,24 @@ $lookup-var-helper:error1:
     (stop *(ebp+0x18) 1)
     # never gets here
 
+== data
+# Like Registers, but no esp or ebp
+Mu-registers:  # (addr stream {(handle array byte), int})
+  # a table is a stream
+  0x48/imm32/write
+  0/imm32/read
+  0x48/imm32/length
+  # data
+  # it is perfectly ok to use fake alloc-ids -- as long as you never try to reclaim them
+  0x11/imm32/alloc-id $Register-eax/imm32 0/imm32
+  0x11/imm32/alloc-id $Register-ecx/imm32 1/imm32
+  0x11/imm32/alloc-id $Register-edx/imm32 2/imm32
+  0x11/imm32/alloc-id $Register-ebx/imm32 3/imm32
+  0x11/imm32/alloc-id $Register-esi/imm32 6/imm32
+  0x11/imm32/alloc-id $Register-edi/imm32 7/imm32
+
+== code
+
 # return first 'name' from the top (back) of 'vars' and create a new var for a fn output if not found
 lookup-or-define-var:  # name: (addr slice), vars: (addr stack live-var), fn: (addr function), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
@@ -11189,7 +11207,7 @@ $emit-save-size-to:emit-base-from-stack:
     }
 $emit-save-size-to:emit-output:
     (write-buffered *(ebp+8) " ")
-    (get Registers *(ebp+0x10) 0xc "Registers")  # => eax
+    (get Mu-registers *(ebp+0x10) 0xc "Mu-registers")  # => eax
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $emit-save-size-to:end:
@@ -11373,7 +11391,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-output:
     (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
-    (get Registers %eax 0xc "Registers")  # => eax: (addr int)
+    (get Mu-registers %eax 0xc "Mu-registers")  # => eax: (addr int)
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-index-stmt-with-array-in-register:end:
@@ -11492,7 +11510,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-output:
     (lookup *(eax+0x14) *(eax+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
-    (get Registers %eax 0xc "Registers")  # => eax: (addr int)
+    (get Mu-registers %eax 0xc "Mu-registers")  # => eax: (addr int)
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-index-stmt-with-array-on-stack:end:
@@ -11540,7 +11558,7 @@ $translate-mu-compute-index-stmt:emit-output:
     (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
-    (get Registers %eax 0xc "Registers")  # => eax: (addr int)
+    (get Mu-registers %eax 0xc "Mu-registers")  # => eax: (addr int)
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-compute-index-stmt:end:
@@ -11603,7 +11621,7 @@ $translate-mu-get-stmt:emit-output:
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     # emit offset->register "/r32"
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
-    (get Registers %eax 0xc "Registers")  # => eax: (addr int)
+    (get Mu-registers %eax 0xc "Mu-registers")  # => eax: (addr int)
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-get-stmt:end:
@@ -14968,7 +14986,7 @@ emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
-    (maybe-get Registers %eax 0xc)  # => eax: (addr register-index)
+    (maybe-get Mu-registers %eax 0xc)  # => eax: (addr register-index)
     (write-buffered *(ebp+8) Space)
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32")
