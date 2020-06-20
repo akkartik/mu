@@ -6696,13 +6696,16 @@ $parse-mu-block:line-loop:
       # line = read-line-buffered(in)
       (clear-stream %ecx)
       (read-line-buffered *(ebp+8) %ecx)
-#?       (write-buffered Stderr "line: ")
-#?       (write-stream-data Stderr %ecx)
-#?       (write-buffered Stderr Newline)
-#?       (flush Stderr)
+      (write-buffered Stderr "line: ")
+      (write-stream-data Stderr %ecx)
+#?       (write-buffered Stderr Newline)  # line has its own newline
+      (flush Stderr)
+      (rewind-stream %ecx)
       # if (line->write == 0) break
       81 7/subop/compare *ecx 0/imm32
       0f 84/jump-if-= break/disp32
+      (write-buffered Stderr "vars:\n")
+      (dump-vars *(ebp+0xc))
       # word-slice = next-mu-token(line)
       (next-mu-token %ecx %edx)
 #?       (write-buffered Stderr "word: ")
@@ -7722,6 +7725,52 @@ $lookup-var-helper:error2:
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
     # never gets here
+
+dump-vars:  # vars: (addr stack live-var)
+    # pseudocode:
+    #   var curr: (addr handle var) = &vars->data[vars->top - 12]
+    #   var min = vars->data
+    #   while curr >= min
+    #     var v: (handle var) = *curr
+    #     print v
+    #     curr -= 12
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = vars
+    8b/-> *(ebp+8) 6/r32/esi
+    # ebx = vars->top
+    8b/-> *esi 3/r32/ebx
+    # var min/edx: (addr handle var) = vars->data
+    8d/copy-address *(esi+8) 2/r32/edx
+    # var curr/ebx: (addr handle var) = &vars->data[vars->top - 12]
+    8d/copy-address *(esi+ebx-4) 3/r32/ebx  # vars + 8 + vars->type - 12
+    {
+$dump-vars:loop:
+      # if (curr < min) return
+      39/compare %ebx 2/r32/edx
+      0f 82/jump-if-addr< break/disp32
+      #
+      (write-buffered Stderr "  var@")
+      (dump-var 2 %ebx)
+      # curr -= 12
+      81 5/subop/subtract %ebx 0xc/imm32
+      e9/jump loop/disp32
+    }
+$dump-vars:end:
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 == data
 # Like Registers, but no esp or ebp
@@ -9336,78 +9385,15 @@ $dump-typeinfo:loop:
       (write-buffered Stderr Newline)
       (flush Stderr)
       (write-buffered Stderr "        input var@")
-      (print-int32-buffered Stderr *eax)
-      (write-buffered Stderr ",")
-      (print-int32-buffered Stderr *(eax+4))
-      (write-buffered Stderr "->")
-      (lookup *eax *(eax+4))  # Typeinfo-entry-input-var
-      (print-int32-buffered Stderr %eax)
-      {
-        3d/compare-eax-and 0/imm32
-        74/jump-if-= break/disp8
-        (write-buffered Stderr " ")
-        # TODO
-      }
-      (write-buffered Stderr Newline)
-      (flush Stderr)
+      (dump-var 5 %eax)
       (lookup *(ecx+8) *(ecx+0xc))
       (write-buffered Stderr "        index: ")
       (print-int32-buffered Stderr *(eax+8))
       (write-buffered Stderr Newline)
       (flush Stderr)
       (write-buffered Stderr "        output var@")
-      (print-int32-buffered Stderr *(eax+0xc))
-      (write-buffered Stderr ",")
-      (print-int32-buffered Stderr *(eax+0x10))
-      (write-buffered Stderr "->")
-      (lookup *(eax+0xc) *(eax+0x10))  # Typeinfo-entry-output-var
-      (print-int32-buffered Stderr %eax)
-      (write-buffered Stderr Newline)
-      (flush Stderr)
-      {
-        3d/compare-eax-and 0/imm32
-        0f 84/jump-if-= break/disp32
-        (write-buffered Stderr "          name: ")
-        89/<- %ebx 0/r32/eax
-        (print-int32-buffered Stderr *ebx)  # Var-name
-        (write-buffered Stderr ",")
-        (print-int32-buffered Stderr *(ebx+4))  # Var-name
-        (write-buffered Stderr "->")
-        (lookup *ebx *(ebx+4))  # Var-name
-        (print-int32-buffered Stderr %eax)
-        {
-          3d/compare-eax-and 0/imm32
-          74/jump-if-= break/disp8
-          (write-buffered Stderr Space)
-          (write-buffered Stderr %eax)
-        }
-        (write-buffered Stderr Newline)
-        (flush Stderr)
-        (write-buffered Stderr "          block depth: ")
-        (print-int32-buffered Stderr *(ebx+0x10))  # Var-block-depth
-        (write-buffered Stderr Newline)
-        (flush Stderr)
-        (write-buffered Stderr "          stack offset: ")
-        (print-int32-buffered Stderr *(ebx+0x14))  # Var-offset
-        (write-buffered Stderr Newline)
-        (flush Stderr)
-        (write-buffered Stderr "          reg: ")
-        (print-int32-buffered Stderr *(ebx+0x18))  # Var-register
-        (write-buffered Stderr ",")
-        (print-int32-buffered Stderr *(ebx+0x1c))  # Var-register
-        (write-buffered Stderr "->")
-        (flush Stderr)
-        (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register
-        (print-int32-buffered Stderr %eax)
-        {
-          3d/compare-eax-and 0/imm32
-          74/jump-if-= break/disp8
-          (write-buffered Stderr Space)
-          (write-buffered Stderr %eax)
-        }
-        (write-buffered Stderr Newline)
-        (flush Stderr)
-      }
+      8d/copy-address *(eax+0xc) 0/r32/eax  # Typeinfo-entry-output-var
+      (dump-var 5 %eax)
       (flush Stderr)
       # curr += row-size
       81 0/subop/add %ecx 0x10/imm32  # Typeinfo-fields-row-size
@@ -9421,6 +9407,81 @@ $dump-typeinfo:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+dump-var:  # indent: int, v: (addr handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    53/push-ebx
+    # eax = v
+    8b/-> *(ebp+0xc) 0/r32/eax
+    #
+    (print-int32-buffered Stderr *eax)
+    (write-buffered Stderr ",")
+    (print-int32-buffered Stderr *(eax+4))
+    (write-buffered Stderr "->")
+    (lookup *eax *(eax+4))
+    (print-int32-buffered Stderr %eax)
+    (write-buffered Stderr Newline)
+    (flush Stderr)
+    {
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      (emit-indent Stderr *(ebp+8))
+      (write-buffered Stderr "name: ")
+      89/<- %ebx 0/r32/eax
+      (print-int32-buffered Stderr *ebx)  # Var-name
+      (write-buffered Stderr ",")
+      (print-int32-buffered Stderr *(ebx+4))  # Var-name
+      (write-buffered Stderr "->")
+      (lookup *ebx *(ebx+4))  # Var-name
+      (print-int32-buffered Stderr %eax)
+      {
+        3d/compare-eax-and 0/imm32
+        74/jump-if-= break/disp8
+        (write-buffered Stderr Space)
+        (write-buffered Stderr %eax)
+      }
+      (write-buffered Stderr Newline)
+      (flush Stderr)
+      (emit-indent Stderr *(ebp+8))
+      (write-buffered Stderr "block depth: ")
+      (print-int32-buffered Stderr *(ebx+0x10))  # Var-block-depth
+      (write-buffered Stderr Newline)
+      (flush Stderr)
+      (emit-indent Stderr *(ebp+8))
+      (write-buffered Stderr "stack offset: ")
+      (print-int32-buffered Stderr *(ebx+0x14))  # Var-offset
+      (write-buffered Stderr Newline)
+      (flush Stderr)
+      (emit-indent Stderr *(ebp+8))
+      (write-buffered Stderr "reg: ")
+      (print-int32-buffered Stderr *(ebx+0x18))  # Var-register
+      (write-buffered Stderr ",")
+      (print-int32-buffered Stderr *(ebx+0x1c))  # Var-register
+      (write-buffered Stderr "->")
+      (flush Stderr)
+      (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register
+      (print-int32-buffered Stderr %eax)
+      {
+        3d/compare-eax-and 0/imm32
+        74/jump-if-= break/disp8
+        (write-buffered Stderr Space)
+        (write-buffered Stderr %eax)
+      }
+      (write-buffered Stderr Newline)
+      (flush Stderr)
+    }
+$dump-var:end:
+    # . restore registers
+    5b/pop-to-ebx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
