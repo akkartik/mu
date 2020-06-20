@@ -2230,8 +2230,50 @@ test-shadow-live-output:
     5d/pop-to-ebp
     c3/return
 
+test-output-in-same-register-as-inout:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo -> x/ecx: int {\n")
+    (write _test-input-stream "  var y/ecx: int <- copy 4\n")
+    (write _test-input-stream "  x <- copy y\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # no error; we looked up 'y' correctly before pushing the binding for 'x'
+    (check-stream-equal _test-error-stream  ""  "F - test-output-in-same-register-as-inout: error stream should be empty")
+    # don't bother checking the generated code; that's in the test 'test-local-clobbered-by-output' below
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-local-clobbered-by-output:
-    # also doesn't spill
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2275,7 +2317,6 @@ test-local-clobbered-by-output:
     c3/return
 
 test-read-output:
-    # also doesn't spill
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4397,7 +4438,7 @@ test-convert-function-call-with-arg-of-user-defined-type-by-reference:
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/23")
     (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/24")
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/25")
-    (check-next-stream-line-equal _test-output-stream "    89/<- %ecx 0x00000001/r32"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/26")
+    (check-next-stream-line-equal _test-output-stream "    8b/-> *(ebp+0x00000008) 0x00000001/r32"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/26")
     (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *ecx"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/27")
     (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/28")
     (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/29")
@@ -7158,8 +7199,14 @@ test-parse-mu-reg-var-def:
     5d/pop-to-ebp
     c3/return
 
-# HERE: we push outputs on the vars stack before we read the inputs that may conflict with them
 parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack live-var), fn: (addr function), out: (addr handle stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # Carefully push any outputs on the vars stack _after_ reading the inputs
+    # that may conflict with them.
+    #
+    # The only situation in which outputs are pushed here (when it's not a
+    # 'var' vardef stmt), and so can possibly conflict with inputs, is if the
+    # output is a function output.
+    #
     # pseudocode:
     #   var name: slice
     #   allocate(Heap, Stmt-size, out)
@@ -7170,9 +7217,11 @@ parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack live-var), fn: (ad
     #       name = next-mu-token(line)
     #       if (name == '<-') break
     #       assert(is-identifier?(name))
-    #       var v: (handle var) = lookup-or-define-var(name, vars, fn)  # regular stmts may define vars in fn outputs
+    #       var v: (handle var) = lookup-var-or-find-in-fn-outputs(name, vars, fn)
     #       out-addr->outputs = append(v, out-addr->outputs)
     #   add-operation-and-inputs-to-stmt(out-addr, line, vars)
+    #   for output in stmt->outputs:
+    #     maybe-define-var(output, vars)
     #
     # . prologue
     55/push-ebp
@@ -7234,7 +7283,7 @@ $parse-mu-stmt:read-outputs:
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= $parse-mu-stmt:abort/disp32
         #
-        (lookup-or-define-var %ecx *(ebp+0xc) *(ebp+0x10) %ebx *(ebp+0x18) *(ebp+0x1c))
+        (lookup-var-or-find-in-fn-outputs %ecx *(ebp+0xc) *(ebp+0x10) %ebx *(ebp+0x18) *(ebp+0x1c))
         8d/copy-address *(edi+0x14) 0/r32/eax  # Stmt1-outputs
         (append-stmt-var Heap  *ebx *(ebx+4)  *(edi+0x14) *(edi+0x18)  %edx  %eax)  # Stmt1-outputs
         #
@@ -7242,6 +7291,24 @@ $parse-mu-stmt:read-outputs:
       }
     }
     (add-operation-and-inputs-to-stmt %edi *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
+$parse-mu-stmt:define-outputs:
+    # var output/edi: (addr stmt-var) = lookup(out-addr->outputs)
+    (lookup *(edi+0x14) *(edi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    89/<- %edi 0/r32/eax
+    {
+$parse-mu-stmt:define-outputs-loop:
+      # if (output == null) break
+      81 7/subop/compare %edi 0/imm32
+      74/jump-if-= break/disp8
+      #
+      (maybe-define-var *edi *(edi+4)  *(ebp+0xc))  # if output is a deref, then it's already been defined,
+                                                    # and must be in vars. This call will be a no-op, but safe.
+      # output = output->next
+      (lookup *(edi+8) *(edi+0xc))  # Stmt-var-next Stmt-var-next => eax
+      89/<- %edi 0/r32/eax
+      #
+      eb/jump loop/disp8
+    }
 $parse-mu-stmt:end:
     # . reclaim locals
     81 0/subop/add %esp 0x10/imm32
@@ -7675,7 +7742,7 @@ Mu-registers:  # (addr stream {(handle array byte), int})
 == code
 
 # return first 'name' from the top (back) of 'vars' and create a new var for a fn output if not found
-lookup-or-define-var:  # name: (addr slice), vars: (addr stack live-var), fn: (addr function), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
+lookup-var-or-find-in-fn-outputs:  # name: (addr slice), vars: (addr stack live-var), fn: (addr function), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7689,17 +7756,11 @@ lookup-or-define-var:  # name: (addr slice), vars: (addr stack live-var), fn: (a
       81 7/subop/compare *eax 0/imm32
       75/jump-if-!= break/disp8
       # if name is one of fn's outputs, return it
-      {
-        (find-in-function-outputs *(ebp+0x10) *(ebp+8) *(ebp+0x14))
-        8b/-> *(ebp+0x14) 0/r32/eax
-        81 7/subop/compare *eax 0/imm32
-        # otherwise abort
-        0f 84/jump-if-= $lookup-or-define-var:abort/disp32
-        # update vars
-        (push *(ebp+0xc) *eax)
-        (push *(ebp+0xc) *(eax+4))
-        (push *(ebp+0xc) 0)  # never spill fn-outputs
-      }
+      (find-in-function-outputs *(ebp+0x10) *(ebp+8) *(ebp+0x14))
+      8b/-> *(ebp+0x14) 0/r32/eax
+      81 7/subop/compare *eax 0/imm32
+      # otherwise abort
+      0f 84/jump-if-= $lookup-or-define-var:abort/disp32
     }
 $lookup-or-define-var:end:
     # . restore registers
@@ -7764,6 +7825,90 @@ $find-in-function-outputs:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# push 'out' to 'vars' if not already there; it's assumed to be a fn output
+maybe-define-var:  # out: (handle var), vars: (addr stack live-var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # var out-addr/eax: (addr var)
+    (lookup *(ebp+8) *(ebp+0xc))  # => eax
+    #
+    (binding-exists? %eax *(ebp+0x10))  # => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $maybe-define-var:end/disp8
+    # otherwise update vars
+    (push *(ebp+0x10) *(ebp+8))
+    (push *(ebp+0x10) *(ebp+0xc))
+    (push *(ebp+0x10) 0)  # 'out' is always a fn output; never spill it
+$maybe-define-var:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# simpler version of lookup-var-helper
+binding-exists?:  # target: (addr var), vars: (addr stack live-var) -> result/eax: boolean
+    # pseudocode:
+    #   var curr: (addr handle var) = &vars->data[vars->top - 12]
+    #   var min = vars->data
+    #   while curr >= min
+    #     var v: (handle var) = *curr
+    #     if v->name == target->name
+    #       return true
+    #     curr -= 12
+    #   return false
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # var target-name/ecx: (addr array byte) = lookup(target->name)
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    89/<- %ecx 0/r32/eax
+    # esi = vars
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # eax = vars->top
+    8b/-> *esi 0/r32/eax
+    # var min/edx: (addr handle var) = vars->data
+    8d/copy-address *(esi+8) 2/r32/edx
+    # var curr/esi: (addr handle var) = &vars->data[vars->top - 12]
+    8d/copy-address *(esi+eax-4) 6/r32/esi  # vars + 8 + vars->type - 12
+    {
+$binding-exists?:loop:
+      # if (curr < min) return
+      39/compare %esi 2/r32/edx
+      0f 82/jump-if-addr< break/disp32
+      # var v/eax: (addr var) = lookup(*curr)
+      (lookup *esi *(esi+4))  # => eax
+      # var vn/eax: (addr array byte) = lookup(v->name)
+      (lookup *eax *(eax+4))  # Var-name Var-name => eax
+      # if (vn == target-name) return true
+      (string-equal? %ecx %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= $binding-exists?:end/disp8  # eax already contains true
+      # curr -= 12
+      81 5/subop/subtract %esi 0xc/imm32
+      e9/jump loop/disp32
+    }
+    b8/copy-to-eax 0/imm32/false
+$binding-exists?:end:
+    # . restore registers
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
