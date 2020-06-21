@@ -2467,6 +2467,67 @@ test-read-output:
     5d/pop-to-ebp
     c3/return
 
+test-fn-output-written-in-inner-block:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo -> out/ecx: int {\n")
+    (write _test-input-stream "  var a/ecx: int <- copy 3\n")  # define outer local
+    (write _test-input-stream "  {\n")
+    (write _test-input-stream "    var b/eax: int <- copy 4\n")  # shadow outer local
+    (write _test-input-stream "    out <- copy b\n")  # write to fn output
+    (write _test-input-stream "  {\n")
+    (write _test-input-stream "  compare a, 0\n")  # use outer local
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # no error; defining 'out' didn't interfere with the reclamation of 'b'
+    (check-stream-equal _test-error-stream  ""  "F - test-fn-output-written-in-inner-block: error stream should be empty")
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-fn-output-written-in-inner-block/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-fn-output-written-in-inner-block/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-fn-output-written-in-inner-block/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-fn-output-written-in-inner-block/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-fn-output-written-in-inner-block/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-fn-output-written-in-inner-block/5")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 4/imm32"  "F - test-fn-output-written-in-inner-block/6")  # no push because it's an output reg
+    (check-next-stream-line-equal _test-output-stream "    89/<- %ecx 0x00000001/r32"  "F - test-fn-output-written-in-inner-block/7")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-fn-output-written-in-inner-block/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-fn-output-written-in-inner-block/9")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-fn-output-written-in-inner-block/10")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-fn-output-written-in-inner-block/11")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-fn-output-written-in-inner-block/12")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-fn-output-written-in-inner-block/13")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-branches-in-block:
     # . prologue
     55/push-ebp
