@@ -77,7 +77,7 @@ command! -nargs=0 L exec "%!grep label |grep -v clear-stream:loop"
 command! -nargs=0 C 1,.!awk '{x[$1] = $0} END{for (i in x) {if (int(i) < int($1)) {print x[i]}}}'
 
 " run test around cursor
-if empty($TMUX)
+if empty($TMUX) || (system("tmux display-message -p '#{client_control_mode}'") =~ "^1")
   " hack: need to move cursor outside function at start (`{`), but inside function at end (`<C-o>`)
   " this solution is unfortunate, but seems forced:
   "   can't put initial cursor movement inside function because we rely on <C-r><C-w> to grab word at cursor
@@ -89,7 +89,7 @@ if empty($TMUX)
     exec "normal \<C-o>"
   endfunction
 else
-  " we have tmux; we don't need to show any output in the Vim pane so life is simpler
+  " we have tmux and are not in control mode; we don't need to show any output in the Vim pane so life is simpler
   " assume the left-most window is for the shell
   noremap <Leader>t {:keeppatterns /^[^ #]<CR>:silent! call RunTestInFirstPane("<C-r><C-w>")<CR><C-o>
   function RunTestInFirstPane(arg)
