@@ -2151,12 +2151,12 @@ test-shadow-name-2:
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
-    # dump _test-output-stream {{{
-    (write 2 "^")
-    (write-stream 2 _test-output-stream)
-    (write 2 "$\n")
-    (rewind-stream _test-output-stream)
-    # }}}
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
     # check output
     (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-shadow-name-2/0")
     (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-shadow-name-2/1")
@@ -5076,6 +5076,17 @@ test-convert-length-of-array-of-user-defined-types:
 # Parsing
 #######################################################
 
+== data
+
+# Global state added to each var record when parsing a function
+Next-block-index:  # (addr int)
+    1/imm32
+
+Curr-block-depth:  # (addr int)
+    1/imm32
+
+== code
+
 parse-mu:  # in: (addr buffered-file), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode
     #   var curr-function: (addr handle function) = Program->functions
@@ -6715,6 +6726,8 @@ populate-mu-function-body:  # in: (addr buffered-file), out: (addr function), va
     8b/-> *(ebp+8) 6/r32/esi
     # edi = out
     8b/-> *(ebp+0xc) 7/r32/edi
+    # initialize some global state
+    c7 0/subop/copy *Curr-block-depth 1/imm32
     # parse-mu-block(in, vars, out, out->body)
     8d/copy-address *(edi+0x18) 0/r32/eax  # Function-body
     (parse-mu-block %esi *(ebp+0x10) %edi %eax *(ebp+0x14) *(ebp+0x18))
@@ -6799,6 +6812,8 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack live-var), fn: (a
     (push *(ebp+0xc) *(edi+0xc))  # Block-var
     (push *(ebp+0xc) *(edi+0x10))  # Block-var
     (push *(ebp+0xc) 0)  # false
+    # increment *Curr-block-depth
+    ff 0/subop/increment *Curr-block-depth
     {
 $parse-mu-block:line-loop:
       # line = read-line-buffered(in)
@@ -6916,6 +6931,9 @@ $parse-mu-block:regular-stmt:
       #
       e9/jump loop/disp32
     } # end line loop
+    (clean-up-blocks *(ebp+0xc) *Curr-block-depth)
+    # decrement *Curr-block-depth
+    ff 1/subop/decrement *Curr-block-depth
     # pop(vars)
     (pop *(ebp+0xc))  # => eax
     (pop *(ebp+0xc))  # => eax
@@ -7007,14 +7025,6 @@ $new-block-name:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
-
-== data
-
-# Global state added to each var record when parsing a function
-Next-block-index:  # (addr int)
-    1/imm32
-
-== code
 
 check-no-tokens-left:  # line: (addr stream byte)
     # . prologue
@@ -7126,6 +7136,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
     50/push-eax
     51/push-ecx
     52/push-edx
+    53/push-ebx
     57/push-edi
     # edi = out
     8b/-> *(ebp+0x10) 7/r32/edi
@@ -7140,8 +7151,12 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
     # v = parse-var-with-type(next-mu-token(line))
     (next-mu-token *(ebp+8) %ecx)
     (parse-var-with-type %ecx *(ebp+8) %edx *(ebp+0x18) *(ebp+0x1c))
-    # either v has no register and there's no more to this line
+    # var v-addr/eax: (addr var)
     (lookup *edx *(edx+4))  # => eax
+    # v->block-depth = *Curr-block-depth
+    8b/-> *Curr-block-depth 3/r32/ebx
+    89/<- *(eax+0x10) 3/r32/ebx  # Var-block-depth
+    # either v has no register and there's no more to this line
     8b/-> *(eax+0x18) 0/r32/eax  # Var-register
     3d/compare-eax-and 0/imm32
     {
@@ -7181,6 +7196,7 @@ $parse-mu-var-def:end:
     81 0/subop/add %esp 0x10/imm32
     # . restore registers
     5f/pop-to-edi
+    5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
@@ -7225,6 +7241,7 @@ test-parse-mu-var-def:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "n: int\n")  # caller has consumed the 'var'
+    c7 0/subop/copy *Curr-block-depth 1/imm32
     # var out/esi: (handle stmt)
     68/push 0/imm32
     68/push 0/imm32
@@ -7250,6 +7267,8 @@ test-parse-mu-var-def:
     (check-strings-equal %eax "n" "F - test-parse-mu-var-def/var-name")
     # v->register
     (check-ints-equal *(ecx+0x18) 0 "F - test-parse-mu-var-def/var-register")  # Var-register
+    # v->block-depth
+    (check-ints-equal *(ecx+0x10) 1 "F - test-parse-mu-var-def/output-block-depth")  # Var-block-depth
     # v->type == int
     (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
     (check-ints-equal *eax 1 "F - test-parse-mu-var-def/var-type:0")  # Tree-is-atom
@@ -7268,6 +7287,7 @@ test-parse-mu-reg-var-def:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "n/eax: int <- copy 0\n")  # caller has consumed the 'var'
+    c7 0/subop/copy *Curr-block-depth 1/imm32
     # var out/esi: (handle stmt)
     68/push 0/imm32
     68/push 0/imm32
@@ -7300,6 +7320,8 @@ test-parse-mu-reg-var-def:
     # v->register
     (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
     (check-strings-equal %eax "eax" "F - test-parse-mu-reg-var-def/output-register")
+    # v->block-depth
+    (check-ints-equal *(ecx+0x10) 1 "F - test-parse-mu-reg-var-def/output-block-depth")  # Var-block-depth
     # v->type == int
     (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
     (check-ints-equal *eax 1 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-is-atom
@@ -8236,6 +8258,9 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice), ou
     8b/-> *(ebp+0x10) 0/r32/eax
     (lookup *eax *(eax+4))  # => eax
     89/<- %ecx 0/r32/eax
+    # out-addr->block-depth = *Curr-block-depth
+    8b/-> *Curr-block-depth 0/r32/eax
+    89/<- *(ecx+0x10) 0/r32/eax  # Var-block-depth
     # out-addr->type = new tree()
     8d/copy-address *(ecx+8) 0/r32/eax  # Var-type
     (allocate *(ebp+8) *Tree-size %eax)
@@ -8280,6 +8305,9 @@ new-literal:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr
     8b/-> *(ebp+0x10) 1/r32/ecx
     (lookup *ecx *(ecx+4))  # => eax
     89/<- %ecx 0/r32/eax
+    # out-addr->block-depth = *Curr-block-depth
+    8b/-> *Curr-block-depth 0/r32/eax
+    89/<- *(ecx+0x10) 0/r32/eax  # Var-block-depth
     # out-addr->type/eax = new type
     8d/copy-address *(ecx+8) 0/r32/eax  # Var-type
     (allocate *(ebp+8) *Tree-size %eax)
@@ -10246,8 +10274,7 @@ $type-equal?:end:
 
 == data
 
-Curr-block-depth:  # (addr int)
-    0/imm32
+# Global state added to each var record when performing code-generation.
 Curr-local-stack-offset:  # (addr int)
     0/imm32
 
@@ -10290,7 +10317,7 @@ emit-subx-function:  # out: (addr buffered-file), f: (addr function), err: (addr
     52/push-edx
     57/push-edi
     # initialize some global state
-    c7 0/subop/copy *Curr-block-depth 1/imm32
+    c7 0/subop/copy *Curr-block-depth 1/imm32  # Important: keep this in sync with the parse phase
     c7 0/subop/copy *Curr-local-stack-offset 0/imm32
     # ecx = f
     8b/-> *(ebp+0xc) 1/r32/ecx
@@ -11317,7 +11344,7 @@ $same-register-spilled-before?:end:
     5d/pop-to-ebp
     c3/return
 
-# clean up global state for 'vars' until some block depth
+# clean up global state for 'vars' until some block depth (inclusive)
 clean-up-blocks:  # vars: (addr stack live-var), until-block-depth: int
     # . prologue
     55/push-ebp
