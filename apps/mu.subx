@@ -2338,7 +2338,7 @@ test-shadow-live-output:
     5d/pop-to-ebp
     c3/return
 
-test-output-in-same-register-as-inout:
+test-stmt-defines-output-in-same-register-as-inout:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2357,7 +2357,7 @@ test-output-in-same-register-as-inout:
     #
     (write _test-input-stream "fn foo -> x/ecx: int {\n")
     (write _test-input-stream "  var y/ecx: int <- copy 4\n")
-    (write _test-input-stream "  x <- copy y\n")
+    (write _test-input-stream "  x <- copy y\n")  # writing to a fn output is currently the only way for a statement to define a new var
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
@@ -2373,15 +2373,15 @@ test-output-in-same-register-as-inout:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # no error; we looked up 'y' correctly before pushing the binding for 'x'
-    (check-stream-equal _test-error-stream  ""  "F - test-output-in-same-register-as-inout: error stream should be empty")
-    # don't bother checking the generated code; that's in the test 'test-local-clobbered-by-output' below
+    (check-stream-equal _test-error-stream  ""  "F - test-stmt-defines-output-in-same-register-as-inout: error stream should be empty")
+    # don't bother checking the generated code; that's in the test 'test-local-clobbered-by-fn-output' below
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
     5d/pop-to-ebp
     c3/return
 
-test-local-clobbered-by-output:
+test-local-clobbered-by-fn-output:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2405,20 +2405,20 @@ test-local-clobbered-by-output:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-local-clobbered-by-output/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-local-clobbered-by-output/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-local-clobbered-by-output/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-local-clobbered-by-output/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-local-clobbered-by-output/4")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-local-clobbered-by-output/5")
-    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 4/imm32"  "F - test-local-clobbered-by-output/6")
-    (check-next-stream-line-equal _test-output-stream "    89/<- %ecx 0x00000001/r32"  "F - test-local-clobbered-by-output/7")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-local-clobbered-by-output/8")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-local-clobbered-by-output/9")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-local-clobbered-by-output/10")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-local-clobbered-by-output/11")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-local-clobbered-by-output/12")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-local-clobbered-by-output/13")
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-local-clobbered-by-fn-output/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-local-clobbered-by-fn-output/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-local-clobbered-by-fn-output/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-local-clobbered-by-fn-output/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-local-clobbered-by-fn-output/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-local-clobbered-by-fn-output/5")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 4/imm32"  "F - test-local-clobbered-by-fn-output/6")  # no push because it's an output reg
+    (check-next-stream-line-equal _test-output-stream "    89/<- %ecx 0x00000001/r32"  "F - test-local-clobbered-by-fn-output/7")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-local-clobbered-by-fn-output/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-local-clobbered-by-fn-output/9")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-local-clobbered-by-fn-output/10")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-local-clobbered-by-fn-output/11")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-local-clobbered-by-fn-output/12")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-local-clobbered-by-fn-output/13")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
