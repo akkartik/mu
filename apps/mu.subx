@@ -2488,12 +2488,12 @@ test-fn-output-written-in-inner-block:
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
-    # dump _test-output-stream {{{
-    (write 2 "^")
-    (write-stream 2 _test-output-stream)
-    (write 2 "$\n")
-    (rewind-stream _test-output-stream)
-    # }}}
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
     # no error; defining 'out' didn't interfere with the reclamation of 'b'
     # check output
     (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-fn-output-written-in-inner-block/0")
@@ -11453,57 +11453,168 @@ $same-register-spilled-before?:end:
     5d/pop-to-ebp
     c3/return
 
-# clean up global state for 'vars' until some block depth (inclusive)
+# Clean up global state for 'vars' until some block depth (inclusive).
+#
+# This would be a simple series of pops, if it wasn't for fn outputs, which
+# can occur anywhere in the stack.
+# So we have to _compact_ the entire array underlying the stack.
+#
+# We want to allow a fn output register to be written to by locals before the
+# output is set.
+# So fn outputs can't just be pushed at the start of the function.
+#
+# We want to allow other locals to shadow a fn output register after the
+# output is set.
+# So the output can't just always override anything in the stack. Sequence matters.
 clean-up-blocks:  # vars: (addr stack live-var), until-block-depth: int, fn: (addr function)
+    # pseudocode:
+    #   to = vars->top  (which points outside the stack)
+    #   while true
+    #     if to <= 0
+    #       break
+    #     var v = vars->data[to-1]
+    #     if v.depth < until and !in-function-outputs?(fn, v)
+    #       break
+    #     --to
+    #   from = to
+    #   while true
+    #     if from >= vars->top
+    #       break
+    #     assert(from >= to)
+    #     v = vars->data[from]
+    #     if in-function-outputs?(fn, v)
+    #       if from > to
+    #         vars->data[to] = vars->data[from]
+    #       ++to
+    #     ++from
+    #   vars->top = to
+    #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    51/push-ecx
+    52/push-edx
+    53/push-ebx
     56/push-esi
-    # esi = vars
-    8b/-> *(ebp+8) 6/r32/esi
-    # ecx = until-block-depth
-    8b/-> *(ebp+0xc) 1/r32/ecx
+    57/push-edi
+    # ebx = vars
+    8b/-> *(ebp+8) 3/r32/ebx
+    # edx = until-block-depth
+    8b/-> *(ebp+0xc) 2/r32/edx
+$clean-up-blocks:phase1:
+    # var to/edi: int = vars->top
+    8b/-> *ebx 7/r32/edi
     {
-$clean-up-blocks:reclaim-loop:
-      # if (vars->top <= 0) break
-      8b/-> *esi 0/r32/eax  # Stack-top
-      3d/compare-eax-and 0/imm32
-      0f 8e/jump-if-<= break/disp32
-      # var v/eax: (addr var) = lookup(vars[vars->top-12])
-#?       (print-int32-buffered Stderr %eax)
-#?       (write-buffered Stderr ": ")
-#?       (print-int32-buffered Stderr *(esi+eax-4))
-#?       (write-buffered Stderr " ")
-#?       (print-int32-buffered Stderr *(esi+eax))
-#?       (write-buffered Stderr " ")
-#?       (print-int32-buffered Stderr *(esi+eax+4))
-#?       (write-buffered Stderr Newline)
-#?       (flush Stderr)
-      (lookup *(esi+eax-4) *(esi+eax))  # vars + 8 + vars->top - 12 => eax
-      # if (v->block-depth < until-block-depth) break
-      39/compare *(eax+0x10) 1/r32/ecx  # Var-block-depth
-      7c/jump-if-< break/disp8
-      # if v is on the stack, update Curr-local-stack-offset
-      81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
+$clean-up-blocks:loop1:
+      # if (to <= 0) break
+      81 7/subop/compare %edi 0/imm32
+      7e/jump-if-<= break/disp8
+      # var v/eax: (addr var) = lookup(vars->data[to-1]->var)
+      8d/copy-address *(ebx+edi-4) 0/r32/eax  # vars + 8 + to - 12
+      (lookup *eax *(eax+4))  # => eax
+      # if (v->block-depth >= until-block-depth) continue
+      39/compare *(eax+0x10) 2/r32/edx  # Var-block-depth
       {
-        75/jump-if-!= break/disp8
-$clean-up-blocks:reclaim-var-on-stack:
-        (size-of %eax)  # => eax
-        01/add-to *Curr-local-stack-offset 0/r32/eax
+        7d/jump-if->= break/disp8
+        # if (!in-function-outputs?(fn, v)) break
+        (in-function-outputs? *(ebp+0x10) %eax)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        74/jump-if-= $clean-up-blocks:phase2/disp8
       }
-      (pop %esi)  # => eax
-      (pop %esi)  # => eax
-      (pop %esi)  # => eax
-      e9/jump loop/disp32
+$clean-up-blocks:loop1-continue:
+      # --to
+      81 5/subop/subtract %edi 0xc/imm32
+      #
+      eb/jump loop/disp8
     }
+$clean-up-blocks:phase2:
+    # var from/esi: int = to
+    89/<- %esi 7/r32/edi
+    {
+$clean-up-blocks:loop2:
+      # if (from >= vars->top) break
+      3b/compare 6/r32/esi *ebx
+      7d/jump-if->= break/disp8
+      # var v/eax: (addr var) = lookup(vars->data[from]->var)
+      8d/copy-address *(ebx+esi+8) 0/r32/eax
+      (lookup *eax *(eax+4))  # => eax
+      # if !in-function-outputs?(fn, v) continue
+      (in-function-outputs? *(ebp+0x10) %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= $clean-up-blocks:loop2-continue/disp8
+      # invariant: from >= to
+      # if (from > to) vars->data[to] = vars->data[from]
+      {
+        39/compare %esi 7/r32/edi
+        7e/jump-if-<= break/disp8
+        56/push-esi
+        57/push-edi
+        # . var from/esi: (addr byte) = &vars->data[from]
+        8d/copy-address *(ebx+esi+8) 6/r32/esi
+        # . var to/edi: (addr byte) = &vars->data[to]
+        8d/copy-address *(ebx+edi+8) 7/r32/edi
+        # .
+        8b/-> *esi 0/r32/eax
+        89/<- *edi 0/r32/eax
+        8b/-> *(esi+4) 0/r32/eax
+        89/<- *(edi+4) 0/r32/eax
+        8b/-> *(esi+8) 0/r32/eax
+        89/<- *(edi+8) 0/r32/eax
+        5f/pop-to-edi
+        5e/pop-to-esi
+      }
+      # ++to
+      81 0/subop/add %edi 0xc/imm32
+$clean-up-blocks:loop2-continue:
+      # ++from
+      81 0/subop/add %esi 0xc/imm32
+      #
+      eb/jump loop/disp8
+    }
+    89/<- *ebx 7/r32/edi
 $clean-up-blocks:end:
     # . restore registers
+    5f/pop-to-edi
     5e/pop-to-esi
-    59/pop-to-ecx
+    5b/pop-to-ebx
+    5a/pop-to-edx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+in-function-outputs?:  # fn: (addr function), target: (addr var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var curr/ecx: (addr list var) = lookup(fn->outputs)
+    8b/-> *(ebp+8) 1/r32/ecx
+    (lookup *(ecx+0x10) *(ecx+0x14))  # Function-outputs Function-outputs => eax
+    89/<- %ecx 0/r32/eax
+    # while curr != null
+    {
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      # var v/eax: (addr var) = lookup(curr->value)
+      (lookup *ecx *(ecx+4))  # List-value List-value => eax
+      # if (v == target) return true
+      39/compare *(ebp+0xc) 0/r32/eax
+      b8/copy-to-eax 1/imm32/true
+      74/jump-if-= $in-function-outputs?:end/disp8
+      # curr = curr->next
+      (lookup *(ecx+8) *(ecx+0xc))  # List-next List-next => eax
+      89/<- %ecx 0/r32/eax
+      #
+      eb/jump loop/disp8
+    }
+    b8/copy-to-eax 0/imm32
+$in-function-outputs?:end:
+    # . restore registers
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp

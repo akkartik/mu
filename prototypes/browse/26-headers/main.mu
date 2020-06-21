@@ -126,9 +126,11 @@ $render-header-line:body: {
   var c/eax: byte <- copy 0
   {
     # if done-drawing?(state) return
-    var done?/eax: boolean <- done-drawing? state
-    compare done?, 0  # false
-    break-if-!= $render-header-line:body
+    {
+      var done?/eax: boolean <- done-drawing? state
+      compare done?, 0  # false
+      break-if-!= $render-header-line:body
+    }
     #
     c <- next-char fs
     # if (c != '#') break
@@ -142,9 +144,11 @@ $render-header-line:body: {
   start-heading header-level
   {
     # if done-drawing?(state) break
-    var done?/eax: boolean <- done-drawing? state
-    compare done?, 0  # false
-    break-if-!=
+    {
+      var done?/eax: boolean <- done-drawing? state
+      compare done?, 0  # false
+      break-if-!=
+    }
     #
     c <- next-char fs
     # if (c == EOF) break

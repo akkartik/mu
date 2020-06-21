@@ -12,7 +12,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   var ncols/ecx: int <- copy 0
   nrows, ncols <- screen-size
   var screen-position-state-storage: screen-position-state
-  var screen-position-state: (addr screen-position-state) = address screen-position-state-storage
+  var screen-position-state: (addr screen-position-state)
   init-screen-position-state screen-position-state, nrows, ncols
   {
     var done?/eax: boolean <- done-reading? fs
