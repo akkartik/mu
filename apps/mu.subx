@@ -6992,7 +6992,7 @@ $parse-mu-block:regular-stmt:
       #
       e9/jump loop/disp32
     } # end line loop
-    (clean-up-blocks *(ebp+0xc) *Curr-block-depth)
+    (clean-up-blocks *(ebp+0xc) *Curr-block-depth *(ebp+0x10))
     # decrement *Curr-block-depth
     ff 1/subop/decrement *Curr-block-depth
     # pop(vars)
@@ -10694,7 +10694,7 @@ $emit-subx-stmt-list:continue:
 $emit-subx-stmt-list:emit-cleanup:
     (emit-cleanup-code-until-depth *(ebp+8) *(ebp+0x10) *Curr-block-depth)
 $emit-subx-stmt-list:clean-up:
-    (clean-up-blocks *(ebp+0x10) *Curr-block-depth)
+    (clean-up-blocks *(ebp+0x10) *Curr-block-depth *(ebp+0x14))
 $emit-subx-stmt-list:end:
     # . restore registers
     5e/pop-to-esi
@@ -11457,7 +11457,7 @@ $same-register-spilled-before?:end:
     c3/return
 
 # clean up global state for 'vars' until some block depth (inclusive)
-clean-up-blocks:  # vars: (addr stack live-var), until-block-depth: int
+clean-up-blocks:  # vars: (addr stack live-var), until-block-depth: int, fn: (addr function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
