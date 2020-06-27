@@ -838,6 +838,7 @@ test-convert-function-with-literal-arg-2:
     5d/pop-to-ebp
     c3/return
 
+# HERE
 test-convert-function-call-with-literal-arg:
     # . prologue
     55/push-ebp
@@ -9874,6 +9875,34 @@ check-mu-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-fi
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
+    # var f/edi: (addr function) = lookup(*Program->functions)
+    (lookup *_Program-functions *_Program-functions->payload)  # => eax
+    (find-matching-function %eax *(ebp+8))  # => eax
+    3d/compare-eax-and 0/imm32
+    {
+      74/jump-if-= break/disp8
+      (check-mu-call *(ebp+8) %eax *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      eb/jump $check-mu-stmt:end/disp8
+    }
+    {
+      75/jump-if-!= break/disp8
+      (check-mu-primitive *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      eb/jump $check-mu-stmt:end/disp8
+    }
+$check-mu-stmt:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-call:  # stmt: (addr stmt), callee: (addr function), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
     51/push-ecx
     52/push-edx
     53/push-ebx
@@ -9881,249 +9910,241 @@ check-mu-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-fi
     57/push-edi
     # esi = stmt
     8b/-> *(ebp+8) 6/r32/esi
-    # var f/edi: (addr function) = lookup(*Program->functions)
-    (lookup *_Program-functions *_Program-functions->payload)  # => eax
-    (find-matching-function %eax *(ebp+8))  # => eax
-    89/<- %edi 0/r32/eax
+    # edi = callee
+    8b/-> *(ebp+0xc) 7/r32/edi
+    # var inouts/ecx: (addr stmt-var) = lookup(stmt->inouts)
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %ecx 0/r32/eax
+    # var expected/edx: (addr list var) = lookup(f->inouts)
+    (lookup *(edi+8) *(edi+0xc))  # Function-inouts Function-inouts => eax
+    89/<- %edx 0/r32/eax
     {
-$check-mu-stmt:check-for-call:
-      81 7/subop/compare %edi 0/imm32
+$check-mu-call:check-for-inouts:
+      # if (inouts == 0) break
+      81 7/subop/compare %ecx 0/imm32
       0f 84/jump-if-= break/disp32
-$check-mu-stmt:is-call:
-      # var inouts/ecx: (addr stmt-var) = lookup(stmt->inouts)
-      (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
-      89/<- %ecx 0/r32/eax
-      # var expected/edx: (addr list var) = lookup(f->inouts)
-      (lookup *(edi+8) *(edi+0xc))  # Function-inouts Function-inouts => eax
-      89/<- %edx 0/r32/eax
+      # if (expected == 0) error
+      81 7/subop/compare %edx 0/imm32
+      0f 84/jump-if-= break/disp32
+$check-mu-call:check-inout-type:
+      # var v/eax: (addr v) = lookup(inouts->value)
+      (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+      # var t/ebx: (addr tree type-id) = lookup(v->type)
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      89/<- %ebx 0/r32/eax
+      # if (inouts->is-deref?) t = t->right  # TODO: check that t->left is an addr
+      81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
       {
-$check-mu-stmt:check-for-inouts:
-        # if (inouts == 0) break
+        74/jump-if-= break/disp8
+        (lookup *(ebx+0xc) *(ebx+0x10))  # Tree-right Tree-right => eax
+        89/<- %ebx 0/r32/eax
+        # if t->right is null, t = t->left
+        81 7/subop/compare *(ebx+0xc) 0/imm32  # Tree-right
+        75/jump-if-!= break/disp8
+        (lookup *(ebx+4) *(ebx+8))  # Tree-left Tree-left => eax
+        89/<- %ebx 0/r32/eax
+      }
+      # var v2/eax: (addr v) = lookup(expected->value)
+      (lookup *edx *(edx+4))  # List-value List-value => eax
+      # var t2/eax: (addr tree type-id) = lookup(v2->type)
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      # if (t != t2) error
+      (type-match? %eax %ebx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      {
+        0f 85/jump-if-!= break/disp32
+        (write-buffered *(ebp+0x14) "fn ")
+        8b/-> *(ebp+0x10) 0/r32/eax
+        (lookup *eax *(eax+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": call ")
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": type for inout '")
+        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+        (lookup *eax *(eax+4))  # Var-name Var-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) "' is not right\n")
+        (flush *(ebp+0x14))
+        (stop *(ebp+0x18) 1)
+      }
+$check-mu-call:continue-to-next-inout:
+      # inouts = lookup(inouts->next)
+      (lookup *(ecx+8) *(ecx+0xc))  # Stmt-var-next Stmt-var-next => eax
+      89/<- %ecx 0/r32/eax
+      # expected = lookup(expected->next)
+      (lookup *(edx+8) *(edx+0xc))  # List-next List-next => eax
+      89/<- %edx 0/r32/eax
+      #
+      e9/jump loop/disp32
+    }
+$check-mu-call:check-inout-count:
+    # if (inouts == expected) proceed
+    39/compare %ecx 2/r32/edx
+    {
+      0f 84/jump-if-= break/disp32
+      # exactly one of the two is null
+      # if (inouts == 0) error("too many inouts")
+      {
         81 7/subop/compare %ecx 0/imm32
         0f 84/jump-if-= break/disp32
-        # if (expected == 0) error
+        (write-buffered *(ebp+0x14) "fn ")
+        8b/-> *(ebp+0x10) 0/r32/eax
+        (lookup *eax *(eax+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": call ")
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": too many inouts\n")
+        (flush *(ebp+0x14))
+        (stop *(ebp+0x18) 1)
+      }
+      # if (expected == 0) error("too few inouts")
+      {
         81 7/subop/compare %edx 0/imm32
         0f 84/jump-if-= break/disp32
-$check-mu-stmt:check-inout-type:
-        # var v/eax: (addr v) = lookup(inouts->value)
-        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
-        # var t/ebx: (addr tree type-id) = lookup(v->type)
-        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-        89/<- %ebx 0/r32/eax
-        # if (inouts->is-deref?) t = t->right  # TODO: check that t->left is an addr
-        81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
-        {
-          74/jump-if-= break/disp8
-          (lookup *(ebx+0xc) *(ebx+0x10))  # Tree-right Tree-right => eax
-          89/<- %ebx 0/r32/eax
-          # if t->right is null, t = t->left
-          81 7/subop/compare *(ebx+0xc) 0/imm32  # Tree-right
-          75/jump-if-!= break/disp8
-          (lookup *(ebx+4) *(ebx+8))  # Tree-left Tree-left => eax
-          89/<- %ebx 0/r32/eax
-        }
-        # var v2/eax: (addr v) = lookup(expected->value)
-        (lookup *edx *(edx+4))  # List-value List-value => eax
-        # var t2/eax: (addr tree type-id) = lookup(v2->type)
-        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-        # if (t != t2) error
-        (type-match? %eax %ebx)  # => eax
-        3d/compare-eax-and 0/imm32/false
-        {
-          0f 85/jump-if-!= break/disp32
-          (write-buffered *(ebp+0x10) "fn ")
-          8b/-> *(ebp+0xc) 0/r32/eax
-          (lookup *eax *(eax+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": call ")
-          (lookup *edi *(edi+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": type for inout '")
-          (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
-          (lookup *eax *(eax+4))  # Var-name Var-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) "' is not right\n")
-          (flush *(ebp+0x10))
-          (stop *(ebp+0x14) 1)
-        }
-$check-mu-stmt:continue-to-next-inout:
-        # inouts = lookup(inouts->next)
-        (lookup *(ecx+8) *(ecx+0xc))  # Stmt-var-next Stmt-var-next => eax
-        89/<- %ecx 0/r32/eax
-        # expected = lookup(expected->next)
-        (lookup *(edx+8) *(edx+0xc))  # List-next List-next => eax
-        89/<- %edx 0/r32/eax
-        #
-        e9/jump loop/disp32
-      }
-$check-mu-stmt:check-inout-count:
-      # if (inouts == expected) proceed
-      39/compare %ecx 2/r32/edx
-      {
-        0f 84/jump-if-= break/disp32
-        # exactly one of the two is null
-        # if (inouts == 0) error("too many inouts")
-        {
-          81 7/subop/compare %ecx 0/imm32
-          0f 84/jump-if-= break/disp32
-          (write-buffered *(ebp+0x10) "fn ")
-          8b/-> *(ebp+0xc) 0/r32/eax
-          (lookup *eax *(eax+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": call ")
-          (lookup *edi *(edi+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": too many inouts\n")
-          (flush *(ebp+0x10))
-          (stop *(ebp+0x14) 1)
-        }
-        # if (expected == 0) error("too few inouts")
-        {
-          81 7/subop/compare %edx 0/imm32
-          0f 84/jump-if-= break/disp32
-          (write-buffered *(ebp+0x10) "fn ")
-          8b/-> *(ebp+0xc) 0/r32/eax
-          (lookup *eax *(eax+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": call ")
-          (lookup *edi *(edi+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": too few inouts\n")
-          (flush *(ebp+0x10))
-          (stop *(ebp+0x14) 1)
-        }
-      }
-$check-mu-stmt:check-outputs:
-      # var outputs/ecx: (addr stmt-var) = lookup(stmt->outputs)
-      (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
-      89/<- %ecx 0/r32/eax
-      # var expected/edx: (addr list var) = lookup(f->outputs)
-      (lookup *(edi+0x10) *(edi+0x14))  # Function-outputs Function-outputs => eax
-      89/<- %edx 0/r32/eax
-      {
-$check-mu-stmt:check-for-outputs:
-        # if (outputs == 0) break
-        81 7/subop/compare %ecx 0/imm32
-        0f 84/jump-if-= break/disp32
-        # if (expected == 0) error
-        81 7/subop/compare %edx 0/imm32
-        0f 84/jump-if-= break/disp32
-$check-mu-stmt:check-output-type:
-        # var v/eax: (addr v) = lookup(outputs->value)
-        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
-        # var t/ebx: (addr tree type-id) = lookup(v->type)
-        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-        89/<- %ebx 0/r32/eax
-        # if (outputs->is-deref?) t = t->right  # TODO: check that t->left is an addr
-        81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
-        {
-          74/jump-if-= break/disp8
-          (lookup *(ebx+0xc) *(ebx+0x10))  # Tree-right Tree-right => eax
-          89/<- %ebx 0/r32/eax
-        }
-        # var v2/eax: (addr v) = lookup(expected->value)
-        (lookup *edx *(edx+4))  # List-value List-value => eax
-        # var t2/eax: (addr tree type-id) = lookup(v2->type)
-        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-        # if (t != t2) error
-        (type-equal? %eax %ebx)  # => eax
-        3d/compare-eax-and 0/imm32/false
-        {
-          0f 85/jump-if-!= break/disp32
-          (write-buffered *(ebp+0x10) "fn ")
-          8b/-> *(ebp+0xc) 0/r32/eax
-          (lookup *eax *(eax+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": call ")
-          (lookup *edi *(edi+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": type for output '")
-          (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
-          (lookup *eax *(eax+4))  # Var-name Var-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) "' is not right\n")
-          (flush *(ebp+0x10))
-          (stop *(ebp+0x14) 1)
-        }
-$check-mu-stmt:check-output-register:
-        # var v/eax: (addr v) = lookup(outputs->value)
-        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
-        # var r/ebx: (addr array byte) = lookup(v->register)
-        (lookup *(eax+18) *(eax+0x1c))  # Var-register Var-register => eax
-        89/<- %ebx 0/r32/eax
-        # var v2/eax: (addr v) = lookup(expected->value)
-        (lookup *edx *(edx+4))  # Stmt-var-value Stmt-var-value => eax
-        # var r2/eax: (addr array byte) = lookup(v2->register)
-        (lookup *(eax+18) *(eax+0x1c))  # Var-register Var-register => eax
-        # if (r != r2) error
-        (string-equal? %eax %ebx)  # => eax
-        3d/compare-eax-and 0/imm32/false
-        {
-          0f 85/jump-if-!= break/disp32
-          (write-buffered *(ebp+0x10) "fn ")
-          8b/-> *(ebp+0xc) 0/r32/eax
-          (lookup *eax *(eax+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": call ")
-          (lookup *edi *(edi+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": register for output '")
-          (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
-          (lookup *eax *(eax+4))  # Var-name Var-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) "' is not right\n")
-          (flush *(ebp+0x10))
-          (stop *(ebp+0x14) 1)
-        }
-$check-mu-stmt:continue-to-next-output:
-        # outputs = lookup(outputs->next)
-        (lookup *(ecx+8) *(ecx+0xc))  # Stmt-var-next Stmt-var-next => eax
-        89/<- %ecx 0/r32/eax
-        # expected = lookup(expected->next)
-        (lookup *(edx+8) *(edx+0xc))  # List-next List-next => eax
-        89/<- %edx 0/r32/eax
-        #
-        e9/jump loop/disp32
-      }
-$check-mu-stmt:check-output-count:
-      # if (outputs == expected) proceed
-      39/compare %ecx 2/r32/edx
-      {
-        0f 84/jump-if-= break/disp32
-        # exactly one of the two is null
-        # if (outputs == 0) error("too many outputs")
-        {
-          81 7/subop/compare %ecx 0/imm32
-          0f 84/jump-if-= break/disp32
-          (write-buffered *(ebp+0x10) "fn ")
-          8b/-> *(ebp+0xc) 0/r32/eax
-          (lookup *eax *(eax+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": call ")
-          (lookup *edi *(edi+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": too many outputs\n")
-          (flush *(ebp+0x10))
-          (stop *(ebp+0x14) 1)
-        }
-        # if (expected == 0) error("too few outputs")
-        {
-          81 7/subop/compare %edx 0/imm32
-          0f 84/jump-if-= break/disp32
-          (write-buffered *(ebp+0x10) "fn ")
-          8b/-> *(ebp+0xc) 0/r32/eax
-          (lookup *eax *(eax+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": call ")
-          (lookup *edi *(edi+4))  # Function-name Function-name => eax
-          (write-buffered *(ebp+0x10) %eax)
-          (write-buffered *(ebp+0x10) ": too few outputs\n")
-          (flush *(ebp+0x10))
-          (stop *(ebp+0x14) 1)
-        }
+        (write-buffered *(ebp+0x14) "fn ")
+        8b/-> *(ebp+0x10) 0/r32/eax
+        (lookup *eax *(eax+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": call ")
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": too few inouts\n")
+        (flush *(ebp+0x14))
+        (stop *(ebp+0x18) 1)
       }
     }
-$check-mu-stmt:end:
+$check-mu-call:check-outputs:
+    # var outputs/ecx: (addr stmt-var) = lookup(stmt->outputs)
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    89/<- %ecx 0/r32/eax
+    # var expected/edx: (addr list var) = lookup(f->outputs)
+    (lookup *(edi+0x10) *(edi+0x14))  # Function-outputs Function-outputs => eax
+    89/<- %edx 0/r32/eax
+    {
+$check-mu-call:check-for-outputs:
+      # if (outputs == 0) break
+      81 7/subop/compare %ecx 0/imm32
+      0f 84/jump-if-= break/disp32
+      # if (expected == 0) error
+      81 7/subop/compare %edx 0/imm32
+      0f 84/jump-if-= break/disp32
+$check-mu-call:check-output-type:
+      # var v/eax: (addr v) = lookup(outputs->value)
+      (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+      # var t/ebx: (addr tree type-id) = lookup(v->type)
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      89/<- %ebx 0/r32/eax
+      # if (outputs->is-deref?) t = t->right  # TODO: check that t->left is an addr
+      81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
+      {
+        74/jump-if-= break/disp8
+        (lookup *(ebx+0xc) *(ebx+0x10))  # Tree-right Tree-right => eax
+        89/<- %ebx 0/r32/eax
+      }
+      # var v2/eax: (addr v) = lookup(expected->value)
+      (lookup *edx *(edx+4))  # List-value List-value => eax
+      # var t2/eax: (addr tree type-id) = lookup(v2->type)
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      # if (t != t2) error
+      (type-equal? %eax %ebx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      {
+        0f 85/jump-if-!= break/disp32
+        (write-buffered *(ebp+0x14) "fn ")
+        8b/-> *(ebp+0x10) 0/r32/eax
+        (lookup *eax *(eax+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": call ")
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": type for output '")
+        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+        (lookup *eax *(eax+4))  # Var-name Var-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) "' is not right\n")
+        (flush *(ebp+0x14))
+        (stop *(ebp+0x18) 1)
+      }
+$check-mu-call:check-output-register:
+      # var v/eax: (addr v) = lookup(outputs->value)
+      (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+      # var r/ebx: (addr array byte) = lookup(v->register)
+      (lookup *(eax+18) *(eax+0x1c))  # Var-register Var-register => eax
+      89/<- %ebx 0/r32/eax
+      # var v2/eax: (addr v) = lookup(expected->value)
+      (lookup *edx *(edx+4))  # Stmt-var-value Stmt-var-value => eax
+      # var r2/eax: (addr array byte) = lookup(v2->register)
+      (lookup *(eax+18) *(eax+0x1c))  # Var-register Var-register => eax
+      # if (r != r2) error
+      (string-equal? %eax %ebx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      {
+        0f 85/jump-if-!= break/disp32
+        (write-buffered *(ebp+0x14) "fn ")
+        8b/-> *(ebp+0x10) 0/r32/eax
+        (lookup *eax *(eax+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": call ")
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": register for output '")
+        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+        (lookup *eax *(eax+4))  # Var-name Var-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) "' is not right\n")
+        (flush *(ebp+0x14))
+        (stop *(ebp+0x18) 1)
+      }
+$check-mu-call:continue-to-next-output:
+      # outputs = lookup(outputs->next)
+      (lookup *(ecx+8) *(ecx+0xc))  # Stmt-var-next Stmt-var-next => eax
+      89/<- %ecx 0/r32/eax
+      # expected = lookup(expected->next)
+      (lookup *(edx+8) *(edx+0xc))  # List-next List-next => eax
+      89/<- %edx 0/r32/eax
+      #
+      e9/jump loop/disp32
+    }
+$check-mu-call:check-output-count:
+    # if (outputs == expected) proceed
+    39/compare %ecx 2/r32/edx
+    {
+      0f 84/jump-if-= break/disp32
+      # exactly one of the two is null
+      # if (outputs == 0) error("too many outputs")
+      {
+        81 7/subop/compare %ecx 0/imm32
+        0f 84/jump-if-= break/disp32
+        (write-buffered *(ebp+0x14) "fn ")
+        8b/-> *(ebp+0x10) 0/r32/eax
+        (lookup *eax *(eax+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": call ")
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": too many outputs\n")
+        (flush *(ebp+0x14))
+        (stop *(ebp+0x18) 1)
+      }
+      # if (expected == 0) error("too few outputs")
+      {
+        81 7/subop/compare %edx 0/imm32
+        0f 84/jump-if-= break/disp32
+        (write-buffered *(ebp+0x14) "fn ")
+        8b/-> *(ebp+0x10) 0/r32/eax
+        (lookup *eax *(eax+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": call ")
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": too few outputs\n")
+        (flush *(ebp+0x14))
+        (stop *(ebp+0x18) 1)
+      }
+    }
+$check-mu-call:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -10131,6 +10152,18 @@ $check-mu-stmt:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-primitive:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$check-mu-primitive:end:
+    # . restore registers
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
