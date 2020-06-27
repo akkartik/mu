@@ -9875,23 +9875,71 @@ check-mu-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-fi
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    # var f/edi: (addr function) = lookup(*Program->functions)
-    (lookup *_Program-functions *_Program-functions->payload)  # => eax
-    (find-matching-function %eax *(ebp+8))  # => eax
-    3d/compare-eax-and 0/imm32
+    # if stmt's operation matches a primitive, check against it
+    (has-primitive-name? *(ebp+8))  # => eax
+    3d/compare-eax-and 0/imm32/false
     {
       74/jump-if-= break/disp8
-      (check-mu-call *(ebp+8) %eax *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
-      eb/jump $check-mu-stmt:end/disp8
-    }
-    {
-      75/jump-if-!= break/disp8
       (check-mu-primitive *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       eb/jump $check-mu-stmt:end/disp8
+    }
+    # otherwise find a function to check against
+    {
+      # var f/edi: (addr function) = lookup(*Program->functions)
+      (lookup *_Program-functions *_Program-functions->payload)  # => eax
+      (find-matching-function %eax *(ebp+8))  # => eax
+      3d/compare-eax-and 0/imm32
+      {
+        74/jump-if-= break/disp8
+        (check-mu-call *(ebp+8) %eax *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+        eb/jump $check-mu-stmt:end/disp8
+      }
+      # TODO: error on unknown function. We need to first type-check calls to SubX functions.
     }
 $check-mu-stmt:end:
     # . restore registers
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+has-primitive-name?:  # stmt: (addr stmt) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # var name/esi: (addr array byte) = lookup(stmt->operation)
+    8b/-> *(ebp+8) 6/r32/esi
+    (lookup *(esi+4) *(esi+8))  # Stmt1-operation Stmt1-operation => eax
+    89/<- %esi 0/r32/eax
+    # var curr/ecx: (addr primitive) = Primitives
+    b9/copy-to-ecx Primitives/imm32
+    {
+$has-primitive-name?:loop:
+      # if (curr == null) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      # if (primitive->name == name) return true
+      (lookup *ecx *(ecx+4))  # Primitive-name Primitive-name => eax
+      (string-equal? %esi %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= $has-primitive-name?:end/disp8
+$has-primitive-name?:next-primitive:
+      # curr = curr->next
+      (lookup *(ecx+0x34) *(ecx+0x38))  # Primitive-next Primitive-next => eax
+      89/<- %ecx 0/r32/eax
+      #
+      e9/jump loop/disp32
+    }
+    # return null
+    b8/copy-to-eax 0/imm32
+$has-primitive-name?:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
