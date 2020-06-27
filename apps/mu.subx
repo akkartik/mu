@@ -16295,13 +16295,13 @@ operand-matches-primitive?:  # s: (addr stmt-var), prim-var: (addr var) -> resul
     # edi = prim-var
     8b/-> *(ebp+0xc) 7/r32/edi
 $operand-matches-primitive?:check-type:
-    # if (var->type != prim-var->type) return false
+    # if !category-match?(var->type, prim-var->type) return false
     # . var vtype/ebx: (addr tree type-id) = lookup(var->type)
     (lookup *(esi+8) *(esi+0xc))  # Var-type Var-type => eax
     89/<- %ebx 0/r32/eax
     # . var ptype/eax: (addr tree type-id) = lookup(prim-var->type)
     (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
-    (subx-type-equal? %ebx %eax)  # => eax
+    (subx-type-category-match? %ebx %eax)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $operand-matches-primitive?:return-false/disp32
     {
@@ -16436,7 +16436,9 @@ $mu-stmt-matches-function?:end:
     5d/pop-to-ebp
     c3/return
 
-subx-type-equal?:  # a: (addr tree type-id), b: (addr tree type-id) -> result/eax: boolean
+# Type-checking happens elsewhere. This method is for selecting between
+# primitives.
+subx-type-category-match?:  # a: (addr tree type-id), b: (addr tree type-id) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -16451,7 +16453,7 @@ subx-type-equal?:  # a: (addr tree type-id), b: (addr tree type-id) -> result/ea
     39/compare %eax 1/r32/ecx
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
-$subx-type-equal?:end:
+$subx-type-category-match?:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
