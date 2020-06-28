@@ -4814,7 +4814,7 @@ test-get-with-wrong-field:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-get-with-wrong-field: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "type 't' has no member called 'y'"  "F - test-get-with-wrong-field: error message")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt get: type 't' has no member called 'y'"  "F - test-get-with-wrong-field: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-var-in-mem-has-no-initializer: exit status")
     # don't restore from ebp
@@ -8871,7 +8871,7 @@ find-or-create-typeinfo-output-var:  # T: (addr typeinfo), f: (addr slice), out:
       68/push 0/imm32
       68/push 0/imm32
       89/<- %eax 4/r32/esp
-      (copy-array Heap "field" %eax)
+      (slice-to-string Heap *(ebp+0xc) %eax)
       # . new var
       8d/copy-address *(edi+0xc) 2/r32/edx
       (new-var Heap  *eax *(eax+4)  %edx)
@@ -8987,7 +8987,6 @@ populate-mu-type:  # in: (addr stream byte), t: (addr typeinfo), err: (addr buff
     #       r->output-var = new literal
     #     TODO: ensure nothing else in line
     # t->total-size-in-bytes = -2 (not yet initialized)
-    # check-input-vars(t, err, ed)
     #
     # . prologue
     55/push-ebp
@@ -9088,8 +9087,6 @@ $populate-mu-type:invalidate-total-size-in-bytes:
     # have encountered the element types.
     # We'll recompute them separately after parsing the entire program.
     c7 0/subop/copy *(edi+0xc) -2/imm32/uninitialized  # Typeinfo-total-size-in-bytes
-$populate-mu-type:validate:
-    (check-input-vars *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
 $populate-mu-type:end:
     # . reclaim locals
     81 0/subop/add %esp 0x224/imm32
@@ -9115,70 +9112,6 @@ $populate-mu-type:abort:
     (write-buffered *(ebp+0x10) "\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
-    # never gets here
-
-check-input-vars:  # t: (addr typeinfo), err: (addr buffered-file), ed: (addr exit-descriptor)
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # . save registers
-    50/push-eax
-    51/push-ecx
-    52/push-edx
-    # var table/ecx: (addr table (handle array byte) (handle typeinfo-entry)) = lookup(t->fields)
-    8b/-> *(ebp+8) 0/r32/eax
-    (lookup *(eax+4) *(eax+8))  # Typeinfo-fields Typeinfo-fields => eax
-    89/<- %ecx 0/r32/eax
-    # var table-size/edx: int = table->write
-    8b/-> *ecx 2/r32/edx  # stream-write
-    # var curr/ecx: (addr table_row) = table->data
-    8d/copy-address *(ecx+0xc) 1/r32/ecx
-    # var max/edx: (addr table_row) = table->data + table->write
-    8d/copy-address *(ecx+edx) 2/r32/edx
-    {
-$check-input-vars:loop:
-      # if (curr >= max) break
-      39/compare %ecx 2/r32/edx
-      73/jump-if-addr>= break/disp8
-      (lookup *ecx *(ecx+4))  # => eax
-      # var t2/eax: (addr typeinfo-entry) = lookup(curr->value)
-      (lookup *(ecx+8) *(ecx+0xc))  # => eax
-      # if (t2->input-var == null) raise an error
-      8b/-> *eax 0/r32/eax  # Typeinfo-entry-input-var
-      3d/compare-eax-and 0/imm32/null
-      0f 84/jump-if-= $check-input-vars:abort/disp32
-      # curr += row-size
-      81 0/subop/add %ecx 0x10/imm32  # Typeinfo-fields-row-size
-      #
-      eb/jump loop/disp8
-    }
-$check-input-vars:end:
-    # . restore registers
-    5a/pop-to-edx
-    59/pop-to-ecx
-    58/pop-to-eax
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-$check-input-vars:abort:
-    # error("type " type " has no member called '" curr->name "'\n")
-    (write-buffered *(ebp+0xc) "type '")
-    # . var tmp/edx: int = t->id << 2
-    8b/-> *(ebp+8) 0/r32/eax
-    8b/-> *eax 2/r32/edx  # Typeinfo-id
-    c1/shift 4/subop/left %edx 2/imm8
-    # . var a/edx: (addr array byte) = Type-id->data[tmp]
-    b8/copy-to-eax Type-id/imm32
-    8b/-> *(eax+edx+0xc) 2/r32/edx
-    (write-buffered *(ebp+0xc) %edx)
-    (write-buffered *(ebp+0xc) "' has no member called '")
-    (lookup *ecx *(ecx+4))  # => eax
-    (write-buffered *(ebp+0xc) %eax)
-    (write-buffered *(ebp+0xc) "'\n")
-    (flush *(ebp+0xc))
-    (stop *(ebp+0x10) 1)
     # never gets here
 
 type-name:  # index: int -> result/eax: (addr array byte)
@@ -9299,6 +9232,9 @@ $populate-mu-type-sizes-in-type:loop:
       73/jump-if-addr>= break/disp8
       # var t/eax: (addr typeinfo-entry) = lookup(curr->value)
       (lookup *(ecx+8) *(ecx+0xc))  # => eax
+      # if (t->input-var == 0) silently ignore it; we'll emit a nice error message while type-checking
+      81 7/subop/compare *eax 0/imm32  # Typeinfo-entry-input-var
+      74/jump-if-= $populate-mu-type-sizes-in-type:end/disp8
       # compute size of t->input-var
       (lookup *eax *(eax+4))  # Typeinfo-entry-input-var Typeinfo-entry-input-var => eax
       (compute-size-of-var %eax)  # => eax
@@ -9449,6 +9385,9 @@ $populate-mu-type-offsets:loop:
       # var v/esi: (addr typeinfo-entry)
       (locate-typeinfo-entry-with-index %ecx %ebx *(ebp+0xc) *(ebp+0x10))  # => eax
       89/<- %esi 0/r32/eax
+      # if (v->input-var == 0) silently ignore v; we'll emit a nice error message while type-checking
+      81 7/subop/compare *esi 0/imm32  # Typeinfo-entry-input-var
+      74/jump-if-= $populate-mu-type-offsets:end/disp8
       # v->output-var->offset = curr-offset
       # . eax: (addr var)
       (lookup *(esi+0xc) *(esi+0x10))  # Typeinfo-entry-output-var Typeinfo-entry-output-var => eax
@@ -9494,7 +9433,7 @@ locate-typeinfo-entry-with-index:  # table: (addr table (handle array byte) (han
     {
 $locate-typeinfo-entry-with-index:loop:
       39/compare %ecx 2/r32/edx
-      73/jump-if-addr>= $locate-typeinfo-entry-with-index:abort/disp8
+      73/jump-if-addr>= break/disp8
       # var v/eax: (addr typeinfo-entry)
       (lookup *(ecx+8) *(ecx+0xc))  # => eax
       # if (v->index == idx) return v
@@ -9529,14 +9468,6 @@ $locate-typeinfo-entry-with-index:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
-
-$locate-typeinfo-entry-with-index:abort:
-    (write-buffered *(ebp+0x10) "overflowing typeinfo-entry->index ")
-    (print-int32-buffered *(ebp+0x10) %ecx)
-    (write-buffered *(ebp+0x10) "\n")
-    (flush *(ebp+0x10))
-    (stop *(ebp+0x14) 1)
-    # never gets here
 
 dump-typeinfos:  # hdr: (addr array byte)
     # . prologue
@@ -9915,6 +9846,26 @@ has-primitive-name?:  # stmt: (addr stmt) -> result/eax: boolean
     8b/-> *(ebp+8) 6/r32/esi
     (lookup *(esi+4) *(esi+8))  # Stmt1-operation Stmt1-operation => eax
     89/<- %esi 0/r32/eax
+    # if (name == "get") return true
+    (string-equal? %esi "get")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "index") return true
+    (string-equal? %esi "index")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "length") return true
+    (string-equal? %esi "length")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "compute-offset") return true
+    (string-equal? %esi "compute-offset")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $has-primitive-name?:end/disp8
+    # if (name == "lookup") return true
+    (string-equal? %esi "lookup")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $has-primitive-name?:end/disp8
     # var curr/ecx: (addr primitive) = Primitives
     b9/copy-to-ecx Primitives/imm32
     {
@@ -9950,12 +9901,100 @@ check-mu-primitive:  # stmt: (addr stmt), fn: (addr function), err: (addr buffer
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
+    51/push-ecx
+    # var op/ecx: (addr array byte) = lookup(stmt->operation)
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *(eax+4) *(eax+8))  # Stmt1-operation Stmt1-operation => eax
+    89/<- %ecx 0/r32/eax
+    # if (op == "copy") check-mu-copy-stmt
+    # if (op == "copy-to") check-mu-copy-to-stmt
+    # if (op == "compare") check-mu-compare-stmt
+    # if (op == "address") check-mu-address-stmt
+    # if (op == "get") check-mu-get-stmt
+    {
+      (string-equal? %ecx "get")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (check-mu-get-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      e9/jump $check-mu-primitive:end/disp32
+    }
+    # if (op == "index") check-mu-index-stmt
+    # if (op == "length") check-mu-length-stmt
+    # if (op == "compute-offset") check-mu-compute-offset-stmt
+    # if (op == "lookup") check-mu-lookup-stmt
+    # otherwise check-numberlike-stmt
 $check-mu-primitive:end:
     # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+check-mu-get-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+8) 6/r32/esi
+    # TODO: check >0 inouts
+    # var base/ebx: (addr stmt-var) = stmt->inouts->value
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %ebx 0/r32/eax
+    # TODO: check >1 inouts
+    # var offset/ecx: (addr var) = stmt->inouts->next->value
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %ecx 0/r32/eax
+    81 7/subop/compare *(ecx+0x14) -1/imm32/uninitialized  # Var-offset
+    74/jump-if-= $check-mu-get-stmt:abort/disp8
+    # TODO: check >0 outputs
+    # var output/edi: (addr var) = stmt->outputs->value
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %edi 0/r32/eax
+    # TODO: check output type
+$check-mu-get-stmt:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$check-mu-get-stmt:abort:
+    # error("fn " fn ": stmt get: type " type " has no member called '" curr->name "'\n")
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt get: type '")
+    # . var tmp/eax = container-type(base)
+    (container-type %ebx)  # => eax
+    # . write(Type-id->data[tmp])
+    bf/copy-to-edi Type-id/imm32
+    (write-buffered *(ebp+0x10) *(edi+eax<<2+0xc))
+    # .
+    (write-buffered *(ebp+0x10) "' has no member called '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "'\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
 
 check-mu-call:  # stmt: (addr stmt), callee: (addr function), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
