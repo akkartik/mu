@@ -5118,6 +5118,54 @@ test-get-with-wrong-output-type-3:
     5d/pop-to-ebp
     c3/return
 
+test-get-with-wrong-output-type-4:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: t\n")
+    (write _test-input-stream "  var c/ecx: (addr boolean) <- get a, x\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-get-with-wrong-output-type-4: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt get: wrong output type for member 'x' of type 't'"  "F - test-get-with-wrong-output-type-4: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-get-with-wrong-output-type-4: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-get-with-too-few-inouts:
     # . prologue
     55/push-ebp
@@ -9323,14 +9371,17 @@ find-typeinfo:  # t: type-id, out: (addr handle typeinfo)
     8b/-> *_Program-types->payload 0/r32/eax
     89/<- *(edi+4) 0/r32/eax
     {
+$find-typeinfo:loop:
       # if (*out == 0) break
       81 7/subop/compare *edi 0/imm32
       74/jump-if-= break/disp8
+$find-typeinfo:check:
       # var tmp/eax: (addr typeinfo) = lookup(*out)
       (lookup *edi *(edi+4))  # => eax
       # if (tmp->id == t) break
       39/compare *eax 1/r32/ecx  # Typeinfo-id
       74/jump-if-= break/disp8
+$find-typeinfo:continue:
       # *out = tmp->next
       8b/-> *(eax+0x10) 2/r32/edx  # Typeinfo-next
       89/<- *edi 2/r32/edx
@@ -10448,6 +10499,7 @@ check-mu-get-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffere
     # . save registers
     50/push-eax
     51/push-ecx
+    52/push-edx
     53/push-ebx
     56/push-esi
     57/push-edi
@@ -10460,6 +10512,7 @@ check-mu-get-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffere
     0f 84/jump-if-= $check-mu-get-stmt:error-too-few-inouts/disp32
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     89/<- %ecx 0/r32/eax
+$check-mu-get-stmt:check-base:
     # - check base type
     # if it's an 'addr', check that it's in a register
     # var base-type/ebx: (addr tree type-id) = lookup(base->type)
@@ -10467,25 +10520,45 @@ check-mu-get-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffere
     89/<- %ebx 0/r32/eax
     {
       81 7/subop/compare *ebx 0/imm32/false  # Tree-is-atom
-      75/jump-if-!= break/disp8
+      0f 85/jump-if-!= break/disp32
+$check-mu-get-stmt:base-is-compound:
       # if (type->left != addr) break
       (lookup *(ebx+4) *(ebx+8))  # Tree-left Tree-left => eax
       (is-simple-mu-type? %eax 2)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
+$check-mu-get-stmt:base-is-addr:
       # now check for register
       81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
       0f 84/jump-if-= $check-mu-get-stmt:error-base-type-addr-but-not-register/disp32
+$check-mu-get-stmt:base-is-addr-in-register:
       # type->left is now an addr; skip it
       (lookup *(ebx+0xc) *(ebx+0x10))  # Tree-right Tree-right => eax
+      81 7/subop/compare *(eax+0xc) 0/imm32  # Tree-right
+      0f 85/jump-if-!= $check-mu-get-stmt:error-bad-base/disp32
+$check-mu-get-stmt:base-is-addr-to-atom-in-register:
+      (lookup *(eax+4) *(eax+8))  # Tree-left Tree-left => eax
       89/<- %ebx 0/r32/eax
     }
+$check-mu-get-stmt:check-base-typeinfo:
     # ensure type is a container
     # var base-type-id/ebx: type-id = base-type->value
     8b/-> *(ebx+4) 3/r32/ebx  # Tree-value
     (is-container? %ebx)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-get-stmt:error-bad-base/disp32
+    # var base-typeinfo/edx: (addr typeinfo) = find-typeinfo(base-type-id)
+    # . var container/ecx: (handle typeinfo)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    # .
+    (find-typeinfo %ebx %ecx)
+    (lookup *ecx *(ecx+4))  # => eax
+    # . reclaim container
+    81 0/subop/add %esp 8/imm32
+    # .
+    89/<- %edx 0/r32/eax
     # var offset/ecx: (addr stmt-var) = stmt->inouts->next
     (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
@@ -10512,6 +10585,7 @@ check-mu-get-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffere
     0f 84/jump-if-= $check-mu-get-stmt:error-too-few-outputs/disp32
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     89/<- %edi 0/r32/eax
+$check-mu-get-stmt:check-output-type:
     # - check output type
     # must be in register
     (lookup *(edi+0x18) *(edi+0x1c))  # Var-register Var-register => eax
@@ -10526,6 +10600,26 @@ check-mu-get-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffere
     (is-simple-mu-type? %eax 2)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-get-stmt:error-output-type-not-address/disp32
+$check-mu-get-stmt:check-output-type-match:
+    # payload of addr type must match 'type' definition
+    (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
+    (lookup *(eax+0xc) *(eax+0x10))  # Tree-right Tree-right => eax
+    (lookup *(eax+4) *(eax+8))  # Tree-left Tree-left => eax
+    89/<- %edi 0/r32/eax
+    # . var output-name/ecx: (addr array byte)
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    89/<- %ecx 0/r32/eax
+    # . var base-typeinfo-entry/eax: (addr handle typeinfo-entry)
+    (lookup *(edx+4) *(edx+8))  # Typeinfo-fields Typeinfo-fields => eax
+    (get %eax %ecx 0x10)  # => eax
+    # .
+    (lookup *eax *(eax+4))  # => eax
+    (lookup *eax *(eax+4))  # Typeinfo-entry-input-var Typeinfo-entry-input-var => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    # .
+    (type-equal? %edi %eax)  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-get-stmt:error-bad-output-type/disp32
     # - check for too many outputs
     (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
@@ -10536,6 +10630,7 @@ $check-mu-get-stmt:end:
     5f/pop-to-edi
     5e/pop-to-esi
     5b/pop-to-ebx
+    5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
@@ -10652,6 +10747,21 @@ $check-mu-get-stmt:error-output-type-not-address:
     (lookup *eax *(eax+4))  # Function-name Function-name => eax
     (write-buffered *(ebp+0x10) %eax)
     (write-buffered *(ebp+0x10) ": stmt get: output must be an address\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-get-stmt:error-bad-output-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt get: wrong output type for member '")
+    (write-buffered *(ebp+0x10) %ecx)
+    (write-buffered *(ebp+0x10) "' of type '")
+    bf/copy-to-edi Type-id/imm32
+    (write-buffered *(ebp+0x10) *(edi+ebx<<2+0xc))
+    (write-buffered *(ebp+0x10) "'\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
