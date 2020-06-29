@@ -10655,12 +10655,11 @@ check-mu-numberlike-primitive:  # stmt: (addr stmt), fn: (addr function), err: (
     # var gas/ecx: int = 2
     b9/copy-to-ecx 2/imm32
     # - check at most 1 output
-    # var output/edi: (addr var) = stmt->outputs->value
+    # var output/eax: (addr stmt-var) = stmt->outputs
     (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     {
       3d/compare-eax-and 0/imm32
-      0f 84/jump-if-= break/disp32
-      89/<- %edi 0/r32/eax
+      74/jump-if-= break/disp8
       (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-!= $check-mu-numberlike-primitive:error-too-many-outputs/disp32
@@ -10672,25 +10671,19 @@ check-mu-numberlike-primitive:  # stmt: (addr stmt), fn: (addr function), err: (
     (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     {
       3d/compare-eax-and 0/imm32
-      0f 84/jump-if-= break/disp32
-      81 7/subop/compare %ecx 0/imm32
-      0f 84/jump-if-= break/disp32
+      74/jump-if-= $check-mu-numberlike-primitive:end/disp8
       # --gas
       49/decrement-ecx
     }
     # - check second inout
-    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
     {
       3d/compare-eax-and 0/imm32
-      0f 84/jump-if-= break/disp32
-      (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
-      3d/compare-eax-and 0/imm32
-      0f 84/jump-if-= break/disp32
+      74/jump-if-= break/disp8
       # is a second inout allowed?
       81 7/subop/compare %ecx 0/imm32
       0f 84/jump-if-= $check-mu-numberlike-primitive:error-too-many-inouts/disp32
     }
-    # check types are one of literal, int, boolean
 $check-mu-numberlike-primitive:end:
     # . restore registers
     5e/pop-to-esi
