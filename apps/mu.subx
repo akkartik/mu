@@ -4828,6 +4828,51 @@ test-add-with-too-many-inouts:
     5d/pop-to-ebp
     c3/return
 
+test-add-with-too-many-inouts-2:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: int\n")
+    (write _test-input-stream "  add-to a, 0, 1\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-add-with-too-many-inouts-2: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt add-to: too many inouts; most primitives support at most two arguments, across inouts and outputs"  "F - test-add-with-too-many-inouts-2: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-add-with-too-many-inouts-2: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-add-with-too-many-outputs:
     # . prologue
     55/push-ebp
@@ -10767,7 +10812,7 @@ $check-mu-numberlike-primitive:output:
     (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     {
       3d/compare-eax-and 0/imm32
-      74/jump-if-= $check-mu-numberlike-primitive:end/disp8
+      0f 84/jump-if-= $check-mu-numberlike-primitive:end/disp32
 $check-mu-numberlike-primitive:first-inout:
       (check-mu-numberlike-arg %eax *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       # --gas
@@ -10785,6 +10830,10 @@ $check-mu-numberlike-primitive:second-inout:
 $check-mu-numberlike-primitive:second-inout-permitted:
       (check-mu-numberlike-arg %eax *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
     }
+$check-mu-numberlike-primitive:third-inout:
+    # if there's a third arg, raise an error
+    81 7/subop/compare *(eax+8) 0/imm32  # Stmt-var-next
+    0f 85/jump-if-!= $check-mu-numberlike-primitive:error-too-many-inouts/disp32
 $check-mu-numberlike-primitive:end:
     # . restore registers
     5e/pop-to-esi
