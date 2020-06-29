@@ -4875,6 +4875,74 @@ test-add-with-too-many-outputs:
     5d/pop-to-ebp
     c3/return
 
+test-add-with-non-number:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: int\n")
+    (write _test-input-stream "  var b/ecx: (addr int) <- add a\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-add-with-non-number: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt add: only non-addr scalar args permitted"  "F - test-add-with-non-number: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-add-with-non-number: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-add-with-addr-dereferenced:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/eax: (addr int) <- copy 0\n")
+    (write _test-input-stream "  add-to *a, 1\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+    # no error
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-get-with-wrong-field:
     # . prologue
     55/push-ebp
@@ -10660,6 +10728,8 @@ check-mu-numberlike-primitive:  # stmt: (addr stmt), fn: (addr function), err: (
     {
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
+$check-mu-numberlike-primitive:output:
+      (check-mu-numberlike-output %eax *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-!= $check-mu-numberlike-primitive:error-too-many-outputs/disp32
@@ -10672,6 +10742,8 @@ check-mu-numberlike-primitive:  # stmt: (addr stmt), fn: (addr function), err: (
     {
       3d/compare-eax-and 0/imm32
       74/jump-if-= $check-mu-numberlike-primitive:end/disp8
+$check-mu-numberlike-primitive:first-inout:
+      (check-mu-numberlike-arg %eax *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       # --gas
       49/decrement-ecx
     }
@@ -10679,10 +10751,13 @@ check-mu-numberlike-primitive:  # stmt: (addr stmt), fn: (addr function), err: (
     (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
     {
       3d/compare-eax-and 0/imm32
-      74/jump-if-= break/disp8
+      74/jump-if-= $check-mu-numberlike-primitive:end/disp8
+$check-mu-numberlike-primitive:second-inout:
       # is a second inout allowed?
       81 7/subop/compare %ecx 0/imm32
       0f 84/jump-if-= $check-mu-numberlike-primitive:error-too-many-inouts/disp32
+$check-mu-numberlike-primitive:second-inout-permitted:
+      (check-mu-numberlike-arg %eax *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
     }
 $check-mu-numberlike-primitive:end:
     # . restore registers
@@ -10718,6 +10793,97 @@ $check-mu-numberlike-primitive:error-too-many-outputs:
     (write-buffered *(ebp+0x10) ": too many outputs; most primitives support at most one output\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
+    # never gets here
+
+check-mu-numberlike-arg:  # v: (addr stmt-var), stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    56/push-esi
+    # var t/esi: (addr tree type-id) = lookup(v->value->type)
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    89/<- %esi 0/r32/eax
+$check-mu-numberlike-arg:check-literal:
+    # if t is an int, return
+    (is-simple-mu-type? %esi 0)  # literal => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $check-mu-numberlike-arg:end/disp8
+$check-mu-numberlike-arg:check-addr:
+    # if t is an addr and v is dereferenced, return
+    {
+      (is-mu-addr-type? %esi)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      8b/-> *(ebp+8) 0/r32/eax
+      8b/-> *(eax+0x10) 0/r32/eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= $check-mu-numberlike-arg:end/disp8
+    }
+$check-mu-numberlike-arg:output-checks:
+    (check-mu-numberlike-output *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
+$check-mu-numberlike-arg:end:
+    # . restore registers
+    5e/pop-to-esi
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-numberlike-output:  # v: (addr stmt-var), stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    56/push-esi
+    # var t/esi: (addr tree type-id) = lookup(v->value->type)
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    89/<- %esi 0/r32/eax
+$check-mu-numberlike-output:check-int:
+    # if t is an int, return
+    (is-simple-mu-type? %esi 1)  # int => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $check-mu-numberlike-output:end/disp8
+$check-mu-numberlike-output:check-boolean:
+    # if t is a boolean, return
+    (is-simple-mu-type? %esi 5)  # boolean => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $check-mu-numberlike-output:end/disp8
+$check-mu-numberlike-output:check-byte:
+    # if t is a byte, return
+    (is-simple-mu-type? %esi 8)  # byte => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $check-mu-numberlike-output:end/disp8
+    e9/jump $check-mu-numberlike-output:fail/disp32
+$check-mu-numberlike-output:end:
+    # . restore registers
+    5e/pop-to-esi
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$check-mu-numberlike-output:fail:
+    # otherwise raise an error
+    (write-buffered *(ebp+0x14) "fn ")
+    8b/-> *(ebp+0x10) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x14) %eax)
+    (write-buffered *(ebp+0x14) ": stmt ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *(eax+4) *(eax+8))  # Stmt1-operation Stmt1-operation => eax
+    (write-buffered *(ebp+0x14) %eax)
+    (write-buffered *(ebp+0x14) ": only non-addr scalar args permitted\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 check-mu-copy-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
@@ -17691,6 +17857,28 @@ is-simple-mu-type?:  # a: (addr tree type-id), n: type-id -> result/eax: boolean
 $is-simple-mu-type?:end:
     # . restore registers
     59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+is-mu-addr-type?:  # a: (addr tree type-id) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax = a
+    8b/-> *(ebp+8) 0/r32/eax
+    # if (!a->is-atom?) a = a->left
+    81 7/subop/compare *eax 0/imm32/false  # Tree-is-atom
+    {
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Tree-left Tree-left => eax
+    }
+    # return (a->value == addr)
+    81 7/subop/compare *(eax+4) 2/imm32/addr  # Tree-value
+    0f 94/set-byte-if-= %al
+    81 4/subop/and %eax 0xff/imm32
+$is-mu-addr-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
