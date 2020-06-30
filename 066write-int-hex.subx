@@ -175,7 +175,7 @@ test-write-byte-hex-buffered:
     # . end
     c3/return
 
-print-int32:  # f: (addr stream byte), n: int
+write-int32-hex:  # f: (addr stream byte), n: int
     # pseudocode:
     #  write(f, "0x")
     #  ecx = 28
@@ -194,7 +194,7 @@ print-int32:  # f: (addr stream byte), n: int
     51/push-ecx
     # ecx = 28
     b9/copy-to-ecx  0x1c/imm32
-$print-int32:print-hex-prefix:
+$write-int32-hex:print-hex-prefix:
     # write(f, "0x")
     # . . push args
     68/push  "0x"/imm32
@@ -203,10 +203,10 @@ $print-int32:print-hex-prefix:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$print-int32:loop:
+$write-int32-hex:loop:
     # if (ecx < 0) break
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0/imm32           # compare ecx
-    7c/jump-if-<  $print-int32:end/disp8
+    7c/jump-if-<  $write-int32-hex:end/disp8
     # eax = n >> ecx
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     d3/>>ecx    5/subop/pad-zeroes  3/mod/direct    0/rm32/eax    .           .             .           .           .               .                 # shift eax right by ecx bits, padding zeroes
@@ -223,8 +223,8 @@ $print-int32:loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # ecx -= 4
     81          5/subop/subtract    3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # subtract from ecx
-    eb/jump  $print-int32:loop/disp8
-$print-int32:end:
+    eb/jump  $write-int32-hex:loop/disp8
+$write-int32-hex:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
@@ -233,8 +233,8 @@ $print-int32:end:
     5d/pop-to-ebp
     c3/return
 
-test-print-int32:
-    # - check that print-int32 prints the hex textual representation
+test-write-int32-hex:
+    # - check that write-int32-hex prints the hex textual representation
     # setup
     # . clear-stream(_test-stream)
     # . . push args
@@ -243,17 +243,17 @@ test-print-int32:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # print-int32(_test-stream, 0x8899aa)
+    # write-int32-hex(_test-stream, 0x8899aa)
     # . . push args
     68/push  0x8899aa/imm32
     68/push  _test-stream/imm32
     # . . call
-    e8/call  print-int32/disp32
+    e8/call  write-int32-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check-stream-equal(_test-stream, "0x008899aa", msg)
     # . . push args
-    68/push  "F - test-print-int32"/imm32
+    68/push  "F - test-write-int32-hex"/imm32
     68/push  "0x008899aa"/imm32
     68/push  _test-stream/imm32
     # . . call
