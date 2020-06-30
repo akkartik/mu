@@ -138,7 +138,7 @@ fn clear toprow: int, leftcol: int, botrow: int, rightcol: int {
     {
       compare col, rightcol
       break-if->=
-      print-string " "
+      print-string-to-screen " "
       col <- increment
       loop
     }

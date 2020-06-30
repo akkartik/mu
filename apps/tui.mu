@@ -12,22 +12,22 @@ fn main -> exit-status/ebx: int {
   move-cursor 5, 35
   start-color 1, 0x7a
   start-blinking
-  print-string "Hello world!"
+  print-string-to-screen "Hello world!"
   reset-formatting
   move-cursor 6, 35
-  print-string "tty dimensions: "
+  print-string-to-screen "tty dimensions: "
   print-int32-to-screen nrows
-  print-string " rows, "
+  print-string-to-screen " rows, "
   print-int32-to-screen ncols
-  print-string " rows\n"
+  print-string-to-screen " rows\n"
 
-  print-string "press a key to see its code: "
+  print-string-to-screen "press a key to see its code: "
   enable-keyboard-immediate-mode
   var x/eax: byte <- read-key
   enable-keyboard-type-mode
   enable-screen-type-mode
-  print-string "You pressed "
+  print-string-to-screen "You pressed "
   print-int32-to-screen x
-  print-string "\n"
+  print-string-to-screen "\n"
   exit-status <- copy 0
 }

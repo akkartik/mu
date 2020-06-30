@@ -14,7 +14,7 @@ $main-body: {
     compare n, 1
     {
       break-if->
-      print-string "usage: cat <filename>\n"
+      print-string-to-screen "usage: cat <filename>\n"
       break $main-body
     }
     {
