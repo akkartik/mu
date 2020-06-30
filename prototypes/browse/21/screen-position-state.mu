@@ -70,7 +70,7 @@ $add-char:body: {
     break $add-char:body
   }
   # print c
-  print-byte c
+  print-byte-to-screen c
   # self->col++
   var tmp/eax: (addr int) <- get self, col
   increment *tmp

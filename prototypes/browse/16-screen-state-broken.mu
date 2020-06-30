@@ -183,6 +183,6 @@ fn dump in: (addr buffered-file) {
   var c/eax: byte <- read-byte-buffered in
   compare c, 0xffffffff  # EOF marker
   break-if-=
-  print-byte c
+  print-byte-to-screen c
   loop
 }

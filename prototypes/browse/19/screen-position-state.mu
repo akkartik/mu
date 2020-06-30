@@ -63,7 +63,7 @@ fn start-drawing _self: (addr screen-position-state) {
 fn add-char _self: (addr screen-position-state), c: byte {
   var self/esi: (addr screen-position-state) <- copy _self
   # print c
-  print-byte c
+  print-byte-to-screen c
   # self->col++
   var tmp/eax: (addr int) <- get self, col
   increment *tmp

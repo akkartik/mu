@@ -99,7 +99,7 @@ $update-attributes:check-state: {
           {
             break-if-!=
             # r->current-state == 1 && c == '*' => print c, then normal text
-            print-byte c
+            print-byte-to-screen c
             col <- increment
             reset-formatting
             start-color 0xec, 7  # 236 = darkish gray
@@ -110,7 +110,7 @@ $update-attributes:check-state: {
           {
             break-if-!=
             # r->current-state == 1 && c == '_' => print c, then normal text
-            print-byte c
+            print-byte-to-screen c
             col <- increment
             reset-formatting
             start-color 0xec, 7  # 236 = darkish gray
@@ -123,7 +123,7 @@ $update-attributes:check-state: {
       compare c, 0xa  # newline
       break-if-=  # no need to print newlines
       # print c
-      print-byte c
+      print-byte-to-screen c
       col <- increment
       loop
     }  # $char-loop
@@ -171,6 +171,6 @@ fn dump in: (addr buffered-file) {
   var c/eax: byte <- read-byte-buffered in
   compare c, 0xffffffff  # EOF marker
   break-if-=
-  print-byte c
+  print-byte-to-screen c
   loop
 }

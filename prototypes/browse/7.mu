@@ -46,7 +46,7 @@ $line-loop: {
       compare c, 0xa  # newline
       break-if-=  # no need to print newlines
       # print c
-      print-byte c
+      print-byte-to-screen c
       col <- increment
       loop
     }  # $char-loop
@@ -94,6 +94,6 @@ fn dump in: (addr buffered-file) {
   var c/eax: byte <- read-byte-buffered in
   compare c, 0xffffffff  # EOF marker
   break-if-=
-  print-byte c
+  print-byte-to-screen c
   loop
 }
