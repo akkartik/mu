@@ -16,9 +16,9 @@ fn main -> exit-status/ebx: int {
   reset-formatting-on-screen
   move-cursor-on-screen 6, 35
   print-string-to-screen "tty dimensions: "
-  print-int32-to-screen nrows
+  print-int32-hex-to-screen nrows
   print-string-to-screen " rows, "
-  print-int32-to-screen ncols
+  print-int32-hex-to-screen ncols
   print-string-to-screen " rows\n"
 
   print-string-to-screen "press a key to see its code: "
@@ -27,7 +27,7 @@ fn main -> exit-status/ebx: int {
   enable-keyboard-type-mode
   enable-screen-type-mode
   print-string-to-screen "You pressed "
-  print-int32-to-screen x
+  print-int32-hex-to-screen x
   print-string-to-screen "\n"
   exit-status <- copy 0
 }

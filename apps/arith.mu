@@ -46,7 +46,7 @@ fn main -> exit-status/ebx: int {
     compare look, 0
     break-if-=
     # print
-    print-int32-to-screen n
+    print-int32-hex-to-screen n
     print-string-to-screen "\n"
     #
     loop
