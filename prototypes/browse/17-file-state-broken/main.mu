@@ -44,8 +44,8 @@ fn render-normal fs: (addr file-state), state: (addr screen-position-state) {
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
-    # if (c == '*') start-bold, render-until-asterisk(fs, state), reset
-    # else if (c == '_') start-bold, render-until-underscore(fs, state), reset
+    # if (c == '*') start-bold-on-screen, render-until-asterisk(fs, state), reset
+    # else if (c == '_') start-bold-on-screen, render-until-underscore(fs, state), reset
     # else if (c == '#' and fs is at start of line) compute-color, start color, render-header-line(fs, state), reset
     # else add-char(state, c)
   }

@@ -9,12 +9,12 @@ fn main -> exit-status/ebx: int {
   var ncols/ecx: int <- copy 0
   nrows, ncols <- screen-size
   enable-screen-grid-mode
-  move-cursor 5, 35
-  start-color 1, 0x7a
-  start-blinking
+  move-cursor-on-screen 5, 35
+  start-color-on-screen 1, 0x7a
+  start-blinking-on-screen
   print-string-to-screen "Hello world!"
-  reset-formatting
-  move-cursor 6, 35
+  reset-formatting-on-screen
+  move-cursor-on-screen 6, 35
   print-string-to-screen "tty dimensions: "
   print-int32-to-screen nrows
   print-string-to-screen " rows, "

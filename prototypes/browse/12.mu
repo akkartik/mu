@@ -41,7 +41,7 @@ fn render in: (addr buffered-file), nrows: int, ncols: int {
   var leftcol/edx: int <- copy 5  # page-margin
   var rightcol/ebx: int <- copy leftcol
   rightcol <- add 0x40  # page-width = 64 characters
-  start-color 0xec, 7  # 236 = darkish gray
+  start-color-on-screen 0xec, 7  # 236 = darkish gray
   {
     compare rightcol, ncols
     break-if->=
@@ -63,7 +63,7 @@ $line-loop: {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
-    move-cursor row, col
+    move-cursor-on-screen row, col
 $char-loop: {
       compare col, rightcol
       break-if->=
@@ -78,7 +78,7 @@ $update-attributes:check-state: {
           {
             break-if-!=
             # r->current-state == 0 && c == '*' => bold text
-            start-bold
+            start-bold-on-screen
             copy-to *state, 1
             break $update-attributes:check-state
           }
@@ -86,7 +86,7 @@ $update-attributes:check-state: {
           {
             break-if-!=
             # r->current-state == 0 && c == '_' => bold text
-            start-bold
+            start-bold-on-screen
             copy-to *state, 1
             break $update-attributes:check-state
           }
@@ -100,8 +100,8 @@ $update-attributes:check-state: {
             # r->current-state == 1 && c == '*' => print c, then normal text
             print-byte-to-screen c
             col <- increment
-            reset-formatting
-            start-color 0xec, 7  # 236 = darkish gray
+            reset-formatting-on-screen
+            start-color-on-screen 0xec, 7  # 236 = darkish gray
             copy-to *state, 0
             loop $char-loop
           }
@@ -111,8 +111,8 @@ $update-attributes:check-state: {
             # r->current-state == 1 && c == '_' => print c, then normal text
             print-byte-to-screen c
             col <- increment
-            reset-formatting
-            start-color 0xec, 7  # 236 = darkish gray
+            reset-formatting-on-screen
+            start-color-on-screen 0xec, 7  # 236 = darkish gray
             copy-to *state, 0
             loop $char-loop
           }
@@ -137,7 +137,7 @@ fn clear toprow: int, leftcol: int, botrow: int, rightcol: int {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
-    move-cursor row, col
+    move-cursor-on-screen row, col
     {
       compare col, rightcol
       break-if->=

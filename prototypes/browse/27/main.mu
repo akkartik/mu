@@ -103,7 +103,7 @@ $render-normal:flush-buffered-newline: {
     compare c, 0x2a  # '*'
     {
       break-if-!=
-      start-bold
+      start-bold-on-screen
         render-until-asterisk fs, state
       normal-text
       loop $render-normal:loop
@@ -112,11 +112,11 @@ $render-normal:flush-buffered-newline: {
     compare c, 0x5f  # '_'
     {
       break-if-!=
-      start-color 0xec, 7  # 236 = darkish gray
-      start-bold
+      start-color-on-screen 0xec, 7  # 236 = darkish gray
+      start-bold-on-screen
         render-until-underscore fs, state
-      reset-formatting
-      start-color 0xec, 7  # 236 = darkish gray
+      reset-formatting-on-screen
+      start-color-on-screen 0xec, 7  # 236 = darkish gray
       loop $render-normal:loop
     }
     #
@@ -176,32 +176,32 @@ $render-header-line:body: {
 # colors for a light background, going from bright to dark (meeting up with bold-text)
 fn start-heading header-level: int {
 $start-heading:body: {
-  start-bold
+  start-bold-on-screen
   compare header-level, 1
   {
     break-if-!=
-    start-color 0xa0, 7
+    start-color-on-screen 0xa0, 7
     break $start-heading:body
   }
   compare header-level, 2
   {
     break-if-!=
-    start-color 0x7c, 7
+    start-color-on-screen 0x7c, 7
     break $start-heading:body
   }
   compare header-level, 3
   {
     break-if-!=
-    start-color 0x58, 7
+    start-color-on-screen 0x58, 7
     break $start-heading:body
   }
   compare header-level, 4
   {
     break-if-!=
-    start-color 0x34, 7
+    start-color-on-screen 0x34, 7
     break $start-heading:body
   }
-  start-color 0xe8, 7
+  start-color-on-screen 0xe8, 7
 }
 }
 
@@ -254,6 +254,6 @@ fn first-arg args-on-stack: (addr array (addr array byte)) -> out/eax: (addr arr
 }
 
 fn normal-text {
-  reset-formatting
-  start-color 0xec, 7  # 236 = darkish gray
+  reset-formatting-on-screen
+  start-color-on-screen 0xec, 7  # 236 = darkish gray
 }

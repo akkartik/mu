@@ -160,5 +160,5 @@ fn reposition-cursor _self: (addr screen-position-state) {
   var self/esi: (addr screen-position-state) <- copy _self
   var r/eax: (addr int) <- get self, row
   var c/ecx: (addr int) <- get self, col
-  move-cursor *r *c
+  move-cursor-on-screen *r *c
 }

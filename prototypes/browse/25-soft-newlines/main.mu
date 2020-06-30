@@ -87,7 +87,7 @@ $render-normal:flush-buffered-newline: {
     compare c, 0x2a  # '*'
     {
       break-if-!=
-      start-bold
+      start-bold-on-screen
         render-until-asterisk fs, state
       normal-text
       loop $render-normal:loop
@@ -96,11 +96,11 @@ $render-normal:flush-buffered-newline: {
     compare c, 0x5f  # '_'
     {
       break-if-!=
-      start-color 0xec, 7  # 236 = darkish gray
-      start-bold
+      start-color-on-screen 0xec, 7  # 236 = darkish gray
+      start-bold-on-screen
         render-until-underscore fs, state
-      reset-formatting
-      start-color 0xec, 7  # 236 = darkish gray
+      reset-formatting-on-screen
+      start-color-on-screen 0xec, 7  # 236 = darkish gray
       loop $render-normal:loop
     }
     #
@@ -159,6 +159,6 @@ fn first-arg args-on-stack: (addr array (addr array byte)) -> out/eax: (addr arr
 }
 
 fn normal-text {
-  reset-formatting
-  start-color 0xec, 7  # 236 = darkish gray
+  reset-formatting-on-screen
+  start-color-on-screen 0xec, 7  # 236 = darkish gray
 }

@@ -36,7 +36,7 @@ $line-loop: {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
-    move-cursor row, col
+    move-cursor-on-screen row, col
     {
       compare col, rightcol
       break-if->=
@@ -61,7 +61,7 @@ fn clear toprow: int, leftcol: int, botrow: int, rightcol: int {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
-    move-cursor row, col
+    move-cursor-on-screen row, col
     {
       compare col, rightcol
       break-if->=
