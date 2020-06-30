@@ -94,19 +94,19 @@ if ('onhashchange' in window) {
 <span id="L35" class="LineNr"> 35 </span><span class="PreProc">fn</span> <span class="muFunction">main</span><span class="PreProc"> -&gt; </span>exit-status/<span class="Constant">ebx</span>: int <span class="Delimiter">{</span>
 <span id="L36" class="LineNr"> 36 </span>  <span class="PreProc">var</span> look/<span class="Constant">esi</span>: byte <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>  <span class="Comment"># lookahead</span>
 <span id="L37" class="LineNr"> 37 </span>  <span class="PreProc">var</span> n/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>  <span class="Comment"># result of each expression</span>
-<span id="L38" class="LineNr"> 38 </span>  <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot;press ctrl-c or ctrl-d to exit\n&quot;</span>
+<span id="L38" class="LineNr"> 38 </span>  <a href='../103screen.subx.html#L122'>print-string-to-screen</a> <span class="Constant">&quot;press ctrl-c or ctrl-d to exit\n&quot;</span>
 <span id="L39" class="LineNr"> 39 </span>  <span class="Comment"># read-eval-print loop</span>
 <span id="L40" class="LineNr"> 40 </span>  <span class="Delimiter">{</span>
 <span id="L41" class="LineNr"> 41 </span>    <span class="Comment"># print prompt</span>
-<span id="L42" class="LineNr"> 42 </span>    <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot;&gt; &quot;</span>
+<span id="L42" class="LineNr"> 42 </span>    <a href='../103screen.subx.html#L122'>print-string-to-screen</a> <span class="Constant">&quot;&gt; &quot;</span>
 <span id="L43" class="LineNr"> 43 </span>    <span class="Comment"># read and eval</span>
 <span id="L44" class="LineNr"> 44 </span>    n, look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L57'>simplify</a>  <span class="Comment"># we explicitly thread 'look' everywhere</span>
 <span id="L45" class="LineNr"> 45 </span>    <span class="Comment"># if (look == 0) break</span>
 <span id="L46" class="LineNr"> 46 </span>    compare look, <span class="Constant">0</span>
 <span id="L47" class="LineNr"> 47 </span>    <span class="PreProc">break-if-=</span>
 <span id="L48" class="LineNr"> 48 </span>    <span class="Comment"># print</span>
-<span id="L49" class="LineNr"> 49 </span>    <a href='../103screen.subx.html#L157'>print-int32-to-screen</a> n
-<span id="L50" class="LineNr"> 50 </span>    <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot;\n&quot;</span>
+<span id="L49" class="LineNr"> 49 </span>    print-int32-to-screen n
+<span id="L50" class="LineNr"> 50 </span>    <a href='../103screen.subx.html#L122'>print-string-to-screen</a> <span class="Constant">&quot;\n&quot;</span>
 <span id="L51" class="LineNr"> 51 </span>    <span class="Comment">#</span>
 <span id="L52" class="LineNr"> 52 </span>    <span class="PreProc">loop</span>
 <span id="L53" class="LineNr"> 53 </span>  <span class="Delimiter">}</span>
@@ -115,7 +115,7 @@ if ('onhashchange' in window) {
 <span id="L56" class="LineNr"> 56 </span>
 <span id="L57" class="LineNr"> 57 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L57'>simplify</a></span><span class="PreProc"> -&gt; </span>result/<span class="Constant">eax</span>: int, look/<span class="Constant">esi</span>: byte <span class="Delimiter">{</span>
 <span id="L58" class="LineNr"> 58 </span>  <span class="Comment"># prime the pump</span>
-<span id="L59" class="LineNr"> 59 </span>  look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L246'>get-char</a>  <span class="Comment"># prime the pump</span>
+<span id="L59" class="LineNr"> 59 </span>  look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L246'>get-char</a>
 <span id="L60" class="LineNr"> 60 </span>  <span class="Comment"># do it</span>
 <span id="L61" class="LineNr"> 61 </span>  result, look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L64'>expression</a> look
 <span id="L62" class="LineNr"> 62 </span><span class="Delimiter">}</span>
@@ -218,14 +218,14 @@ if ('onhashchange' in window) {
 <span id="L159" class="LineNr">159 </span>    <span class="PreProc">break</span> $factor:body
 <span id="L160" class="LineNr">160 </span>  <span class="Delimiter">}</span>
 <span id="L161" class="LineNr">161 </span>  <span class="Comment"># otherwise recurse</span>
-<span id="L162" class="LineNr">162 </span>  look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L246'>get-char</a> look  <span class="Comment"># '('</span>
+<span id="L162" class="LineNr">162 </span>  look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L246'>get-char</a>  <span class="Comment"># '('</span>
 <span id="L163" class="LineNr">163 </span>  result, look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L64'>expression</a> look
 <span id="L164" class="LineNr">164 </span>  look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L236'>skip-spaces</a> look
-<span id="L165" class="LineNr">165 </span>  look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L246'>get-char</a> look  <span class="Comment"># ')'</span>
+<span id="L165" class="LineNr">165 </span>  look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L246'>get-char</a>  <span class="Comment"># ')'</span>
 <span id="L166" class="LineNr">166 </span><span class="Delimiter">}</span>  <span class="Comment"># $factor:body</span>
 <span id="L167" class="LineNr">167 </span><span class="Delimiter">}</span>
 <span id="L168" class="LineNr">168 </span>
-<span id="L169" class="LineNr">169 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L169'>is-mul-or-div?</a></span> c: byte<span class="PreProc"> -&gt; </span>result/<span class="Constant">eax</span>: bool <span class="Delimiter">{</span>
+<span id="L169" class="LineNr">169 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L169'>is-mul-or-div?</a></span> c: byte<span class="PreProc"> -&gt; </span>result/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
 <span id="L170" class="LineNr">170 </span>$is-mul-or-div?:body: <span class="Delimiter">{</span>
 <span id="L171" class="LineNr">171 </span>  compare c, <span class="Constant">0x2a</span>  <span class="Comment"># '*'</span>
 <span id="L172" class="LineNr">172 </span>  <span class="Delimiter">{</span>
@@ -243,7 +243,7 @@ if ('onhashchange' in window) {
 <span id="L184" class="LineNr">184 </span><span class="Delimiter">}</span>  <span class="Comment"># $is-mul-or-div?:body</span>
 <span id="L185" class="LineNr">185 </span><span class="Delimiter">}</span>
 <span id="L186" class="LineNr">186 </span>
-<span id="L187" class="LineNr">187 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L187'>is-add-or-sub?</a></span> c: byte<span class="PreProc"> -&gt; </span>result/<span class="Constant">eax</span>: bool <span class="Delimiter">{</span>
+<span id="L187" class="LineNr">187 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L187'>is-add-or-sub?</a></span> c: byte<span class="PreProc"> -&gt; </span>result/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
 <span id="L188" class="LineNr">188 </span>$is-add-or-sub?:body: <span class="Delimiter">{</span>
 <span id="L189" class="LineNr">189 </span>  compare c, <span class="Constant">0x2b</span>  <span class="Comment"># '+'</span>
 <span id="L190" class="LineNr">190 </span>  <span class="Delimiter">{</span>
@@ -270,13 +270,13 @@ if ('onhashchange' in window) {
 <span id="L211" class="LineNr">211 </span>  look <span class="SpecialChar">&lt;-</span> copy _look  <span class="Comment"># should be a no-op</span>
 <span id="L212" class="LineNr">212 </span>  <span class="PreProc">var</span> out/<span class="Constant">edi</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L213" class="LineNr">213 </span>  <span class="Delimiter">{</span>
-<span id="L214" class="LineNr">214 </span>    <span class="PreProc">var</span> first-digit/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='../075print-int-decimal.subx.html#L405'>to-decimal-digit</a> look
+<span id="L214" class="LineNr">214 </span>    <span class="PreProc">var</span> first-digit/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='../075write-int-decimal.subx.html#L405'>to-decimal-digit</a> look
 <span id="L215" class="LineNr">215 </span>    out <span class="SpecialChar">&lt;-</span> copy first-digit
 <span id="L216" class="LineNr">216 </span>  <span class="Delimiter">}</span>
 <span id="L217" class="LineNr">217 </span>  <span class="Delimiter">{</span>
 <span id="L218" class="LineNr">218 </span>    look <span class="SpecialChar">&lt;-</span> <a href='arith.mu.html#L246'>get-char</a>
 <span id="L219" class="LineNr">219 </span>    <span class="Comment"># done?</span>
-<span id="L220" class="LineNr">220 </span>    <span class="PreProc">var</span> digit?/<span class="Constant">eax</span>: bool <span class="SpecialChar">&lt;-</span> <a href='../075print-int-decimal.subx.html#L306'>is-decimal-digit?</a> look
+<span id="L220" class="LineNr">220 </span>    <span class="PreProc">var</span> digit?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='../075write-int-decimal.subx.html#L306'>is-decimal-digit?</a> look
 <span id="L221" class="LineNr">221 </span>    compare digit?, <span class="Constant">0</span>  <span class="Comment"># false</span>
 <span id="L222" class="LineNr">222 </span>    <span class="PreProc">break-if-=</span>
 <span id="L223" class="LineNr">223 </span>    <span class="Comment"># out *= 10</span>
@@ -285,7 +285,7 @@ if ('onhashchange' in window) {
 <span id="L226" class="LineNr">226 </span>      out <span class="SpecialChar">&lt;-</span> multiply ten
 <span id="L227" class="LineNr">227 </span>    <span class="Delimiter">}</span>
 <span id="L228" class="LineNr">228 </span>    <span class="Comment"># out += digit(look)</span>
-<span id="L229" class="LineNr">229 </span>    <span class="PreProc">var</span> digit/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='../075print-int-decimal.subx.html#L405'>to-decimal-digit</a> look
+<span id="L229" class="LineNr">229 </span>    <span class="PreProc">var</span> digit/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='../075write-int-decimal.subx.html#L405'>to-decimal-digit</a> look
 <span id="L230" class="LineNr">230 </span>    out <span class="SpecialChar">&lt;-</span> add digit
 <span id="L231" class="LineNr">231 </span>    <span class="PreProc">loop</span>
 <span id="L232" class="LineNr">232 </span>  <span class="Delimiter">}</span>
@@ -308,7 +308,7 @@ if ('onhashchange' in window) {
 <span id="L249" class="LineNr">249 </span>  compare look, <span class="Constant">0</span>
 <span id="L250" class="LineNr">250 </span>  <span class="Delimiter">{</span>
 <span id="L251" class="LineNr">251 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L252" class="LineNr">252 </span>    <a href='../103screen.subx.html#L122'>print-string</a> <span class="Constant">&quot;^D\n&quot;</span>
+<span id="L252" class="LineNr">252 </span>    <a href='../103screen.subx.html#L122'>print-string-to-screen</a> <span class="Constant">&quot;^D\n&quot;</span>
 <span id="L253" class="LineNr">253 </span>    syscall_exit
 <span id="L254" class="LineNr">254 </span>  <span class="Delimiter">}</span>
 <span id="L255" class="LineNr">255 </span><span class="Delimiter">}</span>

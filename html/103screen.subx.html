@@ -146,7 +146,7 @@ if ('onhashchange' in window) {
 <span id="L88" class="LineNr"> 88 </span>    c3/return
 <span id="L89" class="LineNr"> 89 </span>
 <span id="L90" class="LineNr"> 90 </span><span class="subxComment"># row and col count from the top-left as (1, 1)</span>
-<span id="L91" class="LineNr"> 91 </span><span class="subxFunction">move-cursor</span>:  <span class="subxComment"># row: int, column: int</span>
+<span id="L91" class="LineNr"> 91 </span><span class="subxFunction">move-cursor-on-screen</span>:  <span class="subxComment"># row: int, column: int</span>
 <span id="L92" class="LineNr"> 92 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L93" class="LineNr"> 93 </span>    55/push-ebp
 <span id="L94" class="LineNr"> 94 </span>    89/&lt;- %ebp 4/r32/esp
@@ -161,13 +161,13 @@ if ('onhashchange' in window) {
 <span id="L103" class="LineNr">103 </span>    <span class="subxComment"># construct directive in buf</span>
 <span id="L104" class="LineNr">104 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L105" class="LineNr">105 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="Constant">&quot;[&quot;</span>)
-<span id="L106" class="LineNr">106 </span>    (<a href='075print-int-decimal.subx.html#L8'>print-int32-decimal</a> %ecx *(ebp+8))
+<span id="L106" class="LineNr">106 </span>    (<a href='075write-int-decimal.subx.html#L8'>write-int32-decimal</a> %ecx *(ebp+8))
 <span id="L107" class="LineNr">107 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="Constant">&quot;;&quot;</span>)
-<span id="L108" class="LineNr">108 </span>    (<a href='075print-int-decimal.subx.html#L8'>print-int32-decimal</a> %ecx *(ebp+0xc))
+<span id="L108" class="LineNr">108 </span>    (<a href='075write-int-decimal.subx.html#L8'>write-int32-decimal</a> %ecx *(ebp+0xc))
 <span id="L109" class="LineNr">109 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="Constant">&quot;H&quot;</span>)
 <span id="L110" class="LineNr">110 </span>    <span class="subxComment"># flush</span>
 <span id="L111" class="LineNr">111 </span>    (<a href='062write-stream.subx.html#L17'>write-stream</a> 2 %ecx)
-<span id="L112" class="LineNr">112 </span><span class="Constant">$move-cursor:end</span>:
+<span id="L112" class="LineNr">112 </span><span class="Constant">$move-cursor-on-screen:end</span>:
 <span id="L113" class="LineNr">113 </span>    <span class="subxS1Comment"># . reclaim locals</span>
 <span id="L114" class="LineNr">114 </span>    81 0/subop/add %esp 0x2c/imm32
 <span id="L115" class="LineNr">115 </span>    <span class="subxS1Comment"># . restore registers</span>
@@ -177,20 +177,20 @@ if ('onhashchange' in window) {
 <span id="L119" class="LineNr">119 </span>    5d/pop-to-ebp
 <span id="L120" class="LineNr">120 </span>    c3/return
 <span id="L121" class="LineNr">121 </span>
-<span id="L122" class="LineNr">122 </span><span class="subxFunction">print-string</span>:  <span class="subxComment"># s: (addr array byte)</span>
+<span id="L122" class="LineNr">122 </span><span class="subxFunction">print-string-to-screen</span>:  <span class="subxComment"># s: (addr array byte)</span>
 <span id="L123" class="LineNr">123 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L124" class="LineNr">124 </span>    55/push-ebp
 <span id="L125" class="LineNr">125 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L126" class="LineNr">126 </span>    <span class="subxComment">#</span>
 <span id="L127" class="LineNr">127 </span>    (<a href='057write.subx.html#L24'>write</a> 2 *(ebp+8))
-<span id="L128" class="LineNr">128 </span><span class="Constant">$print-string:end</span>:
+<span id="L128" class="LineNr">128 </span><span class="Constant">$print-string-to-screen:end</span>:
 <span id="L129" class="LineNr">129 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L130" class="LineNr">130 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L131" class="LineNr">131 </span>    5d/pop-to-ebp
 <span id="L132" class="LineNr">132 </span>    c3/return
 <span id="L133" class="LineNr">133 </span>
 <span id="L134" class="LineNr">134 </span><span class="subxComment"># just because Mu has no support for global variables yet</span>
-<span id="L135" class="LineNr">135 </span><span class="subxFunction">print-byte</span>:  <span class="subxComment"># c: byte</span>
+<span id="L135" class="LineNr">135 </span><span class="subxFunction">print-byte-to-screen</span>:  <span class="subxComment"># c: byte</span>
 <span id="L136" class="LineNr">136 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L137" class="LineNr">137 </span>    55/push-ebp
 <span id="L138" class="LineNr">138 </span>    89/&lt;- %ebp 4/r32/esp
@@ -201,7 +201,7 @@ if ('onhashchange' in window) {
 <span id="L143" class="LineNr">143 </span>    68/push 4/imm32/size
 <span id="L144" class="LineNr">144 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L145" class="LineNr">145 </span>    (<a href='057write.subx.html#L24'>write</a> 2 %ecx)
-<span id="L146" class="LineNr">146 </span><span class="Constant">$print-byte:end</span>:
+<span id="L146" class="LineNr">146 </span><span class="Constant">$print-byte-to-screen:end</span>:
 <span id="L147" class="LineNr">147 </span>    <span class="subxS1Comment"># . reclaim locals</span>
 <span id="L148" class="LineNr">148 </span>    81 0/subop/add %esp 8/imm32
 <span id="L149" class="LineNr">149 </span>    <span class="subxS1Comment"># . restore registers</span>
@@ -212,20 +212,20 @@ if ('onhashchange' in window) {
 <span id="L154" class="LineNr">154 </span>    c3/return
 <span id="L155" class="LineNr">155 </span>
 <span id="L156" class="LineNr">156 </span><span class="subxComment"># just because Mu has no support for global variables yet</span>
-<span id="L157" class="LineNr">157 </span><span class="subxFunction">print-int32-to-screen</span>:  <span class="subxComment"># n: int</span>
+<span id="L157" class="LineNr">157 </span><span class="subxFunction">print-int32-hex-to-screen</span>:  <span class="subxComment"># n: int</span>
 <span id="L158" class="LineNr">158 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L159" class="LineNr">159 </span>    55/push-ebp
 <span id="L160" class="LineNr">160 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L161" class="LineNr">161 </span>    <span class="subxComment">#</span>
-<span id="L162" class="LineNr">162 </span>    (<a href='066print-int.subx.html#L266'>print-int32-buffered</a> <span class="SpecialChar"><a href='064write-byte.subx.html#L10'>Stdout</a></span> *(ebp+8))
+<span id="L162" class="LineNr">162 </span>    (<a href='066write-int-hex.subx.html#L266'>write-int32-hex-buffered</a> <span class="SpecialChar"><a href='064write-byte.subx.html#L10'>Stdout</a></span> *(ebp+8))
 <span id="L163" class="LineNr">163 </span>    (<a href='064write-byte.subx.html#L81'>flush</a> <span class="SpecialChar"><a href='064write-byte.subx.html#L10'>Stdout</a></span>)
-<span id="L164" class="LineNr">164 </span><span class="Constant">$print-int32-to-screen:end</span>:
+<span id="L164" class="LineNr">164 </span><span class="Constant">$print-int32-hex-to-screen:end</span>:
 <span id="L165" class="LineNr">165 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L166" class="LineNr">166 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L167" class="LineNr">167 </span>    5d/pop-to-ebp
 <span id="L168" class="LineNr">168 </span>    c3/return
 <span id="L169" class="LineNr">169 </span>
-<span id="L170" class="LineNr">170 </span><span class="subxFunction">reset-formatting</span>:
+<span id="L170" class="LineNr">170 </span><span class="subxFunction">reset-formatting-on-screen</span>:
 <span id="L171" class="LineNr">171 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L172" class="LineNr">172 </span>    55/push-ebp
 <span id="L173" class="LineNr">173 </span>    89/&lt;- %ebp 4/r32/esp
@@ -234,13 +234,13 @@ if ('onhashchange' in window) {
 <span id="L176" class="LineNr">176 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="Constant">&quot;(B&quot;</span>)
 <span id="L177" class="LineNr">177 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L178" class="LineNr">178 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="Constant">&quot;[m&quot;</span>)
-<span id="L179" class="LineNr">179 </span><span class="Constant">$reset-formatting:end</span>:
+<span id="L179" class="LineNr">179 </span><span class="Constant">$reset-formatting-on-screen:end</span>:
 <span id="L180" class="LineNr">180 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L181" class="LineNr">181 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L182" class="LineNr">182 </span>    5d/pop-to-ebp
 <span id="L183" class="LineNr">183 </span>    c3/return
 <span id="L184" class="LineNr">184 </span>
-<span id="L185" class="LineNr">185 </span><span class="subxFunction">start-color</span>:  <span class="subxComment"># fg: int, bg: int</span>
+<span id="L185" class="LineNr">185 </span><span class="subxFunction">start-color-on-screen</span>:  <span class="subxComment"># fg: int, bg: int</span>
 <span id="L186" class="LineNr">186 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L187" class="LineNr">187 </span>    55/push-ebp
 <span id="L188" class="LineNr">188 </span>    89/&lt;- %ebp 4/r32/esp
@@ -256,16 +256,16 @@ if ('onhashchange' in window) {
 <span id="L198" class="LineNr">198 </span>    <span class="subxS1Comment"># . set fg</span>
 <span id="L199" class="LineNr">199 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L200" class="LineNr">200 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="Constant">&quot;[38;5;&quot;</span>)
-<span id="L201" class="LineNr">201 </span>    (<a href='075print-int-decimal.subx.html#L8'>print-int32-decimal</a> %ecx *(ebp+8))
+<span id="L201" class="LineNr">201 </span>    (<a href='075write-int-decimal.subx.html#L8'>write-int32-decimal</a> %ecx *(ebp+8))
 <span id="L202" class="LineNr">202 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="Constant">&quot;m&quot;</span>)
 <span id="L203" class="LineNr">203 </span>    <span class="subxS1Comment"># . set bg</span>
 <span id="L204" class="LineNr">204 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L205" class="LineNr">205 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="Constant">&quot;[48;5;&quot;</span>)
-<span id="L206" class="LineNr">206 </span>    (<a href='075print-int-decimal.subx.html#L8'>print-int32-decimal</a> %ecx *(ebp+0xc))
+<span id="L206" class="LineNr">206 </span>    (<a href='075write-int-decimal.subx.html#L8'>write-int32-decimal</a> %ecx *(ebp+0xc))
 <span id="L207" class="LineNr">207 </span>    (<a href='057write.subx.html#L24'>write</a> %ecx <span class="Constant">&quot;m&quot;</span>)
 <span id="L208" class="LineNr">208 </span>    <span class="subxComment"># flush</span>
 <span id="L209" class="LineNr">209 </span>    (<a href='062write-stream.subx.html#L17'>write-stream</a> 2 %ecx)
-<span id="L210" class="LineNr">210 </span><span class="Constant">$start-color:end</span>:
+<span id="L210" class="LineNr">210 </span><span class="Constant">$start-color-on-screen:end</span>:
 <span id="L211" class="LineNr">211 </span>    <span class="subxS1Comment"># . reclaim locals</span>
 <span id="L212" class="LineNr">212 </span>    81 0/subop/add %esp 0x2c/imm32
 <span id="L213" class="LineNr">213 </span>    <span class="subxS1Comment"># . restore registers</span>
@@ -275,73 +275,73 @@ if ('onhashchange' in window) {
 <span id="L217" class="LineNr">217 </span>    5d/pop-to-ebp
 <span id="L218" class="LineNr">218 </span>    c3/return
 <span id="L219" class="LineNr">219 </span>
-<span id="L220" class="LineNr">220 </span><span class="subxFunction">start-bold</span>:
+<span id="L220" class="LineNr">220 </span><span class="subxFunction">start-bold-on-screen</span>:
 <span id="L221" class="LineNr">221 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L222" class="LineNr">222 </span>    55/push-ebp
 <span id="L223" class="LineNr">223 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L224" class="LineNr">224 </span>    <span class="subxComment">#</span>
 <span id="L225" class="LineNr">225 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L226" class="LineNr">226 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="Constant">&quot;[1m&quot;</span>)
-<span id="L227" class="LineNr">227 </span><span class="Constant">$start-bold:end</span>:
+<span id="L227" class="LineNr">227 </span><span class="Constant">$start-bold-on-screen:end</span>:
 <span id="L228" class="LineNr">228 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L229" class="LineNr">229 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L230" class="LineNr">230 </span>    5d/pop-to-ebp
 <span id="L231" class="LineNr">231 </span>    c3/return
 <span id="L232" class="LineNr">232 </span>
-<span id="L233" class="LineNr">233 </span><span class="subxFunction">start-underline</span>:
+<span id="L233" class="LineNr">233 </span><span class="subxFunction">start-underline-on-screen</span>:
 <span id="L234" class="LineNr">234 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L235" class="LineNr">235 </span>    55/push-ebp
 <span id="L236" class="LineNr">236 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L237" class="LineNr">237 </span>    <span class="subxComment">#</span>
 <span id="L238" class="LineNr">238 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L239" class="LineNr">239 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="Constant">&quot;[4m&quot;</span>)
-<span id="L240" class="LineNr">240 </span><span class="Constant">$start-underline:end</span>:
+<span id="L240" class="LineNr">240 </span><span class="Constant">$start-underline-on-screen:end</span>:
 <span id="L241" class="LineNr">241 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L242" class="LineNr">242 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L243" class="LineNr">243 </span>    5d/pop-to-ebp
 <span id="L244" class="LineNr">244 </span>    c3/return
 <span id="L245" class="LineNr">245 </span>
-<span id="L246" class="LineNr">246 </span><span class="subxFunction">start-reverse-video</span>:
+<span id="L246" class="LineNr">246 </span><span class="subxFunction">start-reverse-video-on-screen</span>:
 <span id="L247" class="LineNr">247 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L248" class="LineNr">248 </span>    55/push-ebp
 <span id="L249" class="LineNr">249 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L250" class="LineNr">250 </span>    <span class="subxComment">#</span>
 <span id="L251" class="LineNr">251 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L252" class="LineNr">252 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="Constant">&quot;[7m&quot;</span>)
-<span id="L253" class="LineNr">253 </span><span class="Constant">$start-reverse-video:end</span>:
+<span id="L253" class="LineNr">253 </span><span class="Constant">$start-reverse-video-on-screen:end</span>:
 <span id="L254" class="LineNr">254 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L255" class="LineNr">255 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L256" class="LineNr">256 </span>    5d/pop-to-ebp
 <span id="L257" class="LineNr">257 </span>    c3/return
 <span id="L258" class="LineNr">258 </span>
 <span id="L259" class="LineNr">259 </span><span class="subxComment"># might require enabling blinking in your terminal program</span>
-<span id="L260" class="LineNr">260 </span><span class="subxFunction">start-blinking</span>:
+<span id="L260" class="LineNr">260 </span><span class="subxFunction">start-blinking-on-screen</span>:
 <span id="L261" class="LineNr">261 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L262" class="LineNr">262 </span>    55/push-ebp
 <span id="L263" class="LineNr">263 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L264" class="LineNr">264 </span>    <span class="subxComment">#</span>
 <span id="L265" class="LineNr">265 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L266" class="LineNr">266 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="Constant">&quot;[5m&quot;</span>)
-<span id="L267" class="LineNr">267 </span><span class="Constant">$start-blinking:end</span>:
+<span id="L267" class="LineNr">267 </span><span class="Constant">$start-blinking-on-screen:end</span>:
 <span id="L268" class="LineNr">268 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L269" class="LineNr">269 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L270" class="LineNr">270 </span>    5d/pop-to-ebp
 <span id="L271" class="LineNr">271 </span>    c3/return
 <span id="L272" class="LineNr">272 </span>
-<span id="L273" class="LineNr">273 </span><span class="subxFunction">hide-cursor</span>:
+<span id="L273" class="LineNr">273 </span><span class="subxFunction">hide-cursor-on-screen</span>:
 <span id="L274" class="LineNr">274 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L275" class="LineNr">275 </span>    55/push-ebp
 <span id="L276" class="LineNr">276 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L277" class="LineNr">277 </span>    <span class="subxComment">#</span>
 <span id="L278" class="LineNr">278 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L279" class="LineNr">279 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="Constant">&quot;[?25l&quot;</span>)
-<span id="L280" class="LineNr">280 </span><span class="Constant">$hide-cursor:end</span>:
+<span id="L280" class="LineNr">280 </span><span class="Constant">$hide-cursor-on-screen:end</span>:
 <span id="L281" class="LineNr">281 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L282" class="LineNr">282 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L283" class="LineNr">283 </span>    5d/pop-to-ebp
 <span id="L284" class="LineNr">284 </span>    c3/return
 <span id="L285" class="LineNr">285 </span>
-<span id="L286" class="LineNr">286 </span><span class="subxFunction">show-cursor</span>:
+<span id="L286" class="LineNr">286 </span><span class="subxFunction">show-cursor-on-screen</span>:
 <span id="L287" class="LineNr">287 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L288" class="LineNr">288 </span>    55/push-ebp
 <span id="L289" class="LineNr">289 </span>    89/&lt;- %ebp 4/r32/esp
@@ -350,7 +350,7 @@ if ('onhashchange' in window) {
 <span id="L292" class="LineNr">292 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="Constant">&quot;[?12l&quot;</span>)
 <span id="L293" class="LineNr">293 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="SpecialChar"><a href='103screen.subx.html#L330'>Esc</a></span>)
 <span id="L294" class="LineNr">294 </span>    (<a href='057write.subx.html#L24'>write</a> 2 <span class="Constant">&quot;[?25h&quot;</span>)
-<span id="L295" class="LineNr">295 </span><span class="Constant">$show-cursor:end</span>:
+<span id="L295" class="LineNr">295 </span><span class="Constant">$show-cursor-on-screen:end</span>:
 <span id="L296" class="LineNr">296 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L297" class="LineNr">297 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L298" class="LineNr">298 </span>    5d/pop-to-ebp

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 075print-int-decimal.subx</title>
+<title>Mu - 075write-int-decimal.subx</title>
 <meta name="Generator" content="Vim/8.1">
 <meta name="plugin-version" content="vim8.1_v1">
 <meta name="syntax" content="none">
@@ -20,6 +20,8 @@ a { color:inherit; }
 .subxFunction { color: #af5f00; text-decoration: underline; }
 .LineNr { }
 .subxS1Comment { color: #0000af; }
+.CommentedCode { color: #8a8a8a; }
+.SpecialChar { color: #d70000; }
 .Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
 .Folded { color: #080808; background-color: #949494; }
 .Constant { color: #008787; }
@@ -57,7 +59,7 @@ if ('onhashchange' in window) {
 </script>
 </head>
 <body onload='JumpToLine();'>
-<a href='https://github.com/akkartik/mu/blob/master/075print-int-decimal.subx'>https://github.com/akkartik/mu/blob/master/075print-int-decimal.subx</a>
+<a href='https://github.com/akkartik/mu/blob/master/075write-int-decimal.subx'>https://github.com/akkartik/mu/blob/master/075write-int-decimal.subx</a>
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr">  1 </span><span class="subxComment"># Helper to print an int32 in decimal.</span>
 <span id="L2" class="LineNr">  2 </span>
@@ -66,7 +68,7 @@ if ('onhashchange' in window) {
 <span id="L5" class="LineNr">  5 </span><span class="subxS1Comment"># . op          subop               mod             rm32          base        index         scale       r32</span>
 <span id="L6" class="LineNr">  6 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
 <span id="L7" class="LineNr">  7 </span>
-<span id="L8" class="LineNr">  8 </span><span class="subxFunction">print-int32-decimal</span>:  <span class="subxComment"># out: (addr stream byte), n: int32</span>
+<span id="L8" class="LineNr">  8 </span><span class="subxFunction">write-int32-decimal</span>:  <span class="subxComment"># out: (addr stream byte), n: int32</span>
 <span id="L9" class="LineNr">  9 </span>    <span class="subxComment"># works by generating characters from lowest to highest and pushing them</span>
 <span id="L10" class="LineNr"> 10 </span>    <span class="subxComment"># to the stack, before popping them one by one into the stream</span>
 <span id="L11" class="LineNr"> 11 </span>    <span class="subxComment">#</span>
@@ -112,10 +114,10 @@ if ('onhashchange' in window) {
 <span id="L51" class="LineNr"> 51 </span>    <span class="subxComment"># var eax: int = abs(n)</span>
 <span id="L52" class="LineNr"> 52 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to eax</span>
 <span id="L53" class="LineNr"> 53 </span>    3d/compare-eax-with  0/imm32
-<span id="L54" class="LineNr"> 54 </span>    7d/jump-if-&gt;=  $print-int32-decimal:read-loop/disp8
-<span id="L55" class="LineNr"> 55 </span><span class="Constant">$print-int32-decimal:negative</span>:
+<span id="L54" class="LineNr"> 54 </span>    7d/jump-if-&gt;=  $write-int32-decimal:read-loop/disp8
+<span id="L55" class="LineNr"> 55 </span><span class="Constant">$write-int32-decimal:negative</span>:
 <span id="L56" class="LineNr"> 56 </span>    f7          3/subop/negate      3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># negate eax</span>
-<span id="L57" class="LineNr"> 57 </span><span class="Constant">$print-int32-decimal:read-loop</span>:
+<span id="L57" class="LineNr"> 57 </span><span class="Constant">$write-int32-decimal:read-loop</span>:
 <span id="L58" class="LineNr"> 58 </span>    <span class="subxComment"># eax, edx = eax / 10, eax % 10</span>
 <span id="L59" class="LineNr"> 59 </span>    99/sign-extend-eax-into-edx
 <span id="L60" class="LineNr"> 60 </span>    f7          7/subop/idiv        3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># divide edx:eax by ecx, storing quotient in eax and remainder in edx</span>
@@ -125,14 +127,14 @@ if ('onhashchange' in window) {
 <span id="L64" class="LineNr"> 64 </span>    52/push-edx
 <span id="L65" class="LineNr"> 65 </span>    <span class="subxComment"># if (eax == 0) break</span>
 <span id="L66" class="LineNr"> 66 </span>    3d/compare-eax-and  0/imm32
-<span id="L67" class="LineNr"> 67 </span>    7f/jump-if-&gt;  $print-int32-decimal:read-loop/disp8
-<span id="L68" class="LineNr"> 68 </span><span class="Constant">$print-int32-decimal:read-break</span>:
+<span id="L67" class="LineNr"> 67 </span>    7f/jump-if-&gt;  $write-int32-decimal:read-loop/disp8
+<span id="L68" class="LineNr"> 68 </span><span class="Constant">$write-int32-decimal:read-break</span>:
 <span id="L69" class="LineNr"> 69 </span>    <span class="subxComment"># if (n &lt; 0) push('-')</span>
 <span id="L70" class="LineNr"> 70 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0xc/disp8       0/imm32           <span class="subxComment"># compare *(ebp+12)</span>
-<span id="L71" class="LineNr"> 71 </span>    7d/jump-if-&gt;=  $print-int32-decimal:<a href='057write.subx.html#L24'>write</a>/disp8
-<span id="L72" class="LineNr"> 72 </span><span class="Constant">$print-int32-decimal:push-negative</span>:
+<span id="L71" class="LineNr"> 71 </span>    7d/jump-if-&gt;=  $write-int32-decimal:<a href='057write.subx.html#L24'>write</a>/disp8
+<span id="L72" class="LineNr"> 72 </span><span class="Constant">$write-int32-decimal:push-negative</span>:
 <span id="L73" class="LineNr"> 73 </span>    68/push  0x2d/imm32/-
-<span id="L74" class="LineNr"> 74 </span><span class="Constant">$print-int32-decimal:<a href='057write.subx.html#L24'>write</a></span>:
+<span id="L74" class="LineNr"> 74 </span><span class="Constant">$write-int32-decimal:<a href='057write.subx.html#L24'>write</a></span>:
 <span id="L75" class="LineNr"> 75 </span>    <span class="subxComment"># edi = out</span>
 <span id="L76" class="LineNr"> 76 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to edi</span>
 <span id="L77" class="LineNr"> 77 </span>    <span class="subxComment"># var w/edx: int = out-&gt;write</span>
@@ -142,27 +144,27 @@ if ('onhashchange' in window) {
 <span id="L81" class="LineNr"> 81 </span>    <span class="subxComment"># var max/ebx: (addr byte) = &amp;out-&gt;data[out-&gt;size]</span>
 <span id="L82" class="LineNr"> 82 </span>    8b/copy                         1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(edi+8) to ebx</span>
 <span id="L83" class="LineNr"> 83 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  3/index/ebx  <span class="Normal"> . </span>          3/r32/ebx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy edi+ebx+12 to ebx</span>
-<span id="L84" class="LineNr"> 84 </span><span class="Constant">$print-int32-decimal:write-loop</span>:
+<span id="L84" class="LineNr"> 84 </span><span class="Constant">$write-int32-decimal:write-loop</span>:
 <span id="L85" class="LineNr"> 85 </span>    <span class="subxComment"># pop into eax</span>
 <span id="L86" class="LineNr"> 86 </span>    58/pop-to-eax
 <span id="L87" class="LineNr"> 87 </span>    <span class="subxComment"># if (eax == sentinel) break</span>
 <span id="L88" class="LineNr"> 88 </span>    3d/compare-eax-and  0/imm32/sentinel
-<span id="L89" class="LineNr"> 89 </span>    74/jump-if-=  $print-int32-decimal:write-break/disp8
+<span id="L89" class="LineNr"> 89 </span>    74/jump-if-=  $write-int32-decimal:write-break/disp8
 <span id="L90" class="LineNr"> 90 </span>    <span class="subxComment"># if (curr &gt;= max) abort</span>
 <span id="L91" class="LineNr"> 91 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with ebx</span>
-<span id="L92" class="LineNr"> 92 </span>    73/jump-if-addr&gt;=  $print-int32-decimal:abort/disp8
-<span id="L93" class="LineNr"> 93 </span><span class="Constant">$print-int32-decimal:write-char</span>:
+<span id="L92" class="LineNr"> 92 </span>    73/jump-if-addr&gt;=  $write-int32-decimal:abort/disp8
+<span id="L93" class="LineNr"> 93 </span><span class="Constant">$write-int32-decimal:write-char</span>:
 <span id="L94" class="LineNr"> 94 </span>    <span class="subxComment"># *curr = AL</span>
 <span id="L95" class="LineNr"> 95 </span>    88/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy AL to byte at *ecx</span>
 <span id="L96" class="LineNr"> 96 </span>    <span class="subxComment"># ++curr</span>
 <span id="L97" class="LineNr"> 97 </span>    41/increment-ecx
 <span id="L98" class="LineNr"> 98 </span>    <span class="subxComment"># ++w</span>
 <span id="L99" class="LineNr"> 99 </span>    42/increment-edx
-<span id="L100" class="LineNr">100 </span>    eb/jump  $print-int32-decimal:write-loop/disp8
-<span id="L101" class="LineNr">101 </span><span class="Constant">$print-int32-decimal:write-break</span>:
+<span id="L100" class="LineNr">100 </span>    eb/jump  $write-int32-decimal:write-loop/disp8
+<span id="L101" class="LineNr">101 </span><span class="Constant">$write-int32-decimal:write-break</span>:
 <span id="L102" class="LineNr">102 </span>    <span class="subxComment"># out-&gt;write = w</span>
 <span id="L103" class="LineNr">103 </span>    89/copy                         0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy edx to *edi</span>
-<span id="L104" class="LineNr">104 </span><span class="Constant">$print-int32-decimal:end</span>:
+<span id="L104" class="LineNr">104 </span><span class="Constant">$write-int32-decimal:end</span>:
 <span id="L105" class="LineNr">105 </span>    <span class="subxS1Comment"># . restore registers</span>
 <span id="L106" class="LineNr">106 </span>    5f/pop-to-edi
 <span id="L107" class="LineNr">107 </span>    5b/pop-to-ebx
@@ -174,10 +176,10 @@ if ('onhashchange' in window) {
 <span id="L113" class="LineNr">113 </span>    5d/pop-to-ebp
 <span id="L114" class="LineNr">114 </span>    c3/return
 <span id="L115" class="LineNr">115 </span>
-<span id="L116" class="LineNr">116 </span><span class="Constant">$print-int32-decimal:abort</span>:
+<span id="L116" class="LineNr">116 </span><span class="Constant">$write-int32-decimal:abort</span>:
 <span id="L117" class="LineNr">117 </span>    <span class="subxS1Comment"># . _write(2/stderr, error)</span>
 <span id="L118" class="LineNr">118 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L119" class="LineNr">119 </span>    68/push  <span class="Constant">&quot;print-int32-decimal: out of space\n&quot;</span>/imm32
+<span id="L119" class="LineNr">119 </span>    68/push  <span class="Constant">&quot;write-int32-decimal: out of space\n&quot;</span>/imm32
 <span id="L120" class="LineNr">120 </span>    68/push  2/imm32/stderr
 <span id="L121" class="LineNr">121 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L122" class="LineNr">122 </span>    e8/call  <a href='050_write.subx.html#L12'>_write</a>/disp32
@@ -188,7 +190,7 @@ if ('onhashchange' in window) {
 <span id="L127" class="LineNr">127 </span>    e8/call  syscall_exit/disp32
 <span id="L128" class="LineNr">128 </span>    <span class="subxComment"># never gets here</span>
 <span id="L129" class="LineNr">129 </span>
-<span id="L130" class="LineNr">130 </span><span class="subxTest">test-print-int32-decimal</span>:
+<span id="L130" class="LineNr">130 </span><span class="subxTest">test-write-int32-decimal</span>:
 <span id="L131" class="LineNr">131 </span>    <span class="subxH1Comment"># - check that a single-digit number converts correctly</span>
 <span id="L132" class="LineNr">132 </span>    <span class="subxComment"># setup</span>
 <span id="L133" class="LineNr">133 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
@@ -198,17 +200,17 @@ if ('onhashchange' in window) {
 <span id="L137" class="LineNr">137 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L138" class="LineNr">138 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L139" class="LineNr">139 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L140" class="LineNr">140 </span>    <span class="subxComment"># print-int32-decimal(_test-stream, 9)</span>
+<span id="L140" class="LineNr">140 </span>    <span class="subxComment"># write-int32-decimal(_test-stream, 9)</span>
 <span id="L141" class="LineNr">141 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L142" class="LineNr">142 </span>    68/push  9/imm32
 <span id="L143" class="LineNr">143 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L144" class="LineNr">144 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L145" class="LineNr">145 </span>    e8/call  <a href='075print-int-decimal.subx.html#L8'>print-int32-decimal</a>/disp32
+<span id="L145" class="LineNr">145 </span>    e8/call  <a href='075write-int-decimal.subx.html#L8'>write-int32-decimal</a>/disp32
 <span id="L146" class="LineNr">146 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L147" class="LineNr">147 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L148" class="LineNr">148 </span>    <span class="subxComment"># check-stream-equal(_test-stream, &quot;9&quot;, msg)</span>
 <span id="L149" class="LineNr">149 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L150" class="LineNr">150 </span>    68/push  <span class="Constant">&quot;F - test-print-int32-decimal&quot;</span>/imm32
+<span id="L150" class="LineNr">150 </span>    68/push  <span class="Constant">&quot;F - test-write-int32-decimal&quot;</span>/imm32
 <span id="L151" class="LineNr">151 </span>    68/push  <span class="Constant">&quot;9&quot;</span>/imm32
 <span id="L152" class="LineNr">152 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L153" class="LineNr">153 </span>    <span class="subxS2Comment"># . . call</span>
@@ -218,7 +220,7 @@ if ('onhashchange' in window) {
 <span id="L157" class="LineNr">157 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L158" class="LineNr">158 </span>    c3/return
 <span id="L159" class="LineNr">159 </span>
-<span id="L160" class="LineNr">160 </span><span class="subxTest">test-print-int32-decimal-zero</span>:
+<span id="L160" class="LineNr">160 </span><span class="subxTest">test-write-int32-decimal-zero</span>:
 <span id="L161" class="LineNr">161 </span>    <span class="subxH1Comment"># - check that 0 converts correctly</span>
 <span id="L162" class="LineNr">162 </span>    <span class="subxComment"># setup</span>
 <span id="L163" class="LineNr">163 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
@@ -228,17 +230,17 @@ if ('onhashchange' in window) {
 <span id="L167" class="LineNr">167 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L168" class="LineNr">168 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L169" class="LineNr">169 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L170" class="LineNr">170 </span>    <span class="subxComment"># print-int32-decimal(_test-stream, 0)</span>
+<span id="L170" class="LineNr">170 </span>    <span class="subxComment"># write-int32-decimal(_test-stream, 0)</span>
 <span id="L171" class="LineNr">171 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L172" class="LineNr">172 </span>    68/push  0/imm32
 <span id="L173" class="LineNr">173 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L174" class="LineNr">174 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L175" class="LineNr">175 </span>    e8/call  <a href='075print-int-decimal.subx.html#L8'>print-int32-decimal</a>/disp32
+<span id="L175" class="LineNr">175 </span>    e8/call  <a href='075write-int-decimal.subx.html#L8'>write-int32-decimal</a>/disp32
 <span id="L176" class="LineNr">176 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L177" class="LineNr">177 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L178" class="LineNr">178 </span>    <span class="subxComment"># check-stream-equal(_test-stream, &quot;0&quot;, msg)</span>
 <span id="L179" class="LineNr">179 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L180" class="LineNr">180 </span>    68/push  <span class="Constant">&quot;F - test-print-int32-decimal-zero&quot;</span>/imm32
+<span id="L180" class="LineNr">180 </span>    68/push  <span class="Constant">&quot;F - test-write-int32-decimal-zero&quot;</span>/imm32
 <span id="L181" class="LineNr">181 </span>    68/push  <span class="Constant">&quot;0&quot;</span>/imm32
 <span id="L182" class="LineNr">182 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L183" class="LineNr">183 </span>    <span class="subxS2Comment"># . . call</span>
@@ -248,7 +250,7 @@ if ('onhashchange' in window) {
 <span id="L187" class="LineNr">187 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L188" class="LineNr">188 </span>    c3/return
 <span id="L189" class="LineNr">189 </span>
-<span id="L190" class="LineNr">190 </span><span class="subxTest">test-print-int32-decimal-multiple-digits</span>:
+<span id="L190" class="LineNr">190 </span><span class="subxTest">test-write-int32-decimal-multiple-digits</span>:
 <span id="L191" class="LineNr">191 </span>    <span class="subxH1Comment"># - check that a multi-digit number converts correctly</span>
 <span id="L192" class="LineNr">192 </span>    <span class="subxComment"># setup</span>
 <span id="L193" class="LineNr">193 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
@@ -258,17 +260,17 @@ if ('onhashchange' in window) {
 <span id="L197" class="LineNr">197 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L198" class="LineNr">198 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L199" class="LineNr">199 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L200" class="LineNr">200 </span>    <span class="subxComment"># print-int32-decimal(_test-stream, 10)</span>
+<span id="L200" class="LineNr">200 </span>    <span class="subxComment"># write-int32-decimal(_test-stream, 10)</span>
 <span id="L201" class="LineNr">201 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L202" class="LineNr">202 </span>    68/push  0xa/imm32
 <span id="L203" class="LineNr">203 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L204" class="LineNr">204 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L205" class="LineNr">205 </span>    e8/call  <a href='075print-int-decimal.subx.html#L8'>print-int32-decimal</a>/disp32
+<span id="L205" class="LineNr">205 </span>    e8/call  <a href='075write-int-decimal.subx.html#L8'>write-int32-decimal</a>/disp32
 <span id="L206" class="LineNr">206 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L207" class="LineNr">207 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L208" class="LineNr">208 </span>    <span class="subxComment"># check-stream-equal(_test-stream, &quot;10&quot;, msg)</span>
 <span id="L209" class="LineNr">209 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L210" class="LineNr">210 </span>    68/push  <span class="Constant">&quot;F - test-print-int32-decimal-multiple-digits&quot;</span>/imm32
+<span id="L210" class="LineNr">210 </span>    68/push  <span class="Constant">&quot;F - test-write-int32-decimal-multiple-digits&quot;</span>/imm32
 <span id="L211" class="LineNr">211 </span>    68/push  <span class="Constant">&quot;10&quot;</span>/imm32
 <span id="L212" class="LineNr">212 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L213" class="LineNr">213 </span>    <span class="subxS2Comment"># . . call</span>
@@ -278,7 +280,7 @@ if ('onhashchange' in window) {
 <span id="L217" class="LineNr">217 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L218" class="LineNr">218 </span>    c3/return
 <span id="L219" class="LineNr">219 </span>
-<span id="L220" class="LineNr">220 </span><span class="subxTest">test-print-int32-decimal-negative</span>:
+<span id="L220" class="LineNr">220 </span><span class="subxTest">test-write-int32-decimal-negative</span>:
 <span id="L221" class="LineNr">221 </span>    <span class="subxH1Comment"># - check that a negative single-digit number converts correctly</span>
 <span id="L222" class="LineNr">222 </span>    <span class="subxComment"># setup</span>
 <span id="L223" class="LineNr">223 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
@@ -288,18 +290,18 @@ if ('onhashchange' in window) {
 <span id="L227" class="LineNr">227 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L228" class="LineNr">228 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L229" class="LineNr">229 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L230" class="LineNr">230 </span>    <span class="subxComment"># print-int32-decimal(_test-stream, -9)</span>
+<span id="L230" class="LineNr">230 </span>    <span class="subxComment"># write-int32-decimal(_test-stream, -9)</span>
 <span id="L231" class="LineNr">231 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L232" class="LineNr">232 </span>    68/push  -9/imm32
 <span id="L233" class="LineNr">233 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L234" class="LineNr">234 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L235" class="LineNr">235 </span>    e8/call  <a href='075print-int-decimal.subx.html#L8'>print-int32-decimal</a>/disp32
+<span id="L235" class="LineNr">235 </span>    e8/call  <a href='075write-int-decimal.subx.html#L8'>write-int32-decimal</a>/disp32
 <span id="L236" class="LineNr">236 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L237" class="LineNr">237 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L238" class="Folded">238 </span><span class="Folded">+-- 26 lines: #?     # dump _test-stream ------------------------------------------------------------------------------------------------------------------------------------------------</span>
 <span id="L264" class="LineNr">264 </span>    <span class="subxComment"># check-stream-equal(_test-stream, &quot;-9&quot;, msg)</span>
 <span id="L265" class="LineNr">265 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L266" class="LineNr">266 </span>    68/push  <span class="Constant">&quot;F - test-print-int32-decimal-negative&quot;</span>/imm32
+<span id="L266" class="LineNr">266 </span>    68/push  <span class="Constant">&quot;F - test-write-int32-decimal-negative&quot;</span>/imm32
 <span id="L267" class="LineNr">267 </span>    68/push  <span class="Constant">&quot;-9&quot;</span>/imm32
 <span id="L268" class="LineNr">268 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L269" class="LineNr">269 </span>    <span class="subxS2Comment"># . . call</span>
@@ -309,7 +311,7 @@ if ('onhashchange' in window) {
 <span id="L273" class="LineNr">273 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L274" class="LineNr">274 </span>    c3/return
 <span id="L275" class="LineNr">275 </span>
-<span id="L276" class="LineNr">276 </span><span class="subxTest">test-print-int32-decimal-negative-multiple-digits</span>:
+<span id="L276" class="LineNr">276 </span><span class="subxTest">test-write-int32-decimal-negative-multiple-digits</span>:
 <span id="L277" class="LineNr">277 </span>    <span class="subxH1Comment"># - check that a multi-digit number converts correctly</span>
 <span id="L278" class="LineNr">278 </span>    <span class="subxComment"># setup</span>
 <span id="L279" class="LineNr">279 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
@@ -319,17 +321,17 @@ if ('onhashchange' in window) {
 <span id="L283" class="LineNr">283 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L284" class="LineNr">284 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L285" class="LineNr">285 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L286" class="LineNr">286 </span>    <span class="subxComment"># print-int32-decimal(_test-stream, -10)</span>
+<span id="L286" class="LineNr">286 </span>    <span class="subxComment"># write-int32-decimal(_test-stream, -10)</span>
 <span id="L287" class="LineNr">287 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L288" class="LineNr">288 </span>    68/push  -0xa/imm32
 <span id="L289" class="LineNr">289 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L290" class="LineNr">290 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L291" class="LineNr">291 </span>    e8/call  <a href='075print-int-decimal.subx.html#L8'>print-int32-decimal</a>/disp32
+<span id="L291" class="LineNr">291 </span>    e8/call  <a href='075write-int-decimal.subx.html#L8'>write-int32-decimal</a>/disp32
 <span id="L292" class="LineNr">292 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L293" class="LineNr">293 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L294" class="LineNr">294 </span>    <span class="subxComment"># check-stream-equal(_test-stream, &quot;-10&quot;, msg)</span>
 <span id="L295" class="LineNr">295 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L296" class="LineNr">296 </span>    68/push  <span class="Constant">&quot;F - test-print-int32-decimal-negative-multiple-digits&quot;</span>/imm32
+<span id="L296" class="LineNr">296 </span>    68/push  <span class="Constant">&quot;F - test-write-int32-decimal-negative-multiple-digits&quot;</span>/imm32
 <span id="L297" class="LineNr">297 </span>    68/push  <span class="Constant">&quot;-10&quot;</span>/imm32
 <span id="L298" class="LineNr">298 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L299" class="LineNr">299 </span>    <span class="subxS2Comment"># . . call</span>
@@ -370,7 +372,7 @@ if ('onhashchange' in window) {
 <span id="L334" class="LineNr">334 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L335" class="LineNr">335 </span>    68/push  0x2f/imm32
 <span id="L336" class="LineNr">336 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L337" class="LineNr">337 </span>    e8/call  <a href='075print-int-decimal.subx.html#L306'>is-decimal-digit?</a>/disp32
+<span id="L337" class="LineNr">337 </span>    e8/call  <a href='075write-int-decimal.subx.html#L306'>is-decimal-digit?</a>/disp32
 <span id="L338" class="LineNr">338 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L339" class="LineNr">339 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L340" class="LineNr">340 </span>    <span class="subxComment"># check-ints-equal(eax, 0, msg)</span>
@@ -389,7 +391,7 @@ if ('onhashchange' in window) {
 <span id="L353" class="LineNr">353 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L354" class="LineNr">354 </span>    68/push  0x30/imm32
 <span id="L355" class="LineNr">355 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L356" class="LineNr">356 </span>    e8/call  <a href='075print-int-decimal.subx.html#L306'>is-decimal-digit?</a>/disp32
+<span id="L356" class="LineNr">356 </span>    e8/call  <a href='075write-int-decimal.subx.html#L306'>is-decimal-digit?</a>/disp32
 <span id="L357" class="LineNr">357 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L358" class="LineNr">358 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L359" class="LineNr">359 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
@@ -405,7 +407,7 @@ if ('onhashchange' in window) {
 <span id="L369" class="LineNr">369 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L370" class="LineNr">370 </span>    68/push  0x39/imm32
 <span id="L371" class="LineNr">371 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L372" class="LineNr">372 </span>    e8/call  <a href='075print-int-decimal.subx.html#L306'>is-decimal-digit?</a>/disp32
+<span id="L372" class="LineNr">372 </span>    e8/call  <a href='075write-int-decimal.subx.html#L306'>is-decimal-digit?</a>/disp32
 <span id="L373" class="LineNr">373 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L374" class="LineNr">374 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L375" class="LineNr">375 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
@@ -424,7 +426,7 @@ if ('onhashchange' in window) {
 <span id="L388" class="LineNr">388 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L389" class="LineNr">389 </span>    68/push  0x3a/imm32
 <span id="L390" class="LineNr">390 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L391" class="LineNr">391 </span>    e8/call  <a href='075print-int-decimal.subx.html#L306'>is-decimal-digit?</a>/disp32
+<span id="L391" class="LineNr">391 </span>    e8/call  <a href='075write-int-decimal.subx.html#L306'>is-decimal-digit?</a>/disp32
 <span id="L392" class="LineNr">392 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L393" class="LineNr">393 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L394" class="LineNr">394 </span>    <span class="subxComment"># check-ints-equal(eax, 0, msg)</span>
@@ -438,7 +440,68 @@ if ('onhashchange' in window) {
 <span id="L402" class="LineNr">402 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
 <span id="L403" class="LineNr">403 </span>    c3/return
 <span id="L404" class="LineNr">404 </span>
-<span id="L405" class="LineNr">405 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L405" class="LineNr">405 </span><span class="subxFunction">to-decimal-digit</span>:  <span class="subxComment"># in: byte -&gt; out/eax: int</span>
+<span id="L406" class="LineNr">406 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L407" class="LineNr">407 </span>    55/push-ebp
+<span id="L408" class="LineNr">408 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
+<span id="L409" class="LineNr">409 </span>    <span class="subxComment"># eax = in</span>
+<span id="L410" class="LineNr">410 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to eax</span>
+<span id="L411" class="LineNr">411 </span><span class="Constant">$to-decimal-digit:check0</span>:
+<span id="L412" class="LineNr">412 </span>    <span class="subxComment"># if (eax &lt; '0') goto abort</span>
+<span id="L413" class="LineNr">413 </span>    3d/compare-eax-with  0x30/imm32/0
+<span id="L414" class="LineNr">414 </span>    7c/jump-if-&lt;  $to-decimal-digit:abort/disp8
+<span id="L415" class="LineNr">415 </span><span class="Constant">$to-decimal-digit:check1</span>:
+<span id="L416" class="LineNr">416 </span>    <span class="subxComment"># if (eax &gt; '9') goto abort</span>
+<span id="L417" class="LineNr">417 </span>    3d/compare-eax-with  0x39/imm32/f
+<span id="L418" class="LineNr">418 </span>    7f/jump-if-&gt;  $to-decimal-digit:abort/disp8
+<span id="L419" class="LineNr">419 </span><span class="Constant">$to-decimal-digit:digit</span>:
+<span id="L420" class="LineNr">420 </span>    <span class="subxComment"># return eax - '0'</span>
+<span id="L421" class="LineNr">421 </span>    2d/subtract-from-eax  0x30/imm32/0
+<span id="L422" class="LineNr">422 </span><span class="Constant">$to-decimal-digit:end</span>:
+<span id="L423" class="LineNr">423 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L424" class="LineNr">424 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
+<span id="L425" class="LineNr">425 </span>    5d/pop-to-ebp
+<span id="L426" class="LineNr">426 </span>    c3/return
+<span id="L427" class="LineNr">427 </span>
+<span id="L428" class="LineNr">428 </span><span class="Constant">$to-decimal-digit:abort</span>:
+<span id="L429" class="LineNr">429 </span>    <span class="subxS1Comment"># . write-buffered(stderr, error)</span>
+<span id="L430" class="LineNr">430 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L431" class="LineNr">431 </span>    68/push  <span class="Constant">&quot;to-decimal-digit: not a digit character: &quot;</span>/imm32
+<span id="L432" class="LineNr">432 </span>    68/push  <span class="SpecialChar"><a href='065write-buffered.subx.html#L209'>Stderr</a></span>/imm32
+<span id="L433" class="LineNr">433 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L434" class="LineNr">434 </span>    e8/call  <a href='065write-buffered.subx.html#L8'>write-buffered</a>/disp32
+<span id="L435" class="LineNr">435 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L436" class="LineNr">436 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L437" class="LineNr">437 </span>    <span class="subxS1Comment"># . write-byte-buffered(stderr, %eax)</span>
+<span id="L438" class="LineNr">438 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L439" class="LineNr">439 </span>    50/push-eax
+<span id="L440" class="LineNr">440 </span>    68/push  <span class="SpecialChar"><a href='065write-buffered.subx.html#L209'>Stderr</a></span>/imm32
+<span id="L441" class="LineNr">441 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L442" class="LineNr">442 </span><span class="CommentedCode">#?     e8/call  write-byte-buffered/disp32</span>
+<span id="L443" class="LineNr">443 </span>    e8/call  <a href='066write-int-hex.subx.html#L266'>write-int32-hex-buffered</a>/disp32
+<span id="L444" class="LineNr">444 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L445" class="LineNr">445 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L446" class="LineNr">446 </span>    <span class="subxS1Comment"># . write-buffered(stderr, &quot;\n&quot;)</span>
+<span id="L447" class="LineNr">447 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L448" class="LineNr">448 </span>    68/push  <span class="SpecialChar"><a href='051test.subx.html#L82'>Newline</a></span>/imm32
+<span id="L449" class="LineNr">449 </span>    68/push  <span class="SpecialChar"><a href='065write-buffered.subx.html#L209'>Stderr</a></span>/imm32
+<span id="L450" class="LineNr">450 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L451" class="LineNr">451 </span>    e8/call  <a href='065write-buffered.subx.html#L8'>write-buffered</a>/disp32
+<span id="L452" class="LineNr">452 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L453" class="LineNr">453 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L454" class="LineNr">454 </span>    <span class="subxS1Comment"># . flush(Stderr)</span>
+<span id="L455" class="LineNr">455 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L456" class="LineNr">456 </span>    68/push  <span class="SpecialChar"><a href='065write-buffered.subx.html#L209'>Stderr</a></span>/imm32
+<span id="L457" class="LineNr">457 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L458" class="LineNr">458 </span>    e8/call  <a href='064write-byte.subx.html#L81'>flush</a>/disp32
+<span id="L459" class="LineNr">459 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L460" class="LineNr">460 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L461" class="LineNr">461 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L462" class="LineNr">462 </span>    bb/copy-to-ebx  1/imm32
+<span id="L463" class="LineNr">463 </span>    e8/call  syscall_exit/disp32
+<span id="L464" class="LineNr">464 </span>    <span class="subxComment"># never gets here</span>
+<span id="L465" class="LineNr">465 </span>
+<span id="L466" class="LineNr">466 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>

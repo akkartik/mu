@@ -56,7 +56,7 @@ fn main -> exit-status/ebx: int {
 
 fn simplify -> result/eax: int, look/esi: byte {
   # prime the pump
-  look <- get-char  # prime the pump
+  look <- get-char
   # do it
   result, look <- expression look
 }
