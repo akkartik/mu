@@ -6088,7 +6088,7 @@ $parse-mu:error1:
 
 $parse-mu:error2:
     # error(vars->top " vars not reclaimed after fn '" new-function->name "'\n")
-    (print-int32-buffered *(ebp+0xc) *ebx)
+    (write-int32-hex-buffered *(ebp+0xc) *ebx)
     (write-buffered *(ebp+0xc) " vars not reclaimed after fn '")
     (write-slice-buffered *(ebp+0xc) *eax)  # Function-name
     (write-buffered *(ebp+0xc) "'\n")
@@ -6996,7 +6996,7 @@ pos-slice:  # arr: (addr stream (addr array byte)), s: (addr slice) -> index/eax
     8d/copy-address *(esi+ebx+0xc) 3/r32/ebx
     {
 #?       (write-buffered Stderr "  ")
-#?       (print-int32-buffered Stderr %ecx)
+#?       (write-int32-hex-buffered Stderr %ecx)
 #?       (write-buffered Stderr "\n")
 #?       (flush Stderr)
       # if (curr >= max) return -1
@@ -7018,7 +7018,7 @@ pos-slice:  # arr: (addr stream (addr array byte)), s: (addr slice) -> index/eax
     89/<- %eax 1/r32/ecx
 $pos-slice:end:
 #?     (write-buffered Stderr "=> ")
-#?     (print-int32-buffered Stderr %eax)
+#?     (write-int32-hex-buffered Stderr %eax)
 #?     (write-buffered Stderr "\n")
     # . restore registers
     5e/pop-to-esi
@@ -7834,9 +7834,9 @@ new-block-name:  # fn: (addr function), out: (addr handle var)
     (new-literal Heap %eax *(ebp+0xc))
 #?     8b/-> *(ebp+0xc) 0/r32/eax
 #?     (write-buffered Stderr "type allocid in caller after new-literal: ")
-#?     (print-int32-buffered Stderr *(eax+8))
+#?     (write-int32-hex-buffered Stderr *(eax+8))
 #?     (write-buffered Stderr " for var ")
-#?     (print-int32-buffered Stderr %eax)
+#?     (write-int32-hex-buffered Stderr %eax)
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
 $new-block-name:end:
@@ -8351,7 +8351,7 @@ $add-operation-and-inputs-to-stmt:read-inouts:
         (lookup-or-create-constant %eax %ecx %esi)
 #?         (lookup *esi *(esi+4))
 #?         (write-buffered Stderr "creating new output var ")
-#?         (print-int32-buffered Stderr %eax)
+#?         (write-int32-hex-buffered Stderr %eax)
 #?         (write-buffered Stderr " for field called ")
 #?         (write-slice-buffered Stderr %ecx)
 #?         (write-buffered Stderr "; var name ")
@@ -9108,7 +9108,7 @@ new-var:  # ad: (addr allocation-descriptor), name: (handle array byte), out: (a
 #?     (write-buffered Stderr " at ")
 #?     8b/-> *(ebp+0x14) 1/r32/ecx
 #?     (lookup *ecx *(ecx+4))  # => eax
-#?     (print-int32-buffered Stderr %eax)
+#?     (write-int32-hex-buffered Stderr %eax)
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
 $new-var:end:
@@ -9454,14 +9454,14 @@ lookup-or-create-constant:  # container: (addr stmt-var), field-name: (addr slic
 #?     8b/-> *(ebp+0x10) 0/r32/eax
 #?     (write-buffered Stderr "@")
 #?     (lookup *eax *(eax+4))
-#?     (print-int32-buffered Stderr %eax)
+#?     (write-int32-hex-buffered Stderr %eax)
 #?     (lookup *eax *(eax+4))
 #?     (write-buffered Stderr %eax)
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
 #?     (write-buffered Stderr "offset: ")
 #?     8b/-> *(eax+0x14) 0/r32/eax
-#?     (print-int32-buffered Stderr %eax)
+#?     (write-int32-hex-buffered Stderr %eax)
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
 $lookup-or-create-constant:end:
@@ -9543,9 +9543,9 @@ $find-or-create-typeinfo:create:
       # var tmp/eax: (addr typeinfo) = lookup(*out)
       (lookup *edi *(edi+4))  # => eax
 #?     (write-buffered Stderr "created typeinfo at ")
-#?     (print-int32-buffered Stderr %eax)
+#?     (write-int32-hex-buffered Stderr %eax)
 #?     (write-buffered Stderr " for type-id ")
-#?     (print-int32-buffered Stderr *(ebp+8))
+#?     (write-int32-hex-buffered Stderr *(ebp+8))
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
       # tmp->id = t
@@ -9719,18 +9719,18 @@ find-or-create-typeinfo-fields:  # T: (addr typeinfo), f: (addr slice), out: (ad
       75/jump-if-!= break/disp8
       (allocate Heap *Typeinfo-entry-size %esi)
 #?       (write-buffered Stderr "handle at ")
-#?       (print-int32-buffered Stderr %esi)
+#?       (write-int32-hex-buffered Stderr %esi)
 #?       (write-buffered Stderr ": ")
-#?       (print-int32-buffered Stderr *esi)
+#?       (write-int32-hex-buffered Stderr *esi)
 #?       (write-buffered Stderr " ")
-#?       (print-int32-buffered Stderr *(esi+4))
+#?       (write-int32-hex-buffered Stderr *(esi+4))
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
 #?       (lookup *esi *(esi+4))
 #?       (write-buffered Stderr "created typeinfo fields at ")
-#?       (print-int32-buffered Stderr %esi)
+#?       (write-int32-hex-buffered Stderr %esi)
 #?       (write-buffered Stderr " for ")
-#?       (print-int32-buffered Stderr *(ebp+8))
+#?       (write-int32-hex-buffered Stderr *(ebp+8))
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
     }
@@ -9844,9 +9844,9 @@ $populate-mu-type:create-typeinfo-fields:
       (lookup *ebx *(ebx+4))  # => eax
       8b/-> *(ebp-4) 1/r32/ecx
 #?       (write-buffered Stderr "saving index ")
-#?       (print-int32-buffered Stderr %ecx)
+#?       (write-int32-hex-buffered Stderr %ecx)
 #?       (write-buffered Stderr " at ")
-#?       (print-int32-buffered Stderr %edi)
+#?       (write-int32-hex-buffered Stderr %edi)
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
       89/<- *(eax+8) 1/r32/ecx  # Typeinfo-entry-index
@@ -10164,9 +10164,9 @@ $populate-mu-type-offsets:loop:
       39/compare %ebx 2/r32/edx
       0f 8d/jump-if->= break/disp32
 #?       (write-buffered Stderr "looking up index ")
-#?       (print-int32-buffered Stderr %ebx)
+#?       (write-int32-hex-buffered Stderr %ebx)
 #?       (write-buffered Stderr " in ")
-#?       (print-int32-buffered Stderr *(ebp+8))
+#?       (write-int32-hex-buffered Stderr *(ebp+8))
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
       # var v/esi: (addr typeinfo-entry)
@@ -10229,9 +10229,9 @@ $locate-typeinfo-entry-with-index:loop:
       # if (v->index == idx) return v
       8b/-> *(eax+8) 3/r32/ebx  # Typeinfo-entry-index
 #?       (write-buffered Stderr "comparing ")
-#?       (print-int32-buffered Stderr %ebx)
+#?       (write-int32-hex-buffered Stderr %ebx)
 #?       (write-buffered Stderr " and ")
-#?       (print-int32-buffered Stderr *(ebp+0xc))
+#?       (write-int32-hex-buffered Stderr *(ebp+0xc))
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
       39/compare *(ebp+0xc) 3/r32/ebx
@@ -10245,7 +10245,7 @@ $locate-typeinfo-entry-with-index:loop:
     b8/copy-to-eax 0/imm32
 $locate-typeinfo-entry-with-index:end:
 #?     (write-buffered Stderr "returning ")
-#?     (print-int32-buffered Stderr %eax)
+#?     (write-int32-hex-buffered Stderr %eax)
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
     # . restore registers
@@ -10306,22 +10306,22 @@ dump-typeinfo:  # in: (addr typeinfo)
     (lookup *(esi+4) *(esi+8))  # Typeinfo-fields Typeinfo-fields => eax
     89/<- %ecx 0/r32/eax
     (write-buffered Stderr "id:")
-    (print-int32-buffered Stderr *esi)
+    (write-int32-hex-buffered Stderr *esi)
     (write-buffered Stderr "\n")
     (write-buffered Stderr "fields @ ")
-    (print-int32-buffered Stderr %ecx)
+    (write-int32-hex-buffered Stderr %ecx)
     (write-buffered Stderr Newline)
     (flush Stderr)
     (write-buffered Stderr "  write: ")
-    (print-int32-buffered Stderr *ecx)
+    (write-int32-hex-buffered Stderr *ecx)
     (write-buffered Stderr Newline)
     (flush Stderr)
     (write-buffered Stderr "  read: ")
-    (print-int32-buffered Stderr *(ecx+4))
+    (write-int32-hex-buffered Stderr *(ecx+4))
     (write-buffered Stderr Newline)
     (flush Stderr)
     (write-buffered Stderr "  size: ")
-    (print-int32-buffered Stderr *(ecx+8))
+    (write-int32-hex-buffered Stderr *(ecx+8))
     (write-buffered Stderr Newline)
     (flush Stderr)
     # var table-size/edx: int = table->write
@@ -10337,30 +10337,30 @@ $dump-typeinfo:loop:
       0f 83/jump-if-addr>= break/disp32
       (write-buffered Stderr "  row:\n")
       (write-buffered Stderr "    key: ")
-      (print-int32-buffered Stderr *ecx)
+      (write-int32-hex-buffered Stderr *ecx)
       (write-buffered Stderr ",")
-      (print-int32-buffered Stderr *(ecx+4))
+      (write-int32-hex-buffered Stderr *(ecx+4))
       (write-buffered Stderr " = '")
       (lookup *ecx *(ecx+4))
       (write-buffered Stderr %eax)
       (write-buffered Stderr "' @ ")
-      (print-int32-buffered Stderr %eax)
+      (write-int32-hex-buffered Stderr %eax)
       (write-buffered Stderr Newline)
       (flush Stderr)
       (write-buffered Stderr "    value: ")
-      (print-int32-buffered Stderr *(ecx+8))
+      (write-int32-hex-buffered Stderr *(ecx+8))
       (write-buffered Stderr ",")
-      (print-int32-buffered Stderr *(ecx+0xc))
+      (write-int32-hex-buffered Stderr *(ecx+0xc))
       (write-buffered Stderr " = typeinfo-entry@")
       (lookup *(ecx+8) *(ecx+0xc))
-      (print-int32-buffered Stderr %eax)
+      (write-int32-hex-buffered Stderr %eax)
       (write-buffered Stderr Newline)
       (flush Stderr)
       (write-buffered Stderr "        input var@")
       (dump-var 5 %eax)
       (lookup *(ecx+8) *(ecx+0xc))
       (write-buffered Stderr "        index: ")
-      (print-int32-buffered Stderr *(eax+8))
+      (write-int32-hex-buffered Stderr *(eax+8))
       (write-buffered Stderr Newline)
       (flush Stderr)
       (write-buffered Stderr "        output var@")
@@ -10395,12 +10395,12 @@ dump-var:  # indent: int, v: (addr handle var)
     # eax = v
     8b/-> *(ebp+0xc) 0/r32/eax
     #
-    (print-int32-buffered Stderr *eax)
+    (write-int32-hex-buffered Stderr *eax)
     (write-buffered Stderr ",")
-    (print-int32-buffered Stderr *(eax+4))
+    (write-int32-hex-buffered Stderr *(eax+4))
     (write-buffered Stderr "->")
     (lookup *eax *(eax+4))
-    (print-int32-buffered Stderr %eax)
+    (write-int32-hex-buffered Stderr %eax)
     (write-buffered Stderr Newline)
     (flush Stderr)
     {
@@ -10409,12 +10409,12 @@ dump-var:  # indent: int, v: (addr handle var)
       (emit-indent Stderr *(ebp+8))
       (write-buffered Stderr "name: ")
       89/<- %ebx 0/r32/eax
-      (print-int32-buffered Stderr *ebx)  # Var-name
+      (write-int32-hex-buffered Stderr *ebx)  # Var-name
       (write-buffered Stderr ",")
-      (print-int32-buffered Stderr *(ebx+4))  # Var-name
+      (write-int32-hex-buffered Stderr *(ebx+4))  # Var-name
       (write-buffered Stderr "->")
       (lookup *ebx *(ebx+4))  # Var-name
-      (print-int32-buffered Stderr %eax)
+      (write-int32-hex-buffered Stderr %eax)
       {
         3d/compare-eax-and 0/imm32
         74/jump-if-= break/disp8
@@ -10425,23 +10425,23 @@ dump-var:  # indent: int, v: (addr handle var)
       (flush Stderr)
       (emit-indent Stderr *(ebp+8))
       (write-buffered Stderr "block depth: ")
-      (print-int32-buffered Stderr *(ebx+0x10))  # Var-block-depth
+      (write-int32-hex-buffered Stderr *(ebx+0x10))  # Var-block-depth
       (write-buffered Stderr Newline)
       (flush Stderr)
       (emit-indent Stderr *(ebp+8))
       (write-buffered Stderr "stack offset: ")
-      (print-int32-buffered Stderr *(ebx+0x14))  # Var-offset
+      (write-int32-hex-buffered Stderr *(ebx+0x14))  # Var-offset
       (write-buffered Stderr Newline)
       (flush Stderr)
       (emit-indent Stderr *(ebp+8))
       (write-buffered Stderr "reg: ")
-      (print-int32-buffered Stderr *(ebx+0x18))  # Var-register
+      (write-int32-hex-buffered Stderr *(ebx+0x18))  # Var-register
       (write-buffered Stderr ",")
-      (print-int32-buffered Stderr *(ebx+0x1c))  # Var-register
+      (write-int32-hex-buffered Stderr *(ebx+0x1c))  # Var-register
       (write-buffered Stderr "->")
       (flush Stderr)
       (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register
-      (print-int32-buffered Stderr %eax)
+      (write-int32-hex-buffered Stderr %eax)
       {
         3d/compare-eax-and 0/imm32
         74/jump-if-= break/disp8
@@ -11624,10 +11624,10 @@ size-of:  # v: (addr var) -> result/eax: int
     # var t/ecx: (addr tree type-id) = lookup(v->type)
     8b/-> *(ebp+8) 1/r32/ecx
 #?     (write-buffered Stderr "size-of ")
-#?     (print-int32-buffered Stderr %ecx)
+#?     (write-int32-hex-buffered Stderr %ecx)
 #?     (write-buffered Stderr Newline)
 #?     (write-buffered Stderr "type allocid: ")
-#?     (print-int32-buffered Stderr *(ecx+8))
+#?     (write-int32-hex-buffered Stderr *(ecx+8))
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
     (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
@@ -11979,9 +11979,9 @@ $populate-mu-type-offsets-in-inouts:loop:
 #?       (write-buffered Stderr "setting offset of fn inout ")
 #?       (write-buffered Stderr %eax)
 #?       (write-buffered Stderr "@")
-#?       (print-int32-buffered Stderr %ebx)
+#?       (write-int32-hex-buffered Stderr %ebx)
 #?       (write-buffered Stderr " to ")
-#?       (print-int32-buffered Stderr %edx)
+#?       (write-int32-hex-buffered Stderr %edx)
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
       # v->offset = next-offset
@@ -12217,7 +12217,7 @@ push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
 #?     (lookup *ecx *(ecx+4))
 #?     (write-buffered Stderr %eax)
 #?     (write-buffered Stderr " at depth ")
-#?     (print-int32-buffered Stderr *(ecx+0x10))
+#?     (write-int32-hex-buffered Stderr *(ecx+0x10))
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
     # ensure that v is in a register
@@ -12525,7 +12525,7 @@ $emit-cleanup-code-until-depth:var-on-stack:
 $emit-cleanup-code-until-depth:reclaim-var-on-stack:
         (emit-indent *(ebp+8) *Curr-block-depth)
         (write-buffered *(ebp+8) "81 0/subop/add %esp ")
-        (print-int32-buffered *(ebp+8) %eax)
+        (write-int32-hex-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) "/imm32\n")
       }
 $emit-cleanup-code-until-depth:continue:
@@ -12606,7 +12606,7 @@ $emit-cleanup-code-until-target:reclaim-var-on-stack:
         #
         (emit-indent *(ebp+8) *Curr-block-depth)
         (write-buffered *(ebp+8) "81 0/subop/add %esp ")
-        (print-int32-buffered *(ebp+8) %eax)
+        (write-int32-hex-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) "/imm32\n")
       }
 $emit-cleanup-code-until-target:continue:
@@ -13144,11 +13144,11 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (addr stmt)
       81 5/subop/subtract %edx 4/imm32
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "(push-n-zero-bytes ")
-      (print-int32-buffered *(ebp+8) %edx)
+      (write-int32-hex-buffered *(ebp+8) %edx)
       (write-buffered *(ebp+8) ")\n")
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "68/push ")
-      (print-int32-buffered *(ebp+8) %edx)
+      (write-int32-hex-buffered *(ebp+8) %edx)
       (write-buffered *(ebp+8) "/imm32\n")
       eb/jump $emit-subx-var-def:end/disp8
     }
@@ -13319,7 +13319,7 @@ $translate-mu-length-stmt:complex:
     (write-buffered *(ebp+8) "31/xor %edx 2/r32/edx\n")
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "b9/copy-to-ecx ")
-    (print-int32-buffered *(ebp+8) %ecx)
+    (write-int32-hex-buffered *(ebp+8) %ecx)
     (write-buffered *(ebp+8) "/imm32\n")
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "f7 7/subop/idiv-eax-edx-by %ecx\n")
@@ -13426,13 +13426,13 @@ $emit-save-size-to:emit-base-from-register:
       74/jump-if-= break/disp8
 $emit-save-size-to:emit-base-from-stack:
       (write-buffered *(ebp+8) "(ebp+")
-      (print-int32-buffered *(ebp+8) *(ebx+0x14))  # Var-offset
+      (write-int32-hex-buffered *(ebp+8) *(ebx+0x14))  # Var-offset
       (write-buffered *(ebp+8) ")")
     }
 $emit-save-size-to:emit-output:
     (write-buffered *(ebp+8) " ")
     (get Mu-registers *(ebp+0x10) 0xc "Mu-registers")  # => eax
-    (print-int32-buffered *(ebp+8) *eax)
+    (write-int32-hex-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $emit-save-size-to:end:
     # . restore registers
@@ -13455,7 +13455,7 @@ emit-divide-by-shift-right:  # out: (addr buffered-file), reg: (addr array byte)
     (write-buffered *(ebp+8) *(ebp+0xc))
     (write-buffered *(ebp+8) Space)
     (num-shift-rights *(ebp+0x10))  # => eax
-    (print-int32-buffered *(ebp+8) %eax)
+    (write-int32-hex-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) "/imm8\n")
 $emit-divide-by-shift-right:end:
     # . restore registers
@@ -13563,7 +13563,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
         # TODO: ensure size is a power of 2
         (array-element-size %ebx *(ebp+0x10) *(ebp+0x14))  # => eax
         (num-shift-rights %eax)  # => eax
-        (print-int32-buffered *(ebp+8) %eax)
+        (write-int32-hex-buffered *(ebp+8) %eax)
         e9/jump $translate-mu-index-stmt-with-array-in-register:emit-register-index-done/disp32
       }
       # if index->type is any other atom, abort
@@ -13603,7 +13603,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-literal-index:
       05/add-to-eax 4/imm32
       # TODO: check edx for overflow
       # print offset
-      (print-int32-buffered *(ebp+8) %eax)
+      (write-int32-hex-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) ") ")
       e9/jump $translate-mu-index-stmt-with-array-in-register:emit-output/disp32
     }
@@ -13616,7 +13616,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-output:
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
     (get Mu-registers %eax 0xc "Mu-registers")  # => eax: (addr int)
-    (print-int32-buffered *(ebp+8) *eax)
+    (write-int32-hex-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-index-stmt-with-array-in-register:end:
     # . restore registers
@@ -13674,13 +13674,13 @@ $translate-mu-index-stmt-with-array-on-stack:emit-int-register-index:
         # TODO: ensure size is a power of 2
         (array-element-size %ecx *(ebp+0x10) *(ebp+0x14))  # => eax
         (num-shift-rights %eax)  # => eax
-        (print-int32-buffered *(ebp+8) %eax)
+        (write-int32-hex-buffered *(ebp+8) %eax)
         #
         (write-buffered *(ebp+8) " + ")
         #
         8b/-> *(ecx+0x14) 0/r32/eax  # Var-offset
         05/add-to-eax 4/imm32  # for array length
-        (print-int32-buffered *(ebp+8) %eax)
+        (write-int32-hex-buffered *(ebp+8) %eax)
         e9/jump $translate-mu-index-stmt-with-array-on-stack:emit-register-index-done/disp32
       }
       # if index->type is any other atom, abort
@@ -13722,7 +13722,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-literal-index:
       05/add-to-eax 4/imm32
       # TODO: check edx for overflow
       # print offset
-      (print-int32-buffered *(ebp+8) %eax)
+      (write-int32-hex-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) ") ")
       e9/jump $translate-mu-index-stmt-with-array-on-stack:emit-output/disp32
     }
@@ -13735,7 +13735,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-output:
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
     (get Mu-registers %eax 0xc "Mu-registers")  # => eax: (addr int)
-    (print-int32-buffered *(ebp+8) *eax)
+    (write-int32-hex-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-index-stmt-with-array-on-stack:end:
     # . restore registers
@@ -13775,7 +13775,7 @@ $translate-mu-compute-index-stmt:emit-elem-size:
     89/<- %ebx 0/r32/eax
     # print array-element-size(base)
     (array-element-size %ebx *(ebp+0x10) *(ebp+0x14))  # => eax
-    (print-int32-buffered *(ebp+8) %eax)
+    (write-int32-hex-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) "/imm32 ")
 $translate-mu-compute-index-stmt:emit-output:
     # outputs[0] "/r32"
@@ -13783,7 +13783,7 @@ $translate-mu-compute-index-stmt:emit-output:
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
     (get Mu-registers %eax 0xc "Mu-registers")  # => eax: (addr int)
-    (print-int32-buffered *(ebp+8) *eax)
+    (write-int32-hex-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-compute-index-stmt:end:
     # . restore registers
@@ -13825,7 +13825,7 @@ $translate-mu-get-stmt:emit-register-input:
       (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
       (write-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) " + ")
-      (print-int32-buffered *(ebp+8) %edx)
+      (write-int32-hex-buffered *(ebp+8) %edx)
       (write-buffered *(ebp+8) ") ")
       e9/jump $translate-mu-get-stmt:emit-output/disp32
     }
@@ -13835,7 +13835,7 @@ $translate-mu-get-stmt:emit-stack-input:
       # emit "*(ebp + " inouts[0]->stack-offset + offset ") "
       (write-buffered *(ebp+8) "*(ebp+")
       03/add *(eax+0x14) 2/r32/edx  # Var-offset
-      (print-int32-buffered *(ebp+8) %edx)
+      (write-int32-hex-buffered *(ebp+8) %edx)
       (write-buffered *(ebp+8) ") ")
       eb/jump $translate-mu-get-stmt:emit-output/disp8
     }
@@ -13846,7 +13846,7 @@ $translate-mu-get-stmt:emit-output:
     # emit offset->register "/r32"
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
     (get Mu-registers %eax 0xc "Mu-registers")  # => eax: (addr int)
-    (print-int32-buffered *(ebp+8) *eax)
+    (write-int32-hex-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-get-stmt:end:
     # . restore registers
@@ -13938,7 +13938,7 @@ $array-element-type-id:error1:
     (write-buffered *(ebp+0xc) %eax)
     58/pop-to-eax
     (write-buffered *(ebp+0xc) "' has atomic type ")
-    (print-int32-buffered *(ebp+0xc) *(eax+4))  # Tree-value
+    (write-int32-hex-buffered *(ebp+0xc) *(eax+4))  # Tree-value
     (write-buffered *(ebp+0xc) Newline)
     (flush *(ebp+0xc))
     (stop *(ebp+0x10) 1)
@@ -14024,7 +14024,7 @@ mu-get-offset:  # stmt: (addr stmt) -> result/eax: int
     # var output-var/eax: (addr var) = second-inout->value
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
 #?     (write-buffered Stderr "mu-get-offset: ")
-#?     (print-int32-buffered Stderr %eax)
+#?     (write-int32-hex-buffered Stderr %eax)
 #?     (write-buffered Stderr " name: ")
 #?     50/push-eax
 #?     (lookup *eax *(eax+4))  # Var-name
@@ -14035,7 +14035,7 @@ mu-get-offset:  # stmt: (addr stmt) -> result/eax: int
     # return output-var->stack-offset
     8b/-> *(eax+0x14) 0/r32/eax  # Var-offset
 #?     (write-buffered Stderr "=> ")
-#?     (print-int32-buffered Stderr %eax)
+#?     (write-int32-hex-buffered Stderr %eax)
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
 $emit-get-offset:end:
@@ -17190,7 +17190,7 @@ $get-stmt-operand-from-arg-location:end:
 $get-stmt-operand-from-arg-location:abort:
     # error("invalid arg-location " eax)
     (write-buffered *(ebp+0x10) "invalid arg-location ")
-    (print-int32-buffered *(ebp+0x10) %eax)
+    (write-int32-hex-buffered *(ebp+0x10) %eax)
     (write-buffered *(ebp+0x10) Newline)
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
@@ -17212,7 +17212,7 @@ emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
     (maybe-get Mu-registers %eax 0xc)  # => eax: (addr register-index)
     (write-buffered *(ebp+8) Space)
-    (print-int32-buffered *(ebp+8) *eax)
+    (write-int32-hex-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32")
 $emit-subx-r32:end:
     # . restore registers
@@ -17426,7 +17426,7 @@ $emit-subx-call-operand-register-indirect:loop:
       (write-buffered *(ebp+8) " *(")
       (write-buffered *(ebp+8) %esi)
       (write-buffered *(ebp+8) "+")
-      (print-int32-buffered *(ebp+8) %eax)
+      (write-int32-hex-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) ")")
       # i += 4
       05/add-to-eax 4/imm32
@@ -17466,7 +17466,7 @@ $emit-subx-call-operand-stack:loop:
       7d/jump-if->= break/disp8
       # emit " *(ebp+" curr ")"
       (write-buffered *(ebp+8) " *(ebp+")
-      (print-int32-buffered *(ebp+8) %ecx)
+      (write-int32-hex-buffered *(ebp+8) %ecx)
       (write-buffered *(ebp+8) ")")
       # i += 4
       81 0/subop/add %ecx 4/imm32
@@ -17529,7 +17529,7 @@ $emit-subx-var-as-rm32:register-direct:
 $emit-subx-var-as-rm32:stack:
       (write-buffered *(ebp+8) Space)
       (write-buffered *(ebp+8) "*(ebp+")
-      (print-int32-buffered *(ebp+8) *(esi+0x14))  # Var-offset
+      (write-int32-hex-buffered *(ebp+8) *(esi+0x14))  # Var-offset
       (write-buffered *(ebp+8) ")")
     }
 $emit-subx-var-as-rm32:end:

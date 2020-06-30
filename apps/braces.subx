@@ -159,7 +159,7 @@ $subx-braces:check-for-curly-open:
 $subx-braces:emit-curly-open:
     # print(out, "_loop" next-label-id ":")
     (write-buffered *(ebp+0xc) "_loop")
-    (print-int32-buffered *(ebp+0xc) %ebx)
+    (write-int32-hex-buffered *(ebp+0xc) %ebx)
     (write-buffered *(ebp+0xc) ":")
     # push(label-stack, next-label-id)
     (push %edx %ebx)
@@ -176,7 +176,7 @@ $subx-braces:emit-curly-closed:
     (pop %edx)
     # print(out, "_break" eax ":")
     (write-buffered *(ebp+0xc) "_break")
-    (print-int32-buffered *(ebp+0xc) %eax)
+    (write-int32-hex-buffered *(ebp+0xc) %eax)
     (write-buffered *(ebp+0xc) ":")
     # continue
     e9/jump  $subx-braces:next-line/disp32
@@ -207,7 +207,7 @@ $subx-braces:emit-break:
     (top %edx)
     # print(out, "_break" eax)
     (write-buffered *(ebp+0xc) "_break")
-    (print-int32-buffered *(ebp+0xc) %eax)
+    (write-int32-hex-buffered *(ebp+0xc) %eax)
     # word-slice->start += len("break")
     81 0/subop/add *edi 5/imm32/strlen
     # emit rest of word as usual
@@ -223,7 +223,7 @@ $subx-braces:emit-loop:
     (top %edx)
     # print(out, "_loop" eax)
     (write-buffered *(ebp+0xc) "_loop")
-    (print-int32-buffered *(ebp+0xc) %eax)
+    (write-int32-hex-buffered *(ebp+0xc) %eax)
     # word-slice->start += len("loop")
     81 0/subop/add *edi 4/imm32/strlen
     # fall through

@@ -363,7 +363,7 @@ emit-call:  # out: (addr buffered-file), words: (addr stream slice)
     #   write-buffered(out, "/disp32\n")
     #   # emit pops
     #   write-buffered(out, "81 0/subop/add %esp ")
-    #   print-int32-buffered(out, words->write >> 1 - 4)
+    #   write-int32-hex-buffered(out, words->write >> 1 - 4)
     #   write-buffered(out, "/imm32\n")
     #
     # . prologue
@@ -487,7 +487,7 @@ $emit-call:pop-instruction:
     e8/call write-buffered/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
-    # print-int32-buffered(out, words->write >> 1 - 4)
+    # write-int32-hex-buffered(out, words->write >> 1 - 4)
     # . . push args
     8b/-> *esi 0/r32/eax
     c1/shift 7/subop/arith-right %eax 1/imm8
@@ -495,7 +495,7 @@ $emit-call:pop-instruction:
     50/push-eax
     ff 6/subop/push *(ebp+8)
     # . . call
-    e8/call print-int32-buffered/disp32
+    e8/call write-int32-hex-buffered/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
     # write-buffered(out, "/imm32\n")

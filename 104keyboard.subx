@@ -27,26 +27,26 @@ enable-keyboard-immediate-mode:
     e8/call syscall_ioctl/disp32
     # terminal-info->c_iflags &= Keyboard-immediate-mode-iflags
 #?     (write-buffered Stderr "iflags before: ")
-#?     (print-int32-buffered Stderr *esi)
+#?     (write-int32-hex-buffered Stderr *esi)
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
     8b/-> *esi 0/r32/eax  # Termios-c_iflag
     23/and *Keyboard-immediate-mode-iflags 0/r32/eax
     89/<- *esi 0/r32/eax  # Termios-c_iflag
 #?     (write-buffered Stderr "iflags after: ")
-#?     (print-int32-buffered Stderr *esi)
+#?     (write-int32-hex-buffered Stderr *esi)
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
     # terminal-info->c_lflags &= Keyboard-immediate-mode-lflags
 #?     (write-buffered Stderr "lflags before: ")
-#?     (print-int32-buffered Stderr *(esi+0xc))
+#?     (write-int32-hex-buffered Stderr *(esi+0xc))
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
     8b/-> *(esi+0xc) 0/r32/eax  # Termios-c_lflag
     23/and *Keyboard-immediate-mode-lflags 0/r32/eax
     89/<- *(esi+0xc) 0/r32/eax  # Termios-c_lflag
 #?     (write-buffered Stderr "lflags after: ")
-#?     (print-int32-buffered Stderr *(esi+0xc))
+#?     (write-int32-hex-buffered Stderr *(esi+0xc))
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
     # ioctl(*Terminal-file-descriptor, TCSETS, terminal-info)
