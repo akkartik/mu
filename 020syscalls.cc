@@ -79,6 +79,9 @@ void process_int80() {
     Reg[EAX].u = new_segment(/*length*/read_mem_u32(Reg[EBX].u+0x4));
     trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].u << end();
     break;
+  case 0xa2:  // nanosleep
+    cerr << "not sleeping\n";
+    break;
   default:
     raise << HEXWORD << EIP << ": unimplemented syscall " << Reg[EAX].u << '\n' << end();
   }
