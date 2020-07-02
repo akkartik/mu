@@ -1,4 +1,13 @@
 # little example program: animate a line in text-mode
+#
+# To run (on Linux and x86):
+#   $ git clone https://github.com/akkartik/mu
+#   $ cd mu
+#   $ ./translate_mu apps/tile.mu
+#   $ ./a.elf
+# You should see a line drawn on a blank screen. Press a key. You should see
+# the line seem to fall down the screen. Press a second key to quit.
+# https://archive.org/details/akkartik-2min-2020-07-01
 
 fn main -> exit-status/ebx: int {
   clear-screen
