@@ -9,3 +9,9 @@ Some apps written in SubX and Mu, in 3 categories:
   * More ambitious translator for a memory-safe language (in progress): `mu`
 
 * Miscellaneous test programs.
+
+All SubX apps include binaries. At any commit, an example's binary should be
+identical bit for bit with the result of translating the corresponding `.subx`
+file. The binary should also be natively runnable on a Linux system running on
+Intel x86 processors, either 32- or 64-bit. If either of these invariants is
+broken, it's a bug.

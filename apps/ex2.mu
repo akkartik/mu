@@ -1,4 +1,4 @@
-# Add two numbers, and return the result in the exit code.
+# Add 3 and 4, and return the result in the exit code.
 #
 # To run:
 #   $ ./translate_mu apps/ex2.mu

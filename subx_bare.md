@@ -1,7 +1,7 @@
-[The Readme](Readme.md) describes SubX notation with some details hidden
-behind _syntax sugar_ -- local rewrite rules that make programming in SubX
-less error-prone. However, much low-level SubX (before the syntax sugar is
-implemented) is written without syntax sugar. This document describes some
+[The SubX documentation](subx.md) describes SubX notation with some details
+hidden behind _syntax sugar_ -- local rewrite rules that make programming in
+SubX less error-prone. However, much low-level SubX (before the syntax sugar
+is implemented) is written without syntax sugar. This document describes some
 details of the syntax sugar: how the reg/mem operand is translated into
 arguments.
 
@@ -123,3 +123,50 @@ $ echo $?
 
 These details should now be enough information for reading and modifying
 low-level SubX programs.
+
+## Translating SubX programs
+
+This repo includes two translators for bare SubX. The first is [the bootstrap
+translator](bootstrap.md) implemented in C++. In addition, you can use SubX to
+translate itself. For example, running natively on Linux:
+
+  ```sh
+  # generate translator phases using the C++ translator
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/hex.subx    -o hex
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/survey.subx -o survey
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/pack.subx   -o pack
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/assort.subx -o assort
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/dquotes.subx -o dquotes
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/tests.subx  -o tests
+  $ chmod +x hex survey pack assort dquotes tests
+
+  # use the generated translator phases to translate SubX programs
+  $ cat init.linux apps/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
+  $ chmod +x a.elf
+  $ ./a.elf
+  $ echo $?
+  42
+
+  # or, automating the above steps
+  $ ./translate_subx init.linux apps/ex1.subx
+  $ ./a.elf
+  $ echo $?
+  42
+  ```
+
+Or, running in a VM on other platforms (much slower):
+
+  ```sh
+  $ ./translate_subx_emulated init.linux apps/ex1.subx  # generates identical a.elf to above
+  $ ./bootstrap run a.elf
+  $ echo $?
+  42
+  ```
+
+## Resources
+
+- [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
+  (pdf; [cached local copy](https://github.com/akkartik/mu/blob/master/cheatsheet.pdf))
+- [Concise reference for the x86 ISA](https://c9x.me/x86)
+- [Concise reference for the x86 ISA #2](http://ref.x86asm.net/coder32.html)
+- [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf) (pdf)
