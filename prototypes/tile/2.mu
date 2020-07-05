@@ -1,4 +1,11 @@
 # load test: animate a whole lot of text
+#
+# Requires a large file called "x" containing just ascii characters. One way
+# to generate it:
+#   cat /dev/urandom |base64 - |head -n 1000 > x
+# then merge pairs of lines.
+#
+# also assumes it's in a window 185 characters wide
 
 fn main -> exit-status/ebx: int {
   var num-lines/ecx: int <- copy 0x10
