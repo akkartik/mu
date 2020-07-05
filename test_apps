@@ -185,7 +185,7 @@ test $NATIVE  &&  {
 # Larger apps that use the standard library.
 
 echo factorial
-./bootstrap translate init.$OS 0[0-8]*.subx apps/factorial.subx  -o apps/factorial
+./bootstrap translate init.$OS [01]*.subx apps/factorial.subx  -o apps/factorial
 test "$1" = 'record'  ||  git diff --exit-code apps/factorial
 test $EMULATED  &&  {
   ./bootstrap run apps/factorial  ||  ret=$?
@@ -201,7 +201,7 @@ test $NATIVE  &&  {
 }
 
 echo crenshaw2-1
-./bootstrap translate init.$OS 0[0-8]*.subx apps/crenshaw2-1.subx  -o apps/crenshaw2-1
+./bootstrap translate init.$OS [01]*.subx apps/crenshaw2-1.subx  -o apps/crenshaw2-1
 test "$1" = 'record'  ||  git diff --exit-code apps/crenshaw2-1
 test $EMULATED  &&  {
   ./bootstrap run apps/crenshaw2-1 test
@@ -213,7 +213,7 @@ test $NATIVE  &&  {
 }
 
 echo crenshaw2-1b
-./bootstrap translate init.$OS 0[0-8]*.subx apps/crenshaw2-1b.subx  -o apps/crenshaw2-1b
+./bootstrap translate init.$OS [01]*.subx apps/crenshaw2-1b.subx  -o apps/crenshaw2-1b
 test "$1" = 'record'  ||  git diff --exit-code apps/crenshaw2-1b
 test $EMULATED  &&  {
   ./bootstrap run apps/crenshaw2-1b test
@@ -229,7 +229,7 @@ test $NATIVE  &&  {
 for phase in hex survey pack assort dquotes tests
 do
   echo $phase
-  ./bootstrap translate init.$OS 0[0-8]*.subx apps/subx-params.subx apps/$phase.subx -o apps/$phase
+  ./bootstrap translate init.$OS [01]*.subx apps/subx-params.subx apps/$phase.subx -o apps/$phase
   test "$1" = 'record'  ||  git diff --exit-code apps/$phase
   test $EMULATED  &&  {
     ./bootstrap run apps/$phase test
@@ -247,7 +247,7 @@ done
 # to go beyond functionality of the C++ bootstrap.
 
 echo sigils
-./bootstrap translate init.$OS 0*.subx apps/subx-params.subx apps/sigils.subx  -o apps/sigils
+./bootstrap translate init.$OS [012]*.subx apps/subx-params.subx apps/sigils.subx  -o apps/sigils
 test "$1" = 'record'  ||  git diff --exit-code apps/sigils
 test $EMULATED  &&  {
   ./bootstrap run apps/sigils test
@@ -261,7 +261,7 @@ test $NATIVE  &&  {
 test $NATIVE  ||  { echo 'there are more tests, but you need Linux to run them'; exit 0; }
 
 echo calls
-cat init.$OS 0*.subx apps/subx-params.subx apps/calls.subx  |  apps/sigils  > a.sigils
+cat init.$OS [012]*.subx apps/subx-params.subx apps/calls.subx  |  apps/sigils  > a.sigils
 ./bootstrap translate a.sigils -o apps/calls
 test "$1" = 'record'  ||  git diff --exit-code apps/calls
 test $EMULATED  &&  {
@@ -274,7 +274,7 @@ test $NATIVE  &&  {
 }
 
 echo braces
-cat init.$OS 0*.subx apps/subx-params.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
+cat init.$OS [012]*.subx apps/subx-params.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
 ./bootstrap translate a.sigils -o apps/braces
 test "$1" = 'record'  ||  git diff --exit-code apps/braces
 test $EMULATED  &&  {
@@ -316,7 +316,7 @@ done
 for app in factorial crenshaw2-1 crenshaw2-1b
 do
   echo $app
-  ./translate_subx init.$OS 0[0-8]*.subx apps/$app.subx
+  ./translate_subx init.$OS [01]*.subx apps/$app.subx
   diff apps/$app a.elf
 done
 
@@ -325,14 +325,14 @@ done
 for app in hex survey pack assort dquotes tests
 do
   echo $app
-  ./translate_subx init.$OS 0[0-8]*.subx apps/subx-params.subx apps/$app.subx
+  ./translate_subx init.$OS [01]*.subx apps/subx-params.subx apps/$app.subx
   diff apps/$app a.elf
 done
 
 for app in sigils calls braces
 do
   echo $app
-  ./translate_subx init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
+  ./translate_subx init.$OS [012]*.subx apps/subx-params.subx apps/$app.subx
   diff apps/$app a.elf
 done
 
