@@ -3,7 +3,7 @@
 # To run (on Linux and x86):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu apps/tile.mu
+#   $ ./translate_mu prototypes/tile/1.mu
 #   $ ./a.elf
 # You should see a line drawn on a blank screen. Press a key. You should see
 # the line seem to fall down the screen. Press a second key to quit.
