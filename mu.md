@@ -127,6 +127,11 @@ or memory.
 Variables on the stack are never initialized. (They're always implicitly
 zeroed them out.) Variables in registers are always initialized.
 
+Register variables can go in 6 registers: `eax`, `ebx`, `ecx`, `edx`, `esi`
+and `edi`. Defining a variable in a register either clobbers the previous
+variable (if it was defined in the same block) or shadows it temporarily (if
+it was defined in an outer block).
+
 Variables exist from their definition until the end of their containing block.
 Register variables may also die earlier if their register is clobbered by a
 new variable.
