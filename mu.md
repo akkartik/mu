@@ -47,7 +47,7 @@ Zooming out from single statements, here's a complete sample program in Mu:
 Mu programs are lists of functions. Each function has the following form:
 
   ```
-  fn _name_ inout ... -> output ... {
+  fn _name_ _inout_ ... -> _output_ ... {
     _statement_
     _statement_
     ...
