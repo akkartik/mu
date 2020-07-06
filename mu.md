@@ -26,7 +26,7 @@ Statements consist of 3 parts: the operation, optional _inouts_ and optional
 _outputs_. Outputs come before the operation name and `<-`.
 
 Outputs are always registers; memory locations that need to be modified are
-passed in by reference using the `addr` type described below.
+passed in by reference.
 
 So Mu programmers need to make two new categories of decisions: whether to
 define variables in registers or memory, and whether to put variables to the
