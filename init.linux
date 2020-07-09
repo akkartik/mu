@@ -73,7 +73,12 @@ syscall_ioctl:  # fd/ebx: int, cmd/ecx: int, arg/edx: (addr _)
     cd/syscall 0x80/imm8
     c3/return
 
-syscall_nanosleep:
+syscall_nanosleep:  # req/ebx: (addr timespec)
     b8/copy-to-eax 0xa2/imm32  # 162
+    cd/syscall 0x80/imm8
+    c3/return
+
+syscall_clock_gettime:  # clock/ebx: int, out/ecx: (addr timespec)
+    b8/copy-to-eax 0x109/imm32  # 265
     cd/syscall 0x80/imm8
     c3/return

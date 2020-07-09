@@ -1,14 +1,12 @@
-# load test: animate a whole lot of text
+# benchmark: how fast can we print characters to screen?
 #
 # Requires a large file called "x" containing just ascii characters. One way
 # to generate it:
-#   cat /dev/urandom |base64 - |head -n 1000 > x
+#   cat /dev/urandom |base64 - |head -n 10000 > x
 # then merge pairs of lines.
-#
-# also assumes it's in a window 185 characters wide
 
 fn main -> exit-status/ebx: int {
-  var num-lines/ecx: int <- copy 0x10
+  var num-lines/ecx: int <- copy 0x64  # 100
   clear-screen
   # open a file
   var f: (addr buffered-file)
@@ -19,47 +17,41 @@ fn main -> exit-status/ebx: int {
     var f-out/eax: (addr buffered-file) <- lookup f-handle
     copy-to f, f-out
   }
+  # initial time
+  var t1_/eax: int <- time
+  var t1/edx: int <- copy t1_
   # main loop
-  var row/eax: int <- copy 1
+  var iter/eax: int <- copy 1
   {
-    compare row, 0x10  # 16
+    compare iter, 0x640  # 1600
     break-if->
-    render f, row, num-lines
-    row <- increment
-#?     sleep 0 0x5f5e100  # 100ms
+    render f, num-lines
+    iter <- increment
     loop
   }
-  # wait for a key
-  {
-    enable-keyboard-immediate-mode
-      var dummy/eax: byte <- read-key
-    enable-keyboard-type-mode
-  }
+  # final time
+  var t2_/eax: int <- time
+  var t2/ebx: int <- copy t2_
+  # time taken
+  var t3/esi: int <- copy t2
+  t3 <- subtract t1
   # clean up
   clear-screen
+  # results
+  print-int32-hex-to-screen t1
+  print-string-to-screen "\n"
+  print-int32-hex-to-screen t2
+  print-string-to-screen "\n"
+  print-int32-hex-to-screen t3
+  print-string-to-screen "\n"
+  #
   exit-status <- copy 0
 }
 
-fn render f: (addr buffered-file), start-row: int, num-rows: int {
-  var num-cols/ecx: int <- copy 0xb9  # 185
-  # if necessary, clear the row above
-$render:clear-loop: {
-    compare start-row, 1
-    break-if-<=
-    decrement start-row
-    var col/eax: int <- copy 1
-    move-cursor-on-screen start-row, col
-    {
-      compare col, num-cols
-      break-if->
-      print-string-to-screen " "
-      col <- increment
-      loop
-    }
-    increment start-row
-  }
-  # render rest of screen below
-  var row/edx: int <- copy start-row
+fn render f: (addr buffered-file), num-rows: int {
+  var num-cols/ecx: int <- copy 0x64  # 100
+  # render screen
+  var row/edx: int <- copy 1
   var col/ebx: int <- copy 1
   move-cursor-on-screen row, col
 $render:render-loop: {
