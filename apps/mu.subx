@@ -10596,7 +10596,7 @@ check-mu-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-fi
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    # if stmt's operation matches a primitive, check against it
+    # - if stmt's operation matches a primitive, check against it
     (has-primitive-name? *(ebp+8))  # => eax
     3d/compare-eax-and 0/imm32/false
     {
@@ -10604,19 +10604,17 @@ check-mu-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-fi
       (check-mu-primitive *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       eb/jump $check-mu-stmt:end/disp8
     }
-    # otherwise find a function to check against
+    # - otherwise find a function to check against
+    # var f/edi: (addr function) = lookup(*Program->functions)
+    (lookup *_Program-functions *_Program-functions->payload)  # => eax
+    (find-matching-function %eax *(ebp+8))  # => eax
+    3d/compare-eax-and 0/imm32
     {
-      # var f/edi: (addr function) = lookup(*Program->functions)
-      (lookup *_Program-functions *_Program-functions->payload)  # => eax
-      (find-matching-function %eax *(ebp+8))  # => eax
-      3d/compare-eax-and 0/imm32
-      {
-        74/jump-if-= break/disp8
-        (check-mu-call *(ebp+8) %eax *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
-        eb/jump $check-mu-stmt:end/disp8
-      }
-      # TODO: error on unknown function. We need to first type-check calls to SubX functions.
+      74/jump-if-= break/disp8
+      (check-mu-call *(ebp+8) %eax *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      eb/jump $check-mu-stmt:end/disp8
     }
+    # TODO: error on unknown function. We need to first type-check calls to SubX functions.
 $check-mu-stmt:end:
     # . restore registers
     58/pop-to-eax
