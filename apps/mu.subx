@@ -365,6 +365,8 @@ Type-tree-is-atom:  # boolean
 # if left-is-atom?
 Type-tree-value:  # type-id
   4/imm32
+Type-tree-value-size:  # int (for static data structure sizes)
+  8/imm32
 # unless left-is-atom?
 Type-tree-left:  # (addr type-tree)
   4/imm32
@@ -392,7 +394,9 @@ Type-id:  # (stream (addr array byte))
   "offset"/imm32  # 7: (offset T) is guaranteed to be a 32-bit multiple of size-of(T)
   # 0x20
   "byte"/imm32  # 8
-          0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32  # 9 reserved for array-capacity; value is in Type-tree-size
+           # Not to be used directly, so we don't include a name here.
+                  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
@@ -6673,7 +6677,7 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (a
       (slice-equal? %ecx "(")  # => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
-      # EGREGIOUS HACK for static array sizes: if s is a number, parse it
+      # if s is a number, store it in the type's size field
       {
 $parse-type:check-for-int:
         (is-hex-int? %ecx)  # => eax
@@ -6681,7 +6685,8 @@ $parse-type:check-for-int:
         74/jump-if-= break/disp8
 $parse-type:int:
         (parse-hex-int-from-slice %ecx)  # => eax
-        89/<- *(edx+4) 0/r32/eax  # Type-tree-value
+        c7 0/subop/copy *(edx+4) 9/imm32/type-id-array-capacity  # Type-tree-value
+        89/<- *(edx+8) 0/r32/eax  # Type-tree-value-size
         e9/jump $parse-type:end/disp32
       }
 $parse-type:atom:
@@ -11739,10 +11744,11 @@ size-of-array:  # a: (addr type-tree) -> result/eax: int
     # var elem-type/edx: type-id = a->right->left->value
     (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
     8b/-> *(eax+4) 2/r32/edx  # Type-tree-value
-    # var array-size/ecx: int = a->right->right->left->value
+    # TODO: assert that a->right->right->left->value == size
+    # var array-size/ecx: int = a->right->right->left->value-size
     (lookup *(ecx+0xc) *(ecx+0x10))  # Type-tree-right Type-tree-right => eax
     (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-    8b/-> *(eax+4) 1/r32/ecx  # Type-tree-value
+    8b/-> *(eax+8) 1/r32/ecx  # Type-tree-value-size
     # return array-size * size-of(elem-type)
     (size-of-type-id-as-array-element %edx)  # => eax
     f7 4/subop/multiply-into-eax %ecx
