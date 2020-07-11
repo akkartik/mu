@@ -6,7 +6,7 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # compare all the data in a stream (ignoring the read pointer)
-stream-data-equal?:  # f: (addr stream byte), s: (addr array byte) -> eax: boolean
+stream-data-equal?:  # f: (addr stream byte), s: (addr array byte) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -227,7 +227,7 @@ $check-stream-equal:end:
 # on success, set f->read to after the next newline
 # on failure, leave f->read unmodified
 # this function is usually used only in tests, so we repeatedly write f->read
-next-stream-line-equal?:  # f: (addr stream byte), s: (addr array byte) -> eax: boolean
+next-stream-line-equal?:  # f: (addr stream byte), s: (addr array byte) -> result/eax: boolean
     # pseudocode:
     #   currf = f->read  # bound: f->write
     #   currs = 0  # bound: s->size
