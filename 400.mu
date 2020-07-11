@@ -50,7 +50,7 @@ sig check-next-stream-line-equal
 sig tailor-exit-descriptor ed: (addr exit-descriptor), nbytes: int
 sig stop ed: (addr exit-descriptor), value: int
 #sig read f: fd or (addr stream byte), s: (addr stream byte) -> num-bytes-read/eax: int
-sig read-byte-buffered f: (addr buffered-file) -> byte-or-Eof/eax: int
+sig read-byte-buffered f: (addr buffered-file) -> byte-or-Eof/eax: byte
 #sig write-stream f: fd or (addr stream byte), s: (addr stream byte)
 #sig error ed: (addr exit-descriptor), out: fd or (addr stream byte), msg: (addr array byte)
 sig write-byte-buffered f: (addr buffered-file), n: int
@@ -98,9 +98,9 @@ sig skip-chars-matching-whitespace-in-slice curr: (addr byte), end: (addr byte) 
 sig skip-chars-not-matching-in-slice curr: (addr byte), end: (addr byte), delimiter: byte -> curr/eax: (addr byte)
 sig skip-chars-not-matching-whitespace-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
 sig skip-string line: (addr stream byte)
-sig skip-string-in-slice curr: (addr byte), end: (addr byte) -> new_curr/eax: (addr byte)
+sig skip-string-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
 sig skip-until-close-paren line: (addr stream byte)
-sig skip-until-close-paren-in-slice curr: (addr byte), end: (addr byte) -> new_curr/eax: (addr byte)
+sig skip-until-close-paren-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
 sig write-stream-data f: (addr buffered-file), s: (addr stream byte)
 sig write-int32-decimal out: (addr stream byte), n: int32
 sig is-decimal-digit? c: byte -> result/eax: boolean
