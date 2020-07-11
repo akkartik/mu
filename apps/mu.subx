@@ -6017,7 +6017,9 @@ $parse-mu:fn:
         (allocate Heap *Function-size %esi)
         # var new-function-addr/eax: (addr function)
         (lookup *esi *(esi+4))  # => eax
+        # initialize vars
         (clear-stack %ebx)
+        #
         (populate-mu-function-header %ecx %eax %ebx *(ebp+0xc) *(ebp+0x10))
         (populate-mu-function-body *(ebp+8) %eax %ebx *(ebp+0xc) *(ebp+0x10))
         # *curr-function = new-function
@@ -6118,28 +6120,27 @@ $parse-mu:error2:
 #   disallow inputs of type `(... addr ... addr ...)`
 populate-mu-function-header:  # first-line: (addr stream byte), out: (addr function), vars: (addr stack live-var), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
-    #   var name: slice
-    #   next-mu-token(first-line, name)
-    #   assert(name not in '{' '}' '->')
-    #   out->name = slice-to-string(name)
+    #   var word-slice: slice
+    #   next-mu-token(first-line, word-slice)
+    #   assert(word-slice not in '{' '}' '->')
+    #   out->name = slice-to-string(word-slice)
     #   ## inouts
     #   while true
-    #     ## name
-    #     name = next-mu-token(first-line)
-    #     if (name == '{') goto done
-    #     if (name == '->') break
-    #     assert(name != '}')
-    #     var v: (handle var) = parse-var-with-type(name, first-line)
+    #     word-slice = next-mu-token(first-line)
+    #     if (word-slice == '{') goto done
+    #     if (word-slice == '->') break
+    #     assert(word-slice != '}')
+    #     var v: (handle var) = parse-var-with-type(word-slice, first-line)
     #     assert(v->register == null)
     #     # v->block-depth is implicitly 0
     #     out->inouts = append(v, out->inouts)
     #     push(vars, {v, false})
     #   ## outputs
     #   while true
-    #     ## name
-    #     name = next-mu-token(first-line)
-    #     assert(name not in '{' '}' '->')
-    #     var v: (handle var) = parse-var-with-type(name, first-line)
+    #     word-slice = next-mu-token(first-line)
+    #     if (word-slice == '{') break
+    #     assert(word-slice not in '}' '->')
+    #     var v: (handle var) = parse-var-with-type(word-slice, first-line)
     #     assert(v->register != null)
     #     out->outputs = append(v, out->outputs)
     #   done:
@@ -6166,7 +6167,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     # read function name
     (next-mu-token *(ebp+8) %ecx)
     # error checking
-    # TODO: error if name starts with 'break' or 'loop'
+    # TODO: error if word-slice starts with 'break' or 'loop'
     # if (word-slice == '{') abort
     (slice-equal? %ecx "{")   # => eax
     3d/compare-eax-and 0/imm32/false
@@ -10612,7 +10613,7 @@ check-mu-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-fi
       eb/jump $check-mu-stmt:end/disp8
     }
     # - otherwise find a function to check against
-    # var f/edi: (addr function) = lookup(*Program->functions)
+    # var f/eax: (addr function) = lookup(*Program->functions)
     (lookup *_Program-functions *_Program-functions->payload)  # => eax
     (find-matching-function %eax *(ebp+8))  # => eax
     3d/compare-eax-and 0/imm32
