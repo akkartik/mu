@@ -74,7 +74,7 @@ To translate Mu programs through these layers into tiny zero-dependency ELF
 binaries for Linux, use `translate_mu`.
 
 Mu programs can be run in emulated mode to emit traces, which permit time-travel
-debugging. ([More details.](debugging.md))
+debugging. ([More details.](subx_debugging.md))
 
 ### incomplete tools
 
@@ -154,7 +154,7 @@ If you're still reading, here are some more things to check out:
 
 - [How to get your text editor set up for Mu and SubX programs.](editor.md)
 
-- [Some tips for debugging Mu and SubX programs.](debugging.md)
+- [Some tips for debugging SubX programs.](subx_debugging.md)
 
 - [Shared vocabulary of data types and functions shared by Mu programs.](vocabulary.md)
   Mu programs can transparently call low-level functions written in SubX.

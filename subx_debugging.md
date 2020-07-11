@@ -1,4 +1,4 @@
-## A few hints for debugging
+## A few hints for debugging SubX programs
 
 Writing programs in SubX is surprisingly pleasant and addictive. Reading
 programs is a work in progress, and hopefully the extensive unit tests help.
