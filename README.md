@@ -66,12 +66,10 @@ The Mu stack consists of:
 - SubX, an unsafe notation for a subset of x86 machine code; and
 - _bare_ SubX, a more rudimentary form of SubX without certain syntax sugar.
 
-All Mu programs get translated through these layers, and the translators are
-mostly built out of lower levels. The translator from Mu to SubX is written in
-SubX, and the translator from SubX to bare SubX is built in bare SubX.
-
-To translate Mu programs through these layers into tiny zero-dependency ELF
-binaries for Linux, use `translate_mu`.
+All Mu programs get translated through these layers into tiny zero-dependency
+ELF binaries. The translators for most levels are built out of lower levels.
+The translator from Mu to SubX is written in SubX, and the translator from
+SubX to bare SubX is built in bare SubX.
 
 Mu programs can be run in emulated mode to emit traces, which permit time-travel
 debugging. ([More details.](subx_debugging.md))
