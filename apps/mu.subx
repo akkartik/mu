@@ -1179,6 +1179,50 @@ test-convert-function-with-local-var-in-reg:
     5d/pop-to-ebp
     c3/return
 
+test-initializer-in-hex:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: int <- copy 10\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-initializer-in-hex: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "literal integers are always hex in Mu; either start '10' with a '0x' to be unambiguous, or convert it to decimal."  "F - test-initializer-in-hex: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-initializer-in-hex: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-second-local-var-in-same-reg:
     # . prologue
     55/push-ebp
@@ -3563,6 +3607,50 @@ test-convert-function-with-local-array-var-in-mem:
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-array-var-in-mem/15")
     # . epilogue
     89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-array-size-in-hex:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: (array int 10)\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-array-size-in-hex: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "literal integers are always hex in Mu; either start '10' with a '0x' to be unambiguous, or convert it to decimal."  "F - test-array-size-in-hex: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-array-size-in-hex: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
     5d/pop-to-ebp
     c3/return
 
@@ -7027,7 +7115,7 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (a
       # if (s != "(") break
       (slice-equal? %ecx "(")  # => eax
       3d/compare-eax-and 0/imm32/false
-      75/jump-if-!= break/disp8
+      0f 85/jump-if-!= break/disp32
       # if s is a number, store it in the type's size field
       {
 $parse-type:check-for-int:
@@ -7044,6 +7132,7 @@ $parse-type:check-for-int:
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
 $parse-type:int:
+        (check-mu-hex-int %ecx *(ebp+0x14) *(ebp+0x18))
         (parse-hex-int-from-slice %ecx)  # => eax
         c7 0/subop/copy *(edx+4) 9/imm32/type-id-array-capacity  # Type-tree-value
         89/<- *(edx+8) 0/r32/eax  # Type-tree-value-size
@@ -9496,6 +9585,8 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice), ou
     (is-hex-int? *(ebp+0xc))  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $new-literal-integer:abort/disp32
+    # a little more error-checking
+    (check-mu-hex-int *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
     # out = new var(s)
     (new-var-from-slice *(ebp+8) *(ebp+0xc) *(ebp+0x10))
     # var out-addr/ecx: (addr var) = lookup(*out)
@@ -9533,6 +9624,49 @@ $new-literal-integer:abort:
     (flush *(ebp+0x18))
     (stop *(ebp+0x1c) 1)
     # never gets here
+
+# precondition: name is a valid hex integer; require a '0x' prefix
+check-mu-hex-int:  # name: (addr slice), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    #
+    8b/-> *(ebp+8) 1/r32/ecx
+    # var start/ecx: (addr byte) = name->start
+    8b/-> *(ecx+4) 2/r32/edx
+    # var end/ecx: (addr byte) = name->end
+    8b/-> *ecx 1/r32/ecx
+    # var len/eax: int = name->end - name->start
+    89/<- %eax 2/r32/edx
+    29/subtract-from %eax 1/r32/ecx
+    # if (len <= 1) return
+    3d/compare-eax-with 1/imm32
+    0f 8e/jump-if-<= $check-mu-hex-int:end/disp32
+$check-mu-hex-int:length->-1:
+    # if slice-starts-with?("0x") return
+    (slice-starts-with? *(ebp+8) "0x")  # => eax
+    3d/compare-eax-with 0/imm32/false
+    75/jump-if-!= $check-mu-hex-int:end/disp8
+$check-mu-hex-int:abort:
+    # otherwise abort
+    (write-buffered *(ebp+0xc) "literal integers are always hex in Mu; either start '")
+    (write-slice-buffered *(ebp+0xc) *(ebp+8))
+    (write-buffered *(ebp+0xc) "' with a '0x' to be unambiguous, or convert it to decimal.\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
+$check-mu-hex-int:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 new-literal:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr handle var)
     # . prologue
