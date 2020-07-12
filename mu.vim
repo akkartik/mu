@@ -40,6 +40,8 @@ syntax match muLiteral %\<-\?[0-9][0-9A-Fa-f]*\>%
 syntax match muLiteral %\<-\?0x[0-9A-Fa-f]\+\>%
 syntax match muLiteral %"[^"]*"%
 highlight link muLiteral Constant
+syntax match muError %\<[0-9][0-9A-Fa-f]*[^0-9A-Fa-f]\>%
+highlight link muError Error
 
 " sources of action at a distance
 syntax match muAssign "<-"
