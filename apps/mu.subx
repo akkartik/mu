@@ -7031,6 +7031,15 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (a
       # if s is a number, store it in the type's size field
       {
 $parse-type:check-for-int:
+        # var tmp/eax: byte = *s->slice
+        8b/-> *ecx 0/r32/eax
+        8a/copy-byte *eax 0/r32/AL
+        81 4/subop/and %eax 0xff/imm32
+        # TODO: raise an error on `var x: (array int a)`
+        (is-decimal-digit? %eax)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        74/jump-if-= break/disp8
+        #
         (is-hex-int? %ecx)  # => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
