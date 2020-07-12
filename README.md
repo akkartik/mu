@@ -7,14 +7,14 @@ Mu is not designed to operate in large clusters providing services for
 millions of people. Mu is designed for _you_, to run one computer. (Or a few.)
 Running the code you want to run, and nothing else.
 
-  ```sh
-  $ git clone https://github.com/akkartik/mu
-  $ cd mu
-  $ ./translate_mu apps/ex2.mu  # emit a.elf
-  $ ./a.elf  # adds 3 and 4
-  $ echo $?
-  7
-  ```
+```sh
+$ git clone https://github.com/akkartik/mu
+$ cd mu
+$ ./translate_mu apps/ex2.mu  # emit a.elf
+$ ./a.elf  # adds 3 and 4
+$ echo $?
+7
+```
 
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
 
@@ -82,26 +82,26 @@ result in good error messages.
 Once generated, ELF binaries can be packaged up with a Linux kernel into a
 bootable disk image:
 
-  ```sh
-  $ ./translate_mu apps/ex2.mu  # emit a.elf
-  # dependencies
-  $ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
-  $ tools/iso/linux a.elf
-  $ qemu-system-x86_64 -m 256M -cdrom mu_linux.iso -boot d
-  ```
+```sh
+$ ./translate_mu apps/ex2.mu  # emit a.elf
+# dependencies
+$ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
+$ tools/iso/linux a.elf
+$ qemu-system-x86_64 -m 256M -cdrom mu_linux.iso -boot d
+```
 
 The disk image also runs on [any cloud server that supports custom images](http://akkartik.name/post/iso-on-linode).
 
 Mu also runs on the minimal hobbyist OS [Soso](https://github.com/ozkl/soso).
 (Requires graphics and sudo access. Currently doesn't work on a cloud server.)
 
-  ```sh
-  $ ./translate_mu apps/ex2.mu  # emit a.elf
-  # dependencies
-  $ sudo apt install build-essential util-linux nasm xorriso  # maybe also dosfstools and mtools
-  $ tools/iso/soso a.elf  # requires sudo
-  $ qemu-system-i386 -cdrom mu_soso.iso
-  ```
+```sh
+$ ./translate_mu apps/ex2.mu  # emit a.elf
+# dependencies
+$ sudo apt install build-essential util-linux nasm xorriso  # maybe also dosfstools and mtools
+$ tools/iso/soso a.elf  # requires sudo
+$ qemu-system-i386 -cdrom mu_soso.iso
+```
 
 ## Syntax
 
@@ -121,16 +121,16 @@ Here's an example program in Mu:
 
 Here's an example program in SubX:
 
-  ```sh
-  == code
-  Entry:
-    # ebx = 1
-    bb/copy-to-ebx  1/imm32
-    # increment ebx
-    43/increment-ebx
-    # exit(ebx)
-    e8/call  syscall_exit/disp32
-  ```
+```sh
+== code
+Entry:
+  # ebx = 1
+  bb/copy-to-ebx  1/imm32
+  # increment ebx
+  43/increment-ebx
+  # exit(ebx)
+  e8/call  syscall_exit/disp32
+```
 
 [More details on SubX syntax &rarr;](subx.md)
 

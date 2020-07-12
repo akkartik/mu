@@ -25,20 +25,24 @@ rudimentary but hopefully still workable toolkit:
 
 - Generate a trace for the failing test while running your program in emulated
   mode (`bootstrap run`):
+
   ```
   $ ./bootstrap translate input.subx -o binary
   $ ./bootstrap --trace run binary arg1 arg2  2>trace
   ```
+
   The ability to generate a trace is the essential reason for the existence of
   `bootstrap run` mode. It gives far better visibility into program internals than
   running natively.
 
 - As a further refinement, it is possible to render label names in the trace
   by adding a second flag to the `bootstrap translate` command:
+
   ```
   $ ./bootstrap --debug translate input.subx -o binary
   $ ./bootstrap --trace run binary arg1 arg2  2>trace
   ```
+
   `bootstrap --debug translate` emits a mapping from label to address in a file
   called `labels`. `bootstrap --trace run` reads in the `labels` file if
   it exists and prints out any matching label name as it traces each instruction
@@ -57,9 +61,11 @@ rudimentary but hopefully still workable toolkit:
   some loop. Function names get similar `run: == label` lines.
 
 - One trick when emitting traces with labels:
+
   ```
   $ grep label trace
   ```
+
   This is useful for quickly showing you the control flow for the run, and the
   function executing when the error occurred. I find it useful to start with
   this information, only looking at the complete trace after I've gotten

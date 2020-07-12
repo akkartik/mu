@@ -6,16 +6,16 @@ is implemented in SubX and also emits SubX code.
 Here's an example program in SubX that adds 1 and 1 and returns the result to
 the parent shell process:
 
-  ```sh
-  == code
-  Entry:
-    # ebx = 1
-    bb/copy-to-ebx  1/imm32
-    # increment ebx
-    43/increment-ebx
-    # exit(ebx)
-    e8/call  syscall_exit/disp32
-  ```
+```sh
+== code
+Entry:
+  # ebx = 1
+  bb/copy-to-ebx  1/imm32
+  # increment ebx
+  43/increment-ebx
+  # exit(ebx)
+  e8/call  syscall_exit/disp32
+```
 
 ## The syntax of SubX instructions
 
@@ -78,9 +78,9 @@ simpler. It comes from exactly one of the following argument types:
 Putting all this together, here's an example that adds the integer in `eax` to
 the one at address `edx`:
 
-  ```
-  01/add %edx 0/r32/eax
-  ```
+```
+01/add %edx 0/r32/eax
+```
 
 ## The syntax of SubX programs
 

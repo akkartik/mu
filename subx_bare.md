@@ -41,9 +41,9 @@ contains `4`. Rather than encoding register `esp`, it means the address is
 provided by three _whole new_ arguments (`/base`, `/index` and `/scale`) in a
 _totally_ different way (where `<<` is the left-shift operator):
 
-  ```
-  reg/mem = *(base + (index << scale))
-  ```
+```
+reg/mem = *(base + (index << scale))
+```
 
 (There are a couple more exceptions ☹; see [Table 2-2](modrm.pdf) and [Table 2-3](sib.pdf)
 of the Intel manual for the complete story.)
@@ -130,38 +130,38 @@ This repo includes two translators for bare SubX. The first is [the bootstrap
 translator](bootstrap.md) implemented in C++. In addition, you can use SubX to
 translate itself. For example, running natively on Linux:
 
-  ```sh
-  # generate translator phases using the C++ translator
-  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/hex.subx    -o hex
-  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/survey.subx -o survey
-  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/pack.subx   -o pack
-  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/assort.subx -o assort
-  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/dquotes.subx -o dquotes
-  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/tests.subx  -o tests
-  $ chmod +x hex survey pack assort dquotes tests
+```sh
+# generate translator phases using the C++ translator
+$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/hex.subx    -o hex
+$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/survey.subx -o survey
+$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/pack.subx   -o pack
+$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/assort.subx -o assort
+$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/dquotes.subx -o dquotes
+$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/tests.subx  -o tests
+$ chmod +x hex survey pack assort dquotes tests
 
-  # use the generated translator phases to translate SubX programs
-  $ cat init.linux apps/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
-  $ chmod +x a.elf
-  $ ./a.elf
-  $ echo $?
-  42
+# use the generated translator phases to translate SubX programs
+$ cat init.linux apps/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
+$ chmod +x a.elf
+$ ./a.elf
+$ echo $?
+42
 
-  # or, automating the above steps
-  $ ./translate_subx init.linux apps/ex1.subx
-  $ ./a.elf
-  $ echo $?
-  42
-  ```
+# or, automating the above steps
+$ ./translate_subx init.linux apps/ex1.subx
+$ ./a.elf
+$ echo $?
+42
+```
 
 Or, running in a VM on other platforms (much slower):
 
-  ```sh
-  $ ./translate_subx_emulated init.linux apps/ex1.subx  # generates identical a.elf to above
-  $ ./bootstrap run a.elf
-  $ echo $?
-  42
-  ```
+```sh
+$ ./translate_subx_emulated init.linux apps/ex1.subx  # generates identical a.elf to above
+$ ./bootstrap run a.elf
+$ echo $?
+42
+```
 
 ## Resources
 
