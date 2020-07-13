@@ -431,16 +431,7 @@ rules:
 
 Try to avoid mixing these use cases.
 
-You can copy handles to another variable on the stack like this:
-
-```
-var x: (handle T)
-# ..some code initializing x..
-var y/eax: (addr handle T) <- address ...
-copy-handle x, y
-```
-
-You can also save handles inside compound types like this:
+You can save handles inside compound types like this:
 
 ```
 var y/reg: (addr handle T_f) <- get var: (addr T), f
@@ -452,6 +443,15 @@ Or this:
 ```
 var y/reg: (addr handle T) <- index arr: (addr array handle T), n
 copy-handle-to *y, x
+```
+
+You can copy handles to another variable on the stack like this:
+
+```
+var x: (handle T)
+# ..some code initializing x..
+var y/eax: (addr handle T) <- address ...
+copy-handle x, y
 ```
 
 ## Conclusion
