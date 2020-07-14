@@ -13905,6 +13905,104 @@ $array-element-size:end:
     5d/pop-to-ebp
     c3/return
 
+array-element-type-id:  # v: (addr var), err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: type-id
+    # precondition: n is positive
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    8b/-> *(ebp+8) 0/r32/eax
+    # var t/eax: (addr type-tree)
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    # if t == 0 abort
+    3d/compare-eax-with 0/imm32
+    0f 84/jump-if-== $array-element-type-id:error0/disp32
+    # if t->is-atom? abort
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $array-element-type-id:error1/disp32
+    # if (t->left == addr) t = t->right
+    {
+      50/push-eax
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 2)  # addr => eax
+      3d/compare-eax-with 0/imm32/false
+      58/pop-to-eax
+      74/jump-if-= break/disp8
+$array-element-type-id:skip-addr:
+      (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    }
+    # if t == 0 abort
+    3d/compare-eax-with 0/imm32
+    0f 84/jump-if-= $array-element-type-id:error2/disp32
+    # if t->is-atom? abort
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $array-element-type-id:error2/disp32
+    # if t->left != array abort
+    {
+      50/push-eax
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 3)  # array => eax
+      3d/compare-eax-with 0/imm32/false
+      58/pop-to-eax
+$array-element-type-id:no-array:
+      0f 84/jump-if-= $array-element-type-id:error2/disp32
+    }
+$array-element-type-id:skip-array:
+    # t = t->right
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # if t == 0 abort
+    3d/compare-eax-with 0/imm32
+    0f 84/jump-if-= $array-element-type-id:error2/disp32
+    # if t->is-atom? abort
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $array-element-type-id:error2/disp32
+    # return t->left->value
+    (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    8b/-> *(eax+4) 0/r32/eax  # Type-tree-value
+$array-element-type-id:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$array-element-type-id:error0:
+    (write-buffered *(ebp+0xc) "array-element-type-id: var '")
+    50/push-eax
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0xc) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0xc) "' has no type\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
+    # never gets here
+
+$array-element-type-id:error1:
+    (write-buffered *(ebp+0xc) "array-element-type-id: var '")
+    50/push-eax
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0xc) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0xc) "' has atomic type ")
+    (write-int32-hex-buffered *(ebp+0xc) *(eax+4))  # Type-tree-value
+    (write-buffered *(ebp+0xc) Newline)
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
+    # never gets here
+
+$array-element-type-id:error2:
+    (write-buffered *(ebp+0xc) "array-element-type-id: var '")
+    50/push-eax
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0xc) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0xc) "' has non-array type\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
+    # never gets here
+
 size-of-type-id-as-array-element:  # t: type-id -> result/eax: int
     # . prologue
     55/push-ebp
@@ -13916,7 +14014,7 @@ size-of-type-id-as-array-element:  # t: type-id -> result/eax: int
     {
       75/jump-if-!= break/disp8
       b8/copy-to-eax 1/imm32
-      eb/jump $array-element-size:end/disp8
+      eb/jump $size-of-type-id-as-array-element:end/disp8
     }
     # otherwise proceed as usual
     (size-of-type-id %eax)  # => eax
@@ -14383,104 +14481,6 @@ $translate-mu-get-stmt:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
-
-array-element-type-id:  # v: (addr var), err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: type-id
-    # precondition: n is positive
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    #
-    8b/-> *(ebp+8) 0/r32/eax
-    # var t/eax: (addr type-tree)
-    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-    # if t == 0 abort
-    3d/compare-eax-with 0/imm32
-    0f 84/jump-if-== $array-element-type-id:error0/disp32
-    # if t->is-atom? abort
-    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
-    0f 85/jump-if-!= $array-element-type-id:error1/disp32
-    # if (t->left == addr) t = t->right
-    {
-      50/push-eax
-      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
-      3d/compare-eax-with 0/imm32/false
-      58/pop-to-eax
-      74/jump-if-= break/disp8
-$array-element-type-id:skip-addr:
-      (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
-    }
-    # if t == 0 abort
-    3d/compare-eax-with 0/imm32
-    0f 84/jump-if-= $array-element-type-id:error2/disp32
-    # if t->is-atom? abort
-    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
-    0f 85/jump-if-!= $array-element-type-id:error2/disp32
-    # if t->left != array abort
-    {
-      50/push-eax
-      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
-      3d/compare-eax-with 0/imm32/false
-      58/pop-to-eax
-$array-element-type-id:no-array:
-      0f 84/jump-if-= $array-element-type-id:error2/disp32
-    }
-$array-element-type-id:skip-array:
-    # t = t->right
-    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
-    # if t == 0 abort
-    3d/compare-eax-with 0/imm32
-    0f 84/jump-if-= $array-element-type-id:error2/disp32
-    # if t->is-atom? abort
-    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
-    0f 85/jump-if-!= $array-element-type-id:error2/disp32
-    # return t->left->value
-    (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-    8b/-> *(eax+4) 0/r32/eax  # Type-tree-value
-$array-element-type-id:end:
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-$array-element-type-id:error0:
-    (write-buffered *(ebp+0xc) "array-element-type-id: var '")
-    50/push-eax
-    8b/-> *(ebp+8) 0/r32/eax
-    (lookup *eax *(eax+4))  # Var-name Var-name => eax
-    (write-buffered *(ebp+0xc) %eax)
-    58/pop-to-eax
-    (write-buffered *(ebp+0xc) "' has no type\n")
-    (flush *(ebp+0xc))
-    (stop *(ebp+0x10) 1)
-    # never gets here
-
-$array-element-type-id:error1:
-    (write-buffered *(ebp+0xc) "array-element-type-id: var '")
-    50/push-eax
-    8b/-> *(ebp+8) 0/r32/eax
-    (lookup *eax *(eax+4))  # Var-name Var-name => eax
-    (write-buffered *(ebp+0xc) %eax)
-    58/pop-to-eax
-    (write-buffered *(ebp+0xc) "' has atomic type ")
-    (write-int32-hex-buffered *(ebp+0xc) *(eax+4))  # Type-tree-value
-    (write-buffered *(ebp+0xc) Newline)
-    (flush *(ebp+0xc))
-    (stop *(ebp+0x10) 1)
-    # never gets here
-
-$array-element-type-id:error2:
-    (write-buffered *(ebp+0xc) "array-element-type-id: var '")
-    50/push-eax
-    8b/-> *(ebp+8) 0/r32/eax
-    (lookup *eax *(eax+4))  # Var-name Var-name => eax
-    (write-buffered *(ebp+0xc) %eax)
-    58/pop-to-eax
-    (write-buffered *(ebp+0xc) "' has non-array type\n")
-    (flush *(ebp+0xc))
-    (stop *(ebp+0x10) 1)
-    # never gets here
 
 power-of-2?:  # n: int, err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: boolean
     # precondition: n is positive
