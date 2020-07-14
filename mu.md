@@ -445,6 +445,22 @@ var y/reg: (addr handle T) <- index arr: (addr array handle T), n
 copy-handle-to *y, x
 ```
 
+To create handles to non-array types, use `allocate`:
+
+```
+var x: (addr handle T)
+... initialize x ...
+allocate x
+```
+
+To create handles to array types, use `populate`:
+
+```
+var x: (addr handle array T)
+... initialize x ...
+populate x, 3  # array of 3 T's
+```
+
 You can copy handles to another variable on the stack like this:
 
 ```

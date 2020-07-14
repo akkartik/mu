@@ -1179,6 +1179,51 @@ test-convert-function-with-local-var-in-reg:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-allocate:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: (addr handle int) <- copy 0\n")
+    (write _test-input-stream "  allocate x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-allocate/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-allocate/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-allocate/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-allocate/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-allocate/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-allocate/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-with-allocate/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0/imm32"  "F - test-convert-function-with-allocate/7")
+    (check-next-stream-line-equal _test-output-stream "    (allocate Heap 0x00000004 %ecx)"  "F - test-convert-function-with-allocate/8")  # 4 = size-of(int)
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-with-allocate/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-allocate/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-allocate/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-allocate/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-allocate/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-allocate/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-allocate/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-initializer-in-hex:
     # . prologue
     55/push-ebp
@@ -3651,6 +3696,51 @@ test-array-size-in-hex:
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-populate:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: (addr handle array int) <- copy 0\n")
+    (write _test-input-stream "  populate x, 7\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-populate/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-populate/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-populate/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-populate/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-populate/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-populate/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-with-populate/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0/imm32"  "F - test-convert-function-with-populate/7")
+    (check-next-stream-line-equal _test-output-stream "    (allocate-array2 Heap 0x00000004 7 %ecx)"  "F - test-convert-function-with-populate/8")  # 4 = size-of(int)
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-with-populate/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-populate/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-populate/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-populate/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-populate/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-populate/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-populate/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
@@ -11176,11 +11266,19 @@ has-primitive-name?:  # stmt: (addr stmt) -> result/eax: boolean
     # if (name == "compute-offset") return true
     (string-equal? %esi "compute-offset")  # => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $has-primitive-name?:end/disp8
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
     # if (name == "lookup") return true
     (string-equal? %esi "lookup")  # => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $has-primitive-name?:end/disp8
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "allocate") return true
+    (string-equal? %esi "allocate")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "populate") return true
+    (string-equal? %esi "populate")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
     # var curr/ecx: (addr primitive) = Primitives
     b9/copy-to-ecx Primitives/imm32
     {
@@ -11292,6 +11390,22 @@ check-mu-primitive:  # stmt: (addr stmt), fn: (addr function), err: (addr buffer
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (check-mu-lookup-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      e9/jump $check-mu-primitive:end/disp32
+    }
+    # if (op == "allocate") check-mu-allocate-stmt
+    {
+      (string-equal? %ecx "allocate")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (check-mu-allocate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      e9/jump $check-mu-primitive:end/disp32
+    }
+    # if (op == "populate") check-mu-populate-stmt
+    {
+      (string-equal? %ecx "populate")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (check-mu-populate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       e9/jump $check-mu-primitive:end/disp32
     }
     # otherwise check-numberlike-stmt
@@ -11855,6 +11969,30 @@ check-mu-lookup-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buff
     89/<- %ebp 4/r32/esp
     # . save registers
 $check-mu-lookup-stmt:end:
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-allocate-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$check-mu-allocate-stmt:end:
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-populate-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$check-mu-populate-stmt:end:
     # . restore registers
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -13747,6 +13885,24 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (translate-mu-get-stmt *(ebp+8) *(ebp+0xc))
       e9/jump $emit-subx-stmt:end/disp32
     }
+    # allocate scalar
+    {
+      # if (!string-equal?(stmt->operation, "allocate")) break
+      (string-equal? %ecx "allocate")  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      (translate-mu-allocate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      e9/jump $emit-subx-stmt:end/disp32
+    }
+    # allocate array
+    {
+      # if (!string-equal?(stmt->operation, "populate")) break
+      (string-equal? %ecx "populate")  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      (translate-mu-populate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      e9/jump $emit-subx-stmt:end/disp32
+    }
     # - if stmt matches a primitive, emit it
     {
 $emit-subx-stmt:check-for-primitive:
@@ -14477,6 +14633,151 @@ $translate-mu-get-stmt:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+translate-mu-allocate-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var target/edi: (addr stmt-var) = stmt->inouts[0]
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %edi 0/r32/eax
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(allocate Heap ")
+    (addr-handle-payload-size %edi *(ebp+0x10) *(ebp+0x14))  # => eax
+    (write-int32-hex-buffered *(ebp+8) %eax)
+    (emit-subx-call-operand *(ebp+8) %edi)
+    (write-buffered *(ebp+8) ")\n")
+$translate-mu-allocate-stmt:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+addr-handle-payload-size:  # s: (addr stmt-var), err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var t/eax: (addr type-tree) = s->value->type
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    # TODO: check eax != 0
+    # TODO: check !t->is-atom?
+    # TODO: check t->left == addr
+    # t = t->right
+$addr-handle-payload-size:skip-addr:
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # TODO: check eax != 0
+    # TODO: check !t->is-atom?
+    # TODO: check t->left == handle
+    # t = t->right
+$addr-handle-payload-size:skip-handle:
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # TODO: check eax != 0
+    # if !t->is-atom? t = t->left
+    81 7/subop/compare *eax 0/imm32/false
+    {
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    }
+    # TODO: check t->is-atom?
+    # return size(t->value)
+    (size-of-type-id *(eax+4))  # Type-tree-value => eax
+$addr-handle-payload-size:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+translate-mu-populate-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var target/edi: (addr stmt-var) = stmt->inouts[0]
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %edi 0/r32/eax
+    # var len/ecx: (addr stmt-var) = stmt->inouts[1]
+    (lookup *(edi+8) *(edi+0xc))  # Stmt-var-next Stmt-var-next => eax
+    89/<- %ecx 0/r32/eax
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(allocate-array2 Heap ")
+    (addr-handle-array-payload-size %edi *(ebp+0x10) *(ebp+0x14))  # => eax
+    (write-int32-hex-buffered *(ebp+8) %eax)
+    (emit-subx-call-operand *(ebp+8) %ecx)
+    (emit-subx-call-operand *(ebp+8) %edi)
+    (write-buffered *(ebp+8) ")\n")
+$translate-mu-populate-stmt:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+addr-handle-array-payload-size:  # s: (addr stmt-var), err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var t/eax: (addr type-tree) = s->value->type
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    # TODO: check eax != 0
+    # TODO: check !t->is-atom?
+    # TODO: check t->left == addr
+    # t = t->right
+$addr-handle-array-payload-size:skip-addr:
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # TODO: check eax != 0
+    # TODO: check !t->is-atom?
+    # TODO: check t->left == handle
+    # t = t->right
+$addr-handle-array-payload-size:skip-handle:
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # TODO: check eax != 0
+    # TODO: check !t->is-atom?
+    # TODO: check t->left == array
+    # t = t->right
+$addr-handle-array-payload-size:skip-array:
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # TODO: check eax != 0
+    # if !t->is-atom? t = t->left
+    81 7/subop/compare *eax 0/imm32/false
+    {
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    }
+$addr-handle-array-payload-size:compute-size:
+    # TODO: check t->is-atom?
+    # return size(t->value)
+    (size-of-type-id-as-array-element *(eax+4))  # Type-tree-value => eax
+$addr-handle-array-payload-size:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
