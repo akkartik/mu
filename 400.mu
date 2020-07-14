@@ -74,10 +74,10 @@ sig error-byte ed: (addr exit-descriptor), out: (addr buffered-file), msg: (addr
 sig lookup h: (handle T) -> result/eax: (addr T)
 sig handle-equal? a: handle, b: handle -> result/eax: boolean
 sig copy-handle src: handle, dest: (addr handle)
-sig allocate-region ad: (addr allocation-descriptor), n: int, out: (addr handle allocation-descriptor)
-sig allocate-array ad: (addr allocation-descriptor), n: int, out: (addr handle)
+#sig allocate-region ad: (addr allocation-descriptor), n: int, out: (addr handle allocation-descriptor)
+#sig allocate-array ad: (addr allocation-descriptor), n: int, out: (addr handle)
 sig copy-array ad: (addr allocation-descriptor), src: (addr array), out: (addr handle)
-sig zero-out start: (addr byte), len: int
+#sig zero-out start: (addr byte), size: int
 sig new-stream ad: (addr allocation-descriptor), length: int, elemsize: int, out: (addr handle stream _)
 sig read-line-buffered f: (addr buffered-file), s: (addr stream byte)
 sig read-line f: (addr stream byte), s: (addr stream byte)
@@ -93,14 +93,14 @@ sig skip-chars-matching in: (addr stream byte), delimiter: byte
 sig skip-chars-matching-whitespace in: (addr stream byte)
 sig skip-chars-not-matching in: (addr stream byte), delimiter: byte
 sig skip-chars-not-matching-whitespace in: (addr stream byte)
-sig skip-chars-matching-in-slice curr: (addr byte), end: (addr byte), delimiter: byte -> curr/eax: (addr byte)
-sig skip-chars-matching-whitespace-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
-sig skip-chars-not-matching-in-slice curr: (addr byte), end: (addr byte), delimiter: byte -> curr/eax: (addr byte)
-sig skip-chars-not-matching-whitespace-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
+#sig skip-chars-matching-in-slice curr: (addr byte), end: (addr byte), delimiter: byte -> curr/eax: (addr byte)
+#sig skip-chars-matching-whitespace-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
+#sig skip-chars-not-matching-in-slice curr: (addr byte), end: (addr byte), delimiter: byte -> curr/eax: (addr byte)
+#sig skip-chars-not-matching-whitespace-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
 sig skip-string line: (addr stream byte)
-sig skip-string-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
+#sig skip-string-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
 sig skip-until-close-paren line: (addr stream byte)
-sig skip-until-close-paren-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
+#sig skip-until-close-paren-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
 sig write-stream-data f: (addr buffered-file), s: (addr stream byte)
 sig write-int32-decimal out: (addr stream byte), n: int32
 sig is-decimal-digit? c: byte -> result/eax: boolean

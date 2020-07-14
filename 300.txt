@@ -1,3 +1,17 @@
 Layers in the 3xx series use all the available syntax sugar for SubX programs.
-For the most part they're intended to be used by the Mu translator:
-  apps/mu.subx
+They're used by the Mu translator (apps/mu.subx) and can also be called from
+Mu programs if they meet certain criteria:
+
+  - There's a signature for them in 400.mu
+  - Inouts on the stack, outputs in registers
+  - Valid Mu types everywhere (Mu's type system isn't expressive enough for
+    everything SubX does in rare situations.)
+  - No way to for an `addr` to escape a function. No `(... addr ... addr ...)`
+    inouts, and no `(... addr ...)` outputs.
+
+While functions _can_ be called, not all SubX functions meeting these criteria
+_should_ be called. In particular, avoid exporting functions that could be
+misused. A classic example is trying to add a `size-of` operator. If you're
+doing that you're likely going to rely on programmers to use it correctly. Mu
+tries to be idiot-proof. Even if SubX requires greater care, using SubX
+primitives from Mu should not.
