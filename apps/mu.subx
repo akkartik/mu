@@ -15874,8 +15874,8 @@ _Primitive-shift-reg-left-by-lit:  # (payload primitive)
     _string_c1_subop_shift_left/imm32/subx-name
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
-    1/imm32/imm32-is-first-inout
-    0/imm32/no-imm8
+    0/imm32/no-imm32
+    1/imm32/imm8-is-first-inout
     0/imm32/no-disp32
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
@@ -15893,8 +15893,8 @@ _Primitive-shift-reg-right-by-lit:  # (payload primitive)
     _string_c1_subop_shift_right_padding_zeroes/imm32/subx-name
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
-    1/imm32/imm32-is-first-inout
-    0/imm32/no-imm8
+    0/imm32/no-imm32
+    1/imm32/imm8-is-first-inout
     0/imm32/no-disp32
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
@@ -15912,8 +15912,8 @@ _Primitive-shift-reg-right-signed-by-lit:  # (payload primitive)
     _string_c1_subop_shift_right_preserving_sign/imm32/subx-name
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
-    1/imm32/imm32-is-first-inout
-    0/imm32/no-imm8
+    0/imm32/no-imm32
+    1/imm32/imm8-is-first-inout
     0/imm32/no-disp32
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
@@ -15931,8 +15931,8 @@ _Primitive-shift-mem-left-by-lit:  # (payload primitive)
     _string_c1_subop_shift_left/imm32/subx-name
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
-    2/imm32/imm32-is-second-inout
-    0/imm32/no-imm8
+    0/imm32/no-imm32
+    2/imm32/imm8-is-second-inout
     0/imm32/no-disp32
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
@@ -15950,8 +15950,8 @@ _Primitive-shift-mem-right-by-lit:  # (payload primitive)
     _string_c1_subop_shift_right_padding_zeroes/imm32/subx-name
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
-    2/imm32/imm32-is-second-inout
-    0/imm32/no-imm8
+    0/imm32/no-imm32
+    2/imm32/imm8-is-second-inout
     0/imm32/no-disp32
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
@@ -15969,8 +15969,8 @@ _Primitive-shift-mem-right-signed-by-lit:  # (payload primitive)
     _string_c1_subop_shift_right_preserving_sign/imm32/subx-name
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
-    2/imm32/imm32-is-second-inout
-    0/imm32/no-imm8
+    0/imm32/no-imm32
+    2/imm32/imm8-is-second-inout
     0/imm32/no-disp32
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
@@ -18198,7 +18198,7 @@ emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive:
     # emit imm32 if necessary
     (emit-subx-imm32 *(ebp+8) *(ecx+0x28) *(ebp+0xc))  # Primitive-subx-imm32
     # emit imm8 if necessary
-    (emit-subx-imm32 *(ebp+8) *(ecx+0x2c) *(ebp+0xc))  # Primitive-subx-imm8
+    (emit-subx-imm8 *(ebp+8) *(ecx+0x2c) *(ebp+0xc))  # Primitive-subx-imm8
     # emit disp32 if necessary
     (emit-subx-disp32 *(ebp+8) *(ecx+0x30) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))  # Primitive-subx-disp32
     (write-buffered *(ebp+8) Newline)
@@ -18330,6 +18330,32 @@ emit-subx-imm32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt
     (write-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) "/imm32")
 $emit-subx-imm32:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-imm8:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # if (l == 0) return
+    81 7/subop/compare *(ebp+0xc) 0/imm32
+    0f 84/jump-if-= $emit-subx-imm32:end/disp32
+    # var v/eax: (handle var)
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+8) Space)
+    (write-buffered *(ebp+8) %eax)
+    (write-buffered *(ebp+8) "/imm8")
+$emit-subx-imm8:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
@@ -20414,6 +20440,233 @@ $test-add-literal-to-mem:initialize-stmt-operation:
 #?     # }}}
     # check output
     (check-next-stream-line-equal _test-output-stream "81 0/subop/add *(ebp+0x00000008) 0x34/imm32" "F - test-add-literal-to-mem")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-shift-reg-by-literal:
+    #   var1/ecx <- shift-left 2
+    # =>
+    #   c1/shift 4/subop/left %ecx 2/imm8
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+$test-shift-reg-by-literal:initialize-var-type:
+    # var type/ecx: (payload type-tree) = int
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 1/imm32/value:int
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %ecx 4/r32/esp
+$test-shift-reg-by-literal:initialize-var:
+    # var v/ecx: (payload var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    51/push-ecx
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %ecx 4/r32/esp
+$test-shift-reg-by-literal:initialize-var-name:
+    # v->name = "v"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "v" %eax)
+$test-shift-reg-by-literal:initialize-var-register:
+    # v->register = "ecx"
+    8d/copy-address *(ecx+0x1c) 0/r32/eax  # Var-register + 4
+    (copy-array Heap "ecx" %eax)
+$test-shift-reg-by-literal:initialize-literal-type:
+    # var type/edx: (payload type-tree) = literal
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 0/imm32/value:literal
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %edx 4/r32/esp
+$test-shift-reg-by-literal:initialize-literal:
+    # var l/edx: (payload var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    52/push-edx
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %edx 4/r32/esp
+$test-shift-reg-by-literal:initialize-literal-value:
+    # l->name = "2"
+    8d/copy-address *(edx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "2" %eax)
+$test-shift-reg-by-literal:initialize-inouts:
+    # var inouts/esi: (payload stmt-var) = [l]
+    68/push 0/imm32/is-deref:false
+    68/push 0/imm32/next
+    68/push 0/imm32/next
+    52/push-edx/l
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %esi 4/r32/esp
+$test-shift-reg-by-literal:initialize-outputs:
+    # var outputs/edi: (payload stmt-var) = [v]
+    68/push 0/imm32/is-deref:false
+    68/push 0/imm32/next
+    68/push 0/imm32/next
+    51/push-ecx/v
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %edi 4/r32/esp
+$test-shift-reg-by-literal:initialize-stmt:
+    # var stmt/esi: (addr statement)
+    68/push 0/imm32/next
+    68/push 0/imm32/next
+    57/push-edi/outputs
+    68/push 0x11/imm32/alloc-id:fake
+    56/push-esi/inouts
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/operation
+    68/push 0/imm32/operation
+    68/push 1/imm32/tag:stmt1
+    89/<- %esi 4/r32/esp
+$test-shift-reg-by-literal:initialize-stmt-operation:
+    # stmt->operation = "shift-left"
+    8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "shift-left" %eax)
+    # convert
+    c7 0/subop/copy *Curr-block-depth 0/imm32
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "c1/shift 4/subop/left %ecx 2/imm8" "F - test-shift-reg-by-literal")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-shift-mem-by-literal:
+    #   shift-left var 3
+    # =>
+    #   c1/shift 4/subop/left *(ebp+8) 3/imm8
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+$test-shift-mem-by-literal:initialize-type:
+    # var type/ecx: (payload type-tree) = int
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 1/imm32/value:int
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %ecx 4/r32/esp
+$test-shift-mem-by-literal:initialize-var1:
+    # var var1/ecx: (payload var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
+    68/push 8/imm32/stack-offset
+    68/push 1/imm32/block-depth
+    51/push-ecx
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %ecx 4/r32/esp
+$test-shift-mem-by-literal:initialize-var1-name:
+    # var1->name = "var1"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "var1" %eax)
+$test-shift-mem-by-literal:initialize-literal-type:
+    # var type/edx: (payload type-tree) = literal
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 0/imm32/value:literal
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %edx 4/r32/esp
+$test-shift-mem-by-literal:initialize-literal:
+    # var l/edx: (payload var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    52/push-edx
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %edx 4/r32/esp
+$test-shift-mem-by-literal:initialize-literal-value:
+    # l->name = "3"
+    8d/copy-address *(edx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "3" %eax)
+$test-shift-mem-by-literal:initialize-inouts:
+    # var inouts/esi: (payload stmt-var) = [l]
+    68/push 0/imm32/is-deref:false
+    68/push 0/imm32/next
+    68/push 0/imm32/next
+    52/push-edx/l
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %esi 4/r32/esp
+    # var inouts = (handle stmt-var) = [var1, var2]
+    68/push 0/imm32/is-deref:false
+    56/push-esi/next
+    68/push 0x11/imm32/alloc-id:fake
+    51/push-ecx/var1
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %esi 4/r32/esp
+$test-shift-mem-by-literal:initialize-stmt:
+    # var stmt/esi: (addr statement)
+    68/push 0/imm32/next
+    68/push 0/imm32/next
+    68/push 0/imm32/outputs
+    68/push 0/imm32/outputs
+    56/push-esi/inouts
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/operation
+    68/push 0/imm32/operation
+    68/push 1/imm32/tag:stmt1
+    89/<- %esi 4/r32/esp
+$test-shift-mem-by-literal:initialize-stmt-operation:
+    # stmt->operation = "shift-left"
+    8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "shift-left" %eax)
+    # convert
+    c7 0/subop/copy *Curr-block-depth 0/imm32
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "c1/shift 4/subop/left *(ebp+0x00000008) 3/imm8" "F - test-shift-mem-by-literal")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
