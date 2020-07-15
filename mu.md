@@ -188,6 +188,13 @@ compare var1/reg, var2
 compare var/eax, n
 compare var, n
 
+var/reg <- shift-left n
+var/reg <- shift-right n
+var/reg <- shift-right-signed n
+shift-left var, n
+shift-right var, n
+shift-right-signed var, n
+
 var/reg <- multiply var2
 ```
 
