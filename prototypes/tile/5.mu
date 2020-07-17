@@ -37,11 +37,15 @@ $main:loop: {
 #######################################################
 
 fn process c: byte, root: (addr handle cell), cursor: (addr handle cell) {
-  create-child cursor
+  var c1/eax: (addr handle cell) <- copy cursor
+  var c2/eax: (addr cell) <- lookup *c1
+  create-child c2
 }
 
-fn create-child cursor: (addr handle cell) {
-  
+fn create-child node: (addr cell) {
+  var n/ecx: (addr cell) <- copy node
+  var first-child/esi: (addr handle cell) <- get n, first-child
+  allocate first-child
 }
 
 #######################################################
@@ -51,9 +55,26 @@ fn create-child cursor: (addr handle cell) {
 fn render root: (addr cell) {
   clear-screen
   var depth/eax: int <- tree-depth root
-  draw-box 5, 5, 0x23, 0x23  # 35, 35
-  move-cursor-on-screen 0x10, 0x10
-  print-int32-hex-to-screen depth
+  var viewport-width/ecx: int <- copy 0x64  # col2
+  viewport-width <- subtract 5  # col1
+  var column-width/eax: int <- try-divide viewport-width, depth
+  render-tree root, column-width, 5, 5, 0x20, 0x64
+}
+
+fn render-tree c: (addr cell), column-width: int, row-min: int, col-min: int, row-max: int, col-max: int {
+  var root-max/ecx: int <- copy col-min
+  root-max <- add column-width
+  draw-box row-min, col-min, row-max, root-max
+  var c2/eax: (addr cell) <- copy c
+  var child/eax: (addr handle cell) <- get c2, first-child
+  var child-addr/eax: (addr cell) <- lookup *child
+  {
+    compare child-addr, 0
+    break-if-=
+    increment row-min
+    decrement row-max
+    render-tree child-addr, column-width, row-min, root-max, row-max, col-max
+  }
 }
 
 fn tree-depth node-on-stack: (addr cell) -> result/eax: int {
@@ -78,8 +99,19 @@ fn tree-depth node-on-stack: (addr cell) -> result/eax: int {
   result <- increment
 }
 
+# slow, iterative divide instruction
+fn try-divide _nr: int, _dr: int -> result/eax: int {
+  result <- copy _nr
+  result <- shift-right 2
+#?   var nr/ecx: int <- copy _nr
+#?   var tmp/ecx: int <- copy 2
+#?   # find nearest power of 2
+#?   {
+#?     k
+#?   }
+}
+
 fn draw-box row1: int, col1: int, row2: int, col2: int {
-  clear-screen
   draw-horizontal-line row1, col1, col2
   draw-vertical-line row1, row2, col1
   draw-horizontal-line row2, col1, col2
