@@ -101,6 +101,13 @@ var/reg <span class="Special">&lt;-</span> xor n                  =&gt; <span cl
 xor-with var, n                   =&gt; <span class="Constant">&quot;81 6/subop/xor *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 xor-with *var/reg, n              =&gt; <span class="Constant">&quot;81 6/subop/xor *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 
+var/reg <span class="Special">&lt;-</span> shift-left n
+var/reg <span class="Special">&lt;-</span> shift-right n
+var/reg <span class="Special">&lt;-</span> shift-right-signed n
+shift-left var, n
+shift-right var, n
+shift-right-signed var, n
+
 var/<span class="Constant">eax</span> <span class="Special">&lt;-</span> copy n                 =&gt; <span class="Constant">&quot;b8/copy-to-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/<span class="Constant">ecx</span> <span class="Special">&lt;-</span> copy n                 =&gt; <span class="Constant">&quot;b9/copy-to-ecx &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/<span class="Constant">edx</span> <span class="Special">&lt;-</span> copy n                 =&gt; <span class="Constant">&quot;ba/copy-to-edx &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
@@ -114,6 +121,10 @@ var/reg <span class="Special">&lt;-</span> copy *var2/reg2        =&gt; <span cl
 var/reg <span class="Special">&lt;-</span> copy n                 =&gt; <span class="Constant">&quot;c7 0/subop/copy %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 copy-to var, n                    =&gt; <span class="Constant">&quot;c7 0/subop/copy *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 copy-to *var/reg, n               =&gt; <span class="Constant">&quot;c7 0/subop/copy *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
+
+var/reg <span class="Special">&lt;-</span> copy-byte var2/reg2    =&gt; <span class="Constant">&quot;8a/byte-&gt; %&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+var/reg <span class="Special">&lt;-</span> copy-byte *var2/reg2   =&gt; <span class="Constant">&quot;8a/byte-&gt; *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+copy-byte-to *var1/reg1, var2/reg2  =&gt; <span class="Constant">&quot;88/byte&lt;- *&quot;</span> reg1 <span class="Constant">&quot; &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
 
 compare var1, var2/reg2           =&gt; <span class="Constant">&quot;39/compare *(ebp+&quot;</span> var1.stack-offset <span class="Constant">&quot;) &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
 compare *var1/reg1, var2/reg2     =&gt; <span class="Constant">&quot;39/compare *&quot;</span> reg1 <span class="Constant">&quot; &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
@@ -245,28 +256,12 @@ var/reg <span class="Special">&lt;-</span> length arr/reg2: (addr array T)
 If a record (product) type T was defined to have elements a, b, c, ... of
 types T_a, T_b, T_c, ..., then accessing one of those elements f of type T_f:
 
-var/reg: (addr T_f) <span class="Special">&lt;-</span> get var2/reg2: (addr F), f
+var/reg: (addr T_f) <span class="Special">&lt;-</span> get var2/reg2: (addr T), f
   =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> reg2 <span class="Constant">&quot;+&quot;</span> offset(f) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
-var/reg: (addr T_f) <span class="Special">&lt;-</span> get var2: (addr F), f
+var/reg: (addr T_f) <span class="Special">&lt;-</span> get var2: T, f
   =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;+&quot;</span> offset(f) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
 <span class="Comment"># Handles for safe access to the heap</span>
-
-copy-handle-to dest: (handle T), src: (handle T)
-  =&gt; <span class="Constant">&quot;50/push-eax&quot;</span>
-     <span class="Constant">&quot;8b/-&gt; *(ebp+&quot;</span> src.stack-offset <span class="Constant">&quot;) 0/r32/eax&quot;</span>
-     <span class="Constant">&quot;89/&lt;- *(ebp+&quot;</span> dest.stack-offset <span class="Constant">&quot;) 0/r32/eax&quot;</span>
-     <span class="Constant">&quot;8b/-&gt; *(ebp+&quot;</span> src.stack-offset+<span class="Constant">4</span> <span class="Constant">&quot;) 0/r32/eax&quot;</span>
-     <span class="Constant">&quot;89/&lt;- *(ebp+&quot;</span> dest.stack-offset+<span class="Constant">4</span> <span class="Constant">&quot;) 0/r32/eax&quot;</span>
-     <span class="Constant">&quot;58/pop-to-eax&quot;</span>
-
-copy-handle-to *dest/reg: (addr handle T), src: (handle T)
-  =&gt; <span class="Constant">&quot;50/push-eax&quot;</span>
-     <span class="Constant">&quot;8b/-&gt; *(ebp+&quot;</span> src.stack-offset <span class="Constant">&quot;) 0/r32/eax&quot;</span>
-     <span class="Constant">&quot;89/&lt;- *&quot;</span> reg <span class="Constant">&quot; 0/r32/eax&quot;</span>
-     <span class="Constant">&quot;8b/-&gt; *(ebp+&quot;</span> src.stack-offset+<span class="Constant">4</span> <span class="Constant">&quot;) 0/r32/eax&quot;</span>
-     <span class="Constant">&quot;89/&lt;- *(&quot;</span> reg <span class="Constant">&quot;+4) 0/r32/eax&quot;</span>
-     <span class="Constant">&quot;58/pop-to-eax&quot;</span>
 
 out/reg: (addr T) <span class="Special">&lt;-</span> lookup in: (handle T)
   =&gt; <span class="Comment"># payload_allocid = in-&gt;address-&gt;allocid</span>
@@ -278,6 +273,14 @@ out/reg: (addr T) <span class="Special">&lt;-</span> lookup in: (handle T)
      <span class="Comment"># return payload</span>
      <span class="Constant">&quot;8b/-&gt; *(epb+&quot;</span> (in.stack-offset+<span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
      <span class="Constant">&quot;81 0/subop/add %&quot;</span> reg <span class="Constant">&quot; 4/imm32&quot;</span>  <span class="Comment"># skip payload-&gt;allocid</span>
+
+<span class="Comment"># Allocating memory</span>
+
+allocate in: (addr handle T)
+  =&gt; <span class="Constant">&quot;(allocate Heap &quot;</span> size-of(T) <span class="Constant">&quot; &quot;</span> in <span class="Constant">&quot;)&quot;</span>
+
+populate in: (addr handle array T), num  <span class="Comment"># can be literal or variable on stack or register</span>
+  =&gt; <span class="Constant">&quot;(allocate-array2 Heap &quot;</span> size-of(T) <span class="Constant">&quot; &quot;</span> num <span class="Constant">&quot; &quot;</span> in <span class="Constant">&quot;)&quot;</span>
 
 vim&#0058;ft=mu:nowrap:textwidth=<span class="Constant">0</span>
 </pre>

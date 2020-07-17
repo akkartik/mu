@@ -438,18 +438,19 @@ rules:
 
 Try to avoid mixing these use cases.
 
-You can save handles inside compound types like this:
+If you have a variable `src` of type `(handle ...)`, you can save it inside a
+compound type like this (provided the types match):
 
 ```
-var y/reg: (addr handle T_f) <- get var: (addr T), f
-copy-handle-to *y, x
+var dest/reg: (addr handle T_f) <- get var: (addr T), f
+copy-handle src, dest
 ```
 
 Or this:
 
 ```
-var y/reg: (addr handle T) <- index arr: (addr array handle T), n
-copy-handle-to *y, x
+var dest/reg: (addr handle T) <- index arr: (addr array handle T), n
+copy-handle src, dest
 ```
 
 To create handles to non-array types, use `allocate`:

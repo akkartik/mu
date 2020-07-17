@@ -238,22 +238,6 @@ var/reg: (addr T_f) <- get var2: T, f
 
 # Handles for safe access to the heap
 
-copy-handle-to dest: (handle T), src: (handle T)
-  => "50/push-eax"
-     "8b/-> *(ebp+" src.stack-offset ") 0/r32/eax"
-     "89/<- *(ebp+" dest.stack-offset ") 0/r32/eax"
-     "8b/-> *(ebp+" src.stack-offset+4 ") 0/r32/eax"
-     "89/<- *(ebp+" dest.stack-offset+4 ") 0/r32/eax"
-     "58/pop-to-eax"
-
-copy-handle-to *dest/reg: (addr handle T), src: (handle T)
-  => "50/push-eax"
-     "8b/-> *(ebp+" src.stack-offset ") 0/r32/eax"
-     "89/<- *" reg " 0/r32/eax"
-     "8b/-> *(ebp+" src.stack-offset+4 ") 0/r32/eax"
-     "89/<- *(" reg "+4) 0/r32/eax"
-     "58/pop-to-eax"
-
 out/reg: (addr T) <- lookup in: (handle T)
   => # payload_allocid = in->address->allocid
      "8b/-> *(epb+" (in.stack-offset+4) ") " reg "/r32"
