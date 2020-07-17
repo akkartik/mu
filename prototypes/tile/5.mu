@@ -64,9 +64,21 @@ $main:loop: {
 #######################################################
 
 fn process c: byte, root: (addr handle cell), cursor: (addr handle cell) {
-  var c1/eax: (addr handle cell) <- copy cursor
+  # increase depth by 1
+  var c1/ecx: (addr handle cell) <- copy cursor
   var c2/eax: (addr cell) <- lookup *c1
-  create-child c2
+  var c3/edx: (addr cell) <- copy c2
+  {
+    print-string-to-screen "iter\n"
+    var tmp/ebx: (addr handle cell) <- get c3, first-child
+    var tmp2/eax: (addr cell) <- lookup *tmp
+    compare tmp2, 0
+    break-if-=
+    c1 <- copy tmp
+    c3 <- copy tmp2
+    loop
+  }
+  create-child c3
 }
 
 fn create-child node: (addr cell) {
