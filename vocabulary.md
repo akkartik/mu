@@ -5,9 +5,9 @@
 - Kernel strings: null-terminated regions of memory. Unsafe and to be avoided,
   but needed for interacting with the kernel.
 
-- Arrays: length-prefixed regions of memory containing multiple elements of a
+- Arrays: size-prefixed regions of memory containing multiple elements of a
   single type. Contents are preceded by 4 bytes (32 bits) containing the
-  `length` of the array in bytes.
+  `size` of the array in bytes.
 
 - Slices: a pair of 32-bit addresses denoting a [half-open](https://en.wikipedia.org/wiki/Interval_(mathematics))
   \[`start`, `end`) interval to live memory with a consistent lifetime.
@@ -19,10 +19,10 @@
 
   - offset 0: write index
   - offset 4: read index
-  - offset 8: length of array (in bytes)
+  - offset 8: size of array (in bytes)
   - offset 12: start of array data
 
-  Invariant: 0 <= `read` <= `write` <= `length`
+  Invariant: 0 <= `read` <= `write` <= `size`
 
 - File descriptors (fd): Low-level 32-bit integers that the kernel uses to
   track files opened by the program.
@@ -51,7 +51,7 @@ But those are big goals. Here are the syscalls I have so far:
 
   1. SubX can handle 'fake' file descriptors in tests.
 
-  1. `write()` accepts buffer and its length in separate arguments, which
+  1. `write()` accepts buffer and its size in separate arguments, which
      requires callers to manage the two separately and so can be error-prone.
      SubX's wrapper keeps the two together to increase the chances that we
      never accidentally go out of array bounds.
@@ -178,7 +178,7 @@ allocated memory for it.)_
 - `new-stream`: allocates space for a stream of `n` elements, each occupying
   `b` bytes.
   - Will abort the entire program if `n*b` requires more than 32 bits.
-- `clear-stream`: resets everything in the stream to `0` (except its `length`).
+- `clear-stream`: resets everything in the stream to `0` (except its `size`).
 - `rewind-stream`: resets the read index of the stream to `0` without modifying
   its contents.
 
