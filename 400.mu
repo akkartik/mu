@@ -69,14 +69,14 @@ sig parse-hex-int-from-slice in: (addr slice) -> result/eax: int
 sig is-hex-digit? c: byte -> result/eax: boolean
 #sig from-hex-char in/eax: byte -> out/eax: nibble
 sig error-byte ed: (addr exit-descriptor), out: (addr buffered-file), msg: (addr array byte), n: byte
-#sig allocate ad: (addr allocation-descriptor), n: int, out: (addr handle)
-#sig allocate-raw ad: (addr allocation-descriptor), n: int, out: (addr handle)
-sig lookup h: (handle T) -> result/eax: (addr T)
-sig handle-equal? a: handle, b: handle -> result/eax: boolean
-sig copy-handle src: handle, dest: (addr handle)
+#sig allocate ad: (addr allocation-descriptor), n: int, out: (addr handle _)
+#sig allocate-raw ad: (addr allocation-descriptor), n: int, out: (addr handle _)
+sig lookup h: (handle _T) -> result/eax: (addr _T)
+sig handle-equal? a: (handle _T), b: (handle _T) -> result/eax: boolean
+sig copy-handle src: (handle _T), dest: (addr handle _T)
 #sig allocate-region ad: (addr allocation-descriptor), n: int, out: (addr handle allocation-descriptor)
-#sig allocate-array ad: (addr allocation-descriptor), n: int, out: (addr handle)
-sig copy-array ad: (addr allocation-descriptor), src: (addr array), out: (addr handle)
+#sig allocate-array ad: (addr allocation-descriptor), n: int, out: (addr handle _)
+sig copy-array ad: (addr allocation-descriptor), src: (addr array _T), out: (addr handle array _T)
 #sig zero-out start: (addr byte), size: int
 sig new-stream ad: (addr allocation-descriptor), length: int, elemsize: int, out: (addr handle stream _)
 sig read-line-buffered f: (addr buffered-file), s: (addr stream byte)
