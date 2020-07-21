@@ -1039,7 +1039,7 @@ test-convert-invalid-literal:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-convert-invalid-literal: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: variable '1n' cannot begin with a digit"  "F - test-convert-invalid-literal: error message")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: variable '1n' cannot begin with a digit (or do you have a typo in a number?)"  "F - test-convert-invalid-literal: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-convert-invalid-literal: exit status")
     # don't restore from ebp
@@ -9713,7 +9713,7 @@ $new-literal-integer:abort:
     (write-buffered *(ebp+0x18) %eax)
     (write-buffered *(ebp+0x18) ": variable '")
     (write-slice-buffered *(ebp+0x18) *(ebp+0xc))
-    (write-buffered *(ebp+0x18) "' cannot begin with a digit\n")
+    (write-buffered *(ebp+0x18) "' cannot begin with a digit (or do you have a typo in a number?)\n")
     (flush *(ebp+0x18))
     (stop *(ebp+0x1c) 1)
     # never gets here
