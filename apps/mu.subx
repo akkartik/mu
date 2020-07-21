@@ -1421,6 +1421,60 @@ test-convert-function-call:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-call-with-inout-with-compound-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x: (addr int)\n")
+    (write _test-input-stream "  g x\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g a: (addr int) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "f:"                      "F - test-convert-function-call-with-inout-with-compound-type/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call-with-inout-with-compound-type/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call-with-inout-with-compound-type/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-inout-with-compound-type/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call-with-inout-with-compound-type/4")
+    (check-next-stream-line-equal _test-output-stream "$f:0x00000001:loop:"     "F - test-convert-function-call-with-inout-with-compound-type/5")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-call-with-inout-with-compound-type/6")
+    (check-next-stream-line-equal _test-output-stream "    (g *(ebp+0xfffffffc))"  "F - test-convert-function-call-with-inout-with-compound-type/7")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-call-with-inout-with-compound-type/8")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call-with-inout-with-compound-type/9")
+    (check-next-stream-line-equal _test-output-stream "$f:0x00000001:break:"    "F - test-convert-function-call-with-inout-with-compound-type/10")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-inout-with-compound-type/11")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-inout-with-compound-type/12")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-inout-with-compound-type/13")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-inout-with-compound-type/14")
+    (check-next-stream-line-equal _test-output-stream "g:"                      "F - test-convert-function-call-with-inout-with-compound-type/15")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call-with-inout-with-compound-type/16")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call-with-inout-with-compound-type/17")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-inout-with-compound-type/18")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-inout-with-compound-type/19")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-inout-with-compound-type/20")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-inout-with-compound-type/21")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-inout-with-compound-type/22")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-call-with-incorrect-inout-type:
     # . prologue
     55/push-ebp
@@ -1464,6 +1518,52 @@ test-convert-function-call-with-incorrect-inout-type:
     (check-ints-equal *(edx+4) 2 "F - test-convert-function-call-with-incorrect-inout-type: exit status")
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-inout-with-incorrect-compound-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x: (addr int)\n")
+    (write _test-input-stream "  g x\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g a: (addr bool) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-inout-with-incorrect-compound-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn f: call g: type for inout 'x' is not right"  "F - test-convert-function-call-with-inout-with-incorrect-compound-type: error message")
+    # don't bother checking the generated code; that's in the test 'test-local-clobbered-by-fn-output' below
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
     5d/pop-to-ebp
     c3/return
 
