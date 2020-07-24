@@ -12374,8 +12374,68 @@ type-match?:  # def: (addr type-tree), call: (addr type-tree) -> result/eax: boo
     75/jump-if-!= $type-match?:end/disp8
 $type-match?:baseline:
     # otherwise fall back
-    (type-equal? *(ebp+8) *(ebp+0xc))  # => eax
+    (type-component-match? *(ebp+8) *(ebp+0xc))  # => eax
 $type-match?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+type-component-match?:  # def: (addr type-tree), call: (addr type-tree) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    # ecx = def
+    8b/-> *(ebp+8) 1/r32/ecx
+    # edx = call
+    8b/-> *(ebp+0xc) 2/r32/edx
+$type-component-match?:compare-addr:
+    # if (def == call) return true
+    8b/-> %ecx 0/r32/eax  # Var-type
+    39/compare %edx 0/r32/eax  # Var-type
+    b8/copy-to-eax 1/imm32/true
+    0f 84/jump-if-= $type-component-match?:end/disp32
+$type-component-match?:compare-atom-state:
+    # if (def->is-atom? != call->is-atom?) return false
+    8b/-> *ecx 3/r32/ebx  # Type-tree-value
+    39/compare *edx 3/r32/ebx  # Type-tree-value
+    b8/copy-to-eax 0/imm32/false
+    0f 85/jump-if-!= $type-component-match?:end/disp32
+    # if def->is-atom? return (def->value == call->value)
+    {
+$type-component-match?:check-atom:
+      81 7/subop/compare %ebx 0/imm32/false
+      74/jump-if-= break/disp8
+$type-component-match?:is-atom:
+      8b/-> *(ecx+4) 0/r32/eax  # Type-tree-value
+      39/compare *(edx+4) 0/r32/eax  # Type-tree-value
+      0f 94/set-if-= %al
+      81 4/subop/and %eax 0xff/imm32
+      e9/jump $type-component-match?:end/disp32
+    }
+$type-component-match?:check-left:
+    # if (!type-component-match?(def->left, call->left)) return false
+    (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
+    89/<- %ebx 0/r32/eax
+    (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
+    (type-component-match? %eax %ebx)  # => eax
+    3d/compare-eax-and 0/imm32/false
+    74/jump-if-= $type-component-match?:end/disp8
+$type-component-match?:check-right:
+    # return type-component-match?(def->right, call->right)
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Type-tree-right Type-tree-right => eax
+    89/<- %ebx 0/r32/eax
+    (lookup *(edx+0xc) *(edx+0x10))  # Type-tree-right Type-tree-right => eax
+    (type-component-match? %eax %ebx)  # => eax
+$type-component-match?:end:
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
