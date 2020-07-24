@@ -369,12 +369,12 @@ Live-var-size:  # (addr int)
 
 Type-tree-is-atom:  # boolean
   0/imm32
-# if left-is-atom?
+# if is-atom?
 Type-tree-value:  # type-id
   4/imm32
 Type-tree-value-size:  # int (for static data structure sizes)
   8/imm32
-# unless left-is-atom?
+# unless is-atom?
 Type-tree-left:  # (addr type-tree)
   4/imm32
 Type-tree-right:  # (addr type-tree)
@@ -7253,7 +7253,7 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (a
     #   out = allocate(Type-tree)
     #   if s != "("
     #     HACK: if s is an int, parse and return it
-    #     out->left-is-atom? = true
+    #     out->is-atom? = true
     #     out->value = pos-or-insert-slice(Type-id, s)
     #     return
     #   out->left = parse-type(ad, in)
@@ -7332,7 +7332,7 @@ $parse-type:int:
         e9/jump $parse-type:end/disp32
       }
 $parse-type:atom:
-      # out->left-is-atom? = true
+      # out->is-atom? = true
       c7 0/subop/copy *edx 1/imm32/true  # Type-tree-is-atom
       # out->value = pos-or-insert-slice(Type-id, s)
       (pos-or-insert-slice Type-id %ecx)  # => eax
@@ -18307,7 +18307,7 @@ Lit-var:  # (payload var)
 
 Type-int:  # (payload type-tree)
     0x11/imm32/alloc-id:fake:payload
-    1/imm32/left-is-atom
+    1/imm32/is-atom
     1/imm32/value:int
     0/imm32/left:unused
     0/imm32/right:null
