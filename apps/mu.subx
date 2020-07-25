@@ -374,6 +374,8 @@ Type-tree-value:  # type-id
   4/imm32
 Type-tree-value-size:  # int (for static data structure sizes)
   8/imm32
+Type-tree-parameter-name:  # (handle array byte) for type parameters
+  8/imm32
 # unless is-atom?
 Type-tree-left:  # (addr type-tree)
   4/imm32
@@ -401,9 +403,11 @@ Type-id:  # (stream (addr array byte))
   "offset"/imm32  # 7: (offset T) is guaranteed to be a 32-bit multiple of size-of(T)
   # 0x20
   "byte"/imm32  # 8
-  0/imm32  # 9 reserved for array-capacity; value is in Type-tree-size
+  0/imm32  # 9 reserved for array-capacity; value is in Type-tree-size.
            # Not to be used directly, so we don't include a name here.
-                  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32  # 10 reserved for type parameters; value is (address array byte) in Type-tree-value2.
+           # Not to be used directly, so we don't include a name here.
+                          0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
@@ -1472,6 +1476,51 @@ test-convert-function-call-with-inout-with-compound-type:
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-inout-with-compound-type/22")
     # . epilogue
     89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-inout-with-type-parameter:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x: (addr int)\n")
+    (write _test-input-stream "  g x\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g a: (addr _) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # no error; types matched
+    (check-stream-equal _test-error-stream  ""  "F - test-convert-function-call-with-inout-with-type-parameter: error stream should be empty")
+    # don't bother checking the generated code; that's in the test 'test-local-clobbered-by-fn-output' below
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
     5d/pop-to-ebp
     c3/return
 
@@ -7254,7 +7303,11 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (a
     #   if s != "("
     #     HACK: if s is an int, parse and return it
     #     out->is-atom? = true
-    #     out->value = pos-or-insert-slice(Type-id, s)
+    #     if (s[0] == "_")
+    #       out->value = type-parameter
+    #       out->parameter-name = slice-to-string(ad, s)
+    #     else
+    #       out->value = pos-or-insert-slice(Type-id, s)
     #     return
     #   out->left = parse-type(ad, in)
     #   out->right = parse-type-tree(ad, in)
@@ -7334,6 +7387,24 @@ $parse-type:int:
 $parse-type:atom:
       # out->is-atom? = true
       c7 0/subop/copy *edx 1/imm32/true  # Type-tree-is-atom
+      {
+$parse-type:check-for-type-parameter:
+        # var tmp/eax: byte = *s->slice
+        8b/-> *ecx 0/r32/eax
+        8a/copy-byte *eax 0/r32/AL
+        81 4/subop/and %eax 0xff/imm32
+        # if (tmp != '_') break
+        3d/compare-eax-and 0x5f/imm32/_
+        75/jump-if-!= break/disp8
+$parse-type:type-parameter:
+        # out->value = type-parameter
+        c7 0/subop/copy *(edx+4) 0xa/imm32/type-parameter  # Type-tree-value
+        # out->parameter-name = slice-to-string(ad, s)
+        8d/copy-address *(edx+8) 0/r32/eax  # Type-tree-parameter-name
+        (slice-to-string *(ebp+8) %ecx %eax)
+        e9/jump $parse-type:end/disp32
+      }
+$parse-type:non-type-parameter:
       # out->value = pos-or-insert-slice(Type-id, s)
       (pos-or-insert-slice Type-id %ecx)  # => eax
       89/<- *(edx+4) 0/r32/eax  # Type-tree-value
@@ -12372,6 +12443,7 @@ type-match?:  # def: (addr type-tree), call: (addr type-tree) -> result/eax: boo
     3d/compare-eax-and 0/imm32/false
     b8/copy-to-eax 1/imm32/true
     75/jump-if-!= $type-match?:end/disp8
+    # TODO: if (def == '_') return false  # wildcard alone is illegal
 $type-match?:baseline:
     # otherwise fall back
     (type-component-match? *(ebp+8) *(ebp+0xc))  # => eax
@@ -12399,6 +12471,16 @@ $type-component-match?:compare-addr:
     39/compare %edx 0/r32/eax  # Var-type
     b8/copy-to-eax 1/imm32/true
     0f 84/jump-if-= $type-component-match?:end/disp32
+$type-component-match?:check-type-parameter:
+    # if def is a type parameter, return true
+    {
+      81 7/subop/compare *ecx 0/imm32/false  # Type-tree-is-atom
+      74/jump-if-= break/disp8
+      81 7/subop/compare *(ecx+4) 0xa/imm32/type-parameter  # Type-tree-value
+      75/jump-if-!= break/disp8
+      b8/copy-to-eax 1/imm32/true
+      0f 84/jump-if-= $type-component-match?:end/disp32
+    }
 $type-component-match?:compare-atom-state:
     # if (def->is-atom? != call->is-atom?) return false
     8b/-> *ecx 3/r32/ebx  # Type-tree-is-atom
