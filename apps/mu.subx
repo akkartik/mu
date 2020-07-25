@@ -12471,13 +12471,14 @@ $type-component-match?:compare-addr:
     39/compare %edx 0/r32/eax  # Var-type
     b8/copy-to-eax 1/imm32/true
     0f 84/jump-if-= $type-component-match?:end/disp32
-$type-component-match?:check-type-parameter:
     # if def is a type parameter, return true
     {
+$type-component-match?:check-type-parameter:
       81 7/subop/compare *ecx 0/imm32/false  # Type-tree-is-atom
       74/jump-if-= break/disp8
       81 7/subop/compare *(ecx+4) 0xa/imm32/type-parameter  # Type-tree-value
       75/jump-if-!= break/disp8
+$type-component-match?:type-parameter:
       b8/copy-to-eax 1/imm32/true
       0f 84/jump-if-= $type-component-match?:end/disp32
     }
@@ -12504,7 +12505,7 @@ $type-component-match?:check-left:
     (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
     89/<- %ebx 0/r32/eax
     (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
-    (type-component-match? %eax %ebx)  # => eax
+    (type-component-match? %ebx %eax)  # => eax
     3d/compare-eax-and 0/imm32/false
     74/jump-if-= $type-component-match?:end/disp8
 $type-component-match?:check-right:
@@ -12512,7 +12513,7 @@ $type-component-match?:check-right:
     (lookup *(ecx+0xc) *(ecx+0x10))  # Type-tree-right Type-tree-right => eax
     89/<- %ebx 0/r32/eax
     (lookup *(edx+0xc) *(edx+0x10))  # Type-tree-right Type-tree-right => eax
-    (type-component-match? %eax %ebx)  # => eax
+    (type-component-match? %ebx %eax)  # => eax
 $type-component-match?:end:
     # . restore registers
     5b/pop-to-ebx
