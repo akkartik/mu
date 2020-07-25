@@ -13,7 +13,7 @@ export OS=${OS:-linux}
 
 process() {
   app=$1
-  tools/treeshake_translate init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
+  tools/treeshake_translate init.$OS [012]*.subx apps/subx-params.subx apps/$app.subx
   echo "LoC $(cat apps/$app.subx |wc -l) => $(grep -vh '^\s*$\|^\s*#' apps/$app.subx |tools/treeshake |wc -l)"
   echo "LoC including common libraries: $(cat a.in |wc -l) => $(cat a.treeshake |wc -l)"
   echo "binary size: $(ls -lh apps/$app |column 5) => $(ls -lh a.elf |column 5)"
@@ -26,7 +26,7 @@ then
 fi
 
 echo "== deleting dead code"
-for app in factorial crenshaw2-1 crenshaw2-1b handle hex survey pack dquotes assort tests sigils calls braces
+for app in factorial crenshaw2-1 crenshaw2-1b hex survey pack dquotes assort tests sigils calls braces
 do
   echo "- $app"
   process $app
@@ -39,21 +39,21 @@ echo "== testing treeshaken binaries"
 for app in factorial crenshaw2-1 crenshaw2-1b
 do
   echo $app
-  tools/test_treeshake_translate init.$OS 0[0-8]*.subx apps/$app.subx
+  tools/test_treeshake_translate init.$OS [01]*.subx apps/$app.subx
   diff apps/$app a.elf
 done
 
 for app in hex survey pack assort dquotes tests
 do
   echo $app
-  tools/test_treeshake_translate init.$OS 0[0-8]*.subx apps/subx-params.subx apps/$app.subx
+  tools/test_treeshake_translate init.$OS [01]*.subx apps/subx-params.subx apps/$app.subx
   diff apps/$app a.elf
 done
 
 for app in sigils calls braces
 do
   echo $app
-  tools/test_treeshake_translate init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
+  tools/test_treeshake_translate init.$OS [012]*.subx apps/subx-params.subx apps/$app.subx
   diff apps/$app a.elf
 done
 
