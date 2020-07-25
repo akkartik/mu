@@ -1609,7 +1609,98 @@ test-convert-function-call-with-inout-with-incorrect-compound-type:
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-inout-with-incorrect-compound-type: output should be empty")
     (check-next-stream-line-equal _test-error-stream  "fn f: call g: type for inout 'x' is not right"  "F - test-convert-function-call-with-inout-with-incorrect-compound-type: error message")
-    # don't bother checking the generated code; that's in the test 'test-local-clobbered-by-fn-output' below
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-inout-with-multiple-type-parameters:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x: (addr int)\n")
+    (write _test-input-stream "  var y: (addr boolean)\n")
+    (write _test-input-stream "  g x, y\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g a: (addr _), b: (addr _) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # no errors
+    (check-stream-equal _test-error-stream  ""  "F - test-convert-function-call-with-inout-with-multiple-type-parameters: error stream should be empty")
+    # don't bother checking the generated code
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-inout-with-incompatible-type-parameters:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x: (addr int)\n")
+    (write _test-input-stream "  var y: (addr boolean)\n")
+    (write _test-input-stream "  g x, y\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g a: (addr _T), b: (addr _T) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-inout-with-incompatible-type-parameters: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn f: call g: type for inout 'x' is not right"  "F - test-convert-function-call-with-inout-with-incompatible-type-parameters: error message")
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
@@ -12177,6 +12268,15 @@ check-mu-call:  # stmt: (addr stmt), callee: (addr function), fn: (addr function
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    # var type-parameters: (addr table (handle array byte) (addr type-tree) 8)
+    68/push 0/imm32
+    # var type-parameters-storage: (table (handle array byte) (addr type-tree) 8)
+    81 5/subop/subtract %esp 0x60/imm32
+    68/push 0x60/imm32/size
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    # save a pointer to type-parameters-storage at type-parameters
+    89/<- *(ebp-4) 4/r32/esp
     # . save registers
     50/push-eax
     51/push-ecx
@@ -12225,7 +12325,7 @@ $check-mu-call:check-inout-type:
       # var t2/eax: (addr type-tree) = lookup(v2->type)
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
       # if (t != t2) error
-      (type-match? %eax %ebx)  # => eax
+      (type-match? %eax %ebx *(ebp-4))  # => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 85/jump-if-!= break/disp32
@@ -12324,7 +12424,7 @@ $check-mu-call:check-output-type:
       # var t2/eax: (addr type-tree) = lookup(v2->type)
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
       # if (t != t2) error
-      (type-match? %eax %ebx)  # => eax
+      (type-match? %eax %ebx *(ebp-4))  # => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 85/jump-if-!= break/disp32
@@ -12428,13 +12528,15 @@ $check-mu-call:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
+    # . reclaim locals exclusively on the stack
+    81 0/subop/add %esp 0x70/imm32
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 # like type-equal? but takes literals into account
-type-match?:  # def: (addr type-tree), call: (addr type-tree) -> result/eax: boolean
+type-match?:  # def: (addr type-tree), call: (addr type-tree), type-parameters: (addr table (handle array byte) (addr type-tree)) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -12443,17 +12545,16 @@ type-match?:  # def: (addr type-tree), call: (addr type-tree) -> result/eax: boo
     3d/compare-eax-and 0/imm32/false
     b8/copy-to-eax 1/imm32/true
     75/jump-if-!= $type-match?:end/disp8
-    # TODO: if (def == '_') return false  # wildcard alone is illegal
 $type-match?:baseline:
     # otherwise fall back
-    (type-component-match? *(ebp+8) *(ebp+0xc))  # => eax
+    (type-component-match? *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
 $type-match?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-type-component-match?:  # def: (addr type-tree), call: (addr type-tree) -> result/eax: boolean
+type-component-match?:  # def: (addr type-tree), call: (addr type-tree), type-parameters: (addr table (handle array byte) (addr type-tree)) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -12479,8 +12580,8 @@ $type-component-match?:check-type-parameter:
       81 7/subop/compare *(ecx+4) 0xa/imm32/type-parameter  # Type-tree-value
       75/jump-if-!= break/disp8
 $type-component-match?:type-parameter:
-      b8/copy-to-eax 1/imm32/true
-      0f 84/jump-if-= $type-component-match?:end/disp32
+      (type-parameter-match? *(ecx+8) *(ecx+0xc)  %edx  *(ebp+0x10))  # => eax
+      e9/jump $type-component-match?:end/disp32
     }
 $type-component-match?:compare-atom-state:
     # if (def->is-atom? != call->is-atom?) return false
@@ -12505,7 +12606,7 @@ $type-component-match?:check-left:
     (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
     89/<- %ebx 0/r32/eax
     (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
-    (type-component-match? %ebx %eax)  # => eax
+    (type-component-match? %ebx %eax *(ebp+0x10))  # => eax
     3d/compare-eax-and 0/imm32/false
     74/jump-if-= $type-component-match?:end/disp8
 $type-component-match?:check-right:
@@ -12513,12 +12614,25 @@ $type-component-match?:check-right:
     (lookup *(ecx+0xc) *(ecx+0x10))  # Type-tree-right Type-tree-right => eax
     89/<- %ebx 0/r32/eax
     (lookup *(edx+0xc) *(edx+0x10))  # Type-tree-right Type-tree-right => eax
-    (type-component-match? %ebx %eax)  # => eax
+    (type-component-match? %ebx %eax *(ebp+0x10))  # => eax
 $type-component-match?:end:
     # . restore registers
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+type-parameter-match?:  # type-parameter-name: (handle array byte), type: (addr type-tree), type-parameters: (addr table (handle array byte) (addr type-tree)) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$type-parameter-match?:end:
+    b8/copy-to-eax 1/imm32/true
+    # . restore registers
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
