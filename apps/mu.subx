@@ -1634,7 +1634,7 @@ test-convert-function-call-with-inout-with-multiple-type-parameters:
     #
     (write _test-input-stream "fn f {\n")
     (write _test-input-stream "  var x: (addr int)\n")
-    (write _test-input-stream "  var y: (addr boolean)\n")
+    (write _test-input-stream "  var y: (addr int)\n")
     (write _test-input-stream "  g x, y\n")
     (write _test-input-stream "}\n")
     (write _test-input-stream "fn g a: (addr _), b: (addr _) {\n")
@@ -1700,7 +1700,7 @@ test-convert-function-call-with-inout-with-incompatible-type-parameters:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-inout-with-incompatible-type-parameters: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "fn f: call g: type for inout 'x' is not right"  "F - test-convert-function-call-with-inout-with-incompatible-type-parameters: error message")
+    (check-next-stream-line-equal _test-error-stream  "fn f: call g: type for inout 'y' is not right"  "F - test-convert-function-call-with-inout-with-incompatible-type-parameters: error message")
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
@@ -12630,9 +12630,21 @@ type-parameter-match?:  # type-parameter-name: (handle array byte), type: (addr 
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    51/push-ecx
+    #
+    (get-or-insert-handle *(ebp+0x14)  *(ebp+8) *(ebp+0xc)  0xc)  # => eax
+    # if parameter wasn't saved, save it
+    {
+      81 7/subop/compare *eax 0/imm32
+      75/jump-if-!= break/disp8
+      8b/-> *(ebp+0x10) 1/r32/ecx
+      89/<- *eax 1/r32/ecx
+    }
+    #
+    (type-equal? *(ebp+0x10) *eax)  # => eax
 $type-parameter-match?:end:
-    b8/copy-to-eax 1/imm32/true
     # . restore registers
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
