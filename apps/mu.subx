@@ -407,6 +407,7 @@ Type-id:  # (stream (addr array byte))
            # Not to be used directly, so we don't include a name here.
   0/imm32  # 10 reserved for type parameters; value is (address array byte) in Type-tree-value2.
            # Not to be used directly, so we don't include a name here.
+  # Keep Primitive-type-ids in sync if you add types here.
                           0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
@@ -416,7 +417,7 @@ Type-id:  # (stream (addr array byte))
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
 
 Primitive-type-ids:  # (addr int)
-  0x24
+  0x2c
 
 # == Type definitions
 # Program->types contains some typeinfo for each type definition.
@@ -4893,6 +4894,94 @@ test-convert-function-and-type-definition:
     5d/pop-to-ebp
     c3/return
 
+test-type-definition-with-array:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  a: (array int 3)\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-type-definition-with-array: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "type t: invalid type 'array'"  "F - test-type-definition-with-array: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-type-definition-with-array: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-type-definition-with-addr:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  a: (addr int)\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-type-definition-with-addr: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "type t: invalid type 'addr'"  "F - test-type-definition-with-addr: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-type-definition-with-addr: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-local-var-with-user-defined-type:
     # . prologue
     55/push-ebp
@@ -6566,7 +6655,6 @@ $parse-mu:sig:
         0f 84/jump-if-= break/disp32
         # edi = curr-function
         57/push-edi
-$bb:
         8b/-> *(ebp-4) 7/r32/edi
         # var new-function/esi: (handle function)
         68/push 0/imm32
@@ -10667,7 +10755,7 @@ $populate-mu-type:line-loop:
       (read-line-buffered *(ebp+8) %ecx)
       # if (line->write == 0) abort
       81 7/subop/compare *ecx 0/imm32
-      0f 84/jump-if-= $populate-mu-type:abort/disp32
+      0f 84/jump-if-= $populate-mu-type:error1/disp32
 #?       # dump line {{{
 #?       (write 2 "parse-mu: ^")
 #?       (write-stream 2 %ecx)
@@ -10688,7 +10776,19 @@ $populate-mu-type:parse-element:
       # must do this first to strip the trailing ':' from word-slice before
       # using it in find-or-create-typeinfo-fields below
       # TODO: clean up that mutation in parse-var-with-type
-      (parse-var-with-type %edx %ecx %esi *(ebp+0x10) *(ebp+0x14))  # => eax
+      (parse-var-with-type %edx %ecx %esi *(ebp+0x10) *(ebp+0x14))
+      # if v is an addr, abort
+      (lookup *esi *(esi+4))  # => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-mu-addr-type? %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $populate-mu-type:error2/disp32
+      # if v is an array, abort  (we could support it, but initialization gets complex)
+      (lookup *esi *(esi+4))  # => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-mu-array-type? %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $populate-mu-type:error3/disp32
       # var tmp/ecx
       51/push-ecx
 $populate-mu-type:create-typeinfo-fields:
@@ -10712,6 +10812,7 @@ $populate-mu-type:set-input-type:
       89/<- *eax 1/r32/ecx  # Typeinfo-entry-input-var
       8b/-> *(esi+4) 1/r32/ecx
       89/<- *(eax+4) 1/r32/ecx  # Typeinfo-entry-input-var
+      # restore line
       59/pop-to-ecx
       {
 $populate-mu-type:create-output-type:
@@ -10745,12 +10846,32 @@ $populate-mu-type:end:
     5d/pop-to-ebp
     c3/return
 
-$populate-mu-type:abort:
-    # error("unexpected top-level command: " word-slice "\n")
+$populate-mu-type:error1:
+    # error("incomplete type definition '" t->name "'\n")
     (write-buffered *(ebp+0x10) "incomplete type definition '")
     (type-name *edi)  # Typeinfo-id => eax
     (write-buffered *(ebp+0x10) %eax)
     (write-buffered *(ebp+0x10) "\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$populate-mu-type:error2:
+    # error("type " t->name ": invalid type 'addr'\n")
+    (write-buffered *(ebp+0x10) "type ")
+    (type-name *edi)  # Typeinfo-id => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": invalid type 'addr'\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$populate-mu-type:error3:
+    # error("type " t->name ": invalid type 'array'\n")
+    (write-buffered *(ebp+0x10) "type ")
+    (type-name *edi)  # Typeinfo-id => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": invalid type 'array'\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
@@ -10779,7 +10900,7 @@ index:  # arr: (addr stream (handle array byte)), index: int -> result/eax: (add
     # eax = index
     8b/-> *(ebp+0xc) 0/r32/eax
     # eax = *(arr + 12 + index)
-    8b/-> *(esi+eax+0xc) 0/r32/eax
+    8b/-> *(esi+eax<<2+0xc) 0/r32/eax
 $index:end:
     # . restore registers
     5e/pop-to-esi
@@ -19444,6 +19565,28 @@ is-mu-addr-type?:  # a: (addr type-tree) -> result/eax: boolean
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
 $is-mu-addr-type?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+is-mu-array-type?:  # a: (addr type-tree) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax = a
+    8b/-> *(ebp+8) 0/r32/eax
+    # if (!a->is-atom?) a = a->left
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    {
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    }
+    # return (a->value == array)
+    81 7/subop/compare *(eax+4) 3/imm32/array  # Type-tree-value
+    0f 94/set-byte-if-= %al
+    81 4/subop/and %eax 0xff/imm32
+$is-mu-array-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
