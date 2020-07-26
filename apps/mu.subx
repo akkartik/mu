@@ -11653,10 +11653,6 @@ has-primitive-name?:  # stmt: (addr stmt) -> result/eax: boolean
     (string-equal? %esi "compute-offset")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $has-primitive-name?:end/disp32
-    # if (name == "lookup") return true
-    (string-equal? %esi "lookup")  # => eax
-    3d/compare-eax-and 0/imm32/false
-    0f 85/jump-if-!= $has-primitive-name?:end/disp32
     # if (name == "allocate") return true
     (string-equal? %esi "allocate")  # => eax
     3d/compare-eax-and 0/imm32/false
@@ -11768,14 +11764,6 @@ check-mu-primitive:  # stmt: (addr stmt), fn: (addr function), err: (addr buffer
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (check-mu-compute-offset-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
-      e9/jump $check-mu-primitive:end/disp32
-    }
-    # if (op == "lookup") check-mu-lookup-stmt
-    {
-      (string-equal? %ecx "lookup")  # => eax
-      3d/compare-eax-and 0/imm32/false
-      74/jump-if-= break/disp8
-      (check-mu-lookup-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       e9/jump $check-mu-primitive:end/disp32
     }
     # if (op == "allocate") check-mu-allocate-stmt
@@ -12343,18 +12331,6 @@ check-mu-compute-offset-stmt:  # stmt: (addr stmt), fn: (addr function), err: (a
     89/<- %ebp 4/r32/esp
     # . save registers
 $check-mu-compute-offset-stmt:end:
-    # . restore registers
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-check-mu-lookup-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # . save registers
-$check-mu-lookup-stmt:end:
     # . restore registers
     # . epilogue
     89/<- %esp 5/r32/ebp
