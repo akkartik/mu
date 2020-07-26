@@ -3,7 +3,7 @@
 # To run (on Linux and x86):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu prototypes/tile/4.mu
+#   $ ./translate_mu prototypes/tile/10.mu
 #   $ ./a.elf
 #
 # Press 'c' to create new children for the root node, and keys to move:
@@ -201,10 +201,10 @@ fn create-child node: (handle cell) {
 fn render root: (addr cell), cursor: (addr cell) {
   clear-screen
   var depth/eax: int <- tree-depth root
-  var viewport-width/ecx: int <- copy 0x64  # col2
+  var viewport-width/ecx: int <- copy 0x65  # col2
   viewport-width <- subtract 5  # col1
   var column-width/eax: int <- try-divide viewport-width, depth
-  render-tree root, column-width, 5, 5, 0x20, 0x64, cursor
+  render-tree root, column-width, 5, 5, 0x20, 0x65, cursor
 }
 
 fn render-tree c: (addr cell), column-width: int, row-min: int, col-min: int, row-max: int, col-max: int, cursor: (addr cell) {
@@ -306,13 +306,11 @@ fn draw-hatching row1: int, col1: int, row2: int, col2: int {
   var c/eax: int <- copy col1
   var r1/ecx: int <- copy row1
   r1 <- increment
-  var r2/edx: int <- copy row2
-  r2 <- decrement
   c <- add 2
   {
     compare c, col2
     break-if->=
-    draw-vertical-line r1, r2, c
+    draw-vertical-line r1, row2, c
     c <- add 2
     loop
   }

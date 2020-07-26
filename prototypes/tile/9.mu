@@ -4,7 +4,7 @@
 # To run (on Linux and x86):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu prototypes/tile/4.mu
+#   $ ./translate_mu prototypes/tile/9.mu
 #   $ ./a.elf
 #
 # Press 'c' to create new children for the root node.

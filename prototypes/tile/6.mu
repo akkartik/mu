@@ -3,7 +3,7 @@
 # To run (on Linux and x86):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu prototypes/tile/4.mu
+#   $ ./translate_mu prototypes/tile/6.mu
 #   $ ./a.elf
 #
 # Every time you press a key, a deeper tree is rendered. Press ctrl-c to exit.

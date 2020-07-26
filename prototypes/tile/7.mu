@@ -3,7 +3,7 @@
 # To run (on Linux and x86):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu prototypes/tile/4.mu
+#   $ ./translate_mu prototypes/tile/7.mu
 #   $ ./a.elf
 #
 # Every time you press a key, the root node gains another child. Press ctrl-c

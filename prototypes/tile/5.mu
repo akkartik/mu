@@ -3,7 +3,7 @@
 # To run (on Linux and x86):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu prototypes/tile/4.mu
+#   $ ./translate_mu prototypes/tile/5.mu
 #   $ ./a.elf
 #
 # You should see a single rectangle representing a singleton tree node.
