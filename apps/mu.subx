@@ -12810,7 +12810,7 @@ size-of-deref:  # v: (addr var) -> result/eax: int
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (size-of-array %ecx)  # => eax
-      eb/jump $size-of:end/disp8
+      eb/jump $size-of-deref:end/disp8
     }
     # if (!t->is-atom?) t = lookup(t->left)
     {
@@ -12879,7 +12879,7 @@ size-of-array:  # a: (addr type-tree) -> result/eax: int
     (lookup *(ecx+0xc) *(ecx+0x10))  # Type-tree-right Type-tree-right => eax
     (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
     8b/-> *(eax+8) 1/r32/ecx  # Type-tree-value-size
-    # return array-size * size-of(elem-type)
+    # return 4 + array-size * size-of(elem-type)
     (size-of-type-id-as-array-element %edx)  # => eax
     f7 4/subop/multiply-into-eax %ecx
     05/add-to-eax 4/imm32  # for array size
