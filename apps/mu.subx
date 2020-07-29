@@ -4932,7 +4932,7 @@ test-type-definition-with-array:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-type-definition-with-array: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "type t: invalid type 'array'"  "F - test-type-definition-with-array: error message")
+    (check-next-stream-line-equal _test-error-stream  "type t: 'array' elements not allowed for now"  "F - test-type-definition-with-array: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-type-definition-with-array: exit status")
     # don't restore from ebp
@@ -4976,7 +4976,7 @@ test-type-definition-with-addr:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-type-definition-with-addr: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "type t: invalid type 'addr'"  "F - test-type-definition-with-addr: error message")
+    (check-next-stream-line-equal _test-error-stream  "type t: 'addr' elements not allowed"  "F - test-type-definition-with-addr: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-type-definition-with-addr: exit status")
     # don't restore from ebp
@@ -10872,41 +10872,37 @@ $populate-mu-type:error1:
     # never gets here
 
 $populate-mu-type:error2:
-    # error("type " t->name ": invalid type 'addr'\n")
     (write-buffered *(ebp+0x10) "type ")
     (type-name *edi)  # Typeinfo-id => eax
     (write-buffered *(ebp+0x10) %eax)
-    (write-buffered *(ebp+0x10) ": invalid type 'addr'\n")
+    (write-buffered *(ebp+0x10) ": 'addr' elements not allowed\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
 
 $populate-mu-type:error3:
-    # error("type " t->name ": invalid type 'array'\n")
     (write-buffered *(ebp+0x10) "type ")
     (type-name *edi)  # Typeinfo-id => eax
     (write-buffered *(ebp+0x10) %eax)
-    (write-buffered *(ebp+0x10) ": invalid type 'array'\n")
+    (write-buffered *(ebp+0x10) ": 'array' elements not allowed for now\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
 
 $populate-mu-type:error4:
-    # error("type " t->name ": invalid type 'array'\n")
     (write-buffered *(ebp+0x10) "type ")
     (type-name *edi)  # Typeinfo-id => eax
     (write-buffered *(ebp+0x10) %eax)
-    (write-buffered *(ebp+0x10) ": invalid type 'slice'\n")
+    (write-buffered *(ebp+0x10) ": 'slice' elements not allowed\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
 
 $populate-mu-type:error5:
-    # error("type " t->name ": invalid type 'array'\n")
     (write-buffered *(ebp+0x10) "type ")
     (type-name *edi)  # Typeinfo-id => eax
     (write-buffered *(ebp+0x10) %eax)
-    (write-buffered *(ebp+0x10) ": invalid type 'stream'\n")
+    (write-buffered *(ebp+0x10) ": 'stream' elements not allowed for now\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
