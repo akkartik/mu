@@ -78,7 +78,7 @@ sig copy-handle src: (handle _T), dest: (addr handle _T)
 #sig allocate-array ad: (addr allocation-descriptor), n: int, out: (addr handle _)
 sig copy-array ad: (addr allocation-descriptor), src: (addr array _T), out: (addr handle array _T)
 #sig zero-out start: (addr byte), size: int
-sig new-stream ad: (addr allocation-descriptor), length: int, elemsize: int, out: (addr handle stream _)
+#sig new-stream ad: (addr allocation-descriptor), length: int, elemsize: int, out: (addr handle stream _)
 sig read-line-buffered f: (addr buffered-file), s: (addr stream byte)
 sig read-line f: (addr stream byte), s: (addr stream byte)
 sig slice-empty? s: (addr slice) -> result/eax: boolean
@@ -156,4 +156,4 @@ sig enable-keyboard-immediate-mode
 sig enable-keyboard-type-mode
 sig read-key -> result/eax: byte
 sig open filename: (addr array byte), write?: boolean, out: (addr handle buffered-file)
-sig size in: (addr array _) -> result/eax: int
+#sig size in: (addr array _) -> result/eax: int

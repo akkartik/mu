@@ -407,8 +407,11 @@ Type-id:  # (stream (addr array byte))
            # Not to be used directly, so we don't include a name here.
   0/imm32  # 10 reserved for type parameters; value is (address array byte) in Type-tree-value2.
            # Not to be used directly, so we don't include a name here.
+  # some SubX types deliberately left undefined in Mu; they can only be operated on using SubX primitives
+  "stream"/imm32  # 11
+  "slice"/imm32  # 12
   # Keep Primitive-type-ids in sync if you add types here.
-                          0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+                                          0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
@@ -417,7 +420,7 @@ Type-id:  # (stream (addr array byte))
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
 
 Primitive-type-ids:  # (addr int)
-  0x2c
+  0x34
 
 # == Type definitions
 # Program->types contains some typeinfo for each type definition.
@@ -10789,6 +10792,18 @@ $populate-mu-type:parse-element:
       (is-mu-array-type? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-type:error3/disp32
+      # if v is a slice, abort
+      (lookup *esi *(esi+4))  # => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-simple-mu-type? %eax 0xc)  # slice => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $populate-mu-type:error4/disp32
+      # if v is a stream, abort  (we could support it, but initialization gets even more complex)
+      (lookup *esi *(esi+4))  # => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-mu-stream-type? %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $populate-mu-type:error5/disp32
       # var tmp/ecx
       51/push-ecx
 $populate-mu-type:create-typeinfo-fields:
@@ -10872,6 +10887,26 @@ $populate-mu-type:error3:
     (type-name *edi)  # Typeinfo-id => eax
     (write-buffered *(ebp+0x10) %eax)
     (write-buffered *(ebp+0x10) ": invalid type 'array'\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$populate-mu-type:error4:
+    # error("type " t->name ": invalid type 'array'\n")
+    (write-buffered *(ebp+0x10) "type ")
+    (type-name *edi)  # Typeinfo-id => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": invalid type 'slice'\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$populate-mu-type:error5:
+    # error("type " t->name ": invalid type 'array'\n")
+    (write-buffered *(ebp+0x10) "type ")
+    (type-name *edi)  # Typeinfo-id => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": invalid type 'stream'\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
@@ -11080,6 +11115,13 @@ compute-size-of-type-id:  # t: type-id -> result/eax: int
     }
     # if t is a handle, return 8
     3d/compare-eax-and 4/imm32/handle
+    {
+      75/jump-if-!= break/disp8
+      b8/copy-to-eax 8/imm32
+      eb/jump $compute-size-of-type-id:end/disp8  # eax changes type from type-id to int
+    }
+    # if t is a slice, return 8
+    3d/compare-eax-and 0xc/imm32/slice
     {
       75/jump-if-!= break/disp8
       b8/copy-to-eax 8/imm32
@@ -12773,6 +12815,14 @@ size-of:  # v: (addr var) -> result/eax: int
       (size-of-array %ecx)  # => eax
       eb/jump $size-of:end/disp8
     }
+    # if is-mu-stream?(t) return size-of-stream(t)
+    {
+      (is-mu-stream? %ecx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (size-of-stream %ecx)  # => eax
+      eb/jump $size-of:end/disp8
+    }
     # if (!t->is-atom?) t = lookup(t->left)
     {
       81 7/subop/compare *ecx 0/imm32/false  # Type-tree-is-atom
@@ -12810,6 +12860,14 @@ size-of-deref:  # v: (addr var) -> result/eax: int
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (size-of-array %ecx)  # => eax
+      eb/jump $size-of-deref:end/disp8
+    }
+    # if is-mu-stream?(t) return size-of-stream(t)
+    {
+      (is-mu-stream? %ecx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (size-of-stream %ecx)  # => eax
       eb/jump $size-of-deref:end/disp8
     }
     # if (!t->is-atom?) t = lookup(t->left)
@@ -12859,6 +12917,7 @@ $is-mu-array?:end:
     5d/pop-to-ebp
     c3/return
 
+# size of a statically allocated array where the size is part of the type expression
 size-of-array:  # a: (addr type-tree) -> result/eax: int
     # . prologue
     55/push-ebp
@@ -12887,6 +12946,50 @@ $size-of-array:end:
     # . restore registers
     5a/pop-to-edx
     59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+is-mu-stream?:  # t: (addr type-tree) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # ecx = t
+    8b/-> *(ebp+8) 1/r32/ecx
+    # if t->is-atom?, return false
+    81 7/subop/compare *ecx 0/imm32/false  # Type-tree-is-atom
+    75/jump-if-!= $is-mu-stream?:return-false/disp8
+    # if !t->left->is-atom?, return false
+    (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    74/jump-if-= $is-mu-stream?:return-false/disp8
+    # return t->left->value == stream
+    81 7/subop/compare *(eax+4) 0xb/imm32/stream-type-id  # Type-tree-value
+    0f 94/set-if-= %al
+    81 4/subop/and %eax 0xff/imm32
+    eb/jump $is-mu-stream?:end/disp8
+$is-mu-stream?:return-false:
+    b8/copy-to-eax 0/imm32/false
+$is-mu-stream?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# size of a statically allocated stream where the size is part of the type expression
+size-of-stream:  # a: (addr type-tree) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (size-of-array *(ebp+8))  # assumes we ignore the actual type name 'array' in the type
+    05/add-to-eax 8/imm32  # for read/write pointers
+$size-of-stream:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -14268,7 +14371,7 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (addr stmt)
     # v->offset = *Curr-local-stack-offset
     8b/-> *Curr-local-stack-offset 0/r32/eax
     89/<- *(ecx+0x14) 0/r32/eax  # Var-offset
-    # if v is an array, do something special
+    # if v is an array, do something special to initialize it
     {
       (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
       (is-mu-array? %eax)  # => eax
@@ -14276,14 +14379,26 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (addr stmt)
       0f 84/jump-if-= break/disp32
       # var array-size-without-size/edx: int = n-4
       81 5/subop/subtract %edx 4/imm32
+      #
+      (emit-array-data-initialization *(ebp+8) %edx)
+      e9/jump $emit-subx-var-def:end/disp32
+    }
+    # another special-case for initializing streams
+    # a stream is an array with 2 extra pointers
+    {
+      (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
+      (is-mu-stream? %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= break/disp32
+      # var array-size-without-size/edx: int = n-12
+      81 5/subop/subtract %edx 0xc/imm32
+      (emit-array-data-initialization *(ebp+8) %edx)
+      # emit read and write pointers
       (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "(push-n-zero-bytes ")
-      (write-int32-hex-buffered *(ebp+8) %edx)
-      (write-buffered *(ebp+8) ")\n")
+      (write-buffered *(ebp+8) "68/push 0/imm32\n")
       (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "68/push ")
-      (write-int32-hex-buffered *(ebp+8) %edx)
-      (write-buffered *(ebp+8) "/imm32\n")
+      (write-buffered *(ebp+8) "68/push 0/imm32\n")
+      #
       eb/jump $emit-subx-var-def:end/disp8
     }
     # while n > 0
@@ -14302,6 +14417,25 @@ $emit-subx-var-def:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-array-data-initialization:  # out: (addr buffered-file), n: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(push-n-zero-bytes ")
+    (write-int32-hex-buffered *(ebp+8) *(ebp+0xc))
+    (write-buffered *(ebp+8) ")\n")
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "68/push ")
+    (write-int32-hex-buffered *(ebp+8) *(ebp+0xc))
+    (write-buffered *(ebp+8) "/imm32\n")
+$emit-array-data-initialization:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -14371,6 +14505,15 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
       (translate-mu-populate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      e9/jump $emit-subx-stmt:end/disp32
+    }
+    # allocate stream
+    {
+      # if (!string-equal?(stmt->operation, "populate-stream")) break
+      (string-equal? %ecx "populate-stream")  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      (translate-mu-populate-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # - if stmt matches a primitive, emit it
@@ -15200,6 +15343,42 @@ translate-mu-populate-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err
     (emit-subx-call-operand *(ebp+8) %edi)
     (write-buffered *(ebp+8) ")\n")
 $translate-mu-populate-stmt:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+translate-mu-populate-stream-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var target/edi: (addr stmt-var) = stmt->inouts[0]
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %edi 0/r32/eax
+    # var len/ecx: (addr stmt-var) = stmt->inouts[1]
+    (lookup *(edi+8) *(edi+0xc))  # Stmt-var-next Stmt-var-next => eax
+    89/<- %ecx 0/r32/eax
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(new-stream Heap ")
+    (addr-handle-array-payload-size %edi *(ebp+0x10) *(ebp+0x14))  # => eax
+    (write-int32-hex-buffered *(ebp+8) %eax)
+    (emit-subx-call-operand *(ebp+8) %ecx)
+    (emit-subx-call-operand *(ebp+8) %edi)
+    (write-buffered *(ebp+8) ")\n")
+$translate-mu-populate-stream-stmt:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -19563,6 +19742,28 @@ is-mu-array-type?:  # a: (addr type-tree) -> result/eax: boolean
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
 $is-mu-array-type?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+is-mu-stream-type?:  # a: (addr type-tree) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax = a
+    8b/-> *(ebp+8) 0/r32/eax
+    # if (!a->is-atom?) a = a->left
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    {
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    }
+    # return (a->value == stream)
+    81 7/subop/compare *(eax+4) 0xb/imm32/stream  # Type-tree-value
+    0f 94/set-byte-if-= %al
+    81 4/subop/and %eax 0xff/imm32
+$is-mu-stream-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
