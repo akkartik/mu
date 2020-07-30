@@ -11699,6 +11699,18 @@ has-primitive-name?:  # stmt: (addr stmt) -> result/eax: boolean
     (string-equal? %esi "populate")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "populate-stream") return true
+    (string-equal? %esi "populate-stream")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "read-from-stream") return true
+    (string-equal? %esi "read-from-stream")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "write-to-stream") return true
+    (string-equal? %esi "write-to-stream")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
     # var curr/ecx: (addr primitive) = Primitives
     b9/copy-to-ecx Primitives/imm32
     {
@@ -11818,6 +11830,30 @@ check-mu-primitive:  # stmt: (addr stmt), fn: (addr function), err: (addr buffer
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (check-mu-populate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      e9/jump $check-mu-primitive:end/disp32
+    }
+    # if (op == "populate-stream") check-mu-populate-stream-stmt
+    {
+      (string-equal? %ecx "populate-stream")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (check-mu-populate-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      e9/jump $check-mu-primitive:end/disp32
+    }
+    # if (op == "read-from-stream") check-mu-read-from-stream-stmt
+    {
+      (string-equal? %ecx "read-from-stream")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (check-mu-read-from-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      e9/jump $check-mu-primitive:end/disp32
+    }
+    # if (op == "write-to-stream") check-mu-write-to-stream-stmt
+    {
+      (string-equal? %ecx "write-to-stream")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (check-mu-write-to-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       e9/jump $check-mu-primitive:end/disp32
     }
     # otherwise check-numberlike-stmt
@@ -12393,6 +12429,42 @@ check-mu-populate-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr bu
     89/<- %ebp 4/r32/esp
     # . save registers
 $check-mu-populate-stmt:end:
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-populate-stream-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$check-mu-populate-stream-stmt:end:
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-read-from-stream-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$check-mu-read-from-stream-stmt:end:
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-write-to-stream-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$check-mu-write-to-stream-stmt:end:
     # . restore registers
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -14512,6 +14584,24 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (translate-mu-populate-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
       e9/jump $emit-subx-stmt:end/disp32
     }
+    # read from stream
+    {
+      # if (!string-equal?(stmt->operation, "read-from-stream")) break
+      (string-equal? %ecx "read-from-stream")  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      (translate-mu-read-from-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      e9/jump $emit-subx-stmt:end/disp32
+    }
+    # write to stream
+    {
+      # if (!string-equal?(stmt->operation, "write-to-stream")) break
+      (string-equal? %ecx "write-to-stream")  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      (translate-mu-write-to-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      e9/jump $emit-subx-stmt:end/disp32
+    }
     # - if stmt matches a primitive, emit it
     {
 $emit-subx-stmt:check-for-primitive:
@@ -15313,6 +15403,36 @@ $addr-handle-payload-size:end:
     5d/pop-to-ebp
     c3/return
 
+addr-payload-size:  # s: (addr stmt-var), err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var t/eax: (addr type-tree) = s->value->type
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    # TODO: check eax != 0
+    # TODO: check !t->is-atom?
+    # TODO: check t->left == addr
+    # t = t->right
+$addr-payload-size:skip-addr:
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # TODO: check eax != 0
+    # if !t->is-atom? t = t->left
+    81 7/subop/compare *eax 0/imm32/false
+    {
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    }
+    # TODO: check t->is-atom?
+    # return size(t->value)
+    (size-of-type-id *(eax+4))  # Type-tree-value => eax
+$addr-payload-size:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 translate-mu-populate-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
@@ -15375,6 +15495,83 @@ translate-mu-populate-stream-stmt:  # out: (addr buffered-file), stmt: (addr stm
     (emit-subx-call-operand *(ebp+8) %edi)
     (write-buffered *(ebp+8) ")\n")
 $translate-mu-populate-stream-stmt:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+translate-mu-read-from-stream-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var stream/ecx: (addr stmt-var) = stmt->inouts[0]
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %ecx 0/r32/eax
+    # var target/edi: (addr stmt-var) = stmt->inouts[1]
+    (lookup *(ecx+8) *(ecx+0xc))  # Stmt-var-next Stmt-var-next => eax
+    89/<- %edi 0/r32/eax
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(read-from-stream")
+    (emit-subx-call-operand *(ebp+8) %ecx)
+    (emit-subx-call-operand *(ebp+8) %edi)
+    (write-buffered *(ebp+8) Space)
+    (addr-payload-size %edi *(ebp+0x10) *(ebp+0x14))  # => eax
+    (write-int32-hex-buffered *(ebp+8) %eax)
+    (write-buffered *(ebp+8) ")\n")
+$translate-mu-read-from-stream-stmt:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+translate-mu-write-to-stream-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var stream/ecx: (addr stmt-var) = stmt->inouts[0]
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %ecx 0/r32/eax
+    # var target/edi: (addr stmt-var) = stmt->inouts[1]
+    (lookup *(ecx+8) *(ecx+0xc))  # Stmt-var-next Stmt-var-next => eax
+    89/<- %edi 0/r32/eax
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(write-to-stream")
+    (emit-subx-call-operand *(ebp+8) %ecx)
+    (flush *(ebp+8))
+    (emit-subx-call-operand *(ebp+8) %edi)
+    (flush *(ebp+8))
+    (write-buffered *(ebp+8) Space)
+    (flush *(ebp+8))
+    (addr-payload-size %edi *(ebp+0x10) *(ebp+0x14))  # => eax
+    (write-int32-hex-buffered *(ebp+8) %eax)
+    (write-buffered *(ebp+8) ")\n")
+$translate-mu-write-to-stream-stmt:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
