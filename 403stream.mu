@@ -1,13 +1,15 @@
 # Tests for Mu's stream primitives.
 
 fn test-stream {
-  # write an int to a stream, then read it back
+  # - write an int to a stream, then read it back
+  # step 1: initialize
   var s: (stream int 4)
   var s2/ecx: (addr stream int 4) <- address s
   var tmp/eax: boolean <- stream-empty? s2
   check-true tmp, "F - test-stream/empty?/0"
   tmp <- stream-full? s2
   check-false tmp, "F - test-stream/full?/0"
+  # step 2: write to stream
   var x: int
   copy-to x, 0x34
   var x2/edx: (addr int) <- address x
@@ -16,6 +18,9 @@ fn test-stream {
   check-false tmp, "F - test-stream/empty?/1"
   tmp <- stream-full? s2
   check-false tmp, "F - test-stream/full?/1"
+  # step 3: modify the value written (should make no difference)
+  copy-to x, 0
+  # step 4: read back
   var y: int
   var y2/ebx: (addr int) <- address y
   read-from-stream s2, y2
