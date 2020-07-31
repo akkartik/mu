@@ -5077,6 +5077,54 @@ test-convert-function-with-local-var-with-user-defined-type:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: t\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  x: s\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "type s {\n")
+    (write _test-input-stream "  z: int\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/5")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/7")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/8")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/9")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/10")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/11")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/12")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/13")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-with-user-defined-type-containing-user-defined-type/14")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-call-with-arg-of-user-defined-type:
     # . prologue
     55/push-ebp
@@ -11075,7 +11123,7 @@ $populate-mu-type-sizes-in-type:loop:
       74/jump-if-= $populate-mu-type-sizes-in-type:end/disp8
       # compute size of t->input-var
       (lookup *eax *(eax+4))  # Typeinfo-entry-input-var Typeinfo-entry-input-var => eax
-      (compute-size-of-var %eax)  # => eax
+      (compute-size-of-var %eax *(ebp+0xc) *(ebp+0x10))  # => eax
       # result += eax
       01/add-to %edi 0/r32/eax
       # curr += row-size
@@ -11105,7 +11153,7 @@ $populate-mu-type-sizes-in-type:abort:
 
 # Analogous to size-of, except we need to compute what size-of can just read
 # off the right data structures.
-compute-size-of-var:  # in: (addr var) -> result/eax: int
+compute-size-of-var:  # in: (addr var), err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -11123,7 +11171,7 @@ compute-size-of-var:  # in: (addr var) -> result/eax: int
       89/<- %ecx 0/r32/eax
     }
     # TODO: ensure t is an atom
-    (compute-size-of-type-id *(ecx+4))  # Type-tree-value => eax
+    (compute-size-of-type-id *(ecx+4) *(ebp+0xc) *(ebp+0x10))  # Type-tree-value => eax
 $compute-size-of-var:end:
     # . restore registers
     59/pop-to-ecx
@@ -11132,7 +11180,7 @@ $compute-size-of-var:end:
     5d/pop-to-ebp
     c3/return
 
-compute-size-of-type-id:  # t: type-id -> result/eax: int
+compute-size-of-type-id:  # t: type-id, err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -11175,7 +11223,8 @@ compute-size-of-type-id:  # t: type-id -> result/eax: int
       81 7/subop/compare *ecx 0/imm32
       74/jump-if-= break/disp8
 $compute-size-of-type-id:user-defined:
-      (populate-mu-type-sizes %eax)
+      (lookup *ecx *(ecx+4))  # => eax
+      (populate-mu-type-sizes-in-type %eax *(ebp+0xc) *(ebp+0x10))
       8b/-> *(eax+0xc) 0/r32/eax  # Typeinfo-total-size-in-bytes
       eb/jump $compute-size-of-type-id:end/disp8
     }
@@ -15553,7 +15602,7 @@ translate-mu-populate-stream-stmt:  # out: (addr buffered-file), stmt: (addr stm
     #
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "(new-stream Heap ")
-    (addr-handle-array-payload-size %edi *(ebp+0x10) *(ebp+0x14))  # => eax
+    (addr-handle-stream-payload-size %edi *(ebp+0x10) *(ebp+0x14))  # => eax
     (write-int32-hex-buffered *(ebp+8) %eax)
     (emit-subx-call-operand *(ebp+8) %ecx)
     (emit-subx-call-operand *(ebp+8) %edi)
@@ -15684,6 +15733,49 @@ $addr-handle-array-payload-size:compute-size:
     # return size(t->value)
     (size-of-type-id-as-array-element *(eax+4))  # Type-tree-value => eax
 $addr-handle-array-payload-size:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+addr-handle-stream-payload-size:  # s: (addr stmt-var), err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var t/eax: (addr type-tree) = s->value->type
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    # TODO: check eax != 0
+    # TODO: check !t->is-atom?
+    # TODO: check t->left == addr
+    # t = t->right
+$addr-handle-stream-payload-size:skip-addr:
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # TODO: check eax != 0
+    # TODO: check !t->is-atom?
+    # TODO: check t->left == handle
+    # t = t->right
+$addr-handle-stream-payload-size:skip-handle:
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # TODO: check eax != 0
+    # TODO: check !t->is-atom?
+    # TODO: check t->left == stream
+    # t = t->right
+$addr-handle-stream-payload-size:skip-stream:
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # TODO: check eax != 0
+    # if !t->is-atom? t = t->left
+    81 7/subop/compare *eax 0/imm32/false
+    {
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    }
+$addr-handle-stream-payload-size:compute-size:
+    # TODO: check t->is-atom?
+    # return size(t->value)
+    (size-of-type-id-as-array-element *(eax+4))  # Type-tree-value => eax
+$addr-handle-stream-payload-size:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
