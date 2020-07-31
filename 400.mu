@@ -157,3 +157,6 @@ sig enable-keyboard-type-mode
 sig read-key -> result/eax: byte
 sig open filename: (addr array byte), write?: boolean, out: (addr handle buffered-file)
 #sig size in: (addr array _) -> result/eax: int
+
+sig stream-empty? s: (addr stream _) -> result/eax: boolean
+sig stream-full? s: (addr stream _) -> result/eax: boolean

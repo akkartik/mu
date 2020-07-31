@@ -1665,6 +1665,51 @@ test-convert-function-call-with-inout-with-multiple-type-parameters:
     5d/pop-to-ebp
     c3/return
 
+test-type-parameter-matches-rest-of-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x: (addr array int)\n")
+    (write _test-input-stream "  g x\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g a: (addr _) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # no errors
+    (check-stream-equal _test-error-stream  ""  "F - test-type-parameter-matches-rest-of-type: error stream should be empty")
+    # don't bother checking the generated code
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-call-with-inout-with-incompatible-type-parameters:
     # . prologue
     55/push-ebp
@@ -12780,7 +12825,7 @@ $type-component-match?:compare-addr:
     39/compare %edx 0/r32/eax  # Var-type
     b8/copy-to-eax 1/imm32/true
     0f 84/jump-if-= $type-component-match?:end/disp32
-    # if def is a type parameter, return true
+    # if def is a type parameter, just check in type-parameters
     {
 $type-component-match?:check-type-parameter:
       81 7/subop/compare *ecx 0/imm32/false  # Type-tree-is-atom
@@ -12789,6 +12834,25 @@ $type-component-match?:check-type-parameter:
       75/jump-if-!= break/disp8
 $type-component-match?:type-parameter:
       (type-parameter-match? *(ecx+8) *(ecx+0xc)  %edx  *(ebp+0x10))  # => eax
+      e9/jump $type-component-match?:end/disp32
+    }
+    # if def is a list containing just a type parameter, just check in type-parameters
+    {
+$type-component-match?:check-list-type-parameter:
+      # if def is a list..
+      81 7/subop/compare *ecx 0/imm32/false  # Type-tree-is-atom
+      75/jump-if-!= break/disp8
+      #   ..that's a singleton
+      81 7/subop/compare *(ecx+0xc) 0/imm32  # Type-tree-left
+      75/jump-if-!= break/disp8
+      #   ..and whose head is a type parameter
+      (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
+      81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+      74/jump-if-= break/disp8
+      81 7/subop/compare *(eax+4) 0xa/imm32/type-parameter  # Type-tree-value
+      75/jump-if-!= break/disp8
+$type-component-match?:list-type-parameter:
+      (type-parameter-match? *(eax+8) *(eax+0xc)  %edx  *(ebp+0x10))  # => eax
       e9/jump $type-component-match?:end/disp32
     }
 $type-component-match?:compare-atom-state:
