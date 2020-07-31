@@ -24,11 +24,12 @@ fn test-stream {
   var y: int
   var y2/ebx: (addr int) <- address y
   read-from-stream s2, y2
-  check-ints-equal y, 0x34, "F - test-stream"
   tmp <- stream-empty? s2
   check-true tmp, "F - test-stream/empty?/2"
   tmp <- stream-full? s2
   check-false tmp, "F - test-stream/full?/2"
+  # we read back what was written
+  check-ints-equal y, 0x34, "F - test-stream"
 }
 
 fn test-stream-full {
