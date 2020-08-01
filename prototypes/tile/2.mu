@@ -5,7 +5,7 @@
 #   cat /dev/urandom |base64 - |head -n 1000 > x
 # then merge pairs of lines.
 #
-# also assumes it's in a window 185 characters wide
+# This prototype assumes it's in a window 185 characters wide.
 
 fn main -> exit-status/ebx: int {
   var num-lines/ecx: int <- copy 0x10

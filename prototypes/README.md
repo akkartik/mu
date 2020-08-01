@@ -8,11 +8,7 @@ To build prototype #n of app X under this directory:
 $ ./translate_mu prototypes/__X__/__n__.mu
 ```
 
-Now try running it with some text file:
-
-```
-$ ./a.elf __text_file__
-```
+This will generate a binary called `a.elf`.
 
 Sub-directories are prototypes with multiple files. Build them like this:
 
@@ -20,4 +16,5 @@ Sub-directories are prototypes with multiple files. Build them like this:
 $ ./translate_mu prototypes/__X__/__n__/*.mu
 ```
 
-Run them as before.
+For instructions on running the generated `a.elf` binary, see the prototype's
+Readme.
