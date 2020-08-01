@@ -55,7 +55,7 @@ syntax match muControl "\<loop\>\|\<loop-if[^ ]*"
 highlight link muControl PreProc
 
 syntax match muKeyword " -> "
-syntax keyword muKeyword fn type var sig
+syntax keyword muKeyword fn sig type var
 highlight link muKeyword PreProc
 
 syntax match muFunction "\(fn\s*\)\@<=\(\S\+\)"

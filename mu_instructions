@@ -236,19 +236,6 @@ var/reg: (addr T_f) <- get var2/reg2: (addr T), f
 var/reg: (addr T_f) <- get var2: T, f
   => "8d/copy-address *(ebp+" var2.stack-offset "+" offset(f) ") " reg "/r32"
 
-# Handles for safe access to the heap
-
-out/reg: (addr T) <- lookup in: (handle T)
-  => # payload_allocid = in->address->allocid
-     "8b/-> *(epb+" (in.stack-offset+4) ") " reg "/r32"
-     "8b/-> *" reg " " reg "/r32"
-     # if (payload_allocid != handle->allocid) abort
-     "39/compare *(ebp+" in.stack-offset ") " reg "/r32"
-     "0f 85/jump-if-!= $lookup:abort/disp32"
-     # return payload
-     "8b/-> *(epb+" (in.stack-offset+4) ") " reg "/r32"
-     "81 0/subop/add %" reg " 4/imm32"  # skip payload->allocid
-
 # Allocating memory
 
 allocate in: (addr handle T)
@@ -256,5 +243,14 @@ allocate in: (addr handle T)
 
 populate in: (addr handle array T), num  # can be literal or variable on stack or register
   => "(allocate-array2 Heap " size-of(T) " " num " " in ")"
+
+populate-stream in: (addr handle stream T), num  # can be literal or variable on stack or register
+  => "(new-stream Heap " size-of(T) " " num " " in ")"
+
+read-from-stream s: (addr stream T), out: (addr T)
+  => "(read-from-stream " s " " out " " size-of(T) ")"
+
+write-to-stream s: (addr stream T), in: (addr T)
+  => "(write-to-stream " s " " in " " size-of(T) ")"
 
 vim:ft=mu:nowrap:textwidth=0
