@@ -10887,18 +10887,24 @@ $populate-mu-type:parse-element:
       (is-mu-array-type? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-type:error3/disp32
+      # if v is a byte, abort
+      (lookup *esi *(esi+4))  # => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-simple-mu-type? %eax 8)  # byte => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $populate-mu-type:error4/disp32
       # if v is a slice, abort
       (lookup *esi *(esi+4))  # => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
       (is-simple-mu-type? %eax 0xc)  # slice => eax
       3d/compare-eax-and 0/imm32/false
-      0f 85/jump-if-!= $populate-mu-type:error4/disp32
+      0f 85/jump-if-!= $populate-mu-type:error5/disp32
       # if v is a stream, abort  (we could support it, but initialization gets even more complex)
       (lookup *esi *(esi+4))  # => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
       (is-mu-stream-type? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
-      0f 85/jump-if-!= $populate-mu-type:error5/disp32
+      0f 85/jump-if-!= $populate-mu-type:error6/disp32
       # var tmp/ecx
       51/push-ecx
 $populate-mu-type:create-typeinfo-fields:
@@ -10988,12 +10994,21 @@ $populate-mu-type:error4:
     (write-buffered *(ebp+0x10) "type ")
     (type-name *edi)  # Typeinfo-id => eax
     (write-buffered *(ebp+0x10) %eax)
-    (write-buffered *(ebp+0x10) ": 'slice' elements not allowed\n")
+    (write-buffered *(ebp+0x10) ": 'byte' elements not allowed\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
 
 $populate-mu-type:error5:
+    (write-buffered *(ebp+0x10) "type ")
+    (type-name *edi)  # Typeinfo-id => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": 'slice' elements not allowed\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$populate-mu-type:error6:
     (write-buffered *(ebp+0x10) "type ")
     (type-name *edi)  # Typeinfo-id => eax
     (write-buffered *(ebp+0x10) %eax)
