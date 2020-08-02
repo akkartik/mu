@@ -131,8 +131,52 @@ $print-string-to-real-screen:end:
     5d/pop-to-ebp
     c3/return
 
-# currently only supports ascii
+# print a grapheme in utf-8 (only up to 4 bytes so far)
 print-grapheme-to-real-screen:  # c: grapheme
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # var curr/eax: byte = 0
+    b8/copy-to-eax 0/imm32
+    # curr = *(ebp+8)
+    8a/byte-> *(ebp+8) 0/r32/al
+    # if (curr == 0) return
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+    #
+    (print-byte-to-real-screen %eax)
+    # curr = *(ebp+9)
+    8a/byte-> *(ebp+9) 0/r32/al
+    # if (curr == 0) return
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+    #
+    (print-byte-to-real-screen %eax)
+    # curr = *(ebp+10)
+    8a/byte-> *(ebp+0xa) 0/r32/al
+    # if (curr == 0) return
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+    #
+    (print-byte-to-real-screen %eax)
+    # curr = *(ebp+11)
+    8a/byte-> *(ebp+0xb) 0/r32/al
+    # if (curr == 0) return
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+    #
+    (print-byte-to-real-screen %eax)
+$print-grapheme-to-real-screen:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+print-byte-to-real-screen:  # c: byte
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -143,7 +187,7 @@ print-grapheme-to-real-screen:  # c: grapheme
     68/push 1/imm32/size
     89/<- %ecx 4/r32/esp
     (write 1 %ecx)
-$print-grapheme-to-real-screen:end:
+$print-byte-to-real-screen:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
     # . restore registers
