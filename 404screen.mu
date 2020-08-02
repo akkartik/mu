@@ -82,6 +82,7 @@ $clear-screen:body: {
   {
     break-if-=
     # fake screen
+    var space/edi: grapheme <- copy 0x20
     move-cursor screen, 1, 1
     var screen-addr/esi: (addr screen) <- copy screen
     var i/eax: int <- copy 1
@@ -94,7 +95,7 @@ $clear-screen:body: {
       {
         compare j, *ncols
         break-if->
-        print-byte screen, 0x20  # space
+        print-grapheme screen, space
         j <- increment
         loop
       }
@@ -136,13 +137,13 @@ $print-string:body: {
 }
 }
 
-fn print-byte screen: (addr screen), c: byte {
-$print-byte:body: {
+fn print-grapheme screen: (addr screen), c: grapheme {
+$print-grapheme:body: {
   compare screen, 0
   {
     break-if-!=
-    print-byte-to-real-screen c
-    break $print-byte:body
+    print-grapheme-to-real-screen c
+    break $print-grapheme:body
   }
   {
     break-if-=

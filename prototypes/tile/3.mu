@@ -68,7 +68,8 @@ $render:render-loop: {
       move-cursor 0, row, col
       loop $render:render-loop
     }
-    print-byte 0, c
+    var g/eax: grapheme <- copy c
+    print-grapheme 0, g
     col <- increment
     loop
   }

@@ -121,7 +121,8 @@ $change-state: {
           {
             break-if-!=
             # r->current-state == 1 && c == '*' => print c, then normal text
-            print-byte 0, c
+            var g/eax: grapheme <- copy c
+            print-grapheme 0, g
             col <- increment
             reset-formatting 0
             start-color 0, 0xec, 7  # 236 = darkish gray
@@ -132,7 +133,8 @@ $change-state: {
           {
             break-if-!=
             # r->current-state == 1 && c == '_' => print c, then normal text
-            print-byte 0, c
+            var g/eax: grapheme <- copy c
+            print-grapheme 0, g
             col <- increment
             reset-formatting 0
             start-color 0, 0xec, 7  # 236 = darkish gray
@@ -163,7 +165,8 @@ $change-state: {
         copy-to *s, 0  # false
       }
       # print c
-      print-byte 0, c
+      var g/eax: grapheme <- copy c
+      print-grapheme 0, g
       col <- increment
       loop
     }
@@ -211,6 +214,7 @@ fn dump in: (addr buffered-file) {
   var c/eax: byte <- read-byte-buffered in
   compare c, 0xffffffff  # EOF marker
   break-if-=
-  print-byte 0, c
+  var g/eax: grapheme <- copy c
+  print-grapheme 0, g
   loop
 }

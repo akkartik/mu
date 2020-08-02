@@ -71,7 +71,8 @@ $add-char:body: {
     break $add-char:body
   }
   # print c
-  print-byte 0, c
+  var g/eax: grapheme <- copy c
+  print-grapheme 0, g
   # self->col++
   var tmp/eax: (addr int) <- get self, col
   increment *tmp

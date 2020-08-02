@@ -62,7 +62,8 @@ $line-loop: {
       compare c, 0xa  # newline
       break-if-=  # no need to print newlines
       # print c
-      print-byte 0, c
+      var g/eax: grapheme <- copy c
+      print-grapheme 0, g
       col <- increment
       loop
     }  # $char-loop
@@ -110,6 +111,7 @@ fn dump in: (addr buffered-file) {
   var c/eax: byte <- read-byte-buffered in
   compare c, 0xffffffff  # EOF marker
   break-if-=
-  print-byte 0, c
+  var g/eax: grapheme <- copy c
+  print-grapheme 0, g
   loop
 }

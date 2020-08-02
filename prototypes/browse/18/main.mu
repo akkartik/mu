@@ -19,7 +19,8 @@ fn render-normal fs: (addr file-state) {
     compare c, 0xffffffff  # EOF marker
     break-if-=
     #
-    print-byte 0, c
+    var g/eax: grapheme <- copy c
+    print-grapheme 0, g
     #
     loop
   }
