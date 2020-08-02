@@ -72,7 +72,7 @@ $main:loop: {
     render root-addr
     loop
   }
-  clear-screen
+  clear-screen 0
   enable-keyboard-type-mode
   exit-status <- copy 0
 }
@@ -105,7 +105,7 @@ fn create-child node: (addr cell) {
 #######################################################
 
 fn render root: (addr cell) {
-  clear-screen
+  clear-screen 0
   var depth/eax: int <- tree-depth root
   var viewport-width/ecx: int <- copy 0x64  # col2
   viewport-width <- subtract 5  # col1
@@ -205,11 +205,11 @@ fn draw-box row1: int, col1: int, row2: int, col2: int {
 
 fn draw-horizontal-line row: int, col1: int, col2: int {
   var col/eax: int <- copy col1
-  move-cursor-on-screen row, col
+  move-cursor 0, row, col
   {
     compare col, col2
     break-if->=
-    print-string-to-screen "-"
+    print-string 0, "-"
     col <- increment
     loop
   }
@@ -220,8 +220,8 @@ fn draw-vertical-line row1: int, row2: int, col: int {
   {
     compare row, row2
     break-if->=
-    move-cursor-on-screen row, col
-    print-string-to-screen "|"
+    move-cursor 0, row, col
+    print-string 0, "|"
     row <- increment
     loop
   }
@@ -233,8 +233,8 @@ fn try-divide _nr: int, _dr: int -> result/eax: int {
   # x = next power-of-2 multiple of _dr after _nr
   var x/ecx: int <- copy 1
   {
-#?     print-int32-hex-to-screen x
-#?     print-string-to-screen "\n"
+#?     print-int32-hex 0, x
+#?     print-string 0, "\n"
     var tmp/edx: int <- copy _dr
     tmp <- multiply x
     compare tmp, _nr
@@ -242,7 +242,7 @@ fn try-divide _nr: int, _dr: int -> result/eax: int {
     x <- shift-left 1
     loop
   }
-#?   print-string-to-screen "--\n"
+#?   print-string 0, "--\n"
   # min, max = x/2, x
   var max/ecx: int <- copy x
   var min/edx: int <- copy max
@@ -250,8 +250,8 @@ fn try-divide _nr: int, _dr: int -> result/eax: int {
   # narrow down result between min and max
   var i/eax: int <- copy min
   {
-#?     print-int32-hex-to-screen i
-#?     print-string-to-screen "\n"
+#?     print-int32-hex 0, i
+#?     print-string 0, "\n"
     var foo/ebx: int <- copy _dr
     foo <- multiply i
     compare foo, _nr
@@ -261,9 +261,9 @@ fn try-divide _nr: int, _dr: int -> result/eax: int {
   }
   result <- copy i
   result <- decrement
-#?   print-string-to-screen "=> "
-#?   print-int32-hex-to-screen result
-#?   print-string-to-screen "\n"
+#?   print-string 0, "=> "
+#?   print-int32-hex 0, result
+#?   print-string 0, "\n"
 }
 
 fn test-try-divide-1 {

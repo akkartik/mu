@@ -18,7 +18,7 @@ fn init-screen-position-state _self: (addr screen-position-state) {
   var self/esi: (addr screen-position-state) <- copy _self
   var nrows/eax: int <- copy 0
   var ncols/ecx: int <- copy 0
-  nrows, ncols <- screen-size
+  nrows, ncols <- screen-size 0
   var dest/edx: (addr int) <- copy 0
   # self->nrows = nrows
   dest <- get self, nrows
@@ -63,7 +63,7 @@ fn start-drawing _self: (addr screen-position-state) {
 fn add-char _self: (addr screen-position-state), c: byte {
   var self/esi: (addr screen-position-state) <- copy _self
   # print c
-  print-byte-to-screen c
+  print-byte 0, c
   # self->col++
   var tmp/eax: (addr int) <- get self, col
   increment *tmp
@@ -131,5 +131,5 @@ fn reposition-cursor _self: (addr screen-position-state) {
   var self/esi: (addr screen-position-state) <- copy _self
   var r/eax: (addr int) <- get self, row
   var c/ecx: (addr int) <- get self, col
-  move-cursor-on-screen *r *c
+  move-cursor 0, *r *c
 }

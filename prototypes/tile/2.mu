@@ -9,7 +9,7 @@
 
 fn main -> exit-status/ebx: int {
   var num-lines/ecx: int <- copy 0x10
-  clear-screen
+  clear-screen 0
   # open a file
   var f: (addr buffered-file)
   {
@@ -36,7 +36,7 @@ fn main -> exit-status/ebx: int {
     enable-keyboard-type-mode
   }
   # clean up
-  clear-screen
+  clear-screen 0
   exit-status <- copy 0
 }
 
@@ -48,11 +48,11 @@ $render:clear-loop: {
     break-if-<=
     decrement start-row
     var col/eax: int <- copy 1
-    move-cursor-on-screen start-row, col
+    move-cursor 0, start-row, col
     {
       compare col, num-cols
       break-if->
-      print-string-to-screen " "
+      print-string 0, " "
       col <- increment
       loop
     }
@@ -61,7 +61,7 @@ $render:clear-loop: {
   # render rest of screen below
   var row/edx: int <- copy start-row
   var col/ebx: int <- copy 1
-  move-cursor-on-screen row, col
+  move-cursor 0, row, col
 $render:render-loop: {
     compare row, num-rows
     break-if->=
@@ -73,10 +73,10 @@ $render:render-loop: {
       break-if-!=
       row <- increment
       col <- copy 0
-      move-cursor-on-screen row, col
+      move-cursor 0, row, col
       loop $render:render-loop
     }
-    print-byte-to-screen c
+    print-byte 0, c
     col <- increment
     loop
   }

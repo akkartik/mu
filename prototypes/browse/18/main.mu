@@ -19,7 +19,7 @@ fn render-normal fs: (addr file-state) {
     compare c, 0xffffffff  # EOF marker
     break-if-=
     #
-    print-byte-to-screen c
+    print-byte 0, c
     #
     loop
   }

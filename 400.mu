@@ -116,8 +116,8 @@ sig emit out: (addr buffered-file), word: (addr slice), width: int
 #sig get-or-insert table: (addr stream {(handle array byte), T}), key: (addr array byte), row-size: int, ad: (addr allocation-descriptor) -> result/eax: (addr T)
 #sig get-or-insert-handle table: (addr stream {(handle array byte), T}), key: (handle array byte), row-size: int -> result/eax: (addr T)
 #sig get-or-insert-slice table: (addr stream {(handle array byte), T}), key: (addr slice), row-size: int, ad: (addr allocation-descriptor) -> result/eax: (addr T)
-#sig get-or-stop table: (addr stream {(handle array byte), T}), key: (addr array byte), row-size: int,
-#sig get-slice-or-stop table: (addr stream {(handle array byte), _}), key: (addr slice), row-size: int,
+#sig get-or-stop table: (addr stream {(handle array byte), T}), key: (addr array byte), row-size: int
+#sig get-slice-or-stop table: (addr stream {(handle array byte), _}), key: (addr slice), row-size: int
 #sig maybe-get table: (addr stream {(handle array byte), T}), key: (addr array byte), row-size: int -> result/eax: (addr T)
 #sig maybe-get-slice table: (addr stream {(handle array byte), T}), key: (addr slice), row-size: int -> result/eax: (addr T)
 sig slurp f: (addr buffered-file), s: (addr stream byte)
@@ -138,20 +138,20 @@ sig kernel-string-to-string ad: (addr allocation-descriptor), in: (addr kernel-s
 sig kernel-string-length in: (addr kernel-string) -> result/eax: int
 sig enable-screen-grid-mode
 sig enable-screen-type-mode
-sig screen-size -> nrows/eax: int, ncols/ecx: int
-sig clear-screen
-sig move-cursor-on-screen row: int, column: int
-sig print-string-to-screen s: (addr array byte)
-sig print-byte-to-screen c: byte
-sig print-int32-hex-to-screen n: int
-sig reset-formatting-on-screen
-sig start-color-on-screen fg: int, bg: int
-sig start-bold-on-screen
-sig start-underline-on-screen
-sig start-reverse-video-on-screen
-sig start-blinking-on-screen
-sig hide-cursor-on-screen
-sig show-cursor-on-screen
+sig real-screen-size -> nrows/eax: int, ncols/ecx: int
+sig clear-real-screen
+sig move-cursor-on-real-screen row: int, column: int
+sig print-string-to-real-screen s: (addr array byte)
+sig print-byte-to-real-screen c: byte
+sig print-int32-hex-to-real-screen n: int
+sig reset-formatting-on-real-screen
+sig start-color-on-real-screen fg: int, bg: int
+sig start-bold-on-real-screen
+sig start-underline-on-real-screen
+sig start-reverse-video-on-real-screen
+sig start-blinking-on-real-screen
+sig hide-cursor-on-real-screen
+sig show-cursor-on-real-screen
 sig enable-keyboard-immediate-mode
 sig enable-keyboard-type-mode
 sig read-key -> result/eax: byte

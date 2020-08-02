@@ -10,9 +10,9 @@
 # https://archive.org/details/akkartik-2min-2020-07-01
 
 fn main -> exit-status/ebx: int {
-  clear-screen
-  move-cursor-on-screen 5, 5
-  print-string-to-screen "_________"
+  clear-screen 0
+  move-cursor 0, 5, 5
+  print-string 0, "_________"
   enable-keyboard-immediate-mode
   var dummy/eax: byte <- read-key
   var row/eax: int <- copy 5
@@ -26,7 +26,7 @@ fn main -> exit-status/ebx: int {
   }
   var dummy/eax: byte <- read-key
   enable-keyboard-type-mode
-  clear-screen
+  clear-screen 0
   exit-status <- copy 0
 }
 
@@ -35,11 +35,11 @@ fn animate row: int {
   {
     compare col, 0xe
     break-if-=
-    move-cursor-on-screen row, col
-    print-string-to-screen " "
+    move-cursor 0, row, col
+    print-string 0, " "
     increment row
-    move-cursor-on-screen row, col
-    print-string-to-screen "_"
+    move-cursor 0, row, col
+    print-string 0, "_"
     decrement row
     col <- increment
     loop

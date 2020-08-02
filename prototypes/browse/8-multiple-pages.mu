@@ -4,7 +4,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   enable-screen-grid-mode
   var nrows/eax: int <- copy 0
   var ncols/ecx: int <- copy 0
-  nrows, ncols <- screen-size
+  nrows, ncols <- screen-size 0
   enable-keyboard-immediate-mode
   {
     render file, nrows, ncols
@@ -52,7 +52,7 @@ $line-loop: {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
-    move-cursor-on-screen row, col
+    move-cursor 0, row, col
     {
       compare col, rightcol
       break-if->=
@@ -62,7 +62,7 @@ $line-loop: {
       compare c, 0xa  # newline
       break-if-=  # no need to print newlines
       # print c
-      print-byte-to-screen c
+      print-byte 0, c
       col <- increment
       loop
     }  # $char-loop
@@ -77,11 +77,11 @@ fn clear toprow: int, leftcol: int, botrow: int, rightcol: int {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
-    move-cursor-on-screen row, col
+    move-cursor 0, row, col
     {
       compare col, rightcol
       break-if->=
-      print-string-to-screen " "
+      print-string 0, " "
       col <- increment
       loop
     }
@@ -110,6 +110,6 @@ fn dump in: (addr buffered-file) {
   var c/eax: byte <- read-byte-buffered in
   compare c, 0xffffffff  # EOF marker
   break-if-=
-  print-byte-to-screen c
+  print-byte 0, c
   loop
 }

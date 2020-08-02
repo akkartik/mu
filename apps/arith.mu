@@ -35,19 +35,19 @@
 fn main -> exit-status/ebx: int {
   var look/esi: byte <- copy 0  # lookahead
   var n/eax: int <- copy 0  # result of each expression
-  print-string-to-screen "press ctrl-c or ctrl-d to exit\n"
+  print-string 0, "press ctrl-c or ctrl-d to exit\n"
   # read-eval-print loop
   {
     # print prompt
-    print-string-to-screen "> "
+    print-string 0, "> "
     # read and eval
     n, look <- simplify  # we explicitly thread 'look' everywhere
     # if (look == 0) break
     compare look, 0
     break-if-=
     # print
-    print-int32-hex-to-screen n
-    print-string-to-screen "\n"
+    print-int32-hex 0, n
+    print-string 0, "\n"
     #
     loop
   }
@@ -249,7 +249,7 @@ fn get-char -> look/esi: byte {
   compare look, 0
   {
     break-if-!=
-    print-string-to-screen "^D\n"
+    print-string 0, "^D\n"
     syscall_exit
   }
 }

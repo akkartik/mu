@@ -7,7 +7,7 @@
 #   $ ./a.elf
 
 fn main -> exit-status/ebx: int {
-  clear-screen
+  clear-screen 0
   enable-keyboard-immediate-mode
   var dummy/eax: byte <- read-key
   draw-box 5, 5, 0x23, 0x23  # 35, 35
@@ -19,12 +19,12 @@ fn main -> exit-status/ebx: int {
   draw-box 5, 5, 0x23, 0xaf  # 35, 175
   var dummy/eax: byte <- read-key
   enable-keyboard-type-mode
-  clear-screen
+  clear-screen 0
   exit-status <- copy 0
 }
 
 fn draw-box row1: int, col1: int, row2: int, col2: int {
-  clear-screen
+  clear-screen 0
   draw-horizontal-line row1, col1, col2
   draw-vertical-line row1, row2, col1
   draw-horizontal-line row2, col1, col2
@@ -33,11 +33,11 @@ fn draw-box row1: int, col1: int, row2: int, col2: int {
 
 fn draw-horizontal-line row: int, col1: int, col2: int {
   var col/eax: int <- copy col1
-  move-cursor-on-screen row, col
+  move-cursor 0, row, col
   {
     compare col, col2
     break-if->=
-    print-string-to-screen "-"
+    print-string 0, "-"
     col <- increment
     loop
   }
@@ -48,8 +48,8 @@ fn draw-vertical-line row1: int, row2: int, col: int {
   {
     compare row, row2
     break-if->=
-    move-cursor-on-screen row, col
-    print-string-to-screen "|"
+    move-cursor 0, row, col
+    print-string 0, "|"
     row <- increment
     loop
   }

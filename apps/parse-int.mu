@@ -14,7 +14,7 @@ $main-body: {
   compare n, 1
   {
     break-if->
-    print-string-to-screen "usage: parse-int <integer>\n"
+    print-string 0, "usage: parse-int <integer>\n"
     exit-status <- copy 1
     break $main-body
   }

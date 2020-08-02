@@ -14,7 +14,7 @@ $main-body: {
     compare n, 1
     {
       break-if->
-      print-string-to-screen "usage: cat <filename>\n"
+      print-string 0, "usage: cat <filename>\n"
       break $main-body
     }
     {
@@ -31,7 +31,7 @@ $main-body: {
         var c/eax: byte <- read-byte-buffered in-addr
         compare c, 0xffffffff  # EOF marker
         break-if-=
-        print-byte-to-screen c
+        print-byte 0, c
         loop
       }
     }

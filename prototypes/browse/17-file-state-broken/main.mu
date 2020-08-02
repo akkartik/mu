@@ -10,7 +10,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   # initialize screen state from screen size
   var nrows/eax: int <- copy 0
   var ncols/ecx: int <- copy 0
-  nrows, ncols <- screen-size
+  nrows, ncols <- screen-size 0
   var screen-position-state-storage: screen-position-state
   var screen-position-state: (addr screen-position-state)
   init-screen-position-state screen-position-state, nrows, ncols
@@ -44,8 +44,8 @@ fn render-normal fs: (addr file-state), state: (addr screen-position-state) {
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
-    # if (c == '*') start-bold-on-screen, render-until-asterisk(fs, state), reset
-    # else if (c == '_') start-bold-on-screen, render-until-underscore(fs, state), reset
+    # if (c == '*') start-bold 0,, render-until-asterisk(fs, state), reset
+    # else if (c == '_') start-bold 0,, render-until-underscore(fs, state), reset
     # else if (c == '#' and fs is at start of line) compute-color, start color, render-header-line(fs, state), reset
     # else add-char(state, c)
   }

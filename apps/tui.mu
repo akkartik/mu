@@ -7,28 +7,28 @@
 fn main -> exit-status/ebx: int {
   var nrows/eax: int <- copy 0
   var ncols/ecx: int <- copy 0
-  nrows, ncols <- screen-size
+  nrows, ncols <- screen-size 0
   enable-screen-grid-mode
-  move-cursor-on-screen 5, 0x22
-  start-color-on-screen 1, 0x7a
-  start-blinking-on-screen
-  print-string-to-screen "Hello world!"
-  reset-formatting-on-screen
-  move-cursor-on-screen 6, 0x22
-  print-string-to-screen "tty dimensions: "
-  print-int32-hex-to-screen nrows
-  print-string-to-screen " rows, "
-  print-int32-hex-to-screen ncols
-  print-string-to-screen " rows\n"
+  move-cursor 0, 5, 0x22
+  start-color 0, 1, 0x7a
+  start-blinking 0
+  print-string 0, "Hello world!"
+  reset-formatting 0
+  move-cursor 0, 6, 0x22
+  print-string 0, "tty dimensions: "
+  print-int32-hex 0, nrows
+  print-string 0, " rows, "
+  print-int32-hex 0, ncols
+  print-string 0, " rows\n"
 
-  print-string-to-screen "press a key to see its code: "
+  print-string 0, "press a key to see its code: "
   enable-keyboard-immediate-mode
   var x/eax: byte <- read-key
   enable-keyboard-type-mode
   enable-screen-type-mode
-  print-string-to-screen "You pressed "
+  print-string 0, "You pressed "
   var x-int/eax: int <- copy x
-  print-int32-hex-to-screen x-int
-  print-string-to-screen "\n"
+  print-int32-hex 0, x-int
+  print-string 0, "\n"
   exit-status <- copy 0
 }

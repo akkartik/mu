@@ -14,7 +14,7 @@ enable-screen-grid-mode:
     (write 2 Esc)
     (write 2 "[?1049h")
     #
-    (clear-screen)
+    (clear-real-screen)
 $enable-screen-grid-mode:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -34,7 +34,7 @@ $enable-screen-type-mode:end:
     5d/pop-to-ebp
     c3/return
 
-screen-size:  # -> nrows/eax: int, ncols/ecx: int
+real-screen-size:  # -> nrows/eax: int, ncols/ecx: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -59,7 +59,7 @@ screen-size:  # -> nrows/eax: int, ncols/ecx: int
     81 4/subop/and %eax 0xffff/imm32
     8b/-> *esi 1/r32/ecx
     c1/shift 5/subop/logical-right %ecx 0x10/imm8
-$screen-size:end:
+$real-screen-size:end:
     # . reclaim locals
     81 0/subop/add %esp 0x40/imm32
     # . restore registers
@@ -72,7 +72,7 @@ $screen-size:end:
     5d/pop-to-ebp
     c3/return
 
-clear-screen:
+clear-real-screen:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -81,14 +81,14 @@ clear-screen:
     (write 2 "[H")
     (write 2 Esc)
     (write 2 "[2J")
-$clear-screen:end:
+$clear-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 # row and col count from the top-left as (1, 1)
-move-cursor-on-screen:  # row: int, column: int
+move-cursor-on-real-screen:  # row: int, column: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -109,7 +109,7 @@ move-cursor-on-screen:  # row: int, column: int
     (write %ecx "H")
     # flush
     (write-stream 2 %ecx)
-$move-cursor-on-screen:end:
+$move-cursor-on-real-screen:end:
     # . reclaim locals
     81 0/subop/add %esp 0x2c/imm32
     # . restore registers
@@ -119,19 +119,19 @@ $move-cursor-on-screen:end:
     5d/pop-to-ebp
     c3/return
 
-print-string-to-screen:  # s: (addr array byte)
+print-string-to-real-screen:  # s: (addr array byte)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
     (write 2 *(ebp+8))
-$print-string-to-screen:end:
+$print-string-to-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-print-byte-to-screen:  # c: byte
+print-byte-to-real-screen:  # c: byte
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -142,7 +142,7 @@ print-byte-to-screen:  # c: byte
     68/push 4/imm32/size
     89/<- %ecx 4/r32/esp
     (write 2 %ecx)
-$print-byte-to-screen:end:
+$print-byte-to-real-screen:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
     # . restore registers
@@ -152,20 +152,20 @@ $print-byte-to-screen:end:
     5d/pop-to-ebp
     c3/return
 
-print-int32-hex-to-screen:  # n: int
+print-int32-hex-to-real-screen:  # n: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
     (write-int32-hex-buffered Stdout *(ebp+8))
     (flush Stdout)
-$print-int32-hex-to-screen:end:
+$print-int32-hex-to-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-reset-formatting-on-screen:
+reset-formatting-on-real-screen:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -174,13 +174,13 @@ reset-formatting-on-screen:
     (write 2 "(B")
     (write 2 Esc)
     (write 2 "[m")
-$reset-formatting-on-screen:end:
+$reset-formatting-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-start-color-on-screen:  # fg: int, bg: int
+start-color-on-real-screen:  # fg: int, bg: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -205,7 +205,7 @@ start-color-on-screen:  # fg: int, bg: int
     (write %ecx "m")
     # flush
     (write-stream 2 %ecx)
-$start-color-on-screen:end:
+$start-color-on-real-screen:end:
     # . reclaim locals
     81 0/subop/add %esp 0x2c/imm32
     # . restore registers
@@ -215,73 +215,73 @@ $start-color-on-screen:end:
     5d/pop-to-ebp
     c3/return
 
-start-bold-on-screen:
+start-bold-on-real-screen:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
     (write 2 Esc)
     (write 2 "[1m")
-$start-bold-on-screen:end:
+$start-bold-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-start-underline-on-screen:
+start-underline-on-real-screen:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
     (write 2 Esc)
     (write 2 "[4m")
-$start-underline-on-screen:end:
+$start-underline-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-start-reverse-video-on-screen:
+start-reverse-video-on-real-screen:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
     (write 2 Esc)
     (write 2 "[7m")
-$start-reverse-video-on-screen:end:
+$start-reverse-video-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 # might require enabling blinking in your terminal program
-start-blinking-on-screen:
+start-blinking-on-real-screen:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
     (write 2 Esc)
     (write 2 "[5m")
-$start-blinking-on-screen:end:
+$start-blinking-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-hide-cursor-on-screen:
+hide-cursor-on-real-screen:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
     (write 2 Esc)
     (write 2 "[?25l")
-$hide-cursor-on-screen:end:
+$hide-cursor-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-show-cursor-on-screen:
+show-cursor-on-real-screen:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -290,7 +290,7 @@ show-cursor-on-screen:
     (write 2 "[?12l")
     (write 2 Esc)
     (write 2 "[?25h")
-$show-cursor-on-screen:end:
+$show-cursor-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp

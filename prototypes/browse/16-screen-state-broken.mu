@@ -26,7 +26,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   enable-keyboard-immediate-mode
   var nrows/eax: int <- copy 0
   var ncols/ecx: int <- copy 0
-  nrows, ncols <- screen-size
+  nrows, ncols <- screen-size 0
   var screen-position-state-storage: screen-position-state
   var screen-position-state: (addr screen-position-state)
   init-screen-position-state screen-position-state, nrows, ncols
@@ -68,8 +68,8 @@ fn render-normal in: (addr buffered-file), state: (addr screen-position-state) {
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
-    # if (c == '*') start-bold-on-screen, render-until-asterisk(in, state), reset
-    # else if (c == '_') start-bold-on-screen, render-until-underscore(in, state), reset
+    # if (c == '*') start-bold 0,, render-until-asterisk(in, state), reset
+    # else if (c == '_') start-bold 0,, render-until-underscore(in, state), reset
     # else if (c == '#') compute-color, start color, render-header-line(in, state), reset
     # else add-char(state, c)
   }
@@ -183,6 +183,6 @@ fn dump in: (addr buffered-file) {
   var c/eax: byte <- read-byte-buffered in
   compare c, 0xffffffff  # EOF marker
   break-if-=
-  print-byte-to-screen c
+  print-byte 0, c
   loop
 }

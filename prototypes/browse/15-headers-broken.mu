@@ -9,7 +9,7 @@ fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
   enable-screen-grid-mode
   var nrows/eax: int <- copy 0
   var ncols/ecx: int <- copy 0
-  nrows, ncols <- screen-size
+  nrows, ncols <- screen-size 0
   enable-keyboard-immediate-mode
   {
     render file, nrows, ncols
@@ -49,7 +49,7 @@ fn render in: (addr buffered-file), nrows: int, ncols: int {
   var leftcol/edx: int <- copy 5  # page-margin
   var rightcol/ebx: int <- copy leftcol
   rightcol <- add 0x40  # page-width = 64 characters
-  start-color-on-screen 0xec, 7  # 236 = darkish gray
+  start-color 0, 0xec, 7  # 236 = darkish gray
   {
     compare rightcol, ncols
     break-if->=
@@ -71,7 +71,7 @@ $line-loop: {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
-    move-cursor-on-screen row, col
+    move-cursor 0, row, col
 $char-loop: {
       compare col, rightcol
       break-if->=
@@ -86,7 +86,7 @@ $change-state: {
           {
             break-if-!=
             # r->current-state == 0 && c == '*' => bold text
-            start-bold-on-screen
+            start-bold 0
             copy-to *state, 1
             break $change-state
           }
@@ -94,7 +94,7 @@ $change-state: {
           {
             break-if-!=
             # r->current-state == 0 && c == '_' => bold text
-            start-bold-on-screen
+            start-bold 0
             copy-to *state, 1
             break $change-state
           }
@@ -121,10 +121,10 @@ $change-state: {
           {
             break-if-!=
             # r->current-state == 1 && c == '*' => print c, then normal text
-            print-byte-to-screen c
+            print-byte 0, c
             col <- increment
-            reset-formatting-on-screen
-            start-color-on-screen 0xec, 7  # 236 = darkish gray
+            reset-formatting 0
+            start-color 0, 0xec, 7  # 236 = darkish gray
             copy-to *state, 0
             loop $char-loop
           }
@@ -132,10 +132,10 @@ $change-state: {
           {
             break-if-!=
             # r->current-state == 1 && c == '_' => print c, then normal text
-            print-byte-to-screen c
+            print-byte 0, c
             col <- increment
-            reset-formatting-on-screen
-            start-color-on-screen 0xec, 7  # 236 = darkish gray
+            reset-formatting 0
+            start-color 0, 0xec, 7  # 236 = darkish gray
             copy-to *state, 0
             loop $char-loop
           }
@@ -150,8 +150,8 @@ $change-state: {
         var s/eax: (addr boolean) <- get r, start-of-line?
         copy-to *s, 1  # true
         # switch to normal text
-        reset-formatting-on-screen
-        start-color-on-screen 0xec, 7  # 236 = darkish gray
+        reset-formatting 0
+        start-color 0, 0xec, 7  # 236 = darkish gray
         # no need to print newlines
         break $char-loop
       }
@@ -163,7 +163,7 @@ $change-state: {
         copy-to *s, 0  # false
       }
       # print c
-      print-byte-to-screen c
+      print-byte 0, c
       col <- increment
       loop
     }
@@ -178,11 +178,11 @@ fn clear toprow: int, leftcol: int, botrow: int, rightcol: int {
     compare row, botrow
     break-if->=
     var col/edx: int <- copy leftcol
-    move-cursor-on-screen row, col
+    move-cursor 0, row, col
     {
       compare col, rightcol
       break-if->=
-      print-string-to-screen " "
+      print-string 0, " "
       col <- increment
       loop
     }
@@ -211,6 +211,6 @@ fn dump in: (addr buffered-file) {
   var c/eax: byte <- read-byte-buffered in
   compare c, 0xffffffff  # EOF marker
   break-if-=
-  print-byte-to-screen c
+  print-byte 0, c
   loop
 }

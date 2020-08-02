@@ -7,7 +7,7 @@
 
 fn main -> exit-status/ebx: int {
   var num-lines/ecx: int <- copy 0x64  # 100
-  clear-screen
+  clear-screen 0
   # open a file
   var f: (addr buffered-file)
   {
@@ -36,14 +36,14 @@ fn main -> exit-status/ebx: int {
   var t3/esi: int <- copy t2
   t3 <- subtract t1
   # clean up
-  clear-screen
+  clear-screen 0
   # results
-  print-int32-hex-to-screen t1
-  print-string-to-screen "\n"
-  print-int32-hex-to-screen t2
-  print-string-to-screen "\n"
-  print-int32-hex-to-screen t3
-  print-string-to-screen "\n"
+  print-int32-hex 0, t1
+  print-string 0, "\n"
+  print-int32-hex 0, t2
+  print-string 0, "\n"
+  print-int32-hex 0, t3
+  print-string 0, "\n"
   #
   exit-status <- copy 0
 }
@@ -53,7 +53,7 @@ fn render f: (addr buffered-file), num-rows: int {
   # render screen
   var row/edx: int <- copy 1
   var col/ebx: int <- copy 1
-  move-cursor-on-screen row, col
+  move-cursor 0, row, col
 $render:render-loop: {
     compare row, num-rows
     break-if->=
@@ -65,10 +65,10 @@ $render:render-loop: {
       break-if-!=
       row <- increment
       col <- copy 0
-      move-cursor-on-screen row, col
+      move-cursor 0, row, col
       loop $render:render-loop
     }
-    print-byte-to-screen c
+    print-byte 0, c
     col <- increment
     loop
   }

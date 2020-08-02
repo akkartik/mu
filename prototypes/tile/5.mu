@@ -41,7 +41,7 @@ $main:loop: {
     render root-addr
     loop
   }
-  clear-screen
+  clear-screen 0
   enable-keyboard-type-mode
   exit-status <- copy 0
 }
@@ -67,7 +67,7 @@ fn create-child node: (addr cell) {
 #######################################################
 
 fn render root: (addr cell) {
-  clear-screen
+  clear-screen 0
   var depth/eax: int <- tree-depth root
   var viewport-width/ecx: int <- copy 0x64  # col2
   viewport-width <- subtract 5  # col1
@@ -134,11 +134,11 @@ fn draw-box row1: int, col1: int, row2: int, col2: int {
 
 fn draw-horizontal-line row: int, col1: int, col2: int {
   var col/eax: int <- copy col1
-  move-cursor-on-screen row, col
+  move-cursor 0, row, col
   {
     compare col, col2
     break-if->=
-    print-string-to-screen "-"
+    print-string 0, "-"
     col <- increment
     loop
   }
@@ -149,8 +149,8 @@ fn draw-vertical-line row1: int, row2: int, col: int {
   {
     compare row, row2
     break-if->=
-    move-cursor-on-screen row, col
-    print-string-to-screen "|"
+    move-cursor 0, row, col
+    print-string 0, "|"
     row <- increment
     loop
   }
