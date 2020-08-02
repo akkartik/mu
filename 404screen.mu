@@ -45,6 +45,10 @@ fn initialize-screen screen: (addr screen), nrows: int, ncols: int {
   # screen->cursor-col = 1
   dest <- get screen-addr, cursor-col
   copy-to *dest, 1
+  # screen->curr-attributes->background-color = 7  (simulate light background)
+  var tmp2/eax: (addr screen-cell) <- get screen-addr, curr-attributes
+  dest <- get tmp2, background-color
+  copy-to *dest, 7
 }
 
 fn screen-size screen: (addr screen) -> nrows/eax: int, ncols/ecx: int {
@@ -78,6 +82,26 @@ $clear-screen:body: {
   {
     break-if-=
     # fake screen
+    move-cursor screen, 1, 1
+    var screen-addr/esi: (addr screen) <- copy screen
+    var i/eax: int <- copy 1
+    var nrows/ecx: (addr int) <- get screen-addr, num-rows
+    {
+      compare i, *nrows
+      break-if->
+      var j/edx: int <- copy 1
+      var ncols/ebx: (addr int) <- get screen-addr, num-cols
+      {
+        compare j, *ncols
+        break-if->
+        print-byte screen, 0x20  # space
+        j <- increment
+        loop
+      }
+      i <- increment
+      loop
+    }
+    move-cursor screen, 1, 1
   }
 }
 }
