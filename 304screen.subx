@@ -11,8 +11,8 @@ enable-screen-grid-mode:
     (flush Stdout)
     (flush Stderr)
     # switch to second screen buffer
-    (write 2 Esc)
-    (write 2 "[?1049h")
+    (write 1 Esc)
+    (write 1 "[?1049h")
     #
     (clear-real-screen)
 $enable-screen-grid-mode:end:
@@ -26,8 +26,8 @@ enable-screen-type-mode:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # switch to first screen buffer
-    (write 2 Esc)
-    (write 2 "[?1049l")
+    (write 1 Esc)
+    (write 1 "[?1049l")
 $enable-screen-type-mode:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -77,10 +77,10 @@ clear-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 2 Esc)
-    (write 2 "[H")
-    (write 2 Esc)
-    (write 2 "[2J")
+    (write 1 Esc)
+    (write 1 "[H")
+    (write 1 Esc)
+    (write 1 "[2J")
 $clear-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -124,7 +124,7 @@ print-string-to-real-screen:  # s: (addr array byte)
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 2 *(ebp+8))
+    (write 1 *(ebp+8))
 $print-string-to-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -142,7 +142,7 @@ print-grapheme-to-real-screen:  # c: grapheme
     ff 6/subop/push *(ebp+8)
     68/push 4/imm32/size
     89/<- %ecx 4/r32/esp
-    (write 2 %ecx)
+    (write 1 %ecx)
 $print-grapheme-to-real-screen:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -171,10 +171,10 @@ reset-formatting-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 2 Esc)
-    (write 2 "(B")
-    (write 2 Esc)
-    (write 2 "[m")
+    (write 1 Esc)
+    (write 1 "(B")
+    (write 1 Esc)
+    (write 1 "[m")
 $reset-formatting-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -221,8 +221,8 @@ start-bold-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 2 Esc)
-    (write 2 "[1m")
+    (write 1 Esc)
+    (write 1 "[1m")
 $start-bold-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -234,8 +234,8 @@ start-underline-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 2 Esc)
-    (write 2 "[4m")
+    (write 1 Esc)
+    (write 1 "[4m")
 $start-underline-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -247,8 +247,8 @@ start-reverse-video-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 2 Esc)
-    (write 2 "[7m")
+    (write 1 Esc)
+    (write 1 "[7m")
 $start-reverse-video-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -261,8 +261,8 @@ start-blinking-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 2 Esc)
-    (write 2 "[5m")
+    (write 1 Esc)
+    (write 1 "[5m")
 $start-blinking-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -274,8 +274,8 @@ hide-cursor-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 2 Esc)
-    (write 2 "[?25l")
+    (write 1 Esc)
+    (write 1 "[?25l")
 $hide-cursor-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -287,10 +287,10 @@ show-cursor-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 2 Esc)
-    (write 2 "[?12l")
-    (write 2 Esc)
-    (write 2 "[?25h")
+    (write 1 Esc)
+    (write 1 "[?12l")
+    (write 1 Esc)
+    (write 1 "[?25h")
 $show-cursor-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
