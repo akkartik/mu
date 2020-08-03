@@ -152,6 +152,11 @@ $print-grapheme:body: {
 }
 }
 
+fn print-code-point screen: (addr screen), c: code-point {
+  var g/eax: grapheme <- to-grapheme c
+  print-grapheme screen, g
+}
+
 fn print-int32-hex screen: (addr screen), n: int {
 $print-int32-hex:body: {
   compare screen, 0
