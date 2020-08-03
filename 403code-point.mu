@@ -14,6 +14,9 @@
 
 # transliterated from tb_utf8_unicode_to_char in https://github.com/nsf/termbox
 # https://wiki.tcl-lang.org/page/UTF%2D8+bit+by+bit explains the algorithm
+#
+# The day we want to support combining characters, this function will need to
+# take multiple code points. Or something.
 fn to-grapheme in: code-point -> out/eax: grapheme {
 $to-grapheme:body: {
   var c/eax: int <- copy in
