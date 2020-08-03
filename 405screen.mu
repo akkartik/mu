@@ -118,6 +118,15 @@ $move-cursor:body: {
   {
     break-if-=
     # fake screen
+    var screen-addr/esi: (addr screen) <- copy screen
+    # screen->cursor-row = row
+    var dest/edi: (addr int) <- get screen-addr, cursor-row
+    var src/eax: int <- copy row
+    copy-to *dest, src
+    # screen->cursor-col = column
+    dest <- get screen-addr, cursor-col
+    src <- copy column
+    copy-to *dest, src
   }
 }
 }
