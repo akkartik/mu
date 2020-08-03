@@ -10,7 +10,7 @@
 # in 4 bytes.
 #
 # Mu doesn't currently support combining code points, or graphemes made of
-# multiple code points.
+# multiple code points. One day we will.
 
 # transliterated from tb_utf8_unicode_to_char in https://github.com/nsf/termbox
 # https://wiki.tcl-lang.org/page/UTF%2D8+bit+by+bit explains the algorithm
@@ -63,7 +63,6 @@ $to-grapheme:body: {
     }
   }
   # emit trailer bytes, 6 bits from 'in', first two bits '10'
-  var byte-shifts/ebx: int <- copy 0
   var result/edi: int <- copy 0
   {
     compare num-trailers, 0
@@ -71,19 +70,17 @@ $to-grapheme:body: {
     var tmp/esi: int <- copy c
     tmp <- and 0x3f
     tmp <- or 0x80
-    tmp <- shift-left-bytes tmp, byte-shifts
+    result <- shift-left 8
     result <- or tmp
     # update loop state
     c <- shift-right 6
-    byte-shifts <- increment
     num-trailers <- decrement
     loop
   }
   # emit engine
-  var tmp/esi: int <- copy c
-  tmp <- or first
-  tmp <- shift-left-bytes tmp, byte-shifts
-  result <- or tmp
+  result <- shift-left 8
+  result <- or c
+  result <- or first
   #
   out <- copy result
 }
@@ -104,75 +101,58 @@ fn test-to-grapheme-single-byte {
   }
 }
 
+                                                              # byte       | byte      | byte      | byte
 # smallest 2-byte utf-8
 fn test-to-grapheme-two-bytes-min {
-  var in/eax: code-point <- copy 0x80       #        10     000000
+  var in/eax: code-point <- copy 0x80                         #                                 10     00-0000
   var out/eax: grapheme <- to-grapheme in
   var out-int/eax: int <- copy out
-  check-ints-equal out-int, 0xc280, "F 2gr" # 110 00010  10 000000
+  check-ints-equal out-int, 0x80c2, "F - to-grapheme/2a"      #                         110 0-0010  10 00-0000
 }
 
 # largest 2-byte utf-8
 fn test-to-grapheme-two-bytes-max {
-  var in/eax: code-point <- copy 0x7ff      #     11111     111111
+  var in/eax: code-point <- copy 0x7ff                        #                             1-1111     11-1111
   var out/eax: grapheme <- to-grapheme in
   var out-int/eax: int <- copy out
-  check-ints-equal out-int, 0xdfbf, "F 2gr" # 110 11111  10 111111
+  check-ints-equal out-int, 0xbfdf, "F - to-grapheme/2b"      #                         110 1-1111  10 11-1111
 }
 
 # smallest 3-byte utf-8
 fn test-to-grapheme-three-bytes-min {
-  var in/eax: code-point <- copy 0x800      #               100000     000000
+  var in/eax: code-point <- copy 0x800                        #                            10-0000     00-0000
   var out/eax: grapheme <- to-grapheme in
   var out-int/eax: int <- copy out
-  check-ints-equal out-int, 0xc280, "F 2gr" # 1110 0000  10 100000  10 000000
+  check-ints-equal out-int, 0x80a0e0, "F - to-grapheme/3a"    #              1110 0000  10 10-0000  10 00-0000
 }
 
-# needed because available primitives only shift by a literal/constant number of bits
-fn shift-left-bytes n: int, k: int -> result/esi: int {
-  var i/eax: int <- copy 0
-  result <- copy n
-  {
-    compare i, k
-    break-if->=
-    compare i, 4  # only 4 bytes in 32 bits
-    break-if->=
-    result <- shift-left 8
-    i <- increment
-    loop
-  }
+# largest 3-byte utf-8
+fn test-to-grapheme-three-bytes-max {
+  var in/eax: code-point <- copy 0xffff                       #                   1111     11-1111     11-1111
+  var out/eax: grapheme <- to-grapheme in
+  var out-int/eax: int <- copy out
+  check-ints-equal out-int, 0xbfbfef, "F - to-grapheme/3b"    #              1110 1111  10 11-1111  10 11-1111
 }
 
-fn test-shift-left-bytes-0 {
-  var result/esi: int <- shift-left-bytes 1, 0
-  check-ints-equal result, 1, "F - shift-left-bytes 0"
+# smallest 4-byte utf-8
+fn test-to-grapheme-four-bytes-min {
+  var in/eax: code-point <- copy 0x10000                      #                 1-0000     00-0000     00-0000
+  var out/eax: grapheme <- to-grapheme in
+  var out-int/eax: int <- copy out
+  check-ints-equal out-int, 0x808090f0, "F - to-grapheme/4a"  # 1111-0 000  10 01-0000  10 00-0000  10 00-0000
 }
 
-fn test-shift-left-bytes-1 {
-  var result/esi: int <- shift-left-bytes 1, 1
-  check-ints-equal result, 0x100, "F - shift-left-bytes 1"
+# largest 4-byte utf-8
+fn test-to-grapheme-four-bytes-max {
+  var in/eax: code-point <- copy 0x1fffff                     #        111     11-1111     11-1111     11-1111
+  var out/eax: grapheme <- to-grapheme in
+  var out-int/eax: int <- copy out
+  check-ints-equal out-int, 0xbfbfbff7, "F - to-grapheme/4b"  # 1111-0 111  10 11-1111  10 11-1111  10 11-1111
 }
 
-fn test-shift-left-bytes-2 {
-  var result/esi: int <- shift-left-bytes 1, 2
-  check-ints-equal result, 0x10000, "F - shift-left-bytes 2"
-}
-
-fn test-shift-left-bytes-3 {
-  var result/esi: int <- shift-left-bytes 1, 3
-  check-ints-equal result, 0x1000000, "F - shift-left-bytes 3"
-}
-
-fn test-shift-left-bytes-4 {
-  var result/esi: int <- shift-left-bytes 1, 4
-  check-ints-equal result, 0, "F - shift-left-bytes 4"
-}
-
-fn test-shift-left-bytes-5 {
-  var result/esi: int <- shift-left-bytes 1, 5
-  check-ints-equal result, 0, "F - shift-left-bytes >4"
-}
-
-#? fn main {
+# To run all tests, uncomment this and run:
+#   $ ./translate_mu ''  &&  ./a.elf
+#? fn main -> r/ebx: int {
 #?   run-tests
+#?   r <- copy 0
 #? }
