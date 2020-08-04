@@ -12895,6 +12895,13 @@ $type-component-match?:compare-addr:
     39/compare %edx 0/r32/eax  # Var-type
     b8/copy-to-eax 1/imm32/true
     0f 84/jump-if-= $type-component-match?:end/disp32
+    # if (def == 0) return false
+    b8/copy-to-eax 0/imm32/false
+    81 7/subop/compare %ecx 0/imm32  # Type-tree-is-atom
+    0f 84/jump-if-= $type-component-match?:end/disp32
+    # if (call == 0) return false
+    81 7/subop/compare %edx 0/imm32  # Type-tree-is-atom
+    0f 84/jump-if-= $type-component-match?:end/disp32
     # if def is a type parameter, just check in type-parameters
     {
 $type-component-match?:check-type-parameter:
