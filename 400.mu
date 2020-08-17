@@ -142,6 +142,7 @@ sig real-screen-size -> nrows/eax: int, ncols/ecx: int
 sig clear-real-screen
 sig move-cursor-on-real-screen row: int, column: int
 sig print-string-to-real-screen s: (addr array byte)
+sig print-stream-to-real-screen s: (addr stream byte)
 sig print-grapheme-to-real-screen c: grapheme
 sig print-int32-hex-to-real-screen n: int
 sig reset-formatting-on-real-screen
