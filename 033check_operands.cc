@@ -379,7 +379,7 @@ void check_operands_modrm(const line& inst, const word& op) {
   check_operand_metadata_present(inst, "mod", op);
   check_operand_metadata_present(inst, "rm32", op);
   // no check for r32; some instructions don't use it; just assume it's 0 if missing
-  if (op.data == "81" || op.data == "8f" || op.data == "ff") {  // keep sync'd with 'help subop'
+  if (op.data == "81" || op.data == "8f" || op.data == "f7" || op.data == "ff") {  // keep sync'd with 'help subop'
     check_operand_metadata_present(inst, "subop", op);
     check_operand_metadata_absent(inst, "r32", op, "should be replaced by subop");
   }

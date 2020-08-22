@@ -14409,8 +14409,9 @@ size-of-array:  # a: (addr type-tree) -> result/eax: int
     8b/-> *(eax+8) 1/r32/ecx  # Type-tree-value-size
     # return 4 + array-size * size-of(elem-type)
     (size-of-type-id-as-array-element %edx)  # => eax
-    f7 4/subop/multiply-into-eax %ecx
+    f7 4/subop/multiply-into-edx-eax %ecx
     05/add-to-eax 4/imm32  # for array size
+    # TODO: check edx for overflow
 $size-of-array:end:
     # . restore registers
     5a/pop-to-edx
@@ -16549,7 +16550,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-literal-index:
       89/<- %edx 0/r32/eax
       # offset = idx-value * array-element-size(base->type)
       (array-element-size %ebx *(ebp+0x10) *(ebp+0x14))  # => eax
-      f7 4/subop/multiply-into-eax %edx  # clobbers edx
+      f7 4/subop/multiply-into-edx-eax %edx  # clobbers edx
       # offset += 4 for array size
       05/add-to-eax 4/imm32
       # TODO: check edx for overflow
@@ -16666,7 +16667,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-literal-index:
       89/<- %edx 0/r32/eax
       # offset = idx-value * array-element-size(base)
       (array-element-size %ecx *(ebp+0x10) *(ebp+0x14))  # => eax
-      f7 4/subop/multiply-into-eax %edx  # clobbers edx
+      f7 4/subop/multiply-into-edx-eax %edx  # clobbers edx
       # offset += base->offset
       03/add *(ecx+0x14) 0/r32/eax  # Var-offset
       # offset += 4 for array size

@@ -6,12 +6,15 @@ allocate-array2:  # ad: (addr allocation-descriptor), array-len: int, elem-size:
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
+    52/push-edx
     #
     8b/-> *(ebp+0xc) 0/r32/eax
-    f7 4/subop/multiply-into 0/r32/eax *(ebp+0x10)
+    f7 4/subop/multiply-into-eax-edx *(ebp+0x10)
+    # TODO: check edx for overflow
     (allocate-array *(ebp+8) %eax *(ebp+0x14))
 $allocate-array2:end:
     # . restore registers
+    5a/pop-to-edx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
