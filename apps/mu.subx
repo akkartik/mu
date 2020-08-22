@@ -10346,8 +10346,10 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack live-var), out: 
     8b/-> *esi 1/r32/ecx
     8a/copy-byte *ecx 1/r32/CL
     81 4/subop/and %ecx 0xff/imm32
-    # if is-decimal-digit?(c) return new var(name)
+    # if (is-decimal-digit?(c) || c == '-') return new var(name)
     {
+      81 7/subop/compare %ecx 0x2d/imm32/dash
+      74/jump-if-= $lookup-var-or-literal:literal/disp8
       (is-decimal-digit? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
@@ -11050,21 +11052,37 @@ check-mu-hex-int:  # name: (addr slice), err: (addr buffered-file), ed: (addr ex
     50/push-eax
     51/push-ecx
     52/push-edx
-    #
+    # ecx = name
     8b/-> *(ebp+8) 1/r32/ecx
-    # var start/ecx: (addr byte) = name->start
-    8b/-> *(ecx+4) 2/r32/edx
+    # var start/edx: (addr byte) = name->start
+    8b/-> *ecx 2/r32/edx
+    # if (*start == '-') ++start
+    b8/copy-to-eax 0/imm32
+    8a/copy-byte *edx 0/r32/AL
+    3d/compare-eax-and 0x2d/imm32/dash
+    {
+      75/jump-if-!= break/disp8
+      42/increment-edx
+    }
     # var end/ecx: (addr byte) = name->end
-    8b/-> *ecx 1/r32/ecx
+    8b/-> *(ecx+4) 1/r32/ecx
     # var len/eax: int = name->end - name->start
-    89/<- %eax 2/r32/edx
-    29/subtract-from %eax 1/r32/ecx
+    89/<- %eax 1/r32/ecx
+    29/subtract-from %eax 2/r32/edx
     # if (len <= 1) return
     3d/compare-eax-with 1/imm32
     0f 8e/jump-if-<= $check-mu-hex-int:end/disp32
 $check-mu-hex-int:length->-1:
-    # if slice-starts-with?("0x") return
-    (slice-starts-with? *(ebp+8) "0x")  # => eax
+    # if slice-starts-with?({start, end}, "0x") return
+    # . var tmp = {start, end}
+    51/push-ecx
+    52/push-edx
+    89/<- %eax 4/r32/esp
+    # .
+    (slice-starts-with? %eax "0x")  # => eax
+    # . reclaim tmp
+    81 0/subop/add %esp 8/imm32
+    # .
     3d/compare-eax-with 0/imm32/false
     75/jump-if-!= $check-mu-hex-int:end/disp8
 $check-mu-hex-int:abort:
