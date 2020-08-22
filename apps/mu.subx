@@ -7206,6 +7206,51 @@ test-index-with-wrong-output-type:
     5d/pop-to-ebp
     c3/return
 
+test-index-with-wrong-output-compound-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/ebx: (addr array handle boolean) <- copy 0\n")
+    (write _test-input-stream "  var o/edi: (addr handle int) <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-wrong-output-compound-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: output 'o' does not have the right type"  "F - test-index-with-wrong-output-compound-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-wrong-output-compound-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-index-with-no-inouts:
     # . prologue
     55/push-ebp
@@ -13389,7 +13434,6 @@ $check-mu-index-stmt:base-is-array:
       81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
       0f 85/jump-if-!= $check-mu-index-stmt:error-base-array-type-in-register/disp32
     }
-    # - var base-type/ebx: type-id = payload type of base
     # if (base-type->left == addr) base-type = base-type->right
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
@@ -13399,22 +13443,6 @@ $check-mu-index-stmt:base-is-array:
       (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
       89/<- %ebx 0/r32/eax
     }
-    # if (base-type->left == array) base-type = base-type->right
-    {
-      (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
-      3d/compare-eax-and 0/imm32/false
-      74/jump-if-= break/disp8
-      (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
-      89/<- %ebx 0/r32/eax
-    }
-    # TODO: check !base-type->is-atom?
-    # base-type = base-type->left
-    (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-    89/<- %ebx 0/r32/eax
-    # TODO: check base-type->is-atom?
-    # var base-type-id/ebx: type-id = base-type->value
-    8b/-> *(ebx+4) 3/r32/ebx  # Type-tree-value
     # - check for 1 inout
     # var index/ecx: (addr stmt-var) = stmt->inouts->next->value
     (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
@@ -13506,13 +13534,13 @@ $check-mu-index-stmt:check-index-can-be-int:
     (is-simple-mu-type? %eax 2)  # addr => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-index-stmt:error-output-type-not-address/disp32
-    # var output-type-id/eax: type-id = output-type->right->left->value
-    (lookup *(edx+0xc) *(edx+0x10))  # Type-tree-right Type-tree-right => eax
-    (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-    # TODO: check output-type->is-atom?
-    # output-type-id must match base-type-id
-    39/compare *(eax+4) 3/r32/ebx  # Type-tree-value
-    0f 85/jump-if-!= $check-mu-index-stmt:error-bad-output-type/disp32
+    # if tail(base-type) != tail(output-type) abort
+    (type-tail %ebx)  # => eax
+    89/<- %ebx 0/r32/eax
+    (type-tail %edx)  # => eax
+    (type-equal? %ebx %eax)  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-index-stmt:error-bad-output-type/disp32
     # - check for too many outputs
     (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
@@ -14470,6 +14498,68 @@ $size-of-type-id:end:
     5d/pop-to-ebp
     c3/return
 
+# Minor violation of our type system since it returns an addr. But we could
+# replace it with a handle some time.
+# Returns null if t is an atom.
+type-tail:  # t: (addr type-tree) -> out/eax: (addr type-tree)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # eax = 0
+    b8/copy-to-eax 0/imm32
+    # ecx = t
+    8b/-> *(ebp+8) 1/r32/ecx
+$type-tail:check-atom:
+    # if t->is-atom? return 0
+    81 7/subop/compare *ecx 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $type-tail:end/disp32
+    # var tail = t->right
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Type-tree-right Type-tree-right => eax
+    89/<- %ecx 0/r32/eax
+$type-tail:check-singleton:
+    # if (tail->right == 0) return tail->left
+    {
+      81 7/subop/compare *(ecx+0xc) 0/imm32  # Type-tree-right
+      75/jump-if-!= break/disp8
+      (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
+      e9/jump $type-tail:end/disp32
+    }
+    # if tail->right->left is an array-capacity, return tail->left
+    {
+$type-tail:check-array-capacity:
+      (lookup *(ecx+0xc) *(ecx+0x10))  # Type-tree-right Type-tree-right => eax
+      81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+      75/jump-if-!= break/disp8
+$type-tail:check-array-capacity-1:
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      3d/compare-eax-and 0/imm32
+      74/jump-if-= break/disp8
+$type-tail:check-array-capacity-2:
+      (is-simple-mu-type? %eax 9)  # array-capacity => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+$type-tail:array-capacity:
+      (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
+      eb/jump $type-tail:end/disp8
+    }
+$type-tail:check-compound-left:
+    # if !tail->left->is-atom? return tail->left
+    (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    74/jump-if-= $type-tail:end/disp8
+$type-tail:return-tail:
+    # return tail
+    89/<- %eax 1/r32/ecx
+$type-tail:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 type-equal?:  # a: (addr type-tree), b: (addr type-tree) -> result/eax: boolean
     # . prologue
     55/push-ebp
@@ -14487,6 +14577,15 @@ $type-equal?:compare-addr:
     8b/-> %ecx 0/r32/eax  # Var-type
     39/compare %edx 0/r32/eax  # Var-type
     b8/copy-to-eax 1/imm32/true
+    0f 84/jump-if-= $type-equal?:end/disp32
+$type-equal?:compare-null-a:
+    # if (a == 0) return false
+    b8/copy-to-eax 0/imm32/false
+    81 7/subop/compare %ecx 0/imm32
+    0f 84/jump-if-= $type-equal?:end/disp32
+$type-equal?:compare-null-b:
+    # if (b == 0) return false
+    81 7/subop/compare %edx 0/imm32
     0f 84/jump-if-= $type-equal?:end/disp32
 $type-equal?:compare-atom-state:
     # if (a->is-atom? != b->is-atom?) return false
