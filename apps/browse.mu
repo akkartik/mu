@@ -6,7 +6,7 @@
 #
 # Press 'q' to quit. All other keys scroll down.
 
-fn main args-on-stack: (addr array (addr array byte)) -> exit-status/ebx: int {
+fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
   # var file/esi: (addr buffered-file) = open args-on-stack[1] for reading {{{
   var file/esi: (addr buffered-file) <- copy 0
   {
@@ -16,7 +16,7 @@ fn main args-on-stack: (addr array (addr array byte)) -> exit-status/ebx: int {
       # var filename/ecx: (addr array byte) = args-on-stack[1] {{{
       var filename/ecx: (addr array byte) <- copy 0
       {
-        var args/eax: (addr array (addr array byte)) <- copy args-on-stack
+        var args/eax: (addr array addr array byte) <- copy args-on-stack
         var tmp/eax: (addr addr array byte) <- index args, 1
         filename <- copy *tmp
       }

@@ -3,7 +3,7 @@
 # The state machine is getting out of control, and I notice old bugs like
 # turning '*abc_' into bold text.
 
-fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
+fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   var filename/eax: (addr array byte) <- first-arg args
   var file/esi: (addr buffered-file) <- load-file filename
   enable-screen-grid-mode
@@ -194,8 +194,8 @@ fn clear toprow: int, leftcol: int, botrow: int, rightcol: int {
   }
 }
 
-fn first-arg args-on-stack: (addr array (addr array byte)) -> out/eax: (addr array byte) {
-  var args/eax: (addr array (addr array byte)) <- copy args-on-stack
+fn first-arg args-on-stack: (addr array addr array byte) -> out/eax: (addr array byte) {
+  var args/eax: (addr array addr array byte) <- copy args-on-stack
   var result/eax: (addr addr array byte) <- index args, 1
   out <- copy *result
 }

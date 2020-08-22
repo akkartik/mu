@@ -13,8 +13,8 @@
 
 # We also have tests now:
 #   $ ./a.elf test
-fn main args-on-stack: (addr array (addr array byte)) -> exit-status/ebx: int {
-  var args/eax: (addr array (addr array byte)) <- copy args-on-stack
+fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
+  var args/eax: (addr array addr array byte) <- copy args-on-stack
   var tmp/ecx: int <- length args
   $main-body: {
     # if (len(args) > 1 && args[1] == "test") run-tests()

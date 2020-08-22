@@ -6,10 +6,10 @@
 #   $ echo $?
 #   123
 
-fn main _args: (addr array (addr array byte)) -> exit-status/ebx: int {
+fn main _args: (addr array addr array byte) -> exit-status/ebx: int {
 $main-body: {
   # if no args, print a message and exit
-  var args/esi: (addr array (addr array byte)) <- copy _args
+  var args/esi: (addr array addr array byte) <- copy _args
   var n/ecx: int <- length args
   compare n, 1
   {

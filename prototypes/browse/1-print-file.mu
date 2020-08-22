@@ -1,12 +1,12 @@
-fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
+fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   var filename/eax: (addr array byte) <- first-arg args
   var file/ecx: (addr buffered-file) <- load-file filename
   dump file
   exit-status <- copy 0
 }
 
-fn first-arg args-on-stack: (addr array (addr array byte)) -> out/eax: (addr array byte) {
-  var args/eax: (addr array (addr array byte)) <- copy args-on-stack
+fn first-arg args-on-stack: (addr array addr array byte) -> out/eax: (addr array byte) {
+  var args/eax: (addr array addr array byte) <- copy args-on-stack
   var result/eax: (addr addr array byte) <- index args, 1
   out <- copy *result
 }

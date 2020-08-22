@@ -19,7 +19,7 @@
 # Then again, maybe I should just keep going and not try to be compatible with
 # GitHub-Flavored Markdown. Require that new headings are also new paragraphs.
 
-fn main args: (addr array (addr array byte)) -> exit-status/ebx: int {
+fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   var filename/eax: (addr array byte) <- first-arg args
   var file/esi: (addr buffered-file) <- load-file filename
   enable-screen-grid-mode
@@ -163,8 +163,8 @@ fn done-drawing? self: (addr screen-position-state) -> result/eax: boolean {
   # self->rightcol >= self->ncols
 }
 
-fn first-arg args-on-stack: (addr array (addr array byte)) -> out/eax: (addr array byte) {
-  var args/eax: (addr array (addr array byte)) <- copy args-on-stack
+fn first-arg args-on-stack: (addr array addr array byte) -> out/eax: (addr array byte) {
+  var args/eax: (addr array addr array byte) <- copy args-on-stack
   var result/eax: (addr addr array byte) <- index args, 1
   out <- copy *result
 }

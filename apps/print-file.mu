@@ -7,8 +7,8 @@
 #   $ ./a.elf x
 #   abc
 
-fn main _args: (addr array (addr array byte)) -> exit-status/ebx: int {
-  var args/eax: (addr array (addr array byte)) <- copy _args
+fn main _args: (addr array addr array byte) -> exit-status/ebx: int {
+  var args/eax: (addr array addr array byte) <- copy _args
 $main-body: {
     var n/ecx: int <- length args
     compare n, 1
