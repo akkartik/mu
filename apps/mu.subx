@@ -4311,6 +4311,12 @@ test-reg-var-def-with-read-of-same-register:
 #?     (write 2 "$\n")
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
     (check-stream-equal _test-error-stream  ""  "F - test-reg-var-def-with-read-of-same-register: error stream should be empty")
     # check output
     (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-reg-var-def-with-read-of-same-register/0")
@@ -6315,7 +6321,7 @@ test-convert-array-of-user-defined-types:
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var arr/eax: (addr array t) <- copy 0\n")
     (write _test-input-stream "  var idx/ecx: int <- copy 3\n")
-    (write _test-input-stream "  var x/eax: (addr int) <- index arr, idx\n")
+    (write _test-input-stream "  var x/eax: (addr t) <- index arr, idx\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
@@ -6603,6 +6609,826 @@ test-convert-length-of-array-of-user-defined-types:
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-length-of-array-of-user-defined-types/27")
     # . epilogue
     89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-non-array-atom-base-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: int\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-non-array-atom-base-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: var 'a' is not an array"  "F - test-index-with-non-array-atom-base-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-non-array-atom-base-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-non-array-compound-base-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (handle int)\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-non-array-compound-base-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: var 'a' is not an array"  "F - test-index-with-non-array-compound-base-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-non-array-compound-base-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-non-array-compound-base-type-2:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (addr int)\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-non-array-compound-base-type-2: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: var 'a' is not an array"  "F - test-index-with-non-array-compound-base-type-2: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-non-array-compound-base-type-2: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-array-atom-base-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: array\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-array-atom-base-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: array 'a' must specify the type of its elements"  "F - test-index-with-array-atom-base-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-array-atom-base-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-addr-base-on-stack:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (addr array int)\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-addr-base-on-stack: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: var 'a' is an addr to an array, and so must live in a register"  "F - test-index-with-addr-base-on-stack: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-addr-base-on-stack: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-array-base-in-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/eax: (array int 3) <- copy 0\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-array-base-in-register: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: var 'a' is an array, and so must live on the stack"  "F - test-index-with-array-base-in-register: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-array-base-in-register: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-wrong-index-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/eax: (addr array int) <- copy 0\n")
+    (write _test-input-stream "  var b: boolean\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, b\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-wrong-index-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: second argument 'b' must be an int or offset"  "F - test-index-with-wrong-index-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-wrong-index-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-offset-atom-index-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/eax: (addr array int) <- copy 0\n")
+    (write _test-input-stream "  var b: offset\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, b\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-offset-atom-index-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: offset 'b' must specify the type of array elements"  "F - test-index-with-offset-atom-index-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-offset-atom-index-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-offset-on-stack:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/eax: (addr array int) <- copy 0\n")
+    (write _test-input-stream "  var b: int\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, b\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-offset-on-stack: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: second argument 'b' must be in a register"  "F - test-index-with-offset-on-stack: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-offset-on-stack: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-needs-offset-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/eax: (addr array t) <- copy 0\n")
+    (write _test-input-stream "  var b/ebx: int <- copy 0\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, b\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "type t {\n")  # size 12 is not a power of two
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "  z: int\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-needs-offset-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: cannot take an int for array 'a'; create an offset instead. See mu_summary for details."  "F - test-index-needs-offset-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-needs-offset-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-output-not-address:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/ebx: (addr array boolean) <- copy 0\n")
+    (write _test-input-stream "  var o/edi: int <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-output-not-address: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: output 'o' must be an address"  "F - test-index-with-output-not-address: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-output-not-address: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-output-not-address-2:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/ebx: (addr array boolean) <- copy 0\n")
+    (write _test-input-stream "  var o/edi: (int) <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-output-not-address-2: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: output 'o' must be an address"  "F - test-index-with-output-not-address-2: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-output-not-address-2: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-wrong-output-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/ebx: (addr array boolean) <- copy 0\n")
+    (write _test-input-stream "  var o/edi: (addr int) <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-wrong-output-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: output 'o' does not have the right type"  "F - test-index-with-wrong-output-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-wrong-output-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-no-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-no-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: too few inouts (2 required)"  "F - test-index-with-no-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-no-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-too-few-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (array int 3)\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-too-few-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: too few inouts (2 required)"  "F - test-index-with-too-few-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-too-few-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-too-many-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (array int 3)\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- index a, 0, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-too-many-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: too many inouts (2 required)"  "F - test-index-with-too-many-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-too-many-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-no-output:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (array int 3)\n")
+    (write _test-input-stream "  index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-no-output: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: must have an output"  "F - test-index-with-no-output: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-no-output: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-index-with-too-many-outputs:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (array int 3)\n")
+    (write _test-input-stream "  var b/eax: (addr int) <- copy 0\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- copy 0\n")
+    (write _test-input-stream "  b, c <- index a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-index-with-too-many-outputs: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt index: too many outputs (1 required)"  "F - test-index-with-too-many-outputs: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-index-with-too-many-outputs: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
     5d/pop-to-ebp
     c3/return
 
@@ -12243,7 +13069,7 @@ $check-mu-get-stmt:check-base:
 $check-mu-get-stmt:base-is-compound:
       # if (type->left != addr) break
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # => eax
+      (is-simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $check-mu-get-stmt:base-is-addr:
@@ -12495,12 +13321,400 @@ check-mu-index-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffe
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+8) 6/r32/esi
+    # - check for 0 inouts
+    # var base/ecx: (addr var) = stmt->inouts->value
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+$check-mu-index-stmt:check-no-inouts:
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-mu-index-stmt:error-too-few-inouts/disp32
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %ecx 0/r32/eax
+    # - check base type is either (addr array ...) in register or (array ...) on stack
+    # var base-type/ebx: (addr type-tree) = lookup(base->type)
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
+    89/<- %ebx 0/r32/eax
+    # if base-type is an atom, abort with a precise error
+    81 7/subop/compare *ebx 0/imm32/false  # Type-tree-is-atom
+    {
+      74/jump-if-= break/disp8
+      (is-simple-mu-type? %ebx 3)  # array => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $check-mu-index-stmt:error-base-array-atom-type/disp32
+      0f 84/jump-if-= $check-mu-index-stmt:error-base-non-array-type/disp32
+    }
+$check-mu-index-stmt:base-is-compound:
+    # if type->left not addr or array, abort
+    {
+      (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 2)  # addr => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= break/disp8
+      (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 3)  # array => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= break/disp8
+      e9/jump $check-mu-index-stmt:error-base-non-array-type/disp32
+    }
+    # if (type->left == addr) ensure type->right->left == array and type->register exists
+    {
+      (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 2)  # addr => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+$check-mu-index-stmt:base-is-addr:
+      (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 3)  # array => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= $check-mu-index-stmt:error-base-non-array-type/disp32
+$check-mu-index-stmt:check-base-addr-is-register:
+      81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
+      0f 84/jump-if-= $check-mu-index-stmt:error-base-address-array-type-on-stack/disp32
+    }
+    # if (type->left == array) ensure type->register doesn't exist
+    {
+      (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 3)  # array => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+$check-mu-index-stmt:base-is-array:
+      81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
+      0f 85/jump-if-!= $check-mu-index-stmt:error-base-array-type-in-register/disp32
+    }
+    # - var base-type/ebx: type-id = payload type of base
+    # if (base-type->left == addr) base-type = base-type->right
+    {
+      (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 2)  # addr => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
+      89/<- %ebx 0/r32/eax
+    }
+    # if (base-type->left == array) base-type = base-type->right
+    {
+      (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 3)  # array => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
+      89/<- %ebx 0/r32/eax
+    }
+    # TODO: check !base-type->is-atom?
+    # base-type = base-type->left
+    (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+    89/<- %ebx 0/r32/eax
+    # TODO: check base-type->is-atom?
+    # var base-type-id/ebx: type-id = base-type->value
+    8b/-> *(ebx+4) 3/r32/ebx  # Type-tree-value
+    # - check for 1 inout
+    # var index/ecx: (addr stmt-var) = stmt->inouts->next->value
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+$check-mu-index-stmt:check-single-inout:
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-mu-index-stmt:error-too-few-inouts/disp32
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %ecx 0/r32/eax
+    # - check index is either a literal or register
+    # var index-type/edx: (addr type-tree)
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
+    89/<- %edx 0/r32/eax
+    # if index type is an atom, it must be a literal or int
+    81 7/subop/compare *edx 0/imm32/false  # Type-tree-is-atom
+    {
+      74/jump-if-= break/disp8
+$check-mu-index-stmt:index-type-is-atom:
+      (is-simple-mu-type? %edx 0)  # literal => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= $check-mu-index-stmt:index-type-done/disp8
+      (is-simple-mu-type? %edx 1)  # int => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= $check-mu-index-stmt:index-type-done/disp8
+      (is-simple-mu-type? %edx 7)  # offset => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $check-mu-index-stmt:error-index-offset-atom-type/disp32
+      e9/jump $check-mu-index-stmt:error-invalid-index-type/disp32
+    }
+    # if index type is a non-atom: it must be an offset
+    {
+      75/jump-if-!= break/disp8
+$check-mu-index-stmt:index-type-is-non-atom:
+      (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 7)  # offset => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= $check-mu-index-stmt:error-invalid-index-type/disp32
+    }
+$check-mu-index-stmt:index-type-done:
+    # check index is either a literal or in a register
+    {
+      (is-simple-mu-type? %edx 0)  # literal => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= break/disp8
+$check-mu-index-stmt:check-index-in-register:
+      81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
+      0f 84/jump-if-= $check-mu-index-stmt:error-index-on-stack/disp32
+    }
+    # - if index is an 'int', check that element type of base has size 1, 2, 4 or 8 bytes.
+    {
+      (is-simple-mu-type? %edx 1)  # int => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+$check-mu-index-stmt:check-index-can-be-int:
+      (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+      (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+      (array-element-size %eax)  # => eax
+      3d/compare-eax-and 1/imm32
+      74/jump-if-= break/disp8
+      3d/compare-eax-and 2/imm32
+      74/jump-if-= break/disp8
+      3d/compare-eax-and 4/imm32
+      74/jump-if-= break/disp8
+      3d/compare-eax-and 8/imm32
+      74/jump-if-= break/disp8
+      e9/jump $check-mu-index-stmt:error-index-needs-offset/disp32
+    }
+    # - check for too many inouts
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $check-mu-index-stmt:error-too-many-inouts/disp32
+    # - check for 0 outputs
+    # var output/edi: (addr var) = stmt->outputs->value
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-index-stmt:error-too-few-outputs/disp32
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %edi 0/r32/eax
+    # - check output type
+    # must have a non-atomic type
+    (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
+    89/<- %edx 0/r32/eax
+    81 7/subop/compare *edx 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $check-mu-index-stmt:error-output-type-not-address/disp32
+    # type must start with (addr ...)
+    (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
+    (is-simple-mu-type? %eax 2)  # addr => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-index-stmt:error-output-type-not-address/disp32
+    # var output-type-id/eax: type-id = output-type->right->left->value
+    (lookup *(edx+0xc) *(edx+0x10))  # Type-tree-right Type-tree-right => eax
+    (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    # TODO: check output-type->is-atom?
+    # output-type-id must match base-type-id
+    39/compare *(eax+4) 3/r32/ebx  # Type-tree-value
+    0f 85/jump-if-!= $check-mu-index-stmt:error-bad-output-type/disp32
+    # - check for too many outputs
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $check-mu-index-stmt:error-too-many-outputs/disp32
 $check-mu-index-stmt:end:
     # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$check-mu-index-stmt:error-base-non-array-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: var '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' is not an array\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-base-array-atom-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: array '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' must specify the type of its elements\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-base-address-array-type-on-stack:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: var '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' is an addr to an array, and so must live in a register\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-base-array-type-in-register:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: var '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' is an array, and so must live on the stack\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-too-few-inouts:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: too few inouts (2 required)\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-invalid-index-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: second argument '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' must be an int or offset\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-index-offset-atom-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: offset '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' must specify the type of array elements\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-index-on-stack:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: second argument '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' must be in a register\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-index-needs-offset:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: cannot take an int for array '")
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "'; create an offset instead. See mu_summary for details.\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-too-many-inouts:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: too many inouts (2 required)\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-too-few-outputs:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: must have an output\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-too-many-outputs:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: too many outputs (1 required)\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-output-not-in-register:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: output '")
+    (lookup *edi *(edi+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' is not in a register\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-output-type-not-address:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: output '")
+    (lookup *edi *(edi+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' must be an address\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-index-stmt:error-bad-output-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt index: output '")
+    (lookup *edi *(edi+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' does not have the right type\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
 
 check-mu-length-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue

@@ -31,8 +31,8 @@ fn test-factorial {
   check-ints-equal result 0x78 "F - test-factorial"
 }
 
-fn main args-on-stack: (addr array (addr array byte)) -> exit-status/ebx: int {
-  var args/eax: (addr array (addr array byte)) <- copy args-on-stack
+fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
+  var args/eax: (addr array addr array byte) <- copy args-on-stack
   var tmp/ecx: int <- length args
   $main-body: {
     # if (len(args) <= 1) factorial(5)
