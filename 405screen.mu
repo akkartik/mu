@@ -1,4 +1,10 @@
-# Wrappers for real screen primitives that can be passed in a fake screen.
+# Wrappers for real screen primitives that can be passed a fake screen.
+# There are no tests here, but commented scenarios are painstakingly validated
+# against a real terminal emulator. I believe functionality here is broadly
+# portable across terminal emulators.
+#
+# Remember: fake screen co-ordinates are 1-based, just like in real terminal
+# emulators.
 
 type screen {
   num-rows: int
@@ -13,6 +19,7 @@ type screen {
 }
 
 type screen-cell {
+  data: grapheme
   color: int
   background-color: int
   bold?: boolean
@@ -119,6 +126,45 @@ $move-cursor:body: {
     break-if-=
     # fake screen
     var screen-addr/esi: (addr screen) <- copy screen
+    # row < 0 is ignored
+    {
+      compare row, 0
+      break-if-< $move-cursor:body
+    }
+    # row = 0 is treated same as 1
+    {
+      compare row, 0
+      break-if-!=
+      copy-to row, 1
+    }
+    # row > num-rows saturates to num-rows
+    {
+      var nrows-addr/eax: (addr int) <- get screen-addr, num-rows
+      var nrows/eax: int <- copy *nrows-addr
+      compare row, nrows
+      break-if-<=
+      copy-to row, nrows
+    }
+    # column < 0 is ignored
+    {
+      compare column, 0
+      break-if-< $move-cursor:body
+    }
+    # column = 0 is treated same as 1
+    {
+      compare column, 0
+      break-if-!=
+      copy-to column, 1
+    }
+    # column > num-cols saturates to num-cols+1 (so wrapping to next row)
+    {
+      var ncols-addr/eax: (addr int) <- get screen-addr, num-cols
+      var ncols/eax: int <- copy *ncols-addr
+      compare column, ncols
+      break-if-<=
+      copy-to column, ncols
+      increment column
+    }
     # screen->cursor-row = row
     var dest/edi: (addr int) <- get screen-addr, cursor-row
     var src/eax: int <- copy row
@@ -157,8 +203,30 @@ $print-grapheme:body: {
   {
     break-if-=
     # fake screen
+    var screen-addr/esi: (addr screen) <- copy screen
+    var idx/ecx: int <- current-screen-cell-index screen-addr
+    var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+    var data/eax: (addr array screen-cell) <- lookup *data-ah
+    var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+    var cell/eax: (addr screen-cell) <- index data, offset
+    var dest/eax: (addr grapheme) <- get cell, data
+    var c2/ecx: grapheme <- copy c
+    copy-to *dest, c2
   }
 }
+}
+
+fn current-screen-cell-index screen-on-stack: (addr screen) -> result/ecx: int {
+  var screen/esi: (addr screen) <- copy screen-on-stack
+  var num-cols-addr/eax: (addr int) <- get screen, num-cols
+  var num-cols/eax: int <- copy *num-cols-addr
+  var cursor-row-addr/ecx: (addr int) <- get screen, cursor-row
+  result <- copy *cursor-row-addr
+  result <- subtract 1
+  result <- multiply num-cols
+  var cursor-col-addr/eax: (addr int) <- get screen, cursor-col
+  result <- add *cursor-col-addr
+  result <- subtract 1
 }
 
 fn print-code-point screen: (addr screen), c: code-point {
@@ -300,3 +368,66 @@ $show-cursor:body: {
   }
 }
 }
+
+# validate data on screen regardless of attributes (color, bold, etc.)
+# Mu doesn't have multi-line strings, so we provide functions for rows or portions of rows.
+
+fn check-screen-row screen: (addr screen), row-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+}
+
+# various variants by screen-cell attribute; spaces in the 'expected' data should not match the attribute
+
+fn check-screen-row-in-color screen: (addr screen), fg: color, row-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-color-from screen: (addr screen), fg: color, row-idx: int, col-idx: int, expected: (addr array byte) {
+}
+
+# background color is visible even for spaces, so 'expected' behaves as an array of booleans.
+# non-space = given background must match; space = background must not match
+fn check-screen-row-in-background-color screen: (addr screen), fg: color, row-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-background-color-from screen: (addr screen), fg: color, row-idx: int, col-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-bold screen: (addr screen), row-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-bold-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-underline screen: (addr screen), row-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-underline-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-reverse screen: (addr screen), row-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-reverse-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-blinking screen: (addr screen), row-idx: int, expected: (addr array byte) {
+}
+
+fn check-screen-row-in-blinking-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+}
+
+fn test-print-grapheme {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  check-screen-row screen, 1, "a"  # top-left corner of the screen
+}
+
+#? fn main -> exit-status/ebx: int {
+#?   test-print-grapheme
+#?   exit-status <- copy 0
+#? }
