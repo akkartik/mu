@@ -31,7 +31,8 @@ $main-body: {
         var c/eax: byte <- read-byte-buffered in-addr
         compare c, 0xffffffff  # EOF marker
         break-if-=
-        print-grapheme 0, c
+        var g/eax: grapheme <- copy c
+        print-grapheme 0, g
         loop
       }
     }
