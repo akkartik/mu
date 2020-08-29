@@ -1,8 +1,8 @@
-# Helpers for Unicode "code points".
-# https://en.wikipedia.org/wiki/Code_point
+# Helpers for Unicode.
 #
 # Mu has no characters, only code points and graphemes.
 # Code points are the indivisible atoms of text streams.
+#   https://en.wikipedia.org/wiki/Code_point
 # Graphemes are the smallest self-contained unit of text.
 # Graphemes may consist of multiple code points.
 #
