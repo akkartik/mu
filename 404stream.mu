@@ -4,7 +4,7 @@ fn test-stream {
   # - write an int to a stream, then read it back
   # step 1: initialize
   var s: (stream int 4)
-  var s2/ecx: (addr stream int 4) <- address s
+  var s2/ecx: (addr stream int) <- address s
   var tmp/eax: boolean <- stream-empty? s2
   check-true tmp, "F - test-stream/empty?/0"
   tmp <- stream-full? s2
@@ -35,7 +35,7 @@ fn test-stream {
 fn test-stream-full {
   # write an int to a stream of capacity 1
   var s: (stream int 1)
-  var s2/ecx: (addr stream int 1) <- address s
+  var s2/ecx: (addr stream int) <- address s
   var tmp/eax: boolean <- stream-full? s2
   check-false tmp, "F - test-stream-full?/pre"
   var x: int
