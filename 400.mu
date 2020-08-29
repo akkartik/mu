@@ -25,7 +25,7 @@ sig syscall_clock_gettime  # clock/ebx: int, out/ecx: (addr timespec)
 #   grep -h '^[a-z]' [0-9]*.subx |grep -v '^test-'
 # Functions we don't want to make accessible from Mu are commented out.
 # Many functions here may not be usable yet because of missing features
-# (global variable support, type definitions for stuff like `stream`)
+# (global variable support, etc.)
 sig check-ints-equal a: int, b: int, msg: (addr array byte)
 sig kernel-string-equal? s: (addr kernel-string), benchmark: (addr array byte) -> result/eax: boolean
 sig new-segment len: int, ad: (addr allocation-descriptor)
@@ -42,7 +42,7 @@ sig trace-scan line: (addr array byte) -> result/eax: boolean
 sig next-line-matches? t: (addr stream byte), line: (addr array byte) -> result/eax: boolean
 sig skip-next-line t: (addr stream byte)
 sig clear-trace-stream
-#sig write f: fd or (addr stream byte), s: (addr array byte)
+sig write f: (addr stream byte), s: (addr array byte)  # writing to file descriptor not supported; use buffered-file
 sig stream-data-equal? f: (addr stream byte), s: (addr array byte) -> result/eax: boolean
 sig check-stream-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
 sig next-stream-line-equal? f: (addr stream byte), s: (addr array byte) -> result/eax: boolean

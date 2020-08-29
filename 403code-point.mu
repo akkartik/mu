@@ -154,7 +154,7 @@ fn test-to-grapheme-four-bytes-max {
 }
 
 # To run all tests, uncomment this and run:
-#   $ ./translate_mu ''  &&  ./a.elf
+#   $ ./translate_mu  &&  ./a.elf
 #? fn main -> r/ebx: int {
 #?   run-tests
 #?   r <- copy 0
