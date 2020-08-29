@@ -10,7 +10,6 @@ type screen {
   num-rows: int
   num-cols: int
   data: (handle array screen-cell)
-  pending-scroll?: boolean
   top-index: int
   cursor-row: int
   cursor-col: int
@@ -218,14 +217,19 @@ $print-grapheme:body: {
 
 fn current-screen-cell-index screen-on-stack: (addr screen) -> result/ecx: int {
   var screen/esi: (addr screen) <- copy screen-on-stack
+  var cursor-row-addr/ecx: (addr int) <- get screen, cursor-row
+  var cursor-col-addr/eax: (addr int) <- get screen, cursor-col
+  result <- screen-cell-index screen, *cursor-row-addr, *cursor-col-addr
+}
+
+fn screen-cell-index screen-on-stack: (addr screen), row: int, col: int -> result/ecx: int {
+  var screen/esi: (addr screen) <- copy screen-on-stack
   var num-cols-addr/eax: (addr int) <- get screen, num-cols
   var num-cols/eax: int <- copy *num-cols-addr
-  var cursor-row-addr/ecx: (addr int) <- get screen, cursor-row
-  result <- copy *cursor-row-addr
+  result <- copy row
   result <- subtract 1
   result <- multiply num-cols
-  var cursor-col-addr/eax: (addr int) <- get screen, cursor-col
-  result <- add *cursor-col-addr
+  result <- add col
   result <- subtract 1
 }
 
@@ -372,50 +376,52 @@ $show-cursor:body: {
 # validate data on screen regardless of attributes (color, bold, etc.)
 # Mu doesn't have multi-line strings, so we provide functions for rows or portions of rows.
 
-fn check-screen-row screen: (addr screen), row-idx: int, expected: (addr array byte) {
+fn check-screen-row screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte) {
+  var screen/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen, row-idx, 1
 }
 
-fn check-screen-row-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+fn check-screen-row-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
 }
 
 # various variants by screen-cell attribute; spaces in the 'expected' data should not match the attribute
 
-fn check-screen-row-in-color screen: (addr screen), fg: color, row-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-color screen-on-stack: (addr screen), fg: color, row-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-color-from screen: (addr screen), fg: color, row-idx: int, col-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: color, row-idx: int, col-idx: int, expected: (addr array byte) {
 }
 
 # background color is visible even for spaces, so 'expected' behaves as an array of booleans.
 # non-space = given background must match; space = background must not match
-fn check-screen-row-in-background-color screen: (addr screen), fg: color, row-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-background-color screen-on-stack: (addr screen), fg: color, row-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-background-color-from screen: (addr screen), fg: color, row-idx: int, col-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), fg: color, row-idx: int, col-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-bold screen: (addr screen), row-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-bold screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-bold-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-bold-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-underline screen: (addr screen), row-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-underline screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-underline-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-underline-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-reverse screen: (addr screen), row-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-reverse screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-reverse-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-reverse-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-blinking screen: (addr screen), row-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-blinking screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte) {
 }
 
-fn check-screen-row-in-blinking-from screen: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
+fn check-screen-row-in-blinking-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
 }
 
 fn test-print-grapheme {
