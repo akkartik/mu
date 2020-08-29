@@ -51,6 +51,7 @@ sig tailor-exit-descriptor ed: (addr exit-descriptor), nbytes: int
 sig stop ed: (addr exit-descriptor), value: int
 #sig read f: fd or (addr stream byte), s: (addr stream byte) -> num-bytes-read/eax: int
 sig read-byte-buffered f: (addr buffered-file) -> byte-or-Eof/eax: byte
+sig read-byte s: (addr stream byte) -> result/eax: byte
 #sig write-stream f: fd or (addr stream byte), s: (addr stream byte)
 #sig error ed: (addr exit-descriptor), out: fd or (addr stream byte), msg: (addr array byte)
 sig write-byte-buffered f: (addr buffered-file), n: int

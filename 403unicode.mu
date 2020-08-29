@@ -55,6 +55,7 @@ $to-grapheme:body: {
       break $to-grapheme:compute-length
     }
     # more than 4 bytes: unsupported
+    # TODO: print to stderr
     compare c, 0x1fffff
     {
       break-if->
@@ -151,6 +152,148 @@ fn test-to-grapheme-four-bytes-max {
   var out/eax: grapheme <- to-grapheme in
   var out-int/eax: int <- copy out
   check-ints-equal out-int, 0xbfbfbff7, "F - to-grapheme/4b"  # 1111-0 111  10 11-1111  10 11-1111  10 11-1111
+}
+
+# read the next grapheme from a stream of bytes
+fn read-grapheme in: (addr stream byte) -> out/eax: grapheme {
+$read-grapheme:body: {
+  var c/eax: byte <- read-byte in
+  var num-trailers/ecx: int <- copy 0
+  $read-grapheme:compute-length: {
+    # single byte: just return it
+    compare c, 0xc0
+    {
+      break-if->=
+      out <- copy c
+      num-trailers <- copy 0
+      break $read-grapheme:body
+    }
+    compare c, 0xfe
+    {
+      break-if-<
+      out <- copy c
+      break $read-grapheme:body
+    }
+    # 2 bytes
+    compare c, 0xe0
+    {
+      break-if->=
+      num-trailers <- copy 1
+      break $read-grapheme:compute-length
+    }
+    # 3 bytes
+    compare c, 0xf0
+    {
+      break-if->=
+      num-trailers <- copy 2
+      break $read-grapheme:compute-length
+    }
+    # 4 bytes
+    compare c, 0xf8
+    {
+      break-if->=
+      num-trailers <- copy 3
+      break $read-grapheme:compute-length
+    }
+$read-grapheme:abort: {
+      # TODO: print to stderr
+      print-string-to-real-screen "utf-8 encodings larger than 4 bytes are not supported. First byte seen: "
+      var n/eax: int <- copy c
+      print-int32-hex-to-real-screen n
+      print-string-to-real-screen "\n"
+      var exit-status/ebx: int <- copy 1
+      syscall_exit
+    }
+  }
+  # prepend trailer bytes
+  var result/edi: int <- copy c
+  var num-byte-shifts/edx: int <- copy 1
+  {
+    compare num-trailers, 0
+    break-if-<=
+    var tmp/eax: byte <- read-byte in
+    var tmp2/eax: int <- copy tmp
+    tmp2 <- shift-left-bytes tmp2, num-byte-shifts
+    result <- or tmp2
+    # update loop state
+    num-byte-shifts <- increment
+    num-trailers <- decrement
+    loop
+  }
+  out <- copy result
+}
+}
+
+fn test-read-grapheme {
+  var s: (stream byte 0x30)
+  var s2/ecx: (addr stream byte) <- address s
+  write s2, "aΒc世d界e"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x61, "F - test grapheme/0"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x92ce, "F - test grapheme/1"  # greek capital letter beta
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x63, "F - test grapheme/2"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x96b8e4, "F - test grapheme/3"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x64, "F - test grapheme/4"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x8c95e7, "F - test grapheme/5"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x65, "F - test grapheme/6"
+}
+
+# needed because available primitives only shift by a literal/constant number of bits
+fn shift-left-bytes n: int, k: int -> result/eax: int {
+  var i/ecx: int <- copy 0
+  result <- copy n
+  {
+    compare i, k
+    break-if->=
+    compare i, 4  # only 4 bytes in 32 bits
+    break-if->=
+    result <- shift-left 8
+    i <- increment
+    loop
+  }
+}
+
+fn test-shift-left-bytes-0 {
+  var result/eax: int <- shift-left-bytes 1, 0
+  check-ints-equal result, 1, "F - shift-left-bytes 0"
+}
+
+fn test-shift-left-bytes-1 {
+  var result/eax: int <- shift-left-bytes 1, 1
+  check-ints-equal result, 0x100, "F - shift-left-bytes 1"
+}
+
+fn test-shift-left-bytes-2 {
+  var result/eax: int <- shift-left-bytes 1, 2
+  check-ints-equal result, 0x10000, "F - shift-left-bytes 2"
+}
+
+fn test-shift-left-bytes-3 {
+  var result/eax: int <- shift-left-bytes 1, 3
+  check-ints-equal result, 0x1000000, "F - shift-left-bytes 3"
+}
+
+fn test-shift-left-bytes-4 {
+  var result/eax: int <- shift-left-bytes 1, 4
+  check-ints-equal result, 0, "F - shift-left-bytes 4"
+}
+
+fn test-shift-left-bytes-5 {
+  var result/eax: int <- shift-left-bytes 1, 5
+  check-ints-equal result, 0, "F - shift-left-bytes >4"
 }
 
 # To run all tests, uncomment this and run:
