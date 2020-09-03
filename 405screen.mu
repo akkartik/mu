@@ -187,6 +187,26 @@ $print-string:body: {
   {
     break-if-=
     # fake screen
+    var s2: (stream byte 0x100)
+    var s2-addr/esi: (addr stream byte) <- address s2
+    write s2-addr, s
+    var screen-addr/edi: (addr screen) <- copy screen
+    {
+      var done?/eax: boolean <- stream-empty? s2-addr
+      compare done?, 0
+      break-if-!=
+      var idx/ecx: int <- current-screen-cell-index screen-addr
+      var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+      var data/eax: (addr array screen-cell) <- lookup *data-ah
+      var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+      var cell/eax: (addr screen-cell) <- index data, offset
+      var dest/ecx: (addr grapheme) <- get cell, data
+      var g/eax: grapheme <- read-grapheme s2-addr
+      copy-to *dest, g
+      var cursor-col-addr/ecx: (addr int) <- get screen-addr, cursor-col
+      increment *cursor-col-addr
+      loop
+    }
   }
 }
 }
@@ -466,7 +486,16 @@ fn test-print-single-grapheme {
   check-screen-row screen, 1, "a", "F - test-print-single-grapheme"  # top-left corner of the screen
 }
 
+fn test-print-multiple-graphemes {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  print-string screen, "Hello, 世界"
+  check-screen-row screen, 1, "Hello, 世界", "F - test-print-multiple-graphemes"  # top-left corner of the screen
+}
+
 #? fn main -> exit-status/ebx: int {
 #?   test-print-single-grapheme
+#?   test-print-multiple-graphemes
 #?   exit-status <- copy 0
 #? }
