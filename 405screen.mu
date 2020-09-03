@@ -233,6 +233,23 @@ fn screen-cell-index screen-on-stack: (addr screen), row: int, col: int -> resul
   result <- subtract 1
 }
 
+fn screen-grapheme-at screen-on-stack: (addr screen), row: int, col: int -> result/eax: grapheme {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen-addr, row, col
+  result <- screen-grapheme-at-idx screen-addr, idx
+}
+
+fn screen-grapheme-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: grapheme {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var idx/ecx: int <- copy idx-on-stack
+  var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+  var cell/eax: (addr screen-cell) <- index data, offset
+  var src/eax: (addr grapheme) <- get cell, data
+  result <- copy *src
+}
+
 fn print-code-point screen: (addr screen), c: code-point {
   var g/eax: grapheme <- to-grapheme c
   print-grapheme screen, g
@@ -376,9 +393,25 @@ $show-cursor:body: {
 # validate data on screen regardless of attributes (color, bold, etc.)
 # Mu doesn't have multi-line strings, so we provide functions for rows or portions of rows.
 
-fn check-screen-row screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte) {
+fn check-screen-row screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen, row-idx, 1
+  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  var e: (stream byte 0x100)
+  var e-addr/edx: (addr stream byte) <- address e
+  write e-addr, expected
+  {
+    var done?/eax: boolean <- stream-empty? e-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g2/ebx: int <- copy g
+    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme2/eax: int <- copy expected-grapheme
+    check-ints-equal g2, expected-grapheme2, msg
+    idx <- increment
+    loop
+  }
 }
 
 fn check-screen-row-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
@@ -424,16 +457,16 @@ fn check-screen-row-in-blinking screen-on-stack: (addr screen), row-idx: int, ex
 fn check-screen-row-in-blinking-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte) {
 }
 
-fn test-print-grapheme {
+fn test-print-single-grapheme {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4
   var c/eax: grapheme <- copy 0x61  # 'a'
   print-grapheme screen, c
-  check-screen-row screen, 1, "a"  # top-left corner of the screen
+  check-screen-row screen, 1, "a", "F - test-print-single-grapheme"  # top-left corner of the screen
 }
 
 #? fn main -> exit-status/ebx: int {
-#?   test-print-grapheme
+#?   test-print-single-grapheme
 #?   exit-status <- copy 0
 #? }
