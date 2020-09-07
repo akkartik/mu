@@ -414,9 +414,13 @@ $show-cursor:body: {
 # Mu doesn't have multi-line strings, so we provide functions for rows or portions of rows.
 # Tab characters (that translate into multiple screen cells) not supported.
 
-fn check-screen-row screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row screen: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  check-screen-row-from screen, row-idx, 1, expected, msg
+}
+
+fn check-screen-row-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
-  var idx/ecx: int <- screen-cell-index screen, row-idx, 1
+  var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
   # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
@@ -444,9 +448,6 @@ fn check-screen-row screen-on-stack: (addr screen), row-idx: int, expected: (add
     idx <- increment
     loop
   }
-}
-
-fn check-screen-row-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
 }
 
 # various variants by screen-cell attribute; spaces in the 'expected' data should not match the attribute
@@ -614,6 +615,17 @@ fn test-move-cursor-row-too-large-saturates {
   print-grapheme screen, c
   # bottom row shows the character
   check-screen-row screen, 5, " a", "F - test-move-cursor-row-too-large-saturates"
+}
+
+fn test-check-screen-row-from {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  move-cursor screen, 1, 4
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  check-screen-row screen, 1, "   a", "F - test-check-screen-row-from/baseline"
+  check-screen-row-from screen, 1, 4, "a", "F - test-check-screen-row-from"
 }
 
 fn main -> exit-status/ebx: int {
