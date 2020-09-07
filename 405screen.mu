@@ -334,6 +334,23 @@ fn screen-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> resu
   result <- copy *src
 }
 
+fn screen-background-color-at screen-on-stack: (addr screen), row: int, col: int -> result/eax: int {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen-addr, row, col
+  result <- screen-background-color-at-idx screen-addr, idx
+}
+
+fn screen-background-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: int {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var idx/ecx: int <- copy idx-on-stack
+  var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+  var cell/eax: (addr screen-cell) <- index data, offset
+  var src/eax: (addr int) <- get cell, background-color
+  result <- copy *src
+}
+
 fn print-code-point screen: (addr screen), c: code-point {
   var g/eax: grapheme <- to-grapheme c
   print-grapheme screen, g
@@ -367,9 +384,11 @@ $reset-formatting:body: {
     # fake screen
     var screen-addr/esi: (addr screen) <- copy screen
     var dest/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
-    var empty-cell: screen-cell
-    var empty-cell-addr/eax: (addr screen-cell) <- address empty-cell
-    copy-object empty-cell-addr, dest
+    var default-cell: screen-cell
+    var bg/eax: (addr int) <- get default-cell, background-color
+    copy-to *bg, 7
+    var default-cell-addr/eax: (addr screen-cell) <- address default-cell
+    copy-object default-cell-addr, dest
   }
 }
 }
@@ -597,10 +616,49 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, row-i
 
 # background color is visible even for spaces, so 'expected' behaves as an array of booleans.
 # non-space = given background must match; space = background must not match
-fn check-screen-row-in-background-color screen-on-stack: (addr screen), fg: int, row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-background-color screen: (addr screen), bg: int, row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  check-screen-row-in-background-color-from screen, bg, row-idx, 1, expected, msg
 }
 
-fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), fg: int, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), bg: int, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  var screen/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
+  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  var e: (stream byte 0x100)
+  var e-addr/edx: (addr stream byte) <- address e
+  write e-addr, expected
+  {
+    var done?/eax: boolean <- stream-empty? e-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g2/ebx: int <- copy g
+    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme2/edx: int <- copy expected-grapheme
+    # compare graphemes
+    $check-screen-row-in-background-color-from:compare-graphemes: {
+      # if expected-grapheme is space, null grapheme is also ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        compare g2, 0
+        break-if-= $check-screen-row-in-background-color-from:compare-graphemes
+      }
+      # if expected-grapheme is space, a different color is ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        var color/eax: int <- screen-background-color-at-idx screen, idx
+        compare color, bg
+        break-if-!= $check-screen-row-in-background-color-from:compare-graphemes
+      }
+      check-ints-equal g2, expected-grapheme2, msg
+      var color/eax: int <- screen-background-color-at-idx screen, idx
+      check-ints-equal color, bg, msg
+    }
+    idx <- increment
+    loop
+  }
 }
 
 fn check-screen-row-in-bold screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
@@ -811,8 +869,23 @@ fn test-check-screen-color {
   check-screen-row-in-color screen, 0, 1, "a c", "F - test-check-screen-color"
 }
 
-#? fn main -> exit-status/ebx: int {
-#? #?   test-check-screen-color
-#?   run-tests
-#?   exit-status <- copy 0
-#? }
+fn test-check-screen-background-color {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  start-color screen, 0, 1  # background=1
+  c <- copy 0x62  # 'b'
+  print-grapheme screen, c
+  start-color screen, 0, 7  # back to default
+  c <- copy 0x63  # 'c'
+  print-grapheme screen, c
+  check-screen-row-in-background-color screen, 7, 1, "a c", "F - test-check-screen-background-color"
+}
+
+fn main -> exit-status/ebx: int {
+#?   test-check-screen-color
+  run-tests
+  exit-status <- copy 0
+}
