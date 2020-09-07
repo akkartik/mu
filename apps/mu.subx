@@ -12695,6 +12695,10 @@ has-primitive-name?:  # stmt: (addr stmt) -> result/eax: boolean
     (string-equal? %esi "compute-offset")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "copy-object") return true
+    (string-equal? %esi "copy-object")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
     # if (name == "allocate") return true
     (string-equal? %esi "allocate")  # => eax
     3d/compare-eax-and 0/imm32/false
@@ -12818,6 +12822,14 @@ check-mu-primitive:  # stmt: (addr stmt), fn: (addr function), err: (addr buffer
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (check-mu-compute-offset-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      e9/jump $check-mu-primitive:end/disp32
+    }
+    # if (op == "copy-object") check-mu-copy-object-stmt
+    {
+      (string-equal? %ecx "copy-object")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (check-mu-copy-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       e9/jump $check-mu-primitive:end/disp32
     }
     # if (op == "allocate") check-mu-allocate-stmt
@@ -13780,6 +13792,18 @@ check-mu-compute-offset-stmt:  # stmt: (addr stmt), fn: (addr function), err: (a
     89/<- %ebp 4/r32/esp
     # . save registers
 $check-mu-compute-offset-stmt:end:
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-copy-object-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$check-mu-copy-object-stmt:end:
     # . restore registers
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -16039,6 +16063,15 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (translate-mu-allocate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
       e9/jump $emit-subx-stmt:end/disp32
     }
+    # copy-object
+    {
+      # if (!string-equal?(stmt->operation, "copy-object")) break
+      (string-equal? %ecx "copy-object")  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      (translate-mu-copy-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      e9/jump $emit-subx-stmt:end/disp32
+    }
     # allocate array
     {
       # if (!string-equal?(stmt->operation, "populate")) break
@@ -16804,6 +16837,34 @@ $translate-mu-get-stmt:end:
     # . restore registers
     5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+translate-mu-copy-object-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(copy-bytes")
+    # eax = stmt
+    8b/-> *(ebp+0xc) 0/r32/eax
+    # var first-inout/eax: (addr stmt-var) = stmt->inouts[0]
+    (lookup *(eax+0xc) *(eax+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (emit-subx-call-operand *(ebp+8) %eax)
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+    (emit-subx-call-operand *(ebp+8) %eax)
+    (write-buffered *(ebp+8) Space)
+    (addr-payload-size %eax *(ebp+0x10) *(ebp+0x14))  # => eax
+    (write-int32-hex-buffered *(ebp+8) %eax)
+    (write-buffered *(ebp+8) ")\n")
+$translate-mu-copy-object-stmt:end:
+    # . restore registers
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp

@@ -879,7 +879,7 @@ zero-out:  # start: (addr byte), size: int
     #   curr/esi = start
     #   i/ecx = 0
     #   while true
-    #     if (i >= len) break
+    #     if (i >= size) break
     #     *curr = 0
     #     ++curr
     #     ++i
@@ -896,10 +896,10 @@ zero-out:  # start: (addr byte), size: int
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # var i/ecx: int = 0
     31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
-    # edx = len
+    # edx = size
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
 $zero-out:loop:
-    # if (i >= len) break
+    # if (i >= size) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     7d/jump-if->=  $zero-out:end/disp8
     # *curr = 0
@@ -929,7 +929,7 @@ test-zero-out:
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # zero-out(ecx, 3)
     # . . push args
-    68/push  3/imm32/len
+    68/push  3/imm32/size
     51/push-ecx
     # . . call
     e8/call  zero-out/disp32
