@@ -195,16 +195,8 @@ $print-string:body: {
       var done?/eax: boolean <- stream-empty? s2-addr
       compare done?, 0
       break-if-!=
-      var idx/ecx: int <- current-screen-cell-index screen-addr
-      var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
-      var data/eax: (addr array screen-cell) <- lookup *data-ah
-      var offset/ecx: (offset screen-cell) <- compute-offset data, idx
-      var cell/eax: (addr screen-cell) <- index data, offset
-      var dest/ecx: (addr grapheme) <- get cell, data
       var g/eax: grapheme <- read-grapheme s2-addr
-      copy-to *dest, g
-      var cursor-col-addr/ecx: (addr int) <- get screen-addr, cursor-col
-      increment *cursor-col-addr
+      print-grapheme screen, g
       loop
     }
   }
@@ -223,6 +215,7 @@ $print-grapheme:body: {
     break-if-=
     # fake screen
     var screen-addr/esi: (addr screen) <- copy screen
+    var cursor-col-addr/edx: (addr int) <- get screen-addr, cursor-col
     var idx/ecx: int <- current-screen-cell-index screen-addr
     var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
     var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -231,6 +224,7 @@ $print-grapheme:body: {
     var dest/eax: (addr grapheme) <- get cell, data
     var c2/ecx: grapheme <- copy c
     copy-to *dest, c2
+    increment *cursor-col-addr
   }
 }
 }
