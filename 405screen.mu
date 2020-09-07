@@ -550,11 +550,11 @@ fn check-screen-row-from screen-on-stack: (addr screen), row-idx: int, col-idx: 
 
 # various variants by screen-cell attribute; spaces in the 'expected' data should not match the attribute
 
-fn check-screen-row-in-color screen: (addr screen), fg: color, row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-color screen: (addr screen), fg: int, row-idx: int, expected: (addr array byte), msg: (addr array byte) {
   check-screen-row-in-color-from screen, fg, row-idx, 1, expected, msg
 }
 
-fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: color, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
   # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
@@ -587,6 +587,8 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: color, row
         break-if-!= $check-screen-row-in-color-from:compare-graphemes
       }
       check-ints-equal g2, expected-grapheme2, msg
+      var color/eax: int <- screen-color-at-idx screen, idx
+      check-ints-equal color, fg, msg
     }
     idx <- increment
     loop
@@ -595,10 +597,10 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: color, row
 
 # background color is visible even for spaces, so 'expected' behaves as an array of booleans.
 # non-space = given background must match; space = background must not match
-fn check-screen-row-in-background-color screen-on-stack: (addr screen), fg: color, row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-background-color screen-on-stack: (addr screen), fg: int, row-idx: int, expected: (addr array byte), msg: (addr array byte) {
 }
 
-fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), fg: color, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), fg: int, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
 }
 
 fn check-screen-row-in-bold screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
