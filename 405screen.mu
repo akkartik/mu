@@ -10,9 +10,9 @@ type screen {
   num-rows: int
   num-cols: int
   data: (handle array screen-cell)
-  top-index: int
-  cursor-row: int
-  cursor-col: int
+  top-index: int  # 0-indexed
+  cursor-row: int  # 1-indexed
+  cursor-col: int  # 1-indexed
   cursor-hide?: boolean
   curr-attributes: screen-cell
 }
@@ -217,22 +217,52 @@ $print-grapheme:body: {
     var screen-addr/esi: (addr screen) <- copy screen
     var cursor-col-addr/edx: (addr int) <- get screen-addr, cursor-col
     # adjust cursor if necessary
+    # to avoid premature scrolling it's important to do this lazily, at the last possible time
     {
-      var num-cols-addr/eax: (addr int) <- get screen-addr, num-cols
-      var num-cols/eax: int <- copy *num-cols-addr
+      # next row
+      var num-cols-addr/ecx: (addr int) <- get screen-addr, num-cols
+      var num-cols/ecx: int <- copy *num-cols-addr
       compare *cursor-col-addr, num-cols
       break-if-<=
       copy-to *cursor-col-addr, 1
-      var cursor-row-addr/eax: (addr int) <- get screen-addr, cursor-row
+      var cursor-row-addr/ebx: (addr int) <- get screen-addr, cursor-row
       increment *cursor-row-addr
+      # scroll
+      var num-rows-addr/eax: (addr int) <- get screen-addr, num-rows
+      var num-rows/eax: int <- copy *num-rows-addr
+      compare *cursor-row-addr, num-rows
+      break-if-<=
+      copy-to *cursor-row-addr, num-rows
+      # if (top-index > data size) top-index = 0, otherwise top-index += num-cols
+      $print-grapheme:perform-scroll: {
+        var top-index-addr/ebx: (addr int) <- get screen-addr, top-index
+        var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+        var data/eax: (addr array screen-cell) <- lookup *data-ah
+        var max-index/edi: int <- length data
+        compare *top-index-addr, max-index
+        {
+          break-if->=
+          add-to *top-index-addr, num-cols
+          break $print-grapheme:perform-scroll
+        }
+        {
+          break-if-<
+          copy-to *top-index-addr, 0
+        }
+      }
     }
     var idx/ecx: int <- current-screen-cell-index screen-addr
+#?     print-string-to-real-screen "printing grapheme at screen index "
+#?     print-int32-hex-to-real-screen idx
+#?     print-string-to-real-screen ": "
     var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
     var data/eax: (addr array screen-cell) <- lookup *data-ah
     var offset/ecx: (offset screen-cell) <- compute-offset data, idx
     var cell/eax: (addr screen-cell) <- index data, offset
     var dest/eax: (addr grapheme) <- get cell, data
     var c2/ecx: grapheme <- copy c
+#?     print-grapheme-to-real-screen c2
+#?     print-string-to-real-screen "\n"
     copy-to *dest, c2
     increment *cursor-col-addr
   }
@@ -255,6 +285,17 @@ fn screen-cell-index screen-on-stack: (addr screen), row: int, col: int -> resul
   result <- multiply num-cols
   result <- add col
   result <- subtract 1
+  # result = (result + top-index) % data length
+  var top-index-addr/eax: (addr int) <- get screen, top-index
+  result <- add *top-index-addr
+  var data-ah/eax: (addr handle array screen-cell) <- get screen, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var max-index/eax: int <- length data
+  compare result, max-index
+  {
+    break-if-<
+    result <- subtract max-index
+  }
 }
 
 fn screen-grapheme-at screen-on-stack: (addr screen), row: int, col: int -> result/eax: grapheme {
@@ -641,7 +682,29 @@ fn test-print-string-overflows-to-next-row {
   check-screen-row screen, 2, "efg", "F - test-print-string-overflows-to-next-row"
 }
 
-fn main -> exit-status/ebx: int {
-  run-tests
-  exit-status <- copy 0
+fn test-check-screen-scrolls-on-overflow {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  # single character starting at bottom right
+  move-cursor screen, 5, 4
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  check-screen-row-from screen, 5, 4, "a", "F - test-check-screen-scrolls-on-overflow/baseline"  # bottom-right corner of the screen
+  # multiple characters starting at bottom right
+  move-cursor screen, 5, 4
+  print-string screen, "ab"
+  # screen scrolled up one row
+#?   check-screen-row screen, 1, "    ", "F - test-check-screen-scrolls-on-overflow/x1"
+#?   check-screen-row screen, 2, "    ", "F - test-check-screen-scrolls-on-overflow/x2"
+#?   check-screen-row screen, 3, "    ", "F - test-check-screen-scrolls-on-overflow/x3"
+#?   check-screen-row screen, 4, "   a", "F - test-check-screen-scrolls-on-overflow/x4"
+#?   check-screen-row screen, 5, "b   ", "F - test-check-screen-scrolls-on-overflow/x5"
+  check-screen-row-from screen, 4, 4, "a", "F - test-check-screen-scrolls-on-overflow/1"
+  check-screen-row-from screen, 5, 1, "b", "F - test-check-screen-scrolls-on-overflow/2"
 }
+
+#? fn main -> exit-status/ebx: int {
+#?   run-tests
+#?   exit-status <- copy 0
+#? }
