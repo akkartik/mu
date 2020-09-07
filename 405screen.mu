@@ -216,6 +216,16 @@ $print-grapheme:body: {
     # fake screen
     var screen-addr/esi: (addr screen) <- copy screen
     var cursor-col-addr/edx: (addr int) <- get screen-addr, cursor-col
+    # adjust cursor if necessary
+    {
+      var num-cols-addr/eax: (addr int) <- get screen-addr, num-cols
+      var num-cols/eax: int <- copy *num-cols-addr
+      compare *cursor-col-addr, num-cols
+      break-if-<=
+      copy-to *cursor-col-addr, 1
+      var cursor-row-addr/eax: (addr int) <- get screen-addr, cursor-row
+      increment *cursor-row-addr
+    }
     var idx/ecx: int <- current-screen-cell-index screen-addr
     var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
     var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -620,6 +630,15 @@ fn test-check-screen-row-from {
   print-grapheme screen, c
   check-screen-row screen, 1, "   a", "F - test-check-screen-row-from/baseline"
   check-screen-row-from screen, 1, 4, "a", "F - test-check-screen-row-from"
+}
+
+fn test-print-string-overflows-to-next-row {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4  # 5 rows, 4 columns
+  print-string screen, "abcdefg"
+  check-screen-row screen, 1, "abcd", "F - test-print-string-overflows-to-next-row"
+  check-screen-row screen, 2, "efg", "F - test-print-string-overflows-to-next-row"
 }
 
 fn main -> exit-status/ebx: int {
