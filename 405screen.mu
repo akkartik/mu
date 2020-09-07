@@ -351,6 +351,74 @@ fn screen-background-color-at-idx screen-on-stack: (addr screen), idx-on-stack: 
   result <- copy *src
 }
 
+fn screen-bold-at? screen-on-stack: (addr screen), row: int, col: int -> result/eax: boolean {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen-addr, row, col
+  result <- screen-bold-at-idx? screen-addr, idx
+}
+
+fn screen-bold-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: boolean {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var idx/ecx: int <- copy idx-on-stack
+  var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+  var cell/eax: (addr screen-cell) <- index data, offset
+  var src/eax: (addr boolean) <- get cell, bold?
+  result <- copy *src
+}
+
+fn screen-underline-at? screen-on-stack: (addr screen), row: int, col: int -> result/eax: boolean {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen-addr, row, col
+  result <- screen-underline-at-idx? screen-addr, idx
+}
+
+fn screen-underline-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: boolean {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var idx/ecx: int <- copy idx-on-stack
+  var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+  var cell/eax: (addr screen-cell) <- index data, offset
+  var src/eax: (addr boolean) <- get cell, underline?
+  result <- copy *src
+}
+
+fn screen-reverse-at? screen-on-stack: (addr screen), row: int, col: int -> result/eax: boolean {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen-addr, row, col
+  result <- screen-reverse-at-idx? screen-addr, idx
+}
+
+fn screen-reverse-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: boolean {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var idx/ecx: int <- copy idx-on-stack
+  var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+  var cell/eax: (addr screen-cell) <- index data, offset
+  var src/eax: (addr boolean) <- get cell, reverse?
+  result <- copy *src
+}
+
+fn screen-blink-at? screen-on-stack: (addr screen), row: int, col: int -> result/eax: boolean {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen-addr, row, col
+  result <- screen-blink-at-idx? screen-addr, idx
+}
+
+fn screen-blink-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: boolean {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var idx/ecx: int <- copy idx-on-stack
+  var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+  var cell/eax: (addr screen-cell) <- index data, offset
+  var src/eax: (addr boolean) <- get cell, blink?
+  result <- copy *src
+}
+
 fn print-code-point screen: (addr screen), c: code-point {
   var g/eax: grapheme <- to-grapheme c
   print-grapheme screen, g
@@ -661,28 +729,188 @@ fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), bg:
   }
 }
 
-fn check-screen-row-in-bold screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-bold screen: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  check-screen-row-in-bold-from screen, row-idx, 1, expected, msg
 }
 
 fn check-screen-row-in-bold-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  var screen/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
+  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  var e: (stream byte 0x100)
+  var e-addr/edx: (addr stream byte) <- address e
+  write e-addr, expected
+  {
+    var done?/eax: boolean <- stream-empty? e-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g2/ebx: int <- copy g
+    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme2/edx: int <- copy expected-grapheme
+    # compare graphemes
+    $check-screen-row-in-bold-from:compare-graphemes: {
+      # if expected-grapheme is space, null grapheme is also ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        compare g2, 0
+        break-if-= $check-screen-row-in-bold-from:compare-graphemes
+      }
+      # if expected-grapheme is space, non-bold is ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        var bold?/eax: boolean <- screen-bold-at-idx? screen, idx
+        compare bold?, 1
+        break-if-!= $check-screen-row-in-bold-from:compare-graphemes
+      }
+      check-ints-equal g2, expected-grapheme2, msg
+      var bold?/eax: boolean <- screen-bold-at-idx? screen, idx
+      var bold/eax: int <- copy bold?
+      check-ints-equal bold, 1, msg
+    }
+    idx <- increment
+    loop
+  }
 }
 
-fn check-screen-row-in-underline screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-underline screen: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  check-screen-row-in-underline-from screen, row-idx, 1, expected, msg
 }
 
 fn check-screen-row-in-underline-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  var screen/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
+  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  var e: (stream byte 0x100)
+  var e-addr/edx: (addr stream byte) <- address e
+  write e-addr, expected
+  {
+    var done?/eax: boolean <- stream-empty? e-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g2/ebx: int <- copy g
+    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme2/edx: int <- copy expected-grapheme
+    # compare graphemes
+    $check-screen-row-in-underline-from:compare-graphemes: {
+      # if expected-grapheme is space, null grapheme is also ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        compare g2, 0
+        break-if-= $check-screen-row-in-underline-from:compare-graphemes
+      }
+      # if expected-grapheme is space, non-underline is ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        var underline?/eax: boolean <- screen-underline-at-idx? screen, idx
+        compare underline?, 1
+        break-if-!= $check-screen-row-in-underline-from:compare-graphemes
+      }
+      check-ints-equal g2, expected-grapheme2, msg
+      var underline?/eax: boolean <- screen-underline-at-idx? screen, idx
+      var underline/eax: int <- copy underline?
+      check-ints-equal underline, 1, msg
+    }
+    idx <- increment
+    loop
+  }
 }
 
-fn check-screen-row-in-reverse screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-reverse screen: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  check-screen-row-in-reverse-from screen, row-idx, 1, expected, msg
 }
 
 fn check-screen-row-in-reverse-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  var screen/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
+  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  var e: (stream byte 0x100)
+  var e-addr/edx: (addr stream byte) <- address e
+  write e-addr, expected
+  {
+    var done?/eax: boolean <- stream-empty? e-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g2/ebx: int <- copy g
+    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme2/edx: int <- copy expected-grapheme
+    # compare graphemes
+    $check-screen-row-in-reverse-from:compare-graphemes: {
+      # if expected-grapheme is space, null grapheme is also ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        compare g2, 0
+        break-if-= $check-screen-row-in-reverse-from:compare-graphemes
+      }
+      # if expected-grapheme is space, non-reverse is ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        var reverse?/eax: boolean <- screen-reverse-at-idx? screen, idx
+        compare reverse?, 1
+        break-if-!= $check-screen-row-in-reverse-from:compare-graphemes
+      }
+      check-ints-equal g2, expected-grapheme2, msg
+      var reverse?/eax: boolean <- screen-reverse-at-idx? screen, idx
+      var reverse/eax: int <- copy reverse?
+      check-ints-equal reverse, 1, msg
+    }
+    idx <- increment
+    loop
+  }
 }
 
-fn check-screen-row-in-blinking screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+fn check-screen-row-in-blinking screen: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  check-screen-row-in-blinking-from screen, row-idx, 1, expected, msg
 }
 
 fn check-screen-row-in-blinking-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
+  var screen/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
+  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  var e: (stream byte 0x100)
+  var e-addr/edx: (addr stream byte) <- address e
+  write e-addr, expected
+  {
+    var done?/eax: boolean <- stream-empty? e-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g2/ebx: int <- copy g
+    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme2/edx: int <- copy expected-grapheme
+    # compare graphemes
+    $check-screen-row-in-blinking-from:compare-graphemes: {
+      # if expected-grapheme is space, null grapheme is also ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        compare g2, 0
+        break-if-= $check-screen-row-in-blinking-from:compare-graphemes
+      }
+      # if expected-grapheme is space, non-blinking is ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        var blinking?/eax: boolean <- screen-blink-at-idx? screen, idx
+        compare blinking?, 1
+        break-if-!= $check-screen-row-in-blinking-from:compare-graphemes
+      }
+      check-ints-equal g2, expected-grapheme2, msg
+      var blinking?/eax: boolean <- screen-blink-at-idx? screen, idx
+      var blinking/eax: int <- copy blinking?
+      check-ints-equal blinking, 1, msg
+    }
+    idx <- increment
+    loop
+  }
 }
 
 fn test-print-single-grapheme {
@@ -884,8 +1112,72 @@ fn test-check-screen-background-color {
   check-screen-row-in-background-color screen, 7, 1, "a c", "F - test-check-screen-background-color"
 }
 
-fn main -> exit-status/ebx: int {
-#?   test-check-screen-color
-  run-tests
-  exit-status <- copy 0
+fn test-check-screen-bold {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  start-bold screen
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  reset-formatting screen
+  c <- copy 0x62  # 'b'
+  print-grapheme screen, c
+  start-bold screen
+  c <- copy 0x63  # 'c'
+  print-grapheme screen, c
+  check-screen-row-in-bold screen, 1, "a c", "F - test-check-screen-bold"
 }
+
+fn test-check-screen-underline {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  start-underline screen
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  reset-formatting screen
+  c <- copy 0x62  # 'b'
+  print-grapheme screen, c
+  start-underline screen
+  c <- copy 0x63  # 'c'
+  print-grapheme screen, c
+  check-screen-row-in-underline screen, 1, "a c", "F - test-check-screen-underline"
+}
+
+fn test-check-screen-reverse {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  start-reverse-video screen
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  reset-formatting screen
+  c <- copy 0x62  # 'b'
+  print-grapheme screen, c
+  start-reverse-video screen
+  c <- copy 0x63  # 'c'
+  print-grapheme screen, c
+  check-screen-row-in-reverse screen, 1, "a c", "F - test-check-screen-reverse"
+}
+
+fn test-check-screen-blinking {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  start-blinking screen
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  reset-formatting screen
+  c <- copy 0x62  # 'b'
+  print-grapheme screen, c
+  start-blinking screen
+  c <- copy 0x63  # 'c'
+  print-grapheme screen, c
+  check-screen-row-in-blinking screen, 1, "a c", "F - test-check-screen-blinking"
+}
+
+#? fn main -> exit-status/ebx: int {
+#? #?   test-check-screen-color
+#?   run-tests
+#?   exit-status <- copy 0
+#? }
