@@ -1,7 +1,7 @@
 # Wrappers for real screen primitives that can be passed a fake screen.
-# There are no tests here, but commented scenarios are painstakingly validated
-# against a real terminal emulator. I believe functionality here is broadly
-# portable across terminal emulators.
+# The tests here have been painstakingly validated against a real terminal
+# emulator. I believe functionality here is broadly portable across terminal
+# emulators.
 #
 # Remember: fake screen co-ordinates are 1-based, just like in real terminal
 # emulators.
@@ -412,6 +412,7 @@ $show-cursor:body: {
 
 # validate data on screen regardless of attributes (color, bold, etc.)
 # Mu doesn't have multi-line strings, so we provide functions for rows or portions of rows.
+# Tab characters (that translate into multiple screen cells) not supported.
 
 fn check-screen-row screen-on-stack: (addr screen), row-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
@@ -428,7 +429,18 @@ fn check-screen-row screen-on-stack: (addr screen), row-idx: int, expected: (add
     var g2/ebx: int <- copy g
     var expected-grapheme/eax: grapheme <- read-grapheme e-addr
     var expected-grapheme2/eax: int <- copy expected-grapheme
-    check-ints-equal g2, expected-grapheme2, msg
+    # compare graphemes
+    $check-screen-row:compare-graphemes: {
+      # if expected-grapheme is space, null grapheme is also ok
+      {
+        compare expected-grapheme2, 0x20
+        break-if-!=
+        compare g2, 0
+        break-if-!=
+        break $check-screen-row:compare-graphemes
+      }
+      check-ints-equal g2, expected-grapheme2, msg
+    }
     idx <- increment
     loop
   }
@@ -491,11 +503,120 @@ fn test-print-multiple-graphemes {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4
   print-string screen, "Hello, 世界"
-  check-screen-row screen, 1, "Hello, 世界", "F - test-print-multiple-graphemes"  # top-left corner of the screen
+  check-screen-row screen, 1, "Hello, 世界", "F - test-print-multiple-graphemes"
 }
 
-#? fn main -> exit-status/ebx: int {
-#?   test-print-single-grapheme
-#?   test-print-multiple-graphemes
-#?   exit-status <- copy 0
-#? }
+fn test-move-cursor {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  move-cursor screen, 1, 4
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  check-screen-row screen, 1, "   a", "F - test-move-cursor"  # top row
+}
+
+fn test-move-cursor-zeroes {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  move-cursor screen, 0, 0
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  check-screen-row screen, 1, "a", "F - test-move-cursor-zeroes"  # top-left corner of the screen
+}
+
+fn test-move-cursor-zero-row {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  move-cursor screen, 0, 2
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  check-screen-row screen, 1, " a", "F - test-move-cursor-zero-row"  # top row
+}
+
+fn test-move-cursor-zero-column {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  move-cursor screen, 4, 0
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  check-screen-row screen, 4, "a", "F - test-move-cursor-zero-column"
+}
+
+fn test-move-cursor-negative-row {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 3
+  move-cursor screen, -1, 2  # row -1
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  # no move
+  check-screen-row screen, 1, "a", "F - test-move-cursor-negative-row"
+}
+
+fn test-move-cursor-negative-column {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 3
+  move-cursor screen, 2, -1  # column -1
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  # no move
+  check-screen-row screen, 1, "a", "F - test-move-cursor-negative-column"
+}
+
+fn test-move-cursor-column-too-large {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 3  # 5 rows, 3 columns
+  move-cursor screen, 1, 4  # row 1, column 4 (overflow)
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  # top row is empty
+  check-screen-row screen, 1, "   ", "F - test-move-cursor-column-too-large"
+  # character shows up on next row
+  check-screen-row screen, 2, "a", "F - test-move-cursor-column-too-large"
+}
+
+fn test-move-cursor-column-too-large-saturates {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 3  # 5 rows, 3 columns
+  move-cursor screen, 1, 6  # row 1, column 6 (overflow)
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  # top row is empty
+  check-screen-row screen, 1, "   ", "F - test-move-cursor-column-too-large-saturates"  # top-left corner of the screen
+  # character shows up at the start of next row
+  check-screen-row screen, 2, "a", "F - test-move-cursor-column-too-large-saturates"  # top-left corner of the screen
+}
+
+fn test-move-cursor-row-too-large {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 3  # 5 rows
+  move-cursor screen, 6, 2  # row 6 (overflow)
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  # bottom row shows the character
+  check-screen-row screen, 5, " a", "F - test-move-cursor-row-too-large"
+}
+
+fn test-move-cursor-row-too-large-saturates {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 3  # 5 rows
+  move-cursor screen, 9, 2  # row 9 (overflow)
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  print-grapheme screen, c
+  # bottom row shows the character
+  check-screen-row screen, 5, " a", "F - test-move-cursor-row-too-large-saturates"
+}
+
+fn main -> exit-status/ebx: int {
+  run-tests
+  exit-status <- copy 0
+}
