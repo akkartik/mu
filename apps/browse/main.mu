@@ -1,9 +1,11 @@
 fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   # initialize fs from args[1]
   var filename/eax: (addr array byte) <- first-arg args
-  var file-state-storage: file-state
-  var fs/esi: (addr file-state) <- address file-state-storage
-  init-file-state fs, filename
+  var file-storage: (handle buffered-file)
+  var file-storage-addr/esi: (addr handle buffered-file) <- address file-storage
+  open filename, 0, file-storage-addr
+  var _fs/eax: (addr buffered-file) <- lookup file-storage
+  var fs/esi: (addr buffered-file) <- copy _fs
   #
   enable-screen-grid-mode
   enable-keyboard-immediate-mode
@@ -23,12 +25,12 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   exit-status <- copy 0
 }
 
-fn render screen: (addr screen), fs: (addr file-state), state: (addr screen-position-state) {
+fn render screen: (addr screen), fs: (addr buffered-file), state: (addr screen-position-state) {
   start-drawing state
   render-normal screen, fs, state
 }
 
-fn render-normal screen: (addr screen), fs: (addr file-state), state: (addr screen-position-state) {
+fn render-normal screen: (addr screen), fs: (addr buffered-file), state: (addr screen-position-state) {
   var newline-seen?/esi: boolean <- copy 0  # false
   var start-of-paragraph?/edi: boolean <- copy 1  # true
   var previous-char/ebx: byte <- copy 0
@@ -37,7 +39,7 @@ $render-normal:loop: {
     var done?/eax: boolean <- done-drawing? state
     compare done?, 0  # false
     break-if-!=
-    var c/eax: byte <- next-char fs
+    var c/eax: byte <- read-byte-buffered fs
 $render-normal:loop-body: {
       # if (c == EOF) break
       compare c, 0xffffffff  # EOF marker
@@ -138,7 +140,7 @@ $render-normal:whitespace-separated-regions: {
   }  # $render-normal:loop
 }
 
-fn render-header-line screen: (addr screen), fs: (addr file-state), state: (addr screen-position-state) {
+fn render-header-line screen: (addr screen), fs: (addr buffered-file), state: (addr screen-position-state) {
 $render-header-line:body: {
   # compute color based on number of '#'s
   var header-level/esi: int <- copy 1  # caller already grabbed one
@@ -151,7 +153,7 @@ $render-header-line:body: {
       break-if-!= $render-header-line:body
     }
     #
-    c <- next-char fs
+    c <- read-byte-buffered fs
     # if (c != '#') break
     compare c, 0x23  # '#'
     break-if-!=
@@ -169,7 +171,7 @@ $render-header-line:body: {
       break-if-!=
     }
     #
-    c <- next-char fs
+    c <- read-byte-buffered fs
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
@@ -217,14 +219,14 @@ $start-heading:body: {
 }
 }
 
-fn render-until-asterisk fs: (addr file-state), state: (addr screen-position-state) {
+fn render-until-asterisk fs: (addr buffered-file), state: (addr screen-position-state) {
   {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
     compare done?, 0  # false
     break-if-!=
     #
-    var c/eax: byte <- next-char fs
+    var c/eax: byte <- read-byte-buffered fs
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
@@ -238,14 +240,14 @@ fn render-until-asterisk fs: (addr file-state), state: (addr screen-position-sta
   }
 }
 
-fn render-until-underscore fs: (addr file-state), state: (addr screen-position-state) {
+fn render-until-underscore fs: (addr buffered-file), state: (addr screen-position-state) {
   {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
     compare done?, 0  # false
     break-if-!=
     #
-    var c/eax: byte <- next-char fs
+    var c/eax: byte <- read-byte-buffered fs
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
