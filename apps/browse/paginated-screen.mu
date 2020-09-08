@@ -1,6 +1,13 @@
 # If a screen is too wide, split it up into a fixed size of pages.
-# We take control of drawing and moving the cursor, and delegate everything
-# else.
+# We take control of drawing and moving the cursor, and delegate everything else.
+# Never scroll; use the 'done-drawing?' method instead.
+#
+# Example usage:
+#   initialize-paginated-screen
+#   on each frame
+#     start-drawing
+#     while !done-drawing
+#       add-grapheme ...
 
 type paginated-screen {
   screen: (handle screen)
@@ -13,15 +20,6 @@ type paginated-screen {
   rightcol: int
   row: int
   col: int
-}
-
-fn initialize-fake-paginated-screen _self: (addr paginated-screen), nrows: int, ncols: int, page-width: int {
-  var self/esi: (addr paginated-screen) <- copy _self
-  var screen-ah/eax: (addr handle screen) <- get self, screen
-  allocate screen-ah
-  var screen-addr/eax: (addr screen) <- lookup *screen-ah
-  initialize-screen screen-addr, nrows, ncols
-  initialize-paginated-screen self, page-width
 }
 
 fn initialize-paginated-screen _self: (addr paginated-screen), page-width: int {
@@ -84,6 +82,26 @@ fn start-drawing _self: (addr paginated-screen) {
   reposition-cursor self
 }
 
+fn done-drawing? _self: (addr paginated-screen) -> result/eax: boolean {
+$done-drawing?:body: {
+  # return self->rightcol >= self->ncols
+  var self/esi: (addr paginated-screen) <- copy _self
+  var max/ecx: (addr int) <- get self, ncols
+  var tmp/eax: (addr int) <- get self, rightcol
+  var right/eax: int <- copy *tmp
+  compare right, *max
+  {
+    break-if->=
+    result <- copy 0  # false
+    break $done-drawing?:body
+  }
+  {
+    break-if-<
+    result <- copy 1  # true
+  }
+}
+}
+
 fn add-grapheme _self: (addr paginated-screen), c: grapheme {
 $add-grapheme:body: {
   var self/esi: (addr paginated-screen) <- copy _self
@@ -113,81 +131,18 @@ $add-grapheme:body: {
 }
 }
 
-fn next-line _self: (addr paginated-screen) {
+## tests
+
+fn initialize-fake-paginated-screen _self: (addr paginated-screen), nrows: int, ncols: int, page-width: int {
   var self/esi: (addr paginated-screen) <- copy _self
-  var tmp/eax: (addr int) <- copy 0
-  var tmp2/ecx: int <- copy 0
-  # self->col = self->leftcol
-  tmp <- get self, leftcol
-  tmp2 <- copy *tmp
-  tmp <- get self, col
-  copy-to *tmp, tmp2
-  # self->row++
-  tmp <- get self, row
-  increment *tmp
-  # if (self->row > self->botrow) next-page(self)
-  tmp2 <- copy *tmp
-  tmp <- get self, botrow
-  compare tmp2, *tmp
-  {
-    break-if-<=
-    next-page self
-  }
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  allocate screen-ah
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  initialize-screen screen-addr, nrows, ncols
+  initialize-paginated-screen self, page-width
 }
 
-fn next-page _self: (addr paginated-screen) {
-  var self/esi: (addr paginated-screen) <- copy _self
-  var pg/edi: (addr int) <- get self, page-width
-  var tmp/eax: (addr int) <- copy 0
-  var tmp2/ecx: int <- copy 0
-#?   # temporary: stop
-#?   tmp <- get self, ncols
-#?   tmp2 <- copy *tmp
-#?   tmp <- get self, rightcol
-#?   copy-to *tmp, tmp2
-  # real: multiple pages
-  # self->leftcol = self->rightcol + page-margin
-  tmp <- get self, rightcol
-  tmp2 <- copy *tmp
-  tmp2 <- add 5  # page-margin
-  tmp <- get self, leftcol
-  copy-to *tmp, tmp2
-  # self->rightcol = self->leftcol + page-width
-  tmp2 <- copy *tmp
-  tmp2 <- add *pg
-  tmp <- get self, rightcol
-  copy-to *tmp, tmp2
-  # self->row = self->toprow
-  tmp <- get self, toprow
-  tmp2 <- copy *tmp
-  tmp <- get self, row
-  copy-to *tmp, tmp2
-  # self->col = self->leftcol
-  tmp <- get self, leftcol
-  tmp2 <- copy *tmp
-  tmp <- get self, col
-  copy-to *tmp, tmp2
-}
-
-fn done-drawing? _self: (addr paginated-screen) -> result/eax: boolean {
-$done-drawing?:body: {
-  # return self->rightcol >= self->ncols
-  var self/esi: (addr paginated-screen) <- copy _self
-  var max/ecx: (addr int) <- get self, ncols
-  var tmp/eax: (addr int) <- get self, rightcol
-  var right/eax: int <- copy *tmp
-  compare right, *max
-  {
-    break-if->=
-    result <- copy 0  # false
-    break $done-drawing?:body
-  }
-  {
-    break-if-<
-    result <- copy 1  # true
-  }
-}
-}
+## simple delegates
 
 fn reposition-cursor _self: (addr paginated-screen) {
   var self/esi: (addr paginated-screen) <- copy _self
@@ -245,4 +200,62 @@ fn reset-formatting-on-paginated-screen _self: (addr paginated-screen) {
   var screen-ah/eax: (addr handle screen) <- get self, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
   reset-formatting screen-addr
+}
+
+## helpers
+
+fn next-line _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var tmp/eax: (addr int) <- copy 0
+  var tmp2/ecx: int <- copy 0
+  # self->col = self->leftcol
+  tmp <- get self, leftcol
+  tmp2 <- copy *tmp
+  tmp <- get self, col
+  copy-to *tmp, tmp2
+  # self->row++
+  tmp <- get self, row
+  increment *tmp
+  # if (self->row > self->botrow) next-page(self)
+  tmp2 <- copy *tmp
+  tmp <- get self, botrow
+  compare tmp2, *tmp
+  {
+    break-if-<=
+    next-page self
+  }
+}
+
+fn next-page _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var pg/edi: (addr int) <- get self, page-width
+  var tmp/eax: (addr int) <- copy 0
+  var tmp2/ecx: int <- copy 0
+#?   # temporary: stop
+#?   tmp <- get self, ncols
+#?   tmp2 <- copy *tmp
+#?   tmp <- get self, rightcol
+#?   copy-to *tmp, tmp2
+  # real: multiple pages
+  # self->leftcol = self->rightcol + page-margin
+  tmp <- get self, rightcol
+  tmp2 <- copy *tmp
+  tmp2 <- add 5  # page-margin
+  tmp <- get self, leftcol
+  copy-to *tmp, tmp2
+  # self->rightcol = self->leftcol + page-width
+  tmp2 <- copy *tmp
+  tmp2 <- add *pg
+  tmp <- get self, rightcol
+  copy-to *tmp, tmp2
+  # self->row = self->toprow
+  tmp <- get self, toprow
+  tmp2 <- copy *tmp
+  tmp <- get self, row
+  copy-to *tmp, tmp2
+  # self->col = self->leftcol
+  tmp <- get self, leftcol
+  tmp2 <- copy *tmp
+  tmp <- get self, col
+  copy-to *tmp, tmp2
 }
