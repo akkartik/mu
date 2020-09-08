@@ -1,4 +1,32 @@
-fn main args: (addr array addr array byte) -> exit-status/ebx: int {
+fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
+  var args/eax: (addr array addr array byte) <- copy args-on-stack
+  var tmp/ecx: int <- length args
+  $main-body: {
+    # if (len(args) <= 1) print usage and exit
+    compare tmp, 1
+    {
+      break-if->
+      print-string-to-real-screen "usage: browse [filename]\n"
+      print-string-to-real-screen "    or browse test\n"
+      exit-status <- copy 1
+      break $main-body
+    }
+    # if (args[1] == "test") run-tests()
+    var tmp2/ecx: (addr addr array byte) <- index args, 1
+    var tmp3/eax: boolean <- string-equal? *tmp2, "test"
+    compare tmp3, 0
+    {
+      break-if-=
+      run-tests
+      exit-status <- copy 0  # TODO: get at Num-test-failures somehow
+      break $main-body
+    }
+    # otherwise interactive mode
+    exit-status <- interactive args-on-stack
+  }
+}
+
+fn interactive args: (addr array addr array byte) -> exit-status/ebx: int {
   # initialize fs from args[1]
   var filename/eax: (addr array byte) <- first-arg args
   var file-storage: (handle buffered-file)
