@@ -65,9 +65,10 @@ fn start-drawing _self: (addr paginated-screen) {
   tmp <- get self, leftcol
   copy-to *tmp, 5  # left-margin
   # self->rightcol = self->leftcol + page-width
+  tmp <- get self, page-width
+  tmp2 <- copy *tmp
   tmp <- get self, rightcol
-#?   copy-to *tmp, 0x1f  # ncols - 1
-  copy-to *tmp, 0x45  # left-margin + page-width
+  copy-to *tmp, tmp2  # left-margin + page-width
   # self->row = self->toprow
   tmp <- get self, toprow
   tmp2 <- copy *tmp
