@@ -9,13 +9,14 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   #
   enable-screen-grid-mode
   enable-keyboard-immediate-mode
-  # initialize screen state from screen size
+  # initialize screen state
   var paginated-screen-storage: paginated-screen
   var paginated-screen/eax: (addr paginated-screen) <- address paginated-screen-storage
-  init-paginated-screen paginated-screen
-  normal-text 0
+  initialize-paginated-screen paginated-screen
+  normal-text paginated-screen
+  #
   {
-    render 0, fs, paginated-screen
+    render paginated-screen, fs
     var key/eax: byte <- read-key
     compare key, 0x71  # 'q'
     loop-if-!=
@@ -25,18 +26,18 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   exit-status <- copy 0
 }
 
-fn render screen: (addr screen), fs: (addr buffered-file), state: (addr paginated-screen) {
-  start-drawing state
-  render-normal screen, fs, state
+fn render screen: (addr paginated-screen), fs: (addr buffered-file) {
+  start-drawing screen
+  render-normal screen, fs
 }
 
-fn render-normal screen: (addr screen), fs: (addr buffered-file), state: (addr paginated-screen) {
+fn render-normal screen: (addr paginated-screen), fs: (addr buffered-file) {
   var newline-seen?/esi: boolean <- copy 0  # false
   var start-of-paragraph?/edi: boolean <- copy 1  # true
   var previous-grapheme/ebx: grapheme <- copy 0
 $render-normal:loop: {
-    # if done-drawing?(state) break
-    var done?/eax: boolean <- done-drawing? state
+    # if done-drawing?(screen) break
+    var done?/eax: boolean <- done-drawing? screen
     compare done?, 0  # false
     break-if-!=
     var c/eax: grapheme <- read-grapheme-buffered fs
@@ -59,8 +60,8 @@ $render-normal:loop-body: {
         # otherwise render two newlines
         {
           break-if-=
-          add-grapheme state, 0xa  # newline
-          add-grapheme state, 0xa  # newline
+          add-grapheme screen, 0xa  # newline
+          add-grapheme screen, 0xa  # newline
           newline-seen? <- copy 0  # false
           start-of-paragraph? <- copy 1  # true
           break $render-normal:loop-body
@@ -73,7 +74,7 @@ $render-normal:loop-body: {
         compare c, 0x23  # '#'
         {
           break-if-!=
-          render-header-line screen, fs, state
+          render-header-line screen, fs
           newline-seen? <- copy 1  # true
           break $render-normal:loop-body
         }
@@ -94,10 +95,10 @@ $render-normal:flush-buffered-newline: {
         {
           compare c, 0x20
           break-if-!=
-          add-grapheme state, 0xa  # newline
+          add-grapheme screen, 0xa  # newline
           break $render-normal:flush-buffered-newline
         }
-        add-grapheme state, 0x20  # space
+        add-grapheme screen, 0x20  # space
         # fall through to print c
       }
       ## end soft newline support
@@ -115,8 +116,9 @@ $render-normal:whitespace-separated-regions: {
         compare c, 0x2a  # '*'
         {
           break-if-!=
-          start-bold screen
-            render-until-asterisk fs, state
+          start-color-on-paginated-screen screen, 0xec, 7  # 236 = darkish gray
+          start-bold-on-paginated-screen screen
+            render-until-asterisk screen, fs
           normal-text screen
           break $render-normal:loop-body
         }
@@ -124,31 +126,30 @@ $render-normal:whitespace-separated-regions: {
         compare c, 0x5f  # '_'
         {
           break-if-!=
-          start-color screen, 0xec, 7  # 236 = darkish gray
-          start-bold screen
-            render-until-underscore fs, state
-          reset-formatting screen
-          start-color screen, 0xec, 7  # 236 = darkish gray
+          start-color-on-paginated-screen screen, 0xec, 7  # 236 = darkish gray
+          start-bold-on-paginated-screen screen
+            render-until-underscore screen, fs
+          normal-text screen
           break $render-normal:loop-body
         }
       }
       #
-      add-grapheme state, c
+      add-grapheme screen, c
     }  # $render-normal:loop-body
     previous-grapheme <- copy c
     loop
   }  # $render-normal:loop
 }
 
-fn render-header-line screen: (addr screen), fs: (addr buffered-file), state: (addr paginated-screen) {
+fn render-header-line screen: (addr paginated-screen), fs: (addr buffered-file) {
 $render-header-line:body: {
   # compute color based on number of '#'s
   var header-level/esi: int <- copy 1  # caller already grabbed one
   var c/eax: grapheme <- copy 0
   {
-    # if done-drawing?(state) return
+    # if done-drawing?(screen) return
     {
-      var done?/eax: boolean <- done-drawing? state
+      var done?/eax: boolean <- done-drawing? screen
       compare done?, 0  # false
       break-if-!= $render-header-line:body
     }
@@ -164,9 +165,9 @@ $render-header-line:body: {
   }
   start-heading screen, header-level
   {
-    # if done-drawing?(state) break
+    # if done-drawing?(screen) break
     {
-      var done?/eax: boolean <- done-drawing? state
+      var done?/eax: boolean <- done-drawing? screen
       compare done?, 0  # false
       break-if-!=
     }
@@ -179,7 +180,7 @@ $render-header-line:body: {
     compare c, 0xa  # newline
     break-if-=
     #
-    add-grapheme state, c
+    add-grapheme screen, c
     #
     loop
   }
@@ -188,41 +189,41 @@ $render-header-line:body: {
 }
 
 # colors for a light background, going from bright to dark (meeting up with bold-text)
-fn start-heading screen: (addr screen), header-level: int {
+fn start-heading screen: (addr paginated-screen), header-level: int {
 $start-heading:body: {
-  start-bold screen
+  start-bold-on-paginated-screen screen
   compare header-level, 1
   {
     break-if-!=
-    start-color screen, 0xa0, 7
+    start-color-on-paginated-screen screen, 0xa0, 7
     break $start-heading:body
   }
   compare header-level, 2
   {
     break-if-!=
-    start-color screen, 0x7c, 7
+    start-color-on-paginated-screen screen, 0x7c, 7
     break $start-heading:body
   }
   compare header-level, 3
   {
     break-if-!=
-    start-color screen, 0x58, 7
+    start-color-on-paginated-screen screen, 0x58, 7
     break $start-heading:body
   }
   compare header-level, 4
   {
     break-if-!=
-    start-color screen, 0x34, 7
+    start-color-on-paginated-screen screen, 0x34, 7
     break $start-heading:body
   }
-  start-color screen, 0xe8, 7
+  start-color-on-paginated-screen screen, 0xe8, 7
 }
 }
 
-fn render-until-asterisk fs: (addr buffered-file), state: (addr paginated-screen) {
+fn render-until-asterisk screen: (addr paginated-screen), fs: (addr buffered-file) {
   {
-    # if done-drawing?(state) break
-    var done?/eax: boolean <- done-drawing? state
+    # if done-drawing?(screen) break
+    var done?/eax: boolean <- done-drawing? screen
     compare done?, 0  # false
     break-if-!=
     #
@@ -234,16 +235,16 @@ fn render-until-asterisk fs: (addr buffered-file), state: (addr paginated-screen
     compare c, 0x2a  # '*'
     break-if-=
     #
-    add-grapheme state, c
+    add-grapheme screen, c
     #
     loop
   }
 }
 
-fn render-until-underscore fs: (addr buffered-file), state: (addr paginated-screen) {
+fn render-until-underscore screen: (addr paginated-screen), fs: (addr buffered-file) {
   {
-    # if done-drawing?(state) break
-    var done?/eax: boolean <- done-drawing? state
+    # if done-drawing?(screen) break
+    var done?/eax: boolean <- done-drawing? screen
     compare done?, 0  # false
     break-if-!=
     #
@@ -255,7 +256,7 @@ fn render-until-underscore fs: (addr buffered-file), state: (addr paginated-scre
     compare c, 0x5f  # '_'
     break-if-=
     #
-    add-grapheme state, c
+    add-grapheme screen, c
     #
     loop
   }
@@ -267,7 +268,7 @@ fn first-arg args-on-stack: (addr array addr array byte) -> out/eax: (addr array
   out <- copy *result
 }
 
-fn normal-text screen: (addr screen) {
-  reset-formatting screen
-  start-color screen, 0xec, 7  # 236 = darkish gray
+fn normal-text screen: (addr paginated-screen) {
+  reset-formatting-on-paginated-screen screen
+  start-color-on-paginated-screen screen, 0xec, 7  # 236 = darkish gray
 }

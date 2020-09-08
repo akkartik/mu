@@ -1,6 +1,9 @@
-# if a screen is too wide, split it up into a fixed size of pages
+# If a screen is too wide, split it up into a fixed size of pages.
+# We take control of drawing and moving the cursor, and delegate everything
+# else.
 
 type paginated-screen {
+  screen: (handle screen)
   nrows: int  # const
   ncols: int  # const
   toprow: int
@@ -11,15 +14,27 @@ type paginated-screen {
   col: int
 }
 
-fn init-paginated-screen _self: (addr paginated-screen) {
+fn initialize-fake-paginated-screen _self: (addr paginated-screen), nrows: int, ncols: int {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  allocate screen-ah
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  initialize-screen screen-addr, nrows, ncols
+  initialize-paginated-screen self
+}
+
+fn initialize-paginated-screen _self: (addr paginated-screen) {
   # hardcoded parameters:
   #   top-margin
   #   page-margin
   #   page-width
   var self/esi: (addr paginated-screen) <- copy _self
-  var nrows/eax: int <- copy 0xa
-  var ncols/ecx: int <- copy 0x20
-  nrows, ncols <- screen-size 0  # Comment this out to debug with a tiny page. You'll also need to adjust rightcol below.
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var _screen-addr/eax: (addr screen) <- lookup *screen-ah
+  var screen-addr/edi: (addr screen) <- copy _screen-addr
+  var nrows/eax: int <- copy 0
+  var ncols/ecx: int <- copy 0
+  nrows, ncols <- screen-size screen-addr
   var dest/edx: (addr int) <- copy 0
   # self->nrows = nrows
   dest <- get self, nrows
@@ -39,9 +54,9 @@ fn init-paginated-screen _self: (addr paginated-screen) {
 
 fn start-drawing _self: (addr paginated-screen) {
   var self/esi: (addr paginated-screen) <- copy _self
+  clear-paginated-screen self
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
-  clear-screen 0
   # self->leftcol = page-margin
   tmp <- get self, leftcol
   copy-to *tmp, 5  # left-margin
@@ -74,7 +89,9 @@ $add-grapheme:body: {
     break $add-grapheme:body
   }
   # print c
-  print-grapheme 0, c
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  print-grapheme screen-addr, c
   # self->col++
   var tmp/eax: (addr int) <- get self, col
   increment *tmp
@@ -167,7 +184,58 @@ $done-drawing?:body: {
 
 fn reposition-cursor _self: (addr paginated-screen) {
   var self/esi: (addr paginated-screen) <- copy _self
-  var r/eax: (addr int) <- get self, row
-  var c/ecx: (addr int) <- get self, col
-  move-cursor 0, *r *c
+  var r/ecx: (addr int) <- get self, row
+  var c/edx: (addr int) <- get self, col
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  move-cursor screen-addr, *r *c
+}
+
+fn clear-paginated-screen _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  clear-screen screen-addr
+}
+
+fn start-color-on-paginated-screen _self: (addr paginated-screen), fg: int, bg: int {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  start-color screen-addr, fg, bg
+}
+
+fn start-bold-on-paginated-screen _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  start-bold screen-addr
+}
+
+fn start-underline-on-paginated-screen _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  start-underline screen-addr
+}
+
+fn start-reverse-video-on-paginated-screen _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  start-reverse-video screen-addr
+}
+
+fn start-blinking-on-paginated-screen _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  start-blinking screen-addr
+}
+
+fn reset-formatting-on-paginated-screen _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
+  var screen-ah/eax: (addr handle screen) <- get self, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  reset-formatting screen-addr
 }
