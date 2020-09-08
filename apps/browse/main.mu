@@ -40,7 +40,7 @@ fn interactive args: (addr array addr array byte) -> exit-status/ebx: int {
   # initialize screen state
   var paginated-screen-storage: paginated-screen
   var paginated-screen/eax: (addr paginated-screen) <- address paginated-screen-storage
-  initialize-paginated-screen paginated-screen, 0x40
+  initialize-paginated-screen paginated-screen, 0x40, 2, 5
   normal-text paginated-screen
   #
   {
