@@ -6,6 +6,7 @@ type paginated-screen {
   screen: (handle screen)
   nrows: int  # const
   ncols: int  # const
+  page-width: int
   toprow: int
   botrow: int
   leftcol: int
@@ -14,20 +15,19 @@ type paginated-screen {
   col: int
 }
 
-fn initialize-fake-paginated-screen _self: (addr paginated-screen), nrows: int, ncols: int {
+fn initialize-fake-paginated-screen _self: (addr paginated-screen), nrows: int, ncols: int, page-width: int {
   var self/esi: (addr paginated-screen) <- copy _self
   var screen-ah/eax: (addr handle screen) <- get self, screen
   allocate screen-ah
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
   initialize-screen screen-addr, nrows, ncols
-  initialize-paginated-screen self
+  initialize-paginated-screen self, page-width
 }
 
-fn initialize-paginated-screen _self: (addr paginated-screen) {
+fn initialize-paginated-screen _self: (addr paginated-screen), page-width: int {
   # hardcoded parameters:
   #   top-margin
   #   page-margin
-  #   page-width
   var self/esi: (addr paginated-screen) <- copy _self
   var screen-ah/eax: (addr handle screen) <- get self, screen
   var _screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -42,6 +42,12 @@ fn initialize-paginated-screen _self: (addr paginated-screen) {
   # self->ncols = ncols
   dest <- get self, ncols
   copy-to *dest, ncols
+  # self->page-width = page-width
+  {
+    var pg/eax: int <- copy page-width
+    dest <- get self, page-width
+    copy-to *dest, pg
+  }
   # self->toprow = top-margin
   dest <- get self, toprow
   copy-to *dest, 2  # top-margin
@@ -131,6 +137,7 @@ fn next-line _self: (addr paginated-screen) {
 
 fn next-page _self: (addr paginated-screen) {
   var self/esi: (addr paginated-screen) <- copy _self
+  var pg/edi: (addr int) <- get self, page-width
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
 #?   # temporary: stop
@@ -147,7 +154,7 @@ fn next-page _self: (addr paginated-screen) {
   copy-to *tmp, tmp2
   # self->rightcol = self->leftcol + page-width
   tmp2 <- copy *tmp
-  tmp2 <- add 0x40  # page-width
+  tmp2 <- add *pg
   tmp <- get self, rightcol
   copy-to *tmp, tmp2
   # self->row = self->toprow
