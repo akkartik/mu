@@ -10,12 +10,12 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   enable-screen-grid-mode
   enable-keyboard-immediate-mode
   # initialize screen state from screen size
-  var screen-position-state-storage: screen-position-state
-  var screen-position-state/eax: (addr screen-position-state) <- address screen-position-state-storage
-  init-screen-position-state screen-position-state
+  var paginated-screen-storage: paginated-screen
+  var paginated-screen/eax: (addr paginated-screen) <- address paginated-screen-storage
+  init-paginated-screen paginated-screen
   normal-text 0
   {
-    render 0, fs, screen-position-state
+    render 0, fs, paginated-screen
     var key/eax: byte <- read-key
     compare key, 0x71  # 'q'
     loop-if-!=
@@ -25,12 +25,12 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   exit-status <- copy 0
 }
 
-fn render screen: (addr screen), fs: (addr buffered-file), state: (addr screen-position-state) {
+fn render screen: (addr screen), fs: (addr buffered-file), state: (addr paginated-screen) {
   start-drawing state
   render-normal screen, fs, state
 }
 
-fn render-normal screen: (addr screen), fs: (addr buffered-file), state: (addr screen-position-state) {
+fn render-normal screen: (addr screen), fs: (addr buffered-file), state: (addr paginated-screen) {
   var newline-seen?/esi: boolean <- copy 0  # false
   var start-of-paragraph?/edi: boolean <- copy 1  # true
   var previous-grapheme/ebx: grapheme <- copy 0
@@ -140,7 +140,7 @@ $render-normal:whitespace-separated-regions: {
   }  # $render-normal:loop
 }
 
-fn render-header-line screen: (addr screen), fs: (addr buffered-file), state: (addr screen-position-state) {
+fn render-header-line screen: (addr screen), fs: (addr buffered-file), state: (addr paginated-screen) {
 $render-header-line:body: {
   # compute color based on number of '#'s
   var header-level/esi: int <- copy 1  # caller already grabbed one
@@ -219,7 +219,7 @@ $start-heading:body: {
 }
 }
 
-fn render-until-asterisk fs: (addr buffered-file), state: (addr screen-position-state) {
+fn render-until-asterisk fs: (addr buffered-file), state: (addr paginated-screen) {
   {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
@@ -240,7 +240,7 @@ fn render-until-asterisk fs: (addr buffered-file), state: (addr screen-position-
   }
 }
 
-fn render-until-underscore fs: (addr buffered-file), state: (addr screen-position-state) {
+fn render-until-underscore fs: (addr buffered-file), state: (addr paginated-screen) {
   {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state

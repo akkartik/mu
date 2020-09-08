@@ -1,4 +1,6 @@
-type screen-position-state {
+# if a screen is too wide, split it up into a fixed size of pages
+
+type paginated-screen {
   nrows: int  # const
   ncols: int  # const
   toprow: int
@@ -9,12 +11,12 @@ type screen-position-state {
   col: int
 }
 
-fn init-screen-position-state _self: (addr screen-position-state) {
+fn init-paginated-screen _self: (addr paginated-screen) {
   # hardcoded parameters:
   #   top-margin
   #   page-margin
   #   page-width
-  var self/esi: (addr screen-position-state) <- copy _self
+  var self/esi: (addr paginated-screen) <- copy _self
   var nrows/eax: int <- copy 0xa
   var ncols/ecx: int <- copy 0x20
   nrows, ncols <- screen-size 0  # Comment this out to debug with a tiny page. You'll also need to adjust rightcol below.
@@ -35,8 +37,8 @@ fn init-screen-position-state _self: (addr screen-position-state) {
   start-drawing self
 }
 
-fn start-drawing _self: (addr screen-position-state) {
-  var self/esi: (addr screen-position-state) <- copy _self
+fn start-drawing _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
   clear-screen 0
@@ -61,9 +63,9 @@ fn start-drawing _self: (addr screen-position-state) {
   reposition-cursor self
 }
 
-fn add-grapheme _self: (addr screen-position-state), c: grapheme {
+fn add-grapheme _self: (addr paginated-screen), c: grapheme {
 $add-grapheme:body: {
-  var self/esi: (addr screen-position-state) <- copy _self
+  var self/esi: (addr paginated-screen) <- copy _self
   {
     compare c, 0xa  # newline
     break-if-!=
@@ -88,8 +90,8 @@ $add-grapheme:body: {
 }
 }
 
-fn next-line _self: (addr screen-position-state) {
-  var self/esi: (addr screen-position-state) <- copy _self
+fn next-line _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
   # self->col = self->leftcol
@@ -110,8 +112,8 @@ fn next-line _self: (addr screen-position-state) {
   }
 }
 
-fn next-page _self: (addr screen-position-state) {
-  var self/esi: (addr screen-position-state) <- copy _self
+fn next-page _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
 #?   # temporary: stop
@@ -143,10 +145,10 @@ fn next-page _self: (addr screen-position-state) {
   copy-to *tmp, tmp2
 }
 
-fn done-drawing? _self: (addr screen-position-state) -> result/eax: boolean {
+fn done-drawing? _self: (addr paginated-screen) -> result/eax: boolean {
 $done-drawing?:body: {
   # return self->rightcol >= self->ncols
-  var self/esi: (addr screen-position-state) <- copy _self
+  var self/esi: (addr paginated-screen) <- copy _self
   var max/ecx: (addr int) <- get self, ncols
   var tmp/eax: (addr int) <- get self, rightcol
   var right/eax: int <- copy *tmp
@@ -163,8 +165,8 @@ $done-drawing?:body: {
 }
 }
 
-fn reposition-cursor _self: (addr screen-position-state) {
-  var self/esi: (addr screen-position-state) <- copy _self
+fn reposition-cursor _self: (addr paginated-screen) {
+  var self/esi: (addr paginated-screen) <- copy _self
   var r/eax: (addr int) <- get self, row
   var c/ecx: (addr int) <- get self, col
   move-cursor 0, *r *c
