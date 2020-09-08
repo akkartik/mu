@@ -33,13 +33,13 @@ fn render screen: (addr screen), fs: (addr buffered-file), state: (addr screen-p
 fn render-normal screen: (addr screen), fs: (addr buffered-file), state: (addr screen-position-state) {
   var newline-seen?/esi: boolean <- copy 0  # false
   var start-of-paragraph?/edi: boolean <- copy 1  # true
-  var previous-char/ebx: byte <- copy 0
+  var previous-grapheme/ebx: grapheme <- copy 0
 $render-normal:loop: {
     # if done-drawing?(state) break
     var done?/eax: boolean <- done-drawing? state
     compare done?, 0  # false
     break-if-!=
-    var c/eax: byte <- read-byte-buffered fs
+    var c/eax: grapheme <- read-grapheme-buffered fs
 $render-normal:loop-body: {
       # if (c == EOF) break
       compare c, 0xffffffff  # EOF marker
@@ -59,8 +59,8 @@ $render-normal:loop-body: {
         # otherwise render two newlines
         {
           break-if-=
-          add-char state, 0xa  # newline
-          add-char state, 0xa  # newline
+          add-grapheme state, 0xa  # newline
+          add-grapheme state, 0xa  # newline
           newline-seen? <- copy 0  # false
           start-of-paragraph? <- copy 1  # true
           break $render-normal:loop-body
@@ -94,20 +94,20 @@ $render-normal:flush-buffered-newline: {
         {
           compare c, 0x20
           break-if-!=
-          add-char state, 0xa  # newline
+          add-grapheme state, 0xa  # newline
           break $render-normal:flush-buffered-newline
         }
-        add-char state, 0x20  # space
+        add-grapheme state, 0x20  # space
         # fall through to print c
       }
       ## end soft newline support
 
 $render-normal:whitespace-separated-regions: {
-        # if previous-char wasn't whitespace, skip this block
+        # if previous-grapheme wasn't whitespace, skip this block
         {
-          compare previous-char, 0x20  # space
+          compare previous-grapheme, 0x20  # space
           break-if-=
-          compare previous-char, 0xa  # newline
+          compare previous-grapheme, 0xa  # newline
           break-if-=
           break $render-normal:whitespace-separated-regions
         }
@@ -133,9 +133,9 @@ $render-normal:whitespace-separated-regions: {
         }
       }
       #
-      add-char state, c
+      add-grapheme state, c
     }  # $render-normal:loop-body
-    previous-char <- copy c
+    previous-grapheme <- copy c
     loop
   }  # $render-normal:loop
 }
@@ -144,7 +144,7 @@ fn render-header-line screen: (addr screen), fs: (addr buffered-file), state: (a
 $render-header-line:body: {
   # compute color based on number of '#'s
   var header-level/esi: int <- copy 1  # caller already grabbed one
-  var c/eax: byte <- copy 0
+  var c/eax: grapheme <- copy 0
   {
     # if done-drawing?(state) return
     {
@@ -153,7 +153,7 @@ $render-header-line:body: {
       break-if-!= $render-header-line:body
     }
     #
-    c <- read-byte-buffered fs
+    c <- read-grapheme-buffered fs
     # if (c != '#') break
     compare c, 0x23  # '#'
     break-if-!=
@@ -171,7 +171,7 @@ $render-header-line:body: {
       break-if-!=
     }
     #
-    c <- read-byte-buffered fs
+    c <- read-grapheme-buffered fs
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
@@ -179,7 +179,7 @@ $render-header-line:body: {
     compare c, 0xa  # newline
     break-if-=
     #
-    add-char state, c
+    add-grapheme state, c
     #
     loop
   }
@@ -226,7 +226,7 @@ fn render-until-asterisk fs: (addr buffered-file), state: (addr screen-position-
     compare done?, 0  # false
     break-if-!=
     #
-    var c/eax: byte <- read-byte-buffered fs
+    var c/eax: grapheme <- read-grapheme-buffered fs
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
@@ -234,7 +234,7 @@ fn render-until-asterisk fs: (addr buffered-file), state: (addr screen-position-
     compare c, 0x2a  # '*'
     break-if-=
     #
-    add-char state, c
+    add-grapheme state, c
     #
     loop
   }
@@ -247,7 +247,7 @@ fn render-until-underscore fs: (addr buffered-file), state: (addr screen-positio
     compare done?, 0  # false
     break-if-!=
     #
-    var c/eax: byte <- read-byte-buffered fs
+    var c/eax: grapheme <- read-grapheme-buffered fs
     # if (c == EOF) break
     compare c, 0xffffffff  # EOF marker
     break-if-=
@@ -255,7 +255,7 @@ fn render-until-underscore fs: (addr buffered-file), state: (addr screen-positio
     compare c, 0x5f  # '_'
     break-if-=
     #
-    add-char state, c
+    add-grapheme state, c
     #
     loop
   }

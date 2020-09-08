@@ -253,6 +253,75 @@ fn test-read-grapheme {
   check-ints-equal n, 0x65, "F - test grapheme/6"
 }
 
+fn read-grapheme-buffered in: (addr buffered-file) -> out/eax: grapheme {
+$read-grapheme-buffered:body: {
+  var c/eax: byte <- read-byte-buffered in
+  var num-trailers/ecx: int <- copy 0
+  $read-grapheme-buffered:compute-length: {
+    # single byte: just return it
+    compare c, 0xc0
+    {
+      break-if->=
+      out <- copy c
+      num-trailers <- copy 0
+      break $read-grapheme-buffered:body
+    }
+    compare c, 0xfe
+    {
+      break-if-<
+      out <- copy c
+      break $read-grapheme-buffered:body
+    }
+    # 2 bytes
+    compare c, 0xe0
+    {
+      break-if->=
+      num-trailers <- copy 1
+      break $read-grapheme-buffered:compute-length
+    }
+    # 3 bytes
+    compare c, 0xf0
+    {
+      break-if->=
+      num-trailers <- copy 2
+      break $read-grapheme-buffered:compute-length
+    }
+    # 4 bytes
+    compare c, 0xf8
+    {
+      break-if->=
+      num-trailers <- copy 3
+      break $read-grapheme-buffered:compute-length
+    }
+$read-grapheme-buffered:abort: {
+      # TODO: print to stderr
+      print-string-to-real-screen "utf-8 encodings larger than 4 bytes are not supported. First byte seen: "
+      var n/eax: int <- copy c
+      print-int32-hex-to-real-screen n
+      print-string-to-real-screen "\n"
+      var exit-status/ebx: int <- copy 1
+      syscall_exit
+    }
+  }
+  # prepend trailer bytes
+  var result/edi: int <- copy c
+  var num-byte-shifts/edx: int <- copy 1
+  {
+    compare num-trailers, 0
+    break-if-<=
+    var tmp/eax: byte <- read-byte-buffered in
+    var tmp2/eax: int <- copy tmp
+    tmp2 <- shift-left-bytes tmp2, num-byte-shifts
+    result <- or tmp2
+    # update loop state
+    num-byte-shifts <- increment
+    num-trailers <- decrement
+    loop
+  }
+  out <- copy result
+}
+}
+
 # needed because available primitives only shift by a literal/constant number of bits
 fn shift-left-bytes n: int, k: int -> result/eax: int {
   var i/ecx: int <- copy 0

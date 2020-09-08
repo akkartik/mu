@@ -61,19 +61,18 @@ fn start-drawing _self: (addr screen-position-state) {
   reposition-cursor self
 }
 
-fn add-char _self: (addr screen-position-state), c: byte {
-$add-char:body: {
+fn add-grapheme _self: (addr screen-position-state), c: grapheme {
+$add-grapheme:body: {
   var self/esi: (addr screen-position-state) <- copy _self
   {
     compare c, 0xa  # newline
     break-if-!=
     next-line self
     reposition-cursor self
-    break $add-char:body
+    break $add-grapheme:body
   }
   # print c
-  var g/eax: grapheme <- copy c
-  print-grapheme 0, g
+  print-grapheme 0, c
   # self->col++
   var tmp/eax: (addr int) <- get self, col
   increment *tmp
