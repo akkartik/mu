@@ -11,9 +11,9 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   var screen-position-state-storage: screen-position-state
   var screen-position-state/eax: (addr screen-position-state) <- address screen-position-state-storage
   init-screen-position-state screen-position-state
-  normal-text
+  normal-text 0
   {
-    render fs, screen-position-state
+    render 0, fs, screen-position-state
     var key/eax: byte <- read-key
     compare key, 0x71  # 'q'
     loop-if-!=
@@ -23,12 +23,12 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   exit-status <- copy 0
 }
 
-fn render fs: (addr file-state), state: (addr screen-position-state) {
+fn render screen: (addr screen), fs: (addr file-state), state: (addr screen-position-state) {
   start-drawing state
-  render-normal fs, state
+  render-normal screen, fs, state
 }
 
-fn render-normal fs: (addr file-state), state: (addr screen-position-state) {
+fn render-normal screen: (addr screen), fs: (addr file-state), state: (addr screen-position-state) {
   var newline-seen?/esi: boolean <- copy 0  # false
   var start-of-paragraph?/edi: boolean <- copy 1  # true
   var previous-char/ebx: byte <- copy 0
@@ -71,7 +71,7 @@ $render-normal:loop-body: {
         compare c, 0x23  # '#'
         {
           break-if-!=
-          render-header-line fs, state
+          render-header-line screen, fs, state
           newline-seen? <- copy 1  # true
           break $render-normal:loop-body
         }
@@ -113,20 +113,20 @@ $render-normal:whitespace-separated-regions: {
         compare c, 0x2a  # '*'
         {
           break-if-!=
-          start-bold 0
+          start-bold screen
             render-until-asterisk fs, state
-          normal-text
+          normal-text screen
           break $render-normal:loop-body
         }
         # if (c == '_') switch to bold
         compare c, 0x5f  # '_'
         {
           break-if-!=
-          start-color 0, 0xec, 7  # 236 = darkish gray
-          start-bold 0
+          start-color screen, 0xec, 7  # 236 = darkish gray
+          start-bold screen
             render-until-underscore fs, state
-          reset-formatting 0
-          start-color 0, 0xec, 7  # 236 = darkish gray
+          reset-formatting screen
+          start-color screen, 0xec, 7  # 236 = darkish gray
           break $render-normal:loop-body
         }
       }
@@ -138,7 +138,7 @@ $render-normal:whitespace-separated-regions: {
   }  # $render-normal:loop
 }
 
-fn render-header-line fs: (addr file-state), state: (addr screen-position-state) {
+fn render-header-line screen: (addr screen), fs: (addr file-state), state: (addr screen-position-state) {
 $render-header-line:body: {
   # compute color based on number of '#'s
   var header-level/esi: int <- copy 1  # caller already grabbed one
@@ -160,7 +160,7 @@ $render-header-line:body: {
     #
     loop
   }
-  start-heading header-level
+  start-heading screen, header-level
   {
     # if done-drawing?(state) break
     {
@@ -181,39 +181,39 @@ $render-header-line:body: {
     #
     loop
   }
-  normal-text
+  normal-text screen
 }
 }
 
 # colors for a light background, going from bright to dark (meeting up with bold-text)
-fn start-heading header-level: int {
+fn start-heading screen: (addr screen), header-level: int {
 $start-heading:body: {
-  start-bold 0
+  start-bold screen
   compare header-level, 1
   {
     break-if-!=
-    start-color 0, 0xa0, 7
+    start-color screen, 0xa0, 7
     break $start-heading:body
   }
   compare header-level, 2
   {
     break-if-!=
-    start-color 0, 0x7c, 7
+    start-color screen, 0x7c, 7
     break $start-heading:body
   }
   compare header-level, 3
   {
     break-if-!=
-    start-color 0, 0x58, 7
+    start-color screen, 0x58, 7
     break $start-heading:body
   }
   compare header-level, 4
   {
     break-if-!=
-    start-color 0, 0x34, 7
+    start-color screen, 0x34, 7
     break $start-heading:body
   }
-  start-color 0, 0xe8, 7
+  start-color screen, 0xe8, 7
 }
 }
 
@@ -265,7 +265,7 @@ fn first-arg args-on-stack: (addr array addr array byte) -> out/eax: (addr array
   out <- copy *result
 }
 
-fn normal-text {
-  reset-formatting 0
-  start-color 0, 0xec, 7  # 236 = darkish gray
+fn normal-text screen: (addr screen) {
+  reset-formatting screen
+  start-color screen, 0xec, 7  # 236 = darkish gray
 }
