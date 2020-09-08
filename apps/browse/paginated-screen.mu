@@ -77,9 +77,11 @@ fn start-drawing _self: (addr paginated-screen) {
   clear-paginated-screen self
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
-  # self->leftcol = page-margin
+  # self->leftcol = left-margin
+  tmp <- get self, left-margin
+  tmp2 <- copy *tmp
   tmp <- get self, leftcol
-  copy-to *tmp, 5  # left-margin
+  copy-to *tmp, tmp2
   # self->rightcol = self->leftcol + page-width
   tmp <- get self, page-width
   tmp2 <- copy *tmp
@@ -149,6 +151,18 @@ $add-grapheme:body: {
 }
 
 ## tests
+
+fn test-print-grapheme-on-paginated-screen {
+  var pg-on-stack: paginated-screen
+  var pg/eax: (addr paginated-screen) <- address pg-on-stack
+  initialize-fake-paginated-screen pg, 3, 0xa, 0xa, 0, 0
+  start-drawing pg
+  var c/ecx: grapheme <- copy 0x61   # 'a'
+  add-grapheme pg, c
+  var screen-ah/eax: (addr handle screen) <- get pg, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  check-screen-row screen-addr, 1, "a   ", "F - test-print-grapheme-on-paginated-screen"
+}
 
 fn initialize-fake-paginated-screen _self: (addr paginated-screen), nrows: int, ncols: int, page-width: int, top-margin: int, left-margin: int {
   var self/esi: (addr paginated-screen) <- copy _self
@@ -253,16 +267,17 @@ fn next-page _self: (addr paginated-screen) {
 #?   tmp <- get self, rightcol
 #?   copy-to *tmp, tmp2
   # real: multiple pages
-  # self->leftcol = self->rightcol + page-margin
+  # self->leftcol = self->rightcol + left-margin
   tmp <- get self, rightcol
   tmp2 <- copy *tmp
-  tmp2 <- add 5  # page-margin
+  tmp <- get self, left-margin
+  tmp2 <- add *tmp
   tmp <- get self, leftcol
   copy-to *tmp, tmp2
   # self->rightcol = self->leftcol + page-width
   tmp2 <- copy *tmp
-  var pg/edi: (addr int) <- get self, page-width
-  tmp2 <- add *pg
+  tmp <- get self, page-width
+  tmp2 <- add *tmp
   tmp <- get self, rightcol
   copy-to *tmp, tmp2
   # self->row = self->toprow
