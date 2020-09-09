@@ -936,7 +936,7 @@ void test_add_r32_to_mem_at_r32_plus_disp32() {
 }
 
 :(before "End Mod Special-cases(addr)")
-case 2:  // indirect + disp32 addressing
+case 2: {  // indirect + disp32 addressing
   switch (rm) {
   default:
     addr = Reg[rm].u;
@@ -944,11 +944,16 @@ case 2:  // indirect + disp32 addressing
     break;
   // End Mod 2 Special-cases(addr)
   }
+  int32_t displacement = static_cast<int32_t>(next32());
   if (addr > 0) {
-    addr += next32();
+    addr += displacement;
     trace(Callstack_depth+1, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding disp32)" << end();
   }
+  else {
+    trace(Callstack_depth+1, "run") << "null address; skipping displacement" << end();
+  }
   break;
+}
 
 :(code)
 void test_add_r32_to_mem_at_r32_plus_negative_disp32() {

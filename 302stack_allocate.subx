@@ -37,15 +37,12 @@ $push-n-zero-bytes:prologue:
     89/<- %ebp 4/r32/esp
 $push-n-zero-bytes:copy-ra:
     # -- esp = ebp
-    50/push-eax
-    # -- esp+8 = ebp+4
-    # -- esp+4 = ebp
-    8b/-> *(esp+4) 0/r32/eax
+    89/<- *Push-n-zero-bytes-eax 0/r32/eax
+    8b/-> *esp 0/r32/eax
     2b/subtract *(ebp+4) 4/r32/esp
-    # -- esp+4+n = ebp
-    89/<- *(esp+4) 0/r32/eax
-    58/pop-to-eax
     # -- esp+n = ebp
+    89/<- *esp 0/r32/eax
+    8b/-> *Push-n-zero-bytes-eax 0/r32/eax
 $push-n-zero-bytes:bulk-cleaning:
     89/<- *Push-n-zero-bytes-esp 4/r32/esp
     81 0/subop/add *Push-n-zero-bytes-esp 4/imm32
@@ -59,4 +56,6 @@ $push-n-zero-bytes:epilogue:
 Push-n-zero-bytes-ebp:  # (addr int)
   0/imm32
 Push-n-zero-bytes-esp:  # (addr int)
+  0/imm32
+Push-n-zero-bytes-eax:
   0/imm32
