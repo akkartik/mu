@@ -161,7 +161,7 @@ fn test-print-grapheme-on-paginated-screen {
   add-grapheme pg, c
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
-  check-screen-row screen-addr, 1, "a   ", "F - test-print-grapheme-on-paginated-screen"
+  check-screen-row screen-addr, 1, "a", "F - test-print-grapheme-on-paginated-screen"
 }
 
 fn initialize-fake-paginated-screen _self: (addr paginated-screen), nrows: int, ncols: int, page-width: int, top-margin: int, left-margin: int {
