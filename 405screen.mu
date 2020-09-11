@@ -615,22 +615,39 @@ fn check-screen-row-from screen-on-stack: (addr screen), row-idx: int, col-idx: 
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g2/ebx: int <- copy g
+    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g/ebx: grapheme <- copy _g
     var expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme2/eax: int <- copy expected-grapheme
     # compare graphemes
     $check-screen-row-from:compare-graphemes: {
       # if expected-grapheme is space, null grapheme is also ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
-        compare g2, 0
+        compare g, 0
         break-if-= $check-screen-row-from:compare-graphemes
       }
-      check-ints-equal g2, expected-grapheme2, msg
+      # if (g == expected-grapheme) print "."
+      compare g, expected-grapheme
+      {
+        break-if-!=
+        print-string-to-real-screen "."
+        break $check-screen-row-from:compare-graphemes
+      }
+      # otherwise print an error
+      print-string-to-real-screen msg
+      print-string-to-real-screen ": expected '"
+      print-grapheme-to-real-screen expected-grapheme
+      print-string-to-real-screen "' at ("
+      print-int32-hex-to-real-screen row-idx
+      print-string-to-real-screen ", "
+      print-int32-hex-to-real-screen col-idx
+      print-string-to-real-screen ") but observed '"
+      print-grapheme-to-real-screen g
+      print-string-to-real-screen "'\n"
     }
     idx <- increment
+    increment col-idx
     loop
   }
 }
@@ -652,32 +669,72 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, row-i
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g2/ebx: int <- copy g
-    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme2/edx: int <- copy expected-grapheme
-    # compare graphemes
-    $check-screen-row-in-color-from:compare-graphemes: {
+    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g/ebx: grapheme <- copy _g
+    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme/edi: grapheme <- copy _expected-grapheme
+    $check-screen-row-in-color-from:compare-cells: {
       # if expected-grapheme is space, null grapheme is also ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
-        compare g2, 0
-        break-if-= $check-screen-row-in-color-from:compare-graphemes
+        compare g, 0
+        break-if-= $check-screen-row-in-color-from:compare-cells
       }
       # if expected-grapheme is space, a different color is ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
         var color/eax: int <- screen-color-at-idx screen, idx
         compare color, fg
-        break-if-!= $check-screen-row-in-color-from:compare-graphemes
+        break-if-!= $check-screen-row-in-color-from:compare-cells
       }
-      check-ints-equal g2, expected-grapheme2, msg
-      var color/eax: int <- screen-color-at-idx screen, idx
-      check-ints-equal color, fg, msg
+      # compare graphemes
+      $check-screen-row-in-color-from:compare-graphemes: {
+        # if (g == expected-grapheme) print "."
+        compare g, expected-grapheme
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-color-from:compare-graphemes
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") but observed '"
+        print-grapheme-to-real-screen g
+        print-string-to-real-screen "'\n"
+      }
+      $check-screen-row-in-color-from:compare-colors: {
+        var color/eax: int <- screen-color-at-idx screen, idx
+        compare fg, color
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-color-from:compare-colors
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") in color "
+        print-int32-hex-to-real-screen fg
+        print-string-to-real-screen " but observed color "
+        print-int32-hex-to-real-screen color
+        print-string-to-real-screen "\n"
+      }
     }
     idx <- increment
+    increment col-idx
     loop
   }
 }
@@ -699,32 +756,72 @@ fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), bg:
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g2/ebx: int <- copy g
-    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme2/edx: int <- copy expected-grapheme
-    # compare graphemes
-    $check-screen-row-in-background-color-from:compare-graphemes: {
+    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g/ebx: grapheme <- copy _g
+    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    $check-screen-row-in-background-color-from:compare-cells: {
       # if expected-grapheme is space, null grapheme is also ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
-        compare g2, 0
-        break-if-= $check-screen-row-in-background-color-from:compare-graphemes
+        compare g, 0
+        break-if-= $check-screen-row-in-background-color-from:compare-cells
       }
       # if expected-grapheme is space, a different color is ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
         var color/eax: int <- screen-background-color-at-idx screen, idx
         compare color, bg
-        break-if-!= $check-screen-row-in-background-color-from:compare-graphemes
+        break-if-!= $check-screen-row-in-background-color-from:compare-cells
       }
-      check-ints-equal g2, expected-grapheme2, msg
-      var color/eax: int <- screen-background-color-at-idx screen, idx
-      check-ints-equal color, bg, msg
+      # compare graphemes
+      $check-screen-row-in-background-color-from:compare-graphemes: {
+        # if (g == expected-grapheme) print "."
+        compare g, expected-grapheme
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-background-color-from:compare-graphemes
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") but observed '"
+        print-grapheme-to-real-screen g
+        print-string-to-real-screen "'\n"
+      }
+      $check-screen-row-in-background-color-from:compare-colors: {
+        var color/eax: int <- screen-background-color-at-idx screen, idx
+        compare bg, color
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-background-color-from:compare-colors
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") in background color "
+        print-int32-hex-to-real-screen bg
+        print-string-to-real-screen " but observed color "
+        print-int32-hex-to-real-screen color
+        print-string-to-real-screen "\n"
+      }
     }
     idx <- increment
+    increment col-idx
     loop
   }
 }
@@ -744,33 +841,68 @@ fn check-screen-row-in-bold-from screen-on-stack: (addr screen), row-idx: int, c
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g2/ebx: int <- copy g
-    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme2/edx: int <- copy expected-grapheme
-    # compare graphemes
-    $check-screen-row-in-bold-from:compare-graphemes: {
+    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g/ebx: grapheme <- copy _g
+    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    $check-screen-row-in-bold-from:compare-cells: {
       # if expected-grapheme is space, null grapheme is also ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
-        compare g2, 0
-        break-if-= $check-screen-row-in-bold-from:compare-graphemes
+        compare g, 0
+        break-if-= $check-screen-row-in-bold-from:compare-cells
       }
       # if expected-grapheme is space, non-bold is ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
         var bold?/eax: boolean <- screen-bold-at-idx? screen, idx
         compare bold?, 1
-        break-if-!= $check-screen-row-in-bold-from:compare-graphemes
+        break-if-!= $check-screen-row-in-bold-from:compare-cells
       }
-      check-ints-equal g2, expected-grapheme2, msg
-      var bold?/eax: boolean <- screen-bold-at-idx? screen, idx
-      var bold/eax: int <- copy bold?
-      check-ints-equal bold, 1, msg
+      # compare graphemes
+      $check-screen-row-in-bold-from:compare-graphemes: {
+        # if (g == expected-grapheme) print "."
+        compare g, expected-grapheme
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-bold-from:compare-graphemes
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") but observed '"
+        print-grapheme-to-real-screen g
+        print-string-to-real-screen "'\n"
+      }
+      $check-screen-row-in-bold-from:compare-bold: {
+        var bold?/eax: boolean <- screen-bold-at-idx? screen, idx
+        compare bold?, 1
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-bold-from:compare-bold
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") to be in bold\n"
+      }
     }
     idx <- increment
+    increment col-idx
     loop
   }
 }
@@ -790,33 +922,68 @@ fn check-screen-row-in-underline-from screen-on-stack: (addr screen), row-idx: i
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g2/ebx: int <- copy g
-    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme2/edx: int <- copy expected-grapheme
-    # compare graphemes
-    $check-screen-row-in-underline-from:compare-graphemes: {
+    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g/ebx: grapheme <- copy _g
+    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    $check-screen-row-in-underline-from:compare-cells: {
       # if expected-grapheme is space, null grapheme is also ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
-        compare g2, 0
-        break-if-= $check-screen-row-in-underline-from:compare-graphemes
+        compare g, 0
+        break-if-= $check-screen-row-in-underline-from:compare-cells
       }
       # if expected-grapheme is space, non-underline is ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
         var underline?/eax: boolean <- screen-underline-at-idx? screen, idx
         compare underline?, 1
-        break-if-!= $check-screen-row-in-underline-from:compare-graphemes
+        break-if-!= $check-screen-row-in-underline-from:compare-cells
       }
-      check-ints-equal g2, expected-grapheme2, msg
-      var underline?/eax: boolean <- screen-underline-at-idx? screen, idx
-      var underline/eax: int <- copy underline?
-      check-ints-equal underline, 1, msg
+      # compare graphemes
+      $check-screen-row-in-underline-from:compare-graphemes: {
+        # if (g == expected-grapheme) print "."
+        compare g, expected-grapheme
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-underline-from:compare-graphemes
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") but observed '"
+        print-grapheme-to-real-screen g
+        print-string-to-real-screen "'\n"
+      }
+      $check-screen-row-in-underline-from:compare-underline: {
+        var underline?/eax: boolean <- screen-underline-at-idx? screen, idx
+        compare underline?, 1
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-underline-from:compare-underline
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") to be underlined\n"
+      }
     }
     idx <- increment
+    increment col-idx
     loop
   }
 }
@@ -836,33 +1003,68 @@ fn check-screen-row-in-reverse-from screen-on-stack: (addr screen), row-idx: int
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g2/ebx: int <- copy g
-    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme2/edx: int <- copy expected-grapheme
-    # compare graphemes
-    $check-screen-row-in-reverse-from:compare-graphemes: {
+    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g/ebx: grapheme <- copy _g
+    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    $check-screen-row-in-reverse-from:compare-cells: {
       # if expected-grapheme is space, null grapheme is also ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
-        compare g2, 0
-        break-if-= $check-screen-row-in-reverse-from:compare-graphemes
+        compare g, 0
+        break-if-= $check-screen-row-in-reverse-from:compare-cells
       }
       # if expected-grapheme is space, non-reverse is ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
         var reverse?/eax: boolean <- screen-reverse-at-idx? screen, idx
         compare reverse?, 1
-        break-if-!= $check-screen-row-in-reverse-from:compare-graphemes
+        break-if-!= $check-screen-row-in-reverse-from:compare-cells
       }
-      check-ints-equal g2, expected-grapheme2, msg
-      var reverse?/eax: boolean <- screen-reverse-at-idx? screen, idx
-      var reverse/eax: int <- copy reverse?
-      check-ints-equal reverse, 1, msg
+      # compare graphemes
+      $check-screen-row-in-reverse-from:compare-graphemes: {
+        # if (g == expected-grapheme) print "."
+        compare g, expected-grapheme
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-reverse-from:compare-graphemes
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") but observed '"
+        print-grapheme-to-real-screen g
+        print-string-to-real-screen "'\n"
+      }
+      $check-screen-row-in-reverse-from:compare-reverse: {
+        var reverse?/eax: boolean <- screen-reverse-at-idx? screen, idx
+        compare reverse?, 1
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-reverse-from:compare-reverse
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") to be in reverse-video\n"
+      }
     }
     idx <- increment
+    increment col-idx
     loop
   }
 }
@@ -882,33 +1084,69 @@ fn check-screen-row-in-blinking-from screen-on-stack: (addr screen), row-idx: in
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g2/ebx: int <- copy g
-    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme2/edx: int <- copy expected-grapheme
-    # compare graphemes
-    $check-screen-row-in-blinking-from:compare-graphemes: {
+    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
+    var g/ebx: grapheme <- copy _g
+    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
+    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    $check-screen-row-in-blinking-from:compare-cells: {
       # if expected-grapheme is space, null grapheme is also ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
-        compare g2, 0
-        break-if-= $check-screen-row-in-blinking-from:compare-graphemes
+        compare g, 0
+        break-if-= $check-screen-row-in-blinking-from:compare-cells
       }
       # if expected-grapheme is space, non-blinking is ok
       {
-        compare expected-grapheme2, 0x20
+        compare expected-grapheme, 0x20
         break-if-!=
         var blinking?/eax: boolean <- screen-blink-at-idx? screen, idx
         compare blinking?, 1
-        break-if-!= $check-screen-row-in-blinking-from:compare-graphemes
+        break-if-!= $check-screen-row-in-blinking-from:compare-cells
       }
-      check-ints-equal g2, expected-grapheme2, msg
-      var blinking?/eax: boolean <- screen-blink-at-idx? screen, idx
-      var blinking/eax: int <- copy blinking?
-      check-ints-equal blinking, 1, msg
+      # compare graphemes
+      $check-screen-row-in-blinking-from:compare-graphemes: {
+        # if (g == expected-grapheme) print "."
+        compare g, expected-grapheme
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-blinking-from:compare-graphemes
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") but observed '"
+        print-grapheme-to-real-screen g
+        print-string-to-real-screen "'\n"
+      }
+      $check-screen-row-in-blinking-from:compare-blinking: {
+        var blinking?/eax: boolean <- screen-blink-at-idx? screen, idx
+        compare blinking?, 1
+        {
+          break-if-!=
+          print-string-to-real-screen "."
+          break $check-screen-row-in-blinking-from:compare-blinking
+        }
+        # otherwise print an error
+        print-string-to-real-screen msg
+        print-string-to-real-screen ": expected '"
+        print-grapheme-to-real-screen expected-grapheme
+        print-string-to-real-screen "' at ("
+        print-int32-hex-to-real-screen row-idx
+        print-string-to-real-screen ", "
+        print-int32-hex-to-real-screen col-idx
+        print-string-to-real-screen ") to be blinking\n"
+      }
     }
     idx <- increment
+    increment col-idx
+
     loop
   }
 }
