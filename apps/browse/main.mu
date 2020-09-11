@@ -59,7 +59,7 @@ fn render screen: (addr paginated-screen), fs: (addr buffered-file) {
   render-normal screen, fs
 }
 
-fn test-render-normal-text {
+fn test-render-multicolumn-text {
   # input text
   var input-storage: (handle buffered-file)
   var input-ah/eax: (addr handle buffered-file) <- address input-storage
@@ -73,9 +73,29 @@ fn test-render-normal-text {
   render pg-addr, in
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen/eax: (addr screen) <- lookup *screen-ah
-  check-screen-row screen, 1, "      ", "F - test-render-normal-text/row1"
-  check-screen-row screen, 2, " ab ef", "F - test-render-normal-text/row2"
-  check-screen-row screen, 3, " cd gh", "F - test-render-normal-text/row3"
+  check-screen-row screen, 1, "      ", "F - test-render-multicolumn-text/row1"
+  check-screen-row screen, 2, " ab ef", "F - test-render-multicolumn-text/row2"
+  check-screen-row screen, 3, " cd gh", "F - test-render-multicolumn-text/row3"
+}
+
+fn test-render-heading-text {
+  # input text
+  var input-storage: (handle buffered-file)
+  var input-ah/eax: (addr handle buffered-file) <- address input-storage
+  populate-buffered-file-containing "# abc\n\ndef", input-ah
+  var in/eax: (addr buffered-file) <- lookup input-storage
+  # output screen
+  var pg: paginated-screen
+  var pg-addr/ecx: (addr paginated-screen) <- address pg
+  initialize-fake-paginated-screen pg-addr, 8, 6, 5, 1, 1  # 6 columns, single page
+  #
+  render pg-addr, in
+  var screen-ah/eax: (addr handle screen) <- get pg, screen
+  var screen/eax: (addr screen) <- lookup *screen-ah
+  check-screen-row          screen,       1, "      ", "F - test-render-heading-text/row1"
+  check-screen-row-in-color screen, 0xa0, 2, " abc  ", "F - test-render-heading-text/heading"
+  check-screen-row          screen,       3, "      ", "F - test-render-heading-text/row3"
+  check-screen-row          screen,       4, " def  ", "F - test-render-heading-text/row4"
 }
 
 fn render-normal screen: (addr paginated-screen), fs: (addr buffered-file) {
