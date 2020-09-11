@@ -88,11 +88,21 @@ fn start-drawing _self: (addr paginated-screen) {
   add-to *tmp, tmp2
 #?   print-string-to-real-screen "start: left column: "
 #?   print-int32-hex-to-real-screen *tmp
-  # self->rightcol = self->leftcol + page-width
+  # self->rightcol = min(nrows, self->leftcol + page-width)
+  # . tmp2 = self->leftcol + page-width
   tmp <- get self, page-width
   tmp2 <- copy *tmp
   tmp <- get self, leftcol
   tmp2 <- add *tmp
+  # . if (tmp2 > ncols) tmp2 = ncols+1
+  {
+    tmp <- get self, ncols
+    compare tmp2, *tmp
+    break-if-<=
+    tmp2 <- copy *tmp
+    tmp2 <- increment
+  }
+  # . self->rightcol = tmp2
   tmp <- get self, rightcol
   copy-to *tmp, tmp2
 #?   print-string-to-real-screen "; right column: "
@@ -133,6 +143,9 @@ $done-drawing?:body: {
 }
 
 fn add-grapheme _self: (addr paginated-screen), c: grapheme {
+#?   print-string-to-real-screen "add-grapheme: "
+#?   print-grapheme-to-real-screen c
+#?   print-string-to-real-screen "\n"
 $add-grapheme:body: {
   var self/esi: (addr paginated-screen) <- copy _self
   {
@@ -215,6 +228,28 @@ fn test-print-single-page-narrower-than-page-width {
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
   check-screen-row screen-addr, 1, "abcd", "F - test-print-single-page-narrower-than-page-width/row1"
   check-screen-row screen-addr, 2, "e   ", "F - test-print-single-page-narrower-than-page-width/row2"
+  # currently it's hard-coded that we avoid printing to the bottom-most row of the screen
+}
+
+fn test-print-single-page-narrower-than-page-width-with-margin {
+  var pg-on-stack: paginated-screen
+  var pg/eax: (addr paginated-screen) <- address pg-on-stack
+  initialize-fake-paginated-screen pg, 2, 4, 5, 0, 1  # 2 rows, 4 columns, 5-column pages, left margin
+  start-drawing pg
+  var c/ecx: grapheme <- copy 0x61   # 'a'
+  add-grapheme pg, c
+  c <- copy 0x62   # 'b'
+  add-grapheme pg, c
+  c <- copy 0x63   # 'c'
+  add-grapheme pg, c
+  c <- copy 0x64   # 'd'
+  add-grapheme pg, c
+  c <- copy 0x65   # 'e'
+  add-grapheme pg, c
+  var screen-ah/eax: (addr handle screen) <- get pg, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  check-screen-row screen-addr, 1, " abc", "F - test-print-single-page-narrower-than-page-width-with-margin/row1"
+  check-screen-row screen-addr, 2, " de ", "F - test-print-single-page-narrower-than-page-width-with-margin/row2"
   # currently it's hard-coded that we avoid printing to the bottom-most row of the screen
 }
 
@@ -413,10 +448,21 @@ fn next-page _self: (addr paginated-screen) {
   tmp2 <- add *tmp
   tmp <- get self, leftcol
   copy-to *tmp, tmp2
-  # self->rightcol = self->leftcol + page-width
-  tmp2 <- copy *tmp
+  # self->rightcol = min(nrows, self->leftcol + page-width)
+  # . tmp2 = self->leftcol + page-width
   tmp <- get self, page-width
+  tmp2 <- copy *tmp
+  tmp <- get self, leftcol
   tmp2 <- add *tmp
+  # . if (tmp2 > ncols) tmp2 = ncols+1
+  {
+    tmp <- get self, ncols
+    compare tmp2, *tmp
+    break-if-<=
+    tmp2 <- copy *tmp
+    tmp2 <- increment
+  }
+  # . self->rightcol = tmp2
   tmp <- get self, rightcol
   copy-to *tmp, tmp2
   # self->row = self->toprow
