@@ -196,6 +196,28 @@ fn test-print-single-page {
   # currently it's hard-coded that we avoid printing to the bottom-most row of the screen
 }
 
+fn test-print-single-page-narrower-than-page-width {
+  var pg-on-stack: paginated-screen
+  var pg/eax: (addr paginated-screen) <- address pg-on-stack
+  initialize-fake-paginated-screen pg, 2, 4, 5, 0, 0  # 2 rows, 4 columns, 5-column pages
+  start-drawing pg
+  var c/ecx: grapheme <- copy 0x61   # 'a'
+  add-grapheme pg, c
+  var c/ecx: grapheme <- copy 0x62   # 'b'
+  add-grapheme pg, c
+  var c/ecx: grapheme <- copy 0x63   # 'c'
+  add-grapheme pg, c
+  var c/ecx: grapheme <- copy 0x64   # 'd'
+  add-grapheme pg, c
+  var c/ecx: grapheme <- copy 0x65   # 'e'
+  add-grapheme pg, c
+  var screen-ah/eax: (addr handle screen) <- get pg, screen
+  var screen-addr/eax: (addr screen) <- lookup *screen-ah
+  check-screen-row screen-addr, 1, "abcd", "F - test-print-single-page-narrower-than-page-width/row1"
+  check-screen-row screen-addr, 2, "e   ", "F - test-print-single-page-narrower-than-page-width/row2"
+  # currently it's hard-coded that we avoid printing to the bottom-most row of the screen
+}
+
 fn test-print-multiple-pages {
   var pg-on-stack: paginated-screen
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
