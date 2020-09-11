@@ -90,33 +90,32 @@ if ('onhashchange' in window) {
 <span id="L33" class="LineNr">33 </span><span class="subxComment"># n must be positive</span>
 <span id="L34" class="LineNr">34 </span><span class="subxFunction">push-n-zero-bytes</span>:  <span class="subxComment"># n: int</span>
 <span id="L35" class="LineNr">35 </span><span class="Constant">$push-n-zero-bytes:prologue</span>:
-<span id="L36" class="LineNr">36 </span>    89/&lt;- *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L59'>Push-n-zero-bytes-ebp</a></span> 5/r32/ebp  <span class="subxComment"># spill ebp without affecting stack</span>
+<span id="L36" class="LineNr">36 </span>    89/&lt;- *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L56'>Push-n-zero-bytes-ebp</a></span> 5/r32/ebp  <span class="subxComment"># spill ebp without affecting stack</span>
 <span id="L37" class="LineNr">37 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L38" class="LineNr">38 </span><span class="Constant">$push-n-zero-bytes:copy-ra</span>:
 <span id="L39" class="LineNr">39 </span>    <span class="subxComment"># -- esp = ebp</span>
-<span id="L40" class="LineNr">40 </span>    50/push-eax
-<span id="L41" class="LineNr">41 </span>    <span class="subxComment"># -- esp+8 = ebp+4</span>
-<span id="L42" class="LineNr">42 </span>    <span class="subxComment"># -- esp+4 = ebp</span>
-<span id="L43" class="LineNr">43 </span>    8b/-&gt; *(esp+4) 0/r32/eax
-<span id="L44" class="LineNr">44 </span>    2b/subtract *(ebp+4) 4/r32/esp
-<span id="L45" class="LineNr">45 </span>    <span class="subxComment"># -- esp+4+n = ebp</span>
-<span id="L46" class="LineNr">46 </span>    89/&lt;- *(esp+4) 0/r32/eax
-<span id="L47" class="LineNr">47 </span>    58/pop-to-eax
-<span id="L48" class="LineNr">48 </span>    <span class="subxComment"># -- esp+n = ebp</span>
-<span id="L49" class="LineNr">49 </span><span class="Constant">$push-n-zero-bytes:bulk-cleaning</span>:
-<span id="L50" class="LineNr">50 </span>    89/&lt;- *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L61'>Push-n-zero-bytes-esp</a></span> 4/r32/esp
-<span id="L51" class="LineNr">51 </span>    81 0/subop/add *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L61'>Push-n-zero-bytes-esp</a></span> 4/imm32
-<span id="L52" class="LineNr">52 </span>    81 0/subop/add *(ebp+4) 4/imm32
-<span id="L53" class="LineNr">53 </span>    (<a href='120allocate.subx.html#L877'>zero-out</a> *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L61'>Push-n-zero-bytes-esp</a></span> *(ebp+4))  <span class="subxComment"># n+4</span>
-<span id="L54" class="LineNr">54 </span><span class="Constant">$push-n-zero-bytes:epilogue</span>:
-<span id="L55" class="LineNr">55 </span>    8b/-&gt; *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L59'>Push-n-zero-bytes-ebp</a></span> 5/r32/ebp  <span class="subxComment"># restore spill</span>
-<span id="L56" class="LineNr">56 </span>    c3/return
-<span id="L57" class="LineNr">57 </span>
-<span id="L58" class="LineNr">58 </span>== data
-<span id="L59" class="LineNr">59 </span><span class="SpecialChar">Push-n-zero-bytes-ebp</span>:  <span class="subxComment"># (addr int)</span>
-<span id="L60" class="LineNr">60 </span>  0/imm32
-<span id="L61" class="LineNr">61 </span><span class="SpecialChar">Push-n-zero-bytes-esp</span>:  <span class="subxComment"># (addr int)</span>
-<span id="L62" class="LineNr">62 </span>  0/imm32
+<span id="L40" class="LineNr">40 </span>    89/&lt;- *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L60'>Push-n-zero-bytes-eax</a></span> 0/r32/eax
+<span id="L41" class="LineNr">41 </span>    8b/-&gt; *esp 0/r32/eax
+<span id="L42" class="LineNr">42 </span>    2b/subtract *(ebp+4) 4/r32/esp
+<span id="L43" class="LineNr">43 </span>    <span class="subxComment"># -- esp+n = ebp</span>
+<span id="L44" class="LineNr">44 </span>    89/&lt;- *esp 0/r32/eax
+<span id="L45" class="LineNr">45 </span>    8b/-&gt; *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L60'>Push-n-zero-bytes-eax</a></span> 0/r32/eax
+<span id="L46" class="LineNr">46 </span><span class="Constant">$push-n-zero-bytes:bulk-cleaning</span>:
+<span id="L47" class="LineNr">47 </span>    89/&lt;- *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L58'>Push-n-zero-bytes-esp</a></span> 4/r32/esp
+<span id="L48" class="LineNr">48 </span>    81 0/subop/add *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L58'>Push-n-zero-bytes-esp</a></span> 4/imm32
+<span id="L49" class="LineNr">49 </span>    81 0/subop/add *(ebp+4) 4/imm32
+<span id="L50" class="LineNr">50 </span>    (<a href='120allocate.subx.html#L877'>zero-out</a> *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L58'>Push-n-zero-bytes-esp</a></span> *(ebp+4))  <span class="subxComment"># n+4</span>
+<span id="L51" class="LineNr">51 </span><span class="Constant">$push-n-zero-bytes:epilogue</span>:
+<span id="L52" class="LineNr">52 </span>    8b/-&gt; *<span class="SpecialChar"><a href='302stack_allocate.subx.html#L56'>Push-n-zero-bytes-ebp</a></span> 5/r32/ebp  <span class="subxComment"># restore spill</span>
+<span id="L53" class="LineNr">53 </span>    c3/return
+<span id="L54" class="LineNr">54 </span>
+<span id="L55" class="LineNr">55 </span>== data
+<span id="L56" class="LineNr">56 </span><span class="SpecialChar">Push-n-zero-bytes-ebp</span>:  <span class="subxComment"># (addr int)</span>
+<span id="L57" class="LineNr">57 </span>  0/imm32
+<span id="L58" class="LineNr">58 </span><span class="SpecialChar">Push-n-zero-bytes-esp</span>:  <span class="subxComment"># (addr int)</span>
+<span id="L59" class="LineNr">59 </span>  0/imm32
+<span id="L60" class="LineNr">60 </span><span class="SpecialChar">Push-n-zero-bytes-eax</span>:
+<span id="L61" class="LineNr">61 </span>  0/imm32
 </pre>
 </body>
 </html>
