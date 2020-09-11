@@ -181,44 +181,14 @@ fn test-print-single-page {
   initialize-fake-paginated-screen pg, 2, 4, 2, 0, 0  # 2 rows, 4 columns, 2 pages * 2 columns each
   start-drawing pg
   # pages at columns [1, 3), [3, 5]
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x61   # 'a'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x62   # 'b'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x63   # 'c'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x64   # 'd'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
   check-screen-row screen-addr, 1, "ab  ", "F - test-print-single-page/row1"
@@ -231,44 +201,14 @@ fn test-print-multiple-pages {
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
   initialize-fake-paginated-screen pg, 2, 2, 1, 0, 0  # 2 rows, 2 columns, 2 pages * 1 column each
   start-drawing pg
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x61   # 'a'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x62   # 'b'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x63   # 'c'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x64   # 'd'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
   check-screen-row screen-addr, 1, "ac", "F - test-print-multiple-pages/row1"
@@ -281,76 +221,22 @@ fn test-print-multiple-pages-2 {
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
   initialize-fake-paginated-screen pg, 2, 4, 2, 0, 0  # 2 rows, 4 columns, 2 pages * 2 columns each
   start-drawing pg
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x61   # 'a'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x62   # 'b'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x63   # 'c'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x64   # 'd'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x65   # 'e'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x66   # 'f'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x67   # 'g'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x68   # 'h'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
   check-screen-row screen-addr, 1, "abef", "F - test-print-multiple-pages-2/row1"
@@ -363,76 +249,22 @@ fn test-print-multiple-pages-with-margins {
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
   initialize-fake-paginated-screen pg, 3, 6, 2, 1, 1  # 3 rows, 5 columns, 2 pages * 2 columns each
   start-drawing pg
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x61   # 'a'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x62   # 'b'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x63   # 'c'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x64   # 'd'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x65   # 'e'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x66   # 'f'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x67   # 'g'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var c/ecx: grapheme <- copy 0x68   # 'h'
   add-grapheme pg, c
-#?   {
-#?     var foo/eax: boolean <- done-drawing? pg
-#?     var foo2/eax: int <- copy foo
-#?     print-int32-hex-to-real-screen foo2
-#?     print-string-to-real-screen "\n"
-#?   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
   check-screen-row screen-addr, 1, "      ", "F - test-print-multiple-pages-with-margins/row1"
