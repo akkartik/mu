@@ -98,6 +98,62 @@ fn test-render-heading-text {
   check-screen-row          screen,       4, " def  ", "F - test-render-heading-text/row4"
 }
 
+fn test-render-bold-text {
+  # input text
+  var input-storage: (handle buffered-file)
+  var input-ah/eax: (addr handle buffered-file) <- address input-storage
+  populate-buffered-file-containing "a *b* c", input-ah
+  var in/eax: (addr buffered-file) <- lookup input-storage
+  # output screen
+  var pg: paginated-screen
+  var pg-addr/ecx: (addr paginated-screen) <- address pg
+  initialize-fake-paginated-screen pg-addr, 8, 6, 5, 1, 1  # 6 columns, single page
+  #
+  render pg-addr, in
+  var screen-ah/eax: (addr handle screen) <- get pg, screen
+  var screen/eax: (addr screen) <- lookup *screen-ah
+  check-screen-row         screen, 2, " a b c", "F - test-render-bold-text/text"
+  check-screen-row-in-bold screen, 2, "   b  ", "F - test-render-bold-text/bold"
+}
+
+# terminals don't always support italics, so we'll just always render italics
+# as bold.
+fn test-render-pseudoitalic-text {
+  # input text
+  var input-storage: (handle buffered-file)
+  var input-ah/eax: (addr handle buffered-file) <- address input-storage
+  populate-buffered-file-containing "a _b_ c", input-ah
+  var in/eax: (addr buffered-file) <- lookup input-storage
+  # output screen
+  var pg: paginated-screen
+  var pg-addr/ecx: (addr paginated-screen) <- address pg
+  initialize-fake-paginated-screen pg-addr, 8, 6, 5, 1, 1  # 6 columns, single page
+  #
+  render pg-addr, in
+  var screen-ah/eax: (addr handle screen) <- get pg, screen
+  var screen/eax: (addr screen) <- lookup *screen-ah
+  check-screen-row         screen, 2, " a b c", "F - test-render-pseudoitalic-text/text"
+  check-screen-row-in-bold screen, 2, "   b  ", "F - test-render-pseudoitalic-text/bold"
+}
+
+fn test-render-asterisk-in-text {
+  # input text
+  var input-storage: (handle buffered-file)
+  var input-ah/eax: (addr handle buffered-file) <- address input-storage
+  populate-buffered-file-containing "a*b*c", input-ah
+  var in/eax: (addr buffered-file) <- lookup input-storage
+  # output screen
+  var pg: paginated-screen
+  var pg-addr/ecx: (addr paginated-screen) <- address pg
+  initialize-fake-paginated-screen pg-addr, 8, 6, 5, 1, 1  # 6 columns, single page
+  #
+  render pg-addr, in
+  var screen-ah/eax: (addr handle screen) <- get pg, screen
+  var screen/eax: (addr screen) <- lookup *screen-ah
+  check-screen-row         screen, 2, " a*b*c", "F - test-render-bold-text/text"
+  check-screen-row-in-bold screen, 2, "      ", "F - test-render-bold-text/bold"
+}
+
 fn render-normal screen: (addr paginated-screen), fs: (addr buffered-file) {
   var newline-seen?/esi: boolean <- copy 0  # false
   var start-of-paragraph?/edi: boolean <- copy 1  # true
