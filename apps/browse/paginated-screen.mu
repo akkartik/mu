@@ -88,13 +88,13 @@ fn start-drawing _self: (addr paginated-screen) {
   add-to *tmp, tmp2
 #?   print-string-to-real-screen "start: left column: "
 #?   print-int32-hex-to-real-screen *tmp
-  # self->rightcol = min(nrows, self->leftcol + page-width)
+  # self->rightcol = min(ncols+1, self->leftcol + page-width)
   # . tmp2 = self->leftcol + page-width
   tmp <- get self, page-width
   tmp2 <- copy *tmp
   tmp <- get self, leftcol
   tmp2 <- add *tmp
-  # . if (tmp2 > ncols) tmp2 = ncols+1
+  # . if (tmp2 > ncols+1) tmp2 = ncols+1
   {
     tmp <- get self, ncols
     compare tmp2, *tmp
@@ -124,19 +124,36 @@ fn start-drawing _self: (addr paginated-screen) {
 
 fn done-drawing? _self: (addr paginated-screen) -> result/eax: boolean {
 $done-drawing?:body: {
-  # return self->rightcol >= self->ncols
+  # if (self->leftcol == left-margin + 1) return false
   var self/esi: (addr paginated-screen) <- copy _self
-  var max/ecx: (addr int) <- get self, ncols
-  var tmp/eax: (addr int) <- get self, rightcol
-  var right/eax: int <- copy *tmp
-  compare right, *max
+  var tmp/eax: (addr int) <- get self, left-margin
+  var first-col/ecx: int <- copy *tmp
+  first-col <- increment
+  tmp <- get self, leftcol
+  $done-drawing:first-page?: {
+    compare first-col, *tmp
+    break-if-!=
+    result <- copy 0
+    break $done-drawing?:body
+  }
+  # return self->rightcol > self->ncols + 1
+  tmp <- get self, ncols
+  var max/ecx: int <- copy *tmp
+  max <- increment
+  tmp <- get self, rightcol
+#?   print-string-to-real-screen "done-drawing? "
+#?   print-int32-hex-to-real-screen *tmp
+#?   print-string-to-real-screen " vs "
+#?   print-int32-hex-to-real-screen max
+#?   print-string-to-real-screen "\n"
+  compare *tmp, max
   {
-    break-if->=
+    break-if->
     result <- copy 0  # false
     break $done-drawing?:body
   }
   {
-    break-if-<
+    break-if-<=
     result <- copy 1  # true
   }
 }
@@ -184,6 +201,9 @@ fn test-print-grapheme-on-paginated-screen {
   {
     var c/ecx: grapheme <- copy 0x61   # 'a'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-grapheme-on-paginated-screen/done"
   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -195,22 +215,34 @@ fn test-print-single-page {
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
   initialize-fake-paginated-screen pg, 2, 4, 2, 0, 0  # 2 rows, 4 columns, 2 pages * 2 columns each
   start-drawing pg
-  # pages at columns [1, 3), [3, 5]
+  # pages at columns [1, 3), [3, 5)
   {
     var c/ecx: grapheme <- copy 0x61   # 'a'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page/done-1"
   }
   {
     var c/ecx: grapheme <- copy 0x62   # 'b'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page/done-2"
   }
   {
     var c/ecx: grapheme <- copy 0x63   # 'c'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page/done-3"
   }
   {
     var c/ecx: grapheme <- copy 0x64   # 'd'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page/done-4"
   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -227,22 +259,37 @@ fn test-print-single-page-narrower-than-page-width {
   {
     var c/ecx: grapheme <- copy 0x61   # 'a'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-1"
   }
   {
     var c/ecx: grapheme <- copy 0x62   # 'b'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-2"
   }
   {
     var c/ecx: grapheme <- copy 0x63   # 'c'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-3"
   }
   {
     var c/ecx: grapheme <- copy 0x64   # 'd'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-4"
   }
   {
     var c/ecx: grapheme <- copy 0x65   # 'e'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-5"
   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -259,22 +306,37 @@ fn test-print-single-page-narrower-than-page-width-with-margin {
   {
     var c/ecx: grapheme <- copy 0x61   # 'a'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-1"
   }
   {
     var c/ecx: grapheme <- copy 0x62   # 'b'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-2"
   }
   {
     var c/ecx: grapheme <- copy 0x63   # 'c'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-3"
   }
   {
     var c/ecx: grapheme <- copy 0x64   # 'd'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-4"
   }
   {
     var c/ecx: grapheme <- copy 0x65   # 'e'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-5"
   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -291,18 +353,30 @@ fn test-print-multiple-pages {
   {
     var c/ecx: grapheme <- copy 0x61   # 'a'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages/done-1"
   }
   {
     var c/ecx: grapheme <- copy 0x62   # 'b'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages/done-2"
   }
   {
     var c/ecx: grapheme <- copy 0x63   # 'c'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages/done-3"
   }
   {
     var c/ecx: grapheme <- copy 0x64   # 'd'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 1, "F - test-print-multiple-pages/done-4"
   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -319,34 +393,58 @@ fn test-print-multiple-pages-2 {
   {
     var c/ecx: grapheme <- copy 0x61   # 'a'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-1"
   }
   {
     var c/ecx: grapheme <- copy 0x62   # 'b'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-2"
   }
   {
     var c/ecx: grapheme <- copy 0x63   # 'c'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-3"
   }
   {
     var c/ecx: grapheme <- copy 0x64   # 'd'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-4"
   }
   {
     var c/ecx: grapheme <- copy 0x65   # 'e'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-5"
   }
   {
     var c/ecx: grapheme <- copy 0x66   # 'f'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-6"
   }
   {
     var c/ecx: grapheme <- copy 0x67   # 'g'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-7"
   }
   {
     var c/ecx: grapheme <- copy 0x68   # 'h'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 1, "F - test-print-multiple-pages-2/done-8"
   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -363,34 +461,58 @@ fn test-print-multiple-pages-with-margins {
   {
     var c/ecx: grapheme <- copy 0x61   # 'a'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-1"
   }
   {
     var c/ecx: grapheme <- copy 0x62   # 'b'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-2"
   }
   {
     var c/ecx: grapheme <- copy 0x63   # 'c'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-3"
   }
   {
     var c/ecx: grapheme <- copy 0x64   # 'd'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-4"
   }
   {
     var c/ecx: grapheme <- copy 0x65   # 'e'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-5"
   }
   {
     var c/ecx: grapheme <- copy 0x66   # 'f'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-6"
   }
   {
     var c/ecx: grapheme <- copy 0x67   # 'g'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-7"
   }
   {
     var c/ecx: grapheme <- copy 0x68   # 'h'
     add-grapheme pg, c
+    var done?/eax: boolean <- done-drawing? pg
+    var done/eax: int <- copy done?
+    check-ints-equal done, 1, "F - test-print-multiple-pages-with-margins/grapheme-8"
   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -477,6 +599,7 @@ fn reset-formatting-on-paginated-screen _self: (addr paginated-screen) {
 ## helpers
 
 fn next-line _self: (addr paginated-screen) {
+#?   print-string-to-real-screen "next-line\n"
   var self/esi: (addr paginated-screen) <- copy _self
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
@@ -502,6 +625,7 @@ fn next-line _self: (addr paginated-screen) {
 }
 
 fn next-page _self: (addr paginated-screen) {
+#?   print-string-to-real-screen "next-page\n"
   var self/esi: (addr paginated-screen) <- copy _self
   var tmp/eax: (addr int) <- copy 0
   var tmp2/ecx: int <- copy 0
@@ -518,23 +642,19 @@ fn next-page _self: (addr paginated-screen) {
   tmp2 <- add *tmp
   tmp <- get self, leftcol
   copy-to *tmp, tmp2
-  # self->rightcol = min(nrows, self->leftcol + page-width)
-  # . tmp2 = self->leftcol + page-width
+#?   print-string-to-real-screen "left: "
+#?   print-int32-hex-to-real-screen tmp2
+#?   print-string-to-real-screen "\n"
+  # self->rightcol = self->leftcol + page-width
   tmp <- get self, page-width
   tmp2 <- copy *tmp
   tmp <- get self, leftcol
   tmp2 <- add *tmp
-  # . if (tmp2 > ncols) tmp2 = ncols+1
-  {
-    tmp <- get self, ncols
-    compare tmp2, *tmp
-    break-if-<=
-    tmp2 <- copy *tmp
-    tmp2 <- increment
-  }
-  # . self->rightcol = tmp2
   tmp <- get self, rightcol
   copy-to *tmp, tmp2
+#?   print-string-to-real-screen "right: "
+#?   print-int32-hex-to-real-screen tmp2
+#?   print-string-to-real-screen "\n"
   # self->row = self->toprow
   tmp <- get self, toprow
   tmp2 <- copy *tmp

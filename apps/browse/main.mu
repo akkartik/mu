@@ -59,6 +59,25 @@ fn render screen: (addr paginated-screen), fs: (addr buffered-file) {
   render-normal screen, fs
 }
 
+fn test-render-normal-text {
+  # input text
+  var input-storage: (handle buffered-file)
+  var input-ah/eax: (addr handle buffered-file) <- address input-storage
+  populate-buffered-file-containing "abcdefgh", input-ah
+  var in/eax: (addr buffered-file) <- lookup input-storage
+  # output screen
+  var pg: paginated-screen
+  var pg-addr/ecx: (addr paginated-screen) <- address pg
+  initialize-fake-paginated-screen pg-addr, 3, 6, 2, 1, 1  # 3 rows, 6 columns, 2 pages * 2 columns each
+  #
+  render pg-addr, in
+  var screen-ah/eax: (addr handle screen) <- get pg, screen
+  var screen/eax: (addr screen) <- lookup *screen-ah
+  check-screen-row screen, 1, "      ", "F - test-render-normal-text/row1"
+  check-screen-row screen, 2, " ab ef", "F - test-render-normal-text/row2"
+  check-screen-row screen, 3, " cd gh", "F - test-render-normal-text/row3"
+}
+
 fn render-normal screen: (addr paginated-screen), fs: (addr buffered-file) {
   var newline-seen?/esi: boolean <- copy 0  # false
   var start-of-paragraph?/edi: boolean <- copy 1  # true
