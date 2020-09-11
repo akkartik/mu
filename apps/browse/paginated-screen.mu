@@ -183,11 +183,11 @@ fn test-print-single-page {
   # pages at columns [1, 3), [3, 5]
   var c/ecx: grapheme <- copy 0x61   # 'a'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x62   # 'b'
+  c <- copy 0x62   # 'b'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x63   # 'c'
+  c <- copy 0x63   # 'c'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x64   # 'd'
+  c <- copy 0x64   # 'd'
   add-grapheme pg, c
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -203,13 +203,13 @@ fn test-print-single-page-narrower-than-page-width {
   start-drawing pg
   var c/ecx: grapheme <- copy 0x61   # 'a'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x62   # 'b'
+  c <- copy 0x62   # 'b'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x63   # 'c'
+  c <- copy 0x63   # 'c'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x64   # 'd'
+  c <- copy 0x64   # 'd'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x65   # 'e'
+  c <- copy 0x65   # 'e'
   add-grapheme pg, c
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -225,11 +225,11 @@ fn test-print-multiple-pages {
   start-drawing pg
   var c/ecx: grapheme <- copy 0x61   # 'a'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x62   # 'b'
+  c <- copy 0x62   # 'b'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x63   # 'c'
+  c <- copy 0x63   # 'c'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x64   # 'd'
+  c <- copy 0x64   # 'd'
   add-grapheme pg, c
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -245,19 +245,19 @@ fn test-print-multiple-pages-2 {
   start-drawing pg
   var c/ecx: grapheme <- copy 0x61   # 'a'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x62   # 'b'
+  c <- copy 0x62   # 'b'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x63   # 'c'
+  c <- copy 0x63   # 'c'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x64   # 'd'
+  c <- copy 0x64   # 'd'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x65   # 'e'
+  c <- copy 0x65   # 'e'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x66   # 'f'
+  c <- copy 0x66   # 'f'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x67   # 'g'
+  c <- copy 0x67   # 'g'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x68   # 'h'
+  c <- copy 0x68   # 'h'
   add-grapheme pg, c
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
@@ -273,19 +273,19 @@ fn test-print-multiple-pages-with-margins {
   start-drawing pg
   var c/ecx: grapheme <- copy 0x61   # 'a'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x62   # 'b'
+  c <- copy 0x62   # 'b'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x63   # 'c'
+  c <- copy 0x63   # 'c'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x64   # 'd'
+  c <- copy 0x64   # 'd'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x65   # 'e'
+  c <- copy 0x65   # 'e'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x66   # 'f'
+  c <- copy 0x66   # 'f'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x67   # 'g'
+  c <- copy 0x67   # 'g'
   add-grapheme pg, c
-  var c/ecx: grapheme <- copy 0x68   # 'h'
+  c <- copy 0x68   # 'h'
   add-grapheme pg, c
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
