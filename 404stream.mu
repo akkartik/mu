@@ -44,3 +44,26 @@ fn test-stream-full {
   tmp <- stream-full? s2
   check-true tmp, "F - test-stream-full?"
 }
+
+fn test-fake-input-buffered-file {
+  var foo: (handle buffered-file)
+  var foo-ah/eax: (addr handle buffered-file) <- address foo
+  populate-buffered-file-containing "abc", foo-ah
+  var foo-addr/eax: (addr buffered-file) <- lookup foo
+  var s: (stream byte 0x100)
+  var result/ecx: (addr stream byte) <- address s
+  read-line-buffered foo-addr, result
+  check-stream-equal result, "abc", "F - test-fake-input-buffered-file"
+}
+
+fn test-fake-output-buffered-file {
+  var foo: (handle buffered-file)
+  var foo-ah/eax: (addr handle buffered-file) <- address foo
+  new-buffered-file foo-ah
+  var foo-addr/eax: (addr buffered-file) <- lookup foo
+  write-buffered foo-addr, "abc"
+  var s: (stream byte 0x100)
+  var result/ecx: (addr stream byte) <- address s
+  read-line-buffered foo-addr, result
+  check-stream-equal result, "abc", "F - test-fake-output-buffered-file"
+}

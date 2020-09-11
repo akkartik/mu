@@ -1,7 +1,15 @@
+# Methods for constructing buffered-file objects.
+#
+# TODO: There are hard-coded parameters here for buffer sizes. When they
+# overflow, tracking down what's going on can get hairy.
+#
+# HACK: buffered-file stores naked addrs. This is safe because buffered-file
+# objects are opaque. But still sub-optimal; they'll be harder to reclaim when
+# we get around to that.
+
 == code
 
 open:  # filename: (addr array byte), write?: boolean, out: (addr handle buffered-file)
-    # hard-coded parameter: file-buffer-size of created buffered-file
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -55,6 +63,88 @@ $open:end:
     5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+populate-buffered-file-containing:  # contents: (addr array byte), out: (addr handle buffered-file)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    57/push-edi
+    # esi = contents
+    8b/-> *(ebp+8) 6/r32/esi
+    # var n/ecx: int = len(contents)
+    8b/-> *esi 1/r32/ecx
+    # var stream/edi: (handle stream byte)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edi 4/r32/esp
+    # allocate stream
+    (new-stream Heap %ecx 1 %edi)
+    # var stream-addr/edi: (addr stream byte) = lookup(stream)
+    (lookup *edi *(edi+4))  # => eax
+    89/<- %edi 0/r32/eax
+    # write contents to stream
+    (write %edi %esi)
+    # allocate buffered-file
+    (allocate Heap 0x110 *(ebp+0xc))
+    # var out-addr/eax: (addr buffered-file)
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # => eax
+    # out-addr->size = 256 bytes
+    c7 0/subop/copy *(eax+0xc) 0x100/imm32/file-buffer-size
+    # out-addr->fd = stream
+    89/<- *eax 7/r32/edi
+$populate-buffered-file-containing:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+new-buffered-file:  # out: (addr handle buffered-file)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # var stream/ecx: (handle stream byte)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    # allocate stream
+    (new-stream Heap 0x100 1 %ecx)
+    # var stream-addr/ecx: (addr stream byte) = lookup(stream)
+    (lookup *ecx *(ecx+4))  # => eax
+    89/<- %ecx 0/r32/eax
+    # allocate buffered-file
+    (allocate Heap 0x110 *(ebp+8))
+    # var out-addr/eax: (addr buffered-file)
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # => eax
+    # out-addr->size = 256 bytes
+    c7 0/subop/copy *(eax+0xc) 0x100/imm32/file-buffer-size
+    # out-addr->fd = stream
+    89/<- *eax 1/r32/ecx
+$new-buffered-file:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
     # . epilogue

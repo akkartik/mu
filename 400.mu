@@ -46,7 +46,7 @@ sig write f: (addr stream byte), s: (addr array byte)  # writing to file descrip
 sig stream-data-equal? f: (addr stream byte), s: (addr array byte) -> result/eax: boolean
 sig check-stream-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
 sig next-stream-line-equal? f: (addr stream byte), s: (addr array byte) -> result/eax: boolean
-sig check-next-stream-line-equal
+sig check-next-stream-line-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
 sig tailor-exit-descriptor ed: (addr exit-descriptor), nbytes: int
 sig stop ed: (addr exit-descriptor), value: int
 #sig read f: fd or (addr stream byte), s: (addr stream byte) -> num-bytes-read/eax: int
@@ -158,6 +158,8 @@ sig enable-keyboard-immediate-mode
 sig enable-keyboard-type-mode
 sig read-key -> result/eax: byte
 sig open filename: (addr array byte), write?: boolean, out: (addr handle buffered-file)
+sig populate-buffered-file-containing contents: (addr array byte), out: (addr handle buffered-file)
+sig new-buffered-file out: (addr handle buffered-file)
 #sig size in: (addr array _) -> result/eax: int
 
 sig stream-empty? s: (addr stream _) -> result/eax: boolean
