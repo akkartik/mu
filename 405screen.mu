@@ -439,6 +439,21 @@ $print-int32-hex:body: {
 }
 }
 
+fn print-int32-decimal screen: (addr screen), n: int {
+$print-int32-decimal:body: {
+  compare screen, 0
+  {
+    break-if-!=
+    print-int32-decimal-to-real-screen n
+    break $print-int32-decimal:body
+  }
+  {
+    break-if-=
+    # fake screen
+  }
+}
+}
+
 fn reset-formatting screen: (addr screen) {
 $reset-formatting:body: {
   compare screen, 0

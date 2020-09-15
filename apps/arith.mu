@@ -4,7 +4,6 @@
 #   https://compilers.iecc.com/crenshaw
 #
 # Limitations:
-#   Reads numbers in decimal, but prints numbers in hex :(
 #   No division yet.
 #
 # To build:
@@ -14,19 +13,19 @@
 #   $ ./a.elf
 #   press ctrl-c or ctrl-d to exit
 #   > 1
-#   0x00000001
+#   1
 #   > 1+1
-#   0x00000002
+#   2
 #   > 1 + 1
-#   0x00000002
+#   2
 #   > 1+2 +3
-#   0x00000006
+#   6
 #   > 1+2 *3
-#   0x00000007
+#   7
 #   > (1+2) *3
-#   0x00000009
+#   9
 #   > 1 + 3*4
-#   0x0000000d
+#   13
 #   > ^D
 #   $
 #
@@ -46,7 +45,7 @@ fn main -> exit-status/ebx: int {
     compare look, 0
     break-if-=
     # print
-    print-int32-hex 0, n
+    print-int32-decimal 0, n
     print-string 0, "\n"
     #
     loop

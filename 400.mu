@@ -146,6 +146,8 @@ sig print-string-to-real-screen s: (addr array byte)
 sig print-stream-to-real-screen s: (addr stream byte)
 sig print-grapheme-to-real-screen c: grapheme
 sig print-int32-hex-to-real-screen n: int
+sig print-int32-decimal-to-real-screen n: int
+sig write-int32-decimal-buffered f: (addr buffered-file), n: int
 sig reset-formatting-on-real-screen
 sig start-color-on-real-screen fg: int, bg: int
 sig start-bold-on-real-screen
