@@ -243,7 +243,7 @@ fn skip-spaces _look: byte -> look/esi: byte {
 }
 
 fn get-char -> look/esi: byte {
-  var tmp/eax: byte <- read-key
+  var tmp/eax: byte <- read-key-from-real-keyboard
   look <- copy tmp
   compare look, 0
   {
