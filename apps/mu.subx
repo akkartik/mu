@@ -7745,11 +7745,13 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     # pseudocode:
     #   var word-slice: slice
     #   next-mu-token(first-line, word-slice)
+    #   if slice-empty?(word-slice) abort
     #   assert(word-slice not in '{' '}' '->')
     #   out->name = slice-to-string(word-slice)
     #   ## inouts
     #   while true
     #     word-slice = next-mu-token(first-line)
+    #     if slice-empty?(word-slice) abort
     #     if (word-slice == '{') goto done
     #     if (word-slice == '->') break
     #     assert(word-slice != '}')
@@ -7761,6 +7763,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     #   ## outputs
     #   while true
     #     word-slice = next-mu-token(first-line)
+    #     if slice-empty?(word-slice) abort
     #     if (word-slice == '{') break
     #     assert(word-slice not in '}' '->')
     #     var v: (handle var) = parse-var-with-type(word-slice, first-line)
@@ -7790,6 +7793,10 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     # read function name
     (next-mu-token *(ebp+8) %ecx)
     # error checking
+    # if slice-empty?(word-slice) abort
+    (slice-empty? %ecx)  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
     # if (word-slice == '{') abort
     (slice-equal? %ecx "{")   # => eax
     3d/compare-eax-and 0/imm32/false
@@ -7808,6 +7815,10 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     {
 $populate-mu-function-header:check-for-inout:
       (next-mu-token *(ebp+8) %ecx)
+      # if slice-empty?(word-slice) abort
+      (slice-empty? %ecx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       # if (word-slice == '{') goto done
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32/false
@@ -7843,6 +7854,10 @@ $populate-mu-function-header:check-for-inout:
     {
 $populate-mu-function-header:check-for-out:
       (next-mu-token *(ebp+8) %ecx)
+      # if slice-empty?(word-slice) abort
+      (slice-empty? %ecx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       # if (word-slice == '{') break
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32/false
