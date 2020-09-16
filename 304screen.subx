@@ -124,7 +124,8 @@ print-string-to-real-screen:  # s: (addr array byte)
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 1 *(ebp+8))
+    (write-buffered Stdout *(ebp+8))
+#?     (flush Stdout)
 $print-string-to-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -137,7 +138,7 @@ print-slice-to-real-screen:  # s: (addr slice)
     89/<- %ebp 4/r32/esp
     #
     (write-slice-buffered Stdout *(ebp+8))
-    (flush Stdout)
+#?     (flush Stdout)
 $print-slice-to-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -150,7 +151,7 @@ print-stream-to-real-screen:  # s: (addr stream byte)
     89/<- %ebp 4/r32/esp
     #
     (write-stream-data Stdout *(ebp+8))
-    (flush Stdout)
+#?     (flush Stdout)
 $print-stream-to-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -212,7 +213,8 @@ print-byte-to-real-screen:  # c: byte
     ff 6/subop/push *(ebp+8)
     68/push 1/imm32/size
     89/<- %ecx 4/r32/esp
-    (write 1 %ecx)
+    (write-buffered Stdout %ecx)
+#?     (flush Stdout)
 $print-byte-to-real-screen:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -223,13 +225,17 @@ $print-byte-to-real-screen:end:
     5d/pop-to-ebp
     c3/return
 
+flush-stdout:
+    (flush Stdout)
+    c3/return
+
 print-int32-hex-to-real-screen:  # n: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
     (write-int32-hex-buffered Stdout *(ebp+8))
-    (flush Stdout)
+#?     (flush Stdout)
 $print-int32-hex-to-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -242,7 +248,7 @@ print-int32-decimal-to-real-screen:  # n: int
     89/<- %ebp 4/r32/esp
     #
     (write-int32-decimal-buffered Stdout *(ebp+8))
-    (flush Stdout)
+#?     (flush Stdout)
 $print-int32-decimal-to-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -278,10 +284,10 @@ reset-formatting-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 1 Esc)
-    (write 1 "(B")
-    (write 1 Esc)
-    (write 1 "[m")
+    (write-buffered Stdout Esc)
+    (write-buffered Stdout "(B")
+    (write-buffered Stdout Esc)
+    (write-buffered Stdout "[m")
 $reset-formatting-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -312,7 +318,7 @@ start-color-on-real-screen:  # fg: int, bg: int
     (write-int32-decimal %ecx *(ebp+0xc))
     (write %ecx "m")
     # flush
-    (write-stream 2 %ecx)
+    (write-stream-data Stdout %ecx)
 $start-color-on-real-screen:end:
     # . reclaim locals
     81 0/subop/add %esp 0x2c/imm32
@@ -328,8 +334,8 @@ start-bold-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 1 Esc)
-    (write 1 "[1m")
+    (write-buffered Stdout Esc)
+    (write-buffered Stdout "[1m")
 $start-bold-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -341,8 +347,8 @@ start-underline-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 1 Esc)
-    (write 1 "[4m")
+    (write-buffered Stdout Esc)
+    (write-buffered Stdout "[4m")
 $start-underline-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -354,8 +360,8 @@ start-reverse-video-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 1 Esc)
-    (write 1 "[7m")
+    (write-buffered Stdout Esc)
+    (write-buffered Stdout "[7m")
 $start-reverse-video-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -368,8 +374,8 @@ start-blinking-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 1 Esc)
-    (write 1 "[5m")
+    (write-buffered Stdout Esc)
+    (write-buffered Stdout "[5m")
 $start-blinking-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -381,8 +387,8 @@ hide-cursor-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 1 Esc)
-    (write 1 "[?25l")
+    (write-buffered Stdout Esc)
+    (write-buffered Stdout "[?25l")
 $hide-cursor-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -394,10 +400,10 @@ show-cursor-on-real-screen:
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (write 1 Esc)
-    (write 1 "[?12l")
-    (write 1 Esc)
-    (write 1 "[?25h")
+    (write-buffered Stdout Esc)
+    (write-buffered Stdout "[?12l")
+    (write-buffered Stdout Esc)
+    (write-buffered Stdout "[?25h")
 $show-cursor-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp

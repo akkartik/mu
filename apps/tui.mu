@@ -14,6 +14,7 @@ fn main -> exit-status/ebx: int {
   start-blinking 0
   print-string 0, "Hello world!"
   reset-formatting 0
+  flush-stdout
   move-cursor 0, 6, 0x22
   print-string 0, "tty dimensions: "
   print-int32-hex 0, nrows
@@ -28,7 +29,8 @@ fn main -> exit-status/ebx: int {
   enable-screen-type-mode
   print-string 0, "You pressed "
   var x-int/eax: int <- copy x
-  print-int32-hex 0, x-int
+  print-int32-hex-to-real-screen x-int
   print-string 0, "\n"
+  flush-stdout
   exit-status <- copy 0
 }

@@ -75,4 +75,5 @@ fn render screen: (addr screen), buf: (addr gap-buffer) {
   move-cursor screen, start-row, start-col
   #
   render-gap-buffer screen, buf
+  flush-stdout
 }
