@@ -27,6 +27,7 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
 }
 
 fn interactive args: (addr array addr array byte) -> exit-status/ebx: int {
+$interactive:body: {
   # initialize fs from args[1]
   var filename/eax: (addr array byte) <- first-arg args
   var file-storage: (handle buffered-file)
@@ -34,6 +35,14 @@ fn interactive args: (addr array addr array byte) -> exit-status/ebx: int {
   open filename, 0, file-storage-addr
   var _fs/eax: (addr buffered-file) <- lookup file-storage
   var fs/esi: (addr buffered-file) <- copy _fs
+  # if no file, exit
+  {
+    compare fs, 0
+    break-if-!=
+    print-string-to-real-screen "file not found\n"
+    exit-status <- copy 1
+    break $interactive:body
+  }
   #
   enable-screen-grid-mode
   enable-keyboard-immediate-mode
@@ -52,6 +61,7 @@ fn interactive args: (addr array addr array byte) -> exit-status/ebx: int {
   enable-keyboard-type-mode
   enable-screen-type-mode
   exit-status <- copy 0
+}
 }
 
 fn render screen: (addr paginated-screen), fs: (addr buffered-file) {

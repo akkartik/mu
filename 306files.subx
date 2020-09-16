@@ -44,6 +44,9 @@ open:  # filename: (addr array byte), write?: boolean, out: (addr handle buffere
     89/<- %ecx 0/r32/eax
     # restore edx
     5a/pop-to-edx
+    # if fd < 0 return
+    3d/compare-eax-with 0/imm32
+    7c/jump-if-< $open:end/disp8
     # allocate a buffered-file
     (allocate Heap 0x1010 *(ebp+0x10))  # file-buffer-size + 16 for other fields
     # var out-addr/edi: (addr buffered-file)
