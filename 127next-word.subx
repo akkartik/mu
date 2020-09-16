@@ -20,14 +20,13 @@ next-word:  # line: (addr stream byte), out: (addr slice)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # edi = out
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
-    # skip-chars-matching(line, ' ')
+    # skip-chars-matching-whitespace(line)
     # . . push args
-    68/push  0x20/imm32/space
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
-    e8/call  skip-chars-matching/disp32
+    e8/call  skip-chars-matching-whitespace/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 $next-word:check0:
     # if (line->read >= line->write) clear out and return
     # . eax = line->read

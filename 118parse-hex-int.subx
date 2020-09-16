@@ -393,7 +393,7 @@ parse-hex-int-from-slice:  # in: (addr slice) -> result/eax: int
     52/push-edx
     # ecx = in
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
-    # edx = in->end
+    # var max/edx: (addr byte) = in->end
     8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           2/r32/edx   4/disp8         .                 # copy *(ecx+4) to edx
     # var curr/ecx: (addr byte) = in->start
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # copy *ecx to ecx
@@ -582,7 +582,7 @@ test-parse-hex-int-from-slice-0x-prefix:
     e8/call  parse-hex-int-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # check-ints-equal(eax, 0x34a, msg)
+    # check-ints-equal(eax, 0x34, msg)
     # . . push args
     68/push  "F - test-parse-hex-int-from-slice-0x-prefix"/imm32
     68/push  0x34/imm32
@@ -616,7 +616,7 @@ test-parse-hex-int-from-slice-zero:
     e8/call  parse-hex-int-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # check-ints-equal(eax, 0x34a, msg)
+    # check-ints-equal(eax, 0, msg)
     # . . push args
     68/push  "F - test-parse-hex-int-from-slice-zero"/imm32
     68/push  0/imm32

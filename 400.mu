@@ -69,6 +69,8 @@ sig parse-hex-int-from-slice in: (addr slice) -> result/eax: int
 #sig parse-hex-int-helper start: (addr byte), end: (addr byte) -> result/eax: int
 sig is-hex-digit? c: byte -> result/eax: boolean
 #sig from-hex-char in/eax: byte -> out/eax: nibble
+sig parse-decimal-int-from-slice in: (addr slice) -> result/eax: int
+#sig parse-decimal-int-helper start: (addr byte), end: (addr byte) -> result/eax: int
 sig error-byte ed: (addr exit-descriptor), out: (addr buffered-file), msg: (addr array byte), n: byte
 #sig allocate ad: (addr allocation-descriptor), n: int, out: (addr handle _)
 #sig allocate-raw ad: (addr allocation-descriptor), n: int, out: (addr handle _)
@@ -127,10 +129,10 @@ sig compute-width-of-slice s: (addr slice) -> result/eax: int
 sig emit-hex-array out: (addr buffered-file), arr: (addr array byte)
 sig next-word-or-string line: (addr stream byte), out: (addr slice)
 sig write-int out: (addr stream byte), n: int
-sig clear-stack s: (addr stack)
-sig push s: (addr stack), n: int
-sig pop s: (addr stack) -> n/eax: int
-sig top s: (addr stack) -> n/eax: int
+#sig clear-stack s: (addr stack)
+#sig push s: (addr stack), n: int
+#sig pop s: (addr stack) -> n/eax: int
+#sig top s: (addr stack) -> n/eax: int
 sig array-equal? a: (addr array int), b: (addr array int) -> result/eax: boolean
 sig parse-array-of-ints ad: (addr allocation-descriptor), s: (addr string), out: (addr handle array int)
 sig check-array-equal a: (addr array int), expected: (addr string), msg: (addr string)
@@ -143,6 +145,7 @@ sig real-screen-size -> nrows/eax: int, ncols/ecx: int
 sig clear-real-screen
 sig move-cursor-on-real-screen row: int, column: int
 sig print-string-to-real-screen s: (addr array byte)
+sig print-slice-to-real-screen s: (addr slice)
 sig print-stream-to-real-screen s: (addr stream byte)
 sig print-grapheme-to-real-screen c: grapheme
 sig print-int32-hex-to-real-screen n: int
@@ -159,6 +162,7 @@ sig show-cursor-on-real-screen
 sig enable-keyboard-immediate-mode
 sig enable-keyboard-type-mode
 sig read-key-from-real-keyboard -> result/eax: byte
+sig read-line-from-real-keyboard in: (addr stream byte)
 sig open filename: (addr array byte), write?: boolean, out: (addr handle buffered-file)
 sig populate-buffered-file-containing contents: (addr array byte), out: (addr handle buffered-file)
 sig new-buffered-file out: (addr handle buffered-file)
