@@ -14,7 +14,6 @@ fn main -> exit-status/ebx: int {
   start-blinking 0
   print-string 0, "Hello world!"
   reset-formatting 0
-  flush-stdout
   move-cursor 0, 6, 0x22
   print-string 0, "tty dimensions: "
   print-int32-hex 0, nrows
