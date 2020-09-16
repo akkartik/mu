@@ -28,8 +28,7 @@ fn main -> exit-status/ebx: int {
   enable-screen-type-mode
   print-string 0, "You pressed "
   var x-int/eax: int <- copy x
-  print-int32-hex-to-real-screen x-int
+  print-int32-hex 0, x-int
   print-string 0, "\n"
-  flush-stdout
   exit-status <- copy 0
 }
