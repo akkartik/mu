@@ -45,7 +45,7 @@ fn interactive args: (addr array addr array byte) -> exit-status/ebx: int {
   #
   {
     render paginated-screen, fs
-    var key/eax: byte <- read-key
+    var key/eax: byte <- read-key-from-real-keyboard
     compare key, 0x71  # 'q'
     loop-if-!=
   }

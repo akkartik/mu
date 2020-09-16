@@ -23,7 +23,7 @@ fn main -> exit-status/ebx: int {
 
   print-string 0, "press a key to see its code: "
   enable-keyboard-immediate-mode
-  var x/eax: byte <- read-key
+  var x/eax: byte <- read-key-from-real-keyboard
   enable-keyboard-type-mode
   enable-screen-type-mode
   print-string 0, "You pressed "
