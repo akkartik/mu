@@ -1,9 +1,9 @@
 fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
   var args/eax: (addr array addr array byte) <- copy args-on-stack
-  var tmp/ecx: int <- length args
+  var len/ecx: int <- length args
   $main-body: {
     # if (len(args) <= 1) print usage and exit
-    compare tmp, 1
+    compare len, 1
     {
       break-if->
       print-string-to-real-screen "usage: browse [filename]\n"
@@ -12,9 +12,9 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
       break $main-body
     }
     # if (args[1] == "test") run-tests()
-    var tmp2/ecx: (addr addr array byte) <- index args, 1
-    var tmp3/eax: boolean <- string-equal? *tmp2, "test"
-    compare tmp3, 0
+    var tmp/ecx: (addr addr array byte) <- index args, 1
+    var tmp2/eax: boolean <- string-equal? *tmp, "test"
+    compare tmp2, 0
     {
       break-if-=
       run-tests
