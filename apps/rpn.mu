@@ -61,7 +61,7 @@ fn simplify in: (addr stream byte) -> result/eax: int {
   var word/ecx: (addr slice) <- address word-storage
   var stack-storage: int-stack
   var stack/esi: (addr int-stack) <- address stack-storage
-  initialize-stack stack, 0x10
+  initialize-int-stack stack, 0x10
   $simplify:word-loop: {
     next-word in, word
     var done?/eax: boolean <- slice-empty? word
@@ -109,7 +109,7 @@ fn simplify in: (addr stream byte) -> result/eax: int {
   result <- pop-int-stack stack
 }
 
-fn initialize-stack _self: (addr int-stack), n: int {
+fn initialize-int-stack _self: (addr int-stack), n: int {
   var self/esi: (addr int-stack) <- copy _self
   var d/edi: (addr handle array int) <- get self, data
   populate d, n
