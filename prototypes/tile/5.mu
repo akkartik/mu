@@ -113,18 +113,6 @@ fn tree-depth node-on-stack: (addr cell) -> result/eax: int {
   result <- increment
 }
 
-# slow, iterative divide instruction
-fn try-divide _nr: int, _dr: int -> result/eax: int {
-  result <- copy _nr
-  result <- shift-right 2
-#?   var nr/ecx: int <- copy _nr
-#?   var tmp/ecx: int <- copy 2
-#?   # find nearest power of 2
-#?   {
-#?     k
-#?   }
-}
-
 fn draw-box row1: int, col1: int, row2: int, col2: int {
   draw-horizontal-line row1, col1, col2
   draw-vertical-line row1, row2, col1
