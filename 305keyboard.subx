@@ -119,15 +119,22 @@ $enable-keyboard-type-mode:end:
     5d/pop-to-ebp
     c3/return
 
-read-key-from-real-keyboard:  # -> result/eax: byte
+# read keys or escapes up to 4 bytes
+#
+# fun fact: terminal escapes and graphemes in utf-8 don't conflict!
+# - in graphemes all but the first/lowest byte will have a 1 in the MSB (be
+#   greater than 0x7f)
+# - in escapes every byte will have a 0 in the MSB
+# the two categories overlap only when the first/lowest byte is 0x1b or 'esc'
+read-key-from-real-keyboard:  # -> result/eax: grapheme
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var buf/ecx: (stream byte 1)
+    # var buf/ecx: (stream byte 4)
     68/push 0/imm32/data
-    68/push 1/imm32/size  # 3 bytes of data unused
+    68/push 4/imm32/size
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp

@@ -13,7 +13,7 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   init-screen-position-state screen-position-state
   {
     render fs, screen-position-state
-    var key/eax: byte <- read-key
+    var key/eax: grapheme <- read-key-from-real-keyboard
   }
   enable-keyboard-type-mode
   enable-screen-type-mode

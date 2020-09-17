@@ -63,7 +63,7 @@ fn interactive -> exit-status/ebx: int {
 $main:loop: {
     # process key
     {
-      var c/eax: byte <- read-key
+      var c/eax: grapheme <- read-key-from-real-keyboard
       compare c, 4  # ctrl-d
       break-if-= $main:loop
       process c, root, cursor
@@ -84,7 +84,7 @@ $main:loop: {
 # Tree mutations
 #######################################################
 
-fn process c: byte, root: (addr handle cell), cursor: (addr handle cell) {
+fn process c: grapheme, root: (addr handle cell), cursor: (addr handle cell) {
 $process:body: {
   # if c == 'h' move cursor to its parent if possible
   {

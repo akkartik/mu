@@ -19,7 +19,7 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
     compare done?, 0
     break-if-=
     render fs, screen-position-state
-    var key/eax: byte <- read-key
+    var key/eax: grapheme <- read-key-from-real-keyboard
     compare key, 0x71  # 'q'
     loop-if-!=
   }

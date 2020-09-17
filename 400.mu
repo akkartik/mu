@@ -161,7 +161,7 @@ sig hide-cursor-on-real-screen
 sig show-cursor-on-real-screen
 sig enable-keyboard-immediate-mode
 sig enable-keyboard-type-mode
-sig read-key-from-real-keyboard -> result/eax: byte
+sig read-key-from-real-keyboard -> result/eax: grapheme
 sig read-line-from-real-keyboard in: (addr stream byte)
 sig open filename: (addr array byte), write?: boolean, out: (addr handle buffered-file)
 sig populate-buffered-file-containing contents: (addr array byte), out: (addr handle buffered-file)

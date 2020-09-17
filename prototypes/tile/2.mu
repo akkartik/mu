@@ -32,7 +32,7 @@ fn main -> exit-status/ebx: int {
   # wait for a key
   {
     enable-keyboard-immediate-mode
-      var dummy/eax: byte <- read-key
+      var dummy/eax: grapheme <- read-key-from-real-keyboard
     enable-keyboard-type-mode
   }
   # clean up

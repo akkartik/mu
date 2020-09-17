@@ -9,7 +9,7 @@
 fn main -> exit-status/ebx: int {
   clear-screen 0
   enable-keyboard-immediate-mode
-  var dummy/eax: byte <- read-key
+  var dummy/eax: grapheme <- read-key-from-real-keyboard
   draw-box 5, 5, 0x23, 0x23  # 35, 35
   sleep 0 0x5f5e100  # 100ms
   sleep 0 0x5f5e100  # 100ms
@@ -17,7 +17,7 @@ fn main -> exit-status/ebx: int {
   sleep 0 0x5f5e100  # 100ms
   sleep 0 0x5f5e100  # 100ms
   draw-box 5, 5, 0x23, 0xaf  # 35, 175
-  var dummy/eax: byte <- read-key
+  var dummy/eax: grapheme <- read-key-from-real-keyboard
   enable-keyboard-type-mode
   clear-screen 0
   exit-status <- copy 0

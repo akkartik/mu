@@ -14,7 +14,7 @@ fn main -> exit-status/ebx: int {
   move-cursor 0, 5, 5
   print-string 0, "_________"
   enable-keyboard-immediate-mode
-  var dummy/eax: byte <- read-key
+  var dummy/eax: grapheme <- read-key-from-real-keyboard
   var row/eax: int <- copy 5
   {
     compare row, 0xe  # 15
@@ -24,7 +24,7 @@ fn main -> exit-status/ebx: int {
     sleep 0 0x5f5e100  # 100ms
     loop
   }
-  var dummy/eax: byte <- read-key
+  var dummy/eax: grapheme <- read-key-from-real-keyboard
   enable-keyboard-type-mode
   clear-screen 0
   exit-status <- copy 0

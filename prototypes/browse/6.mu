@@ -5,7 +5,7 @@ fn main args: (addr array addr array byte) -> exit-status/ebx: int {
   enable-keyboard-immediate-mode
   {
     render file, 0x20, 0x30  # nrows, ncols
-    var key/eax: byte <- read-key
+    var key/eax: grapheme <- read-key-from-real-keyboard
     compare key, 0x71  # 'q'
     loop-if-!=
   }
