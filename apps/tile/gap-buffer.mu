@@ -19,6 +19,17 @@ fn render-gap-buffer screen: (addr screen), _gap: (addr gap-buffer) {
   render-stack-from-top right, screen
 }
 
+fn gap-buffer-length _gap: (addr gap-buffer) -> result/eax: int {
+  var gap/esi: (addr gap-buffer) <- copy _gap
+  var left/eax: (addr grapheme-stack) <- get gap, left
+  var tmp/eax: (addr int) <- get left, top
+  var left-length/ecx: int <- copy *tmp
+  var right/esi: (addr grapheme-stack) <- get gap, right
+  tmp <- get right, top
+  result <- copy *tmp
+  result <- add left-length
+}
+
 # dump stack to screen from bottom to top
 # don't move the cursor or anything
 fn render-stack-from-bottom _self: (addr grapheme-stack), screen: (addr screen) {
@@ -58,38 +69,47 @@ fn render-stack-from-top _self: (addr grapheme-stack), screen: (addr screen) {
   }
 }
 
-fn add-grapheme _self: (addr gap-buffer), g: grapheme {
+fn add-grapheme-at-gap _self: (addr gap-buffer), g: grapheme {
   var self/esi: (addr gap-buffer) <- copy _self
   var left/eax: (addr grapheme-stack) <- get self, left
   push-grapheme-stack left, g
 }
 
-fn cursor-right _self: (addr gap-buffer) {
+fn gap-right _self: (addr gap-buffer) -> result/eax: grapheme {
+$gap-right:body: {
   var self/esi: (addr gap-buffer) <- copy _self
-  var g/ecx: grapheme <- copy 0
+  var g/edx: grapheme <- copy 0
   {
-    var right/eax: (addr grapheme-stack) <- get self, right
-    var tmp/eax: grapheme <- pop-grapheme-stack right
-    g <- copy tmp
+    var right/ecx: (addr grapheme-stack) <- get self, right
+    result <- pop-grapheme-stack right
+    compare result, -1
+    break-if-= $gap-right:body
+    g <- copy result
   }
   {
-    var left/eax: (addr grapheme-stack) <- get self, left
+    var left/ecx: (addr grapheme-stack) <- get self, left
+    # HERE: can't use 'result' here: "unknown variable 'result'"
     push-grapheme-stack left, g
   }
 }
+}
 
-fn cursor-left _self: (addr gap-buffer) {
+fn gap-left _self: (addr gap-buffer) -> result/eax: grapheme {
+$gap-left:body: {
   var self/esi: (addr gap-buffer) <- copy _self
-  var g/ecx: grapheme <- copy 0
+  var g/edx: grapheme <- copy 0
   {
-    var left/eax: (addr grapheme-stack) <- get self, left
-    var tmp/eax: grapheme <- pop-grapheme-stack left
-    g <- copy tmp
+    var left/ecx: (addr grapheme-stack) <- get self, left
+    result <- pop-grapheme-stack left
+    compare result, -1
+    break-if-= $gap-left:body
+    g <- copy result
   }
   {
-    var right/eax: (addr grapheme-stack) <- get self, right
+    var right/ecx: (addr grapheme-stack) <- get self, right
     push-grapheme-stack right, g
   }
+}
 }
 
 type grapheme-stack {
@@ -124,7 +144,7 @@ $pop-grapheme-stack:body: {
   {
     compare *top-addr, 0
     break-if->
-    val <- copy 0
+    val <- copy -1
     break $pop-grapheme-stack:body
   }
   subtract-from *top-addr, 1
