@@ -10,29 +10,13 @@ fn initialize-environment _env: (addr environment) {
   var screen-ah/edi: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
   var screen/edi: (addr screen) <- copy _screen
-  var nrows/eax: int <- copy 0
-  var ncols/ecx: int <- copy 0
-  nrows, ncols <- screen-size screen
-  # cursor-col
-  var midcol/edx: int <- copy ncols
-  midcol <- shift-right 1
-  var start-col/edx: int <- copy midcol
-  start-col <- add 2
   {
     var cursor-col/eax: (addr int) <- get env, cursor-col
-    copy-to *cursor-col start-col
+    copy-to *cursor-col, 3
   }
-  # cursor-row
-  var midrow/ebx: int <- copy 0
-  {
-    var tmp/eax: int <- try-divide nrows, 3
-    midrow <- copy tmp
-  }
-  var start-row/ebx: int <- copy midrow
-  start-row <- subtract 3
   {
     var cursor-row/eax: (addr int) <- get env, cursor-row
-    copy-to *cursor-row start-row
+    copy-to *cursor-row, 3
   }
   # buf
   var gap/eax: (addr gap-buffer) <- get env, buf
@@ -116,34 +100,14 @@ fn render _env: (addr environment) {
   var screen-ah/edi: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
   var screen/edi: (addr screen) <- copy _screen
+  # prepare screen
   clear-screen screen
-  var nrows/eax: int <- copy 0
-  var ncols/ecx: int <- copy 0
-  nrows, ncols <- screen-size screen
-  var midcol/edx: int <- copy ncols
-  midcol <- shift-right 1
-  draw-vertical-line screen, 1, nrows, midcol
-  var midrow/ebx: int <- copy 0
-  {
-    var tmp/eax: int <- try-divide nrows, 3
-    midrow <- copy tmp
-  }
-  var left-col/edx: int <- copy midcol
-  left-col <- increment
-  draw-horizontal-line screen, midrow, left-col, ncols
-#?   # some debug info
-#?   ncols <- subtract 2
-#?   move-cursor screen, 1, ncols
+  move-cursor screen, 3, 3
+  # render input area
   var buf/ecx: (addr gap-buffer) <- get env, buf
-#?   var foo/eax: int <- gap-buffer-length buf
-#?   print-int32-decimal screen, foo
-  #
-  var start-row/ebx: int <- copy midrow
-  start-row <- subtract 3
-  var start-col/edx: int <- copy left-col
-  start-col <- increment
-  move-cursor screen, start-row, start-col
   render-gap-buffer screen, buf
+#?   # render stacks
+#?   render-all-stacks screen
   # update cursor
   var cursor-row/eax: (addr int) <- get env, cursor-row
   var cursor-col/ecx: (addr int) <- get env, cursor-col
