@@ -71,30 +71,28 @@ $process:body: {
     compare key, 0x445b1b  # left-arrow
     {
       break-if-!=
-      var foo/eax: grapheme <- gap-left buf
-      compare foo, -1
+      var char-skipped/eax: grapheme <- gap-left buf
+      compare char-skipped, -1
       {
         break-if-=
-#?         print-string-to-real-screen "XXX\n"
-        var cursor-col/eax: (addr int) <- get self, cursor-col
+        var cursor-row/eax: (addr int) <- get self, cursor-row
+        var cursor-col/ecx: (addr int) <- get self, cursor-col
         decrement *cursor-col
-#?         print-int32-decimal-to-real-screen *cursor-col
-#?         print-string-to-real-screen "ZZZ\n"
+        move-cursor screen, *cursor-row, *cursor-col
       }
-      var cursor-row/eax: (addr int) <- get self, cursor-row
-      var cursor-col/ecx: (addr int) <- get self, cursor-col
-      move-cursor screen, *cursor-row, *cursor-col
       break $process:body
     }
     compare key, 0x435b1b  # right-arrow
     {
       break-if-!=
-      var foo/eax: grapheme <- gap-right buf
-      compare foo, -1
+      var char-skipped/eax: grapheme <- gap-right buf
+      compare char-skipped, -1
       {
         break-if-=
-        var cursor-col/eax: (addr int) <- get self, cursor-col
+        var cursor-row/eax: (addr int) <- get self, cursor-row
+        var cursor-col/ecx: (addr int) <- get self, cursor-col
         increment *cursor-col
+        move-cursor screen, *cursor-row, *cursor-col
       }
       break $process:body
     }
