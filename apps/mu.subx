@@ -2321,6 +2321,59 @@ test-convert-function-with-local-var-in-block:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-local-var-in-mem-after-block:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  {\n")
+    (write _test-input-stream "    var y: int\n")
+    (write _test-input-stream "  }\n")
+    (write _test-input-stream "  var x: int\n")
+    (write _test-input-stream "  increment x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-local-var-in-mem-after-block/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-local-var-in-mem-after-block/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-var-in-mem-after-block/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-mem-after-block/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-var-in-mem-after-block/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-var-in-mem-after-block/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-local-var-in-mem-after-block/6")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-local-var-in-mem-after-block/7")
+    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-local-var-in-mem-after-block/8")
+    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-mem-after-block/9")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-local-var-in-mem-after-block/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-local-var-in-mem-after-block/11")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-with-local-var-in-mem-after-block/12")
+    (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-local-var-in-mem-after-block/13")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-mem-after-block/14")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-mem-after-block/15")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-var-in-mem-after-block/16")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-mem-after-block/17")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-mem-after-block/18")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-mem-after-block/19")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-mem-after-block/20")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-local-var-in-named-block:
     # . prologue
     55/push-ebp
@@ -15005,6 +15058,7 @@ $emit-subx-stmt-list:continue:
 $emit-subx-stmt-list:emit-cleanup:
     (emit-cleanup-code-until-depth *(ebp+8) *(ebp+0x10) *Curr-block-depth)
 $emit-subx-stmt-list:clean-up:
+    (clean-up-stack-offset-state *(ebp+0x10) *Curr-block-depth)
     (clean-up-blocks *(ebp+0x10) *Curr-block-depth *(ebp+0x14))
 $emit-subx-stmt-list:end:
     # . restore registers
@@ -15440,6 +15494,77 @@ $emit-cleanup-code-until-target:continue:
     }
 $emit-cleanup-code-until-target:end:
     # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# update Curr-local-stack-offset assuming vars until some block depth are popped
+# doesn't actually modify 'vars', so we need traverse manually inside the stack
+clean-up-stack-offset-state:  # vars: (addr stack live-var), until-block-depth: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # ecx = vars
+    8b/-> *(ebp+8) 1/r32/ecx
+    # var esi: int = vars->top
+    8b/-> *ecx 6/r32/esi
+    # var curr/esi: (addr handle var) = &vars->data[vars->top - 12]
+    8d/copy-address *(ecx+esi-4) 6/r32/esi  # vars + 8 + vars->top - 12/Live-var-size
+    # var min/ecx: (addr handle var) = vars->data
+    81 0/subop/add %ecx 8/imm32
+    # edx = until-block-depth
+    8b/-> *(ebp+0xc) 2/r32/edx
+    {
+$clean-up-stack-offset-state:loop:
+      # if (curr < min) break
+      39/compare %esi 1/r32/ecx
+      0f 82/jump-if-addr< break/disp32
+      # var v/ebx: (addr var) = lookup(*curr)
+      (lookup *esi *(esi+4))  # => eax
+      89/<- %ebx 0/r32/eax
+      # if (v->block-depth < until-block-depth) break
+      39/compare *(ebx+0x10) 2/r32/edx  # Var-block-depth
+      0f 8c/jump-if-< break/disp32
+      # if v is in a register
+      81 7/subop/compare *(ebx+0x18) 0/imm32  # Var-register
+      {
+        0f 84/jump-if-= break/disp32
+        {
+$clean-up-stack-offset-state:check-for-previous-spill:
+          8b/-> *(esi+8) 0/r32/eax  # Live-var-register-spilled
+          3d/compare-eax-and 0/imm32/false
+          74/jump-if-= break/disp8
+$clean-up-stack-offset-state:reclaim-var-in-register:
+          81 0/subop/add *Curr-local-stack-offset 4/imm32
+        }
+        eb/jump $clean-up-stack-offset-state:continue/disp8
+      }
+      # otherwise v is on the stack
+      {
+        75/jump-if-!= break/disp8
+$clean-up-stack-offset-state:var-on-stack:
+        (size-of %ebx)  # => eax
+        01/add-to *Curr-local-stack-offset 0/r32/eax
+      }
+$clean-up-stack-offset-state:continue:
+      # curr -= 12
+      81 5/subop/subtract %esi 0xc/imm32
+      e9/jump loop/disp32
+    }
+$clean-up-stack-offset-state:end:
+    # . restore registers
+    5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
