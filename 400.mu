@@ -32,8 +32,8 @@ sig new-segment len: int, ad: (addr allocation-descriptor)
 sig string-equal? s: (addr array byte), benchmark: (addr array byte) -> result/eax: boolean
 sig string-starts-with? s: (addr array byte), benchmark: (addr array byte) -> result/eax: boolean
 sig check-strings-equal s: (addr array byte), expected: (addr array byte), msg: (addr array byte)
-sig clear-stream f: (addr stream byte)
-sig rewind-stream f: (addr stream byte)
+sig clear-stream f: (addr stream _)
+sig rewind-stream f: (addr stream _)
 sig initialize-trace-stream n: int
 sig trace line: (addr array byte)
 sig check-trace-contains line: (addr string), msg: (addr string)
