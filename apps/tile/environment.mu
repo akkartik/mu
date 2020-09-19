@@ -1,26 +1,14 @@
 type environment {
   screen: (handle screen)
-  buf: gap-buffer
-  cursor-row: int
-  cursor-col: int
+  cursor-word: (handle word)
 }
 
 fn initialize-environment _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
-  var screen-ah/edi: (addr handle screen) <- get env, screen
-  var _screen/eax: (addr screen) <- lookup *screen-ah
-  var screen/edi: (addr screen) <- copy _screen
-  {
-    var cursor-col/eax: (addr int) <- get env, cursor-col
-    copy-to *cursor-col, 3
-  }
-  {
-    var cursor-row/eax: (addr int) <- get env, cursor-row
-    copy-to *cursor-row, 3
-  }
-  # buf
-  var gap/eax: (addr gap-buffer) <- get env, buf
-  initialize-gap-buffer gap
+  var cursor-word-ah/eax: (addr handle word) <- get env, cursor-word
+  allocate cursor-word-ah
+  var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+  initialize-word cursor-word
 }
 
 fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int, ncols: int {
@@ -34,13 +22,23 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 
 fn render-loop _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
-  render self
+  # initial render
+  {
+    var screen-ah/edi: (addr handle screen) <- get self, screen
+    var screen/eax: (addr screen) <- lookup *screen-ah
+    move-cursor screen, 3, 3
+  }
   #
   $interactive:loop: {
     var key/eax: grapheme <- read-key-from-real-keyboard
     compare key, 0x71  # 'q'
     break-if-=
     process self, key
+    var max-depth/eax: int <- compute-max-depth self
+    print-string-to-real-screen "ZZ: "
+    print-int32-decimal-to-real-screen max-depth
+    print-string-to-real-screen "\n"
+#?     render self, max-depth
     loop
   }
 }
@@ -48,54 +46,48 @@ fn render-loop _self: (addr environment) {
 fn process _self: (addr environment), key: grapheme {
 $process:body: {
     var self/esi: (addr environment) <- copy _self
-    var screen-ah/edi: (addr handle screen) <- get self, screen
-    var _screen/eax: (addr screen) <- lookup *screen-ah
-    var screen/edi: (addr screen) <- copy _screen
-    var buf/ebx: (addr gap-buffer) <- get self, buf
+    var cursor-word-ah/eax: (addr handle word) <- get self, cursor-word
+    var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    var cursor-word/ecx: (addr word) <- copy _cursor-word
     compare key, 0x445b1b  # left-arrow
     {
       break-if-!=
-      var char-skipped/eax: grapheme <- gap-left buf
-      compare char-skipped, -1
-      {
-        break-if-=
-        var cursor-row/eax: (addr int) <- get self, cursor-row
-        var cursor-col/ecx: (addr int) <- get self, cursor-col
-        decrement *cursor-col
-        move-cursor screen, *cursor-row, *cursor-col
-      }
+      # TODO:
+      #   gap-left cursor-word
+      # or
+      #   cursor-word = cursor-word->prev
+      #   gap-to-end cursor-word
       break $process:body
     }
     compare key, 0x435b1b  # right-arrow
     {
       break-if-!=
-      var char-skipped/eax: grapheme <- gap-right buf
-      compare char-skipped, -1
-      {
-        break-if-=
-        var cursor-row/eax: (addr int) <- get self, cursor-row
-        var cursor-col/ecx: (addr int) <- get self, cursor-col
-        increment *cursor-col
-        move-cursor screen, *cursor-row, *cursor-col
-      }
+      # TODO:
+      #   gap-right cursor-word
+      # or
+      #   cursor-word = cursor-word->next
+      #   gap-to-start cursor-word
       break $process:body
     }
-    var g/ecx: grapheme <- copy key
+    compare key, 0x20  # space
+    {
+      break-if-!=
+      # TODO: new word
+      break $process:body
+    }
+    var g/edx: grapheme <- copy key
     var print?/eax: boolean <- real-grapheme? key
     {
       compare print?, 0  # false
       break-if-=
-      add-grapheme-at-gap buf, g
-      var cursor-col/eax: (addr int) <- get self, cursor-col
-      increment *cursor-col
-      render self
+      add-grapheme-to-word cursor-word, g
       break $process:body
     }
     # silently ignore other hotkeys
 }
 }
 
-fn render _env: (addr environment) {
+fn render _env: (addr environment), max-depth: int {
   var env/esi: (addr environment) <- copy _env
   var screen-ah/edi: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
@@ -103,13 +95,92 @@ fn render _env: (addr environment) {
   # prepare screen
   clear-screen screen
   move-cursor screen, 3, 3
-  # render input area
-  var buf/ecx: (addr gap-buffer) <- get env, buf
-  render-gap-buffer screen, buf
-#?   # render stacks
-#?   render-all-stacks screen
-  # update cursor
-  var cursor-row/eax: (addr int) <- get env, cursor-row
-  var cursor-col/ecx: (addr int) <- get env, cursor-col
-  move-cursor screen, *cursor-row, *cursor-col
+  # cursor-word
+  var cursor-word-ah/esi: (addr handle word) <- get env, cursor-word
+  var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+  var cursor-word/ebx: (addr word) <- copy _cursor-word
+  # curr-word
+  var curr-word/eax: (addr word) <- first-word cursor-word
+  # first-word
+  var first-word: (addr word)
+  copy-to first-word, curr-word
+  # cursor-col
+  var cursor-col: int
+  var cursor-col-a: (addr int)
+  var tmp/ecx: (addr int) <- address cursor-col
+  copy-to cursor-col-a, tmp
+  # curr-col
+  var curr-col/ecx: int <- copy 3
+  {
+    compare curr-word, 0
+    break-if-=
+    move-cursor screen, 3, curr-col
+    print-word screen, curr-word
+    curr-col <- render-stack screen, first-word, curr-word, max-depth, curr-col, cursor-word, cursor-col-a
+    var next-word-ah/edx: (addr handle word) <- get curr-word, next
+    curr-word <- lookup *next-word-ah
+    loop
+  }
+  move-cursor screen, 3, *cursor-col-a
+}
+
+# Render the stack result from interpreting first-world to final-word (inclusive)
+# with the bottom-left corner at botleft-row, botleft-col.
+#
+# Outputs:
+# - Return the farthest column written.
+# - If final-word is same as cursor-word, do some additional computation to set
+#   cursor-col-a.
+fn render-stack screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-row: int, botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+  print-word screen, first-word
+}
+
+# We could be a little faster by not using 'first-word' (since max is commutative),
+# but this way the code follows the pattern of 'render'. Let's see if that's a net win.
+fn compute-max-depth _env: (addr environment) -> result/eax: int {
+  var env/esi: (addr environment) <- copy _env
+  # cursor-word
+  var cursor-word-ah/esi: (addr handle word) <- get env, cursor-word
+  var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+  {
+    var foo/eax: int <- copy cursor-word
+    print-string-to-real-screen "cursor-word: "
+    print-int32-hex-to-real-screen foo
+    print-string-to-real-screen "\n"
+  }
+  # curr-word
+  var curr-word/eax: (addr word) <- first-word cursor-word
+  {
+    var foo/eax: int <- copy curr-word
+    print-string-to-real-screen "curr-word: "
+    print-int32-hex-to-real-screen foo
+    print-string-to-real-screen "\n"
+  }
+  # first-word
+  var first-word: (addr word)
+  copy-to first-word, curr-word
+  #
+  var out/ebx: int <- copy 0
+  {
+    compare curr-word, 0
+    break-if-=
+    {
+      var a/eax: int <- copy first-word
+      print-string-to-real-screen "outside max-stack-depth: "
+      print-int32-hex-to-real-screen a
+      print-string-to-real-screen "\n"
+    }
+    var curr-max-depth/edi: int <- max-stack-depth first-word, curr-word
+    compare curr-max-depth, out
+    {
+      break-if-<=
+      out <- copy curr-max-depth
+    }
+    var next-word-ah/edx: (addr handle word) <- get curr-word, next
+    curr-word <- lookup *next-word-ah
+    loop
+  }
+  print-int32-decimal-to-real-screen out
+  print-string-to-real-screen "\n"
+  result <- copy out
 }
