@@ -17,5 +17,5 @@ far:
 * Newlines are mostly ignored. Double newlines are rendered (paragraphs).
   Newlines followed by indentation are rendered.
 * Paragraphs starting with runs of `#` represent headings.
-* Within a line characters, between `*`s or `_`s represent bolded text. No
+* Within a line, characters between `*`s or `_`s represent bolded text. No
   italics.
