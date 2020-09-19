@@ -51,11 +51,7 @@ fn simplify in: (addr stream byte), out: (addr int-stack) {
 # Copy of 'simplify' that just tracks the maximum stack depth needed
 # Doesn't actually need to simulate the stack, since every word has a predictable effect.
 fn max-stack-depth first-word: (addr word), final-word: (addr word) -> result/edi: int {
-  var a/eax: int <- copy first-word
-  print-string-to-real-screen "inside max-stack-depth: "
-  print-int32-hex-to-real-screen a
-  print-string-to-real-screen "\n"
-  var curr-word/esi: (addr word) <- copy first-word
+  var curr-word/eax: (addr word) <- copy first-word
   var curr-depth/ecx: int <- copy 0
   result <- copy 0
   $max-stack-depth:word-loop: {
@@ -89,6 +85,13 @@ fn max-stack-depth first-word: (addr word), final-word: (addr word) -> result/ed
       break-if-<=
       result <- copy curr-depth
     }
+    # if curr-word == final-word break
+    compare curr-word, final-word
+    break-if-=
+    # curr-word = curr-word->next
+    var next-word-ah/edx: (addr handle word) <- get curr-word, next
+    curr-word <- lookup *next-word-ah
+    #
     loop
   }
 }

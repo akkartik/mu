@@ -35,10 +35,7 @@ fn render-loop _self: (addr environment) {
     break-if-=
     process self, key
     var max-depth/eax: int <- compute-max-depth self
-    print-string-to-real-screen "ZZ: "
-    print-int32-decimal-to-real-screen max-depth
-    print-string-to-real-screen "\n"
-#?     render self, max-depth
+    render self, max-depth
     loop
   }
 }
@@ -115,7 +112,6 @@ fn render _env: (addr environment), max-depth: int {
     compare curr-word, 0
     break-if-=
     move-cursor screen, 3, curr-col
-    print-word screen, curr-word
     curr-col <- render-stack screen, first-word, curr-word, max-depth, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
@@ -142,20 +138,8 @@ fn compute-max-depth _env: (addr environment) -> result/eax: int {
   # cursor-word
   var cursor-word-ah/esi: (addr handle word) <- get env, cursor-word
   var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-  {
-    var foo/eax: int <- copy cursor-word
-    print-string-to-real-screen "cursor-word: "
-    print-int32-hex-to-real-screen foo
-    print-string-to-real-screen "\n"
-  }
   # curr-word
   var curr-word/eax: (addr word) <- first-word cursor-word
-  {
-    var foo/eax: int <- copy curr-word
-    print-string-to-real-screen "curr-word: "
-    print-int32-hex-to-real-screen foo
-    print-string-to-real-screen "\n"
-  }
   # first-word
   var first-word: (addr word)
   copy-to first-word, curr-word
@@ -164,12 +148,6 @@ fn compute-max-depth _env: (addr environment) -> result/eax: int {
   {
     compare curr-word, 0
     break-if-=
-    {
-      var a/eax: int <- copy first-word
-      print-string-to-real-screen "outside max-stack-depth: "
-      print-int32-hex-to-real-screen a
-      print-string-to-real-screen "\n"
-    }
     var curr-max-depth/edi: int <- max-stack-depth first-word, curr-word
     compare curr-max-depth, out
     {
@@ -180,7 +158,5 @@ fn compute-max-depth _env: (addr environment) -> result/eax: int {
     curr-word <- lookup *next-word-ah
     loop
   }
-  print-int32-decimal-to-real-screen out
-  print-string-to-real-screen "\n"
   result <- copy out
 }
