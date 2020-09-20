@@ -135,13 +135,14 @@ fn render _env: (addr environment), max-depth: int {
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
 fn render-column screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-depth: int, botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+  var max-width/ecx: int <- copy 0
   # compute stack
   var stack: int-stack
   var stack-addr/edi: (addr int-stack) <- address stack
   initialize-int-stack stack-addr, 0x10  # max-words
   evaluate first-word, final-word, stack-addr
   # render stack
-  var curr-row/ecx: int <- copy botleft-depth
+  var curr-row/edx: int <- copy botleft-depth
   curr-row <- add 6  # input-row 3 + stack-margin-top 3
   var i/eax: int <- int-stack-length stack-addr
   curr-row <- subtract i
@@ -152,12 +153,15 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     {
       var val/eax: int <- pop-int-stack stack-addr
       print-int32-decimal screen, val
+      var size/eax: int <- decimal-size val
+      compare size, max-width
+      break-if-<=
+      max-width <- copy size
     }
     curr-row <- increment
     i <- decrement
     loop
   }
-  right-col <- copy 8  # TODO: adaptive
 
   # render word, initialize result
   move-cursor screen, 3, botleft-col  # input-row
@@ -166,6 +170,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
 #?   right-col <- copy len
 
   # post-process right-col
+  right-col <- copy max-width
   right-col <- add botleft-col
   right-col <- add 3  # margin-right
 }

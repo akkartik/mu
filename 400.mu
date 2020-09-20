@@ -73,6 +73,7 @@ sig parse-decimal-int in: (addr array byte) -> result/eax: int
 sig parse-decimal-int-from-slice in: (addr slice) -> result/eax: int
 sig parse-decimal-int-from-stream in: (addr stream byte) -> result/eax: int
 #sig parse-decimal-int-helper start: (addr byte), end: (addr byte) -> result/eax: int
+sig decimal-size n: int -> result/eax: int
 sig error-byte ed: (addr exit-descriptor), out: (addr buffered-file), msg: (addr array byte), n: byte
 #sig allocate ad: (addr allocation-descriptor), n: int, out: (addr handle _)
 #sig allocate-raw ad: (addr allocation-descriptor), n: int, out: (addr handle _)
