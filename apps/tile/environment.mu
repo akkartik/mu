@@ -201,9 +201,9 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   initialize-int-stack stack-addr, 0x10  # max-words
   evaluate first-word, final-word, stack-addr
   # render stack
+  var stack-remaining/eax: int <- int-stack-length stack-addr
   var curr-row/edx: int <- copy botleft-depth
   curr-row <- add 6  # input-row 3 + stack-margin-top 3
-  var stack-remaining/eax: int <- int-stack-length stack-addr
   curr-row <- subtract stack-remaining
   start-color screen, 0, 2
   {
