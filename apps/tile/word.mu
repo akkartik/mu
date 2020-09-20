@@ -134,6 +134,12 @@ fn cursor-to-end _self: (addr word) {
   gap-to-end data
 }
 
+fn cursor-index _self: (addr word) -> result/eax: int {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  result <- gap-index data
+}
+
 fn print-word screen: (addr screen), _self: (addr word) {
   var self/esi: (addr word) <- copy _self
   var data/eax: (addr gap-buffer) <- get self, data

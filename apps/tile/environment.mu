@@ -137,7 +137,8 @@ fn render _env: (addr environment), max-depth: int {
     curr-word <- lookup *next-word-ah
     loop
   }
-  move-cursor screen, 3, *cursor-col-a  # input-row
+  var col/eax: (addr int) <- copy cursor-col-a
+  move-cursor screen, 3, *col  # input-row
 }
 
 # Render:
@@ -181,8 +182,17 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   # render word, initialize result
   move-cursor screen, 3, botleft-col  # input-row
   print-word screen, final-word
-#?   var len/eax: int <- word-length final-word
-#?   right-col <- copy len
+
+  # update cursor
+  {
+    var f/eax: (addr word) <- copy final-word
+    compare f, cursor-word
+    break-if-!=
+    var cursor-index/eax: int <- cursor-index cursor-word
+    cursor-index <- add botleft-col
+    var dest/edi: (addr int) <- copy cursor-col-a
+    copy-to *dest, cursor-index
+  }
 
   # post-process right-col
   right-col <- copy max-width

@@ -139,7 +139,6 @@ $gap-right:body: {
   }
   {
     var left/ecx: (addr grapheme-stack) <- get self, left
-    # HERE: can't use 'result' here: "unknown variable 'result'"
     push-grapheme-stack left, g
   }
 }
@@ -161,6 +160,13 @@ $gap-left:body: {
     push-grapheme-stack right, g
   }
 }
+}
+
+fn gap-index _self: (addr gap-buffer) -> result/eax: int {
+  var self/eax: (addr gap-buffer) <- copy _self
+  var left/eax: (addr grapheme-stack) <- get self, left
+  var top-addr/eax: (addr int) <- get left, top
+  result <- copy *top-addr
 }
 
 fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> result/eax: boolean {
