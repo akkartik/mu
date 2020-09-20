@@ -49,7 +49,7 @@ $process:body: {
       var cursor-word-ah/edi: (addr handle word) <- get self, cursor-word
       var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
       var cursor-word/ecx: (addr word) <- copy _cursor-word
-      # if not at start, gap-left
+      # if not at start, move left within current word
       var at-start?/eax: boolean <- cursor-at-start? cursor-word
       compare at-start?, 0  # false
       {
@@ -57,7 +57,7 @@ $process:body: {
         cursor-left cursor-word
         break $process:body
       }
-      # otherwise, move gap to end of prev word
+      # otherwise, move to end of prev word
       var prev-word-ah/esi: (addr handle word) <- get cursor-word, prev
       var prev-word/eax: (addr word) <- lookup *prev-word-ah
       {
@@ -71,11 +71,26 @@ $process:body: {
     compare key, 0x435b1b  # right-arrow
     {
       break-if-!=
-      # TODO:
-      #   gap-right cursor-word
-      # or
-      #   cursor-word = cursor-word->next
-      #   gap-to-start cursor-word
+      var cursor-word-ah/edi: (addr handle word) <- get self, cursor-word
+      var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      var cursor-word/ecx: (addr word) <- copy _cursor-word
+      # if not at end, move right within current word
+      var at-end?/eax: boolean <- cursor-at-end? cursor-word
+      compare at-end?, 0  # false
+      {
+        break-if-=
+        cursor-right cursor-word
+        break $process:body
+      }
+      # otherwise, move to start of next word
+      var next-word-ah/esi: (addr handle word) <- get cursor-word, next
+      var next-word/eax: (addr word) <- lookup *next-word-ah
+      {
+        compare next-word, 0
+        break-if-=
+        copy-object next-word-ah, cursor-word-ah
+        cursor-to-start next-word
+      }
       break $process:body
     }
     compare key, 0x20  # space
