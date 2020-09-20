@@ -203,11 +203,11 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   # render stack
   var curr-row/edx: int <- copy botleft-depth
   curr-row <- add 6  # input-row 3 + stack-margin-top 3
-  var i/eax: int <- int-stack-length stack-addr
-  curr-row <- subtract i
+  var stack-remaining/eax: int <- int-stack-length stack-addr
+  curr-row <- subtract stack-remaining
   start-color screen, 0, 2
   {
-    compare i, 0
+    compare stack-remaining, 0
     break-if-<=
     move-cursor screen, curr-row, botleft-col
     {
@@ -220,7 +220,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     }
     reset-formatting screen
     curr-row <- increment
-    i <- decrement
+    stack-remaining <- decrement
     loop
   }
 
