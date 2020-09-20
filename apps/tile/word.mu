@@ -92,6 +92,12 @@ fn final-word _self: (addr word) -> result/eax: (addr word) {
   result <- copy out
 }
 
+fn first-grapheme _self: (addr word) -> result/eax: grapheme {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  result <- first-grapheme-in-gap-buffer data
+}
+
 fn add-grapheme-to-word _self: (addr word), c: grapheme {
   var self/esi: (addr word) <- copy _self
   var data/eax: (addr gap-buffer) <- get self, data

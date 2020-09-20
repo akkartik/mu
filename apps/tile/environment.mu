@@ -201,15 +201,26 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   initialize-int-stack stack-addr, 0x10  # max-words
   evaluate first-word, final-word, stack-addr
   # render stack
+  var stack-index/ebx: int <- copy 0
   var stack-remaining/eax: int <- int-stack-length stack-addr
   var curr-row/edx: int <- copy botleft-depth
   curr-row <- add 6  # input-row 3 + stack-margin-top 3
   curr-row <- subtract stack-remaining
+  # highlight item just added
   start-color screen, 0, 2
   {
     compare stack-remaining, 0
     break-if-<=
     move-cursor screen, curr-row, botleft-col
+    # highlight items about to be removed
+    {
+      compare stack-index, 1  # second from top
+      break-if-!=
+      var safe-next-word?/eax: boolean <- next-word-is-number? final-word
+      compare safe-next-word?, 0  # false
+      break-if-!=
+      start-color screen, 0, 1
+    }
     {
       var val/eax: int <- pop-int-stack stack-addr
       print-int32-decimal screen, val
@@ -220,6 +231,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     }
     reset-formatting screen
     curr-row <- increment
+    stack-index <- increment
     stack-remaining <- decrement
     loop
   }
@@ -244,6 +256,29 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   right-col <- copy max-width
   right-col <- add botleft-col
   right-col <- add 3  # margin-right
+}
+
+# gotcha: returns true by default
+fn next-word-is-number? _w: (addr word) -> result/eax: boolean {
+$next-word-is-operator?:body: {
+  var w/esi: (addr word) <- copy _w
+  var next-ah/eax: (addr handle word) <- get w, next
+  var next/eax: (addr word) <- lookup *next-ah
+  compare next, 0
+  {
+    break-if-!=
+    result <- copy 1  # true
+    break $next-word-is-operator?:body
+  }
+  var first-grapheme/eax: grapheme <- first-grapheme next
+  compare first-grapheme, -1
+  {
+    break-if-!=
+    result <- copy 1  # true
+    break $next-word-is-operator?:body
+  }
+  result <- is-decimal-digit? first-grapheme
+}
 }
 
 # We could be a little faster by not using 'first-word' (since max is commutative),
