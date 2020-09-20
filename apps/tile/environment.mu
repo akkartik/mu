@@ -93,9 +93,36 @@ $process:body: {
       }
       break $process:body
     }
+    compare key, 0x7f  # del (backspace on Macs)
+    {
+      break-if-!=
+      var cursor-word-ah/edi: (addr handle word) <- get self, cursor-word
+      var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      var cursor-word/ecx: (addr word) <- copy _cursor-word
+      # if not at start of some word, delete grapheme before cursor within current word
+      var at-start?/eax: boolean <- cursor-at-start? cursor-word
+      compare at-start?, 0  # false
+      {
+        break-if-=
+        delete-before-cursor cursor-word
+        break $process:body
+      }
+      # otherwise delete current word and move to end of prev word
+      var prev-word-ah/esi: (addr handle word) <- get cursor-word, prev
+      var prev-word/eax: (addr word) <- lookup *prev-word-ah
+      {
+        compare prev-word, 0
+        break-if-=
+        copy-object prev-word-ah, cursor-word-ah
+        cursor-to-end prev-word
+        delete-next prev-word
+      }
+      break $process:body
+    }
     compare key, 0x20  # space
     {
       break-if-!=
+      # insert new word
       var cursor-word-ah/edx: (addr handle word) <- get self, cursor-word
       append-word cursor-word-ah
       var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
@@ -103,6 +130,7 @@ $process:body: {
       copy-object next-word-ah, cursor-word-ah
       break $process:body
     }
+    # otherwise insert key within current word
     var g/edx: grapheme <- copy key
     var print?/eax: boolean <- real-grapheme? key
     {

@@ -140,6 +140,30 @@ fn cursor-index _self: (addr word) -> result/eax: int {
   result <- gap-index data
 }
 
+fn delete-before-cursor _self: (addr word) {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  delete-before-gap data
+}
+
+fn delete-next _self: (addr word) {
+$delete-next:body: {
+  var self/esi: (addr word) <- copy _self
+  var next-ah/edi: (addr handle word) <- get self, next
+  var next/eax: (addr word) <- lookup *next-ah
+  compare next, 0
+  break-if-= $delete-next:body
+  var next-next-ah/ecx: (addr handle word) <- get next, next
+  var self-ah/esi: (addr handle word) <- get next, prev
+  copy-object next-next-ah, next-ah
+  var new-next/eax: (addr word) <- lookup *next-next-ah
+  compare new-next, 0
+  break-if-= $delete-next:body
+  var dest/eax: (addr handle word) <- get new-next, prev
+  copy-object self-ah, dest
+}
+}
+
 fn print-word screen: (addr screen), _self: (addr word) {
   var self/esi: (addr word) <- copy _self
   var data/eax: (addr gap-buffer) <- get self, data

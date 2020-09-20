@@ -169,6 +169,12 @@ fn gap-index _self: (addr gap-buffer) -> result/eax: int {
   result <- copy *top-addr
 }
 
+fn delete-before-gap _self: (addr gap-buffer) {
+  var self/eax: (addr gap-buffer) <- copy _self
+  var left/eax: (addr grapheme-stack) <- get self, left
+  var dummy/eax: grapheme <- pop-grapheme-stack left
+}
+
 fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> result/eax: boolean {
 $gap-buffer-equal?:body: {
   var self/esi: (addr gap-buffer) <- copy _self
