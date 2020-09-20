@@ -25,19 +25,6 @@ fn allocate-word-with _out: (addr handle word), s: (addr array byte) {
   initialize-word-with out-addr, s
 }
 
-# TODO: handle existing next
-# one implication of handles: append must take a handle
-fn append-word _self-ah: (addr handle word) {
-  var self-ah/esi: (addr handle word) <- copy _self-ah
-  var self/eax: (addr word) <- lookup *self-ah
-  var next-ah/eax: (addr handle word) <- get self, next
-  allocate next-ah
-  var next/eax: (addr word) <- lookup *next-ah
-  initialize-word next
-  var prev-ah/eax: (addr handle word) <- get next, prev
-  copy-handle *self-ah, prev-ah
-}
-
 # just for tests for now
 # TODO: handle existing next
 # one implication of handles: append must take a handle
@@ -109,4 +96,17 @@ fn print-word screen: (addr screen), _self: (addr word) {
   var self/esi: (addr word) <- copy _self
   var data/eax: (addr gap-buffer) <- get self, data
   render-gap-buffer screen, data
+}
+
+# TODO: handle existing next
+# one implication of handles: append must take a handle
+fn append-word _self-ah: (addr handle word) {
+  var self-ah/esi: (addr handle word) <- copy _self-ah
+  var self/eax: (addr word) <- lookup *self-ah
+  var next-ah/eax: (addr handle word) <- get self, next
+  allocate next-ah
+  var next/eax: (addr word) <- lookup *next-ah
+  initialize-word next
+  var prev-ah/eax: (addr handle word) <- get next, prev
+  copy-handle *self-ah, prev-ah
 }
