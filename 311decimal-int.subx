@@ -1,4 +1,4 @@
-# Helpers for parsing decimal ints.
+# Helpers for decimal ints.
 
 parse-decimal-int-from-slice:  # in: (addr slice) -> out/eax: int
     # . prologue
@@ -279,6 +279,123 @@ $test-parse-decimal-int-helper-multi-digit-negative:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+decimal-size:  # n: int -> result/eax: int
+    # pseudocode:
+    #   edi = 0
+    #   eax = n
+    #   if eax < 0
+    #     ++edi  # for '-'
+    #     negate eax
+    #   while true
+    #     edx = 0
+    #     eax, edx = eax/10, eax%10
+    #     ++edi
+    #     if (eax == 0) break
+    #   eax = edi
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    57/push-edi
+    # edi = 0
+    bf/copy-to-edi 0/imm32
+    # eax = n
+    8b/-> *(ebp+8) 0/r32/eax
+    # if (n < 0) negate n, increment edi
+    {
+      3d/compare-eax-with 0/imm32
+      7d/jump-if->= break/disp8
+      f7 3/subop/negate %eax
+      47/increment-edi
+    }
+    # const ten/ecx = 10
+    b9/copy-to-ecx  0xa/imm32
+    {
+      ba/copy-to-edx 0/imm32
+      f7 7/subop/idiv-edx-eax-by %ecx  # eax = edx:eax/10; edx = edx:eax%10
+      47/increment-edi
+      3d/compare-eax-and 0/imm32
+      75/jump-if-!= loop/disp8
+    }
+$decimal-size:end:
+    89/<- %eax 7/r32/edi
+    # . restore registers
+    5f/pop-to-edi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-of-zero:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size 0)  # => eax
+    (check-ints-equal %eax 1 "F - test-decimal-size-of-zero")
+$test-decimal-size-of-zero:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-single-digit:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size 4)  # => eax
+    (check-ints-equal %eax 1 "F - test-decimal-size-single-digit")
+$test-decimal-size-single-digit:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-multi-digit:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size 0xa)  # => eax
+    (check-ints-equal %eax 2 "F - test-decimal-size-multi-digit")
+$test-decimal-size-multi-digit:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-single-digit-negative:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size -4)  # => eax
+    (check-ints-equal %eax 2 "F - test-decimal-size-single-digit-negative")
+$test-decimal-size-single-digit-negative:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-multi-digit-negative:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size -0xa)  # => eax
+    (check-ints-equal %eax 3 "F - test-decimal-size-multi-digit-negative")
+$test-decimal-size-multi-digit-negative:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
