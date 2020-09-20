@@ -170,17 +170,35 @@ fn print-word screen: (addr screen), _self: (addr word) {
   render-gap-buffer screen, data
 }
 
-# TODO: handle existing next
 # one implication of handles: append must take a handle
 fn append-word _self-ah: (addr handle word) {
   var self-ah/esi: (addr handle word) <- copy _self-ah
-  var self/eax: (addr word) <- lookup *self-ah
-  var next-ah/eax: (addr handle word) <- get self, next
-  allocate next-ah
-  var next/eax: (addr word) <- lookup *next-ah
-  initialize-word next
-  var prev-ah/eax: (addr handle word) <- get next, prev
-  copy-handle *self-ah, prev-ah
+  var _self/eax: (addr word) <- lookup *self-ah
+  var self/ebx: (addr word) <- copy _self
+  # allocate new handle
+  var new: (handle word)
+  var new-ah/ecx: (addr handle word) <- address new
+  allocate new-ah
+  var new-addr/eax: (addr word) <- lookup new
+  initialize-word new-addr
+  # new->next = self->next
+  var src/esi: (addr handle word) <- get self, next
+  var dest/edi: (addr handle word) <- get new-addr, next
+  copy-object src, dest
+  # new->next->prev = new
+  {
+    var next-addr/eax: (addr word) <- lookup *src
+    compare next-addr, 0
+    break-if-=
+    dest <- get next-addr, prev
+    copy-object new-ah, dest
+  }
+  # new->prev = self
+  dest <- get new-addr, prev
+  copy-object _self-ah, dest
+  # self->next = new
+  dest <- get self, next
+  copy-object new-ah, dest
 }
 
 fn emit-word _self: (addr word), out: (addr stream byte) {
