@@ -56,6 +56,12 @@ fn word-equal? _self: (addr word), s: (addr array byte) -> result/eax: boolean {
   result <- gap-buffer-equal? data, s
 }
 
+fn word-length _self: (addr word) -> result/eax: int {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  result <- gap-buffer-length data
+}
+
 fn first-word _self: (addr word) -> result/eax: (addr word) {
   var self/esi: (addr word) <- copy _self
   var out/edi: (addr word) <- copy self

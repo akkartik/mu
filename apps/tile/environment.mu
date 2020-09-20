@@ -26,7 +26,7 @@ fn render-loop _self: (addr environment) {
   {
     var screen-ah/edi: (addr handle screen) <- get self, screen
     var screen/eax: (addr screen) <- lookup *screen-ah
-    move-cursor screen, 3, 3
+    move-cursor screen, 3, 3  # input-row, input-col
   }
   #
   $interactive:loop: {
@@ -94,7 +94,7 @@ fn render _env: (addr environment), max-depth: int {
   var screen/edi: (addr screen) <- copy _screen
   # prepare screen
   clear-screen screen
-  move-cursor screen, 3, 3
+  move-cursor screen, 3, 3  # input-row, input-col
   # cursor-word
   var cursor-word-ah/esi: (addr handle word) <- get env, cursor-word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
@@ -110,17 +110,17 @@ fn render _env: (addr environment), max-depth: int {
   var tmp/ecx: (addr int) <- address cursor-col
   copy-to cursor-col-a, tmp
   # curr-col
-  var curr-col/ecx: int <- copy 3
+  var curr-col/ecx: int <- copy 3  # input-col
   {
     compare curr-word, 0
     break-if-=
-    move-cursor screen, 3, curr-col
+    move-cursor screen, 3, curr-col  # input-row
     curr-col <- render-stack screen, first-word, curr-word, max-depth, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     loop
   }
-  move-cursor screen, 3, *cursor-col-a
+  move-cursor screen, 3, *cursor-col-a  # input-row
 }
 
 # Render the stack result from interpreting first-world to final-word (inclusive)
@@ -130,17 +130,20 @@ fn render _env: (addr environment), max-depth: int {
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-stack screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-row: int, botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
-  var curr/eax: (addr word) <- copy first-word
-  {
-    print-word screen, curr
-    compare curr, final-word
-    break-if-=
-    print-string screen " "
-    var next/ecx: (addr handle word) <- get curr, next
-    curr <- lookup *next
-    loop
-  }
+fn render-stack screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-depth: int, botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+  # render word, initialize result
+  move-cursor screen, 3, botleft-col  # input-row
+  print-word screen, final-word
+  right-col <- copy botleft-col
+  var len/eax: int <- word-length final-word
+  right-col <- add len
+  right-col <- add 3  # margin-right
+
+  # render stack
+  var botleft-row/eax: int <- copy botleft-depth
+  botleft-row <- add 4  # input-row 3 + 1 stack-margin-top
+  move-cursor screen, botleft-row, botleft-col
+  print-string screen "-"
 }
 
 # We could be a little faster by not using 'first-word' (since max is commutative),
