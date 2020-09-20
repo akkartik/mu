@@ -207,7 +207,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   curr-row <- add 6  # input-row 3 + stack-margin-top 3
   curr-row <- subtract stack-remaining
   # highlight item just added
-  start-color screen, 0, 2
+  start-color screen, 0, 2  # green background
   {
     compare stack-remaining, 0
     break-if-<=
@@ -219,7 +219,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
       var safe-next-word?/eax: boolean <- next-word-is-number? final-word
       compare safe-next-word?, 0  # false
       break-if-!=
-      start-color screen, 0, 1
+      start-color screen, 0, 9  # red background
     }
     {
       var val/eax: int <- pop-int-stack stack-addr
