@@ -107,7 +107,7 @@ sig skip-string line: (addr stream byte)
 sig skip-until-close-paren line: (addr stream byte)
 #sig skip-until-close-paren-in-slice curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
 sig write-stream-data f: (addr buffered-file), s: (addr stream byte)
-sig write-int32-decimal out: (addr stream byte), n: int32
+sig write-int32-decimal out: (addr stream byte), n: int
 sig is-decimal-digit? c: byte -> result/eax: boolean
 sig to-decimal-digit in: byte -> out/eax: int
 sig next-word line: (addr stream byte), out: (addr slice)
