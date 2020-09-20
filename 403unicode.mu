@@ -373,3 +373,24 @@ fn test-shift-left-bytes-5 {
 #?   run-tests
 #?   r <- copy 0
 #? }
+
+# write a grapheme to a stream of bytes
+# this is like write-to-stream, except we skip leading 0 bytes
+fn write-grapheme out: (addr stream byte), g: grapheme {
+$write-grapheme:body: {
+  var c/eax: int <- copy g
+  append-byte out, c  # first byte is always written
+  c <- shift-right 8
+  compare c, 0
+  break-if-= $write-grapheme:body
+  append-byte out, c
+  c <- shift-right 8
+  compare c, 0
+  break-if-= $write-grapheme:body
+  append-byte out, c
+  c <- shift-right 8
+  compare c, 0
+  break-if-= $write-grapheme:body
+  append-byte out, c
+}
+}

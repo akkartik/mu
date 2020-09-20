@@ -6,15 +6,15 @@ type gap-buffer {
 fn initialize-gap-buffer _self: (addr gap-buffer) {
   var self/esi: (addr gap-buffer) <- copy _self
   var left/eax: (addr grapheme-stack) <- get self, left
-  initialize-grapheme-stack left, 0x10
+  initialize-grapheme-stack left, 0x10  # max-word-size
   var right/eax: (addr grapheme-stack) <- get self, right
-  initialize-grapheme-stack right, 0x10
+  initialize-grapheme-stack right, 0x10  # max-word-size
 }
 
 # just for tests
 fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
   initialize-gap-buffer self
-  var stream-storage: (stream byte 0x10)
+  var stream-storage: (stream byte 0x10)  # max-word-size
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, s
   {
@@ -23,6 +23,52 @@ fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
     break-if-!=
     var g/eax: grapheme <- read-grapheme stream
     add-grapheme-at-gap self, g
+    loop
+  }
+}
+
+fn emit-gap-buffer _self: (addr gap-buffer), out: (addr stream byte) {
+  var self/esi: (addr gap-buffer) <- copy _self
+  clear-stream out
+  var left/eax: (addr grapheme-stack) <- get self, left
+  emit-stack-from-bottom left, out
+  var right/eax: (addr grapheme-stack) <- get self, right
+  emit-stack-from-top right, out
+}
+
+# dump stack from bottom to top
+fn emit-stack-from-bottom _self: (addr grapheme-stack), out: (addr stream byte) {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var data-ah/edi: (addr handle array grapheme) <- get self, data
+  var _data/eax: (addr array grapheme) <- lookup *data-ah
+  var data/edi: (addr array grapheme) <- copy _data
+  var top-addr/ecx: (addr int) <- get self, top
+  var i/eax: int <- copy 0
+  {
+    compare i, *top-addr
+    break-if->=
+    var g/edx: (addr grapheme) <- index data, i
+    write-grapheme out, *g
+    i <- increment
+    loop
+  }
+}
+
+# dump stack from top to bottom
+fn emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte) {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var data-ah/edi: (addr handle array grapheme) <- get self, data
+  var _data/eax: (addr array grapheme) <- lookup *data-ah
+  var data/edi: (addr array grapheme) <- copy _data
+  var top-addr/ecx: (addr int) <- get self, top
+  var i/eax: int <- copy *top-addr
+  i <- decrement
+  {
+    compare i, 0
+    break-if-<
+    var g/edx: (addr grapheme) <- index data, i
+    write-grapheme out, *g
+    i <- decrement
     loop
   }
 }
@@ -111,7 +157,7 @@ $gap-buffer-equal?:body: {
   # complication: graphemes may be multiple bytes
   # so don't rely on length
   # instead turn the expected result into a stream and arrange to read from it in order
-  var stream-storage: (stream byte 0x10)
+  var stream-storage: (stream byte 0x10)  # max-word-size
   var expected-stream/ecx: (addr stream byte) <- address stream-storage
   write expected-stream, s
   # compare left

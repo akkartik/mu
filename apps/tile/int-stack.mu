@@ -47,3 +47,23 @@ $pop-int-stack:body: {
   val <- copy *result-addr
 }
 }
+
+fn int-stack-empty? _self: (addr int-stack) -> result/eax: boolean {
+$int-stack-empty?:body: {
+  var self/esi: (addr int-stack) <- copy _self
+  var top-addr/eax: (addr int) <- get self, top
+  compare *top-addr, 0
+  {
+    break-if-!=
+    result <- copy 1  # true
+    break $int-stack-empty?:body
+  }
+  result <- copy 0  # false
+}
+}
+
+fn int-stack-length _self: (addr int-stack) -> result/eax: int {
+  var self/esi: (addr int-stack) <- copy _self
+  var top-addr/eax: (addr int) <- get self, top
+  result <- copy *top-addr
+}

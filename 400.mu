@@ -69,7 +69,9 @@ sig parse-hex-int-from-slice in: (addr slice) -> result/eax: int
 #sig parse-hex-int-helper start: (addr byte), end: (addr byte) -> result/eax: int
 sig is-hex-digit? c: byte -> result/eax: boolean
 #sig from-hex-char in/eax: byte -> out/eax: nibble
+sig parse-decimal-int in: (addr array byte) -> result/eax: int
 sig parse-decimal-int-from-slice in: (addr slice) -> result/eax: int
+sig parse-decimal-int-from-stream in: (addr stream byte) -> result/eax: int
 #sig parse-decimal-int-helper start: (addr byte), end: (addr byte) -> result/eax: int
 sig error-byte ed: (addr exit-descriptor), out: (addr buffered-file), msg: (addr array byte), n: byte
 #sig allocate ad: (addr allocation-descriptor), n: int, out: (addr handle _)

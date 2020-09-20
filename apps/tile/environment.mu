@@ -94,6 +94,8 @@ fn render _env: (addr environment), max-depth: int {
   var screen/edi: (addr screen) <- copy _screen
   # prepare screen
   clear-screen screen
+  move-cursor screen, 5, 1  # input-row+stack-margin-top
+  print-string screen, "stack:"
   move-cursor screen, 3, 3  # input-row, input-col
   # cursor-word
   var cursor-word-ah/esi: (addr handle word) <- get env, cursor-word
@@ -115,7 +117,7 @@ fn render _env: (addr environment), max-depth: int {
     compare curr-word, 0
     break-if-=
     move-cursor screen, 3, curr-col  # input-row
-    curr-col <- render-stack screen, first-word, curr-word, max-depth, curr-col, cursor-word, cursor-col-a
+    curr-col <- render-column screen, first-word, curr-word, max-depth, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     loop
@@ -123,27 +125,49 @@ fn render _env: (addr environment), max-depth: int {
   move-cursor screen, 3, *cursor-col-a  # input-row
 }
 
-# Render the stack result from interpreting first-world to final-word (inclusive)
-# with the bottom-left corner at botleft-row, botleft-col.
+# Render:
+#   - final-word
+#   - the stack result from interpreting first-world to final-word (inclusive)
+#     with the bottom-left corner at botleft-row, botleft-col.
 #
 # Outputs:
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-stack screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-depth: int, botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-depth: int, botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+  # compute stack
+  var stack: int-stack
+  var stack-addr/edi: (addr int-stack) <- address stack
+  initialize-int-stack stack-addr, 0x10  # max-words
+  evaluate first-word, final-word, stack-addr
+  # render stack
+  var curr-row/ecx: int <- copy botleft-depth
+  curr-row <- add 6  # input-row 3 + stack-margin-top 3
+  var i/eax: int <- int-stack-length stack-addr
+  curr-row <- subtract i
+  {
+    compare i, 0
+    break-if-<=
+    move-cursor screen, curr-row, botleft-col
+    {
+      var val/eax: int <- pop-int-stack stack-addr
+      print-int32-decimal screen, val
+    }
+    curr-row <- increment
+    i <- decrement
+    loop
+  }
+  right-col <- copy 8  # TODO: adaptive
+
   # render word, initialize result
   move-cursor screen, 3, botleft-col  # input-row
   print-word screen, final-word
-  right-col <- copy botleft-col
-  var len/eax: int <- word-length final-word
-  right-col <- add len
-  right-col <- add 3  # margin-right
+#?   var len/eax: int <- word-length final-word
+#?   right-col <- copy len
 
-  # render stack
-  var botleft-row/eax: int <- copy botleft-depth
-  botleft-row <- add 4  # input-row 3 + 1 stack-margin-top
-  move-cursor screen, botleft-row, botleft-col
-  print-string screen "-"
+  # post-process right-col
+  right-col <- add botleft-col
+  right-col <- add 3  # margin-right
 }
 
 # We could be a little faster by not using 'first-word' (since max is commutative),

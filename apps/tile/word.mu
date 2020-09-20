@@ -116,3 +116,9 @@ fn append-word _self-ah: (addr handle word) {
   var prev-ah/eax: (addr handle word) <- get next, prev
   copy-handle *self-ah, prev-ah
 }
+
+fn emit-word _self: (addr word), out: (addr stream byte) {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  emit-gap-buffer data, out
+}
