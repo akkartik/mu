@@ -43,9 +43,6 @@ fn render-loop _self: (addr environment) {
 fn process _self: (addr environment), key: grapheme {
 $process:body: {
     var self/esi: (addr environment) <- copy _self
-    var cursor-word-ah/eax: (addr handle word) <- get self, cursor-word
-    var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-    var cursor-word/ecx: (addr word) <- copy _cursor-word
     compare key, 0x445b1b  # left-arrow
     {
       break-if-!=
@@ -69,7 +66,11 @@ $process:body: {
     compare key, 0x20  # space
     {
       break-if-!=
-      # TODO: new word
+      var cursor-word-ah/edx: (addr handle word) <- get self, cursor-word
+      append-word cursor-word-ah
+      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      var next-word-ah/ecx: (addr handle word) <- get cursor-word, next
+      copy-object next-word-ah, cursor-word-ah
       break $process:body
     }
     var g/edx: grapheme <- copy key
@@ -77,6 +78,8 @@ $process:body: {
     {
       compare print?, 0  # false
       break-if-=
+      var cursor-word-ah/eax: (addr handle word) <- get self, cursor-word
+      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
       add-grapheme-to-word cursor-word, g
       break $process:body
     }
@@ -128,7 +131,16 @@ fn render _env: (addr environment), max-depth: int {
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
 fn render-stack screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-row: int, botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
-  print-word screen, first-word
+  var curr/eax: (addr word) <- copy first-word
+  {
+    print-word screen, curr
+    compare curr, final-word
+    break-if-=
+    print-string screen " "
+    var next/ecx: (addr handle word) <- get curr, next
+    curr <- lookup *next
+    loop
+  }
 }
 
 # We could be a little faster by not using 'first-word' (since max is commutative),

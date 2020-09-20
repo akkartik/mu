@@ -25,6 +25,19 @@ fn allocate-word-with _out: (addr handle word), s: (addr array byte) {
   initialize-word-with out-addr, s
 }
 
+# TODO: handle existing next
+# one implication of handles: append must take a handle
+fn append-word _self-ah: (addr handle word) {
+  var self-ah/esi: (addr handle word) <- copy _self-ah
+  var self/eax: (addr word) <- lookup *self-ah
+  var next-ah/eax: (addr handle word) <- get self, next
+  allocate next-ah
+  var next/eax: (addr word) <- lookup *next-ah
+  initialize-word next
+  var prev-ah/eax: (addr handle word) <- get next, prev
+  copy-handle *self-ah, prev-ah
+}
+
 # just for tests for now
 # TODO: handle existing next
 # one implication of handles: append must take a handle
@@ -71,15 +84,19 @@ fn first-word _self: (addr word) -> result/eax: (addr word) {
   result <- copy out
 }
 
-fn final-word _self: (addr word), out: (addr handle word) {
+fn final-word _self: (addr word) -> result/eax: (addr word) {
   var self/esi: (addr word) <- copy _self
+  var out/edi: (addr word) <- copy self
   var next/esi: (addr handle word) <- get self, next
   {
-    copy-object next, out
     var curr/eax: (addr word) <- lookup *next
     compare curr, 0
-    loop-if-!=
+    break-if-=
+    out <- copy curr
+    next <- get curr, next
+    loop
   }
+  result <- copy out
 }
 
 fn add-grapheme-to-word _self: (addr word), c: grapheme {
