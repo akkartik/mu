@@ -98,6 +98,42 @@ fn add-grapheme-to-word _self: (addr word), c: grapheme {
   add-grapheme-at-gap data, c
 }
 
+fn cursor-at-start? _self: (addr word) -> result/eax: boolean {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  result <- gap-at-start? data
+}
+
+fn cursor-at-end? _self: (addr word) -> result/eax: boolean {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  result <- gap-at-end? data
+}
+
+fn cursor-left _self: (addr word) {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  var dummy/eax: grapheme <- gap-left data
+}
+
+fn cursor-right _self: (addr word) {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  var dummy/eax: grapheme <- gap-right data
+}
+
+fn cursor-to-start _self: (addr word) {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  gap-to-start data
+}
+
+fn cursor-to-end _self: (addr word) {
+  var self/esi: (addr word) <- copy _self
+  var data/eax: (addr gap-buffer) <- get self, data
+  gap-to-end data
+}
+
 fn print-word screen: (addr screen), _self: (addr word) {
   var self/esi: (addr word) <- copy _self
   var data/eax: (addr gap-buffer) <- get self, data

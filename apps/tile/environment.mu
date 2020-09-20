@@ -46,11 +46,26 @@ $process:body: {
     compare key, 0x445b1b  # left-arrow
     {
       break-if-!=
-      # TODO:
-      #   gap-left cursor-word
-      # or
-      #   cursor-word = cursor-word->prev
-      #   gap-to-end cursor-word
+      var cursor-word-ah/edi: (addr handle word) <- get self, cursor-word
+      var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      var cursor-word/ecx: (addr word) <- copy _cursor-word
+      # if not at start, gap-left
+      var at-start?/eax: boolean <- cursor-at-start? cursor-word
+      compare at-start?, 0  # false
+      {
+        break-if-=
+        cursor-left cursor-word
+        break $process:body
+      }
+      # otherwise, move gap to end of prev word
+      var prev-word-ah/esi: (addr handle word) <- get cursor-word, prev
+      var prev-word/eax: (addr word) <- lookup *prev-word-ah
+      {
+        compare prev-word, 0
+        break-if-=
+        copy-object prev-word-ah, cursor-word-ah
+        cursor-to-end prev-word
+      }
       break $process:body
     }
     compare key, 0x435b1b  # right-arrow

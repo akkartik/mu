@@ -114,6 +114,18 @@ fn gap-to-end self: (addr gap-buffer) {
   }
 }
 
+fn gap-at-start? _self: (addr gap-buffer) -> result/eax: boolean {
+  var self/esi: (addr gap-buffer) <- copy _self
+  var left/eax: (addr grapheme-stack) <- get self, left
+  result <- grapheme-stack-empty? left
+}
+
+fn gap-at-end? _self: (addr gap-buffer) -> result/eax: boolean {
+  var self/esi: (addr gap-buffer) <- copy _self
+  var right/eax: (addr grapheme-stack) <- get self, right
+  result <- grapheme-stack-empty? right
+}
+
 fn gap-right _self: (addr gap-buffer) -> result/eax: grapheme {
 $gap-right:body: {
   var self/esi: (addr gap-buffer) <- copy _self
