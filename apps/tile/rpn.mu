@@ -88,36 +88,38 @@ fn max-stack-depth first-word: (addr word), final-word: (addr word) -> result/ed
   var curr-word/eax: (addr word) <- copy first-word
   var curr-depth/ecx: int <- copy 0
   result <- copy 0
-  $max-stack-depth:word-loop: {
-    # handle operators
-    {
-      var is-add?/eax: boolean <- word-equal? curr-word, "+"
-      compare is-add?, 0
-      break-if-=
-      curr-depth <- decrement
-      loop $max-stack-depth:word-loop
-    }
-    {
-      var is-sub?/eax: boolean <- word-equal? curr-word, "-"
-      compare is-sub?, 0
-      break-if-=
-      curr-depth <- decrement
-      loop $max-stack-depth:word-loop
-    }
-    {
-      var is-mul?/eax: boolean <- word-equal? curr-word, "*"
-      compare is-mul?, 0
-      break-if-=
-      curr-depth <- decrement
-      loop $max-stack-depth:word-loop
-    }
-    # otherwise it's an int (do we need error-checking?)
-    curr-depth <- increment
-    # update max depth if necessary
-    {
-      compare curr-depth, result
-      break-if-<=
-      result <- copy curr-depth
+  $max-stack-depth:loop: {
+    $max-stack-depth:process-word: {
+      # handle operators
+      {
+        var is-add?/eax: boolean <- word-equal? curr-word, "+"
+        compare is-add?, 0
+        break-if-=
+        curr-depth <- decrement
+        break $max-stack-depth:process-word
+      }
+      {
+        var is-sub?/eax: boolean <- word-equal? curr-word, "-"
+        compare is-sub?, 0
+        break-if-=
+        curr-depth <- decrement
+        break $max-stack-depth:process-word
+      }
+      {
+        var is-mul?/eax: boolean <- word-equal? curr-word, "*"
+        compare is-mul?, 0
+        break-if-=
+        curr-depth <- decrement
+        break $max-stack-depth:process-word
+      }
+      # otherwise it's an int (do we need error-checking?)
+      curr-depth <- increment
+      # update max depth if necessary
+      {
+        compare curr-depth, result
+        break-if-<=
+        result <- copy curr-depth
+      }
     }
     # if curr-word == final-word break
     compare curr-word, final-word
