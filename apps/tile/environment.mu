@@ -205,6 +205,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   curr-row <- add 6  # input-row 3 + stack-margin-top 3
   var i/eax: int <- int-stack-length stack-addr
   curr-row <- subtract i
+  start-color screen, 0, 2
   {
     compare i, 0
     break-if-<=
@@ -217,6 +218,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
       break-if-<=
       max-width <- copy size
     }
+    reset-formatting screen
     curr-row <- increment
     i <- decrement
     loop
@@ -224,6 +226,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
 
   # render word, initialize result
   move-cursor screen, 3, botleft-col  # input-row
+  reset-formatting screen
   print-word screen, final-word
 
   # update cursor
