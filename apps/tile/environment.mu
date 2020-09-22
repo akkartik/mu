@@ -195,31 +195,39 @@ fn render _env: (addr environment), max-depth: int {
 #   cursor-col-a.
 fn render-column screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-depth: int, botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
-  # compute stack
-  var stack: int-stack
-  var stack-addr/edi: (addr int-stack) <- address stack
-  initialize-int-stack stack-addr, 0x10  # max-words
-  evaluate first-word, final-word, stack-addr
-  # render stack
-  var curr-row/edx: int <- copy botleft-depth
-  curr-row <- add 6  # input-row 3 + stack-margin-top 3
-  var i/eax: int <- int-stack-length stack-addr
-  curr-row <- subtract i
   {
-    compare i, 0
-    break-if-<=
-    move-cursor screen, curr-row, botleft-col
+    # render stack for all but final column
+    var curr/eax: (addr word) <- copy final-word
+    var next-ah/eax: (addr handle word) <- get curr, next
+    var next/eax: (addr word) <- lookup *next-ah
+    compare next, 0
+    break-if-=
+    # compute stack
+    var stack: int-stack
+    var stack-addr/edi: (addr int-stack) <- address stack
+    initialize-int-stack stack-addr, 0x10  # max-words
+    evaluate first-word, final-word, stack-addr
+    # render stack
+    var curr-row/edx: int <- copy botleft-depth
+    curr-row <- add 6  # input-row 3 + stack-margin-top 3
+    var i/eax: int <- int-stack-length stack-addr
+    curr-row <- subtract i
     {
-      var val/eax: int <- pop-int-stack stack-addr
-      print-int32-decimal screen, val
-      var size/eax: int <- decimal-size val
-      compare size, max-width
+      compare i, 0
       break-if-<=
-      max-width <- copy size
+      move-cursor screen, curr-row, botleft-col
+      {
+        var val/eax: int <- pop-int-stack stack-addr
+        print-int32-decimal screen, val
+        var size/eax: int <- decimal-size val
+        compare size, max-width
+        break-if-<=
+        max-width <- copy size
+      }
+      curr-row <- increment
+      i <- decrement
+      loop
     }
-    curr-row <- increment
-    i <- decrement
-    loop
   }
 
   # render word, initialize result
@@ -263,17 +271,24 @@ fn compute-max-depth _env: (addr environment) -> result/eax: int {
   copy-to first-word, curr-word
   #
   var out/ebx: int <- copy 0
-  {
+  $compute-max-depth:loop: {
     compare curr-word, 0
     break-if-=
+    var next-word/edx: (addr word) <- copy 0
+    {
+      var next-word-ah/eax: (addr handle word) <- get curr-word, next
+      var _next-word/eax: (addr word) <- lookup *next-word-ah
+      next-word <- copy _next-word
+      compare next-word, 0
+      break-if-= $compute-max-depth:loop
+    }
     var curr-max-depth/edi: int <- max-stack-depth first-word, curr-word
     compare curr-max-depth, out
     {
       break-if-<=
       out <- copy curr-max-depth
     }
-    var next-word-ah/edx: (addr handle word) <- get curr-word, next
-    curr-word <- lookup *next-word-ah
+    curr-word <- copy next-word
     loop
   }
   result <- copy out
