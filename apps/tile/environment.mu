@@ -192,7 +192,7 @@ fn render _env: (addr environment) {
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-column screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), first-word: (addr word), final-word: (addr word), left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # render stack for all but final column
@@ -202,8 +202,8 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     compare next, 0
     break-if-=
     # indent stack
-    var indented-col/ebx: int <- copy botleft-col
-    indented-col <- add 2
+    var indented-col/ebx: int <- copy left-col
+    indented-col <- add 1
     # compute stack
     var stack: int-stack
     var stack-addr/edi: (addr int-stack) <- address stack
@@ -218,7 +218,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
       move-cursor screen, curr-row, indented-col
       {
         var val/eax: int <- pop-int-stack stack-addr
-        print-int32-decimal screen, val
+        render-integer screen, val
         var size/eax: int <- decimal-size val
         compare size, max-width
         break-if-<=
@@ -231,7 +231,8 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   }
 
   # render word, initialize result
-  move-cursor screen, 3, botleft-col  # input-row
+  reset-formatting screen
+  move-cursor screen, 3, left-col  # input-row
   print-word screen, final-word
   {
     var size/eax: int <- word-length final-word
@@ -246,13 +247,26 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     compare f, cursor-word
     break-if-!=
     var cursor-index/eax: int <- cursor-index cursor-word
-    cursor-index <- add botleft-col
+    cursor-index <- add left-col
     var dest/edi: (addr int) <- copy cursor-col-a
     copy-to *dest, cursor-index
   }
 
   # post-process right-col
   right-col <- copy max-width
-  right-col <- add botleft-col
+  right-col <- add left-col
   right-col <- add 3  # margin-right
+}
+
+# synaesthesia
+fn render-integer screen: (addr screen), val: int {
+  var fg/eax: int <- hash-color val
+  start-color screen, fg, 7
+  print-grapheme screen, 0x20  # space
+  print-int32-decimal screen, val
+  print-grapheme screen, 0x20  # space
+}
+
+fn hash-color val: int -> result/eax: int {
+  result <- try-modulo val, 7  # assumes that 7 is always the background color
 }

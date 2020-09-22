@@ -81,3 +81,11 @@ fn test-try-divide-9 {
   var result/eax: int <- try-divide 0x1c, 3  # 28/3
   check-ints-equal result, 9, "F - try-divide-9\n"
 }
+
+# only positive inouts for now
+fn try-modulo nr: int, dr: int -> result/eax: int {
+  var tmp/eax: int <- try-divide nr, dr
+  tmp <- multiply dr
+  tmp <- subtract nr
+  result <- negate
+}
