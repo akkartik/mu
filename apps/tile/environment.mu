@@ -202,6 +202,9 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     var next/eax: (addr word) <- lookup *next-ah
     compare next, 0
     break-if-=
+    # indent stack
+    var indented-col/ebx: int <- copy botleft-col
+    indented-col <- add 2
     # compute stack
     var stack: int-stack
     var stack-addr/edi: (addr int-stack) <- address stack
@@ -215,7 +218,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     {
       compare i, 0
       break-if-<=
-      move-cursor screen, curr-row, botleft-col
+      move-cursor screen, curr-row, indented-col
       {
         var val/eax: int <- pop-int-stack stack-addr
         print-int32-decimal screen, val
