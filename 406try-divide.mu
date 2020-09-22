@@ -39,47 +39,47 @@ fn try-divide _nr: int, _dr: int -> result/eax: int {
 
 fn test-try-divide-1 {
   var result/eax: int <- try-divide 0, 2
-  check-ints-equal result, 0, "F - try-divide-1\n"
+  check-ints-equal result, 0, "F - try-divide-1"
 }
 
 fn test-try-divide-2 {
   var result/eax: int <- try-divide 1, 2
-  check-ints-equal result, 0, "F - try-divide-2\n"
+  check-ints-equal result, 0, "F - try-divide-2"
 }
 
 fn test-try-divide-3 {
   var result/eax: int <- try-divide 2, 2
-  check-ints-equal result, 1, "F - try-divide-3\n"
+  check-ints-equal result, 1, "F - try-divide-3"
 }
 
 fn test-try-divide-4 {
   var result/eax: int <- try-divide 4, 2
-  check-ints-equal result, 2, "F - try-divide-4\n"
+  check-ints-equal result, 2, "F - try-divide-4"
 }
 
 fn test-try-divide-5 {
   var result/eax: int <- try-divide 6, 2
-  check-ints-equal result, 3, "F - try-divide-5\n"
+  check-ints-equal result, 3, "F - try-divide-5"
 }
 
 fn test-try-divide-6 {
   var result/eax: int <- try-divide 9, 3
-  check-ints-equal result, 3, "F - try-divide-6\n"
+  check-ints-equal result, 3, "F - try-divide-6"
 }
 
 fn test-try-divide-7 {
   var result/eax: int <- try-divide 0xc, 4
-  check-ints-equal result, 3, "F - try-divide-7\n"
+  check-ints-equal result, 3, "F - try-divide-7"
 }
 
 fn test-try-divide-8 {
   var result/eax: int <- try-divide 0x1b, 3  # 27/3
-  check-ints-equal result, 9, "F - try-divide-8\n"
+  check-ints-equal result, 9, "F - try-divide-8"
 }
 
 fn test-try-divide-9 {
   var result/eax: int <- try-divide 0x1c, 3  # 28/3
-  check-ints-equal result, 9, "F - try-divide-9\n"
+  check-ints-equal result, 9, "F - try-divide-9"
 }
 
 # only positive inouts for now
