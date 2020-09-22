@@ -261,7 +261,23 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
 # synaesthesia
 fn render-integer screen: (addr screen), val: int {
   var bg/eax: int <- hash-color val
-  start-color screen, 7, bg
+  var fg/ecx: int <- copy 7
+  {
+    compare bg, 2
+    break-if-!=
+    fg <- copy 0
+  }
+  {
+    compare bg, 3
+    break-if-!=
+    fg <- copy 0
+  }
+  {
+    compare bg, 6
+    break-if-!=
+    fg <- copy 0
+  }
+  start-color screen, fg, bg
   print-grapheme screen, 0x20  # space
   print-int32-decimal screen, val
   print-grapheme screen, 0x20  # space
