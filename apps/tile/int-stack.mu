@@ -68,7 +68,7 @@ fn int-stack-length _self: (addr int-stack) -> result/eax: int {
   result <- copy *top-addr
 }
 
-fn max-stack-value _self: (addr int-stack) -> result/eax: int {
+fn max-stack-justify-threshold _self: (addr int-stack) -> result/eax: int {
   var self/esi: (addr int-stack) <- copy _self
   var data-ah/edi: (addr handle array int) <- get self, data
   var _data/eax: (addr array int) <- lookup *data-ah
@@ -80,10 +80,11 @@ fn max-stack-value _self: (addr int-stack) -> result/eax: int {
     compare i, *top-addr
     break-if->=
     var g/edx: (addr int) <- index data, i
-    compare *g, result
+    var threshold/ecx: int <- right-justify-threshold-decimal *g
+    compare threshold, result
     {
       break-if-<=
-      result <- copy *g
+      result <- copy threshold
     }
     i <- increment
     loop

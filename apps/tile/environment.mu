@@ -211,8 +211,8 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     evaluate first-word, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy 6  # input-row 3 + stack-margin-top 3
-    var _max-val/eax: int <- max-stack-value stack-addr
-    var max-val/esi: int <- copy _max-val
+    var _justify-threshold/eax: int <- max-stack-justify-threshold stack-addr
+    var justify-threshold/esi: int <- copy _justify-threshold
     var i/eax: int <- int-stack-length stack-addr
     {
       compare i, 0
@@ -220,7 +220,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
       move-cursor screen, curr-row, indented-col
       {
         var val/eax: int <- pop-int-stack stack-addr
-        render-integer screen, val, max-val
+        render-integer screen, val, justify-threshold
         var size/eax: int <- decimal-size val
         compare size, max-width
         break-if-<=
@@ -261,7 +261,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
 }
 
 # synaesthesia
-fn render-integer screen: (addr screen), val: int, max-val: int {
+fn render-integer screen: (addr screen), val: int, justify-threshold: int {
   var bg/eax: int <- hash-color val
   var fg/ecx: int <- copy 7
   {
@@ -281,7 +281,7 @@ fn render-integer screen: (addr screen), val: int, max-val: int {
   }
   start-color screen, fg, bg
   print-grapheme screen, 0x20  # space
-  print-int32-decimal-right-justified screen, val, max-val
+  print-int32-decimal-right-justified screen, val, justify-threshold
   print-grapheme screen, 0x20  # space
 }
 
