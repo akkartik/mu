@@ -34,8 +34,7 @@ fn render-loop _self: (addr environment) {
     compare key, 0x71  # 'q'
     break-if-=
     process self, key
-    var max-depth/eax: int <- compute-max-depth self
-    render self, max-depth
+    render self
     loop
   }
 }
@@ -145,7 +144,7 @@ $process:body: {
 }
 }
 
-fn render _env: (addr environment), max-depth: int {
+fn render _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
   var screen-ah/edi: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
@@ -175,7 +174,7 @@ fn render _env: (addr environment), max-depth: int {
     compare curr-word, 0
     break-if-=
     move-cursor screen, 3, curr-col  # input-row
-    curr-col <- render-column screen, first-word, curr-word, max-depth, curr-col, cursor-word, cursor-col-a
+    curr-col <- render-column screen, first-word, curr-word, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     loop
@@ -193,7 +192,7 @@ fn render _env: (addr environment), max-depth: int {
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-column screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-depth: int, botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), first-word: (addr word), final-word: (addr word), botleft-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # render stack for all but final column
@@ -211,10 +210,8 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     initialize-int-stack stack-addr, 0x10  # max-words
     evaluate first-word, final-word, stack-addr
     # render stack
-    var curr-row/edx: int <- copy botleft-depth
-    curr-row <- add 6  # input-row 3 + stack-margin-top 3
+    var curr-row/edx: int <- copy 6  # input-row 3 + stack-margin-top 3
     var i/eax: int <- int-stack-length stack-addr
-    curr-row <- subtract i
     {
       compare i, 0
       break-if-<=
@@ -258,41 +255,4 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   right-col <- copy max-width
   right-col <- add botleft-col
   right-col <- add 3  # margin-right
-}
-
-# We could be a little faster by not using 'first-word' (since max is commutative),
-# but this way the code follows the pattern of 'render'. Let's see if that's a net win.
-fn compute-max-depth _env: (addr environment) -> result/eax: int {
-  var env/esi: (addr environment) <- copy _env
-  # cursor-word
-  var cursor-word-ah/esi: (addr handle word) <- get env, cursor-word
-  var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-  # curr-word
-  var curr-word/eax: (addr word) <- first-word cursor-word
-  # first-word
-  var first-word: (addr word)
-  copy-to first-word, curr-word
-  #
-  var out/ebx: int <- copy 0
-  $compute-max-depth:loop: {
-    compare curr-word, 0
-    break-if-=
-    var next-word/edx: (addr word) <- copy 0
-    {
-      var next-word-ah/eax: (addr handle word) <- get curr-word, next
-      var _next-word/eax: (addr word) <- lookup *next-word-ah
-      next-word <- copy _next-word
-      compare next-word, 0
-      break-if-= $compute-max-depth:loop
-    }
-    var curr-max-depth/edi: int <- max-stack-depth first-word, curr-word
-    compare curr-max-depth, out
-    {
-      break-if-<=
-      out <- copy curr-max-depth
-    }
-    curr-word <- copy next-word
-    loop
-  }
-  result <- copy out
 }
