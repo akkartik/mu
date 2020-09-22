@@ -186,7 +186,7 @@ fn render _env: (addr environment) {
 # Render:
 #   - final-word
 #   - the stack result from interpreting first-world to final-word (inclusive)
-#     with the bottom-left corner at botleft-row, botleft-col.
+#     - unless final-word is truly the final word, in which case it might be incomplete
 #
 # Outputs:
 # - Return the farthest column written.
