@@ -225,6 +225,12 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
   # render word, initialize result
   move-cursor screen, 3, botleft-col  # input-row
   print-word screen, final-word
+  {
+    var size/eax: int <- word-length final-word
+    compare size, max-width
+    break-if-<=
+    max-width <- copy size
+  }
 
   # update cursor
   {
