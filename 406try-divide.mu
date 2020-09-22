@@ -82,10 +82,24 @@ fn test-try-divide-9 {
   check-ints-equal result, 9, "F - try-divide-9"
 }
 
-# only positive inouts for now
+# only positive dr for now
 fn try-modulo nr: int, dr: int -> result/eax: int {
-  var tmp/eax: int <- try-divide nr, dr
+  var _positive-nr/eax: int <- abs nr
+  var positive-nr/ecx: int <- copy _positive-nr
+  var tmp/eax: int <- try-divide positive-nr, dr
   tmp <- multiply dr
-  tmp <- subtract nr
+  tmp <- subtract positive-nr
+  result <- negate
+}
+
+fn test-try-modulo-negative-nr {
+  var result/eax: int <- try-modulo -0xa, 7
+  check-ints-equal result, 3, "F - test-try-modulo-negative-nr"
+}
+
+fn abs n: int -> result/eax: int {
+  result <- copy n
+  compare n, 0
+  break-if->=
   result <- negate
 }
