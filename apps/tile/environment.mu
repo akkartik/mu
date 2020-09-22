@@ -260,8 +260,8 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
 
 # synaesthesia
 fn render-integer screen: (addr screen), val: int {
-  var fg/eax: int <- hash-color val
-  start-color screen, fg, 7
+  var bg/eax: int <- hash-color val
+  start-color screen, 7, bg
   print-grapheme screen, 0x20  # space
   print-int32-decimal screen, val
   print-grapheme screen, 0x20  # space
