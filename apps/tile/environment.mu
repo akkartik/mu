@@ -316,4 +316,13 @@ fn clear-canvas _env: (addr environment) {
   repl-col <- add 2  # repl-margin-left
   move-cursor screen, 5, repl-col  # input-row + stack-margin-top
   print-string screen, "stack:"
+  move-cursor screen, *nrows, repl-col
+  start-reverse-video screen
+  print-string screen, " ctrl-r "
+  reset-formatting screen
+  print-string screen, " rename  "
+  start-reverse-video screen
+  print-string screen, " ctrl-s "
+  reset-formatting screen
+  print-string screen, " tbd  "
 }
