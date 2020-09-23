@@ -42,3 +42,44 @@ fn draw-vertical-line screen: (addr screen), row1: int, row2: int, col: int {
     loop
   }
 }
+
+# erase parts of screen the slow way
+fn clear-rect screen: (addr screen), row1: int, col1: int, row2: int, col2: int {
+  var i/eax: int <- copy row1
+  {
+    compare i, row2
+    break-if->
+    var j/ecx: int <- copy col1
+    move-cursor screen, i, j
+    {
+      compare j, col2
+      break-if->
+      print-grapheme screen 0x20  # space
+      j <- increment
+      loop
+    }
+    i <- increment
+    loop
+  }
+}
+
+fn clear-rect2 screen: (addr screen), row1: int, col1: int, w: int, h: int {
+  var i/eax: int <- copy 0
+  var curr-row/esi: int <- copy row1
+  {
+    compare i, w
+    break-if->=
+    move-cursor screen, curr-row, col1
+    var j/ecx: int <- copy 0
+    {
+      compare j, h
+      break-if->=
+      print-grapheme screen 0x20  # space
+      j <- increment
+      loop
+    }
+    i <- increment
+    curr-row <- increment
+    loop
+  }
+}

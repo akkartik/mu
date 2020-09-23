@@ -163,12 +163,13 @@ fn render _env: (addr environment) {
   var _screen/eax: (addr screen) <- lookup *screen-ah
   var screen/edi: (addr screen) <- copy _screen
   # prepare screen
-  clear-screen screen
   var nrows/eax: (addr int) <- get env, nrows
   var _repl-col/ecx: (addr int) <- get env, code-separator-col
   var repl-col/ecx: int <- copy *_repl-col
   draw-vertical-line screen, 1, *nrows, repl-col
   repl-col <- add 2  # repl-margin-left
+  var ncols/edx: (addr int) <- get env, ncols
+  clear-rect screen, 1, repl-col, *nrows, *ncols
   move-cursor screen, 5, repl-col  # input-row + stack-margin-top
   print-string screen, "stack:"
   move-cursor screen, 3, repl-col  # input-row, input-col
