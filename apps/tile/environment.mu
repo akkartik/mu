@@ -1,6 +1,9 @@
 type environment {
   screen: (handle screen)
   cursor-word: (handle word)
+  nrows: int
+  ncols: int
+  code-separator-col: int
 }
 
 fn initialize-environment _env: (addr environment) {
@@ -9,6 +12,23 @@ fn initialize-environment _env: (addr environment) {
   allocate cursor-word-ah
   var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   initialize-word cursor-word
+  #
+  var screen-ah/eax: (addr handle screen) <- get env, screen
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  var nrows/eax: int <- copy 0
+  var ncols/ecx: int <- copy 0
+  nrows, ncols <- screen-size screen
+  var dest/edx: (addr int) <- get env, nrows
+  copy-to *dest, nrows
+  dest <- get env, ncols
+  copy-to *dest, ncols
+  ncols <- shift-right 1
+  dest <- get env, code-separator-col
+  copy-to *dest, ncols
+  draw-vertical-line screen, 1, nrows, ncols
+  ncols <- add 2  # repl-margin-left
+  move-cursor screen, 3, ncols  # input-row, input-col
 }
 
 fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int, ncols: int {
@@ -22,13 +42,6 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 
 fn render-loop _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
-  # initial render
-  {
-    var screen-ah/edi: (addr handle screen) <- get self, screen
-    var screen/eax: (addr screen) <- lookup *screen-ah
-    move-cursor screen, 3, 3  # input-row, input-col
-  }
-  #
   $interactive:loop: {
     var key/eax: grapheme <- read-key-from-real-keyboard
     compare key, 0x71  # 'q'
@@ -151,9 +164,14 @@ fn render _env: (addr environment) {
   var screen/edi: (addr screen) <- copy _screen
   # prepare screen
   clear-screen screen
-  move-cursor screen, 5, 1  # input-row+stack-margin-top
+  var nrows/eax: (addr int) <- get env, nrows
+  var _repl-col/ecx: (addr int) <- get env, code-separator-col
+  var repl-col/ecx: int <- copy *_repl-col
+  draw-vertical-line screen, 1, *nrows, repl-col
+  repl-col <- add 2  # repl-margin-left
+  move-cursor screen, 5, repl-col  # input-row + stack-margin-top
   print-string screen, "stack:"
-  move-cursor screen, 3, 3  # input-row, input-col
+  move-cursor screen, 3, repl-col  # input-row, input-col
   # cursor-word
   var cursor-word-ah/esi: (addr handle word) <- get env, cursor-word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
@@ -166,10 +184,12 @@ fn render _env: (addr environment) {
   # cursor-col
   var cursor-col: int
   var cursor-col-a: (addr int)
-  var tmp/ecx: (addr int) <- address cursor-col
-  copy-to cursor-col-a, tmp
+  {
+    var tmp/ecx: (addr int) <- address cursor-col
+    copy-to cursor-col-a, tmp
+  }
   # curr-col
-  var curr-col/ecx: int <- copy 3  # input-col
+  var curr-col/ecx: int <- copy repl-col  # input-col
   {
     compare curr-word, 0
     break-if-=
