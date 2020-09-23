@@ -26,7 +26,7 @@ fn initialize-environment _env: (addr environment) {
   ncols <- shift-right 1
   dest <- get env, code-separator-col
   copy-to *dest, ncols
-  draw-vertical-line screen, 1, nrows, ncols
+  clear-canvas env
   ncols <- add 2  # repl-margin-left
   move-cursor screen, 3, ncols  # input-row, input-col
 }
@@ -159,19 +159,13 @@ $process:body: {
 
 fn render _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
+  clear-canvas env
   var screen-ah/edi: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
   var screen/edi: (addr screen) <- copy _screen
-  # prepare screen
-  clear-screen screen
-  var nrows/eax: (addr int) <- get env, nrows
   var _repl-col/ecx: (addr int) <- get env, code-separator-col
   var repl-col/ecx: int <- copy *_repl-col
-  draw-vertical-line screen, 1, *nrows, repl-col
   repl-col <- add 2  # repl-margin-left
-  move-cursor screen, 5, repl-col  # input-row + stack-margin-top
-  print-string screen, "stack:"
-  move-cursor screen, 3, repl-col  # input-row, input-col
   # cursor-word
   var cursor-word-ah/esi: (addr handle word) <- get env, cursor-word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
@@ -307,4 +301,19 @@ fn render-integer screen: (addr screen), val: int, justify-threshold: int {
 
 fn hash-color val: int -> result/eax: int {
   result <- try-modulo val, 7  # assumes that 7 is always the background color
+}
+
+fn clear-canvas _env: (addr environment) {
+  var env/esi: (addr environment) <- copy _env
+  var screen-ah/edi: (addr handle screen) <- get env, screen
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  clear-screen screen
+  var nrows/eax: (addr int) <- get env, nrows
+  var _repl-col/ecx: (addr int) <- get env, code-separator-col
+  var repl-col/ecx: int <- copy *_repl-col
+  draw-vertical-line screen, 1, *nrows, repl-col
+  repl-col <- add 2  # repl-margin-left
+  move-cursor screen, 5, repl-col  # input-row + stack-margin-top
+  print-string screen, "stack:"
 }
