@@ -30,7 +30,7 @@ fn initialize-environment _env: (addr environment) {
   copy-to *dest, ncols
   clear-canvas env
   ncols <- add 2  # repl-margin-left
-  move-cursor screen, 3, ncols  # input-row, input-col
+  move-cursor screen, 3, ncols  # input-row
 }
 
 fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int, ncols: int {
@@ -186,8 +186,6 @@ fn render _env: (addr environment) {
   var line-ah/eax: (addr handle line) <- get sandbox, data
   var _line/eax: (addr line) <- lookup *line-ah
   var line/esi: (addr line) <- copy _line
-  # curr-word
-  var curr-word/eax: (addr word) <- first-word cursor-word
   # cursor-col
   var cursor-col: int
   var cursor-col-a: (addr int)
@@ -195,20 +193,29 @@ fn render _env: (addr environment) {
     var tmp/ecx: (addr int) <- address cursor-col
     copy-to cursor-col-a, tmp
   }
+  #
+  render-line screen, defs, line, 3, repl-col, cursor-word, cursor-col-a  # input-row
+  var col/eax: (addr int) <- copy cursor-col-a
+  move-cursor screen, 3, *col  # input-row
+}
+
+fn render-line screen: (addr screen), defs: (addr function), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) {
+  # curr-word
+  var line/esi: (addr line) <- copy _line
+  var first-word-ah/eax: (addr handle word) <- get line, data
+  var curr-word/eax: (addr word) <- lookup *first-word-ah
   # loop-carried dependency
-  var curr-col/ecx: int <- copy repl-col  # input-col
+  var curr-col/ecx: int <- copy left-col
   #
   {
     compare curr-word, 0
     break-if-=
-    move-cursor screen, 3, curr-col  # input-row
-    curr-col <- render-column screen, defs, line, curr-word, 3, curr-col, cursor-word, cursor-col-a  # input-row
+    move-cursor screen, top-row, curr-col
+    curr-col <- render-column screen, defs, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     loop
   }
-  var col/eax: (addr int) <- copy cursor-col-a
-  move-cursor screen, 3, *col  # input-row
 }
 
 # Render:
