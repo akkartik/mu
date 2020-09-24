@@ -1,5 +1,7 @@
-fn evaluate start: (addr word), end: (addr word), out: (addr int-stack) {
-  var curr/eax: (addr word) <- copy start
+fn evaluate defs: (addr function), scratch: (addr line), end: (addr word), out: (addr int-stack) {
+  var line/eax: (addr line) <- copy scratch
+  var word-ah/eax: (addr handle word) <- get line, data
+  var curr/eax: (addr word) <- lookup *word-ah
   var curr-text-storage: (stream byte 0x10)
   var curr-text/edi: (addr stream byte) <- address curr-text-storage
   clear-int-stack out
@@ -59,27 +61,6 @@ fn evaluate start: (addr word), end: (addr word), out: (addr int-stack) {
     #
     loop
   }
-}
-
-fn test-evaluate {
-  # input = [1, 2, +]
-  var w: (handle word)
-  var wah/eax: (addr handle word) <- address w
-  allocate wah
-  var wa/eax: (addr word) <- lookup w
-  initialize-word-with wa, "1"
-  append-word-with w, "2"
-  var next/ecx: (addr handle word) <- get wa, next
-  append-word-with *next, "+"
-  # initialize output
-  var stack-storage: int-stack
-  var stack/edx: (addr int-stack) <- address stack-storage
-  initialize-int-stack stack, 0x10
-  #
-  evaluate wa, 0, stack
-  # check output
-  var x/eax: int <- pop-int-stack stack
-  check-ints-equal x, 3, "F - test-evaluate"
 }
 
 # Copy of 'simplify' that just tracks the maximum stack depth needed

@@ -1,5 +1,6 @@
 type environment {
   screen: (handle screen)
+  program: (handle program)
   cursor-word: (handle word)
   nrows: int
   ncols: int
@@ -8,11 +9,12 @@ type environment {
 
 fn initialize-environment _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
-  var cursor-word-ah/eax: (addr handle word) <- get env, cursor-word
-  allocate cursor-word-ah
-  var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-  initialize-word cursor-word
-  #
+  var program-ah/eax: (addr handle program) <- get env, program
+  allocate program-ah
+  var program/eax: (addr program) <- lookup *program-ah
+  var cursor-word-ah/ecx: (addr handle word) <- get env, cursor-word
+  initialize-program program, cursor-word-ah
+  # initialize screen
   var screen-ah/eax: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
   var screen/edi: (addr screen) <- copy _screen
@@ -167,14 +169,25 @@ fn render _env: (addr environment) {
   var repl-col/ecx: int <- copy *_repl-col
   repl-col <- add 2  # repl-margin-left
   # cursor-word
-  var cursor-word-ah/esi: (addr handle word) <- get env, cursor-word
+  var cursor-word-ah/ebx: (addr handle word) <- get env, cursor-word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ebx: (addr word) <- copy _cursor-word
+  # program
+  var program-ah/eax: (addr handle program) <- get env, program
+  var _program/eax: (addr program) <- lookup *program-ah
+  var program/esi: (addr program) <- copy _program
+  # defs
+  var defs-ah/edx: (addr handle function) <- get program, defs
+  var _defs/eax: (addr function) <- lookup *defs-ah
+  var defs/edx: (addr function) <- copy _defs
+  # line
+  var sandbox-ah/esi: (addr handle sandbox) <- get program, sandboxes
+  var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+  var line-ah/eax: (addr handle line) <- get sandbox, data
+  var _line/eax: (addr line) <- lookup *line-ah
+  var line/esi: (addr line) <- copy _line
   # curr-word
   var curr-word/eax: (addr word) <- first-word cursor-word
-  # first-word
-  var first-word: (addr word)
-  copy-to first-word, curr-word
   # cursor-col
   var cursor-col: int
   var cursor-col-a: (addr int)
@@ -182,13 +195,14 @@ fn render _env: (addr environment) {
     var tmp/ecx: (addr int) <- address cursor-col
     copy-to cursor-col-a, tmp
   }
-  # curr-col
+  # loop-carried dependency
   var curr-col/ecx: int <- copy repl-col  # input-col
+  #
   {
     compare curr-word, 0
     break-if-=
     move-cursor screen, 3, curr-col  # input-row
-    curr-col <- render-column screen, first-word, curr-word, curr-col, cursor-word, cursor-col-a
+    curr-col <- render-column screen, defs, line, curr-word, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     loop
@@ -206,7 +220,7 @@ fn render _env: (addr environment) {
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-column screen: (addr screen), first-word: (addr word), final-word: (addr word), left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), defs: (addr function), scratch: (addr line), final-word: (addr word), left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # render stack for all but final column
@@ -222,7 +236,7 @@ fn render-column screen: (addr screen), first-word: (addr word), final-word: (ad
     var stack: int-stack
     var stack-addr/edi: (addr int-stack) <- address stack
     initialize-int-stack stack-addr, 0x10  # max-words
-    evaluate first-word, final-word, stack-addr
+    evaluate defs, scratch, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy 6  # input-row 3 + stack-margin-top 3
     var _justify-threshold/eax: int <- max-stack-justify-threshold stack-addr
