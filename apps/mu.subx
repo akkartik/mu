@@ -1988,6 +1988,52 @@ test-convert-function-call-with-too-many-outputs:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-call-with-missing-output-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var x: int\n")
+    (write _test-input-stream "  x <- g\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn g -> a/eax: int {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-convert-function-call-with-missing-output-register: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn f: call g: output 'x' is not in a register"  "F - test-convert-function-call-with-missing-output-register: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-convert-function-call-with-missing-output-register: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-call-with-incorrect-output-register:
     # . prologue
     55/push-ebp
@@ -14124,6 +14170,25 @@ $check-mu-call:check-output-register:
       # var r/ebx: (addr array byte) = lookup(v->register)
       (lookup *(eax+18) *(eax+0x1c))  # Var-register Var-register => eax
       89/<- %ebx 0/r32/eax
+      # if (r == 0) error
+      3d/compare-eax-and 0/imm32
+      {
+        0f 85/jump-if-!= break/disp32
+        (write-buffered *(ebp+0x14) "fn ")
+        8b/-> *(ebp+0x10) 0/r32/eax
+        (lookup *eax *(eax+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": call ")
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) ": output '")
+        (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+        (lookup *eax *(eax+4))  # Var-name Var-name => eax
+        (write-buffered *(ebp+0x14) %eax)
+        (write-buffered *(ebp+0x14) "' is not in a register\n")
+        (flush *(ebp+0x14))
+        (stop *(ebp+0x18) 1)
+      }
       # var v2/eax: (addr v) = lookup(expected->value)
       (lookup *edx *(edx+4))  # Stmt-var-value Stmt-var-value => eax
       # var r2/eax: (addr array byte) = lookup(v2->register)
