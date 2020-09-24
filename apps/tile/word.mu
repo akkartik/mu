@@ -1,20 +1,9 @@
-type word {
-  data: gap-buffer
-  next: (handle word)
-  prev: (handle word)
-}
-
-fn initialize-word _self: (addr word) {
-  var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
-  initialize-gap-buffer data
-}
-
 ## some helpers for creating words. mostly for tests
 
 fn initialize-word-with _self: (addr word), s: (addr array byte) {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   initialize-gap-buffer-with data, s
 }
 
@@ -52,13 +41,15 @@ fn prepend-word-with self-h: (handle word), s: (addr array byte) {
 
 fn word-equal? _self: (addr word), s: (addr array byte) -> result/eax: boolean {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   result <- gap-buffer-equal? data, s
 }
 
 fn word-length _self: (addr word) -> result/eax: int {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   result <- gap-buffer-length data
 }
 
@@ -94,61 +85,71 @@ fn final-word _self: (addr word) -> result/eax: (addr word) {
 
 fn first-grapheme _self: (addr word) -> result/eax: grapheme {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   result <- first-grapheme-in-gap-buffer data
 }
 
 fn add-grapheme-to-word _self: (addr word), c: grapheme {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   add-grapheme-at-gap data, c
 }
 
 fn cursor-at-start? _self: (addr word) -> result/eax: boolean {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   result <- gap-at-start? data
 }
 
 fn cursor-at-end? _self: (addr word) -> result/eax: boolean {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   result <- gap-at-end? data
 }
 
 fn cursor-left _self: (addr word) {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   var dummy/eax: grapheme <- gap-left data
 }
 
 fn cursor-right _self: (addr word) {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   var dummy/eax: grapheme <- gap-right data
 }
 
 fn cursor-to-start _self: (addr word) {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   gap-to-start data
 }
 
 fn cursor-to-end _self: (addr word) {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   gap-to-end data
 }
 
 fn cursor-index _self: (addr word) -> result/eax: int {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   result <- gap-index data
 }
 
 fn delete-before-cursor _self: (addr word) {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   delete-before-gap data
 }
 
@@ -172,7 +173,8 @@ $delete-next:body: {
 
 fn print-word screen: (addr screen), _self: (addr word) {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   render-gap-buffer screen, data
 }
 
@@ -209,6 +211,7 @@ fn append-word _self-ah: (addr handle word) {
 
 fn emit-word _self: (addr word), out: (addr stream byte) {
   var self/esi: (addr word) <- copy _self
-  var data/eax: (addr gap-buffer) <- get self, data
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
   emit-gap-buffer data, out
 }

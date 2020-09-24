@@ -25,13 +25,13 @@ type line {
   prev: (handle line)
 }
 
-#? type word {
-#?   # at most one of these will be non-null
-#?   scalar-data: (handle gap-buffer)
-#?   box-data: (handle line)  # recurse
-#?   left: (handle word)
-#?   right: (handle word)
-#? }
+type word {
+  # at most one of these will be non-null
+  scalar-data: (handle gap-buffer)
+  box-data: (handle line)  # recurse
+  next: (handle word)
+  prev: (handle word)
+}
 
 type result {
   data: (handle word-stack)
@@ -70,4 +70,13 @@ fn initialize-line _line: (addr line), out: (addr handle word) {
   }
   var word/eax: (addr word) <- lookup *word-ah
   initialize-word word
+}
+
+fn initialize-word _self: (addr word) {
+  var self/esi: (addr word) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  allocate data-ah
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  initialize-gap-buffer data
+  # TODO: sometimes initialize box-data rather than scalar-data
 }
