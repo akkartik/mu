@@ -202,7 +202,7 @@ fn render _env: (addr environment) {
     compare curr-word, 0
     break-if-=
     move-cursor screen, 3, curr-col  # input-row
-    curr-col <- render-column screen, defs, line, curr-word, curr-col, cursor-word, cursor-col-a
+    curr-col <- render-column screen, defs, line, curr-word, 3, curr-col, cursor-word, cursor-col-a  # input-row
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     loop
@@ -212,15 +212,15 @@ fn render _env: (addr environment) {
 }
 
 # Render:
-#   - final-word
-#   - the stack result from interpreting first-world to final-word (inclusive)
-#     - unless final-word is truly the final word, in which case it might be incomplete
+#   - starting at top-row, left-col: final-word
+#   - starting somewhere below at left-col: the stack result from interpreting first-world to final-word (inclusive)
+#     unless final-word is truly the final word, in which case it might be incomplete
 #
 # Outputs:
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-column screen: (addr screen), defs: (addr function), scratch: (addr line), final-word: (addr word), left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), defs: (addr function), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # render stack for all but final column
@@ -238,7 +238,8 @@ fn render-column screen: (addr screen), defs: (addr function), scratch: (addr li
     initialize-int-stack stack-addr, 0x10  # max-words
     evaluate defs, scratch, final-word, stack-addr
     # render stack
-    var curr-row/edx: int <- copy 6  # input-row 3 + stack-margin-top 3
+    var curr-row/edx: int <- copy top-row
+    curr-row <- add 3  # stack-margin-top
     var _justify-threshold/eax: int <- max-stack-justify-threshold stack-addr
     var justify-threshold/esi: int <- copy _justify-threshold
     var i/eax: int <- int-stack-length stack-addr
@@ -262,7 +263,7 @@ fn render-column screen: (addr screen), defs: (addr function), scratch: (addr li
 
   # render word, initialize result
   reset-formatting screen
-  move-cursor screen, 3, left-col  # input-row
+  move-cursor screen, top-row, left-col
   print-word screen, final-word
   {
     var size/eax: int <- word-length final-word
