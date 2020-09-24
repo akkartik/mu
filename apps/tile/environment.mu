@@ -188,15 +188,10 @@ fn render _env: (addr environment) {
   var line/esi: (addr line) <- copy _line
   # cursor-col
   var cursor-col: int
-  var cursor-col-a: (addr int)
-  {
-    var tmp/ecx: (addr int) <- address cursor-col
-    copy-to cursor-col-a, tmp
-  }
+  var cursor-col-a/eax: (addr int) <- address cursor-col
   #
   render-line screen, defs, line, 3, repl-col, cursor-word, cursor-col-a  # input-row
-  var col/eax: (addr int) <- copy cursor-col-a
-  move-cursor screen, 3, *col  # input-row
+  move-cursor screen, 3, cursor-col  # input-row
 }
 
 fn render-line screen: (addr screen), defs: (addr function), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) {
