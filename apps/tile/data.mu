@@ -51,10 +51,10 @@ type table {
   next: (handle table)
 }
 
-#? type result {
-#?   data: (handle value-stack)
-#?   error: (handle array byte)  # single error message for now
-#? }
+type result {
+  data: value-stack
+  error: (handle array byte)  # single error message for now
+}
 
 # if 'out' is non-null, save the first word of the program there
 fn initialize-program _program: (addr program), out: (addr handle word) {
