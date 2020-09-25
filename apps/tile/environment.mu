@@ -242,8 +242,8 @@ fn render-column screen: (addr screen), defs: (addr function), scratch: (addr li
     # render stack
     var curr-row/edx: int <- copy top-row
     curr-row <- add 3  # stack-margin-top
-    var _justify-threshold/eax: int <- max-stack-justify-threshold stack-addr
-    var justify-threshold/esi: int <- copy _justify-threshold
+    var _max-width/eax: int <- int-stack-max-width stack-addr
+    var max-width/esi: int <- copy _max-width
     var i/eax: int <- int-stack-length stack-addr
     {
       compare i, 0
@@ -251,7 +251,7 @@ fn render-column screen: (addr screen), defs: (addr function), scratch: (addr li
       move-cursor screen, curr-row, indented-col
       {
         var val/eax: int <- pop-int-stack stack-addr
-        render-integer screen, val, justify-threshold
+        render-integer screen, val, max-width
         var size/eax: int <- decimal-size val
         compare size, max-width
         break-if-<=
@@ -292,7 +292,7 @@ fn render-column screen: (addr screen), defs: (addr function), scratch: (addr li
 }
 
 # synaesthesia
-fn render-integer screen: (addr screen), val: int, justify-threshold: int {
+fn render-integer screen: (addr screen), val: int, max-width: int {
   var bg/eax: int <- hash-color val
   var fg/ecx: int <- copy 7
   {
@@ -312,7 +312,7 @@ fn render-integer screen: (addr screen), val: int, justify-threshold: int {
   }
   start-color screen, fg, bg
   print-grapheme screen, 0x20  # space
-  print-int32-decimal-right-justified screen, val, justify-threshold
+  print-int32-decimal-right-justified screen, val, max-width
   print-grapheme screen, 0x20  # space
 }
 
