@@ -46,6 +46,9 @@ fn evaluate defs: (addr function), bindings: (addr table), scratch: (addr line),
         push-int-stack out, a
         break $evaluate:process-word
       }
+      # HERE: if curr-text is a known function name, call it appropriately
+      {
+      }
       # otherwise it's an int
       {
         var n/eax: int <- parse-decimal-int-from-stream curr-text

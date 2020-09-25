@@ -3,6 +3,7 @@
 fn initialize-word-with _self: (addr word), s: (addr array byte) {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  allocate data-ah
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   initialize-gap-buffer-with data, s
 }
