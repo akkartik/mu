@@ -40,6 +40,16 @@ type value {
   box-data: (handle line)
 }
 
+type bind {
+  key: (handle array byte)
+  value: value
+}
+
+type table {
+  data: (handle array bind)
+  next: (handle table)
+}
+
 #? type result {
 #?   data: (handle value-stack)
 #?   error: (handle array byte)  # single error message for now

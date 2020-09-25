@@ -1,4 +1,4 @@
-fn evaluate defs: (addr function), scratch: (addr line), end: (addr word), out: (addr int-stack) {
+fn evaluate defs: (addr function), bindings: (addr table), scratch: (addr line), end: (addr word), out: (addr int-stack) {
   var line/eax: (addr line) <- copy scratch
   var word-ah/eax: (addr handle word) <- get line, data
   var curr/eax: (addr word) <- lookup *word-ah

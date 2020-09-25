@@ -238,7 +238,7 @@ fn render-column screen: (addr screen), defs: (addr function), scratch: (addr li
     var stack: int-stack
     var stack-addr/edi: (addr int-stack) <- address stack
     initialize-int-stack stack-addr, 0x10  # max-words
-    evaluate defs, scratch, final-word, stack-addr
+    evaluate defs, 0, scratch, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy top-row
     curr-row <- add 3  # stack-margin-top
