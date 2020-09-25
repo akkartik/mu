@@ -1,3 +1,12 @@
+fn initialize-word _self: (addr word) {
+  var self/esi: (addr word) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  allocate data-ah
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  initialize-gap-buffer data
+  # TODO: sometimes initialize box-data rather than scalar-data
+}
+
 ## some helpers for creating words. mostly for tests
 
 fn initialize-word-with _self: (addr word), s: (addr array byte) {

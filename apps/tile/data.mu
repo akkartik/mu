@@ -92,15 +92,6 @@ fn initialize-line _line: (addr line), out: (addr handle word) {
   initialize-word word
 }
 
-fn initialize-word _self: (addr word) {
-  var self/esi: (addr word) <- copy _self
-  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
-  allocate data-ah
-  var data/eax: (addr gap-buffer) <- lookup *data-ah
-  initialize-gap-buffer data
-  # TODO: sometimes initialize box-data rather than scalar-data
-}
-
 fn create-primitive-defs _self: (addr handle function) {
   # x 2* = x 2 *
   var self/esi: (addr handle function) <- copy _self
