@@ -28,15 +28,22 @@ type line {
 type word {
   # at most one of these will be non-null
   scalar-data: (handle gap-buffer)
+  text-data: (handle array byte)
   box-data: (handle line)  # recurse
   next: (handle word)
   prev: (handle word)
 }
 
-type result {
-  data: (handle word-stack)
-  error: (handle array byte)  # single error message for now
+type value {
+  scalar-data: int
+  text-data: (handle array byte)
+  box-data: (handle line)
 }
+
+#? type result {
+#?   data: (handle value-stack)
+#?   error: (handle array byte)  # single error message for now
+#? }
 
 # if 'out' is non-null, save the first word of the program there
 fn initialize-program _program: (addr program), out: (addr handle word) {
