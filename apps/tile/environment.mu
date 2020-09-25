@@ -190,11 +190,11 @@ fn render _env: (addr environment) {
   var cursor-col: int
   var cursor-col-a/eax: (addr int) <- address cursor-col
   #
-  render-line screen, defs, line, 3, repl-col, cursor-word, cursor-col-a  # input-row
+  render-line screen, defs, 0, line, 3, repl-col, cursor-word, cursor-col-a  # input-row=3
   move-cursor screen, 3, cursor-col  # input-row
 }
 
-fn render-line screen: (addr screen), defs: (addr function), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) {
+fn render-line screen: (addr screen), defs: (addr function), bindings: (addr table), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) {
   # curr-word
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
@@ -206,7 +206,7 @@ fn render-line screen: (addr screen), defs: (addr function), _line: (addr line),
     compare curr-word, 0
     break-if-=
     move-cursor screen, top-row, curr-col
-    curr-col <- render-column screen, defs, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
+    curr-col <- render-column screen, defs, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     loop
@@ -222,7 +222,7 @@ fn render-line screen: (addr screen), defs: (addr function), _line: (addr line),
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-column screen: (addr screen), defs: (addr function), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), defs: (addr function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # render stack for all but final column
@@ -238,7 +238,7 @@ fn render-column screen: (addr screen), defs: (addr function), scratch: (addr li
     var stack: int-stack
     var stack-addr/edi: (addr int-stack) <- address stack
     initialize-int-stack stack-addr, 0x10  # max-words
-    evaluate defs, 0, scratch, final-word, stack-addr
+    evaluate defs, bindings, scratch, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy top-row
     curr-row <- add 3  # stack-margin-top
