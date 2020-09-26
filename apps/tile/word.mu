@@ -225,3 +225,10 @@ fn emit-word _self: (addr word), out: (addr stream byte) {
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   emit-gap-buffer data, out
 }
+
+fn word-to-string _self: (addr word), out: (addr handle array byte) {
+  var self/esi: (addr word) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  gap-buffer-to-string data, out
+}

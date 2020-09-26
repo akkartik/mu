@@ -1,10 +1,10 @@
-fn initialize-table _self: (address table) {
+fn initialize-table _self: (addr table) {
   var self/esi: (addr table) <- copy _self
   var data-ah/eax: (addr handle array bind) <- get self, data
   populate data-ah, 0x10
 }
 
-fn bind-int-in-table _self: (addr table), key: (addr array byte), val: int {
+fn bind-int-in-table _self: (addr table), key: (addr handle array byte), val: int {
   var self/esi: (addr table) <- copy _self
   var data-ah/esi: (addr handle array bind) <- get self, data
   var _data/eax: (addr array bind) <- lookup *data-ah
@@ -15,7 +15,7 @@ fn bind-int-in-table _self: (addr table), key: (addr array byte), val: int {
 }
 
 # manual test: full array of binds
-fn next-empty-slot _data: (addr array bind), key: (addr array byte) -> result/eax: (offset bind) {
+fn next-empty-slot _data: (addr array bind), key: (addr handle array byte) -> result/eax: (offset bind) {
   var data/esi: (addr array bind) <- copy _data
   var len/ecx: int <- length data
   var i/edx: int <- copy 0
@@ -36,10 +36,10 @@ fn next-empty-slot _data: (addr array bind), key: (addr array byte) -> result/ea
   }
 }
 
-fn make-binding _self: (addr bind), key: (addr array byte), _val: int {
+fn make-binding _self: (addr bind), key: (addr handle array byte), _val: int {
   var self/esi: (addr bind) <- copy _self
   var dest/eax: (addr handle array byte) <- get self, key
-  populate-text-with dest, key
+  copy-object key, dest
   var dest2/eax: (addr value) <- get self, value
   var dest3/eax: (addr int) <- get dest2, scalar-data
   var val/ecx: int <- copy _val

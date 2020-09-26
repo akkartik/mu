@@ -177,9 +177,7 @@ fn render _env: (addr environment) {
   var _program/eax: (addr program) <- lookup *program-ah
   var program/esi: (addr program) <- copy _program
   # defs
-  var defs-ah/edx: (addr handle function) <- get program, defs
-  var _defs/eax: (addr function) <- lookup *defs-ah
-  var defs/edx: (addr function) <- copy _defs
+  var defs/edx: (addr handle function) <- get program, defs
   # line
   var sandbox-ah/esi: (addr handle sandbox) <- get program, sandboxes
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
@@ -194,7 +192,7 @@ fn render _env: (addr environment) {
   move-cursor screen, 3, cursor-col  # input-row
 }
 
-fn render-line screen: (addr screen), defs: (addr function), bindings: (addr table), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) {
+fn render-line screen: (addr screen), defs: (addr handle function), bindings: (addr table), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) {
   # curr-word
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
@@ -222,7 +220,7 @@ fn render-line screen: (addr screen), defs: (addr function), bindings: (addr tab
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-column screen: (addr screen), defs: (addr function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), defs: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # render stack for all but final column
