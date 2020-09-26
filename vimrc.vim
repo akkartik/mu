@@ -113,4 +113,8 @@ endif
 imap <Leader>a <Esc>F<Space>a(addr <Esc>A)
 imap <Leader>h <Esc>F<Space>a(handle <Esc>A)
 imap <Leader>ah <Esc>F<Space>a(addr handle <Esc>A)
+imap <Leader>aa <Esc>F<Space>a(addr array <Esc>A)
+imap <Leader>aha <Esc>F<Space>a(addr handle array <Esc>A)
+imap <Leader>o <Esc>F<Space>a(offset <Esc>A)
 imap ,- <-
+imap -. ->
