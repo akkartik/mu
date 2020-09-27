@@ -158,9 +158,9 @@ fn perform-call _callee: (addr function), caller-stack: (addr value-stack), defs
   var stack-storage: value-stack
   var stack/edi: (addr value-stack) <- address stack-storage
   initialize-value-stack stack, 0x10
-  print-string-to-real-screen "about to enter recursive eval\n"
+#?   print-string-to-real-screen "about to enter recursive eval\n"
   evaluate defs, table, body, 0, stack
-  print-string-to-real-screen "exited recursive eval\n"
+#?   print-string-to-real-screen "exited recursive eval\n"
   # stitch result from stack into caller
   var result/eax: int <- pop-int-from-value-stack stack
   push-int-to-value-stack caller-stack, result
