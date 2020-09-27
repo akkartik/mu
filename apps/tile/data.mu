@@ -41,14 +41,14 @@ type value {
   box-data: (handle line)
 }
 
-type bind {
-  key: (handle array byte)
-  value: value
-}
-
 type table {
   data: (handle array bind)
   next: (handle table)
+}
+
+type bind {
+  key: (handle array byte)
+  value: value
 }
 
 type result {
