@@ -350,7 +350,7 @@ fn clear-canvas _env: (addr environment) {
   reset-formatting screen
   print-string screen, " tbd  "
   move-cursor screen, 3, 2
-  print-string screen, "x f = 2 x *"
+  print-string screen, "x 2* = 2 x *"
 }
 
 fn real-grapheme? g: grapheme -> result/eax: boolean {
