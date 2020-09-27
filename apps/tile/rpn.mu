@@ -2,21 +2,21 @@ fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr
   var line/eax: (addr line) <- copy scratch
   var word-ah/eax: (addr handle word) <- get line, data
   var curr/eax: (addr word) <- lookup *word-ah
-  var curr-text-storage: (stream byte 0x10)
-  var curr-text/edi: (addr stream byte) <- address curr-text-storage
+  var curr-stream-storage: (stream byte 0x10)
+  var curr-stream/edi: (addr stream byte) <- address curr-stream-storage
   clear-int-stack out
   $evaluate:loop: {
     # precondition (should never hit)
     compare curr, 0
     break-if-=
-    # update curr-text
-    emit-word curr, curr-text
-#?     print-stream-to-real-screen curr-text
+    # update curr-stream
+    emit-word curr, curr-stream
+#?     print-stream-to-real-screen curr-stream
 #?     print-string-to-real-screen "\n"
     $evaluate:process-word: {
-      # if curr-text is an operator, perform it
+      # if curr-stream is an operator, perform it
       {
-        var is-add?/eax: boolean <- stream-data-equal? curr-text, "+"
+        var is-add?/eax: boolean <- stream-data-equal? curr-stream, "+"
         compare is-add?, 0
         break-if-=
         var _b/eax: int <- pop-int-stack out
@@ -27,7 +27,7 @@ fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr
         break $evaluate:process-word
       }
       {
-        var is-sub?/eax: boolean <- stream-data-equal? curr-text, "-"
+        var is-sub?/eax: boolean <- stream-data-equal? curr-stream, "-"
         compare is-sub?, 0
         break-if-=
         var _b/eax: int <- pop-int-stack out
@@ -38,7 +38,7 @@ fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr
         break $evaluate:process-word
       }
       {
-        var is-mul?/eax: boolean <- stream-data-equal? curr-text, "*"
+        var is-mul?/eax: boolean <- stream-data-equal? curr-stream, "*"
         compare is-mul?, 0
         break-if-=
         var _b/eax: int <- pop-int-stack out
@@ -48,20 +48,42 @@ fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr
         push-int-stack out, a
         break $evaluate:process-word
       }
-      # if curr-text is a known function name, call it appropriately
+      # if curr-stream is a known function name, call it appropriately
       {
         var callee-h: (handle function)
         var callee-ah/eax: (addr handle function) <- address callee-h
-        find-function defs, curr-text, callee-ah
+        find-function defs, curr-stream, callee-ah
         var callee/eax: (addr function) <- lookup *callee-ah
         compare callee, 0
         break-if-=
         perform-call callee, out, defs
         break $evaluate:process-word
       }
-      # otherwise it's an int
+      # if it's a name, push its value
       {
-        var n/eax: int <- parse-decimal-int-from-stream curr-text
+        compare bindings, 0
+        break-if-=
+        var tmp: (handle array byte)
+        var curr-string-ah/edx: (addr handle array byte) <- address tmp
+        stream-to-string curr-stream, curr-string-ah
+        var _curr-string/eax: (addr array byte) <- lookup *curr-string-ah
+        var curr-string/edx: (addr array byte) <- copy _curr-string
+        var result/eax: int <- copy 0
+        var found?/ecx: boolean <- copy 0  # false
+        result, found? <- lookup-binding bindings, curr-string
+        compare found?, 0  # false
+        break-if-=
+#?         print-string-to-real-screen "value of "
+#?         print-string-to-real-screen curr-string
+#?         print-string-to-real-screen " is "
+#?         print-int32-hex-to-real-screen result
+#?         print-string-to-real-screen "\n"
+        push-int-stack out, result
+        break $evaluate:process-word
+      }
+      # otherwise assume it's a literal int and push it
+      {
+        var n/eax: int <- parse-decimal-int-from-stream curr-stream
         push-int-stack out, n
       }
     }
@@ -102,7 +124,7 @@ fn perform-call _callee: (addr function), caller-stack: (addr int-stack), defs: 
   # create bindings for args
   var table-storage: table
   var table/esi: (addr table) <- address table-storage
-  initialize-table table
+  initialize-table table, 0x10
   #
   var curr-arg-ah/eax: (addr handle word) <- get callee, args
   var curr-arg/eax: (addr word) <- lookup *curr-arg-ah
@@ -115,7 +137,13 @@ fn perform-call _callee: (addr function), caller-stack: (addr int-stack), defs: 
     # create binding
     word-to-string curr-arg, curr-key
     {
+#?       var tmp/eax: (addr array byte) <- lookup *curr-key
+#?       print-string-to-real-screen "binding "
+#?       print-string-to-real-screen tmp
+#?       print-string-to-real-screen " to "
       var curr-val/eax: int <- pop-int-stack caller-stack
+#?       print-int32-decimal-to-real-screen curr-val
+#?       print-string-to-real-screen "\n"
       bind-int-in-table table, curr-key, curr-val
     }
     #

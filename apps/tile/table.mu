@@ -1,7 +1,7 @@
-fn initialize-table _self: (addr table) {
+fn initialize-table _self: (addr table), n: int {
   var self/esi: (addr table) <- copy _self
   var data-ah/eax: (addr handle array bind) <- get self, data
-  populate data-ah, 0x10
+  populate data-ah, n
 }
 
 fn bind-int-in-table _self: (addr table), key: (addr handle array byte), val: int {
@@ -44,4 +44,39 @@ fn make-binding _self: (addr bind), key: (addr handle array byte), _val: int {
   var dest3/eax: (addr int) <- get dest2, scalar-data
   var val/ecx: int <- copy _val
   copy-to *dest3, val
+}
+
+# TODO: supporting non-integers
+# That'll require radical surgery.
+fn lookup-binding _self: (addr table), key: (addr array byte) -> result/eax: int, found?/ecx: boolean {
+  var self/esi: (addr table) <- copy _self
+  var data-ah/esi: (addr handle array bind) <- get self, data
+  var _data/eax: (addr array bind) <- lookup *data-ah
+  var data/esi: (addr array bind) <- copy _data
+  var len/edx: int <- length data
+  var i/ebx: int <- copy 0
+  found? <- copy 0  # false
+  $lookup-binding:loop: {
+    compare i, len
+    break-if->=
+    {
+      var offset/edx: (offset bind) <- compute-offset data, i
+      var target-bind/esi: (addr bind) <- index data, offset
+      var target2/edx: (addr handle array byte) <- get target-bind, key
+      var target3/eax: (addr array byte) <- lookup *target2
+      compare target3, 0
+      break-if-= $lookup-binding:loop
+      var is-match?/eax: boolean <- string-equal? target3, key
+      compare is-match?, 0  # false
+      break-if-=
+      # found
+      found? <- copy 1  # true
+      var dest2/eax: (addr value) <- get target-bind, value
+      var dest3/eax: (addr int) <- get dest2, scalar-data
+      result <- copy *dest3
+      break $lookup-binding:loop
+    }
+    i <- increment
+    loop
+  }
 }

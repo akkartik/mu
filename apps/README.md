@@ -1,7 +1,8 @@
 Some apps written in SubX and Mu. Check out:
 
 * `tile`: [A text-mode postfix calculator](https://mastodon.social/@akkartik/104896128141863951)
-  that updates as you type.
+  that updates as you type. Prototype. Look at this to see what is currently
+  possible, not how I recommend building software.
 
   <img alt='tile app' src='../html/rpn5.png' width='500px'>
 
