@@ -215,11 +215,11 @@ fn render _env: (addr environment) {
   var cursor-col: int
   var cursor-col-a/eax: (addr int) <- address cursor-col
   #
-  render-line screen, defs, 0, line, 3, repl-col, cursor-word, cursor-col-a  # input-row=3
+  var dummy/ecx: int <- render-line screen, defs, 0, line, 3, repl-col, cursor-word, cursor-col-a  # input-row=3
   move-cursor screen, 3, cursor-col  # input-row
 }
 
-fn render-line screen: (addr screen), defs: (addr handle function), bindings: (addr table), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) {
+fn render-line screen: (addr screen), defs: (addr handle function), bindings: (addr table), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   # curr-word
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
@@ -237,8 +237,18 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
         compare *display-subsidiary-stack?, 0  # false
         break-if-= $render-line:subsidiary
       }
-      # HERE
-      print-string screen, "!"
+      move-cursor screen, top-row, curr-col
+      print-word screen, curr-word
+      var word-len/eax: int <- word-length curr-word
+      curr-col <- add word-len
+      curr-col <- add 2
+      add-to top-row, 1
+      # HERE: construct new bindings
+#?       curr-col <- render-line screen, defs, callee-bindings, callee-body, top-row, curr-col, cursor-word, cursor-col-a
+      curr-col <- add 2
+      move-cursor screen, top-row, curr-col
+      print-code-point screen, 0x21d7  # ⇗
+      subtract-from top-row, 1
     }
     # now render main column
     curr-col <- render-column screen, defs, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
@@ -246,6 +256,8 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
     curr-word <- lookup *next-word-ah
     loop
   }
+  right-col <- copy curr-col
+  right-col <- add 3  # margin-right
 }
 
 # Render:
@@ -359,10 +371,6 @@ fn clear-canvas _env: (addr environment) {
   var _repl-col/ecx: (addr int) <- get env, code-separator-col
   var repl-col/ecx: int <- copy *_repl-col
   draw-vertical-line screen, 1, *nrows, repl-col
-  repl-col <- add 2  # repl-margin-left
-  move-cursor screen, 5, repl-col  # input-row + stack-margin-top
-  print-string screen, "stack:"
-  move-cursor screen, *nrows, repl-col
   start-reverse-video screen
   print-string screen, " ctrl-r "
   reset-formatting screen
