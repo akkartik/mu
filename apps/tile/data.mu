@@ -33,6 +33,7 @@ type word {
   box-data: (handle line)  # recurse
   # other metadata attached to this word
   subsidiary-stack: (handle value-stack)  # if this word is a call
+  display-subsidiary-stack?: boolean
   next: (handle word)
   prev: (handle word)
 }
