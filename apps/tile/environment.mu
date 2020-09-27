@@ -253,21 +253,34 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
       }
       move-cursor screen, top-row, curr-col
       print-word screen, curr-word
-      var word-len/eax: int <- word-length curr-word
-      curr-col <- add word-len
-      curr-col <- add 2
-      add-to top-row, 1
+      {
+        var word-len/eax: int <- word-length curr-word
+        curr-col <- add word-len
+        curr-col <- add 2
+        add-to top-row, 1
+      }
+      # obtain stack at call site
+      var stack-storage: value-stack
+      var stack/edx: (addr value-stack) <- address stack-storage
+      initialize-value-stack stack, 0x10
+      {
+        var prev-word-ah/eax: (addr handle word) <- get curr-word, prev
+        var prev-word/eax: (addr word) <- lookup *prev-word-ah
+        compare prev-word, 0
+        break-if-=
+        evaluate defs, bindings, line, prev-word, stack
+      }
       # construct new bindings
       var callee-bindings-storage: table
       var callee-bindings/esi: (addr table) <- address callee-bindings-storage
       initialize-table callee-bindings, 0x10
-      # HERE: obtain stack at call site
-#?       bind-args callee, callee-bindings
+      bind-args callee, stack, callee-bindings
       # obtain body
       var callee-body-ah/eax: (addr handle line) <- get callee, body
       var callee-body/eax: (addr line) <- lookup *callee-body-ah
-      #
+      # - render subsidiary stack
       curr-col <- render-line screen, defs, callee-bindings, callee-body, top-row, curr-col, cursor-word, cursor-col-a
+      #
       curr-col <- add 2
       move-cursor screen, top-row, curr-col
       print-code-point screen, 0x21d7  # ⇗
