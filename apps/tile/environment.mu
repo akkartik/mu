@@ -25,12 +25,22 @@ fn initialize-environment _env: (addr environment) {
   copy-to *dest, nrows
   dest <- get env, ncols
   copy-to *dest, ncols
-  ncols <- shift-right 1
+  var repl-col/ecx: int <- copy ncols
+  repl-col <- shift-right 1
   dest <- get env, code-separator-col
-  copy-to *dest, ncols
+  copy-to *dest, repl-col
+}
+
+fn draw-screen _env: (addr environment) {
+  var env/esi: (addr environment) <- copy _env
+  var screen-ah/eax: (addr handle screen) <- get env, screen
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  var dest/edx: (addr int) <- get env, code-separator-col
+  var tmp/eax: int <- copy *dest
   clear-canvas env
-  ncols <- add 2  # repl-margin-left
-  move-cursor screen, 3, ncols  # input-row
+  tmp <- add 2  # repl-margin-left
+  move-cursor screen, 3, tmp  # input-row
 }
 
 fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int, ncols: int {
@@ -40,18 +50,6 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
   initialize-screen screen-addr, nrows, ncols
   initialize-environment self
-}
-
-fn render-loop _self: (addr environment) {
-  var self/esi: (addr environment) <- copy _self
-  $interactive:loop: {
-    var key/eax: grapheme <- read-key-from-real-keyboard
-    compare key, 0x71  # 'q'
-    break-if-=
-    process self, key
-    render self
-    loop
-  }
 }
 
 fn process _self: (addr environment), key: grapheme {
@@ -159,6 +157,23 @@ $process:body: {
 }
 }
 
+fn evaluate-environment _env: (addr environment), stack: (addr int-stack) {
+  var env/esi: (addr environment) <- copy _env
+  # program
+  var program-ah/eax: (addr handle program) <- get env, program
+  var _program/eax: (addr program) <- lookup *program-ah
+  var program/esi: (addr program) <- copy _program
+  # defs
+  var defs/edx: (addr handle function) <- get program, defs
+  # line
+  var sandbox-ah/esi: (addr handle sandbox) <- get program, sandboxes
+  var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+  var line-ah/eax: (addr handle line) <- get sandbox, data
+  var _line/eax: (addr line) <- lookup *line-ah
+  var line/esi: (addr line) <- copy _line
+  evaluate defs, 0, line, 0, stack
+}
+
 fn render _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
   clear-canvas env
@@ -223,12 +238,6 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
 fn render-column screen: (addr screen), defs: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
-    # render stack for all but final column
-    var curr/eax: (addr word) <- copy final-word
-    var next-ah/eax: (addr handle word) <- get curr, next
-    var next/eax: (addr word) <- lookup *next-ah
-    compare next, 0
-    break-if-=
     # indent stack
     var indented-col/ebx: int <- copy left-col
     indented-col <- add 1  # margin-right - 2 for padding spaces
@@ -340,4 +349,8 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, " ctrl-s "
   reset-formatting screen
   print-string screen, " tbd  "
+}
+
+fn real-grapheme? g: grapheme -> result/eax: boolean {
+  result <- copy 1  # true
 }
