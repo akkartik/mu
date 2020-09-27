@@ -3,7 +3,7 @@ Some apps written in SubX and Mu. Check out:
 * `tile`: [A text-mode postfix calculator](https://mastodon.social/@akkartik/104896128141863951)
   that updates as you type.
 
-<img alt='tile app' src='../html/rpn5.png'>
+  <img alt='tile app' src='../html/rpn5.png' width='500px'>
 
 * `browse`: [A text-mode browser for a tiny subset of Markdown](https://mastodon.social/@akkartik/104845344081779025).
 
