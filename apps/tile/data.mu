@@ -113,11 +113,11 @@ fn create-primitive-defs _self: (addr handle function) {
   var curr-word-ah/ecx: (addr handle word) <- get body, data
   allocate curr-word-ah
   var curr-word/eax: (addr word) <- lookup *curr-word-ah
-  initialize-word-with curr-word, "x"
+  initialize-word-with curr-word, "2"
   curr-word-ah <- get curr-word, next
   allocate curr-word-ah
   curr-word <- lookup *curr-word-ah
-  initialize-word-with curr-word, "2"
+  initialize-word-with curr-word, "x"
   curr-word-ah <- get curr-word, next
   allocate curr-word-ah
   curr-word <- lookup *curr-word-ah
