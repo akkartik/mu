@@ -11,6 +11,8 @@ fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr
     break-if-=
     # update curr-text
     emit-word curr, curr-text
+#?     print-stream-to-real-screen curr-text
+#?     print-string-to-real-screen "\n"
     $evaluate:process-word: {
       # if curr-text is an operator, perform it
       {
@@ -127,9 +129,10 @@ fn perform-call _callee: (addr function), caller-stack: (addr int-stack), defs: 
   # perform call
   var stack-storage: int-stack
   var stack/edi: (addr int-stack) <- address stack-storage
-      print-string-to-real-screen "about to enter recursive eval\n"
+  initialize-int-stack stack, 0x10
+#?   print-string-to-real-screen "about to enter recursive eval\n"
   evaluate defs, table, body, 0, stack
-      print-string-to-real-screen "exited recursive eval\n"
+#?   print-string-to-real-screen "exited recursive eval\n"
   # stitch result from stack into caller
   var result/eax: int <- pop-int-stack stack
   push-int-stack caller-stack, result
