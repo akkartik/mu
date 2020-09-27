@@ -10,6 +10,9 @@ Some apps written in SubX and Mu. Check out:
 * `ex*`: small stand-alone examples that don't need any of the shared code at
   the top-level. They each have a simple pedagogical goal. Try these first.
 
+* `factorial*`: A simple program to compute factorials in 5 versions, showing
+  all the different syntax sugars and what they expand to.
+
 * Code unique to phases of our build toolchain:
   * Core SubX: `hex`, `survey`, `pack`, `dquotes`, `assort`, `tests`
   * Syntax sugar for SubX: `sigils`, `calls`, `braces`
