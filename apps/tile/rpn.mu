@@ -125,7 +125,24 @@ fn perform-call _callee: (addr function), caller-stack: (addr value-stack), defs
   var table-storage: table
   var table/esi: (addr table) <- address table-storage
   initialize-table table, 0x10
-  #
+  bind-args callee, caller-stack, table
+  # obtain body
+  var body-ah/eax: (addr handle line) <- get callee, body
+  var body/eax: (addr line) <- lookup *body-ah
+  # perform call
+  var stack-storage: value-stack
+  var stack/edi: (addr value-stack) <- address stack-storage
+  initialize-value-stack stack, 0x10
+#?   print-string-to-real-screen "about to enter recursive eval\n"
+  evaluate defs, table, body, 0, stack
+#?   print-string-to-real-screen "exited recursive eval\n"
+  # stitch result from stack into caller
+  var result/eax: int <- pop-int-from-value-stack stack
+  push-int-to-value-stack caller-stack, result
+}
+
+fn bind-args _callee: (addr function), caller-stack: (addr value-stack), table: (addr table) {
+  var callee/ecx: (addr function) <- copy _callee
   var curr-arg-ah/eax: (addr handle word) <- get callee, args
   var curr-arg/eax: (addr word) <- lookup *curr-arg-ah
   #
@@ -151,19 +168,6 @@ fn perform-call _callee: (addr function), caller-stack: (addr value-stack), defs
     curr-arg <- lookup *next-arg-ah
     loop
   }
-  # obtain body
-  var body-ah/eax: (addr handle line) <- get callee, body
-  var body/eax: (addr line) <- lookup *body-ah
-  # perform call
-  var stack-storage: value-stack
-  var stack/edi: (addr value-stack) <- address stack-storage
-  initialize-value-stack stack, 0x10
-#?   print-string-to-real-screen "about to enter recursive eval\n"
-  evaluate defs, table, body, 0, stack
-#?   print-string-to-real-screen "exited recursive eval\n"
-  # stitch result from stack into caller
-  var result/eax: int <- pop-int-from-value-stack stack
-  push-int-to-value-stack caller-stack, result
 }
 
 # Copy of 'simplify' that just tracks the maximum stack depth needed
