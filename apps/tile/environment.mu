@@ -407,14 +407,6 @@ fn clear-canvas _env: (addr environment) {
   var _repl-col/ecx: (addr int) <- get env, code-separator-col
   var repl-col/ecx: int <- copy *_repl-col
   draw-vertical-line screen, 1, *nrows, repl-col
-  start-reverse-video screen
-  print-string screen, " ctrl-r "
-  reset-formatting screen
-  print-string screen, " rename  "
-  start-reverse-video screen
-  print-string screen, " ctrl-s "
-  reset-formatting screen
-  print-string screen, " tbd  "
   move-cursor screen, 3, 2
   print-string screen, "x 2* = 2 x *"
 }
