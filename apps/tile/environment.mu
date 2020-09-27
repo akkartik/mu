@@ -142,6 +142,18 @@ $process:body: {
       copy-object next-word-ah, cursor-word-ah
       break $process:body
     }
+    compare key, 0xa  # enter
+    {
+      break-if-!=
+      # toggle display of subsidiary stack
+      var cursor-word-ah/edx: (addr handle word) <- get self, cursor-word
+      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      var display-subsidiary-stack?/eax: (addr boolean) <- get cursor-word, display-subsidiary-stack?
+      var tmp/ecx: int <- copy 1
+      tmp <- subtract *display-subsidiary-stack?
+      copy-to *display-subsidiary-stack?, tmp
+      break $process:body
+    }
     # otherwise insert key within current word
     var g/edx: grapheme <- copy key
     var print?/eax: boolean <- real-grapheme? key
@@ -218,7 +230,17 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
   {
     compare curr-word, 0
     break-if-=
-    move-cursor screen, top-row, curr-col
+    # if necessary, first render columns for subsidiary stack
+    $render-line:subsidiary: {
+      {
+        var display-subsidiary-stack?/eax: (addr boolean) <- get curr-word, display-subsidiary-stack?
+        compare *display-subsidiary-stack?, 0  # false
+        break-if-= $render-line:subsidiary
+      }
+      # HERE
+      print-string screen, "!"
+    }
+    # now render main column
     curr-col <- render-column screen, defs, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
@@ -350,7 +372,7 @@ fn clear-canvas _env: (addr environment) {
   reset-formatting screen
   print-string screen, " tbd  "
   move-cursor screen, 3, 2
-  print-string screen, "x f = 2 x *"
+  print-string screen, "x 2* = 2 x *"
 }
 
 fn real-grapheme? g: grapheme -> result/eax: boolean {
