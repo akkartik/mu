@@ -1,4 +1,9 @@
-Some apps written in SubX and Mu, in 3 categories:
+Some apps written in SubX and Mu. Check out:
+
+* `tile`: [A postfix calculator](https://mastodon.social/@akkartik/104896128141863951)
+  that updates as you type.
+
+<img alt='tile app' src='../html/rpn5.png'>
 
 * `ex*`: small stand-alone examples that don't need any of the shared code at
   the top-level. They each have a simple pedagogical goal. Try these first.
