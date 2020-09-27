@@ -67,24 +67,24 @@ fn repl {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
-  var stack-storage: int-stack
-  var stack/edi: (addr int-stack) <- address stack-storage
-  initialize-int-stack stack, 0x10
+  var stack-storage: value-stack
+  var stack/edi: (addr value-stack) <- address stack-storage
+  initialize-value-stack stack, 0x10
   print-string-to-real-screen "> "
   $repl:loop: {
     var key/eax: grapheme <- read-key-from-real-keyboard
     print-grapheme-to-real-screen key
     compare key, 4  # ctrl-d
     break-if-=
-    compare key, 0xa  # 'q'
+    compare key, 0xa  # newline
     {
       break-if-!=
       evaluate-environment env, stack
-      var empty?/eax: boolean <- int-stack-empty? stack
+      var empty?/eax: boolean <- value-stack-empty? stack
       {
         compare empty?, 0  # false
         break-if-!=
-        var result/eax: int <- pop-int-stack stack
+        var result/eax: int <- pop-int-from-value-stack stack
         print-int32-decimal-to-real-screen result
         print-string-to-real-screen "\n"
       }

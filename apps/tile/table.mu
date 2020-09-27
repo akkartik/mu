@@ -40,22 +40,20 @@ fn make-binding _self: (addr bind), key: (addr handle array byte), _val: int {
   var self/esi: (addr bind) <- copy _self
   var dest/eax: (addr handle array byte) <- get self, key
   copy-object key, dest
-  var dest2/eax: (addr value) <- get self, value
-  var dest3/eax: (addr int) <- get dest2, scalar-data
+  var dest2/eax: (addr handle value) <- get self, value
+  var dest3/eax: (addr value) <- lookup *dest2
+  var dest4/eax: (addr int) <- get dest3, scalar-data
   var val/ecx: int <- copy _val
-  copy-to *dest3, val
+  copy-to *dest4, val
 }
 
-# TODO: supporting non-integers
-# That'll require radical surgery.
-fn lookup-binding _self: (addr table), key: (addr array byte) -> result/eax: int, found?/ecx: boolean {
+fn lookup-binding _self: (addr table), key: (addr array byte), out: (addr handle value) {
   var self/esi: (addr table) <- copy _self
   var data-ah/esi: (addr handle array bind) <- get self, data
   var _data/eax: (addr array bind) <- lookup *data-ah
   var data/esi: (addr array bind) <- copy _data
   var len/edx: int <- length data
   var i/ebx: int <- copy 0
-  found? <- copy 0  # false
   $lookup-binding:loop: {
     compare i, len
     break-if->=
@@ -70,10 +68,8 @@ fn lookup-binding _self: (addr table), key: (addr array byte) -> result/eax: int
       compare is-match?, 0  # false
       break-if-=
       # found
-      found? <- copy 1  # true
-      var dest2/eax: (addr value) <- get target-bind, value
-      var dest3/eax: (addr int) <- get dest2, scalar-data
-      result <- copy *dest3
+      var target/eax: (addr handle value) <- get target-bind, value
+      copy-object target, out
       break $lookup-binding:loop
     }
     i <- increment

@@ -1,10 +1,10 @@
-fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr line), end: (addr word), out: (addr int-stack) {
+fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr line), end: (addr word), out: (addr value-stack) {
   var line/eax: (addr line) <- copy scratch
   var word-ah/eax: (addr handle word) <- get line, data
   var curr/eax: (addr word) <- lookup *word-ah
   var curr-stream-storage: (stream byte 0x10)
   var curr-stream/edi: (addr stream byte) <- address curr-stream-storage
-  clear-int-stack out
+  clear-value-stack out
   $evaluate:loop: {
     # precondition (should never hit)
     compare curr, 0
@@ -19,33 +19,33 @@ fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr
         var is-add?/eax: boolean <- stream-data-equal? curr-stream, "+"
         compare is-add?, 0
         break-if-=
-        var _b/eax: int <- pop-int-stack out
+        var _b/eax: int <- pop-int-from-value-stack out
         var b/edx: int <- copy _b
-        var a/eax: int <- pop-int-stack out
+        var a/eax: int <- pop-int-from-value-stack out
         a <- add b
-        push-int-stack out, a
+        push-int-to-value-stack out, a
         break $evaluate:process-word
       }
       {
         var is-sub?/eax: boolean <- stream-data-equal? curr-stream, "-"
         compare is-sub?, 0
         break-if-=
-        var _b/eax: int <- pop-int-stack out
+        var _b/eax: int <- pop-int-from-value-stack out
         var b/edx: int <- copy _b
-        var a/eax: int <- pop-int-stack out
+        var a/eax: int <- pop-int-from-value-stack out
         a <- subtract b
-        push-int-stack out, a
+        push-int-to-value-stack out, a
         break $evaluate:process-word
       }
       {
         var is-mul?/eax: boolean <- stream-data-equal? curr-stream, "*"
         compare is-mul?, 0
         break-if-=
-        var _b/eax: int <- pop-int-stack out
+        var _b/eax: int <- pop-int-from-value-stack out
         var b/edx: int <- copy _b
-        var a/eax: int <- pop-int-stack out
+        var a/eax: int <- pop-int-from-value-stack out
         a <- multiply b
-        push-int-stack out, a
+        push-int-to-value-stack out, a
         break $evaluate:process-word
       }
       # if curr-stream is a known function name, call it appropriately
@@ -65,26 +65,26 @@ fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr
         break-if-=
         var tmp: (handle array byte)
         var curr-string-ah/edx: (addr handle array byte) <- address tmp
-        stream-to-string curr-stream, curr-string-ah
-        var _curr-string/eax: (addr array byte) <- lookup *curr-string-ah
-        var curr-string/edx: (addr array byte) <- copy _curr-string
-        var result/eax: int <- copy 0
-        var found?/ecx: boolean <- copy 0  # false
-        result, found? <- lookup-binding bindings, curr-string
-        compare found?, 0  # false
+        stream-to-string curr-stream, curr-string-ah  # unfortunate leak
+        var curr-string/eax: (addr array byte) <- lookup *curr-string-ah
+        var val-storage: (handle value)
+        var val-ah/edi: (addr handle value) <- address val-storage
+        lookup-binding bindings, curr-string, val-ah
+        var val/eax: (addr value) <- lookup *val-ah
+        compare val, 0
         break-if-=
 #?         print-string-to-real-screen "value of "
 #?         print-string-to-real-screen curr-string
 #?         print-string-to-real-screen " is "
 #?         print-int32-hex-to-real-screen result
 #?         print-string-to-real-screen "\n"
-        push-int-stack out, result
+        push-value-stack out, val
         break $evaluate:process-word
       }
       # otherwise assume it's a literal int and push it
       {
         var n/eax: int <- parse-decimal-int-from-stream curr-stream
-        push-int-stack out, n
+        push-int-to-value-stack out, n
       }
     }
     # termination check
@@ -119,7 +119,7 @@ fn find-function first: (addr handle function), name: (addr stream byte), out: (
   }
 }
 
-fn perform-call _callee: (addr function), caller-stack: (addr int-stack), defs: (addr handle function) {
+fn perform-call _callee: (addr function), caller-stack: (addr value-stack), defs: (addr handle function) {
   var callee/ecx: (addr function) <- copy _callee
   # create bindings for args
   var table-storage: table
@@ -141,7 +141,7 @@ fn perform-call _callee: (addr function), caller-stack: (addr int-stack), defs: 
 #?       print-string-to-real-screen "binding "
 #?       print-string-to-real-screen tmp
 #?       print-string-to-real-screen " to "
-      var curr-val/eax: int <- pop-int-stack caller-stack
+      var curr-val/eax: int <- pop-int-from-value-stack caller-stack
 #?       print-int32-decimal-to-real-screen curr-val
 #?       print-string-to-real-screen "\n"
       bind-int-in-table table, curr-key, curr-val
@@ -155,15 +155,15 @@ fn perform-call _callee: (addr function), caller-stack: (addr int-stack), defs: 
   var body-ah/eax: (addr handle line) <- get callee, body
   var body/eax: (addr line) <- lookup *body-ah
   # perform call
-  var stack-storage: int-stack
-  var stack/edi: (addr int-stack) <- address stack-storage
-  initialize-int-stack stack, 0x10
-#?   print-string-to-real-screen "about to enter recursive eval\n"
+  var stack-storage: value-stack
+  var stack/edi: (addr value-stack) <- address stack-storage
+  initialize-value-stack stack, 0x10
+  print-string-to-real-screen "about to enter recursive eval\n"
   evaluate defs, table, body, 0, stack
-#?   print-string-to-real-screen "exited recursive eval\n"
+  print-string-to-real-screen "exited recursive eval\n"
   # stitch result from stack into caller
-  var result/eax: int <- pop-int-stack stack
-  push-int-stack caller-stack, result
+  var result/eax: int <- pop-int-from-value-stack stack
+  push-int-to-value-stack caller-stack, result
 }
 
 # Copy of 'simplify' that just tracks the maximum stack depth needed

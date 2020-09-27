@@ -157,7 +157,7 @@ $process:body: {
 }
 }
 
-fn evaluate-environment _env: (addr environment), stack: (addr int-stack) {
+fn evaluate-environment _env: (addr environment), stack: (addr value-stack) {
   var env/esi: (addr environment) <- copy _env
   # program
   var program-ah/eax: (addr handle program) <- get env, program
@@ -242,22 +242,22 @@ fn render-column screen: (addr screen), defs: (addr handle function), bindings: 
     var indented-col/ebx: int <- copy left-col
     indented-col <- add 1  # margin-right - 2 for padding spaces
     # compute stack
-    var stack: int-stack
-    var stack-addr/edi: (addr int-stack) <- address stack
-    initialize-int-stack stack-addr, 0x10  # max-words
+    var stack: value-stack
+    var stack-addr/edi: (addr value-stack) <- address stack
+    initialize-value-stack stack-addr, 0x10  # max-words
     evaluate defs, bindings, scratch, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy top-row
     curr-row <- add 3  # stack-margin-top
-    var _max-width/eax: int <- int-stack-max-width stack-addr
+    var _max-width/eax: int <- value-stack-max-width stack-addr
     var max-width/esi: int <- copy _max-width
-    var i/eax: int <- int-stack-length stack-addr
+    var i/eax: int <- value-stack-length stack-addr
     {
       compare i, 0
       break-if-<=
       move-cursor screen, curr-row, indented-col
       {
-        var val/eax: int <- pop-int-stack stack-addr
+        var val/eax: int <- pop-int-from-value-stack stack-addr
         render-integer screen, val, max-width
         var size/eax: int <- decimal-size val
         compare size, max-width

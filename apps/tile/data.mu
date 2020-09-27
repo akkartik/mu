@@ -48,7 +48,7 @@ type table {
 
 type bind {
   key: (handle array byte)
-  value: value
+  value: (handle value)  # I'd inline this but we sometimes want to return a specific value from a table
 }
 
 type result {
