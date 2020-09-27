@@ -281,9 +281,10 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
       # - render subsidiary stack
       curr-col <- render-line screen, defs, callee-bindings, callee-body, top-row, curr-col, cursor-word, cursor-col-a
       #
-      curr-col <- add 2
       move-cursor screen, top-row, curr-col
       print-code-point screen, 0x21d7  # ⇗
+      #
+      curr-col <- add 2
       subtract-from top-row, 1
     }
     # now render main column
@@ -293,7 +294,6 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
     loop
   }
   right-col <- copy curr-col
-  right-col <- add 3  # margin-right
 }
 
 # Render:
