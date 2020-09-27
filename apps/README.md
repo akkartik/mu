@@ -1,9 +1,11 @@
 Some apps written in SubX and Mu. Check out:
 
-* `tile`: [A postfix calculator](https://mastodon.social/@akkartik/104896128141863951)
+* `tile`: [A text-mode postfix calculator](https://mastodon.social/@akkartik/104896128141863951)
   that updates as you type.
 
 <img alt='tile app' src='../html/rpn5.png'>
+
+* `browse`: [A text-mode browser for a tiny subset of Markdown](https://mastodon.social/@akkartik/104845344081779025).
 
 * `ex*`: small stand-alone examples that don't need any of the shared code at
   the top-level. They each have a simple pedagogical goal. Try these first.
