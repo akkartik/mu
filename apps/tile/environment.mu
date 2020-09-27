@@ -237,14 +237,37 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
         compare *display-subsidiary-stack?, 0  # false
         break-if-= $render-line:subsidiary
       }
+      # does function exist?
+      var callee/edi: (addr function) <- copy 0
+      {
+        var curr-stream-storage: (stream byte 0x10)
+        var curr-stream/esi: (addr stream byte) <- address curr-stream-storage
+        emit-word curr-word, curr-stream
+        var callee-h: (handle function)
+        var callee-ah/eax: (addr handle function) <- address callee-h
+        find-function defs, curr-stream, callee-ah
+        var _callee/eax: (addr function) <- lookup *callee-ah
+        callee <- copy _callee
+        compare callee, 0
+        break-if-= $render-line:subsidiary
+      }
       move-cursor screen, top-row, curr-col
       print-word screen, curr-word
       var word-len/eax: int <- word-length curr-word
       curr-col <- add word-len
       curr-col <- add 2
       add-to top-row, 1
-      # HERE: construct new bindings
-#?       curr-col <- render-line screen, defs, callee-bindings, callee-body, top-row, curr-col, cursor-word, cursor-col-a
+      # construct new bindings
+      var callee-bindings-storage: table
+      var callee-bindings/esi: (addr table) <- address callee-bindings-storage
+      initialize-table callee-bindings, 0x10
+      # HERE: obtain stack at call site
+#?       bind-args callee, callee-bindings
+      # obtain body
+      var callee-body-ah/eax: (addr handle line) <- get callee, body
+      var callee-body/eax: (addr line) <- lookup *callee-body-ah
+      #
+      curr-col <- render-line screen, defs, callee-bindings, callee-body, top-row, curr-col, cursor-word, cursor-col-a
       curr-col <- add 2
       move-cursor screen, top-row, curr-col
       print-code-point screen, 0x21d7  # ⇗
