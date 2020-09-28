@@ -331,7 +331,7 @@ uint32_t expected_bit_for_received_argument(const word& w, set<string>& instruct
   for (int i = 0;  i < SIZE(w.metadata);  ++i) {
     string/*copy*/ curr = w.metadata.at(i);
     string expected_metadata = curr;
-    if (curr == "mod" || curr == "rm32" || curr == "r32" || curr == "scale" || curr == "index" || curr == "base")
+    if (curr == "mod" || curr == "rm32" || curr == "r32" || curr == "xm32" || curr == "x32" || curr == "scale" || curr == "index" || curr == "base")
       expected_metadata = "modrm";
     else if (!contains_key(Operand_type, curr)) continue;  // ignore unrecognized metadata
     if (found) {
@@ -377,14 +377,16 @@ void test_check_missing_mod_argument() {
 void check_arguments_modrm(const line& inst, const word& op) {
   if (all_hex_bytes(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
   check_argument_metadata_present(inst, "mod", op);
-  check_argument_metadata_present(inst, "rm32", op);
+  if (!has_argument_metadata(inst, "rm32") && !has_argument_metadata(inst, "xm32"))
+    raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": missing rm32 (or xm32) argument\n" << end();
   // no check for r32; some instructions don't use it; just assume it's 0 if missing
   if (op.data == "81" || op.data == "8f" || op.data == "f7" || op.data == "ff") {  // keep sync'd with 'help subop'
     check_argument_metadata_present(inst, "subop", op);
     check_argument_metadata_absent(inst, "r32", op, "should be replaced by subop");
+    check_argument_metadata_absent(inst, "x32", op, "should be replaced by subop");
   }
   if (trace_contains_errors()) return;
-  if (metadata(inst, "rm32").data != "4") return;
+  if (metadata_m32(inst).data != "4") return;
   // SIB byte checks
   uint8_t mod = hex_byte(metadata(inst, "mod").data);
   if (mod != /*direct*/3) {
@@ -396,6 +398,13 @@ void check_arguments_modrm(const line& inst, const word& op) {
     check_argument_metadata_absent(inst, "index", op, "direct mode");
   }
   // no check for scale; 0 (2**0 = 1) by default
+}
+
+word metadata_m32(const line& inst) {
+  for (int i = 0;  i < SIZE(inst.words);  ++i)
+    if (has_argument_metadata(inst.words.at(i), "rm32") || has_argument_metadata(inst.words.at(i), "xm32"))
+      return inst.words.at(i);
+  assert(false);
 }
 
 // same as compare_bitvector, with one additional exception for modrm-based
@@ -505,7 +514,7 @@ void test_check_missing_rm32_argument() {
       "81 0/add/subop 0/mod            1/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
-      "error: '81 0/add/subop 0/mod 1/imm32' (combine rm32 with imm32 based on subop): missing rm32 argument\n"
+      "error: '81 0/add/subop 0/mod 1/imm32' (combine rm32 with imm32 based on subop): missing rm32 (or xm32) argument\n"
   );
 }
 

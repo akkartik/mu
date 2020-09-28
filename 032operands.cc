@@ -18,9 +18,10 @@ put_new(Help, "instructions",
   "Each argument has a type. An instruction won't have more than one argument of\n"
   "any type.\n"
   "Each instruction has some set of allowed argument types. It'll reject others.\n"
-  "The complete list of argument types: mod, subop, r32 (register), rm32\n"
-  "(register or memory), scale, index, base, disp8, disp16, disp32, imm8,\n"
-  "imm32.\n"
+  "The complete list of argument types: mod, subop, r32 (integer register),\n"
+  "rm32 (integer register or memory), x32 (floating point register),\n"
+  "xm32 (floating point register or memory), scale, index, base, disp8, disp16,\n"
+  "disp32,imm8,imm32.\n"
   "Each of these has its own help page. Try reading 'bootstrap help mod' next.\n"
 );
 :(before "End Help Contents")
@@ -51,10 +52,12 @@ set<string> Instruction_arguments;
 Instruction_arguments.insert("subop");
 Instruction_arguments.insert("mod");
 Instruction_arguments.insert("rm32");
+Instruction_arguments.insert("xm32");
 Instruction_arguments.insert("base");
 Instruction_arguments.insert("index");
 Instruction_arguments.insert("scale");
 Instruction_arguments.insert("r32");
+Instruction_arguments.insert("x32");
 Instruction_arguments.insert("disp8");
 Instruction_arguments.insert("disp16");
 Instruction_arguments.insert("disp32");
@@ -93,18 +96,37 @@ void init_argument_type_help() {
     "the two use the same bits.\n"
   );
   put(Help, "r32",
-    "3-bit argument specifying a register argument used directly, without any further addressing modes.\n"
+    "3-bit argument specifying an integer register argument used directly,\n"
+    "without any further addressing modes.\n"
+  );
+  put(Help, "x32",
+    "3-bit argument specifying a floating-point register argument used directly,\n"
+    "without any further addressing modes.\n"
   );
   put(Help, "rm32",
-    "32-bit value in register or memory. The precise details of its construction\n"
-    "depend on the eponymous 3-bit 'rm32' argument, the 'mod' argument, and also\n"
-    "potentially the 'SIB' arguments ('scale', 'index' and 'base') and a displacement\n"
-    "('disp8' or 'disp32').\n"
+    "32-bit value in an integer register or memory. The precise details of its\n"
+    "construction depend on the eponymous 3-bit 'rm32' argument, the 'mod' argument,\n"
+    "and also potentially the 'SIB' arguments ('scale', 'index' and 'base')\n"
+    "and a displacement ('disp8' or 'disp32').\n"
     "\n"
     "For complete details, spend some time with two tables in the IA-32 software\n"
     "developer's manual that are also included in this repo:\n"
     "  - modrm.pdf: volume 2, table 2-2, \"32-bit addressing with the ModR/M byte.\".\n"
     "  - sib.pdf: volume 2, table 2-3, \"32-bit addressing with the SIB byte.\".\n"
+  );
+  put(Help, "xm32",
+    "32-bit value in a floating-point register or memory. The precise details of its\n"
+    "construction depend on the eponymous 3-bit 'rm32' argument, the 'mod' argument,\n"
+    "and also potentially the 'SIB' arguments ('scale', 'index' and 'base')\n"
+    "and a displacement ('disp8' or 'disp32').\n"
+    "\n"
+    "For complete details, spend some time with two tables in the IA-32 software\n"
+    "developer's manual that are also included in this repo:\n"
+    "  - modrm.pdf: volume 2, table 2-2, \"32-bit addressing with the ModR/M byte.\".\n"
+    "  - sib.pdf: volume 2, table 2-3, \"32-bit addressing with the SIB byte.\".\n"
+    "\n"
+    "One subtlety here: while direct mode uses floating-point registers, other addressing\n"
+    "modes to construct memory addresses use integer registers."
   );
   put(Help, "base",
     "Additional 3-bit argument (when 'rm32' is 4, unless 'mod' is 3) specifying the\n"
@@ -210,6 +232,14 @@ void add_modrm_byte(const line& in, line& out) {
       emit = true;
     }
     else if (has_argument_metadata(curr, "r32")) {
+      reg_subop = hex_byte(curr.data);
+      emit = true;
+    }
+    else if (has_argument_metadata(curr, "xm32")) {
+      rm32 = hex_byte(curr.data);
+      emit = true;
+    }
+    else if (has_argument_metadata(curr, "x32")) {
       reg_subop = hex_byte(curr.data);
       emit = true;
     }
@@ -344,6 +374,76 @@ void test_pack_disp8_negative() {
   );
 }
 
+void test_pack_rm32_direct() {
+  run(
+      "== code 0x1\n"
+      // instruction                     effective address                                                   operand     displacement    immediate\n"
+      // op          subop               mod             rm32          base        index         scale       r32\n"
+      // 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes\n"
+      "  01                              3/mod/direct    3/rm32/ebx                                          0/r32/eax                                \n"  // add EAX to EBX
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction '01 3/mod/direct 3/rm32/ebx 0/r32/eax'\n"
+      "transform: instruction after packing: '01 c3'\n"
+  );
+}
+
+void test_pack_rm32_indirect() {
+  transform(
+      "== code 0x1\n"
+      // instruction                     effective address                                                   operand     displacement    immediate\n"
+      // op          subop               mod             rm32          base        index         scale       r32\n"
+      // 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes\n"
+      "  01                              0/mod/indirect  3/rm32/ebx                                          0/r32/eax                                \n"  // add EAX to *EBX
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction '01 0/mod/indirect 3/rm32/ebx 0/r32/eax'\n"
+      "transform: instruction after packing: '01 03'\n"
+  );
+}
+
+void test_pack_x32() {
+  run(
+      "== code 0x1\n"
+      // instruction                     effective address                                                   operand     displacement    immediate\n"
+      // op          subop               mod             rm32          base        index         scale       r32\n"
+      // 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes\n"
+      "  f3 0f 2a                        3/mod/direct    3/rm32/ebx                                          1/x32                                    \n"  // convert EBX to XMM1
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'f3 0f 2a 3/mod/direct 3/rm32/ebx 1/x32'\n"
+      "transform: instruction after packing: 'f3 0f 2a cb'\n"
+  );
+}
+
+void test_pack_xm32_direct() {
+  transform(
+      "== code 0x1\n"
+      // instruction                     effective address                                                   operand     displacement    immediate\n"
+      // op          subop               mod             rm32          base        index         scale       r32\n"
+      // 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes\n"
+      "  f3 0f 5e                        3/mod/direct    3/xm32                                              1/x32                                    \n"  // divide XMM1 by XMM3
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'f3 0f 5e 3/mod/direct 3/xm32 1/x32'\n"
+      "transform: instruction after packing: 'f3 0f 5e cb'\n"
+  );
+}
+
+void test_pack_xm32_indirect() {
+  transform(
+      "== code 0x1\n"
+      // instruction                     effective address                                                   operand     displacement    immediate\n"
+      // op          subop               mod             rm32          base        index         scale       r32\n"
+      // 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes\n"
+      "  f3 0f 5e                        0/mod/indirect  3/rm32/ebx                                          1/x32                                    \n"  // divide XMM1 by *EBX
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'f3 0f 5e 0/mod/indirect 3/rm32/ebx 1/x32'\n"
+      "transform: instruction after packing: 'f3 0f 5e 0b'\n"
+  );
+}
+
 //: helper for scenario
 void transform(const string& text_bytes) {
   program p;
@@ -359,10 +459,10 @@ void test_pack_modrm_imm32() {
       // instruction                     effective address                                                   operand     displacement    immediate\n"
       // op          subop               mod             rm32          base        index         scale       r32\n"
       // 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes\n"
-      "  81          0/add/subop         3/mod/direct    3/ebx/rm32                                                                      1/imm32      \n"  // add 1 to EBX
+      "  81          0/add/subop         3/mod/direct    3/rm32/ebx                                                                      1/imm32      \n"  // add 1 to EBX
   );
   CHECK_TRACE_CONTENTS(
-      "transform: packing instruction '81 0/add/subop 3/mod/direct 3/ebx/rm32 1/imm32'\n"
+      "transform: packing instruction '81 0/add/subop 3/mod/direct 3/rm32/ebx 1/imm32'\n"
       "transform: instruction after packing: '81 c3 01 00 00 00'\n"
   );
 }

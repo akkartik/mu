@@ -39,7 +39,7 @@ bzero(Xmm, sizeof(Xmm));
 cerr << "  registers\n";
 :(before "End Help Texts")
 put_new(Help, "registers",
-  "SubX supports 16 registers: eight 32-bit integer registers and eight double-precision\n"
+  "SubX supports 16 registers: eight 32-bit integer registers and eight single-precision\n"
   "floating-point registers. From 0 to 7, they are:\n"
   "  integer: EAX ECX EDX EBX ESP EBP ESI EDI\n"
   "  floating point: XMM0 XMM1 XMM2 XMM3 XMM4 XMM5 XMM6 XMM7\n"
