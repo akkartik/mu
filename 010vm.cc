@@ -3,7 +3,7 @@
 
 //:: registers
 //: assume segment registers are hard-coded to 0
-//: no floating-point, MMX, etc. yet
+//: no MMX, etc.
 
 :(before "End Types")
 enum {
@@ -28,12 +28,21 @@ uint32_t EIP = 1;  // preserve null pointer
 bzero(Reg, sizeof(Reg));
 EIP = 1;  // preserve null pointer
 
+:(before "End Types")
+const int NUM_XMM_REGISTERS = 8;
+float Xmm[NUM_XMM_REGISTERS] = { 0.0 };
+const string Xname[NUM_XMM_REGISTERS] = { "XMM0", "XMM1", "XMM2", "XMM3", "XMM4", "XMM5", "XMM6", "XMM7" };
+:(before "End Reset")
+bzero(Xmm, sizeof(Xmm));
+
 :(before "End Help Contents")
 cerr << "  registers\n";
 :(before "End Help Texts")
 put_new(Help, "registers",
-  "SubX currently supports eight 32-bit integer registers. From 0 to 7, they are:\n"
-  "  EAX ECX EDX EBX ESP EBP ESI EDI\n"
+  "SubX supports 16 registers: eight 32-bit integer registers and eight double-precision\n"
+  "floating-point registers. From 0 to 7, they are:\n"
+  "  integer: EAX ECX EDX EBX ESP EBP ESI EDI\n"
+  "  floating point: XMM0 XMM1 XMM2 XMM3 XMM4 XMM5 XMM6 XMM7\n"
   "ESP contains the top of the stack.\n"
   "\n"
   "-- 8-bit registers\n"

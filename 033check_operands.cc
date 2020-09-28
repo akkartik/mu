@@ -610,8 +610,23 @@ void check_operands_0f(const line& inst) {
   check_operands_0f(inst, op);
 }
 
-void check_operands_f3(const line& /*unused*/) {
-  raise << "no supported opcodes starting with f3\n" << end();
+void check_operands_f3(const line& inst) {
+  assert(inst.words.at(0).data == "f3");
+  if (SIZE(inst.words) == 1) {
+    raise << "opcode 'f3' requires a second opcode\n" << end();
+    return;
+  }
+  word op = preprocess_op(inst.words.at(1));
+  if (op.data == "0f") {
+    word op2 = preprocess_op(inst.words.at(2));
+    check_operands_f3_0f(inst, op2);
+    return;
+  }
+  if (!contains_key(Name_f3, op.data)) {
+    raise << "unknown 2-byte opcode 'f3 " << op.data << "'\n" << end();
+    return;
+  }
+  check_operands_f3(inst, op);
 }
 
 void test_check_missing_disp32_operand() {
@@ -666,6 +681,15 @@ put_new(Permitted_operands_0f, "9d", 0x01);
 put_new(Permitted_operands_0f, "9e", 0x01);
 put_new(Permitted_operands_0f, "9f", 0x01);
 
+:(before "End Globals")
+map</*op*/string, /*bitvector*/uint8_t> Permitted_operands_f3;
+map</*op*/string, /*bitvector*/uint8_t> Permitted_operands_f3_0f;
+:(before "End Init Permitted Operands")
+//// Class M: using ModR/M byte
+//  imm32 imm8  disp32 |disp16  disp8 subop modrm
+//  0     0     0      |0       0     0     1
+put_new(Permitted_operands_f3_0f, "2a", 0x01);
+
 :(code)
 void check_operands_0f(const line& inst, const word& op) {
   uint8_t expected_bitvector = get(Permitted_operands_0f, op.data);
@@ -678,11 +702,49 @@ void check_operands_0f(const line& inst, const word& op) {
   }
 }
 
+void check_operands_f3(const line& inst, const word& op) {
+  uint8_t expected_bitvector = get(Permitted_operands_f3, op.data);
+  if (HAS(expected_bitvector, MODRM)) {
+    check_operands_modrm(inst, op);
+    compare_bitvector_modrm(inst, expected_bitvector, maybe_name_f3(op));
+  }
+  else {
+    compare_bitvector(inst, CLEAR(expected_bitvector, MODRM), maybe_name_f3(op));
+  }
+}
+
+void check_operands_f3_0f(const line& inst, const word& op) {
+  uint8_t expected_bitvector = get(Permitted_operands_f3_0f, op.data);
+  if (HAS(expected_bitvector, MODRM)) {
+    check_operands_modrm(inst, op);
+    compare_bitvector_modrm(inst, expected_bitvector, maybe_name_f3_0f(op));
+  }
+  else {
+    compare_bitvector(inst, CLEAR(expected_bitvector, MODRM), maybe_name_f3_0f(op));
+  }
+}
+
 string maybe_name_0f(const word& op) {
   if (!is_hex_byte(op)) return "";
   if (!contains_key(Name_0f, op.data)) return "";
   // strip stuff in parens from the name
   const string& s = get(Name_0f, op.data);
+  return " ("+s.substr(0, s.find(" ("))+')';
+}
+
+string maybe_name_f3(const word& op) {
+  if (!is_hex_byte(op)) return "";
+  if (!contains_key(Name_f3, op.data)) return "";
+  // strip stuff in parens from the name
+  const string& s = get(Name_f3, op.data);
+  return " ("+s.substr(0, s.find(" ("))+')';
+}
+
+string maybe_name_f3_0f(const word& op) {
+  if (!is_hex_byte(op)) return "";
+  if (!contains_key(Name_f3_0f, op.data)) return "";
+  // strip stuff in parens from the name
+  const string& s = get(Name_f3_0f, op.data);
   return " ("+s.substr(0, s.find(" ("))+')';
 }
 

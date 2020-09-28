@@ -37,14 +37,17 @@ opcodes`.
 
 The registers instructions operate on are as follows:
 
-- Six general-purpose 32-bit registers: `0/eax`, `1/ebx`, `2/ecx`, `3/edx`,
-  `6/esi` and `7/edi`.
+- Six 32-bit integer registers: `0/eax`, `1/ebx`, `2/ecx`, `3/edx`, `6/esi`
+  and `7/edi`.
 - Two additional 32-bit registers: `4/esp` and `5/ebp`. (I suggest you only
   use these to manage the call stack.)
+- Eight 8-bit integer registers aliased with parts of the 32-bit registers:
+  `0/al`, `1/cl`, `2/dl`, `3/bl`, `4/ah`, `5/ch`, `6/dh` and `7/bh`.
+- Eight 32-bit floating-point registers: `xmm0` through `xmm7`.
 
-(SubX doesn't support floating-point registers yet. Intel processors support
-an 8-bit mode, 16-bit mode and 64-bit mode. SubX will never support them.
-There are also _many_ more instructions that SubX will never support.)
+(Intel processors support a 16-bit mode and 64-bit mode. SubX will never
+support them. There are also _many_ more instructions that SubX will never
+support.)
 
 While SubX doesn't provide the usual mnemonics for opcodes, it _does_ provide
 error-checking. If you miss an argument or accidentally add an extra argument,
