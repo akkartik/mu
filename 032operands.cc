@@ -127,7 +127,7 @@ void init_argument_type_help() {
     "\n"
     "One subtlety here: while /xm32 refers to floating-point registers in direct mode\n"
     "(when /mod is 3), other addressing modes to construct memory addresses use integer registers\n"
-    "(just like /rm32). Other than that, its behavior is identical to /rm32.\n"
+    "(just like /rm32). Other than direct mode, its behavior is identical to /rm32.\n"
   );
   put(Help, "base",
     "Additional 3-bit argument (when 'rm32' is 4, unless 'mod' is 3) specifying the\n"
