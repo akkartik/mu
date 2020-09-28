@@ -2252,10 +2252,10 @@ emit-modrm:  # line: (addr stream byte), out: (addr buffered-file)
     #     if (has-metadata?(word-slice, "mod"))
     #       mod = parse-hex-int-from-slice(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
-    #     else if (has-metadata?(word-slice, "rm32"))
+    #     else if has-metadata?(word-slice, "rm32") or has-metadata?(word-slice, "xm32")
     #       rm32 = parse-hex-int-from-slice(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
-    #     else if (has-metadata?(word-slice, "r32") or has-metadata?(word-slice, "subop"))
+    #     else if has-metadata?(word-slice, "r32") or has-metadata?(word-slice, "x32") or has-metadata?(word-slice, "subop")
     #       r32 = parse-hex-int-from-slice(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
     #   if has-modrm?
@@ -2443,8 +2443,36 @@ $emit-modrm:check-for-rm32:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-=  $emit-modrm:check-for-r32/disp8
+    74/jump-if-=  $emit-modrm:check-for-xm32/disp8
 $emit-modrm:rm32:
+    # rm32 = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
+    # . eax = parse-datum-of-word(word-slice)
+    # . . push args
+    51/push-ecx
+    # . . call
+    e8/call  parse-datum-of-word/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . rm32 = eax
+    89/copy                         3/mod/direct    6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to esi
+    # has-modrm? = true
+    ba/copy-to-edx  1/imm32/true
+    # continue
+    e9/jump  $emit-modrm:loop/disp32
+$emit-modrm:check-for-xm32:
+    # if (has-metadata?(word-slice, "xm32"))
+    # . eax = has-metadata?(ecx, "xm32")
+    # . . push args
+    68/push  "xm32"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  has-metadata?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax == false) goto next check
+    3d/compare-eax-and  0/imm32/false
+    74/jump-if-=  $emit-modrm:check-for-r32/disp8
+$emit-modrm:xm32:
     # rm32 = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
     # . eax = parse-datum-of-word(word-slice)
     # . . push args
@@ -2471,8 +2499,36 @@ $emit-modrm:check-for-r32:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-=  $emit-modrm:check-for-subop/disp8
+    74/jump-if-=  $emit-modrm:check-for-x32/disp8
 $emit-modrm:r32:
+    # r32 = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
+    # . eax = parse-datum-of-word(word-slice)
+    # . . push args
+    51/push-ecx
+    # . . call
+    e8/call  parse-datum-of-word/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . r32 = eax
+    89/copy                         3/mod/direct    7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to edi
+    # has-modrm? = true
+    ba/copy-to-edx  1/imm32/true
+    # continue
+    e9/jump  $emit-modrm:loop/disp32
+$emit-modrm:check-for-x32:
+    # if (has-metadata?(word-slice, "x32"))
+    # . eax = has-metadata?(ecx, "x32")
+    # . . push args
+    68/push  "x32"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  has-metadata?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax == false) goto next check
+    3d/compare-eax-and  0/imm32/false
+    74/jump-if-=  $emit-modrm:check-for-subop/disp8
+$emit-modrm:x32:
     # r32 = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
     # . eax = parse-datum-of-word(word-slice)
     # . . push args
