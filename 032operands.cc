@@ -116,7 +116,7 @@ void init_argument_type_help() {
   );
   put(Help, "xm32",
     "32-bit value in a floating-point register or memory. The precise details of its\n"
-    "construction depend on the eponymous 3-bit 'rm32' argument, the 'mod' argument,\n"
+    "construction depend on the eponymous 3-bit 'xm32' argument, the 'mod' argument,\n"
     "and also potentially the 'SIB' arguments ('scale', 'index' and 'base')\n"
     "and a displacement ('disp8' or 'disp32').\n"
     "\n"
@@ -125,8 +125,9 @@ void init_argument_type_help() {
     "  - modrm.pdf: volume 2, table 2-2, \"32-bit addressing with the ModR/M byte.\".\n"
     "  - sib.pdf: volume 2, table 2-3, \"32-bit addressing with the SIB byte.\".\n"
     "\n"
-    "One subtlety here: while direct mode uses floating-point registers, other addressing\n"
-    "modes to construct memory addresses use integer registers."
+    "One subtlety here: while /xm32 refers to floating-point registers in direct mode\n"
+    "(when /mod is 3), other addressing modes to construct memory addresses use integer registers\n"
+    "(just like /rm32). Other than that, its behavior is identical to /rm32.\n"
   );
   put(Help, "base",
     "Additional 3-bit argument (when 'rm32' is 4, unless 'mod' is 3) specifying the\n"
