@@ -185,6 +185,9 @@ inline uint32_t read_mem_u32(uint32_t addr) {
 inline int32_t read_mem_i32(uint32_t addr) {
   return static_cast<int32_t>(read_mem_u32(addr));
 }
+inline float read_mem_f32(uint32_t addr) {
+  return static_cast<float>(read_mem_u32(addr));
+}
 
 inline uint8_t* mem_addr_u8(uint32_t addr) {
   uint8_t* result = NULL;
@@ -223,6 +226,9 @@ inline uint32_t* mem_addr_u32(uint32_t addr) {
 }
 inline int32_t* mem_addr_i32(uint32_t addr) {
   return reinterpret_cast<int32_t*>(mem_addr_u32(addr));
+}
+inline float* mem_addr_f32(uint32_t addr) {
+  return reinterpret_cast<float*>(mem_addr_u32(addr));
 }
 // helper for some syscalls. But read-only.
 inline const char* mem_addr_kernel_string(uint32_t addr) {

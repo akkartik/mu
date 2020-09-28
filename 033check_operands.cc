@@ -689,6 +689,7 @@ map</*op*/string, /*bitvector*/uint8_t> Permitted_operands_f3_0f;
 //  imm32 imm8  disp32 |disp16  disp8 subop modrm
 //  0     0     0      |0       0     0     1
 put_new(Permitted_operands_f3_0f, "2a", 0x01);
+put_new(Permitted_operands_f3_0f, "5e", 0x01);
 
 :(code)
 void check_operands_0f(const line& inst, const word& op) {
