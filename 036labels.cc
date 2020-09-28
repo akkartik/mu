@@ -41,7 +41,7 @@ void test_Entry_label() {
 if (SIZE(s) == 2) return true;
 
 :(code)
-void test_pack_immediate_ignores_single_byte_nondigit_operand() {
+void test_pack_immediate_ignores_single_byte_nondigit_argument() {
   Hide_errors = true;
   transform(
       "== code 0x1\n"
@@ -54,7 +54,7 @@ void test_pack_immediate_ignores_single_byte_nondigit_operand() {
   );
 }
 
-void test_pack_immediate_ignores_3_hex_digit_operand() {
+void test_pack_immediate_ignores_3_hex_digit_argument() {
   Hide_errors = true;
   transform(
       "== code 0x1\n"
@@ -67,7 +67,7 @@ void test_pack_immediate_ignores_3_hex_digit_operand() {
   );
 }
 
-void test_pack_immediate_ignores_non_hex_operand() {
+void test_pack_immediate_ignores_non_hex_argument() {
   Hide_errors = true;
   transform(
       "== code 0x1\n"
@@ -136,17 +136,17 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
       Source_lines_file << "0x" << HEXWORD << (code.start + current_byte) << ' ' << inst.original << '\n';
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
       const word& curr = inst.words.at(j);
-      // hack: if we have any operand metadata left after previous transforms,
+      // hack: if we have any argument metadata left after previous transforms,
       // deduce its size
       // Maybe we should just move this transform to before instruction
-      // packing, and deduce the size of *all* operands. But then we'll also
+      // packing, and deduce the size of *all* arguments. But then we'll also
       // have to deal with bitfields.
-      if (has_operand_metadata(curr, "disp32") || has_operand_metadata(curr, "imm32")) {
+      if (has_argument_metadata(curr, "disp32") || has_argument_metadata(curr, "imm32")) {
         if (*curr.data.rbegin() == ':')
           raise << "'" << to_string(inst) << "': don't use ':' when jumping to labels\n" << end();
         current_byte += 4;
       }
-      else if (has_operand_metadata(curr, "disp16")) {
+      else if (has_argument_metadata(curr, "disp16")) {
         if (*curr.data.rbegin() == ':')
           raise << "'" << to_string(inst) << "': don't use ':' when jumping to labels\n" << end();
         current_byte += 2;
@@ -160,8 +160,8 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
         // ensure labels look sufficiently different from raw hex
         check_valid_name(label);
         if (trace_contains_errors()) return;
-        if (contains_any_operand_metadata(curr))
-          raise << "'" << to_string(inst) << "': label definition (':') not allowed in operand\n" << end();
+        if (contains_any_argument_metadata(curr))
+          raise << "'" << to_string(inst) << "': label definition (':') not allowed in argument\n" << end();
         if (j > 0)
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
         if (Labels_file.is_open())
@@ -224,21 +224,21 @@ void replace_labels_with_displacements(segment& code, const map<string, int32_t>
       const word& curr = inst.words.at(j);
       if (contains_key(byte_index, curr.data)) {
         int32_t displacement = static_cast<int32_t>(get(byte_index, curr.data)) - byte_index_next_instruction_starts_at;
-        if (has_operand_metadata(curr, "disp8")) {
+        if (has_argument_metadata(curr, "disp8")) {
           if (displacement > 0x7f || displacement < -0x7f)
             raise << "'" << to_string(inst) << "': label too far away for displacement " << std::hex << displacement << " to fit in 8 signed bits\n" << end();
           else
             emit_hex_bytes(new_inst, displacement, 1);
         }
-        else if (has_operand_metadata(curr, "disp16")) {
+        else if (has_argument_metadata(curr, "disp16")) {
           if (displacement > 0x7fff || displacement < -0x7fff)
             raise << "'" << to_string(inst) << "': label too far away for displacement " << std::hex << displacement << " to fit in 16 signed bits\n" << end();
           else
             emit_hex_bytes(new_inst, displacement, 2);
         }
-        else if (has_operand_metadata(curr, "disp32")) {
+        else if (has_argument_metadata(curr, "disp32")) {
           emit_hex_bytes(new_inst, displacement, 4);
-        } else if (has_operand_metadata(curr, "imm32")) {
+        } else if (has_argument_metadata(curr, "imm32")) {
           emit_hex_bytes(new_inst, code.start + get(byte_index, curr.data), 4);
         }
       }

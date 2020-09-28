@@ -1,7 +1,7 @@
 //: Global variables.
 //:
 //: Global variables are just labels in the data segment.
-//: However, they can only be used in imm32 and not disp32 operands. And they
+//: However, they can only be used in imm32 and not disp32 arguments. And they
 //: can't be used with jump and call instructions.
 //:
 //: This layer has much the same structure as rewriting labels.
@@ -119,17 +119,17 @@ void replace_global_variables_in_data_segment(segment& data, const map<string, u
       const word& curr = l.words.at(j);
       if (!contains_key(address, curr.data)) {
         if (looks_like_hex_int(curr.data)) {
-          if (has_operand_metadata(curr, "imm32"))
+          if (has_argument_metadata(curr, "imm32"))
             emit_hex_bytes(new_l, curr, 4);
-          else if (has_operand_metadata(curr, "imm16"))
+          else if (has_argument_metadata(curr, "imm16"))
             emit_hex_bytes(new_l, curr, 2);
-          else if (has_operand_metadata(curr, "imm8"))
+          else if (has_argument_metadata(curr, "imm8"))
             emit_hex_bytes(new_l, curr, 1);
-          else if (has_operand_metadata(curr, "disp8"))
+          else if (has_argument_metadata(curr, "disp8"))
             raise << "can't use /disp8 in a non-code segment\n" << end();
-          else if (has_operand_metadata(curr, "disp16"))
+          else if (has_argument_metadata(curr, "disp16"))
             raise << "can't use /disp16 in a non-code segment\n" << end();
-          else if (has_operand_metadata(curr, "disp32"))
+          else if (has_argument_metadata(curr, "disp32"))
             raise << "can't use /disp32 in a non-code segment\n" << end();
           else
             new_l.words.push_back(curr);
@@ -149,13 +149,13 @@ void replace_global_variables_in_data_segment(segment& data, const map<string, u
 }
 
 bool valid_use_of_global_variable(const word& curr) {
-  if (has_operand_metadata(curr, "imm32")) return true;
+  if (has_argument_metadata(curr, "imm32")) return true;
   // End Valid Uses Of Global Variable(curr)
   return false;
 }
 
 //:: a more complex sanity check for how we use global variables
-//: requires first saving some data early before we pack operands
+//: requires first saving some data early before we pack arguments
 
 :(after "Begin Transforms")
 Transform.push_back(correlate_disp32_with_mod);
@@ -167,18 +167,18 @@ void correlate_disp32_with_mod(program& p) {
     line& inst = code.lines.at(i);
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
       word& curr = inst.words.at(j);
-      if (has_operand_metadata(curr, "disp32")
-          && has_operand_metadata(inst, "mod"))
+      if (has_argument_metadata(curr, "disp32")
+          && has_argument_metadata(inst, "mod"))
         curr.metadata.push_back("has_mod");
     }
   }
 }
 
 :(before "End Valid Uses Of Global Variable(curr)")
-if (has_operand_metadata(curr, "disp32"))
+if (has_argument_metadata(curr, "disp32"))
   return has_metadata(curr, "has_mod");
 // todo: more sophisticated check, to ensure we don't use global variable
-// addresses as a real displacement added to other operands.
+// addresses as a real displacement added to other arguments.
 
 :(code)
 bool has_metadata(const word& w, const string& m) {

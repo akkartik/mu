@@ -7,18 +7,18 @@
 //: metastasizes at runtime into kilobytes of misinterpreted instructions.
 //:
 //: To mitigate these issues, we'll start programming in terms of logical
-//: operands rather than physical bytes. Some operands are smaller than a
+//: arguments rather than physical bytes. Some arguments are smaller than a
 //: byte, and others may consist of multiple bytes. This layer will correctly
-//: pack and order the bytes corresponding to the operands in an instruction.
+//: pack and order the bytes corresponding to the arguments in an instruction.
 
 :(before "End Help Texts")
 put_new(Help, "instructions",
   "Each x86 instruction consists of an instruction or opcode and some number\n"
-  "of operands.\n"
-  "Each operand has a type. An instruction won't have more than one operand of\n"
+  "of arguments.\n"
+  "Each argument has a type. An instruction won't have more than one argument of\n"
   "any type.\n"
-  "Each instruction has some set of allowed operand types. It'll reject others.\n"
-  "The complete list of operand types: mod, subop, r32 (register), rm32\n"
+  "Each instruction has some set of allowed argument types. It'll reject others.\n"
+  "The complete list of argument types: mod, subop, r32 (register), rm32\n"
   "(register or memory), scale, index, base, disp8, disp16, disp32, imm8,\n"
   "imm32.\n"
   "Each of these has its own help page. Try reading 'bootstrap help mod' next.\n"
@@ -43,32 +43,32 @@ void test_pack_immediate_constants() {
   );
 }
 
-//: complete set of valid operand types
+//: complete set of valid argument types
 
 :(before "End Globals")
-set<string> Instruction_operands;
+set<string> Instruction_arguments;
 :(before "End One-time Setup")
-Instruction_operands.insert("subop");
-Instruction_operands.insert("mod");
-Instruction_operands.insert("rm32");
-Instruction_operands.insert("base");
-Instruction_operands.insert("index");
-Instruction_operands.insert("scale");
-Instruction_operands.insert("r32");
-Instruction_operands.insert("disp8");
-Instruction_operands.insert("disp16");
-Instruction_operands.insert("disp32");
-Instruction_operands.insert("imm8");
-Instruction_operands.insert("imm32");
+Instruction_arguments.insert("subop");
+Instruction_arguments.insert("mod");
+Instruction_arguments.insert("rm32");
+Instruction_arguments.insert("base");
+Instruction_arguments.insert("index");
+Instruction_arguments.insert("scale");
+Instruction_arguments.insert("r32");
+Instruction_arguments.insert("disp8");
+Instruction_arguments.insert("disp16");
+Instruction_arguments.insert("disp32");
+Instruction_arguments.insert("imm8");
+Instruction_arguments.insert("imm32");
 
 :(before "End Help Texts")
-init_operand_type_help();
+init_argument_type_help();
 :(code)
-void init_operand_type_help() {
+void init_argument_type_help() {
   put(Help, "mod",
-    "2-bit operand controlling the _addressing mode_ of many instructions,\n"
+    "2-bit argument controlling the _addressing mode_ of many instructions,\n"
     "to determine how to compute the _effective address_ to look up memory at\n"
-    "based on the 'rm32' operand and potentially others.\n"
+    "based on the 'rm32' argument and potentially others.\n"
     "\n"
     "If mod = 3, just operate on the contents of the register specified by rm32\n"
     "            (direct mode).\n"
@@ -87,18 +87,18 @@ void init_operand_type_help() {
     "  - sib.pdf: volume 2, table 2-3, \"32-bit addressing with the SIB byte.\".\n"
   );
   put(Help, "subop",
-    "Additional 3-bit operand for determining the instruction when the opcode\n"
+    "Additional 3-bit argument for determining the instruction when the opcode\n"
     "is 81, 8f, d3, f7 or ff.\n"
-    "Can't coexist with operand of type 'r32' in a single instruction, because\n"
+    "Can't coexist with argument of type 'r32' in a single instruction, because\n"
     "the two use the same bits.\n"
   );
   put(Help, "r32",
-    "3-bit operand specifying a register operand used directly, without any further addressing modes.\n"
+    "3-bit argument specifying a register argument used directly, without any further addressing modes.\n"
   );
   put(Help, "rm32",
     "32-bit value in register or memory. The precise details of its construction\n"
-    "depend on the eponymous 3-bit 'rm32' operand, the 'mod' operand, and also\n"
-    "potentially the 'SIB' operands ('scale', 'index' and 'base') and a displacement\n"
+    "depend on the eponymous 3-bit 'rm32' argument, the 'mod' argument, and also\n"
+    "potentially the 'SIB' arguments ('scale', 'index' and 'base') and a displacement\n"
     "('disp8' or 'disp32').\n"
     "\n"
     "For complete details, spend some time with two tables in the IA-32 software\n"
@@ -107,26 +107,26 @@ void init_operand_type_help() {
     "  - sib.pdf: volume 2, table 2-3, \"32-bit addressing with the SIB byte.\".\n"
   );
   put(Help, "base",
-    "Additional 3-bit operand (when 'rm32' is 4, unless 'mod' is 3) specifying the\n"
+    "Additional 3-bit argument (when 'rm32' is 4, unless 'mod' is 3) specifying the\n"
     "register containing an address to look up.\n"
-    "This address may be further modified by 'index' and 'scale' operands.\n"
+    "This address may be further modified by 'index' and 'scale' arguments.\n"
     "  effective address = base + index*scale + displacement (disp8 or disp32)\n"
     "For complete details, spend some time with the IA-32 software developer's manual,\n"
     "volume 2, table 2-3, \"32-bit addressing with the SIB byte\".\n"
     "It is included in this repository as 'sib.pdf'.\n"
   );
   put(Help, "index",
-    "Optional 3-bit operand (when 'rm32' is 4 unless 'mod' is 3) that can be added to\n"
-    "the 'base' operand to compute the 'effective address' at which to look up memory.\n"
+    "Optional 3-bit argument (when 'rm32' is 4 unless 'mod' is 3) that can be added to\n"
+    "the 'base' argument to compute the 'effective address' at which to look up memory.\n"
     "  effective address = base + index*scale + displacement (disp8 or disp32)\n"
     "For complete details, spend some time with the IA-32 software developer's manual,\n"
     "volume 2, table 2-3, \"32-bit addressing with the SIB byte\".\n"
     "It is included in this repository as 'sib.pdf'.\n"
   );
   put(Help, "scale",
-    "Optional 2-bit operand (when 'rm32' is 4 unless 'mod' is 3) that encodes a\n"
-    "power of 2 to be multiplied to the 'index' operand before adding the result to\n"
-    "the 'base' operand to compute the _effective address_ to operate on.\n"
+    "Optional 2-bit argument (when 'rm32' is 4 unless 'mod' is 3) that encodes a\n"
+    "power of 2 to be multiplied to the 'index' argument before adding the result to\n"
+    "the 'base' argument to compute the _effective address_ to operate on.\n"
     "  effective address = base + index * scale + displacement (disp8 or disp32)\n"
     "\n"
     "When scale is 0, use index unmodified.\n"
@@ -156,27 +156,27 @@ void init_operand_type_help() {
   );
 }
 
-//:: transform packing operands into bytes in the right order
+//:: transform packing arguments into bytes in the right order
 
 :(after "Begin Transforms")
-Transform.push_back(pack_operands);
+Transform.push_back(pack_arguments);
 
 :(code)
-void pack_operands(program& p) {
+void pack_arguments(program& p) {
   if (p.segments.empty()) return;
   segment& code = *find(p, "code");
   // Pack Operands(segment code)
-  trace(3, "transform") << "-- pack operands" << end();
+  trace(3, "transform") << "-- pack arguments" << end();
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);
     if (all_hex_bytes(inst)) continue;
     trace(99, "transform") << "packing instruction '" << to_string(/*with metadata*/inst) << "'" << end();
-    pack_operands(inst);
+    pack_arguments(inst);
     trace(99, "transform") << "instruction after packing: '" << to_string(/*without metadata*/inst.words) << "'" << end();
   }
 }
 
-void pack_operands(line& inst) {
+void pack_arguments(line& inst) {
   line new_inst;
   add_opcodes(inst, new_inst);
   add_modrm_byte(inst, new_inst);
@@ -201,19 +201,19 @@ void add_modrm_byte(const line& in, line& out) {
   bool emit = false;
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_operand_metadata(curr, "mod")) {
+    if (has_argument_metadata(curr, "mod")) {
       mod = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_operand_metadata(curr, "rm32")) {
+    else if (has_argument_metadata(curr, "rm32")) {
       rm32 = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_operand_metadata(curr, "r32")) {
+    else if (has_argument_metadata(curr, "r32")) {
       reg_subop = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_operand_metadata(curr, "subop")) {
+    else if (has_argument_metadata(curr, "subop")) {
       reg_subop = hex_byte(curr.data);
       emit = true;
     }
@@ -227,15 +227,15 @@ void add_sib_byte(const line& in, line& out) {
   bool emit = false;
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_operand_metadata(curr, "scale")) {
+    if (has_argument_metadata(curr, "scale")) {
       scale = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_operand_metadata(curr, "index")) {
+    else if (has_argument_metadata(curr, "index")) {
       index = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_operand_metadata(curr, "base")) {
+    else if (has_argument_metadata(curr, "base")) {
       base = hex_byte(curr.data);
       emit = true;
     }
@@ -247,11 +247,11 @@ void add_sib_byte(const line& in, line& out) {
 void add_disp_bytes(const line& in, line& out) {
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_operand_metadata(curr, "disp8"))
+    if (has_argument_metadata(curr, "disp8"))
       emit_hex_bytes(out, curr, 1);
-    if (has_operand_metadata(curr, "disp16"))
+    if (has_argument_metadata(curr, "disp16"))
       emit_hex_bytes(out, curr, 2);
-    else if (has_operand_metadata(curr, "disp32"))
+    else if (has_argument_metadata(curr, "disp32"))
       emit_hex_bytes(out, curr, 4);
   }
 }
@@ -259,9 +259,9 @@ void add_disp_bytes(const line& in, line& out) {
 void add_imm_bytes(const line& in, line& out) {
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_operand_metadata(curr, "imm8"))
+    if (has_argument_metadata(curr, "imm8"))
       emit_hex_bytes(out, curr, 1);
-    else if (has_operand_metadata(curr, "imm32"))
+    else if (has_argument_metadata(curr, "imm32"))
       emit_hex_bytes(out, curr, 4);
   }
 }
@@ -435,7 +435,7 @@ bool all_hex_bytes(const line& inst) {
 }
 
 bool is_hex_byte(const word& curr) {
-  if (contains_any_operand_metadata(curr))
+  if (contains_any_argument_metadata(curr))
     return false;
   if (SIZE(curr.data) != 2)
     return false;
@@ -444,19 +444,19 @@ bool is_hex_byte(const word& curr) {
   return true;
 }
 
-bool contains_any_operand_metadata(const word& word) {
+bool contains_any_argument_metadata(const word& word) {
   for (int i = 0;  i < SIZE(word.metadata);  ++i)
-    if (Instruction_operands.find(word.metadata.at(i)) != Instruction_operands.end())
+    if (Instruction_arguments.find(word.metadata.at(i)) != Instruction_arguments.end())
       return true;
   return false;
 }
 
-bool has_operand_metadata(const line& inst, const string& m) {
+bool has_argument_metadata(const line& inst, const string& m) {
   bool result = false;
   for (int i = 0;  i < SIZE(inst.words);  ++i) {
-    if (!has_operand_metadata(inst.words.at(i), m)) continue;
+    if (!has_argument_metadata(inst.words.at(i), m)) continue;
     if (result) {
-      raise << "'" << to_string(inst) << "' has conflicting " << m << " operands\n" << end();
+      raise << "'" << to_string(inst) << "' has conflicting " << m << " arguments\n" << end();
       return false;
     }
     result = true;
@@ -464,14 +464,14 @@ bool has_operand_metadata(const line& inst, const string& m) {
   return result;
 }
 
-bool has_operand_metadata(const word& w, const string& m) {
+bool has_argument_metadata(const word& w, const string& m) {
   bool result = false;
   bool metadata_found = false;
   for (int i = 0;  i < SIZE(w.metadata);  ++i) {
     const string& curr = w.metadata.at(i);
-    if (Instruction_operands.find(curr) == Instruction_operands.end()) continue;  // ignore unrecognized metadata
+    if (Instruction_arguments.find(curr) == Instruction_arguments.end()) continue;  // ignore unrecognized metadata
     if (metadata_found) {
-      raise << "'" << w.original << "' has conflicting operand types; it should have only one\n" << end();
+      raise << "'" << w.original << "' has conflicting argument types; it should have only one\n" << end();
       return false;
     }
     metadata_found = true;
@@ -482,7 +482,7 @@ bool has_operand_metadata(const word& w, const string& m) {
 
 word metadata(const line& inst, const string& m) {
   for (int i = 0;  i < SIZE(inst.words);  ++i)
-    if (has_operand_metadata(inst.words.at(i), m))
+    if (has_argument_metadata(inst.words.at(i), m))
       return inst.words.at(i);
   assert(false);
 }

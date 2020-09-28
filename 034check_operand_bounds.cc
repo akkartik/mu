@@ -1,4 +1,4 @@
-//:: Check that the different operands of an instruction aren't too large for their bitfields.
+//:: Check that the different arguments of an instruction aren't too large for their bitfields.
 
 void test_check_bitfield_sizes() {
   Hide_errors = true;
@@ -28,22 +28,22 @@ put_new(Operand_bound, "imm8", 1<<8);
 // no bound needed for imm32
 
 :(before "Pack Operands(segment code)")
-check_operand_bounds(code);
+check_argument_bounds(code);
 if (trace_contains_errors()) return;
 :(code)
-void check_operand_bounds(const segment& code) {
-  trace(3, "transform") << "-- check operand bounds" << end();
+void check_argument_bounds(const segment& code) {
+  trace(3, "transform") << "-- check argument bounds" << end();
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     const line& inst = code.lines.at(i);
-    for (int j = first_operand(inst);  j < SIZE(inst.words);  ++j)
-      check_operand_bounds(inst.words.at(j));
+    for (int j = first_argument(inst);  j < SIZE(inst.words);  ++j)
+      check_argument_bounds(inst.words.at(j));
     if (trace_contains_errors()) return;  // stop at the first mal-formed instruction
   }
 }
 
-void check_operand_bounds(const word& w) {
+void check_argument_bounds(const word& w) {
   for (map<string, uint32_t>::iterator p = Operand_bound.begin();  p != Operand_bound.end();  ++p) {
-    if (!has_operand_metadata(w, p->first)) continue;
+    if (!has_argument_metadata(w, p->first)) continue;
     if (!looks_like_hex_int(w.data)) continue;  // later transforms are on their own to do their own bounds checking
     int32_t x = parse_int(w.data);
     if (x >= 0) {

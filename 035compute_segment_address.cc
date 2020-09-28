@@ -61,9 +61,9 @@ uint32_t num_bytes(const line& inst) {
 }
 
 int size_of(const word& w) {
-  if (has_operand_metadata(w, "disp32") || has_operand_metadata(w, "imm32"))
+  if (has_argument_metadata(w, "disp32") || has_argument_metadata(w, "imm32"))
     return 4;
-  else if (has_operand_metadata(w, "disp16"))
+  else if (has_argument_metadata(w, "disp16"))
     return 2;
   // End size_of(word w) Special-cases
   else
@@ -79,7 +79,7 @@ int size_of(const word& w) {
 //:   (num_bytes).
 //:
 //: Decision: compute segment addresses before expanding labels, by being
-//: aware in this layer of certain operand types that will eventually occupy
+//: aware in this layer of certain argument types that will eventually occupy
 //: multiple bytes.
 //:
 //: The layer to expand labels later hooks into num_bytes() to teach this
