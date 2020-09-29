@@ -415,8 +415,8 @@ Type-id:  # (stream (addr array byte))
   "grapheme"/imm32  # 14; smallest printable unit; will eventually be composed of multiple code-points, but currently corresponds 1:1
                     # only 4-byte graphemes in utf-8 are currently supported;
                     # unclear how we should deal with larger clusters.
+  "float"/imm32     # 15
   # Keep Primitive-type-ids in sync if you add types here.
-                                                          0/imm32
   # 0x40
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
@@ -426,7 +426,7 @@ Type-id:  # (stream (addr array byte))
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
 
 Primitive-type-ids:  # (addr int)
-  0x3c
+  0x40
 
 # == Type definitions
 # Program->types contains some typeinfo for each type definition.
@@ -21696,16 +21696,38 @@ subx-type-category-match?:  # a: (addr type-tree), b: (addr type-tree) -> result
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var alit/ecx: boolean = is-literal-type?(a)
-    (is-simple-mu-type? *(ebp+8) 0)  # => eax
+    # var cata/ecx: int = type-category(a)
+    (type-category *(ebp+8))  # => eax
     89/<- %ecx 0/r32/eax
-    # var blit/eax: boolean = is-literal-type?(b)
-    (is-simple-mu-type? *(ebp+0xc) 0)  # => eax
-    # return alit == blit
+    # var catb/eax: int = type-category(b)
+    (type-category *(ebp+0xc))  # => eax
+    # return cata == catb
     39/compare %eax 1/r32/ecx
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
 $subx-type-category-match?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+type-category:  # a: (addr type-tree) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var lit?/ecx: boolean = is-literal-type?(a)
+    (is-simple-mu-type? *(ebp+8) 0)  # => eax
+    89/<- %ecx 0/r32/eax
+    # var float?/eax: int = is-float?(a)
+    (is-simple-mu-type? *(ebp+0xc) 0xff)  # => eax
+    # set bits for lit? and float?
+    c1/shift 4/subop/left %ecx 1/imm8
+    09/or %eax 1/r32/ecx
+$type-category:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
