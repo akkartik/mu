@@ -127,16 +127,24 @@ var name/reg: type <- ...
 Variables on the stack are never initialized. (They're always implicitly
 zeroed them out.) Variables in registers are always initialized.
 
-Register variables can go in 6 registers: `eax`, `ebx`, `ecx`, `edx`, `esi`
-and `edi`. Defining a variable in a register either clobbers the previous
-variable (if it was defined in the same block) or shadows it temporarily (if
-it was defined in an outer block).
+Register variables can go in 6 integer registers: `eax`, `ebx`, `ecx`, `edx`,
+`esi` and `edi`. Floating-point values can also go in 8 other registers:
+`xmm0`, `xmm1`, `xmm2`, `xmm3`, `xmm4`, `xmm5`, `xmm6` and `xmm7`.
+
+Defining a variable in a register either clobbers the previous variable (if it
+was defined in the same block) or shadows it temporarily (if it was defined in
+an outer block).
 
 Variables exist from their definition until the end of their containing block.
 Register variables may also die earlier if their register is clobbered by a
 new variable.
 
-## Arithmetic primitives
+Variables on the stack can be of many types (but not `byte`). Variables in
+integer registers can only contain 32-bit values: `int`, `boolean`, `(addr
+...)`. Variables in floating-point registers can only contain values of type
+`float`.
+
+## Integer primitives
 
 Here is the list of arithmetic primitive operations supported by Mu. The name
 `n` indicates a literal integer rather than a variable, and `var/reg` indicates
@@ -207,6 +215,83 @@ first.
 Excluding dereferences, the above statements must operate on non-address
 primitive types: `int` or `boolean`. (Booleans are really just `int`s, and Mu
 assumes any value but `0` is true.)
+
+## Floating-point primitives
+
+These instructions may use the floating-point registers `xmm0` ... `xmm7`
+(denoted by `/xreg2` or `/xrm32`). They also use integer values on occasion
+(`/rm32` and `/r32`). They can't take literal floating-point values.
+
+```
+var/xreg <- add var2/xreg2
+var/xreg <- add var2
+var/xreg <- add *var2/reg2
+
+var/xreg <- subtract var2/xreg2
+var/xreg <- subtract var2
+var/xreg <- subtract *var2/reg2
+
+var/xreg <- multiply var2/xreg2
+var/xreg <- multiply var2
+var/xreg <- multiply *var2/reg2
+
+var/xreg <- divide var2/xreg2
+var/xreg <- divide var2
+var/xreg <- divide *var2/reg2
+
+var/xreg <- reciprocal var2/xreg2
+var/xreg <- reciprocal var2
+var/xreg <- reciprocal *var2/reg2
+
+var/xreg <- square-root var2/xreg2
+var/xreg <- square-root var2
+var/xreg <- square-root *var2/reg2
+
+var/xreg <- inverse-square-root var2/xreg2
+var/xreg <- inverse-square-root var2
+var/xreg <- inverse-square-root *var2/reg2
+
+var/xreg <- min var2/xreg2
+var/xreg <- min var2
+var/xreg <- min *var2/reg2
+
+var/xreg <- max var2/xreg2
+var/xreg <- max var2
+var/xreg <- max *var2/reg2
+
+Remember, when these instructions use indirect mode, they still use an integer
+register. Floating-point registers can't hold addresses.
+
+Most instructions operate exclusively on integer or floating-point operands.
+The only exceptions are the instructions for converting between integers and
+floating-point numbers.
+
+var/xreg <- convert var2/reg2
+var/xreg <- convert var2
+var/xreg <- convert *var2/reg2
+
+var/reg <- convert var2/xreg2
+var/reg <- convert var2
+var/reg <- convert *var2/reg2
+
+There are no instructions accepting floating-point literals. To obtain integer
+literals in floating-point registers, copy them to general-purpose registers
+and then convert them to floating-point.
+
+One pattern you may have noticed above is that the floating-point instructions
+above always write to registers. The only exceptions are `copy` instructions,
+which can write to memory locations.
+
+var/xreg <- copy var2/xreg2
+copy-to var1, var2/xreg
+var/xreg <- copy var2
+var/xreg <- copy *var2/reg2
+
+Floating-point comparisons always put a register on the left-hand side:
+
+compare var1/xreg1, var2/xreg2
+compare var1/xreg1, var2
+```
 
 ## Operating on individual bytes
 
