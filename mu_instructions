@@ -76,12 +76,12 @@ var/reg <- xor n                  => "81 6/subop/xor %" reg " " n "/imm32"
 xor-with var, n                   => "81 6/subop/xor *(ebp+" var.stack-offset ") " n "/imm32"
 xor-with *var/reg, n              => "81 6/subop/xor *" reg " " n "/imm32"
 
-var/reg <- shift-left n
-var/reg <- shift-right n
-var/reg <- shift-right-signed n
-shift-left var, n
-shift-right var, n
-shift-right-signed var, n
+var/reg <- shift-left n           => "c1/shift 4/subop/left %" reg " " n "/imm32"
+var/reg <- shift-right n          => "c1/shift 5/subop/right %" reg " " n "/imm32"
+var/reg <- shift-right-signed n   => "c1/shift 7/subop/right-signed %" reg " " n "/imm32"
+shift-left var, n                 => "c1/shift 4/subop/left *(ebp+" var.stack-offset ") " n "/imm32"
+shift-right var, n                => "c1/shift 5/subop/right *(ebp+" var.stack-offset ") " n "/imm32"
+shift-right-signed var, n         => "c1/shift 7/subop/right-signed *(ebp+" var.stack-offset ") " n "/imm32"
 
 var/eax <- copy n                 => "b8/copy-to-eax " n "/imm32"
 var/ecx <- copy n                 => "b9/copy-to-ecx " n "/imm32"
