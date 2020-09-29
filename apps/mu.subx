@@ -15180,11 +15180,8 @@ push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
     # *Curr-local-stack-offset -= 4
     81 5/subop/subtract *Curr-local-stack-offset 4/imm32
     # emit spill
-    (emit-indent *(ebp+8) *Curr-block-depth)
-    (write-buffered *(ebp+8) "ff 6/subop/push %")
     (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
-    (write-buffered *(ebp+8) %eax)
-    (write-buffered *(ebp+8) Newline)
+    (emit-push-register *(ebp+8) %eax)
 $push-output-and-maybe-emit-spill:push:
     8b/-> *(ebp+0xc) 1/r32/ecx
     (lookup *(ecx+0x14) *(ecx+0x18))  # Regvardef-outputs Regvardef-outputs => eax
@@ -15449,11 +15446,8 @@ $emit-cleanup-code-until-depth:check-for-previous-spill:
           3d/compare-eax-and 0/imm32/false
           74/jump-if-= break/disp8
 $emit-cleanup-code-until-depth:reclaim-var-in-register:
-          (emit-indent *(ebp+8) *Curr-block-depth)
-          (write-buffered *(ebp+8) "8f 0/subop/pop %")
           (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register Var-register => eax
-          (write-buffered *(ebp+8) %eax)
-          (write-buffered *(ebp+8) Newline)
+          (emit-pop-register *(ebp+8) %eax)
         }
         eb/jump $emit-cleanup-code-until-depth:continue/disp8
       }
@@ -15483,6 +15477,36 @@ $emit-cleanup-code-until-depth:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-push-register:  # out: (addr buffered-file), reg: (addr array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "ff 6/subop/push %")
+    (write-buffered *(ebp+8) *(ebp+0xc))
+    (write-buffered *(ebp+8) Newline)
+$emit-push-register:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "8f 0/subop/pop %")
+    (write-buffered *(ebp+8) *(ebp+0xc))
+    (write-buffered *(ebp+8) Newline)
+$emit-pop-register:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
