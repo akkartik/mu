@@ -470,6 +470,13 @@ type point {
 
 Mu programs are currently sequences of `fn` and `type` definitions.
 
+Compound types can't include `addr` types for safety (use `handle` instead).
+They also can't currently include `array`, `stream` or `byte` types. Since
+arrays and streams carry their size with them, supporting them in compound
+types complicates variable initialization. Instead of defining them inline in
+a type definition, define a `handle` to them. Bytes shouldn't be used for
+anything but arrays of bytes (utf-8 strings).
+
 To access within a compound type, use the `get` instruction. There are two
 forms. You need either a variable of the type itself (say `T`) in memory, or a
 variable of type `(addr T)` in a register.
