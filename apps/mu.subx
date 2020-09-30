@@ -4270,9 +4270,9 @@ test-convert-floating-point-operation:
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-floating-point-operation/6")
     (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"  "F - test-convert-floating-point-operation/7")
     (check-next-stream-line-equal _test-output-stream "    81 5/subop/subtract %esp 4/imm32"  "F - test-convert-floating-point-operation/8")
-    (check-next-stream-line-equal _test-output-stream "    66 0f 7e/<- *esp 1/x32"  "F - test-convert-floating-point-operation/9")
+    (check-next-stream-line-equal _test-output-stream "    f3 0f 11/<- *esp 1/x32"  "F - test-convert-floating-point-operation/9")
     (check-next-stream-line-equal _test-output-stream "    f3 0f 2a/convert-to-float %eax 0x00000001/x32"  "F - test-convert-floating-point-operation/10")
-    (check-next-stream-line-equal _test-output-stream "    66 0f 6e/-> *esp 1/x32"  "F - test-convert-floating-point-operation/11")
+    (check-next-stream-line-equal _test-output-stream "    f3 0f 10/-> *esp 1/x32"  "F - test-convert-floating-point-operation/11")
     (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 4/imm32"  "F - test-convert-length-of-array-on-stack/12")
     (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax" "F - test-convert-floating-point-operation/13")
     (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-floating-point-operation/14")
@@ -15661,7 +15661,7 @@ emit-push-register:  # out: (addr buffered-file), reg: (addr array byte)
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "81 5/subop/subtract %esp 4/imm32\n")
       (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "66 0f 7e/<- *esp ")
+      (write-buffered *(ebp+8) "f3 0f 11/<- *esp ")
       # var prefix/eax: byte = reg->data[3]
       8b/-> *(ebp+0xc) 0/r32/eax
       8a/copy-byte *(eax+7) 0/r32/AL
@@ -15696,7 +15696,7 @@ emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
       0f 85/jump-if-!= break/disp32
       # TODO validate register
       (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "66 0f 6e/-> *esp ")
+      (write-buffered *(ebp+8) "f3 0f 10/-> *esp ")
       # var prefix/eax: byte = reg->data[3]
       8b/-> *(ebp+0xc) 0/r32/eax
       8a/copy-byte *(eax+7) 0/r32/AL
