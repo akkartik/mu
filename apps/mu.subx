@@ -4237,6 +4237,55 @@ test-convert-address:
     5d/pop-to-ebp
     c3/return
 
+test-convert-floating-point-operation:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/eax: int <- copy 0\n")
+    (write _test-input-stream "  var b/xmm1: float <- convert a\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-floating-point-operation/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-floating-point-operation/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-floating-point-operation/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-floating-point-operation/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-floating-point-operation/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-floating-point-operation/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-floating-point-operation/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"  "F - test-convert-floating-point-operation/7")
+    (check-next-stream-line-equal _test-output-stream "    81 5/subop/subtract %esp 4/imm32"  "F - test-convert-floating-point-operation/8")
+    (check-next-stream-line-equal _test-output-stream "    66 0f 7e/<- *esp 1/x32"  "F - test-convert-floating-point-operation/9")
+    (check-next-stream-line-equal _test-output-stream "    f3 0f 2a/convert-to-float %eax 0x00000001/x32"  "F - test-convert-floating-point-operation/10")
+    (check-next-stream-line-equal _test-output-stream "    66 0f 6e/-> *esp 1/x32"  "F - test-convert-floating-point-operation/11")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 4/imm32"  "F - test-convert-length-of-array-on-stack/12")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax" "F - test-convert-floating-point-operation/13")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-floating-point-operation/14")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-floating-point-operation/15")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-floating-point-operation/16")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-floating-point-operation/17")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-floating-point-operation/18")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-floating-point-operation/19")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-length-of-array:
     # . prologue
     55/push-ebp
@@ -13079,6 +13128,14 @@ check-mu-primitive:  # stmt: (addr stmt), fn: (addr function), err: (addr buffer
       (check-mu-write-to-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       e9/jump $check-mu-primitive:end/disp32
     }
+    # if (op == "convert") check-mu-convert-stmt
+    {
+      (string-equal? %ecx "convert")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (check-mu-convert-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      e9/jump $check-mu-primitive:end/disp32
+    }
     # otherwise check-numberlike-stmt
     (check-mu-numberlike-primitive *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
 $check-mu-primitive:end:
@@ -14071,6 +14128,18 @@ check-mu-write-to-stream-stmt:  # stmt: (addr stmt), fn: (addr function), err: (
     89/<- %ebp 4/r32/esp
     # . save registers
 $check-mu-write-to-stream-stmt:end:
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+check-mu-convert-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$check-mu-convert-stmt:end:
     # . restore registers
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -15579,7 +15648,29 @@ emit-push-register:  # out: (addr buffered-file), reg: (addr array byte)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    #
+    # eax = reg
+    8b/-> *(ebp+0xc) 0/r32/eax
+    # var prefix/eax: byte = reg->data[0]
+    8a/copy-byte *(eax+4) 0/r32/AL
+    81 4/subop/and %eax 0xff/imm32
+    # if (prefix == 'x') push xmm register
+    {
+      3d/compare-eax-and 0x78/imm32/x
+      0f 85/jump-if-!= break/disp32
+      # TODO validate register
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "81 5/subop/subtract %esp 4/imm32\n")
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "66 0f 7e/<- *esp ")
+      # var prefix/eax: byte = reg->data[3]
+      8b/-> *(ebp+0xc) 0/r32/eax
+      8a/copy-byte *(eax+7) 0/r32/AL
+      81 4/subop/and %eax 0xff/imm32
+      (write-byte-buffered *(ebp+8) %eax)
+      (write-buffered *(ebp+8) "/x32\n")
+      e9/jump $emit-push-register:end/disp32
+    }
+    # otherwise push gp register
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "ff 6/subop/push %")
     (write-buffered *(ebp+8) *(ebp+0xc))
@@ -15594,7 +15685,29 @@ emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    #
+    # eax = reg
+    8b/-> *(ebp+0xc) 0/r32/eax
+    # var prefix/eax: byte = reg->data[0]
+    8a/copy-byte *(eax+4) 0/r32/AL
+    81 4/subop/and %eax 0xff/imm32
+    # if (prefix == 'x') pop to xmm register
+    {
+      3d/compare-eax-and 0x78/imm32/x
+      0f 85/jump-if-!= break/disp32
+      # TODO validate register
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "66 0f 6e/-> *esp ")
+      # var prefix/eax: byte = reg->data[3]
+      8b/-> *(ebp+0xc) 0/r32/eax
+      8a/copy-byte *(eax+7) 0/r32/AL
+      81 4/subop/and %eax 0xff/imm32
+      (write-byte-buffered *(ebp+8) %eax)
+      (write-buffered *(ebp+8) "/x32\n")
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "81 0/subop/add %esp 4/imm32\n")
+      e9/jump $emit-push-register:end/disp32
+    }
+    # otherwise pop to gp register
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "8f 0/subop/pop %")
     (write-buffered *(ebp+8) *(ebp+0xc))
@@ -19277,6 +19390,47 @@ _Primitive-multiply-reg-by-mem:  # (payload primitive)
     0/imm32/no-xm32
     0/imm32/no-x32
     0x11/imm32/alloc-id:fake
+    _Primitive-convert-mem-to-xreg/imm32/next
+# - convert int to floating point
+_Primitive-convert-mem-to-xreg:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    # var1/xreg <- convert var2 => f3 0f 2a/convert-to-float var2/rm32 var1/x32
+    0x11/imm32/alloc-id:fake
+    _string-convert/imm32/name
+    0x11/imm32/alloc-id:fake
+    Single-int-var-in-mem/imm32/inouts
+    0x11/imm32/alloc-id:fake
+    Single-float-var-in-some-register/imm32/outputs
+    0x11/imm32/alloc-id:fake
+    _string_f3_0f_2a_convert_to_float/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    1/imm32/xm32-is-first-inout
+    3/imm32/x32-is-first-output
+    0x11/imm32/alloc-id:fake
+    _Primitive-convert-reg-to-xreg/imm32/next
+_Primitive-convert-reg-to-xreg:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    # var1/xreg <- convert var2/reg => f3 0f 2a/convert-to-float var2/rm32 var1/x32
+    0x11/imm32/alloc-id:fake
+    _string-convert/imm32/name
+    0x11/imm32/alloc-id:fake
+    Single-int-var-in-some-register/imm32/inouts
+    0x11/imm32/alloc-id:fake
+    Single-float-var-in-some-register/imm32/outputs
+    0x11/imm32/alloc-id:fake
+    _string_f3_0f_2a_convert_to_float/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    1/imm32/xm32-is-first-inout
+    3/imm32/x32-is-first-output
+    0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr</imm32/next
 # - branches
 _Primitive-break-if-addr<:  # (payload primitive)
@@ -20293,6 +20447,11 @@ _string-multiply:  # (payload array byte)
     # "multiply"
     0x8/imm32/size
     0x6d/m 0x75/u 0x6c/l 0x74/t 0x69/i 0x70/p 0x6c/l 0x79/y
+_string-convert:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "convert"
+    0x7/imm32/size
+    0x63/c 0x6f/o 0x6e/n 0x76/v 0x65/e 0x72/r 0x74/t
 _string-negate:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "negate"
@@ -20530,6 +20689,16 @@ _string_0f_af_multiply:  # (payload array byte)
     # "0f af/multiply"
     0xe/imm32/size
     0x30/0 0x66/f 0x20/space 0x61/a 0x66/f 0x2f/slash 0x6d/m 0x75/u 0x6c/l 0x74/t 0x69/i 0x70/p 0x6c/l 0x79/y
+_string_f3_0f_2a_convert_to_float:
+    0x11/imm32/alloc-id:fake:payload
+    # "f3 0f 2a/convert-to-float"
+    0x19/imm32/size
+    0x66/f 0x33/3 0x20/space 0x30/0 0x66/f 0x20/space 0x32/2 0x61/a 0x2f/slash 0x63/c 0x6f/o 0x6e/n 0x76/v 0x65/e 0x72/r 0x74/t 0x2d/dash 0x74/t 0x6f/o 0x2d/dash 0x66/f 0x6c/l 0x6f/o 0x61/a 0x74/t
+_string_f3_0f_2d_convert_to_int:
+    0x11/imm32/alloc-id:fake:payload
+    # "f3 0f 2d/convert-to-int"
+    0x17/imm32/size
+    0x66/f 0x33/3 0x20/space 0x30/0 0x66/f 0x20/space 0x32/2 0x64/d 0x2f/slash 0x63/c 0x6f/o 0x6e/n 0x76/v 0x65/e 0x72/r 0x74/t 0x2d/dash 0x74/t 0x6f/o 0x2d/dash 0x69/i 0x6e/n 0x74/t
 _string_21_and_with:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "21/and-with"
@@ -21060,6 +21229,42 @@ Lit-var:  # (payload var)
     0/imm32/no-register
     0/imm32/no-register
 
+Single-float-var-in-mem:  # (payload list var)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    Float-var-in-mem/imm32
+    0/imm32/next
+    0/imm32/next
+
+Float-var-in-mem:  # (payload var)
+    0x11/imm32/alloc-id:fake:payload
+    0/imm32/name
+    0/imm32/name
+    0x11/imm32/alloc-id:fake
+    Type-float/imm32
+    1/imm32/some-block-depth
+    1/imm32/some-stack-offset
+    0/imm32/no-register
+    0/imm32/no-register
+
+Single-float-var-in-some-register:  # (payload list var)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    Float-var-in-some-register/imm32
+    0/imm32/next
+    0/imm32/next
+
+Float-var-in-some-register:  # (payload var)
+    0x11/imm32/alloc-id:fake:payload
+    0/imm32/name
+    0/imm32/name
+    0x11/imm32/alloc-id:fake
+    Type-float/imm32
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    0x11/imm32/alloc-id:fake
+    Any-register/imm32
+
 Type-int:  # (payload type-tree)
     0x11/imm32/alloc-id:fake:payload
     1/imm32/is-atom
@@ -21092,6 +21297,14 @@ Type-byte:  # (payload type-tree)
     0/imm32/right:null
     0/imm32/right:null
 
+Type-float:  # (payload type-tree)
+    0x11/imm32/alloc-id:fake:payload
+    1/imm32/is-atom
+    0xf/imm32/value:float
+    0/imm32/left:unused
+    0/imm32/right:null
+    0/imm32/right:null
+
 == code
 emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive: (addr primitive), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
@@ -21110,6 +21323,10 @@ emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive:
     (emit-subx-rm32 *(ebp+8) *(ecx+0x20) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))  # Primitive-subx-rm32
     # emit r32 if necessary
     (emit-subx-r32 *(ebp+8) *(ecx+0x24) *(ebp+0xc))  # Primitive-subx-r32
+    # emit xm32 if necessary
+    (emit-subx-xm32 *(ebp+8) *(ecx+0x34) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))  # Primitive-subx-xm32
+    # emit x32 if necessary
+    (emit-subx-x32 *(ebp+8) *(ecx+0x38) *(ebp+0xc))  # Primitive-subx-x32
     # emit imm32 if necessary
     (emit-subx-imm32 *(ebp+8) *(ecx+0x28) *(ebp+0xc))  # Primitive-subx-imm32
     # emit imm8 if necessary
@@ -21214,11 +21431,67 @@ emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+#?     (write-buffered Stderr "looking up ")
+#?     (write-buffered Stderr %eax)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
     (maybe-get Mu-registers %eax 0xc)  # => eax: (addr register-index)
     (write-buffered *(ebp+8) Space)
     (write-int32-hex-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32")
 $emit-subx-r32:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# TODO: doesn't work yet
+emit-subx-xm32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # if (l == 0) return
+    81 7/subop/compare *(ebp+0xc) 0/imm32
+    74/jump-if-= $emit-subx-xm32:end/disp8
+    # var v/eax: (addr stmt-var)
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))  # => eax
+    (emit-subx-var-as-rm32 *(ebp+8) %eax)
+$emit-subx-xm32:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-x32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # if (l == 0) return
+    81 7/subop/compare *(ebp+0xc) 0/imm32
+    0f 84/jump-if-= $emit-subx-x32:end/disp32
+    # var v/eax: (addr stmt-var)
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+#?     (write-buffered Stderr "looking up ")
+#?     (write-buffered Stderr %eax)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
+    (maybe-get Mu-registers %eax 0xc)  # => eax: (addr register-index)
+    (write-buffered *(ebp+8) Space)
+    (write-int32-hex-buffered *(ebp+8) *eax)
+    (write-buffered *(ebp+8) "/x32")
+$emit-subx-x32:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
