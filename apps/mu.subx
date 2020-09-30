@@ -210,7 +210,8 @@
 #     subx-imm32: enum arg-location
 #     subx-imm8: enum arg-location
 #     subx-disp32: enum arg-location
-#     output-is-write-only: boolean
+#     subx-xm32: enum arg-location
+#     subx-x32: enum arg-location
 #   arg-location: enum
 #     0 means none
 #     1 means first inout
@@ -291,12 +292,14 @@ Primitive-subx-imm8:  # enum arg-location  -- only for bit shifts
   0x2c/imm32
 Primitive-subx-disp32:  # enum arg-location  -- only for branches
   0x30/imm32
-Primitive-output-is-write-only:  # boolean
+Primitive-subx-xm32:  # enum arg-location
   0x34/imm32
-Primitive-next:  # (handle function)
+Primitive-subx-x32:  # enum arg-location
   0x38/imm32
+Primitive-next:  # (handle function)
+  0x3c/imm32
 Primitive-size:  # (addr int)
-  0x40/imm32/60
+  0x44/imm32/68
 
 Stmt-tag:  # int
   0/imm32
@@ -12929,12 +12932,15 @@ $has-primitive-name?:loop:
       74/jump-if-= break/disp8
       # if (primitive->name == name) return true
       (lookup *ecx *(ecx+4))  # Primitive-name Primitive-name => eax
+#?       (write-buffered Stderr %eax)
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
       (string-equal? %esi %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= $has-primitive-name?:end/disp8
 $has-primitive-name?:next-primitive:
       # curr = curr->next
-      (lookup *(ecx+0x38) *(ecx+0x3c))  # Primitive-next Primitive-next => eax
+      (lookup *(ecx+0x3c) *(ecx+0x40))  # Primitive-next Primitive-next => eax
       89/<- %ecx 0/r32/eax
       #
       e9/jump loop/disp32
@@ -17737,7 +17743,8 @@ _Primitive-increment-eax:  # (addr primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-increment-ecx/imm32/next
 _Primitive-increment-ecx:  # (payload primitive)
@@ -17756,7 +17763,8 @@ _Primitive-increment-ecx:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-increment-edx/imm32/next
 _Primitive-increment-edx:  # (payload primitive)
@@ -17775,7 +17783,8 @@ _Primitive-increment-edx:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-increment-ebx/imm32/next
 _Primitive-increment-ebx:  # (payload primitive)
@@ -17794,7 +17803,8 @@ _Primitive-increment-ebx:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-increment-esi/imm32/next
 _Primitive-increment-esi:  # (payload primitive)
@@ -17813,7 +17823,8 @@ _Primitive-increment-esi:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-increment-edi/imm32/next
 _Primitive-increment-edi:  # (payload primitive)
@@ -17832,7 +17843,8 @@ _Primitive-increment-edi:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-eax/imm32/next
 _Primitive-decrement-eax:  # (payload primitive)
@@ -17851,7 +17863,8 @@ _Primitive-decrement-eax:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-ecx/imm32/next
 _Primitive-decrement-ecx:  # (payload primitive)
@@ -17870,7 +17883,8 @@ _Primitive-decrement-ecx:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-edx/imm32/next
 _Primitive-decrement-edx:  # (payload primitive)
@@ -17889,7 +17903,8 @@ _Primitive-decrement-edx:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-ebx/imm32/next
 _Primitive-decrement-ebx:  # (payload primitive)
@@ -17908,7 +17923,8 @@ _Primitive-decrement-ebx:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-esi/imm32/next
 _Primitive-decrement-esi:  # (payload primitive)
@@ -17927,7 +17943,8 @@ _Primitive-decrement-esi:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-edi/imm32/next
 _Primitive-decrement-edi:  # (payload primitive)
@@ -17946,7 +17963,8 @@ _Primitive-decrement-edi:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-increment-mem/imm32/next
 _Primitive-increment-mem:  # (payload primitive)
@@ -17965,7 +17983,8 @@ _Primitive-increment-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-increment-reg/imm32/next
 _Primitive-increment-reg:  # (payload primitive)
@@ -17984,7 +18003,8 @@ _Primitive-increment-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-mem/imm32/next
 _Primitive-decrement-mem:  # (payload primitive)
@@ -18003,7 +18023,8 @@ _Primitive-decrement-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-reg/imm32/next
 _Primitive-decrement-reg:  # (payload primitive)
@@ -18022,7 +18043,8 @@ _Primitive-decrement-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-add-to-eax/imm32/next
 # - add
@@ -18042,7 +18064,8 @@ _Primitive-add-to-eax:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-add-reg-to-reg/imm32/next
 _Primitive-add-reg-to-reg:  # (payload primitive)
@@ -18061,7 +18084,8 @@ _Primitive-add-reg-to-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-add-reg-to-mem/imm32/next
 _Primitive-add-reg-to-mem:  # (payload primitive)
@@ -18080,7 +18104,8 @@ _Primitive-add-reg-to-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-add-mem-to-reg/imm32/next
 _Primitive-add-mem-to-reg:  # (payload primitive)
@@ -18099,7 +18124,8 @@ _Primitive-add-mem-to-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-add-lit-to-reg/imm32/next
 _Primitive-add-lit-to-reg:  # (payload primitive)
@@ -18118,7 +18144,8 @@ _Primitive-add-lit-to-reg:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-add-lit-to-mem/imm32/next
 _Primitive-add-lit-to-mem:  # (payload primitive)
@@ -18137,7 +18164,8 @@ _Primitive-add-lit-to-mem:  # (payload primitive)
     2/imm32/imm32-is-second-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-from-eax/imm32/next
 # - subtract
@@ -18157,7 +18185,8 @@ _Primitive-subtract-from-eax:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-reg-from-reg/imm32/next
 _Primitive-subtract-reg-from-reg:  # (payload primitive)
@@ -18176,7 +18205,8 @@ _Primitive-subtract-reg-from-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-reg-from-mem/imm32/next
 _Primitive-subtract-reg-from-mem:  # (payload primitive)
@@ -18195,7 +18225,8 @@ _Primitive-subtract-reg-from-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-mem-from-reg/imm32/next
 _Primitive-subtract-mem-from-reg:  # (payload primitive)
@@ -18214,7 +18245,8 @@ _Primitive-subtract-mem-from-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-lit-from-reg/imm32/next
 _Primitive-subtract-lit-from-reg:  # (payload primitive)
@@ -18233,7 +18265,8 @@ _Primitive-subtract-lit-from-reg:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-lit-from-mem/imm32/next
 _Primitive-subtract-lit-from-mem:  # (payload primitive)
@@ -18252,7 +18285,8 @@ _Primitive-subtract-lit-from-mem:  # (payload primitive)
     2/imm32/imm32-is-second-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-and-with-eax/imm32/next
 # - and
@@ -18272,7 +18306,8 @@ _Primitive-and-with-eax:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-and-reg-with-reg/imm32/next
 _Primitive-and-reg-with-reg:  # (payload primitive)
@@ -18291,7 +18326,8 @@ _Primitive-and-reg-with-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-and-reg-with-mem/imm32/next
 _Primitive-and-reg-with-mem:  # (payload primitive)
@@ -18310,7 +18346,8 @@ _Primitive-and-reg-with-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-and-mem-with-reg/imm32/next
 _Primitive-and-mem-with-reg:  # (payload primitive)
@@ -18329,7 +18366,8 @@ _Primitive-and-mem-with-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-and-lit-with-reg/imm32/next
 _Primitive-and-lit-with-reg:  # (payload primitive)
@@ -18348,7 +18386,8 @@ _Primitive-and-lit-with-reg:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-and-lit-with-mem/imm32/next
 _Primitive-and-lit-with-mem:  # (payload primitive)
@@ -18367,7 +18406,8 @@ _Primitive-and-lit-with-mem:  # (payload primitive)
     2/imm32/imm32-is-second-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-or-with-eax/imm32/next
 # - or
@@ -18387,7 +18427,8 @@ _Primitive-or-with-eax:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-or-reg-with-reg/imm32/next
 _Primitive-or-reg-with-reg:  # (payload primitive)
@@ -18406,7 +18447,8 @@ _Primitive-or-reg-with-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-or-reg-with-mem/imm32/next
 _Primitive-or-reg-with-mem:  # (payload primitive)
@@ -18425,7 +18467,8 @@ _Primitive-or-reg-with-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-or-mem-with-reg/imm32/next
 _Primitive-or-mem-with-reg:  # (payload primitive)
@@ -18444,7 +18487,8 @@ _Primitive-or-mem-with-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-or-lit-with-reg/imm32/next
 _Primitive-or-lit-with-reg:  # (payload primitive)
@@ -18463,7 +18507,8 @@ _Primitive-or-lit-with-reg:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-or-lit-with-mem/imm32/next
 _Primitive-or-lit-with-mem:  # (payload primitive)
@@ -18482,7 +18527,8 @@ _Primitive-or-lit-with-mem:  # (payload primitive)
     2/imm32/imm32-is-second-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-xor-with-eax/imm32/next
 # - xor
@@ -18502,7 +18548,8 @@ _Primitive-xor-with-eax:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-xor-reg-with-reg/imm32/next
 _Primitive-xor-reg-with-reg:  # (payload primitive)
@@ -18521,7 +18568,8 @@ _Primitive-xor-reg-with-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-xor-reg-with-mem/imm32/next
 _Primitive-xor-reg-with-mem:  # (payload primitive)
@@ -18540,7 +18588,8 @@ _Primitive-xor-reg-with-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-xor-mem-with-reg/imm32/next
 _Primitive-xor-mem-with-reg:  # (payload primitive)
@@ -18559,7 +18608,8 @@ _Primitive-xor-mem-with-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-xor-lit-with-reg/imm32/next
 _Primitive-xor-lit-with-reg:  # (payload primitive)
@@ -18578,7 +18628,8 @@ _Primitive-xor-lit-with-reg:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-xor-lit-with-mem/imm32/next
 _Primitive-xor-lit-with-mem:  # (payload primitive)
@@ -18597,7 +18648,8 @@ _Primitive-xor-lit-with-mem:  # (payload primitive)
     2/imm32/imm32-is-second-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-shift-reg-left-by-lit/imm32/next
 _Primitive-shift-reg-left-by-lit:  # (payload primitive)
@@ -18616,7 +18668,8 @@ _Primitive-shift-reg-left-by-lit:  # (payload primitive)
     0/imm32/no-imm32
     1/imm32/imm8-is-first-inout
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-shift-reg-right-by-lit/imm32/next
 _Primitive-shift-reg-right-by-lit:  # (payload primitive)
@@ -18635,7 +18688,8 @@ _Primitive-shift-reg-right-by-lit:  # (payload primitive)
     0/imm32/no-imm32
     1/imm32/imm8-is-first-inout
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-shift-reg-right-signed-by-lit/imm32/next
 _Primitive-shift-reg-right-signed-by-lit:  # (payload primitive)
@@ -18654,7 +18708,8 @@ _Primitive-shift-reg-right-signed-by-lit:  # (payload primitive)
     0/imm32/no-imm32
     1/imm32/imm8-is-first-inout
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-shift-mem-left-by-lit/imm32/next
 _Primitive-shift-mem-left-by-lit:  # (payload primitive)
@@ -18673,7 +18728,8 @@ _Primitive-shift-mem-left-by-lit:  # (payload primitive)
     0/imm32/no-imm32
     2/imm32/imm8-is-second-inout
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-shift-mem-right-by-lit/imm32/next
 _Primitive-shift-mem-right-by-lit:  # (payload primitive)
@@ -18692,7 +18748,8 @@ _Primitive-shift-mem-right-by-lit:  # (payload primitive)
     0/imm32/no-imm32
     2/imm32/imm8-is-second-inout
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-shift-mem-right-signed-by-lit/imm32/next
 _Primitive-shift-mem-right-signed-by-lit:  # (payload primitive)
@@ -18711,7 +18768,8 @@ _Primitive-shift-mem-right-signed-by-lit:  # (payload primitive)
     0/imm32/no-imm32
     2/imm32/imm8-is-second-inout
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-eax/imm32/next
 # - copy
@@ -18731,7 +18789,8 @@ _Primitive-copy-to-eax:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-ecx/imm32/next
 _Primitive-copy-to-ecx:  # (payload primitive)
@@ -18750,7 +18809,8 @@ _Primitive-copy-to-ecx:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-edx/imm32/next
 _Primitive-copy-to-edx:  # (payload primitive)
@@ -18769,7 +18829,8 @@ _Primitive-copy-to-edx:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-ebx/imm32/next
 _Primitive-copy-to-ebx:  # (payload primitive)
@@ -18788,7 +18849,8 @@ _Primitive-copy-to-ebx:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-esi/imm32/next
 _Primitive-copy-to-esi:  # (payload primitive)
@@ -18807,7 +18869,8 @@ _Primitive-copy-to-esi:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-edi/imm32/next
 _Primitive-copy-to-edi:  # (payload primitive)
@@ -18826,7 +18889,8 @@ _Primitive-copy-to-edi:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-reg-to-reg/imm32/next
 _Primitive-copy-reg-to-reg:  # (payload primitive)
@@ -18845,7 +18909,8 @@ _Primitive-copy-reg-to-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-reg-to-mem/imm32/next
 _Primitive-copy-reg-to-mem:  # (payload primitive)
@@ -18864,7 +18929,8 @@ _Primitive-copy-reg-to-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-mem-to-reg/imm32/next
 _Primitive-copy-mem-to-reg:  # (payload primitive)
@@ -18883,7 +18949,8 @@ _Primitive-copy-mem-to-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-lit-to-reg/imm32/next
 _Primitive-copy-lit-to-reg:  # (payload primitive)
@@ -18902,7 +18969,8 @@ _Primitive-copy-lit-to-reg:  # (payload primitive)
     1/imm32/imm32-is-first-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-lit-to-mem/imm32/next
 _Primitive-copy-lit-to-mem:  # (payload primitive)
@@ -18921,7 +18989,8 @@ _Primitive-copy-lit-to-mem:  # (payload primitive)
     2/imm32/imm32-is-second-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-byte-from-reg/imm32/next
 # - copy byte
@@ -18941,7 +19010,8 @@ _Primitive-copy-byte-from-reg:
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-byte-from-mem/imm32/next
 _Primitive-copy-byte-from-mem:
@@ -18960,7 +19030,8 @@ _Primitive-copy-byte-from-mem:
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-copy-byte-to-mem/imm32/next
 _Primitive-copy-byte-to-mem:
@@ -18979,7 +19050,8 @@ _Primitive-copy-byte-to-mem:
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-address/imm32/next
 # - address
@@ -18999,7 +19071,8 @@ _Primitive-address:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    1/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-compare-reg-with-reg/imm32/next
 # - compare
@@ -19019,7 +19092,8 @@ _Primitive-compare-reg-with-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-compare-mem-with-reg/imm32/next
 _Primitive-compare-mem-with-reg:  # (payload primitive)
@@ -19038,7 +19112,8 @@ _Primitive-compare-mem-with-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-compare-reg-with-mem/imm32/next
 _Primitive-compare-reg-with-mem:  # (payload primitive)
@@ -19057,7 +19132,8 @@ _Primitive-compare-reg-with-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-compare-eax-with-literal/imm32/next
 _Primitive-compare-eax-with-literal:  # (payload primitive)
@@ -19076,7 +19152,8 @@ _Primitive-compare-eax-with-literal:  # (payload primitive)
     2/imm32/imm32-is-second-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-compare-reg-with-literal/imm32/next
 _Primitive-compare-reg-with-literal:  # (payload primitive)
@@ -19095,7 +19172,8 @@ _Primitive-compare-reg-with-literal:  # (payload primitive)
     2/imm32/imm32-is-second-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-compare-mem-with-literal/imm32/next
 _Primitive-compare-mem-with-literal:  # (payload primitive)
@@ -19114,7 +19192,8 @@ _Primitive-compare-mem-with-literal:  # (payload primitive)
     2/imm32/imm32-is-second-inout
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-negate-reg/imm32/next
 # - negate
@@ -19134,7 +19213,8 @@ _Primitive-negate-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-negate-mem/imm32/next
 _Primitive-negate-mem:  # (payload primitive)
@@ -19153,7 +19233,8 @@ _Primitive-negate-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-multiply-reg-by-reg/imm32/next
 # - multiply
@@ -19173,7 +19254,8 @@ _Primitive-multiply-reg-by-reg:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-multiply-reg-by-mem/imm32/next
 _Primitive-multiply-reg-by-mem:  # (payload primitive)
@@ -19192,7 +19274,8 @@ _Primitive-multiply-reg-by-mem:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/output-is-write-only
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr</imm32/next
 # - branches
@@ -19211,7 +19294,8 @@ _Primitive-break-if-addr<:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr>=/imm32/next
 _Primitive-break-if-addr>=:  # (payload primitive)
@@ -19229,7 +19313,8 @@ _Primitive-break-if-addr>=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-=/imm32/next
 _Primitive-break-if-=:  # (payload primitive)
@@ -19247,7 +19332,8 @@ _Primitive-break-if-=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-!=/imm32/next
 _Primitive-break-if-!=:  # (payload primitive)
@@ -19265,7 +19351,8 @@ _Primitive-break-if-!=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr<=/imm32/next
 _Primitive-break-if-addr<=:  # (payload primitive)
@@ -19283,7 +19370,8 @@ _Primitive-break-if-addr<=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr>/imm32/next
 _Primitive-break-if-addr>:  # (payload primitive)
@@ -19301,7 +19389,8 @@ _Primitive-break-if-addr>:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-</imm32/next
 _Primitive-break-if-<:  # (payload primitive)
@@ -19319,7 +19408,8 @@ _Primitive-break-if-<:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if->=/imm32/next
 _Primitive-break-if->=:  # (payload primitive)
@@ -19337,7 +19427,8 @@ _Primitive-break-if->=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-<=/imm32/next
 _Primitive-break-if-<=:  # (payload primitive)
@@ -19355,7 +19446,8 @@ _Primitive-break-if-<=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if->/imm32/next
 _Primitive-break-if->:  # (payload primitive)
@@ -19373,7 +19465,8 @@ _Primitive-break-if->:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break/imm32/next
 _Primitive-break:  # (payload primitive)
@@ -19391,7 +19484,8 @@ _Primitive-break:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr</imm32/next
 _Primitive-loop-if-addr<:  # (payload primitive)
@@ -19409,7 +19503,8 @@ _Primitive-loop-if-addr<:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr>=/imm32/next
 _Primitive-loop-if-addr>=:  # (payload primitive)
@@ -19427,7 +19522,8 @@ _Primitive-loop-if-addr>=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-=/imm32/next
 _Primitive-loop-if-=:  # (payload primitive)
@@ -19445,7 +19541,8 @@ _Primitive-loop-if-=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-!=/imm32/next
 _Primitive-loop-if-!=:  # (payload primitive)
@@ -19463,7 +19560,8 @@ _Primitive-loop-if-!=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr<=/imm32/next
 _Primitive-loop-if-addr<=:  # (payload primitive)
@@ -19481,7 +19579,8 @@ _Primitive-loop-if-addr<=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr>/imm32/next
 _Primitive-loop-if-addr>:  # (payload primitive)
@@ -19499,7 +19598,8 @@ _Primitive-loop-if-addr>:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-</imm32/next
 _Primitive-loop-if-<:  # (payload primitive)
@@ -19517,7 +19617,8 @@ _Primitive-loop-if-<:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if->=/imm32/next
 _Primitive-loop-if->=:  # (payload primitive)
@@ -19535,7 +19636,8 @@ _Primitive-loop-if->=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-<=/imm32/next
 _Primitive-loop-if-<=:  # (payload primitive)
@@ -19553,7 +19655,8 @@ _Primitive-loop-if-<=:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if->/imm32/next
 _Primitive-loop-if->:  # (payload primitive)
@@ -19571,7 +19674,8 @@ _Primitive-loop-if->:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop/imm32/next  # we probably don't need an unconditional break
 _Primitive-loop:  # (payload primitive)
@@ -19589,7 +19693,8 @@ _Primitive-loop:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     0/imm32/no-disp32
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr<-named/imm32/next
 # - branches to named blocks
@@ -19608,7 +19713,8 @@ _Primitive-break-if-addr<-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr>=-named/imm32/next
 _Primitive-break-if-addr>=-named:  # (payload primitive)
@@ -19626,7 +19732,8 @@ _Primitive-break-if-addr>=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-=-named/imm32/next
 _Primitive-break-if-=-named:  # (payload primitive)
@@ -19644,7 +19751,8 @@ _Primitive-break-if-=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-!=-named/imm32/next
 _Primitive-break-if-!=-named:  # (payload primitive)
@@ -19662,7 +19770,8 @@ _Primitive-break-if-!=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr<=-named/imm32/next
 _Primitive-break-if-addr<=-named:  # (payload primitive)
@@ -19680,7 +19789,8 @@ _Primitive-break-if-addr<=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr>-named/imm32/next
 _Primitive-break-if-addr>-named:  # (payload primitive)
@@ -19698,7 +19808,8 @@ _Primitive-break-if-addr>-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-<-named/imm32/next
 _Primitive-break-if-<-named:  # (payload primitive)
@@ -19716,7 +19827,8 @@ _Primitive-break-if-<-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if->=-named/imm32/next
 _Primitive-break-if->=-named:  # (payload primitive)
@@ -19734,7 +19846,8 @@ _Primitive-break-if->=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-<=-named/imm32/next
 _Primitive-break-if-<=-named:  # (payload primitive)
@@ -19752,7 +19865,8 @@ _Primitive-break-if-<=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-if->-named/imm32/next
 _Primitive-break-if->-named:  # (payload primitive)
@@ -19770,7 +19884,8 @@ _Primitive-break-if->-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-break-named/imm32/next
 _Primitive-break-named:  # (payload primitive)
@@ -19788,7 +19903,8 @@ _Primitive-break-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr<-named/imm32/next
 _Primitive-loop-if-addr<-named:  # (payload primitive)
@@ -19806,7 +19922,8 @@ _Primitive-loop-if-addr<-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr>=-named/imm32/next
 _Primitive-loop-if-addr>=-named:  # (payload primitive)
@@ -19824,7 +19941,8 @@ _Primitive-loop-if-addr>=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-=-named/imm32/next
 _Primitive-loop-if-=-named:  # (payload primitive)
@@ -19842,7 +19960,8 @@ _Primitive-loop-if-=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-!=-named/imm32/next
 _Primitive-loop-if-!=-named:  # (payload primitive)
@@ -19860,7 +19979,8 @@ _Primitive-loop-if-!=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr<=-named/imm32/next
 _Primitive-loop-if-addr<=-named:  # (payload primitive)
@@ -19878,7 +19998,8 @@ _Primitive-loop-if-addr<=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr>-named/imm32/next
 _Primitive-loop-if-addr>-named:  # (payload primitive)
@@ -19896,7 +20017,8 @@ _Primitive-loop-if-addr>-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-<-named/imm32/next
 _Primitive-loop-if-<-named:  # (payload primitive)
@@ -19914,7 +20036,8 @@ _Primitive-loop-if-<-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if->=-named/imm32/next
 _Primitive-loop-if->=-named:  # (payload primitive)
@@ -19932,7 +20055,8 @@ _Primitive-loop-if->=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-<=-named/imm32/next
 _Primitive-loop-if-<=-named:  # (payload primitive)
@@ -19950,7 +20074,8 @@ _Primitive-loop-if-<=-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if->-named/imm32/next
 _Primitive-loop-if->-named:  # (payload primitive)
@@ -19968,7 +20093,8 @@ _Primitive-loop-if->-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0x11/imm32/alloc-id:fake
     _Primitive-loop-named/imm32/next  # we probably don't need an unconditional break
 _Primitive-loop-named:  # (payload primitive)
@@ -19986,7 +20112,8 @@ _Primitive-loop-named:  # (payload primitive)
     0/imm32/no-imm32
     0/imm32/no-imm8
     1/imm32/disp32-is-first-inout
-    0/imm32/no-output
+    0/imm32/no-xm32
+    0/imm32/no-x32
     0/imm32/next
     0/imm32/next
 
@@ -21468,7 +21595,7 @@ $find-matching-primitive:loop:
       }
 $find-matching-primitive:next-primitive:
       # curr = curr->next
-      (lookup *(ecx+0x38) *(ecx+0x3c))  # Primitive-next Primitive-next => eax
+      (lookup *(ecx+0x3c) *(ecx+0x40))  # Primitive-next Primitive-next => eax
       89/<- %ecx 0/r32/eax
       #
       e9/jump loop/disp32
@@ -22008,7 +22135,8 @@ $test-emit-subx-stmt-primitive:initialize-primitive:
     # var primitives/ebx: (addr primitive)
     68/push 0/imm32/next
     68/push 0/imm32/next
-    68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-x32
+    68/push 0/imm32/no-xm32
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm8
     68/push 0/imm32/no-imm32
@@ -22153,7 +22281,8 @@ $test-emit-subx-stmt-primitive-register:initialize-primitive:
     # var primitives/ebx: (addr primitive)
     68/push 0/imm32/next
     68/push 0/imm32/next
-    68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-x32
+    68/push 0/imm32/no-xm32
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm8
     68/push 0/imm32/no-imm32
@@ -22301,7 +22430,8 @@ $test-emit-subx-stmt-select-primitive:initialize-primitive2:
     # var primitive2/edi: (payload primitive)
     68/push 0/imm32/next
     68/push 0/imm32/next
-    68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-x32
+    68/push 0/imm32/no-xm32
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm8
     68/push 0/imm32/no-imm32
@@ -22329,7 +22459,8 @@ $test-emit-subx-stmt-select-primitive:initialize-primitive:
     # var primitives/ebx: (addr primitive)
     57/push-edi
     68/push 0x11/imm32/alloc-id:fake
-    68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-x32
+    68/push 0/imm32/no-xm32
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm8
     68/push 0/imm32/no-imm32
@@ -22477,7 +22608,8 @@ $test-emit-subx-stmt-select-primitive-2:initialize-primitive2:
     # var primitive2/edi: (payload primitive)
     68/push 0/imm32/next
     68/push 0/imm32/next
-    68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-x32
+    68/push 0/imm32/no-xm32
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm8
     68/push 0/imm32/no-imm32
@@ -22505,7 +22637,8 @@ $test-emit-subx-stmt-select-primitive-2:initialize-primitive:
     # var primitives/ebx: (addr primitive)
     57/push-edi
     68/push 0x11/imm32/alloc-id:fake
-    68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-x32
+    68/push 0/imm32/no-xm32
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm8
     68/push 0/imm32/no-imm32
