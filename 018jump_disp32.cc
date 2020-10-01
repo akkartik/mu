@@ -135,8 +135,8 @@ void test_jne_disp32_fail() {
 //:: jump if greater
 
 :(before "End Initialize Op Names")
-put_new(Name_0f, "8f", "jump disp32 bytes away if greater (signed), if ZF is unset and SF == OF (jcc/jg/jnle)");
-put_new(Name_0f, "87", "jump disp32 bytes away if greater (unsigned), if ZF is unset and CF is unset (jcc/ja/jnbe)");
+put_new(Name_0f, "8f", "jump disp32 bytes away if greater, if ZF is unset and SF == OF (jcc/jg/jnle)");
+put_new(Name_0f, "87", "jump disp32 bytes away if greater (addr, float), if ZF is unset and CF is unset (jcc/ja/jnbe)");
 
 :(code)
 void test_jg_disp32_success() {
@@ -199,8 +199,8 @@ void test_jg_disp32_fail() {
 //:: jump if greater or equal
 
 :(before "End Initialize Op Names")
-put_new(Name_0f, "8d", "jump disp32 bytes away if greater or equal (signed), if SF == OF (jcc/jge/jnl)");
-put_new(Name_0f, "83", "jump disp32 bytes away if greater or equal (unsigned), if CF is unset (jcc/jae/jnb)");
+put_new(Name_0f, "8d", "jump disp32 bytes away if greater or equal, if SF == OF (jcc/jge/jnl)");
+put_new(Name_0f, "83", "jump disp32 bytes away if greater or equal (addr, float), if CF is unset (jcc/jae/jnb)");
 
 :(code)
 void test_jge_disp32_success() {
@@ -261,8 +261,8 @@ void test_jge_disp32_fail() {
 //:: jump if lesser
 
 :(before "End Initialize Op Names")
-put_new(Name_0f, "8c", "jump disp32 bytes away if lesser (signed), if SF != OF (jcc/jl/jnge)");
-put_new(Name_0f, "82", "jump disp32 bytes away if lesser (unsigned), if CF is set (jcc/jb/jnae)");
+put_new(Name_0f, "8c", "jump disp32 bytes away if lesser, if SF != OF (jcc/jl/jnge)");
+put_new(Name_0f, "82", "jump disp32 bytes away if lesser (addr, float), if CF is set (jcc/jb/jnae)");
 
 :(code)
 void test_jl_disp32_success() {
@@ -325,8 +325,8 @@ void test_jl_disp32_fail() {
 //:: jump if lesser or equal
 
 :(before "End Initialize Op Names")
-put_new(Name_0f, "8e", "jump disp32 bytes away if lesser or equal (signed), if ZF is set or SF != OF (jcc/jle/jng)");
-put_new(Name_0f, "86", "jump disp32 bytes away if lesser or equal (unsigned), if ZF is set or CF is set (jcc/jbe/jna)");
+put_new(Name_0f, "8e", "jump disp32 bytes away if lesser or equal, if ZF is set or SF != OF (jcc/jle/jng)");
+put_new(Name_0f, "86", "jump disp32 bytes away if lesser or equal (addr, float), if ZF is set or CF is set (jcc/jbe/jna)");
 
 :(code)
 void test_jle_disp32_equal() {

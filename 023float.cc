@@ -375,3 +375,42 @@ float* effective_address_float(uint8_t modrm) {
   trace(Callstack_depth+1, "run") << "effective address contains " << read_mem_f32(addr) << end();
   return mem_addr_f32(addr);
 }
+
+//: compare
+
+:(before "End Initialize Op Names")
+put_new(Name_0f, "2f", "compare: set SF if x32 < xm32 (comiss)");
+
+:(code)
+void test_compare_x32_with_mem_at_rm32() {
+  Reg[EAX].i = 0x2000;
+  Xmm[3] = 0.5;
+  run(
+      "== code 0x1\n"
+      // op     ModR/M  SIB   displacement  immediate
+      "  0f 2f  18                                    \n"  // compare XMM3 with *EAX
+      // ModR/M in binary: 00 (indirect mode) 011 (lhs XMM3) 000 (rhs EAX)
+      "== data 0x2000\n"
+      "00 00 00 00\n"  // 0x00000000 = 0.0
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare XMM3 with x/m32\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
+  );
+}
+
+:(before "End Two-Byte Opcodes Starting With 0f")
+case 0x2f: {  // set SF if x32 < x/m32
+  const uint8_t modrm = next();
+  const uint8_t reg1 = (modrm>>3)&0x7;
+  trace(Callstack_depth+1, "run") << "compare " << Xname[reg1] << " with x/m32" << end();
+  const float* arg2 = effective_address_float(modrm);
+  // Flag settings carefully copied from the Intel manual.
+  // See also https://stackoverflow.com/questions/7057501/x86-assembler-floating-point-compare/7057771#7057771
+  SF = ZF = CF = OF = false;
+  if (Xmm[reg1] == *arg2) ZF = true;
+  if (Xmm[reg1] < *arg2) CF = true;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  break;
+}

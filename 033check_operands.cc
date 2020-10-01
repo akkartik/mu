@@ -677,7 +677,8 @@ put_new(Permitted_arguments_0f, "8f", 0x10);
 //// Class M: using ModR/M byte
 //  imm32 imm8  disp32 |disp16  disp8 subop modrm
 //  0     0     0      |0       0     0     1
-put_new(Permitted_arguments_0f, "af", 0x01);
+put_new(Permitted_arguments_0f, "2f", 0x01);  // compare floats
+put_new(Permitted_arguments_0f, "af", 0x01);  // multiply ints
 // setcc
 put_new(Permitted_arguments_0f, "92", 0x01);
 put_new(Permitted_arguments_0f, "93", 0x01);

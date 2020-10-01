@@ -538,7 +538,7 @@ void test_compare_mem_at_r32_with_r32_equal() {
 put_new(Name, "3b", "compare: set SF if r32 < rm32 (cmp)");
 
 :(code)
-void test_compare_r32_with_mem_at_r32_greater() {
+void test_compare_r32_with_mem_at_rm32_greater() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
@@ -576,7 +576,7 @@ case 0x3b: {  // set SF if r32 < r/m32
 }
 
 :(code)
-void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed() {
+void test_compare_r32_with_mem_at_rm32_lesser_unsigned_and_signed() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c07;
   run(
@@ -595,7 +595,7 @@ void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed() {
   );
 }
 
-void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed_due_to_overflow() {
+void test_compare_r32_with_mem_at_rm32_lesser_unsigned_and_signed_due_to_overflow() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
   run(
@@ -614,7 +614,7 @@ void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed_due_to_overflow
   );
 }
 
-void test_compare_r32_with_mem_at_r32_lesser_signed() {
+void test_compare_r32_with_mem_at_rm32_lesser_signed() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xffffffff;  // -1
   run(
@@ -633,7 +633,7 @@ void test_compare_r32_with_mem_at_r32_lesser_signed() {
   );
 }
 
-void test_compare_r32_with_mem_at_r32_lesser_unsigned() {
+void test_compare_r32_with_mem_at_rm32_lesser_unsigned() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x00000001;  // 1
   run(
@@ -652,7 +652,7 @@ void test_compare_r32_with_mem_at_r32_lesser_unsigned() {
   );
 }
 
-void test_compare_r32_with_mem_at_r32_equal() {
+void test_compare_r32_with_mem_at_rm32_equal() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
