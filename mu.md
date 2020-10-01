@@ -371,6 +371,15 @@ break-if-addr<=
 break-if-addr<= label
 break-if-addr>=
 break-if-addr>= label
+
+break-if-float<
+break-if-float< label
+break-if-float>
+break-if-float> label
+break-if-float<=
+break-if-float<= label
+break-if-float>=
+break-if-float>= label
 ```
 
 Similarly, conditional loops:
