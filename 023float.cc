@@ -1,5 +1,80 @@
 //: floating-point operations
 
+//:: copy
+
+:(before "End Initialize Op Names")
+put_new(Name_f3_0f, "10", "copy xm32 to x32 (movss)");
+put_new(Name_f3_0f, "11", "copy x32 to xm32 (movss)");
+
+:(code)
+void test_copy_x32_to_x32() {
+  Xmm[3] = 0.5;
+  run(
+      "== code 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "f3 0f 11 d8                                    \n"  // copy XMM3 to XMM0
+      // ModR/M in binary: 11 (direct mode) 011 (src XMM3) 000 (dest XMM0)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy XMM3 to x/m32\n"
+      "run: x/m32 is XMM0\n"
+      "run: storing 0.5\n"
+  );
+}
+
+:(before "End Three-Byte Opcodes Starting With f3 0f")
+case 0x10: {  // copy x/m32 to x32
+  const uint8_t modrm = next();
+  const uint8_t rdest = (modrm>>3)&0x7;
+  trace(Callstack_depth+1, "run") << "copy x/m32 to " << Xname[rdest] << end();
+  float* src = effective_address_float(modrm);
+  Xmm[rdest] = *src;  // Write multiple elements of vector<uint8_t> at once. Assumes sizeof(float) == 4 on the host as well.
+  trace(Callstack_depth+1, "run") << "storing " << Xmm[rdest] << end();
+  break;
+}
+case 0x11: {  // copy x32 to x/m32
+  const uint8_t modrm = next();
+  const uint8_t rsrc = (modrm>>3)&0x7;
+  trace(Callstack_depth+1, "run") << "copy " << Xname[rsrc] << " to x/m32" << end();
+  float* dest = effective_address_float(modrm);
+  *dest = Xmm[rsrc];  // Write multiple elements of vector<uint8_t> at once. Assumes sizeof(float) == 4 on the host as well.
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+
+:(code)
+void test_copy_x32_to_mem_at_xm32() {
+  Xmm[3] = 0.5;
+  Reg[EAX].i = 0x60;
+  run(
+      "== code 0x1\n"
+      // op     ModR/M  SIB   displacement  immediate
+      "f3 0f 11 18                                    \n"  // copy XMM3 to *EAX
+      // ModR/M in binary: 00 (indirect mode) 011 (src XMM3) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy XMM3 to x/m32\n"
+      "run: effective address is 0x00000060 (EAX)\n"
+      "run: storing 0.5\n"
+  );
+}
+
+void test_copy_mem_at_xm32_to_x32() {
+  Reg[EAX].i = 0x2000;
+  run(
+      "== code 0x1\n"
+      // op     ModR/M  SIB   displacement  immediate
+      "f3 0f 10 18                                    \n"  // copy *EAX to XMM3
+      "== data 0x2000\n"
+      "00 00 00 3f\n"  // 0x3f000000 = 0.5
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy x/m32 to XMM3\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: storing 0.5\n"
+  );
+}
+
 //:: convert to floating point
 
 :(before "End Initialize Op Names")
