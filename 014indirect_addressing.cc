@@ -545,7 +545,7 @@ void test_compare_r32_with_mem_at_rm32_greater() {
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
-      // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
+      // ModR/M in binary: 00 (indirect mode) 011 (lhs EBX) 000 (rhs EAX)
       "== data 0x2000\n"
       "07 0c 0b 0a\n"  // 0x0a0b0c07
   );
@@ -583,7 +583,7 @@ void test_compare_r32_with_mem_at_rm32_lesser_unsigned_and_signed() {
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      // ModR/M in binary: 11 (direct mode) 011 (lhs EBX) 000 (rhs EAX)
       "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
@@ -602,7 +602,7 @@ void test_compare_r32_with_mem_at_rm32_lesser_unsigned_and_signed_due_to_overflo
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      // ModR/M in binary: 11 (direct mode) 011 (lhs EBX) 000 (rhs EAX)
       "== data 0x2000\n"
       "00 00 00 80\n"  // smallest negative signed integer
   );
@@ -621,7 +621,7 @@ void test_compare_r32_with_mem_at_rm32_lesser_signed() {
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      // ModR/M in binary: 11 (direct mode) 011 (lhs EBX) 000 (rhs EAX)
       "== data 0x2000\n"
       "01 00 00 00\n"  // 1
   );
@@ -640,7 +640,7 @@ void test_compare_r32_with_mem_at_rm32_lesser_unsigned() {
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      // ModR/M in binary: 11 (direct mode) 011 (lhs EBX) 000 (rhs EAX)
       "== data 0x2000\n"
       "ff ff ff ff\n"  // -1
   );
@@ -659,7 +659,7 @@ void test_compare_r32_with_mem_at_rm32_equal() {
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
-      // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
+      // ModR/M in binary: 00 (indirect mode) 011 (lhs EBX) 000 (rhs EAX)
       "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
