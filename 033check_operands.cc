@@ -697,8 +697,17 @@ map</*op*/string, /*bitvector*/uint8_t> Permitted_arguments_f3_0f;
 //// Class M: using ModR/M byte
 //  imm32 imm8  disp32 |disp16  disp8 subop modrm
 //  0     0     0      |0       0     0     1
-put_new(Permitted_arguments_f3_0f, "2a", 0x01);
-put_new(Permitted_arguments_f3_0f, "5e", 0x01);
+put_new(Permitted_arguments_f3_0f, "2a", 0x01);  // convert-to-float
+put_new(Permitted_arguments_f3_0f, "2d", 0x01);  // convert-to-int
+put_new(Permitted_arguments_f3_0f, "51", 0x01);  // square root
+put_new(Permitted_arguments_f3_0f, "52", 0x01);  // inverse square root
+put_new(Permitted_arguments_f3_0f, "53", 0x01);  // reciprocal
+put_new(Permitted_arguments_f3_0f, "58", 0x01);  // add floats
+put_new(Permitted_arguments_f3_0f, "59", 0x01);  // multiply floats
+put_new(Permitted_arguments_f3_0f, "5c", 0x01);  // subtract floats
+put_new(Permitted_arguments_f3_0f, "5d", 0x01);  // minimum of floats
+put_new(Permitted_arguments_f3_0f, "5e", 0x01);  // divide floats
+put_new(Permitted_arguments_f3_0f, "5f", 0x01);  // maximum of floats
 
 :(code)
 void check_arguments_0f(const line& inst, const word& op) {
