@@ -241,7 +241,6 @@ inline string mem_addr_string(uint32_t addr, uint32_t size) {
   return out.str();
 }
 
-
 inline void write_mem_u8(uint32_t addr, uint8_t val) {
   uint8_t* handle = mem_addr_u8(addr);
   if (handle != NULL) *handle = val;

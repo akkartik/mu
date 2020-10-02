@@ -84,7 +84,7 @@ if empty($TMUX) || (system("tmux display-message -p '#{client_control_mode}'") =
   "   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map
   "   can't avoid the function because that disables the wait for <CR> prompt
   noremap <Leader>t {:keeppatterns /^[^ #]<CR>:call RunTestMoveCursor("<C-r><C-w>")<CR>
-  function RunTestMoveCursor(arg)
+  function! RunTestMoveCursor(arg)
     exec "!./run_one_test ".expand("%")." '".a:arg."'"
     exec "normal \<C-o>"
   endfunction
@@ -92,10 +92,10 @@ else
   " we have tmux and are not in control mode; we don't need to show any output in the Vim pane so life is simpler
   " assume the left-most window is for the shell
   noremap <Leader>t {:keeppatterns /^[^ #]<CR>:silent! call RunTestInFirstPane("<C-r><C-w>")<CR><C-o>
-  function RunTestInFirstPane(arg)
+  function! RunTestInFirstPane(arg)
     call RunInFirstPane("./run_one_test ".expand("%")." ".a:arg)
   endfunction
-  function RunInFirstPane(arg)
+  function! RunInFirstPane(arg)
     exec "!tmux select-pane -t :0.0"
     exec "!tmux send-keys '".a:arg."' C-m"
     exec "!tmux last-pane"
