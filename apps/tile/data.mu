@@ -113,15 +113,69 @@ fn create-primitive-defs _self: (addr handle function) {
   var curr-word-ah/ecx: (addr handle word) <- get body, data
   allocate curr-word-ah
   var curr-word/eax: (addr word) <- lookup *curr-word-ah
-  initialize-word-with curr-word, "2"
-  curr-word-ah <- get curr-word, next
-  allocate curr-word-ah
-  curr-word <- lookup *curr-word-ah
   initialize-word-with curr-word, "x"
   curr-word-ah <- get curr-word, next
   allocate curr-word-ah
   curr-word <- lookup *curr-word-ah
+  initialize-word-with curr-word, "2"
+  curr-word-ah <- get curr-word, next
+  allocate curr-word-ah
+  curr-word <- lookup *curr-word-ah
   initialize-word-with curr-word, "*"
+  # x 1+ = x 1 +
+  var next/esi: (addr handle function) <- get f, next
+  allocate next
+  var _f/eax: (addr function) <- lookup *next
+  var f/esi: (addr function) <- copy _f
+  var name-ah/eax: (addr handle array byte) <- get f, name
+  populate-text-with name-ah, "1+"
+  var args-ah/eax: (addr handle word) <- get f, args
+  allocate args-ah
+  var args/eax: (addr word) <- lookup *args-ah
+  initialize-word-with args, "x"
+  var body-ah/eax: (addr handle line) <- get f, body
+  allocate body-ah
+  var body/eax: (addr line) <- lookup *body-ah
+  initialize-line body, 0
+  var curr-word-ah/ecx: (addr handle word) <- get body, data
+  allocate curr-word-ah
+  var curr-word/eax: (addr word) <- lookup *curr-word-ah
+  initialize-word-with curr-word, "x"
+  curr-word-ah <- get curr-word, next
+  allocate curr-word-ah
+  curr-word <- lookup *curr-word-ah
+  initialize-word-with curr-word, "1"
+  curr-word-ah <- get curr-word, next
+  allocate curr-word-ah
+  curr-word <- lookup *curr-word-ah
+  initialize-word-with curr-word, "+"
+  # x 2+ = x 1+ 1+
+  var next/esi: (addr handle function) <- get f, next
+  allocate next
+  var _f/eax: (addr function) <- lookup *next
+  var f/ecx: (addr function) <- copy _f
+  var name-ah/eax: (addr handle array byte) <- get f, name
+  populate-text-with name-ah, "2+"
+  var args-ah/eax: (addr handle word) <- get f, args
+  allocate args-ah
+  var args/eax: (addr word) <- lookup *args-ah
+  initialize-word-with args, "x"
+  var body-ah/eax: (addr handle line) <- get f, body
+  allocate body-ah
+  var body/eax: (addr line) <- lookup *body-ah
+  initialize-line body, 0
+  var curr-word-ah/ecx: (addr handle word) <- get body, data
+  allocate curr-word-ah
+  var curr-word/eax: (addr word) <- lookup *curr-word-ah
+  initialize-word-with curr-word, "x"
+  curr-word-ah <- get curr-word, next
+  allocate curr-word-ah
+  curr-word <- lookup *curr-word-ah
+  initialize-word-with curr-word, "1+"
+  curr-word-ah <- get curr-word, next
+  allocate curr-word-ah
+  curr-word <- lookup *curr-word-ah
+  initialize-word-with curr-word, "1+"
   # TODO: populate prev pointers
 }
 

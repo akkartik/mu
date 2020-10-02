@@ -408,7 +408,11 @@ fn clear-canvas _env: (addr environment) {
   var repl-col/ecx: int <- copy *_repl-col
   draw-vertical-line screen, 1, *nrows, repl-col
   move-cursor screen, 3, 2
-  print-string screen, "x 2* = 2 x *"
+  print-string screen, "x 2* = x 2 *"
+  move-cursor screen, 4, 2
+  print-string screen, "x 1+ = x 1 +"
+  move-cursor screen, 5, 2
+  print-string screen, "x 2+ = x 1+ 1+"
 }
 
 fn real-grapheme? g: grapheme -> result/eax: boolean {
