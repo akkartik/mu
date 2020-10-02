@@ -416,5 +416,44 @@ fn clear-canvas _env: (addr environment) {
 }
 
 fn real-grapheme? g: grapheme -> result/eax: boolean {
+$real-grapheme?:body: {
+  # if g == newline return true
+  compare g, 0xa
+  {
+    break-if-!=
+    result <- copy 1  # true
+    break $real-grapheme?:body
+  }
+  # if g == tab return true
+  compare g, 9
+  {
+    break-if-!=
+    result <- copy 1  # true
+    break $real-grapheme?:body
+  }
+  # if g < 32 return false
+  compare g, 0x20
+  {
+    break-if->=
+    result <- copy 0  # false
+    break $real-grapheme?:body
+  }
+  # if g <= 255 return true
+  compare g, 0xff
+  {
+    break-if->
+    result <- copy 1  # true
+    break $real-grapheme?:body
+  }
+  # if (g&0xff == Esc) it's an escape sequence
+  and-with g, 0xff
+  compare g, 0x1b  # Esc
+  {
+    break-if-!=
+    result <- copy 0  # false
+    break $real-grapheme?:body
+  }
+  # otherwise return true
   result <- copy 1  # true
+}
 }

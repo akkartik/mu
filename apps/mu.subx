@@ -13500,7 +13500,7 @@ $check-mu-numberlike-output:check-int:
     # if t is an int, return
     (is-simple-mu-type? %esi 1)  # int => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $check-mu-numberlike-output:end/disp8
+    0f 85/jump-if-!= $check-mu-numberlike-output:end/disp32
 $check-mu-numberlike-output:check-float:
     # if t is a float, return
     (is-simple-mu-type? %esi 0xf)  # float => eax
@@ -13514,6 +13514,16 @@ $check-mu-numberlike-output:check-boolean:
 $check-mu-numberlike-output:check-byte:
     # if t is a byte, return
     (is-simple-mu-type? %esi 8)  # byte => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $check-mu-numberlike-output:end/disp8
+$check-mu-numberlike-output:check-code-point:
+    # if t is a code-point, return
+    (is-simple-mu-type? %esi 0xd)  # code-point => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $check-mu-numberlike-output:end/disp8
+$check-mu-numberlike-output:check-grapheme:
+    # if t is a grapheme, return
+    (is-simple-mu-type? %esi 0xe)  # grapheme => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= $check-mu-numberlike-output:end/disp8
     e9/jump $check-mu-numberlike-output:fail/disp32
