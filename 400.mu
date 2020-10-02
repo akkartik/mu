@@ -175,4 +175,4 @@ sig stream-empty? s: (addr stream _) -> result/eax: boolean
 sig stream-full? s: (addr stream _) -> result/eax: boolean
 sig stream-to-string in: (addr stream _), out: (addr handle array _)
 
-sig copy-bytes src: (addr byte), dest: (addr byte), n: int
+#sig copy-bytes src: (addr byte), dest: (addr byte), n: int
