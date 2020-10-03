@@ -4538,6 +4538,60 @@ test-convert-floating-point-operation:
     5d/pop-to-ebp
     c3/return
 
+test-convert-floating-point-dereferenced:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var m: float\n")
+    (write _test-input-stream "  var x/xmm1: float <- copy m\n")
+    (write _test-input-stream "  var y/eax: (addr float) <- copy 0\n")
+    (write _test-input-stream "  x <- multiply *y\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "f:"                                                                     "F - test-convert-floating-point-dereferenced/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                                                         "F - test-convert-floating-point-dereferenced/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                                                          "F - test-convert-floating-point-dereferenced/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                                                 "F - test-convert-floating-point-dereferenced/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                                                    "F - test-convert-floating-point-dereferenced/4")
+    (check-next-stream-line-equal _test-output-stream "$f:0x00000001:loop:"                                                    "F - test-convert-floating-point-dereferenced/5")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"                                                    "F - test-convert-floating-point-dereferenced/6")
+    (check-next-stream-line-equal _test-output-stream "    81 5/subop/subtract %esp 4/imm32"                                   "F - test-convert-floating-point-dereferenced/7")
+    (check-next-stream-line-equal _test-output-stream "    f3 0f 11/<- *esp 1/x32"                                             "F - test-convert-floating-point-dereferenced/8")
+    (check-next-stream-line-equal _test-output-stream "    f3 0f 10/copy *(ebp+0xfffffffc) 0x00000001/x32"                     "F - test-convert-floating-point-dereferenced/9")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                                               "F - test-convert-floating-point-dereferenced/10")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                                             "F - test-convert-floating-point-dereferenced/11")
+    (check-next-stream-line-equal _test-output-stream "    f3 0f 59/multiply *eax 0x00000001/x32"                              "F - test-convert-floating-point-dereferenced/12")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                                                "F - test-convert-floating-point-dereferenced/13")
+    (check-next-stream-line-equal _test-output-stream "    f3 0f 10/-> *esp 1/x32"                                             "F - test-convert-floating-point-dereferenced/14")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 4/imm32"                                        "F - test-convert-floating-point-dereferenced/15")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"                               "F - test-convert-floating-point-dereferenced/16")
+    (check-next-stream-line-equal _test-output-stream "  }"                                                                    "F - test-convert-floating-point-dereferenced/17")
+    (check-next-stream-line-equal _test-output-stream "$f:0x00000001:break:"                                                   "F - test-convert-floating-point-dereferenced/18")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                                                         "F - test-convert-floating-point-dereferenced/19")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                                                 "F - test-convert-floating-point-dereferenced/20")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                                                        "F - test-convert-floating-point-dereferenced/21")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                                            "F - test-convert-floating-point-dereferenced/22")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-length-of-array:
     # . prologue
     55/push-ebp
@@ -23401,6 +23455,22 @@ $operand-matches-primitive?:check-type:
     # . var vtype/ebx: (addr type-tree) = lookup(var->type)
     (lookup *(esi+8) *(esi+0xc))  # Var-type Var-type => eax
     89/<- %ebx 0/r32/eax
+    # . if s is deref, vtype = vtype->right
+    {
+      81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
+      74/jump-if-= break/disp8
+$operand-matches-primitive?:is-deref:
+      # . var t/eax: (addr type)
+      (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
+      # . if !t->is-atom? t = t->left
+      81 7/subop/compare *eax 0/imm32/false
+      {
+        75/jump-if-!= break/disp8
+        (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      }
+      # .
+      89/<- %ebx 0/r32/eax
+    }
     # . var ptype/eax: (addr type-tree) = lookup(prim-var->type)
     (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
     (subx-type-category-match? %ebx %eax)  # => eax
