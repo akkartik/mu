@@ -1381,6 +1381,50 @@ test-read-clobbered-reg-var:
     5d/pop-to-ebp
     c3/return
 
+test-overlapping-int-fp-registers:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)  # bytes of args in call to convert-mu
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: int <- copy 3\n")
+    (write _test-input-stream "  var y/xmm0: float <- convert x\n")
+    (write _test-input-stream "  x <- increment\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # no errors
+    (check-next-stream-line-equal _test-error-stream  ""  "F - test-overlapping-int-fp-registers: error message")
+    # don't bother checking the generated code
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-call:
     # . prologue
     55/push-ebp
@@ -10857,7 +10901,15 @@ lookup-var-helper:  # name: (addr slice), vars: (addr stack live-var), out: (add
     8d/copy-address *(esi+8) 2/r32/edx
     # var curr/ebx: (addr handle var) = &vars->data[vars->top - 12]
     8d/copy-address *(esi+ebx-4) 3/r32/ebx  # vars + 8 + vars->type - 12
-    # var var-in-reg/edi: 8 addrs
+    # var var-in-reg/edi: 16 addrs
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
+    68/push 0/imm32
     68/push 0/imm32
     68/push 0/imm32
     68/push 0/imm32
@@ -10890,7 +10942,7 @@ $lookup-var-helper:found:
           74/jump-if-= break/disp8
 $lookup-var-helper:found-register:
           # var reg/eax: int = get(Registers, vr)
-          (get Mu-registers %eax 0xc "Mu-registers")  # => eax
+          (get Mu-registers-unique %eax 0xc "Mu-registers-unique")  # => eax
           8b/-> *eax 0/r32/eax
           # if (var-in-reg[reg]) error
           8b/-> *(edi+eax<<2) 0/r32/eax
@@ -10915,7 +10967,7 @@ $lookup-var-helper:return:
       3d/compare-eax-and 0/imm32
       74/jump-if-= $lookup-var-helper:continue/disp8
       # . var reg/eax: int = get(Registers, vr)
-      (get Mu-registers %eax 0xc "Mu-registers")  # => eax
+      (get Mu-registers-unique %eax 0xc "Mu-registers-unique")  # => eax
       8b/-> *eax 0/r32/eax
       # . var-in-reg[reg] = v
       89/<- *(edi+eax<<2) 1/r32/ecx
@@ -10926,7 +10978,7 @@ $lookup-var-helper:continue:
     }
 $lookup-var-helper:end:
     # . reclaim locals
-    81 0/subop/add %esp 0x20/imm32
+    81 0/subop/add %esp 0x40/imm32
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -11045,6 +11097,32 @@ Mu-registers:  # (addr stream {(handle array byte), int})
   0x11/imm32/alloc-id $Mu-register-xmm5/imm32 5/imm32
   0x11/imm32/alloc-id $Mu-register-xmm6/imm32 6/imm32
   0x11/imm32/alloc-id $Mu-register-xmm7/imm32 7/imm32
+
+# Like Mu-registers, but with unique codes for integer and floating-point
+# registers.
+# Don't use this for code-generation, only for checking.
+Mu-registers-unique:  # (addr stream {(handle array byte), int})
+  # a table is a stream
+  0xa8/imm32/write
+  0/imm32/read
+  0xa8/imm32/length
+  # data
+  # general-purpose registers
+  0x11/imm32/alloc-id $Mu-register-eax/imm32 0/imm32
+  0x11/imm32/alloc-id $Mu-register-ecx/imm32 1/imm32
+  0x11/imm32/alloc-id $Mu-register-edx/imm32 2/imm32
+  0x11/imm32/alloc-id $Mu-register-ebx/imm32 3/imm32
+  0x11/imm32/alloc-id $Mu-register-esi/imm32 6/imm32
+  0x11/imm32/alloc-id $Mu-register-edi/imm32 7/imm32
+  # floating-point registers
+  0x11/imm32/alloc-id $Mu-register-xmm0/imm32 8/imm32
+  0x11/imm32/alloc-id $Mu-register-xmm1/imm32 9/imm32
+  0x11/imm32/alloc-id $Mu-register-xmm2/imm32 0xa/imm32
+  0x11/imm32/alloc-id $Mu-register-xmm3/imm32 0xb/imm32
+  0x11/imm32/alloc-id $Mu-register-xmm4/imm32 0xc/imm32
+  0x11/imm32/alloc-id $Mu-register-xmm5/imm32 0xd/imm32
+  0x11/imm32/alloc-id $Mu-register-xmm6/imm32 0xe/imm32
+  0x11/imm32/alloc-id $Mu-register-xmm7/imm32 0xf/imm32
 
 $Mu-register-eax:
   0x11/imm32/alloc-id
