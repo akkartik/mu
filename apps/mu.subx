@@ -10911,15 +10911,13 @@ $lookup-var-helper:return:
       # 'name' not yet found; update var-in-reg if v in register
       # . var vr/eax: (addr array byte) = lookup(v->register)
       (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
-      # . if (var == 0) continue
+      # . if (vr == 0) continue
       3d/compare-eax-and 0/imm32
       74/jump-if-= $lookup-var-helper:continue/disp8
       # . var reg/eax: int = get(Registers, vr)
       (get Mu-registers %eax 0xc "Mu-registers")  # => eax
       8b/-> *eax 0/r32/eax
-      # . if (var-in-reg[reg] == 0) var-in-reg[reg] = v
-      81 7/subop/compare *(edi+eax<<2) 0/imm32
-      75/jump-if-!= $lookup-var-helper:continue/disp8
+      # . var-in-reg[reg] = v
       89/<- *(edi+eax<<2) 1/r32/ecx
 $lookup-var-helper:continue:
       # curr -= 12
