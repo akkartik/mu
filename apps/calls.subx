@@ -348,7 +348,12 @@ emit-call:  # out: (addr buffered-file), words: (addr stream slice)
     #   # emit pushes
     #   while true
     #     if (curr <= min) break
-    #     if *curr->start in '%' '*'
+    #     if slice-starts-with?(curr, "%x")    # floating-point register
+    #       write-buffered(out, "81 5/subop/subtract %esp 4/imm32\n")
+    #       write-buffered(out, "f3 0f 11/<- *esp ")
+    #       write-byte-buffered(out, *(curr->start+4))
+    #       write-buffered(out, "/x32\n")
+    #     else if *curr->start in '%' '*'
     #       write-buffered(out, "ff 6/subop/push ")
     #       write-slice-buffered(out, curr)
     #       write-buffered(out, "\n")
@@ -390,6 +395,57 @@ $emit-call:push-loop:
     # if (curr <= min) break
     39/compare %ecx 2/r32/edx
     0f 8e/jump-if-<= $emit-call:call-instruction/disp32
+    # if !slice-starts-with?(curr, "%x") goto next check
+    # . eax = slice-starts-with?(curr, "%x")
+    # . . push args
+    68/push "%x"/imm32
+    51/push-ecx
+    # . . call
+    e8/call slice-starts-with?/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . if (eax != 0) goto next check
+    3d/compare-eax-and 0/imm32/false
+    74/jump-if-= $emit-call:push-int/disp8
+    # emit floating-point push
+    # . write-buffered(out, "81 5/subop/subtract %esp 4/imm32\n")
+    # . . push args
+    68/push "81 5/subop/subtract %esp 4/imm32\n"/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . write-buffered(out, "f3 0f 11/<- *esp ")
+    # . . push args
+    68/push "f3 0f 11/<- *esp "/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . write-byte-buffered(out, *(curr->start+4))
+    # . . eax = *(curr->start+4)
+    8b/-> *ecx 0/r32/eax
+    8a/copy-byte *(eax+4) 0/r32/eax
+    81 4/subop/and %eax 0xff/imm32
+    # . . push args
+    50/push-eax
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-byte-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . write-buffered(out, "/x32\n")
+    68/push "/x32\n"/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . continue
+    e9/jump $emit-call:next-push/disp32
+$emit-call:push-int:
     # if (*curr->start in '%' '*') goto push-rm32
     # . var start/eax: (addr byte) = curr->start
     8b/-> *ecx 0/r32/eax
@@ -404,6 +460,7 @@ $emit-call:push-loop:
     74/jump-if-= $emit-call:push-rm32/disp8
 $emit-call:push-imm32:
     # write-buffered(out, "68/push ")
+    # . . push args
     68/push "68/push "/imm32
     ff 6/subop/push *(ebp+8)
     # . . call
