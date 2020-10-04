@@ -185,6 +185,9 @@ xor-with var1, var2/reg
 var/reg <- xor n
 xor-with var, n
 
+var1/reg1 <- negate
+negate var
+
 var/reg <- copy var2/reg2
 copy-to var1, var2/reg
 var/reg <- copy var2
