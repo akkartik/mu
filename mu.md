@@ -263,6 +263,11 @@ var/xreg <- max *var2/reg2
 Remember, when these instructions use indirect mode, they still use an integer
 register. Floating-point registers can't hold addresses.
 
+Two instructions in the above list are approximate. According to the Intel
+Manual, `reciprocal` and `inverse-square-root` [go off the rails around the
+fourth decimal place](x86_approx.md). If you need more precision, use `divide`
+separately.
+
 Most instructions operate exclusively on integer or floating-point operands.
 The only exceptions are the instructions for converting between integers and
 floating-point numbers.
