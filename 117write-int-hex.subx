@@ -176,24 +176,9 @@ test-write-byte-hex-buffered:
     c3/return
 
 write-int32-hex:  # f: (addr stream byte), n: int
-    # pseudocode:
-    #  write(f, "0x")
-    #  ecx = 28
-    #  while true
-    #    if (ecx < 0) break
-    #    eax = n >> ecx
-    #    eax = eax & 0xf
-    #    append-byte(f, AL)
-    #    ecx -= 4
-    #
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # . save registers
-    50/push-eax
-    51/push-ecx
-    # ecx = 28
-    b9/copy-to-ecx  0x1c/imm32
 $write-int32-hex:hex-prefix:
     # write(f, "0x")
     # . . push args
@@ -203,11 +188,48 @@ $write-int32-hex:hex-prefix:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$write-int32-hex:loop:
-    # if (ecx < 0) break
+$write-int32-hex:rest:
+    # write-int32-hex-bits(f, n, 32)
+    # . . push args
+    68/push  0x20/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  write-int32-hex-bits/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+$write-int32-hex:end:
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# print rightmost 'bits' of 'n'
+# bits must be multiple of 4
+write-int32-hex-bits:  # f: (addr stream byte), n: int, bits: int
+    # pseudocode:
+    #  bits -= 4
+    #  while true
+    #    if (bits < 0) break
+    #    eax = n >> bits
+    #    eax = eax & 0xf
+    #    append-byte(f, AL)
+    #    bits -= 4
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # ecx = bits-4
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # copy *(ebp+16) to ecx
+    81          5/subop/subtract    3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # subtract from ecx
+$write-int32-hex-bits:loop:
+    # if (bits < 0) break
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0/imm32           # compare ecx
-    7c/jump-if-<  $write-int32-hex:end/disp8
-    # eax = n >> ecx
+    7c/jump-if-<  $write-int32-hex-bits:end/disp8
+    # eax = n >> bits
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     d3/>>ecx    5/subop/pad-zeroes  3/mod/direct    0/rm32/eax    .           .             .           .           .               .                 # shift eax right by ecx bits, padding zeroes
     # eax = to-hex-char(AL)
@@ -221,10 +243,10 @@ $write-int32-hex:loop:
     e8/call  append-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # ecx -= 4
+    # bits -= 4
     81          5/subop/subtract    3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # subtract from ecx
-    eb/jump  $write-int32-hex:loop/disp8
-$write-int32-hex:end:
+    eb/jump  $write-int32-hex-bits:loop/disp8
+$write-int32-hex-bits:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
@@ -264,24 +286,9 @@ test-write-int32-hex:
     c3/return
 
 write-int32-hex-buffered:  # f: (addr buffered-file), n: int
-    # pseudocode:
-    #  write-buffered(f, "0x")
-    #  ecx = 28
-    #  while true
-    #    if (ecx < 0) break
-    #    eax = n >> ecx
-    #    eax = eax & 0xf
-    #    write-byte-buffered(f, AL)
-    #    ecx -= 4
-    #
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # . save registers
-    50/push-eax
-    51/push-ecx
-    # ecx = 28
-    b9/copy-to-ecx  0x1c/imm32
 $write-int32-hex-buffered:hex-prefix:
     # write-buffered(f, "0x")
     # . . push args
@@ -291,11 +298,48 @@ $write-int32-hex-buffered:hex-prefix:
     e8/call  write-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$write-int32-hex-buffered:loop:
-    # if (ecx < 0) break
+$write-int32-hex-buffered:rest:
+    # write-int32-hex-bits-buffered(f, n, 32)
+    # . . push args
+    68/push  0x20/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  write-int32-hex-bits-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+$write-int32-hex-buffered:end:
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# print rightmost 'bits' of 'n'
+# bits must be multiple of 4
+write-int32-hex-bits-buffered:  # f: (addr buffered-file), n: int, bits: int
+    # pseudocode:
+    #  bits -= 4
+    #  while true
+    #    if (bits < 0) break
+    #    eax = n >> bits
+    #    eax = eax & 0xf
+    #    write-byte-buffered(f, AL)
+    #    bits -= 4
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # ecx = bits-4
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # copy *(ebp+16) to ecx
+    81          5/subop/subtract    3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # subtract from ecx
+$write-int32-hex-bits-buffered:loop:
+    # if (bits < 0) break
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0/imm32           # compare ecx
-    7c/jump-if-<  $write-int32-hex-buffered:end/disp8
-    # eax = n >> ecx
+    7c/jump-if-<  $write-int32-hex-bits-buffered:end/disp8
+    # eax = n >> bits
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     d3/>>ecx    5/subop/pad-zeroes  3/mod/direct    0/rm32/eax    .           .             .           .           .               .                 # shift eax right by ecx bits, padding zeroes
     # eax = to-hex-char(AL)
@@ -309,10 +353,10 @@ $write-int32-hex-buffered:loop:
     e8/call  write-byte-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # ecx -= 4
+    # bits -= 4
     81          5/subop/subtract    3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # subtract from ecx
-    eb/jump  $write-int32-hex-buffered:loop/disp8
-$write-int32-hex-buffered:end:
+    eb/jump  $write-int32-hex-bits-buffered:loop/disp8
+$write-int32-hex-bits-buffered:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax

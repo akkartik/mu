@@ -62,7 +62,9 @@ sig write-buffered f: (addr buffered-file), msg: (addr array byte)
 sig append-byte-hex f: (addr stream byte), n: int
 sig write-byte-hex-buffered f: (addr buffered-file), n: int
 sig write-int32-hex f: (addr stream byte), n: int
+sig write-int32-hex-bits f: (addr stream byte), n: int, bits: int
 sig write-int32-hex-buffered f: (addr buffered-file), n: int
+sig write-int32-hex-bits-buffered f: (addr buffered-file), n: int, bits: int
 sig is-hex-int? in: (addr slice) -> result/eax: boolean
 sig parse-hex-int in: (addr array byte) -> result/eax: int
 sig parse-hex-int-from-slice in: (addr slice) -> result/eax: int
@@ -152,6 +154,7 @@ sig print-slice-to-real-screen s: (addr slice)
 sig print-stream-to-real-screen s: (addr stream byte)
 sig print-grapheme-to-real-screen c: grapheme
 sig print-int32-hex-to-real-screen n: int
+sig print-int32-hex-bits-to-real-screen n: int, bits: int
 sig print-int32-decimal-to-real-screen n: int
 sig write-int32-decimal-buffered f: (addr buffered-file), n: int
 sig reset-formatting-on-real-screen

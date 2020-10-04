@@ -435,6 +435,45 @@ $print-int32-hex:body: {
   {
     break-if-=
     # fake screen
+    var s2: (stream byte 0x100)
+    var s2-addr/esi: (addr stream byte) <- address s2
+    write-int32-hex s2-addr, n
+    var screen-addr/edi: (addr screen) <- copy screen
+    {
+      var done?/eax: boolean <- stream-empty? s2-addr
+      compare done?, 0
+      break-if-!=
+      var g/eax: grapheme <- read-grapheme s2-addr
+      print-grapheme screen, g
+      loop
+    }
+  }
+}
+}
+
+fn print-int32-hex-bits screen: (addr screen), n: int, bits: int {
+$print-int32-hex-bits:body: {
+  compare screen, 0
+  {
+    break-if-!=
+    print-int32-hex-bits-to-real-screen n, bits
+    break $print-int32-hex-bits:body
+  }
+  {
+    break-if-=
+    # fake screen
+    var s2: (stream byte 0x100)
+    var s2-addr/esi: (addr stream byte) <- address s2
+    write-int32-hex-bits s2-addr, n, bits
+    var screen-addr/edi: (addr screen) <- copy screen
+    {
+      var done?/eax: boolean <- stream-empty? s2-addr
+      compare done?, 0
+      break-if-!=
+      var g/eax: grapheme <- read-grapheme s2-addr
+      print-grapheme screen, g
+      loop
+    }
   }
 }
 }
