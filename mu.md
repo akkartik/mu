@@ -258,6 +258,7 @@ var/xreg <- min *var2/reg2
 var/xreg <- max var2/xreg2
 var/xreg <- max var2
 var/xreg <- max *var2/reg2
+```
 
 Remember, when these instructions use indirect mode, they still use an integer
 register. Floating-point registers can't hold addresses.
@@ -266,6 +267,7 @@ Most instructions operate exclusively on integer or floating-point operands.
 The only exceptions are the instructions for converting between integers and
 floating-point numbers.
 
+```
 var/xreg <- convert var2/reg2
 var/xreg <- convert var2
 var/xreg <- convert *var2/reg2
@@ -273,6 +275,7 @@ var/xreg <- convert *var2/reg2
 var/reg <- convert var2/xreg2
 var/reg <- convert var2
 var/reg <- convert *var2/reg2
+```
 
 There are no instructions accepting floating-point literals. To obtain integer
 literals in floating-point registers, copy them to general-purpose registers
@@ -282,13 +285,16 @@ One pattern you may have noticed above is that the floating-point instructions
 above always write to registers. The only exceptions are `copy` instructions,
 which can write to memory locations.
 
+```
 var/xreg <- copy var2/xreg2
 copy-to var1, var2/xreg
 var/xreg <- copy var2
 var/xreg <- copy *var2/reg2
+```
 
 Floating-point comparisons always put a register on the left-hand side:
 
+```
 compare var1/xreg1, var2/xreg2
 compare var1/xreg1, var2
 ```
