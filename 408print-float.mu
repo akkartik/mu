@@ -8,7 +8,7 @@
 #                          mantissa                  exponent
 #                    = 0 | 000000000000000000000000 | 01111110
 #                          zero-pad mantissa          exponent
-#                   =   +1.000000                   e -01
+#                   =   +1.000000                   p -01
 fn test-print-float-normal {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
@@ -21,7 +21,7 @@ fn test-print-float-normal {
   half <- divide two-f
   print-float screen, half
   #
-  check-screen-row screen, 1, "1.000000e-01 ", "F - test-print-float-normal"
+  check-screen-row screen, 1, "1.000000p-01 ", "F - test-print-float-normal"
 }
 
 fn test-print-float-zero {
@@ -150,7 +150,7 @@ $print-float:body: {
   mantissa <- and 0x7fffff
   print-int32-hex-bits screen, mantissa, 0x18
   # print exponent
-  print-string screen, "e"
+  print-string screen, "p"
   exponent <- subtract 0x7f
   compare exponent, 0
   {
