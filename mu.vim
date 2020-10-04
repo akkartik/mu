@@ -65,7 +65,7 @@ syntax match muTest "\(fn\s*\)\@<=\(test-\S\+\)"
 highlight link muTest Identifier
 
 syntax match muData "^type\>"
-syntax match muData "\<eax\>\|\<ecx\>\|\<edx\>\|\<ebx\>\|\<esi\>\|\<edi\>"
+syntax match muData "\<eax\>\|\<ecx\>\|\<edx\>\|\<ebx\>\|\<esi\>\|\<edi\>\|\<xmm[0-7]\>"
 highlight link muData Constant
 
 let &cpo = s:save_cpo
