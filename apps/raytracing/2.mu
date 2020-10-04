@@ -60,24 +60,27 @@ type rgb {
 # print translating to [0, 256)
 fn print-rgb screen: (addr screen), _c: (addr rgb) {
   var c/esi: (addr rgb) <- copy _c
-  var n/ecx: int <- copy 0xff
+  var n/ecx: int <- copy 0xff  # turns out 255 works just as well as 255.999, which is lucky because we don't have floating-point literals
   var xn/xmm1: float <- convert n
-  var tmp/xmm0: float <- copy xn
-  var tmp-a/eax: (addr float) <- get c, r
-  tmp <- multiply *tmp-a
-  var tmp2/edx: int <- convert tmp
-  print-int32-decimal screen, tmp2
+  # print 255 * c->r
+  var result/xmm0: float <- copy xn
+  var src-addr/eax: (addr float) <- get c, r
+  result <- multiply *src-addr
+  var result-int/edx: int <- convert result
+  print-int32-decimal screen, result-int
   print-string screen, " "
-  tmp-a <- get c, g
-  tmp <- copy xn
-  tmp <- multiply *tmp-a
-  tmp2 <- convert tmp
-  print-int32-decimal screen, tmp2
+  # print 255 * c->g
+  src-addr <- get c, g
+  result <- copy xn
+  result <- multiply *src-addr
+  result-int <- convert result
+  print-int32-decimal screen, result-int
   print-string screen, " "
-  tmp-a <- get c, b
-  tmp <- copy xn
-  tmp <- multiply *tmp-a
-  tmp2 <- convert tmp
-  print-int32-decimal screen, tmp2
+  # print 255 * c->b
+  src-addr <- get c, b
+  result <- copy xn
+  result <- multiply *src-addr
+  result-int <- convert result
+  print-int32-decimal screen, result-int
   print-string screen, "\n"
 }

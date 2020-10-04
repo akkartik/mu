@@ -119,27 +119,30 @@ if ('onhashchange' in window) {
 <span id="L60" class="LineNr">60 </span><span class="Comment"># print translating to [0, 256)</span>
 <span id="L61" class="LineNr">61 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='2.mu.html#L61'>print-rgb</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), _c: (addr <a href='2.mu.html#L53'>rgb</a>) <span class="Delimiter">{</span>
 <span id="L62" class="LineNr">62 </span>  <span class="PreProc">var</span> c/<span class="Constant">esi</span>: (addr <a href='2.mu.html#L53'>rgb</a>) <span class="SpecialChar">&lt;-</span> copy _c
-<span id="L63" class="LineNr">63 </span>  <span class="PreProc">var</span> n/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0xff</span>
+<span id="L63" class="LineNr">63 </span>  <span class="PreProc">var</span> n/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0xff</span>  <span class="Comment"># turns out 255 works just as well as 255.999, which is lucky because we don't have floating-point literals</span>
 <span id="L64" class="LineNr">64 </span>  <span class="PreProc">var</span> xn/xmm1: float <span class="SpecialChar">&lt;-</span> convert n
-<span id="L65" class="LineNr">65 </span>  <span class="PreProc">var</span> tmp/xmm0: float <span class="SpecialChar">&lt;-</span> copy xn
-<span id="L66" class="LineNr">66 </span>  <span class="PreProc">var</span> tmp-a/<span class="Constant">eax</span>: (addr float) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> c, r
-<span id="L67" class="LineNr">67 </span>  tmp <span class="SpecialChar">&lt;-</span> multiply *tmp-a
-<span id="L68" class="LineNr">68 </span>  <span class="PreProc">var</span> tmp2/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> convert tmp
-<span id="L69" class="LineNr">69 </span>  <a href='../../405screen.mu.html#L442'>print-int32-decimal</a> <a href='../../405screen.mu.html#L9'>screen</a>, tmp2
-<span id="L70" class="LineNr">70 </span>  <a href='../../405screen.mu.html#L179'>print-string</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot; &quot;</span>
-<span id="L71" class="LineNr">71 </span>  tmp-a <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> c, g
-<span id="L72" class="LineNr">72 </span>  tmp <span class="SpecialChar">&lt;-</span> copy xn
-<span id="L73" class="LineNr">73 </span>  tmp <span class="SpecialChar">&lt;-</span> multiply *tmp-a
-<span id="L74" class="LineNr">74 </span>  tmp2 <span class="SpecialChar">&lt;-</span> convert tmp
-<span id="L75" class="LineNr">75 </span>  <a href='../../405screen.mu.html#L442'>print-int32-decimal</a> <a href='../../405screen.mu.html#L9'>screen</a>, tmp2
-<span id="L76" class="LineNr">76 </span>  <a href='../../405screen.mu.html#L179'>print-string</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot; &quot;</span>
-<span id="L77" class="LineNr">77 </span>  tmp-a <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> c, b
-<span id="L78" class="LineNr">78 </span>  tmp <span class="SpecialChar">&lt;-</span> copy xn
-<span id="L79" class="LineNr">79 </span>  tmp <span class="SpecialChar">&lt;-</span> multiply *tmp-a
-<span id="L80" class="LineNr">80 </span>  tmp2 <span class="SpecialChar">&lt;-</span> convert tmp
-<span id="L81" class="LineNr">81 </span>  <a href='../../405screen.mu.html#L442'>print-int32-decimal</a> <a href='../../405screen.mu.html#L9'>screen</a>, tmp2
-<span id="L82" class="LineNr">82 </span>  <a href='../../405screen.mu.html#L179'>print-string</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot;\n&quot;</span>
-<span id="L83" class="LineNr">83 </span><span class="Delimiter">}</span>
+<span id="L65" class="LineNr">65 </span>  <span class="Comment"># print 255 * c-&gt;r</span>
+<span id="L66" class="LineNr">66 </span>  <span class="PreProc">var</span> result/xmm0: float <span class="SpecialChar">&lt;-</span> copy xn
+<span id="L67" class="LineNr">67 </span>  <span class="PreProc">var</span> src-addr/<span class="Constant">eax</span>: (addr float) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> c, r
+<span id="L68" class="LineNr">68 </span>  result <span class="SpecialChar">&lt;-</span> multiply *src-addr
+<span id="L69" class="LineNr">69 </span>  <span class="PreProc">var</span> result-int/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> convert result
+<span id="L70" class="LineNr">70 </span>  <a href='../../405screen.mu.html#L442'>print-int32-decimal</a> <a href='../../405screen.mu.html#L9'>screen</a>, result-int
+<span id="L71" class="LineNr">71 </span>  <a href='../../405screen.mu.html#L179'>print-string</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot; &quot;</span>
+<span id="L72" class="LineNr">72 </span>  <span class="Comment"># print 255 * c-&gt;g</span>
+<span id="L73" class="LineNr">73 </span>  src-addr <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> c, g
+<span id="L74" class="LineNr">74 </span>  result <span class="SpecialChar">&lt;-</span> copy xn
+<span id="L75" class="LineNr">75 </span>  result <span class="SpecialChar">&lt;-</span> multiply *src-addr
+<span id="L76" class="LineNr">76 </span>  result-int <span class="SpecialChar">&lt;-</span> convert result
+<span id="L77" class="LineNr">77 </span>  <a href='../../405screen.mu.html#L442'>print-int32-decimal</a> <a href='../../405screen.mu.html#L9'>screen</a>, result-int
+<span id="L78" class="LineNr">78 </span>  <a href='../../405screen.mu.html#L179'>print-string</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot; &quot;</span>
+<span id="L79" class="LineNr">79 </span>  <span class="Comment"># print 255 * c-&gt;b</span>
+<span id="L80" class="LineNr">80 </span>  src-addr <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> c, b
+<span id="L81" class="LineNr">81 </span>  result <span class="SpecialChar">&lt;-</span> copy xn
+<span id="L82" class="LineNr">82 </span>  result <span class="SpecialChar">&lt;-</span> multiply *src-addr
+<span id="L83" class="LineNr">83 </span>  result-int <span class="SpecialChar">&lt;-</span> convert result
+<span id="L84" class="LineNr">84 </span>  <a href='../../405screen.mu.html#L442'>print-int32-decimal</a> <a href='../../405screen.mu.html#L9'>screen</a>, result-int
+<span id="L85" class="LineNr">85 </span>  <a href='../../405screen.mu.html#L179'>print-string</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot;\n&quot;</span>
+<span id="L86" class="LineNr">86 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
