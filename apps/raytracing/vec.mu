@@ -4,35 +4,35 @@ type vec3 {
   z: float
 }
 
-fn vec3-negate a: (addr vec3), out: (addr vec3) {
+fn vec3-negate _a: (addr vec3), out: (addr vec3) {
 }
 
-fn vec3-add-to a: (addr vec3), b: (addr vec3) {
+fn vec3-add-to _a: (addr vec3), _b: (addr vec3) {
 }
 
-fn vec3-mul-by a: (addr vec3), b: (addr vec3) {
+fn vec3-mul-by _a: (addr vec3), _b: (addr vec3) {
 }
 
-fn vec3-scale-up a: (addr vec3), n: float {
+fn vec3-scale-up _a: (addr vec3), n: float {
 }
 
-fn vec3-scale-down a: (addr vec3), n: float {
+fn vec3-scale-down _a: (addr vec3), n: float {
 }
 
-fn vec3-length a: (addr vec3) -> result/eax: float {
+fn vec3-length _a: (addr vec3) -> result/eax: float {
 }
 
-fn vec3-length-squared a: (addr vec3) -> result/eax: float {
+fn vec3-length-squared _a: (addr vec3) -> result/eax: float {
 }
 
-fn vec3-dot a: (addr vec3), b: (addr vec3) -> result/eax: float {
+fn vec3-dot _a: (addr vec3), _b: (addr vec3) -> result/eax: float {
 }
 
-fn vec3-cross a: (addr vec3), b: (addr vec3), out: (addr vec3) {
+fn vec3-cross _a: (addr vec3), _b: (addr vec3), out: (addr vec3) {
 }
 
 fn vec3-unit in: (addr vec3), out: (addr vec3) {
 }
 
-fn print-vec3 screen: (addr screen), a: (addr vec3) {
+fn print-vec3 screen: (addr screen), _a: (addr vec3) {
 }
