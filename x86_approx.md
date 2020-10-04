@@ -23,9 +23,9 @@ It gives different results when emulated and run natively:
   ```
   $ ./translate_mu_debug x.mu  # debug mode = error checking
   $ ./bootstrap run a.elf
-  0x3f000000
+  0x3f000000  # correct
   $ ./a.elf
-  0x3efff000
+  0x3efff000  # wrong
   ```
 
 I spent some time digging into this before I realized it wasn't a bug in Mu,
