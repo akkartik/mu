@@ -27,8 +27,11 @@ setlocal iskeyword=@,48-57,?,!,_,$,-
 setlocal formatoptions-=t  " Mu programs have long lines
 setlocal formatoptions+=c  " but comments should still wrap
 
-syntax match muComment /#.*$/  | highlight link muComment Comment
 syntax match muSalientComment /##.*$/  | highlight link muSalientComment SalientComment
+syntax match muComment /#\( \.\| - \|? \)\@!.*/ | highlight link muComment Comment
+syntax match muS1Comment /# \..*/ | highlight link muS1Comment Comment
+syntax match muS2Comment /# \. \..*/ | highlight link muS2Comment Comment
+
 set comments+=n:#
 syntax match muCommentedCode "#? .*"  | highlight link muCommentedCode CommentedCode
 let b:cmt_head = "#? "
