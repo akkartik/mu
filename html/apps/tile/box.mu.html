@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - apps/tile/box.mu</title>
+<meta name="Generator" content="Vim/8.1">
+<meta name="plugin-version" content="vim8.1_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal-light">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.muComment { color: #005faf; }
+.LineNr { }
+.SpecialChar { color: #d70000; }
+.Delimiter { color: #c000c0; }
+.muFunction { color: #af5f00; text-decoration: underline; }
+.Constant { color: #008787; }
+.PreProc { color: #c000c0; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/apps/tile/box.mu'>https://github.com/akkartik/mu/blob/master/apps/tile/box.mu</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='box.mu.html#L1'>draw-box</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), row1: int, col1: int, row2: int, col2: int <span class="Delimiter">{</span>
+<span id="L2" class="LineNr"> 2 </span>  <a href='box.mu.html#L22'>draw-horizontal-line</a> <a href='../../405screen.mu.html#L9'>screen</a>, row1, col1, col2
+<span id="L3" class="LineNr"> 3 </span>  <a href='box.mu.html#L34'>draw-vertical-line</a> <a href='../../405screen.mu.html#L9'>screen</a>, row1, row2, col1
+<span id="L4" class="LineNr"> 4 </span>  <a href='box.mu.html#L22'>draw-horizontal-line</a> <a href='../../405screen.mu.html#L9'>screen</a>, row2, col1, col2
+<span id="L5" class="LineNr"> 5 </span>  <a href='box.mu.html#L34'>draw-vertical-line</a> <a href='../../405screen.mu.html#L9'>screen</a>, row1, row2, col2
+<span id="L6" class="LineNr"> 6 </span><span class="Delimiter">}</span>
+<span id="L7" class="LineNr"> 7 </span>
+<span id="L8" class="LineNr"> 8 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='box.mu.html#L8'>draw-hatching</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), row1: int, col1: int, row2: int, col2: int <span class="Delimiter">{</span>
+<span id="L9" class="LineNr"> 9 </span>  <span class="PreProc">var</span> c/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy col1
+<span id="L10" class="LineNr">10 </span>  <span class="PreProc">var</span> r1/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy row1
+<span id="L11" class="LineNr">11 </span>  r1 <span class="SpecialChar">&lt;-</span> increment
+<span id="L12" class="LineNr">12 </span>  c <span class="SpecialChar">&lt;-</span> add <span class="Constant">2</span>
+<span id="L13" class="LineNr">13 </span>  <span class="Delimiter">{</span>
+<span id="L14" class="LineNr">14 </span>    compare c, col2
+<span id="L15" class="LineNr">15 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L16" class="LineNr">16 </span>    <a href='box.mu.html#L34'>draw-vertical-line</a> <a href='../../405screen.mu.html#L9'>screen</a>, r1, row2, c
+<span id="L17" class="LineNr">17 </span>    c <span class="SpecialChar">&lt;-</span> add <span class="Constant">2</span>
+<span id="L18" class="LineNr">18 </span>    <span class="PreProc">loop</span>
+<span id="L19" class="LineNr">19 </span>  <span class="Delimiter">}</span>
+<span id="L20" class="LineNr">20 </span><span class="Delimiter">}</span>
+<span id="L21" class="LineNr">21 </span>
+<span id="L22" class="LineNr">22 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='box.mu.html#L22'>draw-horizontal-line</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), row: int, col1: int, col2: int <span class="Delimiter">{</span>
+<span id="L23" class="LineNr">23 </span>  <span class="PreProc">var</span> col/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy col1
+<span id="L24" class="LineNr">24 </span>  <a href='../../405screen.mu.html#L116'>move-cursor</a> <span class="Constant">0</span>, row, col
+<span id="L25" class="LineNr">25 </span>  <span class="Delimiter">{</span>
+<span id="L26" class="LineNr">26 </span>    compare col, col2
+<span id="L27" class="LineNr">27 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L28" class="LineNr">28 </span>    <a href='../../405screen.mu.html#L422'>print-code-point</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x2500</span>
+<span id="L29" class="LineNr">29 </span>    col <span class="SpecialChar">&lt;-</span> increment
+<span id="L30" class="LineNr">30 </span>    <span class="PreProc">loop</span>
+<span id="L31" class="LineNr">31 </span>  <span class="Delimiter">}</span>
+<span id="L32" class="LineNr">32 </span><span class="Delimiter">}</span>
+<span id="L33" class="LineNr">33 </span>
+<span id="L34" class="LineNr">34 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='box.mu.html#L34'>draw-vertical-line</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), row1: int, row2: int, col: int <span class="Delimiter">{</span>
+<span id="L35" class="LineNr">35 </span>  <span class="PreProc">var</span> row/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy row1
+<span id="L36" class="LineNr">36 </span>  <span class="Delimiter">{</span>
+<span id="L37" class="LineNr">37 </span>    compare row, row2
+<span id="L38" class="LineNr">38 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L39" class="LineNr">39 </span>    <a href='../../405screen.mu.html#L116'>move-cursor</a> <span class="Constant">0</span>, row, col
+<span id="L40" class="LineNr">40 </span>    <a href='../../405screen.mu.html#L422'>print-code-point</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x2502</span>
+<span id="L41" class="LineNr">41 </span>    row <span class="SpecialChar">&lt;-</span> increment
+<span id="L42" class="LineNr">42 </span>    <span class="PreProc">loop</span>
+<span id="L43" class="LineNr">43 </span>  <span class="Delimiter">}</span>
+<span id="L44" class="LineNr">44 </span><span class="Delimiter">}</span>
+<span id="L45" class="LineNr">45 </span>
+<span id="L46" class="LineNr">46 </span><span class="muComment"># erase parts of screen the slow way</span>
+<span id="L47" class="LineNr">47 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='box.mu.html#L47'>clear-rect</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), row1: int, col1: int, row2: int, col2: int <span class="Delimiter">{</span>
+<span id="L48" class="LineNr">48 </span>  <span class="PreProc">var</span> i/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy row1
+<span id="L49" class="LineNr">49 </span>  <span class="Delimiter">{</span>
+<span id="L50" class="LineNr">50 </span>    compare i, row2
+<span id="L51" class="LineNr">51 </span>    <span class="PreProc">break-if-&gt;</span>
+<span id="L52" class="LineNr">52 </span>    <span class="PreProc">var</span> j/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy col1
+<span id="L53" class="LineNr">53 </span>    <a href='../../405screen.mu.html#L116'>move-cursor</a> <a href='../../405screen.mu.html#L9'>screen</a>, i, j
+<span id="L54" class="LineNr">54 </span>    <span class="Delimiter">{</span>
+<span id="L55" class="LineNr">55 </span>      compare j, col2
+<span id="L56" class="LineNr">56 </span>      <span class="PreProc">break-if-&gt;</span>
+<span id="L57" class="LineNr">57 </span>      <a href='../../405screen.mu.html#L206'>print-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a> <span class="Constant">0x20</span>  <span class="muComment"># space</span>
+<span id="L58" class="LineNr">58 </span>      j <span class="SpecialChar">&lt;-</span> increment
+<span id="L59" class="LineNr">59 </span>      <span class="PreProc">loop</span>
+<span id="L60" class="LineNr">60 </span>    <span class="Delimiter">}</span>
+<span id="L61" class="LineNr">61 </span>    i <span class="SpecialChar">&lt;-</span> increment
+<span id="L62" class="LineNr">62 </span>    <span class="PreProc">loop</span>
+<span id="L63" class="LineNr">63 </span>  <span class="Delimiter">}</span>
+<span id="L64" class="LineNr">64 </span><span class="Delimiter">}</span>
+<span id="L65" class="LineNr">65 </span>
+<span id="L66" class="LineNr">66 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='box.mu.html#L66'>clear-rect2</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), row1: int, col1: int, w: int, h: int <span class="Delimiter">{</span>
+<span id="L67" class="LineNr">67 </span>  <span class="PreProc">var</span> i/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L68" class="LineNr">68 </span>  <span class="PreProc">var</span> curr-row/<span class="Constant">esi</span>: int <span class="SpecialChar">&lt;-</span> copy row1
+<span id="L69" class="LineNr">69 </span>  <span class="Delimiter">{</span>
+<span id="L70" class="LineNr">70 </span>    compare i, w
+<span id="L71" class="LineNr">71 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L72" class="LineNr">72 </span>    <a href='../../405screen.mu.html#L116'>move-cursor</a> <a href='../../405screen.mu.html#L9'>screen</a>, curr-row, col1
+<span id="L73" class="LineNr">73 </span>    <span class="PreProc">var</span> j/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L74" class="LineNr">74 </span>    <span class="Delimiter">{</span>
+<span id="L75" class="LineNr">75 </span>      compare j, h
+<span id="L76" class="LineNr">76 </span>      <span class="PreProc">break-if-&gt;=</span>
+<span id="L77" class="LineNr">77 </span>      <a href='../../405screen.mu.html#L206'>print-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a> <span class="Constant">0x20</span>  <span class="muComment"># space</span>
+<span id="L78" class="LineNr">78 </span>      j <span class="SpecialChar">&lt;-</span> increment
+<span id="L79" class="LineNr">79 </span>      <span class="PreProc">loop</span>
+<span id="L80" class="LineNr">80 </span>    <span class="Delimiter">}</span>
+<span id="L81" class="LineNr">81 </span>    i <span class="SpecialChar">&lt;-</span> increment
+<span id="L82" class="LineNr">82 </span>    curr-row <span class="SpecialChar">&lt;-</span> increment
+<span id="L83" class="LineNr">83 </span>    <span class="PreProc">loop</span>
+<span id="L84" class="LineNr">84 </span>  <span class="Delimiter">}</span>
+<span id="L85" class="LineNr">85 </span><span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
