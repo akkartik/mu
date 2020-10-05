@@ -13,17 +13,16 @@
 pre { font-family: monospace; color: #000000; background-color: #c6c6c6; }
 body { font-family: monospace; color: #000000; background-color: #c6c6c6; }
 * { font-size: 1em; }
-.Comment { color: #005faf; }
+.muComment { color: #005faf; }
 .SpecialChar { color: #d70000; }
 .Constant { color: #008787; }
 .PreProc { color: #c000c0; }
-.SalientComment { color: #0000af; }
 -->
 </style>
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="SalientComment">## Mu's instructions and their table-driven translation</span>
+<span class="muComment">## Mu's instructions and their table-driven translation</span>
 
 See <a href="http://akkartik.name/akkartik-convivial-20200607.pdf">http://akkartik.name/akkartik-convivial-20200607.pdf</a> for the complete
 story. In brief: Mu is a statement-oriented language. Blocks consist of flat
@@ -105,6 +104,10 @@ var/<span class="Constant">eax</span> <span class="SpecialChar">&lt;-</span> xor
 var/reg <span class="SpecialChar">&lt;-</span> xor n                  =&gt; <span class="Constant">&quot;81 6/subop/xor %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 xor-with var, n                   =&gt; <span class="Constant">&quot;81 6/subop/xor *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 xor-with *var/reg, n              =&gt; <span class="Constant">&quot;81 6/subop/xor *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
+
+var/reg <span class="SpecialChar">&lt;-</span> negate                 =&gt; <span class="Constant">&quot;f7 3/subop/negate %&quot;</span> reg
+negate var                        =&gt; <span class="Constant">&quot;f7 3/subop/negate *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;)&quot;</span>
+negate *var/reg                   =&gt; <span class="Constant">&quot;f7 3/subop/negate *&quot;</span> reg
 
 var/reg <span class="SpecialChar">&lt;-</span> shift-left n           =&gt; <span class="Constant">&quot;c1/shift 4/subop/left %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/reg <span class="SpecialChar">&lt;-</span> shift-right n          =&gt; <span class="Constant">&quot;c1/shift 5/subop/right %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
@@ -202,7 +205,7 @@ var/reg <span class="SpecialChar">&lt;-</span> multiply *var2/reg2    =&gt; <spa
 <span class="PreProc">loop-if-addr&gt;=</span>                    =&gt; <span class="Constant">&quot;0f 83/jump-if-addr&gt;= loop/disp32&quot;</span>
 <span class="PreProc">loop-if-addr&gt;=</span> label              =&gt; <span class="Constant">&quot;0f 83/jump-if-addr&gt;= &quot;</span> label <span class="Constant">&quot;:loop/disp32&quot;</span>
 
-Similar float variants like `<span class="PreProc">break-if-float&lt;</span>` are aliases for the corresponding
+Similar float variants like `<span class="PreProc">break-if-float&lt;`</span> are aliases for the corresponding
 `addr` equivalents. The x86 instruction set stupidly has floating-point
 operations only update a subset of flags.
 
@@ -211,12 +214,12 @@ operations only update a subset of flags.
 In the following instructions types are provided for clarity even if they must
 be provided in an earlier 'var' declaration.
 
-<span class="Comment"># Address operations</span>
+<span class="muComment"># Address operations</span>
 
 var/reg: (addr T) <span class="SpecialChar">&lt;-</span> address var2: T
   =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
-<span class="Comment"># Array operations</span>
+<span class="muComment"># Array operations</span>
 (TODO: bounds-checking)
 
 var/reg <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), idx/regi: int
@@ -229,9 +232,9 @@ var/reg <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), n
 var/reg <span class="SpecialChar">&lt;-</span> index arr: (array T sz), n
   =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> (arr.stack-offset+<span class="Constant">4</span>+n*size-of(T)) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
-var/reg: (offset T) <span class="SpecialChar">&lt;-</span> compute-offset arr: (addr array T), idx/regi: int  <span class="Comment"># arr can be in reg or mem</span>
+var/reg: (offset T) <span class="SpecialChar">&lt;-</span> compute-offset arr: (addr array T), idx/regi: int  <span class="muComment"># arr can be in reg or mem</span>
   =&gt; <span class="Constant">&quot;69/multiply %&quot;</span> regi <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;/imm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
-var/reg: (offset T) <span class="SpecialChar">&lt;-</span> compute-offset arr: (addr array T), idx: int       <span class="Comment"># arr can be in reg or mem</span>
+var/reg: (offset T) <span class="SpecialChar">&lt;-</span> compute-offset arr: (addr array T), idx: int       <span class="muComment"># arr can be in reg or mem</span>
   =&gt; <span class="Constant">&quot;69/multiply *(ebp+&quot;</span> idx.stack-offset <span class="Constant">&quot;) &quot;</span> size-of(T) <span class="Constant">&quot;/imm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), o/rego: offset
   =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> rego <span class="Constant">&quot;+4) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
@@ -254,7 +257,7 @@ var/reg <span class="SpecialChar">&lt;-</span> length arr/reg2: (addr array T)
          if reg is not <span class="Constant">edx</span>
           <span class="Constant">&quot;52/push-edx&quot;</span>
          <span class="Constant">&quot;8b/-&gt; *&quot;</span> reg2 <span class="Constant">&quot; eax/r32&quot;</span>
-         <span class="Constant">&quot;31/xor %edx 2/r32/edx&quot;</span>  <span class="Comment"># sign-extend, but array size can't be negative</span>
+         <span class="Constant">&quot;31/xor %edx 2/r32/edx&quot;</span>  <span class="muComment"># sign-extend, but array size can't be negative</span>
          <span class="Constant">&quot;b9/copy-to-ecx &quot;</span> size-of(T) <span class="Constant">&quot;/imm32&quot;</span>
          <span class="Constant">&quot;f7 7/subop/idiv-eax-edx-by %ecx&quot;</span>
          if reg is not <span class="Constant">eax</span>
@@ -266,7 +269,7 @@ var/reg <span class="SpecialChar">&lt;-</span> length arr/reg2: (addr array T)
          if reg is not <span class="Constant">eax</span>
           <span class="Constant">&quot;58/pop-to-eax&quot;</span>
 
-<span class="Comment"># User-defined types</span>
+<span class="muComment"># User-defined types</span>
 
 If a record (product) type T was defined to have elements a, b, c, ... of
 types T_a, T_b, T_c, ..., then accessing one of those elements f of type T_f:
@@ -276,15 +279,15 @@ var/reg: (addr T_f) <span class="SpecialChar">&lt;-</span> get var2/reg2: (addr 
 var/reg: (addr T_f) <span class="SpecialChar">&lt;-</span> get var2: T, f
   =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;+&quot;</span> offset(f) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
-<span class="Comment"># Allocating memory</span>
+<span class="muComment"># Allocating memory</span>
 
 allocate in: (addr handle T)
   =&gt; <span class="Constant">&quot;(allocate Heap &quot;</span> size-of(T) <span class="Constant">&quot; &quot;</span> in <span class="Constant">&quot;)&quot;</span>
 
-populate in: (addr handle array T), num  <span class="Comment"># can be literal or variable on stack or register</span>
+populate in: (addr handle array T), num  <span class="muComment"># can be literal or variable on stack or register</span>
   =&gt; <span class="Constant">&quot;(allocate-array2 Heap &quot;</span> size-of(T) <span class="Constant">&quot; &quot;</span> num <span class="Constant">&quot; &quot;</span> in <span class="Constant">&quot;)&quot;</span>
 
-populate-stream in: (addr handle stream T), num  <span class="Comment"># can be literal or variable on stack or register</span>
+populate-stream in: (addr handle stream T), num  <span class="muComment"># can be literal or variable on stack or register</span>
   =&gt; <span class="Constant">&quot;(new-stream Heap &quot;</span> size-of(T) <span class="Constant">&quot; &quot;</span> num <span class="Constant">&quot; &quot;</span> in <span class="Constant">&quot;)&quot;</span>
 
 read-from-stream s: (addr stream T), out: (addr T)
@@ -293,47 +296,47 @@ read-from-stream s: (addr stream T), out: (addr T)
 write-to-stream s: (addr stream T), in: (addr T)
   =&gt; <span class="Constant">&quot;(write-to-stream &quot;</span> s <span class="Constant">&quot; &quot;</span> in <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
 
-<span class="Comment"># Floating-point operations</span>
+<span class="muComment"># Floating-point operations</span>
 
 All the instructions so far use Intel's general-purpose integer registers.
 However, some of them translate to different SubX if their arguments are in
 floating-point registers.
 
-var/xreg <span class="SpecialChar">&lt;-</span> add var2/xreg2        =&gt; <span class="Constant">&quot;f3 0f 58/add 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> add var2/xreg2        =&gt; <span class="Constant">&quot;f3 0f 58/add %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> add var2              =&gt; <span class="Constant">&quot;f3 0f 58/add *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> add *var2/reg2        =&gt; <span class="Constant">&quot;f3 0f 58/add *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
-var/xreg <span class="SpecialChar">&lt;-</span> subtract var2/xreg2   =&gt; <span class="Constant">&quot;f3 0f 5c/subtract 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> subtract var2/xreg2   =&gt; <span class="Constant">&quot;f3 0f 5c/subtract %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> subtract var2         =&gt; <span class="Constant">&quot;f3 0f 5c/subtract *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> subtract *var2/reg2   =&gt; <span class="Constant">&quot;f3 0f 5c/subtract *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
-var/xreg <span class="SpecialChar">&lt;-</span> multiply var2/xreg2   =&gt; <span class="Constant">&quot;f3 0f 59/multiply 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> multiply var2/xreg2   =&gt; <span class="Constant">&quot;f3 0f 59/multiply %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> multiply var2         =&gt; <span class="Constant">&quot;f3 0f 59/multiply *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> multiply *var2/reg2   =&gt; <span class="Constant">&quot;f3 0f 59/multiply *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
-var/xreg <span class="SpecialChar">&lt;-</span> divide var2/xreg2     =&gt; <span class="Constant">&quot;f3 0f 5e/divide 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> divide var2/xreg2     =&gt; <span class="Constant">&quot;f3 0f 5e/divide %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> divide var2           =&gt; <span class="Constant">&quot;f3 0f 5e/divide *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> divide *var2/reg2     =&gt; <span class="Constant">&quot;f3 0f 5e/divide *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
 There are also some exclusively floating-point instructions:
 
-var/xreg <span class="SpecialChar">&lt;-</span> reciprocal var2/xreg2 =&gt; <span class="Constant">&quot;f3 0f 53/reciprocal 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> reciprocal var2/xreg2 =&gt; <span class="Constant">&quot;f3 0f 53/reciprocal %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> reciprocal var2       =&gt; <span class="Constant">&quot;f3 0f 53/reciprocal *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> reciprocal *var2/reg2 =&gt; <span class="Constant">&quot;f3 0f 53/reciprocal *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
-var/xreg <span class="SpecialChar">&lt;-</span> square-root var2/xreg2 =&gt; <span class="Constant">&quot;f3 0f 51/square-root 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> square-root var2/xreg2 =&gt; <span class="Constant">&quot;f3 0f 51/square-root %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> square-root var2       =&gt; <span class="Constant">&quot;f3 0f 51/square-root *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> square-root *var2/reg2 =&gt; <span class="Constant">&quot;f3 0f 51/square-root *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
-var/xreg <span class="SpecialChar">&lt;-</span> inverse-square-root var2/xreg2 =&gt; <span class="Constant">&quot;f3 0f 52/inverse-square-root 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> inverse-square-root var2/xreg2 =&gt; <span class="Constant">&quot;f3 0f 52/inverse-square-root %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> inverse-square-root var2       =&gt; <span class="Constant">&quot;f3 0f 52/inverse-square-root *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> inverse-square-root *var2/reg2 =&gt; <span class="Constant">&quot;f3 0f 52/inverse-square-root *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
-var/xreg <span class="SpecialChar">&lt;-</span> min var2/xreg2        =&gt; <span class="Constant">&quot;f3 0f 5d/min 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> min var2/xreg2        =&gt; <span class="Constant">&quot;f3 0f 5d/min %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> min var2              =&gt; <span class="Constant">&quot;f3 0f 5d/min *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> min *var2/reg2        =&gt; <span class="Constant">&quot;f3 0f 5d/min *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
-var/xreg <span class="SpecialChar">&lt;-</span> max var2/xreg2        =&gt; <span class="Constant">&quot;f3 0f 5f/max 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> max var2/xreg2        =&gt; <span class="Constant">&quot;f3 0f 5f/max %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> max var2              =&gt; <span class="Constant">&quot;f3 0f 5f/max *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> max *var2/reg2        =&gt; <span class="Constant">&quot;f3 0f 5f/max *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
@@ -348,7 +351,7 @@ var/xreg <span class="SpecialChar">&lt;-</span> convert var2/reg2     =&gt; <spa
 var/xreg <span class="SpecialChar">&lt;-</span> convert var2          =&gt; <span class="Constant">&quot;f3 0f 2a/convert-to-float *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> convert *var2/reg2    =&gt; <span class="Constant">&quot;f3 0f 2a/convert-to-float *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
-var/reg <span class="SpecialChar">&lt;-</span> convert var2/xreg2     =&gt; <span class="Constant">&quot;f3 0f 2d/convert-to-int 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+var/reg <span class="SpecialChar">&lt;-</span> convert var2/xreg2     =&gt; <span class="Constant">&quot;f3 0f 2d/convert-to-int %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="SpecialChar">&lt;-</span> convert var2           =&gt; <span class="Constant">&quot;f3 0f 2d/convert-to-int *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="SpecialChar">&lt;-</span> convert *var2/reg2     =&gt; <span class="Constant">&quot;f3 0f 2d/convert-to-int *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
@@ -360,15 +363,15 @@ One pattern you may have noticed above is that the floating-point instructions
 above always write to registers. The only exceptions are `copy` instructions,
 which can write to memory locations.
 
-var/xreg <span class="SpecialChar">&lt;-</span> copy var2/xreg2       =&gt; <span class="Constant">&quot;f3 0f 11/&lt;- 3/mod &quot;</span> xreg <span class="Constant">&quot;/xm32 &quot;</span> xreg2 <span class="Constant">&quot;/x32&quot;</span>
+var/xreg <span class="SpecialChar">&lt;-</span> copy var2/xreg2       =&gt; <span class="Constant">&quot;f3 0f 11/&lt;- %&quot;</span> xreg <span class="Constant">&quot; &quot;</span> xreg2 <span class="Constant">&quot;/x32&quot;</span>
 copy-to var1, var2/xreg           =&gt; <span class="Constant">&quot;f3 0f 11/&lt;- *(ebp+&quot;</span> var1.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> copy var2             =&gt; <span class="Constant">&quot;f3 0f 10/-&gt; *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> copy *var2/reg2       =&gt; <span class="Constant">&quot;f3 0f 10/-&gt; *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
 Comparisons must always start with a register:
 
-compare var1/xreg1, var2/xreg2    =&gt; <span class="Constant">&quot;0f 2f/compare 3/mod &quot;</span> xreg2 <span class="Constant">&quot;/xm32 &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
-compare var1/xreg1, var2          =&gt; <span class="Constant">&quot;0f 2f/compare 2/mod *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+compare var1/xreg1, var2/xreg2    =&gt; <span class="Constant">&quot;0f 2f/compare %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
+compare var1/xreg1, var2          =&gt; <span class="Constant">&quot;0f 2f/compare *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 
 vim&#0058;ft=mu:nowrap:textwidth=<span class="Constant">0</span>
 </pre>
