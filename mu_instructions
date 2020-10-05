@@ -278,41 +278,41 @@ All the instructions so far use Intel's general-purpose integer registers.
 However, some of them translate to different SubX if their arguments are in
 floating-point registers.
 
-var/xreg <- add var2/xreg2        => "f3 0f 58/add 3/mod " xreg2 "/xm32 " xreg1 "/x32"
+var/xreg <- add var2/xreg2        => "f3 0f 58/add %" xreg2 " " xreg1 "/x32"
 var/xreg <- add var2              => "f3 0f 58/add *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- add *var2/reg2        => "f3 0f 58/add *" reg2 " " xreg "/x32"
 
-var/xreg <- subtract var2/xreg2   => "f3 0f 5c/subtract 3/mod " xreg2 "/xm32 " xreg1 "/x32"
+var/xreg <- subtract var2/xreg2   => "f3 0f 5c/subtract %" xreg2 " " xreg1 "/x32"
 var/xreg <- subtract var2         => "f3 0f 5c/subtract *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- subtract *var2/reg2   => "f3 0f 5c/subtract *" reg2 " " xreg "/x32"
 
-var/xreg <- multiply var2/xreg2   => "f3 0f 59/multiply 3/mod " xreg2 "/xm32 " xreg1 "/x32"
+var/xreg <- multiply var2/xreg2   => "f3 0f 59/multiply %" xreg2 " " xreg1 "/x32"
 var/xreg <- multiply var2         => "f3 0f 59/multiply *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- multiply *var2/reg2   => "f3 0f 59/multiply *" reg2 " " xreg "/x32"
 
-var/xreg <- divide var2/xreg2     => "f3 0f 5e/divide 3/mod " xreg2 "/xm32 " xreg1 "/x32"
+var/xreg <- divide var2/xreg2     => "f3 0f 5e/divide %" xreg2 " " xreg1 "/x32"
 var/xreg <- divide var2           => "f3 0f 5e/divide *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- divide *var2/reg2     => "f3 0f 5e/divide *" reg2 " " xreg "/x32"
 
 There are also some exclusively floating-point instructions:
 
-var/xreg <- reciprocal var2/xreg2 => "f3 0f 53/reciprocal 3/mod " xreg2 "/xm32 " xreg1 "/x32"
+var/xreg <- reciprocal var2/xreg2 => "f3 0f 53/reciprocal %" xreg2 " " xreg1 "/x32"
 var/xreg <- reciprocal var2       => "f3 0f 53/reciprocal *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- reciprocal *var2/reg2 => "f3 0f 53/reciprocal *" reg2 " " xreg "/x32"
 
-var/xreg <- square-root var2/xreg2 => "f3 0f 51/square-root 3/mod " xreg2 "/xm32 " xreg1 "/x32"
+var/xreg <- square-root var2/xreg2 => "f3 0f 51/square-root %" xreg2 " " xreg1 "/x32"
 var/xreg <- square-root var2       => "f3 0f 51/square-root *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- square-root *var2/reg2 => "f3 0f 51/square-root *" reg2 " " xreg "/x32"
 
-var/xreg <- inverse-square-root var2/xreg2 => "f3 0f 52/inverse-square-root 3/mod " xreg2 "/xm32 " xreg1 "/x32"
+var/xreg <- inverse-square-root var2/xreg2 => "f3 0f 52/inverse-square-root %" xreg2 " " xreg1 "/x32"
 var/xreg <- inverse-square-root var2       => "f3 0f 52/inverse-square-root *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- inverse-square-root *var2/reg2 => "f3 0f 52/inverse-square-root *" reg2 " " xreg "/x32"
 
-var/xreg <- min var2/xreg2        => "f3 0f 5d/min 3/mod " xreg2 "/xm32 " xreg1 "/x32"
+var/xreg <- min var2/xreg2        => "f3 0f 5d/min %" xreg2 " " xreg1 "/x32"
 var/xreg <- min var2              => "f3 0f 5d/min *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- min *var2/reg2        => "f3 0f 5d/min *" reg2 " " xreg "/x32"
 
-var/xreg <- max var2/xreg2        => "f3 0f 5f/max 3/mod " xreg2 "/xm32 " xreg1 "/x32"
+var/xreg <- max var2/xreg2        => "f3 0f 5f/max %" xreg2 " " xreg1 "/x32"
 var/xreg <- max var2              => "f3 0f 5f/max *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- max *var2/reg2        => "f3 0f 5f/max *" reg2 " " xreg "/x32"
 
@@ -327,7 +327,7 @@ var/xreg <- convert var2/reg2     => "f3 0f 2a/convert-to-float %" reg2 " " xreg
 var/xreg <- convert var2          => "f3 0f 2a/convert-to-float *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- convert *var2/reg2    => "f3 0f 2a/convert-to-float *" reg2 " " xreg "/x32"
 
-var/reg <- convert var2/xreg2     => "f3 0f 2d/convert-to-int 3/mod " xreg2 "/xm32 " reg "/r32"
+var/reg <- convert var2/xreg2     => "f3 0f 2d/convert-to-int %" xreg2 " " reg "/r32"
 var/reg <- convert var2           => "f3 0f 2d/convert-to-int *(ebp+" var2.stack-offset ") " reg "/r32"
 var/reg <- convert *var2/reg2     => "f3 0f 2d/convert-to-int *" reg2 " " reg "/r32"
 
@@ -339,14 +339,14 @@ One pattern you may have noticed above is that the floating-point instructions
 above always write to registers. The only exceptions are `copy` instructions,
 which can write to memory locations.
 
-var/xreg <- copy var2/xreg2       => "f3 0f 11/<- 3/mod " xreg "/xm32 " xreg2 "/x32"
+var/xreg <- copy var2/xreg2       => "f3 0f 11/<- %" xreg " " xreg2 "/x32"
 copy-to var1, var2/xreg           => "f3 0f 11/<- *(ebp+" var1.stack-offset ") " xreg "/x32"
 var/xreg <- copy var2             => "f3 0f 10/-> *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- copy *var2/reg2       => "f3 0f 10/-> *" reg2 " " xreg "/x32"
 
 Comparisons must always start with a register:
 
-compare var1/xreg1, var2/xreg2    => "0f 2f/compare 3/mod " xreg2 "/xm32 " xreg1 "/x32"
-compare var1/xreg1, var2          => "0f 2f/compare 2/mod *(ebp+" var2.stack-offset ") " xreg1 "/x32"
+compare var1/xreg1, var2/xreg2    => "0f 2f/compare %" xreg2 " " xreg1 "/x32"
+compare var1/xreg1, var2          => "0f 2f/compare *(ebp+" var2.stack-offset ") " xreg1 "/x32"
 
 vim:ft=mu:nowrap:textwidth=0
