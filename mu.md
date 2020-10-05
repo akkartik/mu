@@ -283,6 +283,10 @@ var/xreg <- convert *var2/reg2
 var/reg <- convert var2/xreg2
 var/reg <- convert var2
 var/reg <- convert *var2/reg2
+
+var/reg <- truncate var2/xreg2
+var/reg <- truncate var2
+var/reg <- truncate *var2/reg2
 ```
 
 There are no instructions accepting floating-point literals. To obtain integer

@@ -94,6 +94,14 @@ int main() {
 //?               std::cerr << '\n';
             color pixel_color = ray_color(r);
 //?             std::cerr << "pixel color: " << pixel_color.x() << " " << pixel_color.y() << " " << pixel_color.z() << '\n';
+
+//?             std::cout << "(";
+//?               p(std::cout, pixel_color.x());
+//?               std::cout << ", ";
+//?               p(std::cout, pixel_color.y());
+//?               std::cout << ", ";
+//?               p(std::cout, pixel_color.z());
+//?               std::cout << ")\n";
             write_color(std::cout, pixel_color);
 //?             break;
         }

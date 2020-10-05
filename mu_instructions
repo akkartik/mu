@@ -327,9 +327,18 @@ var/xreg <- convert var2/reg2     => "f3 0f 2a/convert-to-float %" reg2 " " xreg
 var/xreg <- convert var2          => "f3 0f 2a/convert-to-float *(ebp+" var2.stack-offset ") " xreg "/x32"
 var/xreg <- convert *var2/reg2    => "f3 0f 2a/convert-to-float *" reg2 " " xreg "/x32"
 
+Converting floats to ints performs rounding by default. (We don't mess with the
+MXCSR control register.)
+
 var/reg <- convert var2/xreg2     => "f3 0f 2d/convert-to-int %" xreg2 " " reg "/r32"
 var/reg <- convert var2           => "f3 0f 2d/convert-to-int *(ebp+" var2.stack-offset ") " reg "/r32"
 var/reg <- convert *var2/reg2     => "f3 0f 2d/convert-to-int *" reg2 " " reg "/r32"
+
+There's a separate instruction for truncating the fractional part.
+
+var/reg <- truncate var2/xreg2     => "f3 0f 2c/truncate-to-int %" xreg2 " " reg "/r32"
+var/reg <- truncate var2           => "f3 0f 2c/truncate-to-int *(ebp+" var2.stack-offset ") " reg "/r32"
+var/reg <- truncate *var2/reg2     => "f3 0f 2c/truncate-to-int *" reg2 " " reg "/r32"
 
 There are no instructions accepting floating-point literals. To obtain integer
 literals in floating-point registers, copy them to general-purpose registers

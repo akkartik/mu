@@ -701,6 +701,7 @@ map</*op*/string, /*bitvector*/uint8_t> Permitted_arguments_f3_0f;
 put_new(Permitted_arguments_f3_0f, "10", 0x01);  // copy xm32 to x32
 put_new(Permitted_arguments_f3_0f, "11", 0x01);  // copy x32 to xm32
 put_new(Permitted_arguments_f3_0f, "2a", 0x01);  // convert-to-float
+put_new(Permitted_arguments_f3_0f, "2c", 0x01);  // truncate-to-int
 put_new(Permitted_arguments_f3_0f, "2d", 0x01);  // convert-to-int
 put_new(Permitted_arguments_f3_0f, "51", 0x01);  // square root
 put_new(Permitted_arguments_f3_0f, "52", 0x01);  // inverse square root

@@ -111,10 +111,11 @@ case 0x2a: {  // convert integer to float
 
 :(before "End Initialize Op Names")
 put_new(Name_f3_0f, "2d", "convert floating-point to int (cvtss2si)");
+put_new(Name_f3_0f, "2c", "truncate floating-point to int (cvttss2si)");
 
 :(code)
 void test_cvtss2si() {
-  Xmm[0] = 10.0;
+  Xmm[0] = 9.8;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -134,7 +135,34 @@ case 0x2d: {  // convert float to integer
   const uint8_t dest = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "convert x/m32 to " << rname(dest) << end();
   const float* src = effective_address_float(modrm);
-  Reg[dest].i = *src;
+  Reg[dest].i = round(*src);
+  trace(Callstack_depth+1, "run") << rname(dest) << " is now 0x" << HEXWORD << Reg[dest].i << end();
+  break;
+}
+
+:(code)
+void test_cvttss2si() {
+  Xmm[0] = 9.8;
+  run(
+      "== code 0x1\n"
+      // op     ModR/M  SIB   displacement  immediate
+      "f3 0f 2c c0                                    \n"
+      // ModR/M in binary: 11 (direct mode) 000 (EAX) 000 (XMM0)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: truncate x/m32 to EAX\n"
+      "run: x/m32 is XMM0\n"
+      "run: EAX is now 0x00000009\n"
+  );
+}
+
+:(before "End Three-Byte Opcodes Starting With f3 0f")
+case 0x2c: {  // truncate float to integer
+  const uint8_t modrm = next();
+  const uint8_t dest = (modrm>>3)&0x7;
+  trace(Callstack_depth+1, "run") << "truncate x/m32 to " << rname(dest) << end();
+  const float* src = effective_address_float(modrm);
+  Reg[dest].i = trunc(*src);
   trace(Callstack_depth+1, "run") << rname(dest) << " is now 0x" << HEXWORD << Reg[dest].i << end();
   break;
 }

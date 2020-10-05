@@ -351,9 +351,18 @@ var/xreg <span class="SpecialChar">&lt;-</span> convert var2/reg2     =&gt; <spa
 var/xreg <span class="SpecialChar">&lt;-</span> convert var2          =&gt; <span class="Constant">&quot;f3 0f 2a/convert-to-float *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> convert *var2/reg2    =&gt; <span class="Constant">&quot;f3 0f 2a/convert-to-float *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
 
+Converting floats to ints performs rounding by default. (We don't mess with the
+MXCSR control register.)
+
 var/reg <span class="SpecialChar">&lt;-</span> convert var2/xreg2     =&gt; <span class="Constant">&quot;f3 0f 2d/convert-to-int %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="SpecialChar">&lt;-</span> convert var2           =&gt; <span class="Constant">&quot;f3 0f 2d/convert-to-int *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="SpecialChar">&lt;-</span> convert *var2/reg2     =&gt; <span class="Constant">&quot;f3 0f 2d/convert-to-int *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+
+There's a separate instruction for truncating the fractional part.
+
+var/reg <span class="SpecialChar">&lt;-</span> truncate var2/xreg2     =&gt; <span class="Constant">&quot;f3 0f 2c/truncate-to-int %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+var/reg <span class="SpecialChar">&lt;-</span> truncate var2           =&gt; <span class="Constant">&quot;f3 0f 2c/truncate-to-int *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+var/reg <span class="SpecialChar">&lt;-</span> truncate *var2/reg2     =&gt; <span class="Constant">&quot;f3 0f 2c/truncate-to-int *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
 There are no instructions accepting floating-point literals. To obtain integer
 literals in floating-point registers, copy them to general-purpose registers
