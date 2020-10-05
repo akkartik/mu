@@ -10,7 +10,16 @@ fn ray-color _in: (addr ray), _out: (addr rgb) {
   var in/esi: (addr ray) <- copy _in
   var out/edi: (addr rgb) <- copy _out
   var dir/eax: (addr vec3) <- get in, dir
-  var y-addr/eax: (addr float) <- get dir, y
+#?   print-string 0, "r.dir: "
+#?   print-vec3 0, dir
+#?   print-string 0, "\n"
+  var unit-storage: vec3
+  var unit/ecx: (addr vec3) <- address unit-storage
+  vec3-unit dir, unit
+#?   print-string 0, "r.dir normalized: "
+#?   print-vec3 0, unit
+#?   print-string 0, "\n"
+  var y-addr/eax: (addr float) <- get unit, y
   # t = (dir.y + 1.0) / 2.0
   var t/xmm0: float <- copy *y-addr
   var one/eax: int <- copy 1
@@ -19,6 +28,9 @@ fn ray-color _in: (addr ray), _out: (addr rgb) {
   var two/eax: int <- copy 2
   var two-f/xmm2: float <- convert two
   t <- divide two-f
+#?   print-string 0, "t: "
+#?   print-float 0, t
+#?   print-string 0, "\n"
   # whitening = (1.0 - t) * white
   var whitening-storage: rgb
   var whitening/ecx: (addr rgb) <- address whitening-storage
@@ -26,6 +38,9 @@ fn ray-color _in: (addr ray), _out: (addr rgb) {
   var one-minus-t/xmm3: float <- copy one-f
   one-minus-t <- subtract t
   rgb-scale-up whitening, one-minus-t
+#?   print-string 0, "whitening: "
+#?   print-rgb-raw 0, whitening
+#?   print-string 0, "\n"
   # out = t * (0.5, 0.7, 1.0)
   var dest/eax: (addr float) <- get out, r
   fill-in-rational dest, 5, 0xa
@@ -33,8 +48,15 @@ fn ray-color _in: (addr ray), _out: (addr rgb) {
   fill-in-rational dest, 7, 0xa
   dest <- get out, b
   copy-to *dest, one-f
+  rgb-scale-up out, t
+#?   print-string 0, "base: "
+#?   print-rgb-raw 0, out
+#?   print-string 0, "\n"
   # blend with whitening
   rgb-add-to out, whitening
+#?   print-string 0, "result: "
+#?   print-rgb-raw 0, out
+#?   print-string 0, "\n"
 }
 
 fn main -> exit-status/ebx: int {
@@ -45,6 +67,14 @@ fn main -> exit-status/ebx: int {
   var aspect: float
   var aspect-addr/eax: (addr float) <- address aspect
   fill-in-rational aspect-addr, 0x10, 9  # 16/9
+#?   print-string 0, "aspect ratio: "
+#?   print-float 0, aspect
+#?   print-string 0, " "
+#?   {
+#?     var foo2/ebx: int <- reinterpret aspect
+#?     print-int32-hex 0, foo2
+#?   }
+#?   print-string 0, "\n"
 
   # camera
 
@@ -52,9 +82,29 @@ fn main -> exit-status/ebx: int {
   var tmp/eax: int <- copy 2
   var two-f/xmm4: float <- convert tmp
   var viewport-height/xmm7: float <- copy two-f
+#?   print-string 0, "viewport height: "
+#?   print-float 0, viewport-height
+#?   print-string 0, " "
+#?   {
+#?     var foo: float
+#?     copy-to foo, viewport-height
+#?     var foo2/ebx: int <- reinterpret foo
+#?     print-int32-hex 0, foo2
+#?   }
+#?   print-string 0, "\n"
   # viewport-width = aspect * viewport-height
   var viewport-width/xmm6: float <- convert tmp
   viewport-width <- multiply aspect
+#?   print-string 0, "viewport width: "
+#?   print-float 0, viewport-width
+#?   print-string 0, " "
+#?   {
+#?     var foo: float
+#?     copy-to foo, viewport-width
+#?     var foo2/ebx: int <- reinterpret foo
+#?     print-int32-hex 0, foo2
+#?   }
+#?   print-string 0, "\n"
   # focal-length = 1.0
   tmp <- copy 1
   var focal-length/xmm5: float <- convert tmp
@@ -119,6 +169,9 @@ fn main -> exit-status/ebx: int {
       # u = i / (image-width - 1)
       var u/xmm0: float <- convert i
       u <- divide image-width-1
+#?       print-string 0, "u: "
+#?       print-float 0, u
+#?       print-string 0, "\n"
       # v = j / (image-height - 1)
       var v/xmm1: float <- convert j
       v <- divide image-height-1
@@ -147,6 +200,9 @@ fn main -> exit-status/ebx: int {
         vec3-add-to dest, tmp
         # . r.dir -= origin
         vec3-subtract-from dest, origin
+#?         print-string 0, "ray direction: "
+#?         print-vec3 0, dest
+#?         print-string 0, "\n"
       }
       # pixel-color = ray-color(r)
       var c-storage: rgb
@@ -224,6 +280,20 @@ fn print-rgb screen: (addr screen), _c: (addr rgb) {
   result-int <- convert result
   print-int32-decimal screen, result-int
   print-string screen, "\n"
+}
+
+fn print-rgb-raw screen: (addr screen), _v: (addr rgb) {
+  var v/esi: (addr rgb) <- copy _v
+  print-string screen, "("
+  var tmp/eax: (addr float) <- get v, r
+  print-float screen, *tmp
+  print-string screen, ", "
+  tmp <- get v, g
+  print-float screen, *tmp
+  print-string screen, ", "
+  tmp <- get v, b
+  print-float screen, *tmp
+  print-string screen, ")"
 }
 
 fn rgb-white _c: (addr rgb) {
@@ -377,6 +447,9 @@ fn vec3-scale-down _v1: (addr vec3), f: float {
 
 fn vec3-unit in: (addr vec3), out: (addr vec3) {
   var len/xmm0: float <- vec3-length in
+#?   print-string 0, "len: "
+#?   print-float 0, len
+#?   print-string 0, "\n"
   copy-object in, out
   vec3-scale-down out, len
 }
@@ -393,5 +466,14 @@ fn vec3-length-squared _v: (addr vec3) -> result/xmm0: float {
   var tmp/xmm1: float <- copy *src
   tmp <- multiply tmp
   result <- copy tmp
-  # 
+  # result += v.y * v.y
+  src <- get v, y
+  tmp <- copy *src
+  tmp <- multiply tmp
+  result <- add tmp
+  # result += v.z * v.z
+  src <- get v, z
+  tmp <- copy *src
+  tmp <- multiply tmp
+  result <- add tmp
 }
