@@ -206,9 +206,9 @@ fn populate-text-with _out: (addr handle array byte), _in: (addr array byte) {
 }
 
 fn find-in-call-path in: (addr handle call-path), needle: (addr handle call-path-element) -> result/eax: boolean {
-$find-in-call-path:body: {
   var curr-ah/esi: (addr handle call-path) <- copy in
-  {
+  var out/edi: boolean <- copy 0  # false
+  $find-in-call-path:loop: {
     var curr/eax: (addr call-path) <- lookup *curr-ah
     compare curr, 0
     break-if-=
@@ -218,15 +218,14 @@ $find-in-call-path:body: {
       compare match?, 0  # false
       {
         break-if-=
-        result <- copy 1  # true
-        break $find-in-call-path:body
+        out <- copy 1  # true
+        break $find-in-call-path:loop
       }
     }
     curr-ah <- get curr, next
     loop
   }
-  result <- copy 0  # false
-}
+  result <- copy out
 }
 
 fn call-path-element-match? _x: (addr handle call-path-element), _y: (addr handle call-path-element) -> result/eax: boolean {
