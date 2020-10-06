@@ -1,7 +1,6 @@
 type environment {
   screen: (handle screen)
   program: (handle program)
-  cursor-word: (handle word)
   nrows: int
   ncols: int
   code-separator-col: int
@@ -12,8 +11,7 @@ fn initialize-environment _env: (addr environment) {
   var program-ah/eax: (addr handle program) <- get env, program
   allocate program-ah
   var program/eax: (addr program) <- lookup *program-ah
-  var cursor-word-ah/ecx: (addr handle word) <- get env, cursor-word
-  initialize-program program, cursor-word-ah
+  initialize-program program
   # initialize screen
   var screen-ah/eax: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
@@ -55,12 +53,16 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 fn process _self: (addr environment), key: grapheme {
 $process:body: {
     var self/esi: (addr environment) <- copy _self
+    var program-ah/eax: (addr handle program) <- get self, program
+    var program/eax: (addr program) <- lookup *program-ah
+    var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
+    var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var cursor-word-ah/edi: (addr handle word) <- get sandbox, cursor-word
+    var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    var cursor-word/ecx: (addr word) <- copy _cursor-word
     compare key, 0x445b1b  # left-arrow
     {
       break-if-!=
-      var cursor-word-ah/edi: (addr handle word) <- get self, cursor-word
-      var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-      var cursor-word/ecx: (addr word) <- copy _cursor-word
       # if not at start, move left within current word
       var at-start?/eax: boolean <- cursor-at-start? cursor-word
       compare at-start?, 0  # false
@@ -83,9 +85,6 @@ $process:body: {
     compare key, 0x435b1b  # right-arrow
     {
       break-if-!=
-      var cursor-word-ah/edi: (addr handle word) <- get self, cursor-word
-      var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-      var cursor-word/ecx: (addr word) <- copy _cursor-word
       # if not at end, move right within current word
       var at-end?/eax: boolean <- cursor-at-end? cursor-word
       compare at-end?, 0  # false
@@ -108,9 +107,6 @@ $process:body: {
     compare key, 0x7f  # del (backspace on Macs)
     {
       break-if-!=
-      var cursor-word-ah/edi: (addr handle word) <- get self, cursor-word
-      var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-      var cursor-word/ecx: (addr word) <- copy _cursor-word
       # if not at start of some word, delete grapheme before cursor within current word
       var at-start?/eax: boolean <- cursor-at-start? cursor-word
       compare at-start?, 0  # false
@@ -135,9 +131,7 @@ $process:body: {
     {
       break-if-!=
       # insert new word
-      var cursor-word-ah/edx: (addr handle word) <- get self, cursor-word
       append-word cursor-word-ah
-      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
       var next-word-ah/ecx: (addr handle word) <- get cursor-word, next
       copy-object next-word-ah, cursor-word-ah
       break $process:body
@@ -146,8 +140,6 @@ $process:body: {
     {
       break-if-!=
       # toggle display of subsidiary stack
-      var cursor-word-ah/edx: (addr handle word) <- get self, cursor-word
-      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
       var display-subsidiary-stack?/eax: (addr boolean) <- get cursor-word, display-subsidiary-stack?
       var tmp/ecx: int <- copy 1
       tmp <- subtract *display-subsidiary-stack?
@@ -160,8 +152,6 @@ $process:body: {
     {
       compare print?, 0  # false
       break-if-=
-      var cursor-word-ah/eax: (addr handle word) <- get self, cursor-word
-      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
       add-grapheme-to-word cursor-word, g
       break $process:body
     }
@@ -197,27 +187,33 @@ fn render _env: (addr environment) {
   var _repl-col/eax: (addr int) <- get env, code-separator-col
   var repl-col/ecx: int <- copy *_repl-col
   repl-col <- add 2  # repl-margin-left
-  # cursor-word
-  var cursor-word-ah/eax: (addr handle word) <- get env, cursor-word
-  var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-  var cursor-word/ebx: (addr word) <- copy _cursor-word
   # program
   var program-ah/eax: (addr handle program) <- get env, program
   var _program/eax: (addr program) <- lookup *program-ah
   var program/esi: (addr program) <- copy _program
   # defs
   var defs/edx: (addr handle function) <- get program, defs
-  # line
+  # sandbox
   var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+  render-sandbox screen, defs, 0, sandbox, 3, repl-col
+}
+
+fn render-sandbox screen: (addr screen), defs: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int {
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
+  # line
   var line-ah/eax: (addr handle line) <- get sandbox, data
   var _line/eax: (addr line) <- lookup *line-ah
-  var line/esi: (addr line) <- copy _line
+  var line/ecx: (addr line) <- copy _line
+  # cursor-word
+  var cursor-word-ah/eax: (addr handle word) <- get sandbox, cursor-word
+  var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+  var cursor-word/ebx: (addr word) <- copy _cursor-word
   # cursor-col
   var cursor-col: int
   var cursor-col-a/eax: (addr int) <- address cursor-col
   #
-  var dummy/ecx: int <- render-line screen, defs, 0, line, 3, repl-col, cursor-word, cursor-col-a  # input-row=3
+  var dummy/ecx: int <- render-line screen, defs, 0, line, 3, left-col, cursor-word, cursor-col-a  # input-row=3
   move-cursor screen, 3, cursor-col  # input-row
 }
 

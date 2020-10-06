@@ -6,6 +6,7 @@ type program {
 type sandbox {
   setup: (handle line)
   data: (handle line)
+  cursor-word: (handle word)
   next: (handle sandbox)
   prev: (handle sandbox)
 }
@@ -58,24 +59,24 @@ type result {
   error: (handle array byte)  # single error message for now
 }
 
-# if 'out' is non-null, save the first word of the program there
-fn initialize-program _program: (addr program), out: (addr handle word) {
+fn initialize-program _program: (addr program) {
   var program/esi: (addr program) <- copy _program
   var defs/eax: (addr handle function) <- get program, defs
   create-primitive-defs defs
   var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
   allocate sandbox-ah
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-  initialize-sandbox sandbox, out
+  initialize-sandbox sandbox
 }
 
-# if 'out' is non-null, save the first word of the sandbox there
-fn initialize-sandbox _sandbox: (addr sandbox), out: (addr handle word) {
+fn initialize-sandbox _sandbox: (addr sandbox) {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var line-ah/eax: (addr handle line) <- get sandbox, data
   allocate line-ah
   var line/eax: (addr line) <- lookup *line-ah
-  initialize-line line, out
+  var cursor-word-ah/esi: (addr handle word) <- get sandbox, cursor-word
+  allocate cursor-word-ah
+  initialize-line line, cursor-word-ah
 }
 
 # initialize line with a single empty word

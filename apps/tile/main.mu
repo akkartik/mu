@@ -89,15 +89,14 @@ fn repl {
         print-string-to-real-screen "\n"
       }
       # clear line
-      var cursor-word-ah/ecx: (addr handle word) <- get env, cursor-word
       var program-ah/eax: (addr handle program) <- get env, program
-      var _program/eax: (addr program) <- lookup *program-ah
-      var program/esi: (addr program) <- copy _program
-      var sandbox-ah/esi: (addr handle sandbox) <- get program, sandboxes
-      var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+      var program/eax: (addr program) <- lookup *program-ah
+      var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
+      var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+      var sandbox/esi: (addr sandbox) <- copy _sandbox
       var line-ah/eax: (addr handle line) <- get sandbox, data
-      var _line/eax: (addr line) <- lookup *line-ah
-      var line/esi: (addr line) <- copy _line
+      var line/eax: (addr line) <- lookup *line-ah
+      var cursor-word-ah/esi: (addr handle word) <- get sandbox, cursor-word
       initialize-line line, cursor-word-ah
       print-string-to-real-screen "> "
       loop $repl:loop
