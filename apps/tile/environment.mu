@@ -222,6 +222,8 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
   var curr-word/eax: (addr word) <- lookup *first-word-ah
+  #
+  var word-index/ebx: int <- copy 0
   # loop-carried dependency
   var curr-col/ecx: int <- copy left-col
   #
@@ -285,10 +287,18 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
       curr-col <- add 2
       subtract-from top-row, 1
     }
+    # print word index
+    subtract-from top-row, 1
+      move-cursor screen, top-row, curr-col
+      start-color screen, 8, 7
+        print-int32-hex-bits screen, word-index, 4
+      reset-formatting screen
+    add-to top-row, 1
     # now render main column
     curr-col <- render-column screen, defs, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
+    word-index <- increment
     loop
   }
   right-col <- copy curr-col
