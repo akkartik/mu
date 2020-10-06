@@ -189,14 +189,16 @@ fn evaluate-environment _env: (addr environment), stack: (addr value-stack) {
 fn render _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
   clear-canvas env
-  var screen-ah/edi: (addr handle screen) <- get env, screen
+  # screen
+  var screen-ah/eax: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
   var screen/edi: (addr screen) <- copy _screen
-  var _repl-col/ecx: (addr int) <- get env, code-separator-col
+  # repl-col
+  var _repl-col/eax: (addr int) <- get env, code-separator-col
   var repl-col/ecx: int <- copy *_repl-col
   repl-col <- add 2  # repl-margin-left
   # cursor-word
-  var cursor-word-ah/ebx: (addr handle word) <- get env, cursor-word
+  var cursor-word-ah/eax: (addr handle word) <- get env, cursor-word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ebx: (addr word) <- copy _cursor-word
   # program
@@ -206,7 +208,7 @@ fn render _env: (addr environment) {
   # defs
   var defs/edx: (addr handle function) <- get program, defs
   # line
-  var sandbox-ah/esi: (addr handle sandbox) <- get program, sandboxes
+  var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
   var line-ah/eax: (addr handle line) <- get sandbox, data
   var _line/eax: (addr line) <- lookup *line-ah
