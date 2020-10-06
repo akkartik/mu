@@ -63,46 +63,44 @@ fn interactive {
 }
 
 fn repl {
-  enable-keyboard-immediate-mode
-  var env-storage: environment
-  var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
-  var stack-storage: value-stack
-  var stack/edi: (addr value-stack) <- address stack-storage
-  initialize-value-stack stack, 0x10
-  print-string-to-real-screen "> "
-  $repl:loop: {
-    var key/eax: grapheme <- read-key-from-real-keyboard
-    print-grapheme-to-real-screen key
-    compare key, 4  # ctrl-d
-    break-if-=
-    compare key, 0xa  # newline
+  {
+    # prompt
+    var line-storage: (stream byte 0x100)
+    var line/ecx: (addr stream byte) <- address line-storage
+    print-string-to-real-screen "> "
+    # read
+    clear-stream line
+    read-line-from-real-keyboard line
+    var done?/eax: boolean <- stream-empty? line
+    compare done?, 0  # false
+    break-if-!=
+    # parse
+    var env-storage: environment
+    var env/esi: (addr environment) <- address env-storage
+    initialize-environment env
     {
+      var done?/eax: boolean <- stream-empty? line
+      compare done?, 0  # false
       break-if-!=
-      evaluate-environment env, stack
-      var empty?/eax: boolean <- value-stack-empty? stack
-      {
-        compare empty?, 0  # false
-        break-if-!=
-        var result/eax: int <- pop-int-from-value-stack stack
-        print-int32-decimal-to-real-screen result
-        print-string-to-real-screen "\n"
-      }
-      # clear line
-      var program-ah/eax: (addr handle program) <- get env, program
-      var program/eax: (addr program) <- lookup *program-ah
-      var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
-      var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-      var sandbox/esi: (addr sandbox) <- copy _sandbox
-      var line-ah/eax: (addr handle line) <- get sandbox, data
-      var line/eax: (addr line) <- lookup *line-ah
-      var cursor-word-ah/esi: (addr handle word) <- get sandbox, cursor-word
-      initialize-line line, cursor-word-ah
-      print-string-to-real-screen "> "
-      loop $repl:loop
+      var g/eax: grapheme <- read-grapheme line
+      process env, g
+      loop
     }
-    process env, key
+    # eval
+    var stack-storage: value-stack
+    var stack/edi: (addr value-stack) <- address stack-storage
+    initialize-value-stack stack, 0x10
+    evaluate-environment env, stack
+    # print
+    var empty?/eax: boolean <- value-stack-empty? stack
+    {
+      compare empty?, 0  # false
+      break-if-!=
+      var result/eax: int <- pop-int-from-value-stack stack
+      print-int32-decimal-to-real-screen result
+      print-string-to-real-screen "\n"
+    }
+    #
     loop
   }
-  enable-keyboard-type-mode
 }
