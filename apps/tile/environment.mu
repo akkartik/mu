@@ -83,8 +83,8 @@ $process:body: {
         break-if-=
         copy-object prev-word-ah, cursor-word-ah
         cursor-to-end prev-word
-        var cursor-word-index/eax: (addr int) <- get sandbox, cursor-word-index
-        decrement *cursor-word-index
+        var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+        decrement-final-element cursor-call-path
       }
       break $process:body
     }
@@ -107,8 +107,8 @@ $process:body: {
         break-if-=
         copy-object next-word-ah, cursor-word-ah
         cursor-to-start next-word
-        var cursor-word-index/eax: (addr int) <- get sandbox, cursor-word-index
-        increment *cursor-word-index
+        var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+        increment-final-element cursor-call-path
       }
       break $process:body
     }
@@ -132,8 +132,8 @@ $process:body: {
         copy-object prev-word-ah, cursor-word-ah
         cursor-to-end prev-word
         delete-next prev-word
-        var cursor-word-index/eax: (addr int) <- get sandbox, cursor-word-index
-        decrement *cursor-word-index
+        var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+        decrement-final-element cursor-call-path
       }
       break $process:body
     }
@@ -144,8 +144,8 @@ $process:body: {
       append-word cursor-word-ah
       var next-word-ah/ecx: (addr handle word) <- get cursor-word, next
       copy-object next-word-ah, cursor-word-ah
-      var cursor-word-index/eax: (addr int) <- get sandbox, cursor-word-index
-      increment *cursor-word-index
+      var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+      increment-final-element cursor-call-path
       break $process:body
     }
     compare key, 0xa  # enter
@@ -172,19 +172,19 @@ fn toggle-cursor-word _sandbox: (addr sandbox) {
 $toggle-cursor-word:body: {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var expanded-words/edi: (addr handle call-path) <- get sandbox, expanded-words
-  var cursor-word-index/ecx: (addr int) <- get sandbox, cursor-word-index
-  var already-expanded?/eax: boolean <- find-in-call-path expanded-words, *cursor-word-index
+  var cursor-call-path/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
+  var already-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
   compare already-expanded?, 0  # false
   {
     break-if-!=
     # if not already-expanded, insert
-    insert-in-call-path expanded-words *cursor-word-index
+    insert-in-call-path expanded-words cursor-call-path
     break $toggle-cursor-word:body
   }
   {
     break-if-=
     # otherwise delete
-    delete-in-call-path expanded-words *cursor-word-index
+    delete-in-call-path expanded-words cursor-call-path
   }
 }
 }
@@ -247,7 +247,9 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
   var first-word-ah/eax: (addr handle word) <- get line, data
   var curr-word/eax: (addr word) <- lookup *first-word-ah
   #
-  var word-index/ebx: int <- copy 0
+  var word-index-storage: (handle call-path-element)
+  var word-index/ebx: (addr handle call-path-element) <- address word-index-storage
+  allocate word-index  # leak
   # loop-carried dependency
   var curr-col/ecx: int <- copy left-col
   #
@@ -319,14 +321,17 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     subtract-from top-row, 1
       move-cursor screen, top-row, curr-col
       start-color screen, 8, 7
-        print-int32-hex-bits screen, word-index, 4
+        {
+          var word-index-val/eax: int <- final-element-value word-index
+          print-int32-hex-bits screen, word-index-val, 4
+        }
       reset-formatting screen
     add-to top-row, 1
     # now render main column
     curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
-    word-index <- increment
+    increment-final-element word-index
     loop
   }
   right-col <- copy curr-col

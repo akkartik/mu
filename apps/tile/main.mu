@@ -44,12 +44,30 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
 }
 
 fn interactive {
+#?   var elem: (handle call-path-element)
+#?   var elem-addr/ebx: (addr handle call-path-element) <- address elem
+#?   allocate elem-addr  # leak
+#?   var path: (handle call-path)
+#?   var path-addr/eax: (addr handle call-path) <- address path
+#?   allocate path-addr
+#?   var dummy/eax: boolean <- find-in-call-path path-addr, elem-addr
   enable-screen-grid-mode
   enable-keyboard-immediate-mode
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
   draw-screen env
+#?   var key/eax: grapheme <- copy 0x31  # '1'
+#?   process env, key
+#?   key <- copy 0x20  # space
+#?   process env, key
+#?   key <- copy 0x32  # '2'
+#?   process env, key
+#?   key <- copy 0x2a  # '*'
+#?   process env, key
+#?   key <- copy 0xa  # newline
+#?   process env, key
+#?   render env
   {
     var key/eax: grapheme <- read-key-from-real-keyboard
     compare key, 0x71  # 'q'
