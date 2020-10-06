@@ -1,7 +1,11 @@
 type sandbox {
   setup: (handle line)
   data: (handle line)
+  # display data
   cursor-word: (handle word)
+  cursor-word-index: int
+  expanded-words: (handle call-path)
+  #
   next: (handle sandbox)
   prev: (handle sandbox)
 }
@@ -27,8 +31,7 @@ type word {
   scalar-data: (handle gap-buffer)
   text-data: (handle array byte)
   box-data: (handle line)  # recurse
-  # other metadata attached to this word
-  display-subsidiary-stack?: boolean
+  #
   next: (handle word)
   prev: (handle word)
 }
@@ -47,6 +50,13 @@ type table {
 type bind {
   key: (handle array byte)
   value: (handle value)  # I'd inline this but we sometimes want to return a specific value from a table
+}
+
+# A call-path is a data structure that can unambiguously refer to any specific
+# call arbitrarily deep inside the call hierarchy of a program.
+type call-path {
+  data: int
+  next: (handle call-path)
 }
 
 type result {
@@ -183,4 +193,62 @@ fn populate-text-with _out: (addr handle array byte), _in: (addr array byte) {
     i <- increment
     loop
   }
+}
+
+fn find-in-call-path in: (addr handle call-path), _needle: int -> result/eax: boolean {
+$find-in-call-path:body: {
+  var curr-ah/esi: (addr handle call-path) <- copy in
+  var needle/ebx: int <- copy _needle
+  {
+    var curr/eax: (addr call-path) <- lookup *curr-ah
+    compare curr, 0
+    break-if-=
+    var curr-n/ecx: (addr int) <- get curr, data
+    compare needle, *curr-n
+    {
+      break-if-!=
+      result <- copy 1  # true
+      break $find-in-call-path:body
+    }
+    curr-ah <- get curr, next
+    loop
+  }
+  result <- copy 0  # false
+}
+}
+
+# order is irrelevant
+fn insert-in-call-path list: (addr handle call-path), _n: int {
+  var new-path-storage: (handle call-path)
+  var new-path-ah/edi: (addr handle call-path) <- address new-path-storage
+  allocate new-path-ah
+  var new-path/eax: (addr call-path) <- lookup *new-path-ah
+  var next/ecx: (addr handle call-path) <- get new-path, next
+  copy-object list, next
+  var data/ecx: (addr int) <- get new-path, data
+  var n/edx: int <- copy _n
+  copy-to *data, n
+  copy-object new-path-ah, list
+}
+
+fn delete-in-call-path list: (addr handle call-path), _n: int {
+$delete-in-call-path:body: {
+  var curr-ah/esi: (addr handle call-path) <- copy list
+  var n/ebx: int <- copy _n
+  $delete-in-call-path:loop: {
+    var curr/eax: (addr call-path) <- lookup *curr-ah
+    compare curr, 0
+    break-if-=
+    var curr-n/ecx: (addr int) <- get curr, data
+    compare n, *curr-n
+    {
+      break-if-!=
+      var next-ah/ecx: (addr handle call-path) <- get curr, next
+      copy-object next-ah, curr-ah
+      loop $delete-in-call-path:loop
+    }
+    curr-ah <- get curr, next
+    loop
+  }
+}
 }

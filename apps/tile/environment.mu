@@ -59,7 +59,8 @@ fn process _self: (addr environment), key: grapheme {
 $process:body: {
     var self/esi: (addr environment) <- copy _self
     var sandbox-ah/eax: (addr handle sandbox) <- get self, sandboxes
-    var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/esi: (addr sandbox) <- copy _sandbox
     var cursor-word-ah/edi: (addr handle word) <- get sandbox, cursor-word
     var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
     var cursor-word/ecx: (addr word) <- copy _cursor-word
@@ -75,13 +76,15 @@ $process:body: {
         break $process:body
       }
       # otherwise, move to end of prev word
-      var prev-word-ah/esi: (addr handle word) <- get cursor-word, prev
+      var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
       var prev-word/eax: (addr word) <- lookup *prev-word-ah
       {
         compare prev-word, 0
         break-if-=
         copy-object prev-word-ah, cursor-word-ah
         cursor-to-end prev-word
+        var cursor-word-index/eax: (addr int) <- get sandbox, cursor-word-index
+        decrement *cursor-word-index
       }
       break $process:body
     }
@@ -97,13 +100,15 @@ $process:body: {
         break $process:body
       }
       # otherwise, move to start of next word
-      var next-word-ah/esi: (addr handle word) <- get cursor-word, next
+      var next-word-ah/edx: (addr handle word) <- get cursor-word, next
       var next-word/eax: (addr word) <- lookup *next-word-ah
       {
         compare next-word, 0
         break-if-=
         copy-object next-word-ah, cursor-word-ah
         cursor-to-start next-word
+        var cursor-word-index/eax: (addr int) <- get sandbox, cursor-word-index
+        increment *cursor-word-index
       }
       break $process:body
     }
@@ -119,7 +124,7 @@ $process:body: {
         break $process:body
       }
       # otherwise delete current word and move to end of prev word
-      var prev-word-ah/esi: (addr handle word) <- get cursor-word, prev
+      var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
       var prev-word/eax: (addr word) <- lookup *prev-word-ah
       {
         compare prev-word, 0
@@ -127,6 +132,8 @@ $process:body: {
         copy-object prev-word-ah, cursor-word-ah
         cursor-to-end prev-word
         delete-next prev-word
+        var cursor-word-index/eax: (addr int) <- get sandbox, cursor-word-index
+        decrement *cursor-word-index
       }
       break $process:body
     }
@@ -137,16 +144,15 @@ $process:body: {
       append-word cursor-word-ah
       var next-word-ah/ecx: (addr handle word) <- get cursor-word, next
       copy-object next-word-ah, cursor-word-ah
+      var cursor-word-index/eax: (addr int) <- get sandbox, cursor-word-index
+      increment *cursor-word-index
       break $process:body
     }
     compare key, 0xa  # enter
     {
       break-if-!=
       # toggle display of subsidiary stack
-      var display-subsidiary-stack?/eax: (addr boolean) <- get cursor-word, display-subsidiary-stack?
-      var tmp/ecx: int <- copy 1
-      tmp <- subtract *display-subsidiary-stack?
-      copy-to *display-subsidiary-stack?, tmp
+      toggle-cursor-word sandbox
       break $process:body
     }
     # otherwise insert key within current word
@@ -159,6 +165,27 @@ $process:body: {
       break $process:body
     }
     # silently ignore other hotkeys
+}
+}
+
+fn toggle-cursor-word _sandbox: (addr sandbox) {
+$toggle-cursor-word:body: {
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
+  var expanded-words/edi: (addr handle call-path) <- get sandbox, expanded-words
+  var cursor-word-index/ecx: (addr int) <- get sandbox, cursor-word-index
+  var already-expanded?/eax: boolean <- find-in-call-path expanded-words, *cursor-word-index
+  compare already-expanded?, 0  # false
+  {
+    break-if-!=
+    # if not already-expanded, insert
+    insert-in-call-path expanded-words *cursor-word-index
+    break $toggle-cursor-word:body
+  }
+  {
+    break-if-=
+    # otherwise delete
+    delete-in-call-path expanded-words *cursor-word-index
+  }
 }
 }
 
@@ -196,6 +223,8 @@ fn render _env: (addr environment) {
 
 fn render-sandbox screen: (addr screen), functions: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
+  # expanded-words
+  var expanded-words/edi: (addr handle call-path) <- get sandbox, expanded-words
   # line
   var line-ah/eax: (addr handle line) <- get sandbox, data
   var _line/eax: (addr line) <- lookup *line-ah
@@ -208,11 +237,11 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   var cursor-col: int
   var cursor-col-a/eax: (addr int) <- address cursor-col
   #
-  var dummy/ecx: int <- render-line screen, functions, 0, line, 3, left-col, cursor-word, cursor-col-a  # input-row=3
+  var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, cursor-word, cursor-col-a  # input-row=3
   move-cursor screen, 3, cursor-col  # input-row
 }
 
-fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   # curr-word
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
@@ -228,8 +257,12 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     # if necessary, first render columns for subsidiary stack
     $render-line:subsidiary: {
       {
-        var display-subsidiary-stack?/eax: (addr boolean) <- get curr-word, display-subsidiary-stack?
-        compare *display-subsidiary-stack?, 0  # false
+        # can't expand subsidiary stacks for now
+        compare bindings, 0
+        break-if-!= $render-line:subsidiary
+        #
+        var display-subsidiary-stack?/eax: boolean <- find-in-call-path expanded-words, word-index
+        compare display-subsidiary-stack?, 0  # false
         break-if-= $render-line:subsidiary
       }
       # does function exist?
@@ -274,7 +307,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       var callee-body-ah/eax: (addr handle line) <- get callee, body
       var callee-body/eax: (addr line) <- lookup *callee-body-ah
       # - render subsidiary stack
-      curr-col <- render-line screen, functions, callee-bindings, callee-body, top-row, curr-col, cursor-word, cursor-col-a
+      curr-col <- render-line screen, functions, callee-bindings, callee-body, 0, top-row, curr-col, cursor-word, cursor-col-a
       #
       move-cursor screen, top-row, curr-col
       print-code-point screen, 0x21d7  # ⇗
