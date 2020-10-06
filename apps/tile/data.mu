@@ -1,5 +1,5 @@
 type program {
-  defs: (handle function)
+  functions: (handle function)
   sandboxes: (handle sandbox)
 }
 
@@ -61,8 +61,8 @@ type result {
 
 fn initialize-program _program: (addr program) {
   var program/esi: (addr program) <- copy _program
-  var defs/eax: (addr handle function) <- get program, defs
-  create-primitive-defs defs
+  var functions/eax: (addr handle function) <- get program, functions
+  create-primitive-functions functions
   var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
   allocate sandbox-ah
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
@@ -95,7 +95,7 @@ fn initialize-line _line: (addr line), out: (addr handle word) {
   initialize-word word
 }
 
-fn create-primitive-defs _self: (addr handle function) {
+fn create-primitive-functions _self: (addr handle function) {
   # x 2* = x 2 *
   var self/esi: (addr handle function) <- copy _self
   allocate self

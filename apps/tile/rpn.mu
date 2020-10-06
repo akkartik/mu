@@ -1,4 +1,4 @@
-fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr line), end: (addr word), out: (addr value-stack) {
+fn evaluate functions: (addr handle function), bindings: (addr table), scratch: (addr line), end: (addr word), out: (addr value-stack) {
   var line/eax: (addr line) <- copy scratch
   var word-ah/eax: (addr handle word) <- get line, data
   var curr/eax: (addr word) <- lookup *word-ah
@@ -52,11 +52,11 @@ fn evaluate defs: (addr handle function), bindings: (addr table), scratch: (addr
       {
         var callee-h: (handle function)
         var callee-ah/eax: (addr handle function) <- address callee-h
-        find-function defs, curr-stream, callee-ah
+        find-function functions, curr-stream, callee-ah
         var callee/eax: (addr function) <- lookup *callee-ah
         compare callee, 0
         break-if-=
-        perform-call callee, out, defs
+        perform-call callee, out, functions
         break $evaluate:process-word
       }
       # if it's a name, push its value
@@ -119,7 +119,7 @@ fn find-function first: (addr handle function), name: (addr stream byte), out: (
   }
 }
 
-fn perform-call _callee: (addr function), caller-stack: (addr value-stack), defs: (addr handle function) {
+fn perform-call _callee: (addr function), caller-stack: (addr value-stack), functions: (addr handle function) {
   var callee/ecx: (addr function) <- copy _callee
   # create bindings for args
   var table-storage: table
@@ -134,7 +134,7 @@ fn perform-call _callee: (addr function), caller-stack: (addr value-stack), defs
   var stack/edi: (addr value-stack) <- address stack-storage
   initialize-value-stack stack, 0x10
 #?   print-string-to-real-screen "about to enter recursive eval\n"
-  evaluate defs, table, body, 0, stack
+  evaluate functions, table, body, 0, stack
 #?   print-string-to-real-screen "exited recursive eval\n"
   # stitch result from stack into caller
   var result/eax: int <- pop-int-from-value-stack stack

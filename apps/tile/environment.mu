@@ -165,15 +165,15 @@ fn evaluate-environment _env: (addr environment), stack: (addr value-stack) {
   var program-ah/eax: (addr handle program) <- get env, program
   var _program/eax: (addr program) <- lookup *program-ah
   var program/esi: (addr program) <- copy _program
-  # defs
-  var defs/edx: (addr handle function) <- get program, defs
+  # functions
+  var functions/edx: (addr handle function) <- get program, functions
   # line
   var sandbox-ah/esi: (addr handle sandbox) <- get program, sandboxes
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
   var line-ah/eax: (addr handle line) <- get sandbox, data
   var _line/eax: (addr line) <- lookup *line-ah
   var line/esi: (addr line) <- copy _line
-  evaluate defs, 0, line, 0, stack
+  evaluate functions, 0, line, 0, stack
 }
 
 fn render _env: (addr environment) {
@@ -191,15 +191,15 @@ fn render _env: (addr environment) {
   var program-ah/eax: (addr handle program) <- get env, program
   var _program/eax: (addr program) <- lookup *program-ah
   var program/esi: (addr program) <- copy _program
-  # defs
-  var defs/edx: (addr handle function) <- get program, defs
+  # functions
+  var functions/edx: (addr handle function) <- get program, functions
   # sandbox
   var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-  render-sandbox screen, defs, 0, sandbox, 3, repl-col
+  render-sandbox screen, functions, 0, sandbox, 3, repl-col
 }
 
-fn render-sandbox screen: (addr screen), defs: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int {
+fn render-sandbox screen: (addr screen), functions: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   # line
   var line-ah/eax: (addr handle line) <- get sandbox, data
@@ -213,11 +213,11 @@ fn render-sandbox screen: (addr screen), defs: (addr handle function), bindings:
   var cursor-col: int
   var cursor-col-a/eax: (addr int) <- address cursor-col
   #
-  var dummy/ecx: int <- render-line screen, defs, 0, line, 3, left-col, cursor-word, cursor-col-a  # input-row=3
+  var dummy/ecx: int <- render-line screen, functions, 0, line, 3, left-col, cursor-word, cursor-col-a  # input-row=3
   move-cursor screen, 3, cursor-col  # input-row
 }
 
-fn render-line screen: (addr screen), defs: (addr handle function), bindings: (addr table), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   # curr-word
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
@@ -245,7 +245,7 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
         emit-word curr-word, curr-stream
         var callee-h: (handle function)
         var callee-ah/eax: (addr handle function) <- address callee-h
-        find-function defs, curr-stream, callee-ah
+        find-function functions, curr-stream, callee-ah
         var _callee/eax: (addr function) <- lookup *callee-ah
         callee <- copy _callee
         compare callee, 0
@@ -268,7 +268,7 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
         var prev-word/eax: (addr word) <- lookup *prev-word-ah
         compare prev-word, 0
         break-if-=
-        evaluate defs, bindings, line, prev-word, stack
+        evaluate functions, bindings, line, prev-word, stack
       }
       # construct new bindings
       var callee-bindings-storage: table
@@ -279,7 +279,7 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
       var callee-body-ah/eax: (addr handle line) <- get callee, body
       var callee-body/eax: (addr line) <- lookup *callee-body-ah
       # - render subsidiary stack
-      curr-col <- render-line screen, defs, callee-bindings, callee-body, top-row, curr-col, cursor-word, cursor-col-a
+      curr-col <- render-line screen, functions, callee-bindings, callee-body, top-row, curr-col, cursor-word, cursor-col-a
       #
       move-cursor screen, top-row, curr-col
       print-code-point screen, 0x21d7  # ⇗
@@ -295,7 +295,7 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
       reset-formatting screen
     add-to top-row, 1
     # now render main column
-    curr-col <- render-column screen, defs, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
+    curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     word-index <- increment
@@ -313,7 +313,7 @@ fn render-line screen: (addr screen), defs: (addr handle function), bindings: (a
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-column screen: (addr screen), defs: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # indent stack
@@ -323,7 +323,7 @@ fn render-column screen: (addr screen), defs: (addr handle function), bindings: 
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
     initialize-value-stack stack-addr, 0x10  # max-words
-    evaluate defs, bindings, scratch, final-word, stack-addr
+    evaluate functions, bindings, scratch, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy top-row
     curr-row <- add 3  # stack-margin-top
