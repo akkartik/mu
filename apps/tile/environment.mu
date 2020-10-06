@@ -1,6 +1,7 @@
 type environment {
   screen: (handle screen)
-  program: (handle program)
+  functions: (handle function)
+  sandboxes: (handle sandbox)
   nrows: int
   ncols: int
   code-separator-col: int
@@ -8,10 +9,14 @@ type environment {
 
 fn initialize-environment _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
-  var program-ah/eax: (addr handle program) <- get env, program
-  allocate program-ah
-  var program/eax: (addr program) <- lookup *program-ah
-  initialize-program program
+  # initialize some predefined function definitions
+  var functions/eax: (addr handle function) <- get env, functions
+  create-primitive-functions functions
+  # initialize first sandbox
+  var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+  allocate sandbox-ah
+  var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+  initialize-sandbox sandbox
   # initialize screen
   var screen-ah/eax: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
@@ -53,9 +58,7 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 fn process _self: (addr environment), key: grapheme {
 $process:body: {
     var self/esi: (addr environment) <- copy _self
-    var program-ah/eax: (addr handle program) <- get self, program
-    var program/eax: (addr program) <- lookup *program-ah
-    var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
+    var sandbox-ah/eax: (addr handle sandbox) <- get self, sandboxes
     var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
     var cursor-word-ah/edi: (addr handle word) <- get sandbox, cursor-word
     var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
@@ -161,14 +164,10 @@ $process:body: {
 
 fn evaluate-environment _env: (addr environment), stack: (addr value-stack) {
   var env/esi: (addr environment) <- copy _env
-  # program
-  var program-ah/eax: (addr handle program) <- get env, program
-  var _program/eax: (addr program) <- lookup *program-ah
-  var program/esi: (addr program) <- copy _program
   # functions
-  var functions/edx: (addr handle function) <- get program, functions
+  var functions/edx: (addr handle function) <- get env, functions
   # line
-  var sandbox-ah/esi: (addr handle sandbox) <- get program, sandboxes
+  var sandbox-ah/esi: (addr handle sandbox) <- get env, sandboxes
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
   var line-ah/eax: (addr handle line) <- get sandbox, data
   var _line/eax: (addr line) <- lookup *line-ah
@@ -187,14 +186,10 @@ fn render _env: (addr environment) {
   var _repl-col/eax: (addr int) <- get env, code-separator-col
   var repl-col/ecx: int <- copy *_repl-col
   repl-col <- add 2  # repl-margin-left
-  # program
-  var program-ah/eax: (addr handle program) <- get env, program
-  var _program/eax: (addr program) <- lookup *program-ah
-  var program/esi: (addr program) <- copy _program
   # functions
-  var functions/edx: (addr handle function) <- get program, functions
+  var functions/edx: (addr handle function) <- get env, functions
   # sandbox
-  var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
+  var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
   render-sandbox screen, functions, 0, sandbox, 3, repl-col
 }

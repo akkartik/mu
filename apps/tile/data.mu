@@ -1,8 +1,3 @@
-type program {
-  functions: (handle function)
-  sandboxes: (handle sandbox)
-}
-
 type sandbox {
   setup: (handle line)
   data: (handle line)
@@ -57,16 +52,6 @@ type bind {
 type result {
   data: value-stack
   error: (handle array byte)  # single error message for now
-}
-
-fn initialize-program _program: (addr program) {
-  var program/esi: (addr program) <- copy _program
-  var functions/eax: (addr handle function) <- get program, functions
-  create-primitive-functions functions
-  var sandbox-ah/eax: (addr handle sandbox) <- get program, sandboxes
-  allocate sandbox-ah
-  var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-  initialize-sandbox sandbox
 }
 
 fn initialize-sandbox _sandbox: (addr sandbox) {
