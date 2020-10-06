@@ -410,39 +410,39 @@ fn vec3-negate v: (addr vec3) {
   vec3-scale-up v, negative-one-f
 }
 
-fn vec3-scale-up _v1: (addr vec3), f: float {
-  var v1/edi: (addr vec3) <- copy _v1
-  # v1.x *= f
-  var dest/eax: (addr float) <- get v1, x
+fn vec3-scale-up _v: (addr vec3), f: float {
+  var v/edi: (addr vec3) <- copy _v
+  # v.x *= f
+  var dest/eax: (addr float) <- get v, x
   var result/xmm0: float <- copy *dest
   result <- multiply f
   copy-to *dest, result
-  # v1.y *= f
-  dest <- get v1, y
+  # v.y *= f
+  dest <- get v, y
   result <- copy *dest
   result <- multiply f
   copy-to *dest, result
-  # v1.z *= f
-  dest <- get v1, z
+  # v.z *= f
+  dest <- get v, z
   result <- copy *dest
   result <- multiply f
   copy-to *dest, result
 }
 
-fn vec3-scale-down _v1: (addr vec3), f: float {
-  var v1/edi: (addr vec3) <- copy _v1
-  # v1.x /= f
-  var dest/eax: (addr float) <- get v1, x
+fn vec3-scale-down _v: (addr vec3), f: float {
+  var v/edi: (addr vec3) <- copy _v
+  # v.x /= f
+  var dest/eax: (addr float) <- get v, x
   var result/xmm0: float <- copy *dest
   result <- divide f
   copy-to *dest, result
-  # v1.y /= f
-  dest <- get v1, y
+  # v.y /= f
+  dest <- get v, y
   result <- copy *dest
   result <- divide f
   copy-to *dest, result
-  # v1.z /= f
-  dest <- get v1, z
+  # v.z /= f
+  dest <- get v, z
   result <- copy *dest
   result <- divide f
   copy-to *dest, result
