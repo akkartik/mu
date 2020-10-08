@@ -364,16 +364,16 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       curr-col <- add 2
       subtract-from top-row, 1
     }
-    # print word index
-    subtract-from top-row, 1
-      move-cursor screen, top-row, curr-col
-      start-color screen, 8, 7
-        {
-          var word-index-val/eax: int <- final-element-value word-index
-          print-int32-hex-bits screen, word-index-val, 4
-        }
-      reset-formatting screen
-    add-to top-row, 1
+    # debug info: print word index
+#?     subtract-from top-row, 1
+#?       move-cursor screen, top-row, curr-col
+#?       start-color screen, 8, 7
+#?         {
+#?           var word-index-val/eax: int <- final-element-value word-index
+#?           print-int32-hex-bits screen, word-index-val, 4
+#?         }
+#?       reset-formatting screen
+#?     add-to top-row, 1
     # now render main column
     curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
