@@ -28,7 +28,7 @@ setlocal formatoptions-=t  " Mu programs have long lines
 setlocal formatoptions+=c  " but comments should still wrap
 
 syntax match muSalientComment /##.*$/  | highlight link muSalientComment SalientComment
-syntax match muComment /#\( \.\| - \|? \)\@!.*/ | highlight link muComment Comment
+syntax match muComment /#\( \.\|? \)\@!.*/ | highlight link muComment Comment
 syntax match muS1Comment /# \..*/ | highlight link muS1Comment Comment
 syntax match muS2Comment /# \. \..*/ | highlight link muS2Comment Comment
 
