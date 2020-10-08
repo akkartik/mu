@@ -58,10 +58,13 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 fn process _self: (addr environment), key: grapheme {
 $process:body: {
     var self/esi: (addr environment) <- copy _self
+    var functions/ecx: (addr handle function) <- get self, functions
     var sandbox-ah/eax: (addr handle sandbox) <- get self, sandboxes
     var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-    var sandbox/esi: (addr sandbox) <- copy _sandbox
-    var cursor-word-ah/edi: (addr handle word) <- get sandbox, cursor-word
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-word-storage: (handle word)
+    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
+    get-cursor-word sandbox, functions, cursor-word-ah
     var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
     var cursor-word/ecx: (addr word) <- copy _cursor-word
     compare key, 0x445b1b  # left-arrow
@@ -76,12 +79,11 @@ $process:body: {
         break $process:body
       }
       # otherwise, move to end of prev word
-      var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
+      var prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
       var prev-word/eax: (addr word) <- lookup *prev-word-ah
       {
         compare prev-word, 0
         break-if-=
-        copy-object prev-word-ah, cursor-word-ah
         cursor-to-end prev-word
         var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
         decrement-final-element cursor-call-path
@@ -100,12 +102,11 @@ $process:body: {
         break $process:body
       }
       # otherwise, move to start of next word
-      var next-word-ah/edx: (addr handle word) <- get cursor-word, next
+      var next-word-ah/eax: (addr handle word) <- get cursor-word, next
       var next-word/eax: (addr word) <- lookup *next-word-ah
       {
         compare next-word, 0
         break-if-=
-        copy-object next-word-ah, cursor-word-ah
         cursor-to-start next-word
         var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
         increment-final-element cursor-call-path
@@ -124,12 +125,11 @@ $process:body: {
         break $process:body
       }
       # otherwise delete current word and move to end of prev word
-      var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
+      var prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
       var prev-word/eax: (addr word) <- lookup *prev-word-ah
       {
         compare prev-word, 0
         break-if-=
-        copy-object prev-word-ah, cursor-word-ah
         cursor-to-end prev-word
         delete-next prev-word
         var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -142,8 +142,6 @@ $process:body: {
       break-if-!=
       # insert new word
       append-word cursor-word-ah
-      var next-word-ah/ecx: (addr handle word) <- get cursor-word, next
-      copy-object next-word-ah, cursor-word-ah
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       increment-final-element cursor-call-path
       break $process:body
@@ -165,6 +163,53 @@ $process:body: {
       break $process:body
     }
     # silently ignore other hotkeys
+}
+}
+
+fn get-cursor-word _sandbox: (addr sandbox), functions: (addr handle function), out: (addr handle word) {
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
+  var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+  var line/ecx: (addr handle line) <- get sandbox, data
+  get-word-from-path line, functions, cursor-call-path, out
+}
+
+fn get-word-from-path _line: (addr handle line), functions: (addr handle function), _path-ah: (addr handle call-path-element), out: (addr handle word) {
+  # if (path->next)
+  #   get-word-from-path(line, functions, path->next, out)
+  #   line = function-body(functions, out)
+  # word-index(line, path->index-in-body, out)
+  var path-ah/eax: (addr handle call-path-element) <- copy _path-ah
+  var _path/eax: (addr call-path-element) <- lookup *path-ah
+  var path/ecx: (addr call-path-element) <- copy _path
+  var next-ah/edx: (addr handle call-path-element) <- get path, next
+  var next/eax: (addr call-path-element) <- lookup *next-ah
+  var line-ah/ebx: (addr handle line) <- copy _line
+  {
+    compare next, 0
+    break-if-=
+    get-word-from-path _line, functions, next-ah, out
+    function-body functions, out, line-ah
+  }
+  var n/ecx: (addr int) <- get path, index-in-body
+  var line/eax: (addr line) <- lookup *line-ah
+  var words/eax: (addr handle word) <- get line, data
+  word-index words, *n, out
+}
+
+fn word-index _words: (addr handle word), _n: int, out: (addr handle word) {
+$word-index:body: {
+  var n/ecx: int <- copy _n
+  {
+    compare n, 0
+    break-if-!=
+    copy-object _words, out
+    break $word-index:body
+  }
+  var words-ah/eax: (addr handle word) <- copy _words
+  var words/eax: (addr word) <- lookup *words-ah
+  var next/eax: (addr handle word) <- get words, next
+  n <- decrement
+  word-index next, n, out
 }
 }
 
@@ -230,7 +275,9 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   var _line/eax: (addr line) <- lookup *line-ah
   var line/ecx: (addr line) <- copy _line
   # cursor-word
-  var cursor-word-ah/eax: (addr handle word) <- get sandbox, cursor-word
+  var cursor-word-storage: (handle word)
+  var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
+  get-cursor-word sandbox, functions, cursor-word-ah
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ebx: (addr word) <- copy _cursor-word
   # cursor-col

@@ -2,7 +2,6 @@ type sandbox {
   setup: (handle line)
   data: (handle line)
   # display data
-  cursor-word: (handle word)
   cursor-call-path: (handle call-path-element)
   expanded-words: (handle call-path)
   #
@@ -79,23 +78,14 @@ fn initialize-sandbox _sandbox: (addr sandbox) {
   var line-ah/eax: (addr handle line) <- get sandbox, data
   allocate line-ah
   var line/eax: (addr line) <- lookup *line-ah
-  var cursor-word-ah/esi: (addr handle word) <- get sandbox, cursor-word
-  allocate cursor-word-ah
-  initialize-line line, cursor-word-ah
+  initialize-line line
 }
 
 # initialize line with a single empty word
-# if 'out' is non-null, save the word there as well
-fn initialize-line _line: (addr line), out: (addr handle word) {
+fn initialize-line _line: (addr line) {
   var line/esi: (addr line) <- copy _line
   var word-ah/eax: (addr handle word) <- get line, data
   allocate word-ah
-  {
-    compare out, 0
-    break-if-=
-    var dest/edi: (addr handle word) <- copy out
-    copy-object word-ah, dest
-  }
   var word/eax: (addr word) <- lookup *word-ah
   initialize-word word
 }
@@ -115,7 +105,7 @@ fn create-primitive-functions _self: (addr handle function) {
   var body-ah/eax: (addr handle line) <- get f, body
   allocate body-ah
   var body/eax: (addr line) <- lookup *body-ah
-  initialize-line body, 0
+  initialize-line body
   var curr-word-ah/ecx: (addr handle word) <- get body, data
   allocate curr-word-ah
   var curr-word/eax: (addr word) <- lookup *curr-word-ah
@@ -142,7 +132,7 @@ fn create-primitive-functions _self: (addr handle function) {
   var body-ah/eax: (addr handle line) <- get f, body
   allocate body-ah
   var body/eax: (addr line) <- lookup *body-ah
-  initialize-line body, 0
+  initialize-line body
   var curr-word-ah/ecx: (addr handle word) <- get body, data
   allocate curr-word-ah
   var curr-word/eax: (addr word) <- lookup *curr-word-ah
@@ -169,7 +159,7 @@ fn create-primitive-functions _self: (addr handle function) {
   var body-ah/eax: (addr handle line) <- get f, body
   allocate body-ah
   var body/eax: (addr line) <- lookup *body-ah
-  initialize-line body, 0
+  initialize-line body
   var curr-word-ah/ecx: (addr handle word) <- get body, data
   allocate curr-word-ah
   var curr-word/eax: (addr word) <- lookup *curr-word-ah
@@ -183,6 +173,37 @@ fn create-primitive-functions _self: (addr handle function) {
   curr-word <- lookup *curr-word-ah
   initialize-word-with curr-word, "1+"
   # TODO: populate prev pointers
+}
+
+fn function-body in: (addr handle function), _word: (addr handle word), out: (addr handle line) {
+  var function-name-storage: (handle array byte)
+  var function-name-ah/ecx: (addr handle array byte) <- address function-name-storage
+  var word-ah/esi: (addr handle word) <- copy _word
+  var word/eax: (addr word) <- lookup *word-ah
+  var gap-ah/eax: (addr handle gap-buffer) <- get word, scalar-data
+  var gap/eax: (addr gap-buffer) <- lookup *gap-ah
+  gap-buffer-to-string gap, function-name-ah
+  var _function-name/eax: (addr array byte) <- lookup *function-name-ah
+  var function-name/esi: (addr array byte) <- copy _function-name
+  var curr-ah/ecx: (addr handle function) <- copy in
+  $function-body:loop: {
+    var _curr/eax: (addr function) <- lookup *curr-ah
+    var curr/edx: (addr function) <- copy _curr
+    compare curr, 0
+    break-if-=
+    var curr-name-ah/eax: (addr handle array byte) <- get curr, name
+    var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
+    var found?/eax: boolean <- string-equal? curr-name, function-name
+    compare found?, 0  # false
+    {
+      break-if-=
+      var src/eax: (addr handle line) <- get curr, body
+      copy-object src, out
+      break $function-body:loop
+    }
+    curr-ah <- get curr, next
+    loop
+  }
 }
 
 fn populate-text-with _out: (addr handle array byte), _in: (addr array byte) {
