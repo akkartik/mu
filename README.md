@@ -179,7 +179,7 @@ Mu builds on many ideas that have come before, especially:
 - [Peter Naur](http://akkartik.name/naur.pdf) for articulating the paramount
   problem of programming: communicating a codebase to others;
 - [Christopher Alexander](http://www.amazon.com/Notes-Synthesis-Form-Harvard-Paperbacks/dp/0674627512)
-  and [Richard Gabriel](http://dreamsongs.net/Files/PatternsOfSoftware.pdf) for
+  and [Richard Gabriel](https://www.dreamsongs.com/Files/PatternsOfSoftware.pdf) for
   the intellectual tools for reasoning about the higher order design of a
   codebase;
 - [David Parnas](http://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf)
