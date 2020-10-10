@@ -334,7 +334,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         var word-len/eax: int <- word-length curr-word
         curr-col <- add word-len
         curr-col <- add 2
-        add-to top-row, 1
+        increment top-row
       }
       # obtain stack at call site
       var stack-storage: value-stack
@@ -362,10 +362,10 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       print-code-point screen, 0x21d7  # ⇗
       #
       curr-col <- add 2
-      subtract-from top-row, 1
+      decrement top-row
     }
     # debug info: print word index
-#?     subtract-from top-row, 1
+#?     decrement top-row
 #?       move-cursor screen, top-row, curr-col
 #?       start-color screen, 8, 7
 #?         {
@@ -373,7 +373,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?           print-int32-hex-bits screen, word-index-val, 4
 #?         }
 #?       reset-formatting screen
-#?     add-to top-row, 1
+#?     increment top-row
     # now render main column
     curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
