@@ -388,7 +388,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?       reset-formatting screen
 #?     increment top-row
     # now render main column
-    curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col, curr-path, cursor-word, cursor-col-a
+    curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     increment-final-element curr-path
@@ -400,13 +400,12 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 # Render:
 #   - starting at top-row, left-col: final-word
 #   - starting somewhere below at left-col: the stack result from interpreting first-world to final-word (inclusive)
-#     unless final-word is truly the final word, in which case it might be incomplete
 #
 # Outputs:
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-path: (addr handle call-path-element), cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # indent stack
