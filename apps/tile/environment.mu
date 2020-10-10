@@ -97,11 +97,16 @@ $process:body: {
         break $process:body
       }
       # otherwise, move to end of prev word
-      var prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
+      var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
       var prev-word/eax: (addr word) <- lookup *prev-word-ah
       {
         compare prev-word, 0
         break-if-=
+        copy-object prev-word-ah, cursor-word-ah
+        # Is it expanded? If so, it's a function call. Move to the rightmost
+        # word in the function's body
+          # HERE
+        # otherwise move to end of word
         cursor-to-end prev-word
         var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
         decrement-final-element cursor-call-path
@@ -161,6 +166,13 @@ $process:body: {
       }
       break $process:body
     }
+    compare key, 0xa  # enter
+    {
+      break-if-!=
+      # toggle display of subsidiary stack
+      toggle-cursor-word sandbox
+      break $process:body
+    }
     compare key, 0x7f  # del (backspace on Macs)
     {
       break-if-!=
@@ -192,13 +204,6 @@ $process:body: {
       append-word cursor-word-ah
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       increment-final-element cursor-call-path
-      break $process:body
-    }
-    compare key, 0xa  # enter
-    {
-      break-if-!=
-      # toggle display of subsidiary stack
-      toggle-cursor-word sandbox
       break $process:body
     }
     # otherwise insert key within current word
