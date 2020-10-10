@@ -93,9 +93,29 @@ fn test {
   process env, g
   g <- copy 0x435b1b  # right-arrow
   process env, g
+  {
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var line-ah/eax: (addr handle line) <- get sandbox, data
+    var line/eax: (addr line) <- lookup *line-ah
+    var first-word-ah/eax: (addr handle word) <- get line, data
+    var curr-word/eax: (addr word) <- lookup *first-word-ah
+    print-word 0, curr-word
+    print-string 0, "\n"
+  }
   g <- copy 0x435b1b  # right-arrow
   process env, g
-  render env
+  {
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var line-ah/eax: (addr handle line) <- get sandbox, data
+    var line/eax: (addr line) <- lookup *line-ah
+    var first-word-ah/eax: (addr handle word) <- get line, data
+    var curr-word/eax: (addr word) <- lookup *first-word-ah
+    print-word 0, curr-word
+    print-string 0, "\n"
+  }
+#?   render env
 }
 
 fn repl {

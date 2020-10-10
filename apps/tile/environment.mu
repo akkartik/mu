@@ -64,7 +64,25 @@ $process:body: {
     var sandbox/edi: (addr sandbox) <- copy _sandbox
     var cursor-word-storage: (handle word)
     var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
+#?     {
+#?       print-string 0, "A: line starts with "
+#?       var line-ah/eax: (addr handle line) <- get sandbox, data
+#?       var line/eax: (addr line) <- lookup *line-ah
+#?       var first-word-ah/eax: (addr handle word) <- get line, data
+#?       var curr-word/eax: (addr word) <- lookup *first-word-ah
+#?       print-word 0, curr-word
+#?       print-string 0, "\n"
+#?     }
     get-cursor-word sandbox, functions, cursor-word-ah
+#?     {
+#?       print-string 0, "Z: line starts with "
+#?       var line-ah/eax: (addr handle line) <- get sandbox, data
+#?       var line/eax: (addr line) <- lookup *line-ah
+#?       var first-word-ah/eax: (addr handle word) <- get line, data
+#?       var curr-word/eax: (addr word) <- lookup *first-word-ah
+#?       print-word 0, curr-word
+#?       print-string 0, "\n"
+#?     }
     var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
     var cursor-word/ecx: (addr word) <- copy _cursor-word
     compare key, 0x445b1b  # left-arrow
@@ -98,6 +116,7 @@ $process:body: {
       compare at-end?, 0  # false
       {
         break-if-=
+#?         print-string 0, "a\n"
         cursor-right cursor-word
         break $process:body
       }
@@ -107,6 +126,7 @@ $process:body: {
       {
         compare next-word, 0
         break-if-=
+#?         print-string 0, "b\n"
         cursor-to-start next-word
         # cursor-word now out of date
         var cursor-call-path/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -114,11 +134,13 @@ $process:body: {
         # Is the new cursor word expanded? If so, it's a function call. Add a
         # new level to the cursor-call-path for the call's body.
         {
+#?           print-string 0, "c\n"
           var expanded-words/eax: (addr handle call-path) <- get sandbox, expanded-words
           var curr-word-is-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
           compare curr-word-is-expanded?, 0  # false
           break-if-=
           push-to-call-path-element cursor-call-path, 0
+#?           print-string 0, "d\n"
           break $process:body
         }
       }
@@ -181,30 +203,85 @@ fn get-cursor-word _sandbox: (addr sandbox), functions: (addr handle function), 
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
   var line/ecx: (addr handle line) <- get sandbox, data
+#?   {
+#?     print-string 0, "B: line starts with "
+#?     var line-ah/eax: (addr handle line) <- get sandbox, data
+#?     var line/eax: (addr line) <- lookup *line-ah
+#?     var first-word-ah/eax: (addr handle word) <- get line, data
+#?     var curr-word/eax: (addr word) <- lookup *first-word-ah
+#?     print-word 0, curr-word
+#?     print-string 0, "\n"
+#?   }
   get-word-from-path line, functions, cursor-call-path, out
+#?   {
+#?     print-string 0, "Y: line starts with "
+#?     var line-ah/eax: (addr handle line) <- get sandbox, data
+#?     var line/eax: (addr line) <- lookup *line-ah
+#?     var first-word-ah/eax: (addr handle word) <- get line, data
+#?     var curr-word/eax: (addr word) <- lookup *first-word-ah
+#?     print-word 0, curr-word
+#?     print-string 0, "\n"
+#?   }
 }
 
 fn get-word-from-path _line: (addr handle line), functions: (addr handle function), _path-ah: (addr handle call-path-element), out: (addr handle word) {
+  # var tmp = line
   # if (path->next)
   #   get-word-from-path(line, functions, path->next, out)
-  #   line = function-body(functions, out)
-  # word-index(line, path->index-in-body, out)
+  #   tmp = function-body(functions, out)
+  # word-index(tmp, path->index-in-body, out)
+#?   print-string 0, "C\n"
+  var tmp: (handle line)
+  {
+    var tmp-ah/eax: (addr handle line) <- address tmp
+    copy-object _line, tmp-ah
+  }
   var path-ah/eax: (addr handle call-path-element) <- copy _path-ah
   var _path/eax: (addr call-path-element) <- lookup *path-ah
   var path/ecx: (addr call-path-element) <- copy _path
   var next-ah/edx: (addr handle call-path-element) <- get path, next
   var next/eax: (addr call-path-element) <- lookup *next-ah
-  var line-ah/ebx: (addr handle line) <- copy _line
   {
     compare next, 0
     break-if-=
     get-word-from-path _line, functions, next-ah, out
-    function-body functions, out, line-ah
+#?     {
+#?       print-string 0, "D: line starts with "
+#?       var line/eax: (addr line) <- lookup *line-ah
+#?       var words/eax: (addr handle word) <- get line, data
+#?       var curr-word/eax: (addr word) <- lookup *words
+#?       print-word 0, curr-word
+#?       print-string 0, "\n"
+#?     }
+    var tmp-ah/eax: (addr handle line) <- address tmp
+    function-body functions, out, tmp-ah
+#?     {
+#?       print-string 0, "G: line starts with "
+#?       var line/eax: (addr line) <- lookup *line-ah
+#?       var words/eax: (addr handle word) <- get line, data
+#?       var curr-word/eax: (addr word) <- lookup *words
+#?       print-word 0, curr-word
+#?       print-string 0, "\n"
+#?     }
+    # TODO: support multiple levels
   }
   var n/ecx: (addr int) <- get path, index-in-body
-  var line/eax: (addr line) <- lookup *line-ah
+  var line/eax: (addr line) <- lookup tmp
   var words/eax: (addr handle word) <- get line, data
+#?   {
+#?     print-string 0, "M: line starts with "
+#?     var curr-word/eax: (addr word) <- lookup *words
+#?     print-word 0, curr-word
+#?     print-string 0, "\n"
+#?   }
   word-index words, *n, out
+#?   {
+#?     print-string 0, "P: line starts with "
+#?     var curr-word/eax: (addr word) <- lookup *words
+#?     print-word 0, curr-word
+#?     print-string 0, "\n"
+#?   }
+#?   print-string 0, "X\n"
 }
 
 fn word-index _words: (addr handle word), _n: int, out: (addr handle word) {
@@ -274,6 +351,14 @@ fn render _env: (addr environment) {
   # sandbox
   var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+#?   {
+#?     var line-ah/eax: (addr handle line) <- get sandbox, data
+#?     var line/eax: (addr line) <- lookup *line-ah
+#?     var first-word-ah/eax: (addr handle word) <- get line, data
+#?     var curr-word/eax: (addr word) <- lookup *first-word-ah
+#?     print-word 0, curr-word
+#?     print-string 0, "\n"
+#?   }
   render-sandbox screen, functions, 0, sandbox, 3, repl-col
 }
 
@@ -298,11 +383,17 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   var curr-path-storage: (handle call-path-element)
   var curr-path/esi: (addr handle call-path-element) <- address curr-path-storage
   allocate curr-path  # leak
+#?   print-string 0, "==\n"
   var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, curr-path, cursor-word, cursor-col-a  # input-row=3
   move-cursor screen, 3, cursor-col  # input-row
 }
 
+# Render the line of words in line, along with the state of the stack under each word.
+# Also render any expanded function calls using recursive calls.
+#
+# Along the way, compute the column the cursor should be positioned at (cursor-col-a).
 fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+#?   print-string 0, "--\n"
   # curr-word
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
@@ -314,6 +405,12 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
   {
     compare curr-word, 0
     break-if-=
+#?     print-word 0, curr-word
+#?     print-string 0, "\n"
+
+#?     {
+#?       var dummy/eax: grapheme <- read-key-from-real-keyboard
+#?     }
     # if necessary, first render columns for subsidiary stack
     $render-line:subsidiary: {
       {
@@ -412,8 +509,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #   - starting at top-row, left-col: final-word
 #   - starting somewhere below at left-col: the stack result from interpreting first-world to final-word (inclusive)
 #
-# Outputs:
-# - Return the farthest column written.
+# Return the farthest column written.
 fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
