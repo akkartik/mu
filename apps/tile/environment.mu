@@ -387,8 +387,19 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?         }
 #?       reset-formatting screen
 #?     increment top-row
-    # now render main column
-    curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
+    # render main column
+    var old-col/edx: int <- copy curr-col
+    curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col
+    # cache cursor column if necessary
+    compare curr-word, cursor-word
+    {
+      break-if-!=
+      var dest/edi: (addr int) <- copy cursor-col-a
+      copy-to *dest, old-col
+      var cursor-index-in-word/eax: int <- cursor-index curr-word
+      add-to *dest, cursor-index-in-word
+    }
+    # loop update
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
     increment-final-element curr-path
@@ -403,9 +414,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #
 # Outputs:
 # - Return the farthest column written.
-# - If final-word is same as cursor-word, do some additional computation to set
-#   cursor-col-a.
-fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # indent stack
@@ -449,17 +458,6 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     compare size, max-width
     break-if-<=
     max-width <- copy size
-  }
-
-  # update cursor
-  {
-    var f/eax: (addr word) <- copy final-word
-    compare f, cursor-word
-    break-if-!=
-    var cursor-index/eax: int <- cursor-index cursor-word
-    cursor-index <- add left-col
-    var dest/edi: (addr int) <- copy cursor-col-a
-    copy-to *dest, cursor-index
   }
 
   # post-process right-col
