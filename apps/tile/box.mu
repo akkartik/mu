@@ -21,7 +21,7 @@ fn draw-hatching screen: (addr screen), row1: int, col1: int, row2: int, col2: i
 
 fn draw-horizontal-line screen: (addr screen), row: int, col1: int, col2: int {
   var col/eax: int <- copy col1
-  move-cursor 0, row, col
+  move-cursor screen, row, col
   {
     compare col, col2
     break-if->=
@@ -36,7 +36,7 @@ fn draw-vertical-line screen: (addr screen), row1: int, row2: int, col: int {
   {
     compare row, row2
     break-if->=
-    move-cursor 0, row, col
+    move-cursor screen, row, col
     print-code-point screen, 0x2502
     row <- increment
     loop

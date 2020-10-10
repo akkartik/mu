@@ -74,7 +74,7 @@ fn interactive {
 fn test {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment-with-fake-screen env, 0x30, 0xa0  # 48 rows, 160 columns
   var g/eax: grapheme <- copy 0x31  # '1'
   process env, g
   g <- copy 0x20  # space
