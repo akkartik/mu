@@ -173,6 +173,14 @@ $process:body: {
       toggle-cursor-word sandbox
       break $process:body
     }
+    # if call, break
+    var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+    var next-cursor-element-ah/eax: (addr handle call-path-element) <- get cursor-call-path, next
+    var next-cursor-element/eax: (addr call-path-element) <- lookup *next-cursor-element-ah
+    compare next-cursor-element, 0
+    break-if-!= $process:body
+    # - remaining keys only work at the top row outside any function calls
     compare key, 0x7f  # del (backspace on Macs)
     {
       break-if-!=
