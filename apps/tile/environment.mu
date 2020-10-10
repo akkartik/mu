@@ -101,15 +101,26 @@ $process:body: {
         cursor-right cursor-word
         break $process:body
       }
-      # otherwise, move to start of next word
-      var next-word-ah/eax: (addr handle word) <- get cursor-word, next
+      # otherwise, move to a new word
+      var next-word-ah/edx: (addr handle word) <- get cursor-word, next
       var next-word/eax: (addr word) <- lookup *next-word-ah
       {
         compare next-word, 0
         break-if-=
         cursor-to-start next-word
-        var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+        # cursor-word now out of date
+        var cursor-call-path/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
         increment-final-element cursor-call-path
+        # Is the new cursor word expanded? If so, it's a function call. Add a
+        # new level to the cursor-call-path for the call's body.
+        {
+          var expanded-words/eax: (addr handle call-path) <- get sandbox, expanded-words
+          var curr-word-is-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
+          compare curr-word-is-expanded?, 0  # false
+          break-if-=
+          push-to-call-path-element cursor-call-path, 0
+          break $process:body
+        }
       }
       break $process:body
     }
@@ -282,21 +293,21 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   var cursor-word/ebx: (addr word) <- copy _cursor-word
   # cursor-col
   var cursor-col: int
-  var cursor-col-a/eax: (addr int) <- address cursor-col
+  var cursor-col-a/edx: (addr int) <- address cursor-col
   #
-  var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, cursor-word, cursor-col-a  # input-row=3
+  var curr-path-storage: (handle call-path-element)
+  var curr-path/esi: (addr handle call-path-element) <- address curr-path-storage
+  allocate curr-path  # leak
+  var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, curr-path, cursor-word, cursor-col-a  # input-row=3
   move-cursor screen, 3, cursor-col  # input-row
 }
 
-fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   # curr-word
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
   var curr-word/eax: (addr word) <- lookup *first-word-ah
   #
-  var word-index-storage: (handle call-path-element)
-  var word-index/ebx: (addr handle call-path-element) <- address word-index-storage
-  allocate word-index  # leak
   # loop-carried dependency
   var curr-col/ecx: int <- copy left-col
   #
@@ -310,7 +321,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         compare bindings, 0
         break-if-!= $render-line:subsidiary
         #
-        var display-subsidiary-stack?/eax: boolean <- find-in-call-path expanded-words, word-index
+        var display-subsidiary-stack?/eax: boolean <- find-in-call-path expanded-words, curr-path
         compare display-subsidiary-stack?, 0  # false
         break-if-= $render-line:subsidiary
       }
@@ -356,7 +367,9 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       var callee-body-ah/eax: (addr handle line) <- get callee, body
       var callee-body/eax: (addr line) <- lookup *callee-body-ah
       # - render subsidiary stack
-      curr-col <- render-line screen, functions, callee-bindings, callee-body, 0, top-row, curr-col, cursor-word, cursor-col-a
+      push-to-call-path-element curr-path, 0  # leak
+      curr-col <- render-line screen, functions, callee-bindings, callee-body, 0, top-row, curr-col, curr-path, cursor-word, cursor-col-a
+      drop-from-call-path-element curr-path
       #
       move-cursor screen, top-row, curr-col
       print-code-point screen, 0x21d7  # ⇗
@@ -375,10 +388,10 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?       reset-formatting screen
 #?     increment top-row
     # now render main column
-    curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col, cursor-word, cursor-col-a
+    curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col, curr-path, cursor-word, cursor-col-a
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
-    increment-final-element word-index
+    increment-final-element curr-path
     loop
   }
   right-col <- copy curr-col
@@ -393,7 +406,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 # - Return the farthest column written.
 # - If final-word is same as cursor-word, do some additional computation to set
 #   cursor-col-a.
-fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int, cursor-path: (addr handle call-path-element), cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
   var max-width/ecx: int <- copy 0
   {
     # indent stack

@@ -374,3 +374,26 @@ fn final-element-value list: (addr handle call-path-element) -> result/eax: int 
   var val/eax: (addr int) <- get final, index-in-body
   result <- copy *val
 }
+
+fn push-to-call-path-element list: (addr handle call-path-element), new: int {
+  var new-element-storage: (handle call-path-element)
+  var new-element-ah/edi: (addr handle call-path-element) <- address new-element-storage
+  allocate new-element-ah
+  var new-element/eax: (addr call-path-element) <- lookup *new-element-ah
+  # index-in-body
+  var dest/ecx: (addr int) <- get new-element, index-in-body
+  var src/edx: int <- copy new
+  copy-to *dest, src
+  # next
+  var dest2/ecx: (addr handle call-path-element) <- get new-element, next
+  copy-object list, dest2
+  # return
+  copy-object new-element-ah, list
+}
+
+fn drop-from-call-path-element _list: (addr handle call-path-element) {
+  var list-ah/esi: (addr handle call-path-element) <- copy _list
+  var list/eax: (addr call-path-element) <- lookup *list-ah
+  var next/eax: (addr handle call-path-element) <- get list, next
+  copy-object next, _list
+}
