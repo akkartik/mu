@@ -470,12 +470,18 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   # cursor-col
   var cursor-col: int
   var cursor-col-a/edx: (addr int) <- address cursor-col
+  # cursor-call-path
+  var cursor-call-path: (addr handle call-path-element)
+  {
+    var src/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    copy-to cursor-call-path, src
+  }
   #
   var curr-path-storage: (handle call-path-element)
   var curr-path/esi: (addr handle call-path-element) <- address curr-path-storage
   allocate curr-path  # leak
 #?   print-string 0, "==\n"
-  var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, curr-path, cursor-word, cursor-col-a  # input-row=3
+  var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, curr-path, cursor-word, cursor-call-path, cursor-col-a  # input-row=3
   var cursor-row/eax: int <- call-depth-at-cursor _sandbox
   move-cursor screen, cursor-row, cursor-col
 }
@@ -505,7 +511,7 @@ fn call-path-element-length _x: (addr handle call-path-element) -> result/eax: i
 # Also render any expanded function calls using recursive calls.
 #
 # Along the way, compute the column the cursor should be positioned at (cursor-col-a).
-fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-col-a: (addr int) -> right-col/ecx: int {
 #?   print-string 0, "--\n"
   # curr-word
   var line/esi: (addr line) <- copy _line
@@ -578,7 +584,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       var callee-body/eax: (addr line) <- lookup *callee-body-ah
       # - render subsidiary stack
       push-to-call-path-element curr-path, 0  # leak
-      curr-col <- render-line screen, functions, callee-bindings, callee-body, 0, top-row, curr-col, curr-path, cursor-word, cursor-col-a
+      curr-col <- render-line screen, functions, callee-bindings, callee-body, 0, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-col-a
       drop-from-call-path-element curr-path
       #
       move-cursor screen, top-row, curr-col
@@ -601,9 +607,12 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     var old-col/edx: int <- copy curr-col
     curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col
     # cache cursor column if necessary
-    compare curr-word, cursor-word
-    {
-      break-if-!=
+    $render-line:cache-cursor-column: {
+      {
+        var found?/eax: boolean <- call-path-element-match? curr-path, cursor-call-path
+        compare found?, 0  # false
+        break-if-= $render-line:cache-cursor-column
+      }
       var dest/edi: (addr int) <- copy cursor-col-a
       copy-to *dest, old-col
       var cursor-index-in-word/eax: int <- cursor-index curr-word
