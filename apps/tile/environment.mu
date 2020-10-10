@@ -276,7 +276,7 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   var line/ecx: (addr line) <- copy _line
   # cursor-word
   var cursor-word-storage: (handle word)
-  var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
+  var cursor-word-ah/eax: (addr handle word) <- address cursor-word-storage
   get-cursor-word sandbox, functions, cursor-word-ah
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ebx: (addr word) <- copy _cursor-word
