@@ -413,7 +413,29 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   allocate curr-path  # leak
 #?   print-string 0, "==\n"
   var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, curr-path, cursor-word, cursor-col-a  # input-row=3
-  move-cursor screen, 3, cursor-col  # input-row
+  var cursor-row/eax: int <- call-depth-at-cursor _sandbox
+  move-cursor screen, cursor-row, cursor-col
+}
+
+fn call-depth-at-cursor _sandbox: (addr sandbox) -> result/eax: int {
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
+  var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+  result <- call-path-element-length cursor-call-path
+  result <- add 2  # input-row-1
+}
+
+fn call-path-element-length _x: (addr handle call-path-element) -> result/eax: int {
+  var curr-ah/ecx: (addr handle call-path-element) <- copy _x
+  var out/edi: int <- copy 0
+  {
+    var curr/eax: (addr call-path-element) <- lookup *curr-ah
+    compare curr, 0
+    break-if-=
+    curr-ah <- get curr, next
+    out <- increment
+    loop
+  }
+  result <- copy out
 }
 
 # Render the line of words in line, along with the state of the stack under each word.
