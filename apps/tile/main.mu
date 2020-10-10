@@ -87,33 +87,77 @@ fn test {
   process env, g
   g <- copy 0x445b1b  # left-arrow
   process env, g
-  g <- copy 0x445b1b  # left-arrow
-  process env, g
-  g <- copy 0x445b1b  # left-arrow
-  process env, g
-  g <- copy 0x435b1b  # right-arrow
-  process env, g
   {
+    var functions/ecx: (addr handle function) <- get env, functions
     var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
-    var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-    var line-ah/eax: (addr handle line) <- get sandbox, data
-    var line/eax: (addr line) <- lookup *line-ah
-    var first-word-ah/eax: (addr handle word) <- get line, data
-    var curr-word/eax: (addr word) <- lookup *first-word-ah
-    print-word 0, curr-word
-    print-string 0, "\n"
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-word-storage: (handle word)
+    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
+    get-cursor-word sandbox, functions, cursor-word-ah
+    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    print-word 0, cursor-word
+    print-string-to-real-screen "\n"
   }
-  g <- copy 0x435b1b  # right-arrow
+  g <- copy 0x445b1b  # left-arrow
+  print-string-to-real-screen "==\n"
   process env, g
   {
+    var functions/ecx: (addr handle function) <- get env, functions
     var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
-    var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-    var line-ah/eax: (addr handle line) <- get sandbox, data
-    var line/eax: (addr line) <- lookup *line-ah
-    var first-word-ah/eax: (addr handle word) <- get line, data
-    var curr-word/eax: (addr word) <- lookup *first-word-ah
-    print-word 0, curr-word
-    print-string 0, "\n"
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-word-storage: (handle word)
+    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
+    get-cursor-word sandbox, functions, cursor-word-ah
+    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    print-word 0, cursor-word
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  print-string-to-real-screen "==\n"
+  process env, g
+  {
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-word-storage: (handle word)
+    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
+    get-cursor-word sandbox, functions, cursor-word-ah
+    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    print-word 0, cursor-word
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  print-string-to-real-screen "==\n"
+  process env, g
+  {
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-word-storage: (handle word)
+    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
+    get-cursor-word sandbox, functions, cursor-word-ah
+    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    print-word 0, cursor-word
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  print-string-to-real-screen "==\n"
+  process env, g
+  {
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-word-storage: (handle word)
+    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
+    get-cursor-word sandbox, functions, cursor-word-ah
+    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    print-word 0, cursor-word
+    print-string-to-real-screen "\n"
   }
 #?   render env
 }

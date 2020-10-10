@@ -107,75 +107,88 @@ fn create-primitive-functions _self: (addr handle function) {
   var body/eax: (addr line) <- lookup *body-ah
   initialize-line body
   var curr-word-ah/ecx: (addr handle word) <- get body, data
+  # *curr-word = "x"
   allocate curr-word-ah
-  var curr-word/eax: (addr word) <- lookup *curr-word-ah
+  var tmp/eax: (addr word) <- lookup *curr-word-ah
+  var curr-word/edx: (addr word) <- copy tmp
   initialize-word-with curr-word, "x"
-  curr-word-ah <- get curr-word, next
-  allocate curr-word-ah
-  curr-word <- lookup *curr-word-ah
-  initialize-word-with curr-word, "2"
-  curr-word-ah <- get curr-word, next
-  allocate curr-word-ah
-  curr-word <- lookup *curr-word-ah
-  initialize-word-with curr-word, "*"
-  # x 1+ = x 1 +
-  var next/esi: (addr handle function) <- get f, next
-  allocate next
-  var _f/eax: (addr function) <- lookup *next
-  var f/esi: (addr function) <- copy _f
-  var name-ah/eax: (addr handle array byte) <- get f, name
-  populate-text-with name-ah, "1+"
-  var args-ah/eax: (addr handle word) <- get f, args
-  allocate args-ah
-  var args/eax: (addr word) <- lookup *args-ah
-  initialize-word-with args, "x"
-  var body-ah/eax: (addr handle line) <- get f, body
-  allocate body-ah
-  var body/eax: (addr line) <- lookup *body-ah
-  initialize-line body
-  var curr-word-ah/ecx: (addr handle word) <- get body, data
-  allocate curr-word-ah
-  var curr-word/eax: (addr word) <- lookup *curr-word-ah
-  initialize-word-with curr-word, "x"
-  curr-word-ah <- get curr-word, next
-  allocate curr-word-ah
-  curr-word <- lookup *curr-word-ah
-  initialize-word-with curr-word, "1"
-  curr-word-ah <- get curr-word, next
-  allocate curr-word-ah
-  curr-word <- lookup *curr-word-ah
-  initialize-word-with curr-word, "+"
-  # x 2+ = x 1+ 1+
-  var next/esi: (addr handle function) <- get f, next
-  allocate next
-  var _f/eax: (addr function) <- lookup *next
-  var f/ecx: (addr function) <- copy _f
-  var name-ah/eax: (addr handle array byte) <- get f, name
-  populate-text-with name-ah, "2+"
-  var args-ah/eax: (addr handle word) <- get f, args
-  allocate args-ah
-  var args/eax: (addr word) <- lookup *args-ah
-  initialize-word-with args, "x"
-  var body-ah/eax: (addr handle line) <- get f, body
-  allocate body-ah
-  var body/eax: (addr line) <- lookup *body-ah
-  initialize-line body
-  var curr-word-ah/ecx: (addr handle word) <- get body, data
-  allocate curr-word-ah
-  var curr-word/eax: (addr word) <- lookup *curr-word-ah
-  initialize-word-with curr-word, "x"
-  curr-word-ah <- get curr-word, next
-  allocate curr-word-ah
-  curr-word <- lookup *curr-word-ah
-  initialize-word-with curr-word, "1+"
-  curr-word-ah <- get curr-word, next
-  allocate curr-word-ah
-  curr-word <- lookup *curr-word-ah
-  initialize-word-with curr-word, "1+"
-  # TODO: populate prev pointers
+  # *curr-word->next = "2"
+  var next-word-ah/ebx: (addr handle word) <- get curr-word, next
+  allocate next-word-ah
+  tmp <- lookup *next-word-ah
+  initialize-word-with tmp, "2"
+  # *curr-word->next->prev = curr-word
+  var prev-word-ah/edi: (addr handle word) <- get tmp, prev
+  copy-object curr-word-ah, prev-word-ah
+  # curr-word = curr-word->next
+  curr-word-ah <- copy next-word-ah
+  curr-word <- copy tmp
+  # *curr-word->next = "*"
+  next-word-ah <- get curr-word, next
+  allocate next-word-ah
+  tmp <- lookup *next-word-ah
+  initialize-word-with tmp, "*"
+  # *curr-word->next->prev = curr-word
+  prev-word-ah <- get tmp, prev
+  copy-object curr-word-ah, prev-word-ah
+  tmp <- lookup *prev-word-ah
+#?   # x 1+ = x 1 +
+#?   var next/esi: (addr handle function) <- get f, next
+#?   allocate next
+#?   var _f/eax: (addr function) <- lookup *next
+#?   var f/esi: (addr function) <- copy _f
+#?   var name-ah/eax: (addr handle array byte) <- get f, name
+#?   populate-text-with name-ah, "1+"
+#?   var args-ah/eax: (addr handle word) <- get f, args
+#?   allocate args-ah
+#?   var args/eax: (addr word) <- lookup *args-ah
+#?   initialize-word-with args, "x"
+#?   var body-ah/eax: (addr handle line) <- get f, body
+#?   allocate body-ah
+#?   var body/eax: (addr line) <- lookup *body-ah
+#?   initialize-line body
+#?   var curr-word-ah/ecx: (addr handle word) <- get body, data
+#?   allocate curr-word-ah
+#?   var curr-word/eax: (addr word) <- lookup *curr-word-ah
+#?   initialize-word-with curr-word, "x"
+#?   curr-word-ah <- get curr-word, next
+#?   allocate curr-word-ah
+#?   curr-word <- lookup *curr-word-ah
+#?   initialize-word-with curr-word, "1"
+#?   curr-word-ah <- get curr-word, next
+#?   allocate curr-word-ah
+#?   curr-word <- lookup *curr-word-ah
+#?   initialize-word-with curr-word, "+"
+#?   # x 2+ = x 1+ 1+
+#?   var next/esi: (addr handle function) <- get f, next
+#?   allocate next
+#?   var _f/eax: (addr function) <- lookup *next
+#?   var f/ecx: (addr function) <- copy _f
+#?   var name-ah/eax: (addr handle array byte) <- get f, name
+#?   populate-text-with name-ah, "2+"
+#?   var args-ah/eax: (addr handle word) <- get f, args
+#?   allocate args-ah
+#?   var args/eax: (addr word) <- lookup *args-ah
+#?   initialize-word-with args, "x"
+#?   var body-ah/eax: (addr handle line) <- get f, body
+#?   allocate body-ah
+#?   var body/eax: (addr line) <- lookup *body-ah
+#?   initialize-line body
+#?   var curr-word-ah/ecx: (addr handle word) <- get body, data
+#?   allocate curr-word-ah
+#?   var curr-word/eax: (addr word) <- lookup *curr-word-ah
+#?   initialize-word-with curr-word, "x"
+#?   curr-word-ah <- get curr-word, next
+#?   allocate curr-word-ah
+#?   curr-word <- lookup *curr-word-ah
+#?   initialize-word-with curr-word, "1+"
+#?   curr-word-ah <- get curr-word, next
+#?   allocate curr-word-ah
+#?   curr-word <- lookup *curr-word-ah
+#?   initialize-word-with curr-word, "1+"
 }
 
-fn function-body in: (addr handle function), _word: (addr handle word), out: (addr handle line) {
+fn function-body functions: (addr handle function), _word: (addr handle word), out: (addr handle line) {
   var function-name-storage: (handle array byte)
   var function-name-ah/ecx: (addr handle array byte) <- address function-name-storage
   var word-ah/esi: (addr handle word) <- copy _word
@@ -185,7 +198,7 @@ fn function-body in: (addr handle function), _word: (addr handle word), out: (ad
   gap-buffer-to-string gap, function-name-ah
   var _function-name/eax: (addr array byte) <- lookup *function-name-ah
   var function-name/esi: (addr array byte) <- copy _function-name
-  var curr-ah/ecx: (addr handle function) <- copy in
+  var curr-ah/ecx: (addr handle function) <- copy functions
   $function-body:loop: {
     var _curr/eax: (addr function) <- lookup *curr-ah
     var curr/edx: (addr function) <- copy _curr
@@ -204,6 +217,29 @@ fn function-body in: (addr handle function), _word: (addr handle word), out: (ad
     curr-ah <- get curr, next
     loop
   }
+}
+
+fn body-length functions: (addr handle function), function-name: (addr handle word) -> result/eax: int {
+  var body-storage: (handle line)
+  var body-ah/edi: (addr handle line) <- address body-storage
+  function-body functions, function-name, body-ah
+  var body/eax: (addr line) <- lookup *body-ah
+  result <- line-length body
+}
+
+fn line-length _in: (addr line) -> result/eax: int {
+  var in/esi: (addr line) <- copy _in
+  var curr-ah/ecx: (addr handle word) <- get in, data
+  var out/edi: int <- copy 0
+  {
+    var curr/eax: (addr word) <- lookup *curr-ah
+    compare curr, 0
+    break-if-=
+    curr-ah <- get curr, next
+    out <- increment
+    loop
+  }
+  result <- copy out
 }
 
 fn populate-text-with _out: (addr handle array byte), _in: (addr array byte) {
