@@ -85,81 +85,293 @@ fn test {
   process env, g
   g <- copy 0xa  # <enter>
   process env, g
+  g <- copy 0x20  # space
+  process env, g
+  g <- copy 0x32  # '2'
+  process env, g
+  g <- copy 0x2a  # '*'
+  process env, g
+  g <- copy 0xa  # <enter>
+  process env, g
+  # 12 arrows to return to end of first call
   g <- copy 0x445b1b  # left-arrow
   process env, g
   {
+    print-string-to-real-screen "==\n"
     var functions/ecx: (addr handle function) <- get env, functions
     var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
     var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
     var sandbox/edi: (addr sandbox) <- copy _sandbox
-    var cursor-word-storage: (handle word)
-    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
-    get-cursor-word sandbox, functions, cursor-word-ah
-    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-    print-word 0, cursor-word
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
     print-string-to-real-screen "\n"
   }
-  g <- copy 0x445b1b  # left-arrow
-  print-string-to-real-screen "==\n"
   process env, g
   {
+    print-string-to-real-screen "==\n"
     var functions/ecx: (addr handle function) <- get env, functions
     var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
     var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
     var sandbox/edi: (addr sandbox) <- copy _sandbox
-    var cursor-word-storage: (handle word)
-    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
-    get-cursor-word sandbox, functions, cursor-word-ah
-    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-    print-word 0, cursor-word
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
     print-string-to-real-screen "\n"
   }
   g <- copy 0x445b1b  # left-arrow
-  print-string-to-real-screen "==\n"
   process env, g
   {
+    print-string-to-real-screen "==\n"
     var functions/ecx: (addr handle function) <- get env, functions
     var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
     var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
     var sandbox/edi: (addr sandbox) <- copy _sandbox
-    var cursor-word-storage: (handle word)
-    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
-    get-cursor-word sandbox, functions, cursor-word-ah
-    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-    print-word 0, cursor-word
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
     print-string-to-real-screen "\n"
   }
   g <- copy 0x445b1b  # left-arrow
-  print-string-to-real-screen "==\n"
   process env, g
   {
+    print-string-to-real-screen "==\n"
     var functions/ecx: (addr handle function) <- get env, functions
     var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
     var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
     var sandbox/edi: (addr sandbox) <- copy _sandbox
-    var cursor-word-storage: (handle word)
-    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
-    get-cursor-word sandbox, functions, cursor-word-ah
-    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-    print-word 0, cursor-word
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
     print-string-to-real-screen "\n"
   }
   g <- copy 0x445b1b  # left-arrow
-  print-string-to-real-screen "==\n"
   process env, g
   {
+    print-string-to-real-screen "==\n"
     var functions/ecx: (addr handle function) <- get env, functions
     var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
     var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
     var sandbox/edi: (addr sandbox) <- copy _sandbox
-    var cursor-word-storage: (handle word)
-    var cursor-word-ah/ebx: (addr handle word) <- address cursor-word-storage
-    get-cursor-word sandbox, functions, cursor-word-ah
-    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-    print-word 0, cursor-word
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
     print-string-to-real-screen "\n"
   }
-#?   render env
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  {
+    print-string-to-real-screen "==\n"
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  {
+    print-string-to-real-screen "==\n"
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  {
+    print-string-to-real-screen "==\n"
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  {
+    print-string-to-real-screen "==\n"
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  {
+    print-string-to-real-screen "==\n"
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  {
+    print-string-to-real-screen "==\n"
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  {
+    print-string-to-real-screen "==\n"
+    var functions/ecx: (addr handle function) <- get env, functions
+    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+    var sandbox/edi: (addr sandbox) <- copy _sandbox
+    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+    cursor-call-path <- get foo, next
+    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
+    var foo/ecx: (addr call-path-element) <- copy _foo
+    compare foo, 0
+    break-if-=
+    var bar/eax: (addr int) <- get foo, index-in-body
+    print-int32-hex 0, *bar
+    print-string-to-real-screen "\n"
+  }
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  render env
 }
 
 fn repl {
