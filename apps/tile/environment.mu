@@ -120,6 +120,21 @@ $process:body: {
         cursor-right cursor-word
         break $process:body
       }
+      # if at final word, look for a caller to jump to
+      {
+        var next-word-ah/edx: (addr handle word) <- get cursor-word, next
+        var next-word/eax: (addr word) <- lookup *next-word-ah
+        compare next-word, 0
+        break-if-!=
+        var cursor-call-path-ah/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+        var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+        var next-cursor-element-ah/ecx: (addr handle call-path-element) <- get cursor-call-path, next
+        var next-cursor-element/eax: (addr call-path-element) <- lookup *next-cursor-element-ah
+        compare next-cursor-element, 0
+        break-if-=
+        copy-object next-cursor-element-ah, cursor-call-path-ah
+        break $process:body
+      }
       # otherwise, move to a new word
       var next-word-ah/edx: (addr handle word) <- get cursor-word, next
       var next-word/eax: (addr word) <- lookup *next-word-ah
