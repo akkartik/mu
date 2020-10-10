@@ -33,6 +33,15 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
         exit-status <- copy 0
         break $main-body
       }
+      # if single arg is 'test' ...
+      tmp2 <- string-equal? *tmp, "test2"
+      compare tmp2, 0  # false
+      {
+        break-if-=
+        test
+        exit-status <- copy 0
+        break $main-body
+      }
     }
     # otherwise error message
     print-string-to-real-screen "usage:\n"
@@ -60,6 +69,33 @@ fn interactive {
   }
   enable-keyboard-type-mode
   enable-screen-type-mode
+}
+
+fn test {
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment env
+  var g/eax: grapheme <- copy 0x31  # '1'
+  process env, g
+  g <- copy 0x20  # space
+  process env, g
+  g <- copy 0x32  # '2'
+  process env, g
+  g <- copy 0x2a  # '*'
+  process env, g
+  g <- copy 0xa  # <enter>
+  process env, g
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  g <- copy 0x445b1b  # left-arrow
+  process env, g
+  g <- copy 0x435b1b  # right-arrow
+  process env, g
+  g <- copy 0x435b1b  # right-arrow
+  process env, g
+  render env
 }
 
 fn repl {
