@@ -461,3 +461,44 @@ fn drop-from-call-path-element _list: (addr handle call-path-element) {
   var next/eax: (addr handle call-path-element) <- get list, next
   copy-object next, _list
 }
+
+fn dump-call-path-element screen: (addr screen), _x-ah: (addr handle call-path-element) {
+$dump-call-path-element:body: {
+  var x-ah/ecx: (addr handle call-path-element) <- copy _x-ah
+  var x/eax: (addr call-path-element) <- lookup *x-ah
+  var src/ecx: (addr int) <- get x, index-in-body
+  print-int32-hex screen, *src
+  var next-ah/ecx: (addr handle call-path-element) <- get x, next
+  var next/eax: (addr call-path-element) <- lookup *next-ah
+  compare next, 0
+  {
+    break-if-=
+    print-string screen, " "
+    dump-call-path-element screen, next-ah
+    break $dump-call-path-element:body
+  }
+  {
+    break-if-!=
+    print-string screen, "\n"
+  }
+}
+}
+
+fn dump-call-paths screen: (addr screen), _x-ah: (addr handle call-path) {
+$dump-call-paths:body: {
+  var x-ah/ecx: (addr handle call-path) <- copy _x-ah
+  var x/eax: (addr call-path) <- lookup *x-ah
+  compare x, 0
+  break-if-=
+  var src/ecx: (addr handle call-path-element) <- get x, data
+  dump-call-path-element screen, src
+  var next-ah/ecx: (addr handle call-path) <- get x, next
+  var next/eax: (addr call-path) <- lookup *next-ah
+  compare next, 0
+  {
+    break-if-=
+    dump-call-paths screen, next-ah
+    break $dump-call-paths:body
+  }
+}
+}

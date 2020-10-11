@@ -397,12 +397,19 @@ $toggle-cursor-word:body: {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var expanded-words/edi: (addr handle call-path) <- get sandbox, expanded-words
   var cursor-call-path/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
+#?   print-string 0, "cursor call path: "
+#?   dump-call-path-element 0, cursor-call-path
+#?   print-string 0, "expanded words:\n"
+#?   dump-call-paths 0, expanded-words
   var already-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
   compare already-expanded?, 0  # false
   {
     break-if-!=
+#?     print-string 0, "expand\n"
     # if not already-expanded, insert
     insert-in-call-path expanded-words cursor-call-path
+#?     print-string 0, "expanded words now:\n"
+#?     dump-call-paths 0, expanded-words
     break $toggle-cursor-word:body
   }
   {
@@ -524,6 +531,8 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
   {
     compare curr-word, 0
     break-if-=
+#?     print-string 0, "-- "
+#?     dump-call-path-element 0, curr-path
 #?     print-word 0, curr-word
 #?     print-string 0, "\n"
 
@@ -533,14 +542,12 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     # if necessary, first render columns for subsidiary stack
     $render-line:subsidiary: {
       {
-        # can't expand subsidiary stacks for now
-        compare bindings, 0
-        break-if-!= $render-line:subsidiary
-        #
+#?         print-string 0, "check sub\n"
         var display-subsidiary-stack?/eax: boolean <- find-in-call-path expanded-words, curr-path
         compare display-subsidiary-stack?, 0  # false
         break-if-= $render-line:subsidiary
       }
+#?       print-string 0, "render subsidiary stack\n"
       # does function exist?
       var callee/edi: (addr function) <- copy 0
       {
@@ -556,6 +563,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         break-if-= $render-line:subsidiary
       }
       move-cursor screen, top-row, curr-col
+      start-color screen, 8, 7
       print-word screen, curr-word
       {
         var word-len/eax: int <- word-length curr-word
@@ -584,7 +592,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       var callee-body/eax: (addr line) <- lookup *callee-body-ah
       # - render subsidiary stack
       push-to-call-path-element curr-path, 0  # leak
-      curr-col <- render-line screen, functions, callee-bindings, callee-body, 0, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-col-a
+      curr-col <- render-line screen, functions, callee-bindings, callee-body, expanded-words, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-col-a
       drop-from-call-path-element curr-path
       #
       move-cursor screen, top-row, curr-col
