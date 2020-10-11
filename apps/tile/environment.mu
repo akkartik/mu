@@ -140,21 +140,8 @@ $process:body: {
           var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
           cursor-word <- copy _cursor-word
         }
-        # then move to end of caller's previous word
-        {
-          var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
-          var prev-word/eax: (addr word) <- lookup *prev-word-ah
-          compare prev-word, 0
-          break-if-=
-#?           print-string 0, "jump before caller\n"
-          copy-object prev-word-ah, cursor-word-ah
-          cursor-to-end prev-word
-          var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
-          decrement-final-element cursor-call-path
-        }
-        break $process:body
       }
-      # otherwise, move to end of previous word
+      # then move to end of previous word
       var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
       var prev-word/eax: (addr word) <- lookup *prev-word-ah
       {
