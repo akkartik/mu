@@ -95,7 +95,11 @@ fn test {
   process env, g
   g <- copy 0x10  # <ctrl-p>
   process env, g
-  g <- copy 0x10  # <ctrl-p>
+  g <- copy 0xe  # <ctrl-n>
+  process env, g
+  g <- copy 0xe  # <ctrl-n>
+  process env, g
+  g <- copy 0xe  # <ctrl-n>
   process env, g
 }
 

@@ -202,6 +202,11 @@ $process:body: {
           compare curr-word-is-expanded?, 0  # false
           break-if-=
           push-to-call-path-element cursor-call-path, 0
+          # position cursor at left
+          var functions/eax: (addr handle function) <- get self, functions
+          get-cursor-word sandbox, functions, cursor-word-ah
+          var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+          cursor-to-start cursor-word
 #?           print-string 0, "d\n"
           break $process:body
         }
@@ -251,6 +256,35 @@ $process:body: {
         decrement-final-element cursor-call-path-ah
         break $process:body
       }
+    }
+    compare key, 0xe  # 14 = ctrl-n
+    $process:next-word: {
+      break-if-!=
+      print-string 0, "AA\n"
+      # jump to previous word at same level
+      var next-word-ah/edx: (addr handle word) <- get cursor-word, next
+      var next-word/eax: (addr word) <- lookup *next-word-ah
+      {
+        compare next-word, 0
+        break-if-=
+        print-string 0, "BB\n"
+        copy-object next-word-ah, cursor-word-ah
+        cursor-to-end next-word
+        var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+        increment-final-element cursor-call-path
+        break $process:body
+      }
+      # if next word doesn't exist, try to bump up one level
+      print-string 0, "CC\n"
+      var cursor-call-path-ah/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+      var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+      var caller-cursor-element-ah/ecx: (addr handle call-path-element) <- get cursor-call-path, next
+      var caller-cursor-element/eax: (addr call-path-element) <- lookup *caller-cursor-element-ah
+      compare caller-cursor-element, 0
+      break-if-=
+      print-string 0, "DD\n"
+      copy-object caller-cursor-element-ah, cursor-call-path-ah
+      break $process:body
     }
     # if cursor is within a call, disable editing hotkeys below
     var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
