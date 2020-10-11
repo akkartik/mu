@@ -141,7 +141,7 @@ $process:body: {
           get-cursor-word sandbox, functions, cursor-word-ah
           var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
           cursor-word <- copy _cursor-word
-          loop
+#?           loop
         }
         # then move to end of caller's previous word
         {
