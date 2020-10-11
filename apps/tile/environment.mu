@@ -115,7 +115,7 @@ $process:body: {
           var n/eax: int <- body-length functions, cursor-word-ah
           n <- decrement
           push-to-call-path-element cursor-call-path, n
-          loop
+#?           loop
         }
         # move cursor to end of word
         get-cursor-word sandbox, functions, cursor-word-ah
