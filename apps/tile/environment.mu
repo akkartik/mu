@@ -215,6 +215,21 @@ $process:body: {
       toggle-cursor-word sandbox
       break $process:body
     }
+    compare key, 0x10  # 16 = ctrl-p
+    {
+      break-if-!=
+      # jump to previous word at same level
+      var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
+      var prev-word/eax: (addr word) <- lookup *prev-word-ah
+      {
+        compare prev-word, 0
+        break-if-=
+        copy-object prev-word-ah, cursor-word-ah
+        cursor-to-end prev-word
+        var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+        decrement-final-element cursor-call-path
+      }
+    }
     # if cursor is within a call, disable editing hotkeys below
     var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
     var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
