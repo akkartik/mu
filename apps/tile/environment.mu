@@ -105,18 +105,13 @@ $process:body: {
         var curr-word-is-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
         compare curr-word-is-expanded?, 0  # false
         break-if-=
+        # update cursor-call-path
 #?         print-string 0, "curr word is expanded\n"
         var self/ecx: (addr environment) <- copy _self
         var functions/ecx: (addr handle function) <- get self, functions
-        {
-          var curr-word-is-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
-          compare curr-word-is-expanded?, 0  # false
-          break-if-=
-          var n/eax: int <- body-length functions, cursor-word-ah
-          n <- decrement
-          push-to-call-path-element cursor-call-path, n
-#?           loop
-        }
+        var n/eax: int <- body-length functions, cursor-word-ah
+        n <- decrement
+        push-to-call-path-element cursor-call-path, n
         # move cursor to end of word
         get-cursor-word sandbox, functions, cursor-word-ah
         var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
