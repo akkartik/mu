@@ -215,7 +215,7 @@ $process:body: {
       toggle-cursor-word sandbox
       break $process:body
     }
-    # if call, break
+    # if cursor is within a call, disable editing hotkeys below
     var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
     var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
     var next-cursor-element-ah/eax: (addr handle call-path-element) <- get cursor-call-path, next
