@@ -119,14 +119,12 @@ $process:body: {
         break $process:body
       }
       # if at first word, look for a caller to jump to
-      $process:key-left-arrow-caller: {
+      $process:key-left-arrow-first-word: {
         var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
         var prev-word/eax: (addr word) <- lookup *prev-word-ah
         compare prev-word, 0
         break-if-!=
-        $process:key-left-arrow-caller-loop: {
-          compare prev-word, 0
-          break-if-!=
+        $process:key-left-arrow-first-word-and-caller: {
 #?           print-string 0, "return\n"
           {
             var cursor-call-path-ah/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -134,14 +132,13 @@ $process:body: {
             var next-cursor-element-ah/edx: (addr handle call-path-element) <- get cursor-call-path, next
             var next-cursor-element/eax: (addr call-path-element) <- lookup *next-cursor-element-ah
             compare next-cursor-element, 0
-            break-if-= $process:key-left-arrow-caller-loop
+            break-if-= $process:key-left-arrow-first-word-and-caller
             copy-object next-cursor-element-ah, cursor-call-path-ah
           }
           var functions/eax: (addr handle function) <- get self, functions
           get-cursor-word sandbox, functions, cursor-word-ah
           var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
           cursor-word <- copy _cursor-word
-#?           loop
         }
         # then move to end of caller's previous word
         {
