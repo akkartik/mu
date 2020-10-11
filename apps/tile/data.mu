@@ -429,6 +429,8 @@ fn decrement-final-element list: (addr handle call-path-element) {
   var final-ah/eax: (addr handle call-path-element) <- copy list
   var final/eax: (addr call-path-element) <- lookup *final-ah
   var val/eax: (addr int) <- get final, index-in-body
+  compare *val, 0
+  break-if-=
   decrement *val
 }
 

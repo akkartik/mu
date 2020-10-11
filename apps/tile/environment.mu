@@ -218,6 +218,7 @@ $process:body: {
     compare key, 0x10  # 16 = ctrl-p
     {
       break-if-!=
+#?       print-string 0, "AA\n"
       # jump to previous word at same level
       var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
       var prev-word/eax: (addr word) <- lookup *prev-word-ah
@@ -228,6 +229,32 @@ $process:body: {
         cursor-to-end prev-word
         var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
         decrement-final-element cursor-call-path
+        break $process:body
+      }
+      # if previous word doesn't exist, try to bump up one level
+#?       print-string 0, "BB\n"
+      {
+        var next-word-ah/edx: (addr handle word) <- get cursor-word, next
+        var next-word/eax: (addr word) <- lookup *next-word-ah
+        compare next-word, 0
+        break-if-=
+#?         print-string 0, "CC\n"
+        var cursor-call-path-ah/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
+        var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+        var caller-cursor-element-ah/ecx: (addr handle call-path-element) <- get cursor-call-path, next
+        var caller-cursor-element/eax: (addr call-path-element) <- lookup *caller-cursor-element-ah
+        compare caller-cursor-element, 0
+        break-if-=
+        # check if previous word exists in caller
+#?         print-string 0, "DD\n"
+        var caller-index/eax: (addr int) <- get caller-cursor-element, index-in-body
+        compare *caller-index, 0
+        break-if-<=
+        # if so jump to it
+#?         print-string 0, "EE\n"
+        copy-object caller-cursor-element-ah, cursor-call-path-ah
+        decrement-final-element cursor-call-path-ah
+        break $process:body
       }
     }
     # if cursor is within a call, disable editing hotkeys below

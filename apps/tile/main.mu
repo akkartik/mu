@@ -91,60 +91,12 @@ fn test {
   process env, g
   g <- copy 0x445b1b  # left-arrow
   process env, g
-  {
-    print-string 0, "== before enter\n"
-    var functions/ecx: (addr handle function) <- get env, functions
-    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
-    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-    var sandbox/edi: (addr sandbox) <- copy _sandbox
-    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
-    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
-    var foo/ecx: (addr call-path-element) <- copy _foo
-    var bar/eax: (addr int) <- get foo, index-in-body
-    print-int32-hex 0, *bar
-    print-string 0, "\n"
-    cursor-call-path <- get foo, next
-    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
-    var foo/ecx: (addr call-path-element) <- copy _foo
-    compare foo, 0
-    break-if-=
-    var bar/eax: (addr int) <- get foo, index-in-body
-    print-int32-hex 0, *bar
-    print-string 0, "\n"
-  }
-  g <- copy 0xa  # <enter>
+  g <- copy 0x10  # <ctrl-p>
   process env, g
-  {
-    print-string 0, "== after enter\n"
-    var functions/ecx: (addr handle function) <- get env, functions
-    var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
-    var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-    var sandbox/edi: (addr sandbox) <- copy _sandbox
-    var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
-    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
-    var foo/ecx: (addr call-path-element) <- copy _foo
-    var bar/eax: (addr int) <- get foo, index-in-body
-    print-int32-hex 0, *bar
-    print-string 0, "\n"
-    cursor-call-path <- get foo, next
-    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
-    var foo/ecx: (addr call-path-element) <- copy _foo
-    compare foo, 0
-    break-if-=
-    var bar/eax: (addr int) <- get foo, index-in-body
-    print-int32-hex 0, *bar
-    print-string 0, "\n"
-    cursor-call-path <- get foo, next
-    var _foo/eax: (addr call-path-element) <- lookup *cursor-call-path
-    var foo/ecx: (addr call-path-element) <- copy _foo
-    compare foo, 0
-    break-if-=
-    var bar/eax: (addr int) <- get foo, index-in-body
-    print-int32-hex 0, *bar
-    print-string 0, "\n"
-  }
-  print-string 0, "== render\n"
-  render env
+  g <- copy 0x10  # <ctrl-p>
+  process env, g
+  g <- copy 0x10  # <ctrl-p>
+  process env, g
 }
 
 fn repl {
