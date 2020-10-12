@@ -287,6 +287,44 @@ $process:body: {
       copy-object caller-cursor-element-ah, cursor-call-path-ah
       break $process:body
     }
+    # line-based motions
+    compare key, 1  # ctrl-a
+    $process:start-of-line: {
+      break-if-!=
+      # move cursor to initial word of sandbox
+      var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+      allocate cursor-call-path-ah
+      # move cursor to start of initial word
+      var functions/ecx: (addr handle function) <- get self, functions
+      get-cursor-word sandbox, functions, cursor-word-ah
+      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      cursor-to-start cursor-word
+      # this works as long as the first word isn't expanded
+      # but we don't expect to see zero-arg functions first-up
+      break $process:body
+    }
+    compare key, 5  # ctrl-e
+    $process:end-of-line: {
+      break-if-!=
+      # move cursor to final word of sandbox
+      var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+      allocate cursor-call-path-ah
+      var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+      var dest/edx: (addr int) <- get cursor-call-path, index-in-body
+      var line-ah/eax: (addr handle line) <- get sandbox, data
+      var line/eax: (addr line) <- lookup *line-ah
+      var n/eax: int <- line-length line
+      n <- decrement
+      copy-to *dest, n
+      # move cursor to end of final word
+      var functions/ecx: (addr handle function) <- get self, functions
+      get-cursor-word sandbox, functions, cursor-word-ah
+      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      cursor-to-end cursor-word
+      # this works because expanded words lie to the right of their bodies
+      # so the final word is always guaranteed to be at the top-level
+      break $process:body
+    }
     # if cursor is within a call, disable editing hotkeys below
     var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
     var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah

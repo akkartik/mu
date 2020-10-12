@@ -81,25 +81,13 @@ fn test {
   process env, g
   g <- copy 0x32  # '2'
   process env, g
-  g <- copy 0x2b  # '+'
-  process env, g
-  g <- copy 0xa  # <enter>
-  process env, g
   g <- copy 0x445b1b  # left-arrow
   process env, g
   g <- copy 0x445b1b  # left-arrow
   process env, g
   g <- copy 0x445b1b  # left-arrow
   process env, g
-  g <- copy 0x10  # <ctrl-p>
-  process env, g
-  g <- copy 0x10  # <ctrl-p>
-  process env, g
-  g <- copy 0xe  # <ctrl-n>
-  process env, g
-  g <- copy 0xe  # <ctrl-n>
-  process env, g
-  g <- copy 0xe  # <ctrl-n>
+  g <- copy 5  # <ctrl-e>
   process env, g
 }
 
