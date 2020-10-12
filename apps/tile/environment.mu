@@ -822,13 +822,21 @@ fn clear-canvas _env: (addr environment) {
   draw-vertical-line screen, 1, *nrows, repl-col
   # wordstar-style cheatsheet of shortcuts
   start-reverse-video screen
+  print-string screen, " ctrl-a "
+  reset-formatting screen
+  print-string screen, " ⏮   "
+  start-reverse-video screen
   print-string screen, " ctrl-b "
   reset-formatting screen
-  print-string screen, " prev word  "
+  print-string screen, " ◀ prev word  "
   start-reverse-video screen
   print-string screen, " ctrl-f "
   reset-formatting screen
-  print-string screen, " next word  "
+  print-string screen, " next word ▶  "
+  start-reverse-video screen
+  print-string screen, " ctrl-e "
+  reset-formatting screen
+  print-string screen, " ⏭  "
   # currently defined functions
   move-cursor screen, 3, 2
   print-string screen, "x 2* = x 2 *"
