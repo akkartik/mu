@@ -260,14 +260,14 @@ $process:body: {
     compare key, 0xe  # 14 = ctrl-n
     $process:next-word: {
       break-if-!=
-      print-string 0, "AA\n"
+#?       print-string 0, "AA\n"
       # jump to previous word at same level
       var next-word-ah/edx: (addr handle word) <- get cursor-word, next
       var next-word/eax: (addr word) <- lookup *next-word-ah
       {
         compare next-word, 0
         break-if-=
-        print-string 0, "BB\n"
+#?         print-string 0, "BB\n"
         copy-object next-word-ah, cursor-word-ah
         cursor-to-end next-word
         var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -275,14 +275,14 @@ $process:body: {
         break $process:body
       }
       # if next word doesn't exist, try to bump up one level
-      print-string 0, "CC\n"
+#?       print-string 0, "CC\n"
       var cursor-call-path-ah/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
       var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
       var caller-cursor-element-ah/ecx: (addr handle call-path-element) <- get cursor-call-path, next
       var caller-cursor-element/eax: (addr call-path-element) <- lookup *caller-cursor-element-ah
       compare caller-cursor-element, 0
       break-if-=
-      print-string 0, "DD\n"
+#?       print-string 0, "DD\n"
       copy-object caller-cursor-element-ah, cursor-call-path-ah
       break $process:body
     }
