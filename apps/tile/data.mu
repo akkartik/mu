@@ -177,7 +177,7 @@ fn create-primitive-functions _self: (addr handle function) {
   var next/esi: (addr handle function) <- get f, next
   allocate next
   var _f/eax: (addr function) <- lookup *next
-  var f/ecx: (addr function) <- copy _f
+  var f/esi: (addr function) <- copy _f
   var name-ah/eax: (addr handle array byte) <- get f, name
   populate-text-with name-ah, "2+"
   var args-ah/eax: (addr handle word) <- get f, args
@@ -210,6 +210,47 @@ fn create-primitive-functions _self: (addr handle function) {
   allocate next-word-ah
   tmp <- lookup *next-word-ah
   initialize-word-with tmp, "1+"
+  # *curr-word->next->prev = curr-word
+  prev-word-ah <- get tmp, prev
+  copy-object curr-word-ah, prev-word-ah
+  tmp <- lookup *prev-word-ah
+  # x square = x x *
+  var next/esi: (addr handle function) <- get f, next
+  allocate next
+  var _f/eax: (addr function) <- lookup *next
+  var f/esi: (addr function) <- copy _f
+  var name-ah/eax: (addr handle array byte) <- get f, name
+  populate-text-with name-ah, "square"
+  var args-ah/eax: (addr handle word) <- get f, args
+  allocate args-ah
+  var args/eax: (addr word) <- lookup *args-ah
+  initialize-word-with args, "x"
+  var body-ah/eax: (addr handle line) <- get f, body
+  allocate body-ah
+  var body/eax: (addr line) <- lookup *body-ah
+  initialize-line body
+  var curr-word-ah/ecx: (addr handle word) <- get body, data
+  # *curr-word = "x"
+  allocate curr-word-ah
+  var tmp/eax: (addr word) <- lookup *curr-word-ah
+  var curr-word/edx: (addr word) <- copy tmp
+  initialize-word-with curr-word, "x"
+  # *curr-word->next = "x"
+  var next-word-ah/ebx: (addr handle word) <- get curr-word, next
+  allocate next-word-ah
+  tmp <- lookup *next-word-ah
+  initialize-word-with tmp, "x"
+  # *curr-word->next->prev = curr-word
+  var prev-word-ah/edi: (addr handle word) <- get tmp, prev
+  copy-object curr-word-ah, prev-word-ah
+  # curr-word = curr-word->next
+  curr-word-ah <- copy next-word-ah
+  curr-word <- copy tmp
+  # *curr-word->next = "*"
+  next-word-ah <- get curr-word, next
+  allocate next-word-ah
+  tmp <- lookup *next-word-ah
+  initialize-word-with tmp, "*"
   # *curr-word->next->prev = curr-word
   prev-word-ah <- get tmp, prev
   copy-object curr-word-ah, prev-word-ah

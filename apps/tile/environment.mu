@@ -868,6 +868,8 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, "x 1+ = x 1 +"
   move-cursor screen, 5, 2
   print-string screen, "x 2+ = x 1+ 1+"
+  move-cursor screen, 6, 2
+  print-string screen, "x square = x x *"
 }
 
 fn real-grapheme? g: grapheme -> result/eax: boolean {
