@@ -833,6 +833,9 @@ fn clear-canvas _env: (addr environment) {
   var repl-col/ecx: int <- copy *_repl-col
   draw-vertical-line screen, 1, *nrows, repl-col
   # wordstar-style cheatsheet of shortcuts
+  var menu-start/ecx: int <- copy repl-col
+  menu-start <- subtract 0x2c  # 44 = half the size of the menu
+  move-cursor screen, *nrows, menu-start
   start-reverse-video screen
   print-string screen, " ctrl-a "
   reset-formatting screen
