@@ -220,7 +220,8 @@ $process:body: {
       toggle-cursor-word sandbox
       break $process:body
     }
-    compare key, 0x10  # 16 = ctrl-p
+    # word-based motions
+    compare key, 2  # ctrl-b
     $process:prev-word: {
       break-if-!=
 #?       print-string 0, "AA\n"
@@ -257,7 +258,7 @@ $process:body: {
         break $process:body
       }
     }
-    compare key, 0xe  # 14 = ctrl-n
+    compare key, 6  # ctrl-f
     $process:next-word: {
       break-if-!=
 #?       print-string 0, "AA\n"
@@ -783,11 +784,11 @@ fn clear-canvas _env: (addr environment) {
   draw-vertical-line screen, 1, *nrows, repl-col
   # wordstar-style cheatsheet of shortcuts
   start-reverse-video screen
-  print-string screen, " ctrl-p "
+  print-string screen, " ctrl-b "
   reset-formatting screen
   print-string screen, " prev word  "
   start-reverse-video screen
-  print-string screen, " ctrl-n "
+  print-string screen, " ctrl-f "
   reset-formatting screen
   print-string screen, " next word  "
   # currently defined functions
