@@ -61,7 +61,7 @@ fn interactive {
   draw-screen env
   {
     var key/eax: grapheme <- read-key-from-real-keyboard
-    compare key, 0x71  # 'q'
+    compare key, 0x11  # 'ctrl-q'
     break-if-=
     process env, key
     render env
