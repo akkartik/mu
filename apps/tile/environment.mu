@@ -563,6 +563,9 @@ fn render _env: (addr environment) {
 
 fn render-sandbox screen: (addr screen), functions: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
+#?   print-string 0, "rendering sandbox from "
+#?   print-int32-decimal 0, left-col
+#?   print-string 0, "\n"
   # expanded-words
   var expanded-words/edi: (addr handle call-path) <- get sandbox, expanded-words
   # line
@@ -714,6 +717,9 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?     increment top-row
     # render main column
     var old-col/edx: int <- copy curr-col
+#?     print-string 0, "rendering line from "
+#?     print-int32-decimal 0, curr-col
+#?     print-string 0, "\n"
     curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col
     # cache cursor column if necessary
     $render-line:cache-cursor-column: {
@@ -747,6 +753,9 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     # indent stack
     var indented-col/ebx: int <- copy left-col
     indented-col <- add 1  # margin-right - 2 for padding spaces
+#?     print-string 0, "rendering stack from "
+#?     print-int32-decimal 0, indented-col
+#?     print-string 0, "\n"
     # compute stack
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
@@ -761,6 +770,9 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     {
       compare i, 0
       break-if-<=
+#?       print-string 0, "rendering stack row from "
+#?       print-int32-decimal 0, indented-col
+#?       print-string 0, "\n"
       move-cursor screen, curr-row, indented-col
       {
         var val/eax: int <- pop-int-from-value-stack stack-addr

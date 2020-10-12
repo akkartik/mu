@@ -75,20 +75,9 @@ fn test {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment-with-fake-screen env, 0x30, 0xa0  # 48 rows, 160 columns
-  var g/eax: grapheme <- copy 0x31  # '1'
+  var g/eax: grapheme <- copy 0x73  # 's'
   process env, g
-  g <- copy 0x20  # space
-  process env, g
-  g <- copy 0x32  # '2'
-  process env, g
-  g <- copy 0x445b1b  # left-arrow
-  process env, g
-  g <- copy 0x445b1b  # left-arrow
-  process env, g
-  g <- copy 0x445b1b  # left-arrow
-  process env, g
-  g <- copy 5  # <ctrl-e>
-  process env, g
+  render env
 }
 
 fn repl {
