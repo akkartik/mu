@@ -63,34 +63,34 @@ fn word-length _self: (addr word) -> result/eax: int {
   result <- gap-buffer-length data
 }
 
-fn first-word _self: (addr word) -> result/eax: (addr word) {
-  var self/esi: (addr word) <- copy _self
-  var out/edi: (addr word) <- copy self
-  var prev/esi: (addr handle word) <- get self, prev
+fn first-word _in: (addr handle word), out: (addr handle word) {
+  var curr-ah/esi: (addr handle word) <- copy _in
+  var curr/eax: (addr word) <- lookup *curr-ah
+  var prev/edi: (addr handle word) <- copy 0
   {
+    prev <- get curr, prev
     var curr/eax: (addr word) <- lookup *prev
     compare curr, 0
     break-if-=
-    out <- copy curr
-    prev <- get curr, prev
+    copy-object prev, curr-ah
     loop
   }
-  result <- copy out
+  copy-object curr-ah, out
 }
 
-fn final-word _self: (addr word) -> result/eax: (addr word) {
-  var self/esi: (addr word) <- copy _self
-  var out/edi: (addr word) <- copy self
-  var next/esi: (addr handle word) <- get self, next
+fn final-word _in: (addr handle word), out: (addr handle word) {
+  var curr-ah/esi: (addr handle word) <- copy _in
+  var curr/eax: (addr word) <- lookup *curr-ah
+  var next/edi: (addr handle word) <- copy 0
   {
+    next <- get curr, next
     var curr/eax: (addr word) <- lookup *next
     compare curr, 0
     break-if-=
-    out <- copy curr
-    next <- get curr, next
+    copy-object next, curr-ah
     loop
   }
-  result <- copy out
+  copy-object curr-ah, out
 }
 
 fn first-grapheme _self: (addr word) -> result/eax: grapheme {
