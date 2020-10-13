@@ -628,6 +628,8 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
   var curr-word/eax: (addr word) <- lookup *first-word-ah
+  var debug-row: int
+  copy-to debug-row, 0x20
   #
   # loop-carried dependency
   var curr-col/ecx: int <- copy left-col
@@ -717,7 +719,9 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?     increment top-row
     # render main column
     var old-col/edx: int <- copy curr-col
-#?     print-string 0, "rendering line from "
+#?     move-cursor 0, debug-row, 1
+#?     increment debug-row
+#?     print-string 0, "rendering column from "
 #?     print-int32-decimal 0, curr-col
 #?     print-string 0, "\n"
     curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col
@@ -752,7 +756,7 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
   {
     # indent stack
     var indented-col/ebx: int <- copy left-col
-    indented-col <- add 1  # margin-right - 2 for padding spaces
+    indented-col <- add 1  # margin-right
     # compute stack
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
@@ -778,6 +782,8 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     }
   }
 
+  max-width <- add 2  # spaces on either side of items on the stack
+
   # render word, initialize result
   reset-formatting screen
   move-cursor screen, top-row, left-col
@@ -790,9 +796,13 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
   }
 
   # post-process right-col
-  right-col <- copy max-width
-  right-col <- add left-col
-  right-col <- add 3  # margin-right
+  right-col <- copy left-col
+  right-col <- add max-width
+  right-col <- add 1  # margin-right
+#?   print-int32-decimal 0, left-col
+#?   print-string 0, " => "
+#?   print-int32-decimal 0, right-col
+#?   print-string 0, "\n"
 }
 
 # synaesthesia
