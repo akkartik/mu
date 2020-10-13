@@ -748,14 +748,11 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #
 # Return the farthest column written.
 fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int -> right-col/ecx: int {
-  var max-width/ecx: int <- copy 0
+  var max-width/esi: int <- copy 0
   {
     # indent stack
     var indented-col/ebx: int <- copy left-col
     indented-col <- add 1  # margin-right - 2 for padding spaces
-#?     print-string 0, "rendering stack from "
-#?     print-int32-decimal 0, indented-col
-#?     print-string 0, "\n"
     # compute stack
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
@@ -765,14 +762,11 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     var curr-row/edx: int <- copy top-row
     curr-row <- add 3  # stack-margin-top
     var _max-width/eax: int <- value-stack-max-width stack-addr
-    var max-width/esi: int <- copy _max-width
+    max-width <- copy _max-width
     var i/eax: int <- value-stack-length stack-addr
     {
       compare i, 0
       break-if-<=
-#?       print-string 0, "rendering stack row from "
-#?       print-int32-decimal 0, indented-col
-#?       print-string 0, "\n"
       move-cursor screen, curr-row, indented-col
       {
         var val/eax: int <- pop-int-from-value-stack stack-addr
