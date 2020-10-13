@@ -764,7 +764,8 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     # render stack
     var curr-row/edx: int <- copy top-row
     curr-row <- add 3  # stack-margin-top
-    var max-width/esi: int <- copy 0
+    var _max-width/eax: int <- value-stack-max-width stack-addr
+    var max-width/esi: int <- copy _max-width
     var i/eax: int <- value-stack-length stack-addr
     {
       compare i, 0
@@ -776,10 +777,6 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
       {
         var val/eax: int <- pop-int-from-value-stack stack-addr
         render-integer screen, val, max-width
-        var size/eax: int <- decimal-size val
-        compare size, max-width
-        break-if-<=
-        max-width <- copy size
       }
       curr-row <- increment
       i <- decrement
