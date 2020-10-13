@@ -26,10 +26,12 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
   }
 }
 
-fn interactive args: (addr array addr array byte) -> exit-status/ebx: int {
+fn interactive _args: (addr array addr array byte) -> exit-status/ebx: int {
 $interactive:body: {
   # initialize fs from args[1]
-  var filename/eax: (addr array byte) <- first-arg args
+  var args/eax: (addr array addr array byte) <- copy _args
+  var arg/eax: (addr addr array byte) <- index args, 1
+  var filename/eax: (addr array byte) <- copy *arg
   var file-storage: (handle buffered-file)
   var file-storage-addr/esi: (addr handle buffered-file) <- address file-storage
   open filename, 0, file-storage-addr
@@ -54,7 +56,7 @@ $interactive:body: {
   #
   {
     render paginated-screen, fs
-    var key/eax: byte <- read-key-from-real-keyboard
+    var key/eax: grapheme <- read-key-from-real-keyboard
     compare key, 0x71  # 'q'
     loop-if-!=
   }
@@ -393,12 +395,6 @@ fn render-until-underscore screen: (addr paginated-screen), fs: (addr buffered-f
     #
     loop
   }
-}
-
-fn first-arg args-on-stack: (addr array addr array byte) -> out/eax: (addr array byte) {
-  var args/eax: (addr array addr array byte) <- copy args-on-stack
-  var result/eax: (addr addr array byte) <- index args, 1
-  out <- copy *result
 }
 
 fn normal-text screen: (addr paginated-screen) {
