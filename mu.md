@@ -617,11 +617,15 @@ copy-handle x, y
 I said at the start that most instructions map 1:1 to x86 machine code. To
 enforce type- and memory-safety, I was forced to carve out a few exceptions:
 
-* the `index` instruction on arrays, for bounds-checking
+* the `index` instruction on arrays, for bounds-checking (not yet implemented)
 * the `length` instruction on arrays, for translating the array size in bytes
   into the number of elements.
 * the `lookup` instruction on handles, for validating fat-pointer metadata
 * `var` instructions, for initializing memory
+
+If you're curious, [the compiler summary page](http://akkartik.github.io/mu/html/mu_instructions.html)
+has the complete nitty-gritty on how each instruction is implemented. Including
+the above exceptions.
 
 ## Conclusion
 
