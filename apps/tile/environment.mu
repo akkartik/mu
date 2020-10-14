@@ -346,7 +346,7 @@ $process:body: {
     break-if-!= $process:body
     # - remaining keys only work at the top row outside any function calls
     compare key, 0x7f  # del (backspace on Macs)
-    {
+    $process:backspace: {
       break-if-!=
       # if not at start of some word, delete grapheme before cursor within current word
       var at-start?/eax: boolean <- cursor-at-start? cursor-word
@@ -370,7 +370,7 @@ $process:body: {
       break $process:body
     }
     compare key, 0x20  # space
-    {
+    $process:space: {
       break-if-!=
       # insert new word
       append-word cursor-word-ah
@@ -381,7 +381,7 @@ $process:body: {
     # otherwise insert key within current word
     var g/edx: grapheme <- copy key
     var print?/eax: boolean <- real-grapheme? key
-    {
+    $process:real-grapheme: {
       compare print?, 0  # false
       break-if-=
       add-grapheme-to-word cursor-word, g
