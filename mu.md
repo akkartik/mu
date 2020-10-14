@@ -12,10 +12,14 @@ short, the former increments a value in memory, while the latter increments a
 value in a register.
 
 Most languages start from some syntax and do what it takes to implement it.
-Mu, however, is designed as a safe way to program in [a regular subset of
+Mu, however, is designed as a safe[1] way to program in [a regular subset of
 32-bit x86 machine code](subx.md), _satisficing_ rather than optimizing for a
 clean syntax. To keep the mapping to machine code lightweight, Mu exclusively
 uses statements. Most statements map to a single instruction of machine code.
+
+[1] While it's designed to be memory-safe, and already performs many safety
+checks, the Mu compiler is still a work in progress and can currently corrupt
+memory just like C can.
 
 Since the x86 instruction set restricts how many memory locations an instruction
 can use, Mu makes registers explicit as well. Variables must be explicitly
@@ -82,7 +86,8 @@ two signatures:
 - `fn main -> x/ebx: int`
 - `fn main args: (addr array (addr array byte)) -> x/ebx: int`
 
-(The name of the output is flexible.)
+(The names of the inout and output are flexible. Strings are addresses to
+arrays of bytes, or `(addr array byte)` in Mu.)
 
 ## Blocks
 
@@ -124,11 +129,11 @@ var name/reg: type <- ...
 ```
 
 Variables on the stack are never initialized. (They're always implicitly
-zeroed them out.) Variables in registers are always initialized.
+zeroed out.) Variables in registers are always initialized.
 
 Register variables can go in 6 integer registers: `eax`, `ebx`, `ecx`, `edx`,
-`esi` and `edi`. Floating-point values can also go in 8 other registers:
-`xmm0`, `xmm1`, `xmm2`, `xmm3`, `xmm4`, `xmm5`, `xmm6` and `xmm7`.
+`esi` and `edi`. Floating-point values can go in 8 other registers: `xmm0`,
+`xmm1`, `xmm2`, `xmm3`, `xmm4`, `xmm5`, `xmm6` and `xmm7`.
 
 Defining a variable in a register either clobbers the previous variable (if it
 was defined in the same block) or shadows it temporarily (if it was defined in
@@ -138,16 +143,15 @@ Variables exist from their definition until the end of their containing block.
 Register variables may also die earlier if their register is clobbered by a
 new variable.
 
-Variables on the stack can be of many types (but not `byte`). Variables in
-integer registers can only contain 32-bit values: `int`, `boolean`, `(addr
-...)`. Variables in floating-point registers can only contain values of type
-`float`.
+Variables on the stack can be of many types (but not `byte`). Integer registers
+can only contain 32-bit values: `int`, `byte`, `boolean`, `(addr ...)`. Floating-point
+registers can only contain values of type `float`.
 
 ## Integer primitives
 
 Here is the list of arithmetic primitive operations supported by Mu. The name
 `n` indicates a literal integer rather than a variable, and `var/reg` indicates
-a variable in a register.
+a variable in a register, though that's not always valid Mu syntax.
 
 ```
 var/reg <- increment
@@ -215,8 +219,9 @@ can't dereference variables in memory. You have to load them into a register
 first.
 
 Excluding dereferences, the above statements must operate on non-address
-primitive types: `int` or `boolean`. (Booleans are really just `int`s, and Mu
-assumes any value but `0` is true.)
+values with primitive types: `int`, `boolean` or `byte`. (Booleans are really
+just `int`s, and Mu assumes any value but `0` is true.) You can copy addresses
+to int variables, but not the other way around.
 
 ## Floating-point primitives
 
@@ -266,7 +271,7 @@ Remember, when these instructions use indirect mode, they still use an integer
 register. Floating-point registers can't hold addresses.
 
 Two instructions in the above list are approximate. According to the Intel
-Manual, `reciprocal` and `inverse-square-root` [go off the rails around the
+manual, `reciprocal` and `inverse-square-root` [go off the rails around the
 fourth decimal place](x86_approx.md). If you need more precision, use `divide`
 separately.
 
@@ -312,9 +317,10 @@ compare var1/xreg1, var2
 
 ## Operating on individual bytes
 
-A special-case is variables of type 'byte'. Mu is a 32-bit platform so for the
+A special-case is variables of type `byte`. Mu is a 32-bit platform so for the
 most part only supports types that are multiples of 32 bits. However, we do
-want to support strings in ASCII and UTF-8, which will be arrays of bytes.
+want to support strings in ASCII and UTF-8, which will be arrays of 8-bit
+bytes.
 
 Since most x86 instructions implicitly load 32 bits at a time from memory,
 variables of type 'byte' are only allowed in registers, not on the stack. Here
@@ -327,7 +333,8 @@ copy-byte-to *var1/reg1, var2/reg2  # var1: (addr byte), var2: byte
 ```
 
 In addition, variables of type 'byte' are restricted to (the lowest bytes of)
-just 4 registers: eax, ecx, edx and ebx.
+just 4 registers: `eax`, `ecx`, `edx` and `ebx`. As always, this is due to
+constraints of the x86 instruction set.
 
 ## Primitive jumps
 
@@ -367,8 +374,7 @@ break-if-!=
 break-if-!= label
 ```
 
-Inequalities are similar, but have unsigned and signed variants. For simplicity,
-always use signed integers; use the unsigned variants only to compare addresses.
+Inequalities are similar, but have additional variants for addresses and floats.
 
 ```
 break-if-<
@@ -424,6 +430,15 @@ loop-if-addr<=
 loop-if-addr<= label
 loop-if-addr>=
 loop-if-addr>= label
+
+loop-if-float<
+loop-if-float< label
+loop-if-float>
+loop-if-float> label
+loop-if-float<=
+loop-if-float<= label
+loop-if-float>=
+loop-if-float>= label
 ```
 
 ## Addresses
@@ -496,12 +511,12 @@ type point {
 
 Mu programs are currently sequences of `fn` and `type` definitions.
 
-Compound types can't include `addr` types for safety (use `handle` instead).
-They also can't currently include `array`, `stream` or `byte` types. Since
-arrays and streams carry their size with them, supporting them in compound
-types complicates variable initialization. Instead of defining them inline in
-a type definition, define a `handle` to them. Bytes shouldn't be used for
-anything but arrays of bytes (utf-8 strings).
+Compound types can't include `addr` types for safety (use `handle` instead,
+which is described below). They also can't currently include `array`, `stream`
+or `byte` types. Since arrays and streams carry their size with them, supporting
+them in compound types complicates variable initialization. Instead of
+defining them inline in a type definition, define a `handle` to them. Bytes
+shouldn't be used for anything but utf-8 strings.
 
 To access within a compound type, use the `get` instruction. There are two
 forms. You need either a variable of the type itself (say `T`) in memory, or a
@@ -512,8 +527,8 @@ var/reg: (addr T_f) <- get var/reg: (addr T), f
 var/reg: (addr T_f) <- get var: T, f
 ```
 
-The `f` here is the field name from the `type` definition, and `T_f` must
-match the type of `f` in the `type` definition. For example, some legal
+The `f` here is the field name from the `type` definition, and its type `T_f`
+must match the type of `f` in the `type` definition. For example, some legal
 instructions for the definition of `point` above:
 
 ```
@@ -523,11 +538,12 @@ var a/eax: (addr int) <- get p, y
 
 ## Handles for safe access to the heap
 
-We've seen the `addr` type, but it's intended to be short-lived. In particular,
-you can't save `addr` values inside compound `type`s. To do that you need a
-"fat pointer" called a `handle` that is safe to keep around for extended
-periods and ensures it's used safely without corrupting the heap and causing
-security issues or hard-to-debug misbehavior.
+We've seen the `addr` type, but it's intended to be short-lived. `addr` values
+should never escape from functions. In particular, save `addr` values inside
+compound `type`s. To do that you need a "fat pointer" called a `handle` that
+is safe to keep around for extended periods and ensures it's used safely
+without corrupting the heap and causing security issues or hard-to-debug
+misbehavior.
 
 To actually _use_ a `handle`, we have to turn it into an `addr` first using
 the `lookup` statement.
@@ -545,7 +561,7 @@ doesn't implement reclamation yet.)
 
 Having two kinds of addresses takes some getting used to. Do we pass in
 variables by value, by `addr` or by `handle`? In inputs or outputs? Here are 3
-rules:
+rules of thumb:
 
   * Functions that need to look at the payload should accept an `(addr ...)`.
   * Functions that need to treat a handle as a value, without looking at its
@@ -596,8 +612,21 @@ var y/eax: (addr handle T) <- address ...
 copy-handle x, y
 ```
 
+## Seams
+
+I said at the start that most instructions map 1:1 to x86 machine code. To
+enforce type- and memory-safety, I was forced to carve out a few exceptions:
+
+* the `index` instruction on arrays, for bounds-checking
+* the `length` instruction on arrays, for translating the array size in bytes
+  into the number of elements.
+* the `lookup` instruction on handles, for validating fat-pointer metadata
+* `var` instructions, for initializing memory
+
 ## Conclusion
 
-Anything not allowed here is forbidden. At least until you modify mu.subx.
-Please [contact me](mailto:ak@akkartik.com) or [report issues](https://github.com/akkartik/mu/issues)
-when you encounter a missing or misleading error message.
+Anything not allowed here is forbidden. Even if the compiler doesn't currently
+detect and complain about it. Please [contact me](mailto:ak@akkartik.com) or
+[report issues](https://github.com/akkartik/mu/issues) when you encounter a
+missing or misleading error message. Thank you for bearing with the dust! I'm
+here for the long haul, and everything will be clean and checked in due time.
