@@ -65,7 +65,9 @@ fn _name_ _inout_ ... -> _output_ ... {
 
 Each function has a header line, and some number of statements, each on a
 separate line. Headers describe inouts and outputs. Inouts can't be registers,
-and outputs _must_ be registers.
+and outputs _must_ be registers. In the above example, the outputs of both
+`do-add` and `main` have type `int` and are available in register `ebx` at the
+end of the respective calls.
 
 The above program also demonstrates a function call (to the function `do-add`).
 Function calls look the same as primitive statements: they can return (multiple)
@@ -79,7 +81,7 @@ fn f -> x/eax: int {
 }
 fn g {
   a/eax <- f  # ok
-  a/ebx <- f  # wrong
+  a/ebx <- f  # wrong; `a` must be in register `eax`
 }
 ```
 
@@ -92,8 +94,13 @@ two signatures:
 - `fn main -> x/ebx: int`
 - `fn main args: (addr array (addr array byte)) -> x/ebx: int`
 
-(The names of the inout and output are flexible. Strings are addresses to
-arrays of bytes, or `(addr array byte)` in Mu.)
+(The names of the inout and output are flexible.)
+
+Mu encloses multi-word types in parentheses, and types can get quite expressive.
+For example, you read `main`'s inout type as "an address to an array of
+addresses to arrays of bytes." Since addresses to arrays of bytes are almost
+always strings in Mu, you'll quickly learn to mentally shorten this type to
+"an address to an array of strings".
 
 ## Blocks
 
