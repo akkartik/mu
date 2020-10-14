@@ -62,7 +62,7 @@ type call-path {
 # Calls are denoted by their position in the caller's body. They also include
 # the function being called.
 type call-path-element {
-  index-in-body: int
+  word: (handle word)
   next: (handle call-path-element)
 }
 
@@ -73,12 +73,16 @@ type result {
 
 fn initialize-sandbox _sandbox: (addr sandbox) {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
-  var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
-  allocate cursor-call-path-ah
   var line-ah/eax: (addr handle line) <- get sandbox, data
   allocate line-ah
   var line/eax: (addr line) <- lookup *line-ah
   initialize-line line
+  var word-ah/ecx: (addr handle word) <- get line, data
+  var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+  allocate cursor-call-path-ah
+  var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+  var dest/eax: (addr handle word) <- get cursor-call-path, word
+  copy-object word-ah, dest
 }
 
 # initialize line with a single empty word
@@ -331,6 +335,17 @@ fn populate-text-with _out: (addr handle array byte), _in: (addr array byte) {
   }
 }
 
+fn initialize-path-from-sandbox _in: (addr sandbox), _out: (addr handle call-path-element) {
+  var sandbox/esi: (addr sandbox) <- copy _in
+  var line-ah/eax: (addr handle line) <- get sandbox, data
+  var line/eax: (addr line) <- lookup *line-ah
+  var src/esi: (addr handle word) <- get line, data
+  var out-ah/edi: (addr handle call-path-element) <- copy _out
+  var out/eax: (addr call-path-element) <- lookup *out-ah
+  var dest/edi: (addr handle word) <- get out, word
+  copy-object src, dest
+}
+
 fn find-in-call-path in: (addr handle call-path), needle: (addr handle call-path-element) -> result/eax: boolean {
   var curr-ah/esi: (addr handle call-path) <- copy in
   var out/edi: boolean <- copy 0  # false
@@ -380,9 +395,12 @@ $call-path-element-match?:body: {
     result <- copy 0  # false
     break $call-path-element-match?:body
   }
-  var x-data-a/ecx: (addr int) <- get x, index-in-body
+  # compare word addresses, not contents
+  var x-data-ah/ecx: (addr handle word) <- get x, word
+  var x-data-a/eax: (addr word) <- lookup *x-data-ah
   var x-data/ecx: int <- copy *x-data-a
-  var y-data-a/eax: (addr int) <- get y, index-in-body
+  var y-data-ah/eax: (addr handle word) <- get y, word
+  var y-data-a/eax: (addr word) <- lookup *y-data-ah
   var y-data/eax: int <- copy *y-data-a
   compare x-data, y-data
   {
@@ -423,10 +441,9 @@ fn deep-copy-call-path-element _src: (addr handle call-path-element), _dest: (ad
   # copy data
   var dest-addr/eax: (addr call-path-element) <- lookup *dest
   {
-    var dest-data-addr/ecx: (addr int) <- get dest-addr, index-in-body
-    var tmp/eax: (addr int) <- get src-addr, index-in-body
-    var tmp2/eax: int <- copy *tmp
-    copy-to *dest-data-addr, tmp2
+    var dest-data-addr/ecx: (addr handle word) <- get dest-addr, word
+    var src-data-addr/eax: (addr handle word) <- get src-addr, word
+    copy-object src-data-addr, dest-data-addr
   }
   # recurse
   var src-next/esi: (addr handle call-path-element) <- get src-addr, next
@@ -462,36 +479,36 @@ $delete-in-call-path:body: {
 fn increment-final-element list: (addr handle call-path-element) {
   var final-ah/eax: (addr handle call-path-element) <- copy list
   var final/eax: (addr call-path-element) <- lookup *final-ah
-  var val/eax: (addr int) <- get final, index-in-body
-  increment *val
+  var val-ah/ecx: (addr handle word) <- get final, word
+  var val/eax: (addr word) <- lookup *val-ah
+  var new-ah/edx: (addr handle word) <- get val, next
+  var target/eax: (addr word) <- lookup *new-ah
+  compare target, 0
+  break-if-=
+  copy-object new-ah, val-ah
 }
 
 fn decrement-final-element list: (addr handle call-path-element) {
   var final-ah/eax: (addr handle call-path-element) <- copy list
   var final/eax: (addr call-path-element) <- lookup *final-ah
-  var val/eax: (addr int) <- get final, index-in-body
-  compare *val, 0
+  var val-ah/ecx: (addr handle word) <- get final, word
+  var val/eax: (addr word) <- lookup *val-ah
+  var new-ah/edx: (addr handle word) <- get val, prev
+  var target/eax: (addr word) <- lookup *new-ah
+  compare target, 0
   break-if-=
-  decrement *val
+  copy-object new-ah, val-ah
 }
 
-fn final-element-value list: (addr handle call-path-element) -> result/eax: int {
-  var final-ah/eax: (addr handle call-path-element) <- copy list
-  var final/eax: (addr call-path-element) <- lookup *final-ah
-  var val/eax: (addr int) <- get final, index-in-body
-  result <- copy *val
-}
-
-fn push-to-call-path-element list: (addr handle call-path-element), new: int {
+fn push-to-call-path-element list: (addr handle call-path-element), new: (addr handle word) {
   var new-element-storage: (handle call-path-element)
   var new-element-ah/edi: (addr handle call-path-element) <- address new-element-storage
   allocate new-element-ah
   var new-element/eax: (addr call-path-element) <- lookup *new-element-ah
-  # index-in-body
-  var dest/ecx: (addr int) <- get new-element, index-in-body
-  var src/edx: int <- copy new
-  copy-to *dest, src
-  # next
+  # save word
+  var dest/ecx: (addr handle word) <- get new-element, word
+  copy-object new, dest
+  # save next
   var dest2/ecx: (addr handle call-path-element) <- get new-element, next
   copy-object list, dest2
   # return
@@ -508,9 +525,11 @@ fn drop-from-call-path-element _list: (addr handle call-path-element) {
 fn dump-call-path-element screen: (addr screen), _x-ah: (addr handle call-path-element) {
 $dump-call-path-element:body: {
   var x-ah/ecx: (addr handle call-path-element) <- copy _x-ah
-  var x/eax: (addr call-path-element) <- lookup *x-ah
-  var src/ecx: (addr int) <- get x, index-in-body
-  print-int32-hex screen, *src
+  var _x/eax: (addr call-path-element) <- lookup *x-ah
+  var x/esi: (addr call-path-element) <- copy _x
+  var word-ah/eax: (addr handle word) <- get x, word
+  var word/eax: (addr word) <- lookup *word-ah
+  print-word screen, word
   var next-ah/ecx: (addr handle call-path-element) <- get x, next
   var next/eax: (addr call-path-element) <- lookup *next-ah
   compare next, 0
