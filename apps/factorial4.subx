@@ -17,42 +17,10 @@
 # Expected output:
 #   ........
 # Every '.' indicates a passing test. Failing tests get a 'F'.
+#
+# Compare apps/factorial3.subx
 
 == code
-
-Entry:  # run tests if necessary, compute `factorial(5)` if not
-    # . prologue
-    89/<- %ebp 4/r32/esp
-
-    # initialize heap
-    (new-segment *Heap-size Heap)
-
-    # - if argc > 1, then return run_tests()
-    {
-      # if (argc <= 1) break
-      81 7/subop/compare *ebp 1/imm32
-      7e/jump-if-<= break/disp8
-      # if (!kernel-string-equal?(argv[1], "test")) break
-      (kernel-string-equal? *(ebp+8) "test")  # => eax
-      3d/compare-eax-and 0/imm32/false
-      74/jump-if-= break/disp8
-      #
-      (run-tests)
-      # eax = *Num-test-failures
-      8b/-> *Num-test-failures 3/r32/ebx
-    }
-    # if (argc <= 1) factorial(5)
-    {
-      # if (argc > 1) break
-      81 7/subop/compare *ebp 1/imm32
-      7f/jump-if-> break/disp8
-      # eax = factorial(5)
-      (factorial 5)
-      # syscall(exit, eax)
-      89/<- %ebx 0/r32/eax
-    }
-
-    e8/call  syscall_exit/disp32
 
 factorial:  # n: int -> int/eax
     # . prologue
@@ -86,3 +54,36 @@ test-factorial:
     (factorial 5)
     (check-ints-equal %eax 0x78 "F - test-factorial")
     c3/return
+
+Entry:  # run tests if necessary, compute `factorial(5)` if not
+    # . prologue
+    89/<- %ebp 4/r32/esp
+
+    # initialize heap (needed by tests elsewhere)
+    (new-segment *Heap-size Heap)
+
+    # if (argc <= 1) return factorial(5)
+    {
+      # if (argc > 1) break
+      81 7/subop/compare *ebp 1/imm32
+      7f/jump-if-> break/disp8
+      # ebx = factorial(5)
+      (factorial 5)  # => eax
+      89/<- %ebx 0/r32/eax
+    }
+    # otherwise if an arg exists and is "test", then return run_tests()
+    {
+      # if (argc <= 1) break
+      81 7/subop/compare *ebp 1/imm32
+      7e/jump-if-<= break/disp8
+      # if (!kernel-string-equal?(argv[1], "test")) break
+      (kernel-string-equal? *(ebp+8) "test")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      #
+      (run-tests)
+      # ebx = *Num-test-failures
+      8b/-> *Num-test-failures 3/r32/ebx
+    }
+
+    e8/call  syscall_exit/disp32

@@ -16,37 +16,10 @@
 # Expected output:
 #   ........
 # Every '.' indicates a passing test. Failing tests get a 'F'.
+#
+# Compare apps/factorial2.subx
 
 == code
-
-Entry:  # run tests if necessary, compute `factorial(5)` if not
-    # . prologue
-    89/<- %ebp 4/r32/esp
-
-    # initialize heap
-    (new-segment *Heap-size Heap)
-
-    # - if argc > 1 and argv[1] == "test", then return run_tests()
-    # if (argc <= 1) goto run-main
-    81 7/subop/compare *ebp 1/imm32
-    7e/jump-if-<= $run-main/disp8
-    # if (!kernel-string-equal?(argv[1], "test")) goto run-main
-    (kernel-string-equal? *(ebp+8) "test")  # => eax
-    # . if (eax == false) goto run-main
-    3d/compare-eax-and 0/imm32/false
-    74/jump-if-= $run-main/disp8
-    #
-    (run-tests)
-    # syscall(exit, *Num-test-failures)
-    8b/-> *Num-test-failures 3/r32/ebx
-    eb/jump $main:end/disp8
-$run-main:
-    # - otherwise
-    (factorial 5)  # => eax
-    # syscall(exit, eax)
-    89/<- %ebx 0/r32/eax
-$main:end:
-    e8/call  syscall_exit/disp32
 
 factorial:  # n: int -> int/eax
     # . prologue
@@ -78,3 +51,31 @@ test-factorial:
     (factorial 5)
     (check-ints-equal %eax 0x78 "F - test-factorial")
     c3/return
+
+Entry:  # run tests if necessary, compute `factorial(5)` if not
+    # . prologue
+    89/<- %ebp 4/r32/esp
+
+    # initialize heap (needed by tests elsewhere)
+    (new-segment *Heap-size Heap)
+
+    # - if argc > 1 and argv[1] == "test", then return run_tests()
+    # if (argc <= 1) goto run-main
+    81 7/subop/compare *ebp 1/imm32
+    7e/jump-if-<= $run-main/disp8
+    # if (!kernel-string-equal?(argv[1], "test")) goto run-main
+    (kernel-string-equal? *(ebp+8) "test")  # => eax
+    # . if (eax == false) goto run-main
+    3d/compare-eax-and 0/imm32/false
+    74/jump-if-= $run-main/disp8
+    #
+    (run-tests)
+    # syscall(exit, *Num-test-failures)
+    8b/-> *Num-test-failures 3/r32/ebx
+    eb/jump $main:end/disp8
+$run-main:
+    # - otherwise
+    (factorial 5)  # => eax
+    89/<- %ebx 0/r32/eax
+$main:end:
+    e8/call  syscall_exit/disp32

@@ -8,6 +8,11 @@
 #
 # You can also run the automated test suite:
 #   $ ./a.elf test
+# Expected output:
+#   ........
+# Every '.' indicates a passing test. Failing tests get a 'F'.
+# There's only one test in this file, but you'll also see tests running from
+# Mu's standard library.
 #
 # Compare apps/factorial4.subx
 

@@ -18,6 +18,55 @@
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
+factorial:  # n: int -> int/eax
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    53/push-ebx
+    # if (n <= 1) return 1
+    b8/copy-to-eax  1/imm32
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         1/imm32           # compare *(ebp+8)
+    7e/jump-if-<=  $factorial:end/disp8
+    # var ebx: int = n-1
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
+    4b/decrement-ebx
+    # var eax: int = factorial(n-1)
+    # . . push args
+    53/push-ebx
+    # . . call
+    e8/call  factorial/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # return n * factorial(n-1)
+    f7          4/subop/multiply    1/mod/*+disp8   5/rm32/ebp    .           .                                     8/disp8         .                 # multiply *(ebp+8) into eax
+    # TODO: check for overflow
+$factorial:end:
+    # . epilogue
+    5b/pop-to-ebx
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-factorial:
+    # factorial(5)
+    # . . push args
+    68/push  5/imm32
+    # . . call
+    e8/call  factorial/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(eax, 120, msg)
+    # . . push args
+    68/push  "F - test-factorial"/imm32
+    68/push  0x78/imm32/expected-120
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
 Entry:  # run tests if necessary, compute `factorial(5)` if not
     # . prologue
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -92,58 +141,9 @@ $run-main:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # syscall(exit, eax)
+    #
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
 $main:end:
     e8/call  syscall_exit/disp32
-
-factorial:  # n: int -> int/eax
-    # . prologue
-    55/push-ebp
-    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    53/push-ebx
-    # if (n <= 1) return 1
-    b8/copy-to-eax  1/imm32
-    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         1/imm32           # compare *(ebp+8)
-    7e/jump-if-<=  $factorial:end/disp8
-    # var ebx: int = n-1
-    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
-    4b/decrement-ebx
-    # var eax: int = factorial(n-1)
-    # . . push args
-    53/push-ebx
-    # . . call
-    e8/call  factorial/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # return n * factorial(n-1)
-    f7          4/subop/multiply    1/mod/*+disp8   5/rm32/ebp    .           .                                     8/disp8         .                 # multiply *(ebp+8) into eax
-    # TODO: check for overflow
-$factorial:end:
-    # . epilogue
-    5b/pop-to-ebx
-    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
-    5d/pop-to-ebp
-    c3/return
-
-test-factorial:
-    # factorial(5)
-    # . . push args
-    68/push  5/imm32
-    # . . call
-    e8/call  factorial/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # check-ints-equal(eax, 120, msg)
-    # . . push args
-    68/push  "F - test-factorial"/imm32
-    68/push  0x78/imm32/expected-120
-    50/push-eax
-    # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # end
-    c3/return
 
 # . . vim:nowrap:textwidth=0
