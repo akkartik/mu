@@ -15,8 +15,7 @@ Most languages start from some syntax and do what it takes to implement it.
 Mu, however, is designed as a safe way to program in [a regular subset of
 32-bit x86 machine code](subx.md), _satisficing_ rather than optimizing for a
 clean syntax. To keep the mapping to machine code lightweight, Mu exclusively
-uses statements and most statements map to a single instruction of machine
-code.
+uses statements. Most statements map to a single instruction of machine code.
 
 Since the x86 instruction set restricts how many memory locations an instruction
 can use, Mu makes registers explicit as well. Variables must be explicitly
