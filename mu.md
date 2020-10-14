@@ -25,13 +25,13 @@ Statements consist of 3 parts: the operation, optional _inouts_ and optional
 _outputs_. Outputs come before the operation name and `<-`.
 
 Outputs are always registers; memory locations that need to be modified are
-passed in by reference.
+passed in by reference in inouts.
 
 So Mu programmers need to make two new categories of decisions: whether to
 define variables in registers or memory, and whether to put variables to the
 left or right. There's always exactly one way to write any given operation. In
 return for this overhead you get a lightweight and future-proof stack. And Mu
-will provide good error message to support you.
+will provide good error messages to support you.
 
 Further down, this page enumerates all available primitives in Mu, and [a
 separate page](http://akkartik.github.io/mu/html/mu_instructions.html)
