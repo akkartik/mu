@@ -283,7 +283,7 @@ $process:body: {
       break-if-!=
       # move cursor to initial word of sandbox
       var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
-      allocate cursor-call-path-ah
+      initialize-path-from-sandbox sandbox, cursor-call-path-ah
       # move cursor to start of initial word
       var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
@@ -299,7 +299,7 @@ $process:body: {
       break-if-!=
       # move cursor to final word of sandbox
       var cursor-call-path-ah/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
-      allocate cursor-call-path-ah
+      initialize-path-from-sandbox sandbox, cursor-call-path-ah
       var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
       var dest/eax: (addr handle word) <- get cursor-call-path, word
       final-word dest, dest
