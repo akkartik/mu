@@ -38,7 +38,7 @@ fn main args-on-stack: (addr array (addr array byte)) -> exit-status/ebx: int {
   # len = length(args)
   var len/ecx: int <- length args
   $main-body: {
-    # if (len <= 1) factorial(5)
+    # if (len <= 1) return factorial(5)
     compare len, 1
     {
       break-if->
