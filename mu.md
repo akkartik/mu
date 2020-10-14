@@ -19,11 +19,17 @@ uses statements. Most statements map to a single instruction of machine code.
 
 [1] While it's designed to be memory-safe, and already performs many safety
 checks, the Mu compiler is still a work in progress and can currently corrupt
-memory just like C can.
+memory just like C can. I estimate that it'll currently point out 90% of the
+mistakes you make.
 
 Since the x86 instruction set restricts how many memory locations an instruction
 can use, Mu makes registers explicit as well. Variables must be explicitly
-mapped to registers; otherwise they live in memory.
+mapped to specific registers; otherwise they live in memory. While you have to
+do your own register allocation, Mu will helpfully point out[2] when you get it
+wrong.
+
+[2] Again, there are some known issues here at the moment. I estimate that
+it'll currently catch 95% of register allocation errors.
 
 Statements consist of 3 parts: the operation, optional _inouts_ and optional
 _outputs_. Outputs come before the operation name and `<-`.
