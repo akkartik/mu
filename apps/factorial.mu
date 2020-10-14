@@ -15,10 +15,12 @@ fn factorial n: int -> result/eax: int {
   compare n 1
   {
     break-if->
+    # n <= 1; return 1
     result <- copy 1
   }
   {
     break-if-<=
+    # n > 1; return n * factorial(n-1)
     var tmp/ecx: int <- copy n
     tmp <- decrement
     result <- factorial tmp
@@ -31,12 +33,13 @@ fn test-factorial {
   check-ints-equal result 0x78 "F - test-factorial"
 }
 
-fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
+fn main args-on-stack: (addr array (addr array byte)) -> exit-status/ebx: int {
   var args/eax: (addr array addr array byte) <- copy args-on-stack
-  var tmp/ecx: int <- length args
+  # len = length(args)
+  var len/ecx: int <- length args
   $main-body: {
-    # if (len(args) <= 1) factorial(5)
-    compare tmp, 1
+    # if (len <= 1) factorial(5)
+    compare len, 1
     {
       break-if->
       var tmp/eax: int <- factorial 5
