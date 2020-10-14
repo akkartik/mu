@@ -12,7 +12,7 @@
 # Compare apps/factorial4.subx
 
 fn factorial n: int -> result/eax: int {
-  compare n 1
+  compare n, 1
   {
     break-if->
     # n <= 1; return 1
@@ -30,7 +30,7 @@ fn factorial n: int -> result/eax: int {
 
 fn test-factorial {
   var result/eax: int <- factorial 5
-  check-ints-equal result 0x78 "F - test-factorial"
+  check-ints-equal result, 0x78, "F - test-factorial"
 }
 
 fn main args-on-stack: (addr array (addr array byte)) -> exit-status/ebx: int {
