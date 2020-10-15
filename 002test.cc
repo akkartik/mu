@@ -105,5 +105,19 @@ for (size_t i=0;  i < sizeof(Tests)/sizeof(Tests[0]);  ++i) {
   }
 }
 
+//: A pending test that also serves to put our test harness through its paces.
+
+:(code)
+void test_is_equal() {
+  CHECK(is_equal("", ""));
+  CHECK(!is_equal("", "foo"));
+  CHECK(!is_equal("foo", ""));
+  CHECK(!is_equal("f", "bar"));
+  CHECK(!is_equal("bar", "f"));
+  CHECK(!is_equal("bar", "ba"));
+  CHECK(!is_equal("ba", "bar"));
+  CHECK(is_equal("bar", "bar"));
+}
+
 :(before "End Includes")
 #include <stdlib.h>

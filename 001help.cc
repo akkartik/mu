@@ -95,8 +95,10 @@ void init_help() {
 }
 
 :(code)
-bool is_equal(char* s, const char* lit) {
-  return strncmp(s, lit, strlen(lit)) == 0;
+bool is_equal(const char* s, const char* lit) {
+  size_t len = strlen(lit);
+  if (strlen(s) != len) return false;
+  return strncmp(s, lit, len) == 0;
 }
 
 bool starts_with(const string& s, const string& pat) {
