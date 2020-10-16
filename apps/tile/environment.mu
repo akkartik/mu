@@ -591,8 +591,9 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       # obtain body
       var callee-body-ah/eax: (addr handle line) <- get callee, body
       var callee-body/eax: (addr line) <- lookup *callee-body-ah
+      var callee-body-first-word/edx: (addr handle word) <- get callee-body, data
       # - render subsidiary stack
-      push-to-call-path-element curr-path, 0  # leak
+      push-to-call-path-element curr-path, callee-body-first-word  # leak
       curr-col <- render-line screen, functions, callee-bindings, callee-body, expanded-words, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-col-a
       drop-from-call-path-element curr-path
       #

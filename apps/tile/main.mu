@@ -75,17 +75,15 @@ fn test {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment-with-fake-screen env, 5, 0xa
-  var g/eax: grapheme <- copy 0x61  # 'a'
+  var g/eax: grapheme <- copy 0x31  # '1'
   process env, g
   g <- copy 0x20  # space
   process env, g
-  g <- copy 0x62  # 'b'
+  g <- copy 0x32  # '2'
   process env, g
-  g <- copy 0x20  # space
+  g <- copy 0x2a  # '*'
   process env, g
-  g <- copy 0x63  # 'c'
-  process env, g
-  g <- copy 2  # 'ctrl-b'
+  g <- copy 0xa  # newline
   process env, g
   render env
 }
