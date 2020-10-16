@@ -79,12 +79,15 @@ fn first-word _in: (addr handle word), out: (addr handle word) {
 }
 
 fn final-word _in: (addr handle word), out: (addr handle word) {
-  var curr-ah/esi: (addr handle word) <- copy _in
-  var curr/eax: (addr word) <- lookup *curr-ah
+  var curr-h: (handle word)
+  var curr-ah/esi: (addr handle word) <- address curr-h
+  copy-object _in, curr-ah
+  var curr/eax: (addr word) <- copy 0
   var next/edi: (addr handle word) <- copy 0
   {
+    curr <- lookup *curr-ah
     next <- get curr, next
-    var curr/eax: (addr word) <- lookup *next
+    curr <- lookup *next
     compare curr, 0
     break-if-=
     copy-object next, curr-ah
