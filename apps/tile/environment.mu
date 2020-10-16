@@ -312,12 +312,7 @@ $process:body: {
     $process:clear-line: {
       break-if-!=
       # clear line in sandbox
-      var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
-      allocate cursor-call-path-ah
-      var line-ah/eax: (addr handle line) <- get sandbox, data
-      allocate line-ah
-      var line/eax: (addr line) <- lookup *line-ah
-      initialize-line line
+      initialize-sandbox sandbox
       break $process:body
     }
     # if cursor is within a call, disable editing hotkeys below
