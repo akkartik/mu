@@ -180,14 +180,14 @@ case 0xc6: {  // copy imm8 to r/m8
 :(before "End Initialize Op Names")
 put_new(Name_0f, "94", "set r8/m8-at-rm32 to 1 if equal, if ZF is set, 0 otherwise (setcc/setz/sete)");
 put_new(Name_0f, "95", "set r8/m8-at-rm32 to 1 if not equal, if ZF is not set, 0 otherwise (setcc/setnz/setne)");
-put_new(Name_0f, "9f", "set r8/m8-at-rm32 to 1 if greater (signed), if ZF is unset and SF == OF, 0 otherwise (setcc/setg/setnle)");
-put_new(Name_0f, "97", "set r8/m8-at-rm32 to 1 if greater (unsigned), if ZF is unset and CF is unset, 0 otherwise (setcc/seta/setnbe)");
-put_new(Name_0f, "9d", "set r8/m8-at-rm32 to 1 if greater or equal (signed), if SF == OF, 0 otherwise (setcc/setge/setnl)");
-put_new(Name_0f, "93", "set r8/m8-at-rm32 to 1 if greater or equal (unsigned), if CF is unset, 0 otherwise (setcc/setae/setnb)");
-put_new(Name_0f, "9c", "set r8/m8-at-rm32 to 1 if lesser (signed), if SF != OF, 0 otherwise (setcc/setl/setnge)");
-put_new(Name_0f, "92", "set r8/m8-at-rm32 to 1 if lesser (unsigned), if CF is set, 0 otherwise (setcc/setb/setnae)");
-put_new(Name_0f, "9e", "set r8/m8-at-rm32 to 1 if lesser or equal (signed), if ZF is set or SF != OF, 0 otherwise (setcc/setle/setng)");
-put_new(Name_0f, "96", "set r8/m8-at-rm32 to 1 if lesser or equal (unsigned), if ZF is set or CF is set, 0 otherwise (setcc/setbe/setna)");
+put_new(Name_0f, "9f", "set r8/m8-at-rm32 to 1 if greater, if ZF is unset and SF == OF, 0 otherwise (setcc/setg/setnle)");
+put_new(Name_0f, "97", "set r8/m8-at-rm32 to 1 if greater (addr, float), if ZF is unset and CF is unset, 0 otherwise (setcc/seta/setnbe)");
+put_new(Name_0f, "9d", "set r8/m8-at-rm32 to 1 if greater or equal, if SF == OF, 0 otherwise (setcc/setge/setnl)");
+put_new(Name_0f, "93", "set r8/m8-at-rm32 to 1 if greater or equal (addr, float), if CF is unset, 0 otherwise (setcc/setae/setnb)");
+put_new(Name_0f, "9c", "set r8/m8-at-rm32 to 1 if lesser, if SF != OF, 0 otherwise (setcc/setl/setnge)");
+put_new(Name_0f, "92", "set r8/m8-at-rm32 to 1 if lesser (addr, float), if CF is set, 0 otherwise (setcc/setb/setnae)");
+put_new(Name_0f, "9e", "set r8/m8-at-rm32 to 1 if lesser or equal, if ZF is set or SF != OF, 0 otherwise (setcc/setle/setng)");
+put_new(Name_0f, "96", "set r8/m8-at-rm32 to 1 if lesser or equal (addr, float), if ZF is set or CF is set, 0 otherwise (setcc/setbe/setna)");
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x94: {  // set r8/m8-at-rm32 if ZF
