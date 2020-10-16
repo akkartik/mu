@@ -185,13 +185,23 @@ $process:body: {
         increment-final-element cursor-call-path
         # Is the new cursor word expanded? If so, it's a function call. Add a
         # new level to the cursor-call-path for the call's body.
-        {
+        $process:key-right-arrow-next-word-is-call-expanded: {
 #?           print-string 0, "c\n"
-          var expanded-words/eax: (addr handle call-path) <- get sandbox, expanded-words
-          var curr-word-is-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
-          compare curr-word-is-expanded?, 0  # false
-          break-if-=
-          push-to-call-path-element cursor-call-path, 0
+          {
+            var expanded-words/eax: (addr handle call-path) <- get sandbox, expanded-words
+            var curr-word-is-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
+            compare curr-word-is-expanded?, 0  # false
+            break-if-= $process:key-right-arrow-next-word-is-call-expanded
+          }
+          var callee-h: (handle function)
+          var callee-ah/edx: (addr handle function) <- address callee-h
+          var functions/ebx: (addr handle function) <- get self, functions
+          callee functions, next-word, callee-ah
+          var callee/eax: (addr function) <- lookup *callee-ah
+          var callee-body-ah/eax: (addr handle line) <- get callee, body
+          var callee-body/eax: (addr line) <- lookup *callee-body-ah
+          var callee-body-first-word/edx: (addr handle word) <- get callee-body, data
+          push-to-call-path-element cursor-call-path, callee-body-first-word
           # position cursor at left
           var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
           var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
@@ -552,12 +562,9 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       # does function exist?
       var callee/edi: (addr function) <- copy 0
       {
-        var curr-stream-storage: (stream byte 0x10)
-        var curr-stream/esi: (addr stream byte) <- address curr-stream-storage
-        emit-word curr-word, curr-stream
         var callee-h: (handle function)
-        var callee-ah/eax: (addr handle function) <- address callee-h
-        find-function functions, curr-stream, callee-ah
+        var callee-ah/ecx: (addr handle function) <- address callee-h
+        callee functions, curr-word, callee-ah
         var _callee/eax: (addr function) <- lookup *callee-ah
         callee <- copy _callee
         compare callee, 0
@@ -630,6 +637,13 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     loop
   }
   right-col <- copy curr-col
+}
+
+fn callee functions: (addr handle function), word: (addr word), out: (addr handle function) {
+  var stream-storage: (stream byte 0x10)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  emit-word word, stream
+  find-function functions, stream, out
 }
 
 # Render:
