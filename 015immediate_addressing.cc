@@ -183,7 +183,7 @@ void test_add_imm32_to_r32_unsigned_and_signed_overflow() {
 //:
 
 :(code)
-void test_add_imm32_to_mem_at_r32() {
+void test_add_imm32_to_mem_at_rm32() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -286,7 +286,7 @@ void test_subtract_imm32_from_EAX_signed_and_unsigned_overflow() {
 
 //:
 
-void test_subtract_imm32_from_mem_at_r32() {
+void test_subtract_imm32_from_mem_at_rm32() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -326,7 +326,7 @@ case 5: {
 }
 
 :(code)
-void test_subtract_imm32_from_mem_at_r32_signed_overflow() {
+void test_subtract_imm32_from_mem_at_rm32_signed_overflow() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -347,7 +347,7 @@ void test_subtract_imm32_from_mem_at_r32_signed_overflow() {
   );
 }
 
-void test_subtract_imm32_from_mem_at_r32_unsigned_overflow() {
+void test_subtract_imm32_from_mem_at_rm32_unsigned_overflow() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -368,7 +368,7 @@ void test_subtract_imm32_from_mem_at_r32_unsigned_overflow() {
   );
 }
 
-void test_subtract_imm32_from_mem_at_r32_signed_and_unsigned_overflow() {
+void test_subtract_imm32_from_mem_at_rm32_signed_and_unsigned_overflow() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -646,7 +646,7 @@ case 0x25: {  // and imm32 with EAX
 //:
 
 :(code)
-void test_and_imm32_with_mem_at_r32() {
+void test_and_imm32_with_mem_at_rm32() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -738,7 +738,7 @@ case 0x0d: {  // or imm32 with EAX
 //:
 
 :(code)
-void test_or_imm32_with_mem_at_r32() {
+void test_or_imm32_with_mem_at_rm32() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -828,7 +828,7 @@ case 0x35: {  // xor imm32 with EAX
 //:
 
 :(code)
-void test_xor_imm32_with_mem_at_r32() {
+void test_xor_imm32_with_mem_at_rm32() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -1106,7 +1106,7 @@ void test_compare_imm32_with_r32_equal() {
 }
 
 :(code)
-void test_compare_imm32_with_mem_at_r32_greater() {
+void test_compare_imm32_with_mem_at_rm32_greater() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -1125,7 +1125,7 @@ void test_compare_imm32_with_mem_at_r32_greater() {
 }
 
 :(code)
-void test_compare_imm32_with_mem_at_r32_lesser() {
+void test_compare_imm32_with_mem_at_rm32_lesser() {
   Reg[EAX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -1144,7 +1144,7 @@ void test_compare_imm32_with_mem_at_r32_lesser() {
 }
 
 :(code)
-void test_compare_imm32_with_mem_at_r32_equal() {
+void test_compare_imm32_with_mem_at_rm32_equal() {
   Reg[EBX].i = 0x0d0c0b0a;
   Reg[EBX].i = 0x2000;
   run(
@@ -1208,7 +1208,7 @@ case 0xbf: {  // copy imm32 to r32
 put_new(Name, "c7", "copy imm32 to rm32 with subop 0 (mov)");
 
 :(code)
-void test_copy_imm32_to_mem_at_r32() {
+void test_copy_imm32_to_mem_at_rm32() {
   Reg[EBX].i = 0x60;
   run(
       "== code 0x1\n"

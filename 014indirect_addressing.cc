@@ -1,7 +1,7 @@
 //: operating on memory at the address provided by some register
 //: we'll now start providing data in a separate segment
 
-void test_add_r32_to_mem_at_r32() {
+void test_add_r32_to_mem_at_rm32() {
   Reg[EBX].i = 0x10;
   Reg[EAX].i = 0x2000;
   run(
@@ -36,7 +36,7 @@ case 0:  // indirect addressing
 put_new(Name, "03", "add rm32 to r32 (add)");
 
 :(code)
-void test_add_mem_at_r32_to_r32() {
+void test_add_mem_at_rm32_to_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x10;
   run(
@@ -77,7 +77,7 @@ case 0x03: {  // add r/m32 to r32
 }
 
 :(code)
-void test_add_mem_at_r32_to_r32_signed_overflow() {
+void test_add_mem_at_rm32_to_r32_signed_overflow() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
   run(
@@ -97,7 +97,7 @@ void test_add_mem_at_r32_to_r32_signed_overflow() {
   );
 }
 
-void test_add_mem_at_r32_to_r32_unsigned_overflow() {
+void test_add_mem_at_rm32_to_r32_unsigned_overflow() {
   Reg[EAX].u = 0x2000;
   Reg[EBX].u = 0xffffffff;  // largest unsigned number
   run(
@@ -117,7 +117,7 @@ void test_add_mem_at_r32_to_r32_unsigned_overflow() {
   );
 }
 
-void test_add_mem_at_r32_to_r32_unsigned_and_signed_overflow() {
+void test_add_mem_at_rm32_to_r32_unsigned_and_signed_overflow() {
   Reg[EAX].u = 0x2000;
   Reg[EBX].u = 0x80000000;  // smallest negative signed integer
   run(
@@ -140,7 +140,7 @@ void test_add_mem_at_r32_to_r32_unsigned_and_signed_overflow() {
 //:: subtract
 
 :(code)
-void test_subtract_r32_from_mem_at_r32() {
+void test_subtract_r32_from_mem_at_rm32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 1;
   run(
@@ -164,7 +164,7 @@ void test_subtract_r32_from_mem_at_r32() {
 put_new(Name, "2b", "subtract rm32 from r32 (sub)");
 
 :(code)
-void test_subtract_mem_at_r32_from_r32() {
+void test_subtract_mem_at_rm32_from_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 10;
   run(
@@ -205,7 +205,7 @@ case 0x2b: {  // subtract r/m32 from r32
 }
 
 :(code)
-void test_subtract_mem_at_r32_from_r32_signed_overflow() {
+void test_subtract_mem_at_rm32_from_r32_signed_overflow() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x80000000;  // smallest negative signed integer
   run(
@@ -225,7 +225,7 @@ void test_subtract_mem_at_r32_from_r32_signed_overflow() {
   );
 }
 
-void test_subtract_mem_at_r32_from_r32_unsigned_overflow() {
+void test_subtract_mem_at_rm32_from_r32_unsigned_overflow() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0;
   run(
@@ -245,7 +245,7 @@ void test_subtract_mem_at_r32_from_r32_unsigned_overflow() {
   );
 }
 
-void test_subtract_mem_at_r32_from_r32_signed_and_unsigned_overflow() {
+void test_subtract_mem_at_rm32_from_r32_signed_and_unsigned_overflow() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0;
   run(
@@ -267,7 +267,7 @@ void test_subtract_mem_at_r32_from_r32_signed_and_unsigned_overflow() {
 
 //:: and
 :(code)
-void test_and_r32_with_mem_at_r32() {
+void test_and_r32_with_mem_at_rm32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xff;
   run(
@@ -291,7 +291,7 @@ void test_and_r32_with_mem_at_r32() {
 put_new(Name, "23", "r32 = bitwise AND of r32 with rm32 (and)");
 
 :(code)
-void test_and_mem_at_r32_with_r32() {
+void test_and_mem_at_rm32_with_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
@@ -330,7 +330,7 @@ case 0x23: {  // and r/m32 with r32
 //:: or
 
 :(code)
-void test_or_r32_with_mem_at_r32() {
+void test_or_r32_with_mem_at_rm32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xa0b0c0d0;
   run(
@@ -354,7 +354,7 @@ void test_or_r32_with_mem_at_r32() {
 put_new(Name, "0b", "r32 = bitwise OR of r32 with rm32 (or)");
 
 :(code)
-void test_or_mem_at_r32_with_r32() {
+void test_or_mem_at_rm32_with_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xa0b0c0d0;
   run(
@@ -393,7 +393,7 @@ case 0x0b: {  // or r/m32 with r32
 //:: xor
 
 :(code)
-void test_xor_r32_with_mem_at_r32() {
+void test_xor_r32_with_mem_at_rm32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xa0b0c0d0;
   run(
@@ -416,7 +416,7 @@ void test_xor_r32_with_mem_at_r32() {
 put_new(Name, "33", "r32 = bitwise XOR of r32 with rm32 (xor)");
 
 :(code)
-void test_xor_mem_at_r32_with_r32() {
+void test_xor_mem_at_rm32_with_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xa0b0c0d0;
   run(
@@ -455,7 +455,7 @@ case 0x33: {  // xor r/m32 with r32
 //:: not
 
 :(code)
-void test_not_of_mem_at_r32() {
+void test_not_of_mem_at_rm32() {
   Reg[EBX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -476,7 +476,7 @@ void test_not_of_mem_at_r32() {
 //:: compare (cmp)
 
 :(code)
-void test_compare_mem_at_r32_with_r32_greater() {
+void test_compare_mem_at_rm32_with_r32_greater() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c07;
   run(
@@ -495,7 +495,7 @@ void test_compare_mem_at_r32_with_r32_greater() {
 }
 
 :(code)
-void test_compare_mem_at_r32_with_r32_lesser() {
+void test_compare_mem_at_rm32_with_r32_lesser() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
@@ -514,7 +514,7 @@ void test_compare_mem_at_r32_with_r32_lesser() {
 }
 
 :(code)
-void test_compare_mem_at_r32_with_r32_equal() {
+void test_compare_mem_at_rm32_with_r32_equal() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
@@ -672,7 +672,7 @@ void test_compare_r32_with_mem_at_rm32_equal() {
 
 //:: copy (mov)
 
-void test_copy_r32_to_mem_at_r32() {
+void test_copy_r32_to_mem_at_rm32() {
   Reg[EBX].i = 0xaf;
   Reg[EAX].i = 0x60;
   run(
@@ -694,7 +694,7 @@ void test_copy_r32_to_mem_at_r32() {
 put_new(Name, "8b", "copy rm32 to r32 (mov)");
 
 :(code)
-void test_copy_mem_at_r32_to_r32() {
+void test_copy_mem_at_rm32_to_r32() {
   Reg[EAX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -724,7 +724,7 @@ case 0x8b: {  // copy r32 to r/m32
 //:: jump
 
 :(code)
-void test_jump_mem_at_r32() {
+void test_jump_mem_at_rm32() {
   Reg[EAX].i = 0x2000;
   run(
       "== code 0x1\n"
@@ -758,7 +758,7 @@ case 4: {  // jump to r/m32
 //:: push
 
 :(code)
-void test_push_mem_at_r32() {
+void test_push_mem_at_rm32() {
   Reg[EAX].i = 0x2000;
   Mem.push_back(vma(0xbd000000));  // manually allocate memory
   Reg[ESP].u = 0xbd000014;
@@ -791,7 +791,7 @@ case 6: {  // push r/m32 to stack
 put_new(Name, "8f", "pop top of stack to rm32 (pop)");
 
 :(code)
-void test_pop_mem_at_r32() {
+void test_pop_mem_at_rm32() {
   Reg[EAX].i = 0x60;
   Mem.push_back(vma(0xbd000000));  // manually allocate memory
   Reg[ESP].u = 0xbd000000;
@@ -854,7 +854,7 @@ case 5:  // exception: mod 0b00 rm 0b101 => incoming disp32
 //:
 
 :(code)
-void test_add_r32_to_mem_at_r32_plus_disp8() {
+void test_add_r32_to_mem_at_rm32_plus_disp8() {
   Reg[EBX].i = 0x10;  // source
   Reg[EAX].i = 0x1ffe;  // dest
   run(
@@ -894,7 +894,7 @@ case 1: {  // indirect + disp8 addressing
 }
 
 :(code)
-void test_add_r32_to_mem_at_r32_plus_negative_disp8() {
+void test_add_r32_to_mem_at_rm32_plus_negative_disp8() {
   Reg[EBX].i = 0x10;  // source
   Reg[EAX].i = 0x2001;  // dest
   run(
@@ -916,7 +916,7 @@ void test_add_r32_to_mem_at_r32_plus_negative_disp8() {
 //:
 
 :(code)
-void test_add_r32_to_mem_at_r32_plus_disp32() {
+void test_add_r32_to_mem_at_rm32_plus_disp32() {
   Reg[EBX].i = 0x10;  // source
   Reg[EAX].i = 0x1ffe;  // dest
   run(
@@ -956,7 +956,7 @@ case 2: {  // indirect + disp32 addressing
 }
 
 :(code)
-void test_add_r32_to_mem_at_r32_plus_negative_disp32() {
+void test_add_r32_to_mem_at_rm32_plus_negative_disp32() {
   Reg[EBX].i = 0x10;  // source
   Reg[EAX].i = 0x2001;  // dest
   run(

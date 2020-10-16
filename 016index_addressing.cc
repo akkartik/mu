@@ -1,7 +1,7 @@
 //: operating on memory at the address provided by some register plus optional scale and offset
 
 :(code)
-void test_add_r32_to_mem_at_r32_with_sib() {
+void test_add_r32_to_mem_at_rm32_with_sib() {
   Reg[EBX].i = 0x10;
   Reg[EAX].i = 0x2000;
   run(

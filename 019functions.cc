@@ -67,7 +67,7 @@ case 2: {  // call function pointer at r/m32
 }
 
 :(code)
-void test_call_mem_at_r32() {
+void test_call_mem_at_rm32() {
   Mem.push_back(vma(0xbd000000));  // manually allocate memory
   Reg[ESP].u = 0xbd000064;
   Reg[EBX].u = 0x2000;
