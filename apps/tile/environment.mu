@@ -221,7 +221,6 @@ $process:body: {
       {
         compare prev-word, 0
         break-if-=
-        copy-object prev-word-ah, cursor-word-ah
         cursor-to-end prev-word
         var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
         decrement-final-element cursor-call-path
@@ -259,7 +258,6 @@ $process:body: {
         compare next-word, 0
         break-if-=
 #?         print-string 0, "BB\n"
-        copy-object next-word-ah, cursor-word-ah
         cursor-to-end next-word
         var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
         increment-final-element cursor-call-path

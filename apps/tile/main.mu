@@ -79,9 +79,13 @@ fn test {
   process env, g
   g <- copy 0x20  # space
   process env, g
-  g <- copy 1  # 'ctrl-a'
+  g <- copy 0x62  # 'b'
   process env, g
-  g <- copy 5  # 'ctrl-e'
+  g <- copy 0x20  # space
+  process env, g
+  g <- copy 0x63  # 'c'
+  process env, g
+  g <- copy 2  # 'ctrl-b'
   process env, g
   render env
 }
