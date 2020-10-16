@@ -750,7 +750,7 @@ fn clear-canvas _env: (addr environment) {
   reset-formatting screen
   print-string screen, " quit "
   var menu-start/ecx: int <- copy repl-col
-  menu-start <- subtract 0x2c  # 44 = half the size of the menu
+  menu-start <- subtract 0x40  # 64 = half the size of the menu
   move-cursor screen, *nrows, menu-start
   start-reverse-video screen
   print-string screen, " ctrl-a "
@@ -759,19 +759,27 @@ fn clear-canvas _env: (addr environment) {
   start-reverse-video screen
   print-string screen, " ctrl-b "
   reset-formatting screen
-  print-string screen, " ◀ prev word  "
+  print-string screen, " ◀ word  "
   start-reverse-video screen
   print-string screen, " ctrl-f "
   reset-formatting screen
-  print-string screen, " next word ▶  "
+  print-string screen, " word ▶  "
   start-reverse-video screen
   print-string screen, " ctrl-e "
   reset-formatting screen
-  print-string screen, " ⏭  "
+  print-string screen, " ⏭   "
   start-reverse-video screen
   print-string screen, " ctrl-u "
   reset-formatting screen
   print-string screen, " clear line  "
+  start-reverse-video screen
+  print-string screen, " ctrl-r "
+  reset-formatting screen
+  print-string screen, " rename word  "
+  start-reverse-video screen
+  print-string screen, " ctrl-d "
+  reset-formatting screen
+  print-string screen, " define function  "
   # currently defined functions
   move-cursor screen, 3, 2
   print-string screen, "x 2* = x 2 *"
