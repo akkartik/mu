@@ -138,7 +138,6 @@ $process:body: {
         compare prev-word, 0
         break-if-=
 #?         print-string 0, "previous word\n"
-        copy-object prev-word-ah, cursor-word-ah
         cursor-to-end prev-word
         var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
         decrement-final-element cursor-call-path
