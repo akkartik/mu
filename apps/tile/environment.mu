@@ -581,14 +581,12 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   }
   #
   var curr-path-storage: (handle call-path-element)
-  var curr-path/esi: (addr handle call-path-element) <- address curr-path-storage
+  var curr-path/eax: (addr handle call-path-element) <- address curr-path-storage
   allocate curr-path  # leak
-  var sandbox/eax: (addr sandbox) <- copy _sandbox
   initialize-path-from-sandbox sandbox, curr-path
 #?   print-string 0, "==\n"
   var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, curr-path, cursor-word, cursor-call-path, cursor-col-a  # input-row=3
   # if necessary, draw the rename-word modal dialog
-  var sandbox/esi: (addr sandbox) <- copy _sandbox
   var cursor-row/eax: int <- call-depth-at-cursor _sandbox
   render-rename-dialog screen, sandbox, cursor-row, cursor-col
   # Finally, position the cursor correctly.
