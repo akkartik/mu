@@ -55,6 +55,10 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
   initialize-environment self
 }
 
+#############
+# Iterate
+#############
+
 fn process _self: (addr environment), key: grapheme {
 $process:body: {
     var self/esi: (addr environment) <- copy _self
@@ -422,6 +426,10 @@ $toggle-cursor-word:body: {
   }
 }
 }
+
+#############
+# Visualize
+#############
 
 fn evaluate-environment _env: (addr environment), stack: (addr value-stack) {
   var env/esi: (addr environment) <- copy _env
