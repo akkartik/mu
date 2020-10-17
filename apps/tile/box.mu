@@ -3,6 +3,10 @@ fn draw-box screen: (addr screen), row1: int, col1: int, row2: int, col2: int {
   draw-vertical-line screen, row1, row2, col1
   draw-horizontal-line screen, row2, col1, col2
   draw-vertical-line screen, row1, row2, col2
+  draw-top-left-corner screen, row1, col1
+  draw-top-right-corner screen, row1, col2
+  draw-bottom-left-corner screen, row2, col1
+  draw-bottom-right-corner screen, row2, col2
 }
 
 fn draw-hatching screen: (addr screen), row1: int, col1: int, row2: int, col2: int {
@@ -41,6 +45,26 @@ fn draw-vertical-line screen: (addr screen), row1: int, row2: int, col: int {
     row <- increment
     loop
   }
+}
+
+fn draw-top-left-corner screen: (addr screen), row: int, col: int {
+  move-cursor screen, row, col
+  print-code-point screen, 0x250c
+}
+
+fn draw-top-right-corner screen: (addr screen), row: int, col: int {
+  move-cursor screen, row, col
+  print-code-point screen, 0x2510
+}
+
+fn draw-bottom-left-corner screen: (addr screen), row: int, col: int {
+  move-cursor screen, row, col
+  print-code-point screen, 0x2514
+}
+
+fn draw-bottom-right-corner screen: (addr screen), row: int, col: int {
+  move-cursor screen, row, col
+  print-code-point screen, 0x2518
 }
 
 # erase parts of screen the slow way
