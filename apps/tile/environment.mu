@@ -60,10 +60,24 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 #############
 
 fn process _self: (addr environment), key: grapheme {
+$process:body: {
   var self/esi: (addr environment) <- copy _self
   var sandbox-ah/eax: (addr handle sandbox) <- get self, sandboxes
-  var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-  process-sandbox self, sandbox, key
+  var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+  var sandbox/edi: (addr sandbox) <- copy _sandbox
+  var rename-word-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
+  var rename-word-mode?/eax: (addr word) <- lookup *rename-word-mode-ah?
+  compare rename-word-mode?, 0
+  {
+    break-if-!=
+    process-sandbox self, sandbox, key
+    break $process:body
+  }
+  {
+    break-if-=
+    process-sandbox-rename sandbox, key
+  }
+}
 }
 
 fn process-sandbox _self: (addr environment), _sandbox: (addr sandbox), key: grapheme {
@@ -374,6 +388,17 @@ $process-sandbox:body: {
     increment-final-element cursor-call-path
     break $process-sandbox:body
   }
+  compare key, 0x12  # ctrl-r
+  $process:rename-word: {
+    break-if-!=
+    # TODO: ensure current word is not a function
+    # rename word at cursor
+    var new-name-ah/eax: (addr handle word) <- get sandbox, partial-name-for-cursor-word
+    allocate new-name-ah
+    var new-name/eax: (addr word) <- lookup *new-name-ah
+    initialize-word new-name
+    break $process-sandbox:body
+  }
   # otherwise insert key within current word
   var g/edx: grapheme <- copy key
   var print?/eax: boolean <- real-grapheme? key
@@ -382,6 +407,58 @@ $process-sandbox:body: {
     break-if-=
     add-grapheme-to-word cursor-word, g
     break $process-sandbox:body
+  }
+  # silently ignore other hotkeys
+}
+}
+
+# collect new name in partial-name-for-cursor-word, and then rename the word
+# at cursor to it
+# Precondition: cursor-call-path is a singleton (not within a call)
+fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
+$process-sandbox-rename:body: {
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
+  var new-name-ah/esi: (addr handle word) <- get sandbox, partial-name-for-cursor-word
+  # if 'esc' pressed, cancel rename
+  compare key, 0x1b  # esc
+  $process-sandbox-rename:cancel: {
+    break-if-!=
+    var empty: (handle word)
+    copy-handle empty, new-name-ah
+    break $process-sandbox-rename:body
+  }
+  # if 'enter' pressed, perform rename
+  compare key, 0xa  # enter
+  $process-sandbox-rename:commit: {
+    break-if-!=
+    # HERE
+    var empty: (handle word)
+    copy-handle empty, new-name-ah
+    break $process-sandbox-rename:body
+  }
+  #
+  compare key, 0x7f  # del (backspace on Macs)
+  $process-sandbox-rename:backspace: {
+    break-if-!=
+    # if not at start, delete grapheme before cursor
+    var new-name/eax: (addr word) <- lookup *new-name-ah
+    var at-start?/eax: boolean <- cursor-at-start? new-name
+    compare at-start?, 0  # false
+    {
+      break-if-=
+      var new-name/eax: (addr word) <- lookup *new-name-ah
+      delete-before-cursor new-name
+    }
+    break $process-sandbox-rename:body
+  }
+  # otherwise insert key within current word
+  var print?/eax: boolean <- real-grapheme? key
+  $process-sandbox-rename:real-grapheme: {
+    compare print?, 0  # false
+    break-if-=
+    var new-name/eax: (addr word) <- lookup *new-name-ah
+    add-grapheme-to-word new-name, key
+    break $process-sandbox-rename:body
   }
   # silently ignore other hotkeys
 }
@@ -510,8 +587,54 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   initialize-path-from-sandbox sandbox, curr-path
 #?   print-string 0, "==\n"
   var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, curr-path, cursor-word, cursor-call-path, cursor-col-a  # input-row=3
+  # if necessary, draw the rename-word modal dialog
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
   var cursor-row/eax: int <- call-depth-at-cursor _sandbox
+  render-rename-word screen, sandbox, cursor-row, cursor-col
+  # Finally, position the cursor correctly.
   move-cursor screen, cursor-row, cursor-col
+}
+
+fn render-rename-word screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
+  var sandbox/edi: (addr sandbox) <- copy _sandbox
+  var rename-word-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
+  var rename-word-mode?/eax: (addr word) <- lookup *rename-word-mode-ah?
+  compare rename-word-mode?, 0
+  break-if-=
+  # clear a space for the dialog
+  var top-row/eax: int <- copy cursor-row
+  top-row <- subtract 3
+  var bottom-row/ecx: int <- copy cursor-row
+  bottom-row <- add 3
+  var left-col/edx: int <- copy cursor-col
+  left-col <- subtract 0x10
+  var right-col/ebx: int <- copy cursor-col
+  right-col <- add 0x10
+  clear-rect screen, top-row, left-col, bottom-row, right-col
+  draw-box screen, top-row, left-col, bottom-row, right-col
+  # render a little menu for the dialog
+  var menu-row/ecx: int <- copy bottom-row
+  menu-row <- decrement
+  var menu-col/edx: int <- copy left-col
+  menu-col <- add 2
+  move-cursor screen, menu-row, menu-col
+  start-reverse-video screen
+  print-string screen, " esc "
+  reset-formatting screen
+  print-string screen, " cancel  "
+  start-reverse-video screen
+  print-string screen, " enter "
+  reset-formatting screen
+  print-string screen, " rename  "
+  # draw the word, positioned appropriately around the cursor
+  var start-col/ecx: int <- copy cursor-col
+  var word-ah?/edx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
+  var word/eax: (addr word) <- lookup *word-ah?
+  var cursor-index/eax: int <- cursor-index word
+  start-col <- subtract cursor-index
+  move-cursor screen, cursor-row, start-col
+  var word/eax: (addr word) <- lookup *word-ah?
+  print-word screen, word
 }
 
 fn call-depth-at-cursor _sandbox: (addr sandbox) -> result/eax: int {

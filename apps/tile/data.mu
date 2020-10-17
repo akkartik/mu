@@ -4,6 +4,7 @@ type sandbox {
   # display data
   cursor-call-path: (handle call-path-element)
   expanded-words: (handle call-path)
+  partial-name-for-cursor-word: (handle word)  # only when renaming word
   #
   next: (handle sandbox)
   prev: (handle sandbox)
