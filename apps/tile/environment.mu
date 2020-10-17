@@ -60,10 +60,15 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 #############
 
 fn process _self: (addr environment), key: grapheme {
-$process:body: {
   var self/esi: (addr environment) <- copy _self
   var sandbox-ah/eax: (addr handle sandbox) <- get self, sandboxes
-  var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+  var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+  process-sandbox self, sandbox, key
+}
+
+fn process-sandbox _self: (addr environment), _sandbox: (addr sandbox), key: grapheme {
+$process-sandbox:body: {
+  var self/esi: (addr environment) <- copy _self
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
   var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
@@ -71,7 +76,7 @@ $process:body: {
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ecx: (addr word) <- copy _cursor-word
   compare key, 0x445b1b  # left-arrow
-  $process:key-left-arrow: {
+  $process-sandbox:key-left-arrow: {
     break-if-!=
 #?     print-string 0, "left-arrow\n"
     # if not at start, move left within current word
@@ -81,7 +86,7 @@ $process:body: {
       break-if-=
 #?       print-string 0, "cursor left within word\n"
       cursor-left cursor-word
-      break $process:body
+      break $process-sandbox:body
     }
     # if current word is expanded, move to the rightmost word in its body
     {
@@ -109,15 +114,15 @@ $process:body: {
       var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
       var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
       cursor-to-end cursor-word
-      break $process:body
+      break $process-sandbox:body
     }
     # if at first word, look for a caller to jump to
-    $process:key-left-arrow-first-word: {
+    $process-sandbox:key-left-arrow-first-word: {
       var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
       var prev-word/eax: (addr word) <- lookup *prev-word-ah
       compare prev-word, 0
       break-if-!=
-      $process:key-left-arrow-first-word-and-caller: {
+      $process-sandbox:key-left-arrow-first-word-and-caller: {
 #?         print-string 0, "return\n"
         {
           var cursor-call-path-ah/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -125,7 +130,7 @@ $process:body: {
           var next-cursor-element-ah/edx: (addr handle call-path-element) <- get cursor-call-path, next
           var next-cursor-element/eax: (addr call-path-element) <- lookup *next-cursor-element-ah
           compare next-cursor-element, 0
-          break-if-= $process:key-left-arrow-first-word-and-caller
+          break-if-= $process-sandbox:key-left-arrow-first-word-and-caller
           copy-object next-cursor-element-ah, cursor-call-path-ah
         }
         var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -146,10 +151,10 @@ $process:body: {
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       decrement-final-element cursor-call-path
     }
-    break $process:body
+    break $process-sandbox:body
   }
   compare key, 0x435b1b  # right-arrow
-  $process:key-right-arrow: {
+  $process-sandbox:key-right-arrow: {
     break-if-!=
     # if not at end, move right within current word
     var at-end?/eax: boolean <- cursor-at-end? cursor-word
@@ -158,7 +163,7 @@ $process:body: {
       break-if-=
 #?       print-string 0, "a\n"
       cursor-right cursor-word
-      break $process:body
+      break $process-sandbox:body
     }
     # if at final word, look for a caller to jump to
     {
@@ -173,7 +178,7 @@ $process:body: {
       compare next-cursor-element, 0
       break-if-=
       copy-object next-cursor-element-ah, cursor-call-path-ah
-      break $process:body
+      break $process-sandbox:body
     }
     # otherwise, move to the next word
     var next-word-ah/edx: (addr handle word) <- get cursor-word, next
@@ -188,13 +193,13 @@ $process:body: {
       increment-final-element cursor-call-path
       # Is the new cursor word expanded? If so, it's a function call. Add a
       # new level to the cursor-call-path for the call's body.
-      $process:key-right-arrow-next-word-is-call-expanded: {
+      $process-sandbox:key-right-arrow-next-word-is-call-expanded: {
 #?         print-string 0, "c\n"
         {
           var expanded-words/eax: (addr handle call-path) <- get sandbox, expanded-words
           var curr-word-is-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
           compare curr-word-is-expanded?, 0  # false
-          break-if-= $process:key-right-arrow-next-word-is-call-expanded
+          break-if-= $process-sandbox:key-right-arrow-next-word-is-call-expanded
         }
         var callee-h: (handle function)
         var callee-ah/edx: (addr handle function) <- address callee-h
@@ -212,21 +217,21 @@ $process:body: {
         var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
         cursor-to-start cursor-word
 #?         print-string 0, "d\n"
-        break $process:body
+        break $process-sandbox:body
       }
     }
-    break $process:body
+    break $process-sandbox:body
   }
   compare key, 0xa  # enter
   {
     break-if-!=
     # toggle display of subsidiary stack
     toggle-cursor-word sandbox
-    break $process:body
+    break $process-sandbox:body
   }
   # word-based motions
   compare key, 2  # ctrl-b
-  $process:prev-word: {
+  $process-sandbox:prev-word: {
     break-if-!=
     # jump to previous word at same level
     var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
@@ -237,7 +242,7 @@ $process:body: {
       cursor-to-end prev-word
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       decrement-final-element cursor-call-path
-      break $process:body
+      break $process-sandbox:body
     }
     # if previous word doesn't exist, try to bump up one level
     {
@@ -257,11 +262,11 @@ $process:body: {
       # if so jump to it
       drop-from-call-path-element cursor-call-path-ah
       decrement-final-element cursor-call-path-ah
-      break $process:body
+      break $process-sandbox:body
     }
   }
   compare key, 6  # ctrl-f
-  $process:next-word: {
+  $process-sandbox:next-word: {
     break-if-!=
 #?     print-string 0, "AA\n"
     # jump to previous word at same level
@@ -274,7 +279,7 @@ $process:body: {
       cursor-to-end next-word
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       increment-final-element cursor-call-path
-      break $process:body
+      break $process-sandbox:body
     }
     # if next word doesn't exist, try to bump up one level
 #?     print-string 0, "CC\n"
@@ -286,11 +291,11 @@ $process:body: {
     break-if-=
 #?     print-string 0, "DD\n"
     copy-object caller-cursor-element-ah, cursor-call-path-ah
-    break $process:body
+    break $process-sandbox:body
   }
   # line-based motions
   compare key, 1  # ctrl-a
-  $process:start-of-line: {
+  $process-sandbox:start-of-line: {
     break-if-!=
     # move cursor to initial word of sandbox
     var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -303,10 +308,10 @@ $process:body: {
     cursor-to-start cursor-word
     # this works as long as the first word isn't expanded
     # but we don't expect to see zero-arg functions first-up
-    break $process:body
+    break $process-sandbox:body
   }
   compare key, 5  # ctrl-e
-  $process:end-of-line: {
+  $process-sandbox:end-of-line: {
     break-if-!=
     # move cursor to final word of sandbox
     var cursor-call-path-ah/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -319,14 +324,14 @@ $process:body: {
     cursor-to-end cursor-word
     # this works because expanded words lie to the right of their bodies
     # so the final word is always guaranteed to be at the top-level
-    break $process:body
+    break $process-sandbox:body
   }
   compare key, 0x15  # ctrl-u
-  $process:clear-line: {
+  $process-sandbox:clear-line: {
     break-if-!=
     # clear line in sandbox
     initialize-sandbox sandbox
-    break $process:body
+    break $process-sandbox:body
   }
   # if cursor is within a call, disable editing hotkeys below
   var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -334,10 +339,10 @@ $process:body: {
   var next-cursor-element-ah/eax: (addr handle call-path-element) <- get cursor-call-path, next
   var next-cursor-element/eax: (addr call-path-element) <- lookup *next-cursor-element-ah
   compare next-cursor-element, 0
-  break-if-!= $process:body
+  break-if-!= $process-sandbox:body
   # - remaining keys only work at the top row outside any function calls
   compare key, 0x7f  # del (backspace on Macs)
-  $process:backspace: {
+  $process-sandbox:backspace: {
     break-if-!=
     # if not at start of some word, delete grapheme before cursor within current word
     var at-start?/eax: boolean <- cursor-at-start? cursor-word
@@ -345,7 +350,7 @@ $process:body: {
     {
       break-if-=
       delete-before-cursor cursor-word
-      break $process:body
+      break $process-sandbox:body
     }
     # otherwise delete current word and move to end of prev word
     var prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
@@ -358,25 +363,25 @@ $process:body: {
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       decrement-final-element cursor-call-path
     }
-    break $process:body
+    break $process-sandbox:body
   }
   compare key, 0x20  # space
-  $process:space: {
+  $process-sandbox:space: {
     break-if-!=
     # insert new word
     append-word cursor-word-ah
     var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
     increment-final-element cursor-call-path
-    break $process:body
+    break $process-sandbox:body
   }
   # otherwise insert key within current word
   var g/edx: grapheme <- copy key
   var print?/eax: boolean <- real-grapheme? key
-  $process:real-grapheme: {
+  $process-sandbox:real-grapheme: {
     compare print?, 0  # false
     break-if-=
     add-grapheme-to-word cursor-word, g
-    break $process:body
+    break $process-sandbox:body
   }
   # silently ignore other hotkeys
 }
