@@ -590,12 +590,12 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   # if necessary, draw the rename-word modal dialog
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var cursor-row/eax: int <- call-depth-at-cursor _sandbox
-  render-rename-word screen, sandbox, cursor-row, cursor-col
+  render-rename-dialog screen, sandbox, cursor-row, cursor-col
   # Finally, position the cursor correctly.
   move-cursor screen, cursor-row, cursor-col
 }
 
-fn render-rename-word screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
+fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var rename-word-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
   var rename-word-mode?/eax: (addr word) <- lookup *rename-word-mode-ah?
