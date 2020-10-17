@@ -435,7 +435,9 @@ $process-sandbox-rename:body: {
     var new-line-ah/eax: (addr handle line) <- address new-line-h
     allocate new-line-ah
     var new-line/eax: (addr line) <- lookup *new-line-ah
-    initialize-line new-line
+    # new-line->word = sandbox-partial-name-for-cursor-word
+    var new-line-word/ecx: (addr handle word) <- get new-line, data
+    copy-object new-name-ah, new-line-word
     # new-line->next = sandbox->data
     var new-line-next/ecx: (addr handle line) <- get new-line, next
     var sandbox-slot/edx: (addr handle line) <- get sandbox, data
