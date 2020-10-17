@@ -418,7 +418,7 @@ $process-sandbox:body: {
 fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
 $process-sandbox-rename:body: {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
-  var new-name-ah/esi: (addr handle word) <- get sandbox, partial-name-for-cursor-word
+  var new-name-ah/edi: (addr handle word) <- get sandbox, partial-name-for-cursor-word
   # if 'esc' pressed, cancel rename
   compare key, 0x1b  # esc
   $process-sandbox-rename:cancel: {
@@ -431,7 +431,18 @@ $process-sandbox-rename:body: {
   compare key, 0xa  # enter
   $process-sandbox-rename:commit: {
     break-if-!=
-    # HERE
+    var new-line-h: (handle line)
+    var new-line-ah/eax: (addr handle line) <- address new-line-h
+    allocate new-line-ah
+    var new-line/eax: (addr line) <- lookup *new-line-ah
+    initialize-line new-line
+    # new-line->next = sandbox->data
+    var new-line-next/ecx: (addr handle line) <- get new-line, next
+    var sandbox-slot/edx: (addr handle line) <- get sandbox, data
+    copy-object sandbox-slot, new-line-next
+    # sandbox->data = new-line
+    copy-handle new-line-h, sandbox-slot
+    # clear partial-name-for-cursor-word
     var empty: (handle word)
     copy-handle empty, new-name-ah
     break $process-sandbox-rename:body
