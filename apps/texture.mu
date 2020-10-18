@@ -16,7 +16,7 @@ fn main -> exit-status/ebx: int {
   print-string 0, " "
   print-int32-decimal 0, height
   print-string 0, "\n"
-  print-string 0, "65535\n"  # color depth
+  print-string 0, "255\n"  # color depth
   var row/ecx: int <- copy 0
   {
     compare row, height
@@ -27,16 +27,20 @@ fn main -> exit-status/ebx: int {
       break-if->=
       # r
       var tmp/eax: int <- copy col
-      tmp <- multiply col
+      tmp <- multiply row
+      tmp <- and 0xff
       print-int32-decimal 0, tmp
       print-string 0, " "
       # g
       tmp <- copy row
-      tmp <- multiply row
+      tmp <- multiply col
+      tmp <- and col
       print-int32-decimal 0, tmp
       print-string 0, " "
       # b
-      tmp <- copy 0
+      tmp <- copy row
+      tmp <- multiply col
+      tmp <- and row
       print-int32-decimal 0, tmp
       print-string 0, "\n"
       col <- increment
