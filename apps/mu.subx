@@ -1279,7 +1279,7 @@ test-initializer-in-hex:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-initializer-in-hex: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "literal integers are always hex in Mu; either start '10' with a '0x' to be unambiguous, or convert it to decimal."  "F - test-initializer-in-hex: error message")
+    (check-next-stream-line-equal _test-error-stream  "literal integers are always hex in Mu; start '10' with a '0x' to be unambiguous, converting it to hexadecimal as necessary."  "F - test-initializer-in-hex: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-initializer-in-hex: exit status")
     # don't restore from ebp
@@ -4193,7 +4193,7 @@ test-array-size-in-hex:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-array-size-in-hex: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "literal integers are always hex in Mu; either start '10' with a '0x' to be unambiguous, or convert it to decimal."  "F - test-array-size-in-hex: error message")
+    (check-next-stream-line-equal _test-error-stream  "literal integers are always hex in Mu; start '10' with a '0x' to be unambiguous, converting it to hexadecimal as necessary."  "F - test-array-size-in-hex: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-array-size-in-hex: exit status")
     # don't restore from ebp
@@ -11678,9 +11678,9 @@ $check-mu-hex-int:length->-1:
     75/jump-if-!= $check-mu-hex-int:end/disp8
 $check-mu-hex-int:abort:
     # otherwise abort
-    (write-buffered *(ebp+0xc) "literal integers are always hex in Mu; either start '")
+    (write-buffered *(ebp+0xc) "literal integers are always hex in Mu; start '")
     (write-slice-buffered *(ebp+0xc) *(ebp+8))
-    (write-buffered *(ebp+0xc) "' with a '0x' to be unambiguous, or convert it to decimal.\n")
+    (write-buffered *(ebp+0xc) "' with a '0x' to be unambiguous, converting it to hexadecimal as necessary.\n")
     (flush *(ebp+0xc))
     (stop *(ebp+0x10) 1)
 $check-mu-hex-int:end:
