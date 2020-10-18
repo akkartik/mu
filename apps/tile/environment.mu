@@ -70,11 +70,13 @@ $process:body: {
   compare rename-word-mode?, 0
   {
     break-if-!=
+#?     print-string 0, "processing sandbox\n"
     process-sandbox self, sandbox, key
     break $process:body
   }
   {
     break-if-=
+#?     print-string 0, "processing sandbox rename\n"
     process-sandbox-rename sandbox, key
   }
 }
@@ -97,7 +99,7 @@ $process-sandbox:body: {
     var at-start?/eax: boolean <- cursor-at-start? cursor-word
     compare at-start?, 0  # false
     {
-      break-if-=
+      break-if-!=
 #?       print-string 0, "cursor left within word\n"
       cursor-left cursor-word
       break $process-sandbox:body
@@ -174,7 +176,7 @@ $process-sandbox:body: {
     var at-end?/eax: boolean <- cursor-at-end? cursor-word
     compare at-end?, 0  # false
     {
-      break-if-=
+      break-if-!=
 #?       print-string 0, "a\n"
       cursor-right cursor-word
       break $process-sandbox:body
@@ -362,7 +364,7 @@ $process-sandbox:body: {
     var at-start?/eax: boolean <- cursor-at-start? cursor-word
     compare at-start?, 0  # false
     {
-      break-if-=
+      break-if-!=
       delete-before-cursor cursor-word
       break $process-sandbox:body
     }
@@ -431,13 +433,31 @@ $process-sandbox-rename:body: {
   compare key, 0xa  # enter
   $process-sandbox-rename:commit: {
     break-if-!=
+#?     print-string 0, "newline\n"
+    # new line
     var new-line-h: (handle line)
     var new-line-ah/eax: (addr handle line) <- address new-line-h
     allocate new-line-ah
     var new-line/eax: (addr line) <- lookup *new-line-ah
-    # new-line->word = sandbox-partial-name-for-cursor-word
-    var new-line-word/ecx: (addr handle word) <- get new-line, data
-    copy-object new-name-ah, new-line-word
+    initialize-line new-line
+    var new-line-word-ah/ecx: (addr handle word) <- get new-line, data
+    {
+      # move word at cursor to new line
+      var cursor-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+      var cursor/eax: (addr call-path-element) <- lookup *cursor-ah
+      var word-at-cursor-ah/eax: (addr handle word) <- get cursor, word
+      move-word-contents word-at-cursor-ah, new-line-word-ah
+      # copy name to word at cursor
+      copy-word-contents-before-cursor new-name-ah, word-at-cursor-ah
+    }
+    # prepend '=' to name
+    {
+      var new-name/eax: (addr word) <- lookup *new-name-ah
+      cursor-to-start new-name
+      add-grapheme-to-word new-name, 0x3d  # '='
+    }
+    # append name to new line
+    chain-words new-line-word-ah, new-name-ah
     # new-line->next = sandbox->data
     var new-line-next/ecx: (addr handle line) <- get new-line, next
     var sandbox-slot/edx: (addr handle line) <- get sandbox, data
@@ -458,7 +478,7 @@ $process-sandbox-rename:body: {
     var at-start?/eax: boolean <- cursor-at-start? new-name
     compare at-start?, 0  # false
     {
-      break-if-=
+      break-if-!=
       var new-name/eax: (addr word) <- lookup *new-name-ah
       delete-before-cursor new-name
     }
@@ -583,6 +603,9 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ebx: (addr word) <- copy _cursor-word
+#?   print-string 0, "cursor word is "
+#?   print-word 0, cursor-word
+#?   print-string 0, "\n"
   # cursor-col
   var cursor-col: int
   var cursor-col-a/edx: (addr int) <- address cursor-col

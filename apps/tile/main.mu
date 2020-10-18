@@ -81,7 +81,9 @@ fn test {
   process env, g
   g <- copy 0x32  # '2'
   process env, g
-  g <- copy 0x2a  # '*'
+  g <- copy 0x12  # ctrl-r
+  process env, g
+  g <- copy 0x61  # 'a'
   process env, g
   g <- copy 0xa  # newline
   process env, g

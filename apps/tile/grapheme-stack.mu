@@ -11,14 +11,20 @@ fn initialize-grapheme-stack _self: (addr grapheme-stack), n: int {
   copy-to *top, 0
 }
 
+fn clear-grapheme-stack _self: (addr grapheme-stack) {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var top/eax: (addr int) <- get self, top
+  copy-to *top, 0
+}
+
 fn grapheme-stack-empty? _self: (addr grapheme-stack) -> result/eax: boolean {
 $grapheme-stack-empty?:body: {
   var self/esi: (addr grapheme-stack) <- copy _self
   var top/eax: (addr int) <- get self, top
   compare *top, 0
   {
-    break-if-=
-    result <- copy 1  # false
+    break-if-!=
+    result <- copy 1  # true
     break $grapheme-stack-empty?:body
   }
   result <- copy 0  # false

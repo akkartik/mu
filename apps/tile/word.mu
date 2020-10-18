@@ -49,6 +49,53 @@ fn prepend-word-with self-h: (handle word), s: (addr array byte) {
 
 ## real primitives
 
+fn move-word-contents _src-ah: (addr handle word), _dest-ah: (addr handle word) {
+  var dest-ah/eax: (addr handle word) <- copy _dest-ah
+  var _dest/eax: (addr word) <- lookup *dest-ah
+  var dest/edi: (addr word) <- copy _dest
+  var src-ah/eax: (addr handle word) <- copy _src-ah
+  var _src/eax: (addr word) <- lookup *src-ah
+  var src/esi: (addr word) <- copy _src
+  cursor-to-start src
+  var src-data-ah/eax: (addr handle gap-buffer) <- get src, scalar-data
+  var src-data/eax: (addr gap-buffer) <- lookup *src-data-ah
+  var src-stack/ecx: (addr grapheme-stack) <- get src-data, right
+  {
+    var done?/eax: boolean <- grapheme-stack-empty? src-stack
+    compare done?, 0  # false
+    break-if-!=
+    var g/eax: grapheme <- pop-grapheme-stack src-stack
+#?     print-grapheme 0, g
+#?     print-string 0, "\n"
+    add-grapheme-to-word dest, g
+    loop
+  }
+}
+
+fn copy-word-contents-before-cursor _src-ah: (addr handle word), _dest-ah: (addr handle word) {
+  var dest-ah/eax: (addr handle word) <- copy _dest-ah
+  var _dest/eax: (addr word) <- lookup *dest-ah
+  var dest/edi: (addr word) <- copy _dest
+  var src-ah/eax: (addr handle word) <- copy _src-ah
+  var src/eax: (addr word) <- lookup *src-ah
+  var src-data-ah/eax: (addr handle gap-buffer) <- get src, scalar-data
+  var src-data/eax: (addr gap-buffer) <- lookup *src-data-ah
+  var src-stack/ecx: (addr grapheme-stack) <- get src-data, left
+  var src-stack-data-ah/eax: (addr handle array grapheme) <- get src-stack, data
+  var _src-stack-data/eax: (addr array grapheme) <- lookup *src-stack-data-ah
+  var src-stack-data/edx: (addr array grapheme) <- copy _src-stack-data
+  var top-addr/ecx: (addr int) <- get src-stack, top
+  var i/eax: int <- copy 0
+  {
+    compare i, *top-addr
+    break-if->=
+    var g/edx: (addr grapheme) <- index src-stack-data, i
+    add-grapheme-to-word dest, *g
+    i <- increment
+    loop
+  }
+}
+
 fn word-equal? _self: (addr word), s: (addr array byte) -> result/eax: boolean {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
@@ -220,6 +267,18 @@ fn append-word _self-ah: (addr handle word) {
   # self->next = new
   dest <- get self, next
   copy-object new-ah, dest
+}
+
+fn chain-words _self-ah: (addr handle word), _next: (addr handle word) {
+  var self-ah/esi: (addr handle word) <- copy _self-ah
+  var _self/eax: (addr word) <- lookup *self-ah
+  var self/ecx: (addr word) <- copy _self
+  var next-ah/edi: (addr handle word) <- copy _next
+  var next/eax: (addr word) <- lookup *next-ah
+  var dest/edx: (addr handle word) <- get next, prev
+  copy-object self-ah, dest
+  dest <- get self, next
+  copy-object next-ah, dest
 }
 
 fn emit-word _self: (addr word), out: (addr stream byte) {
