@@ -50,6 +50,9 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       }
       # if curr-stream defines a binding, save top of stack to bindings
       {
+        var done?/eax: boolean <- stream-empty? curr-stream
+        compare done?, 0  # false
+        break-if-!=
         var new-byte/eax: byte <- read-byte curr-stream
         compare new-byte, 0x3d  # '='
         break-if-!=

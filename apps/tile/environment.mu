@@ -588,9 +588,47 @@ fn render _env: (addr environment) {
 
 fn render-sandbox screen: (addr screen), functions: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
-#?   print-string 0, "rendering sandbox from "
-#?   print-int32-decimal 0, left-col
-#?   print-string 0, "\n"
+  # line
+  var curr-line-ah/eax: (addr handle line) <- get sandbox, data
+  var _curr-line/eax: (addr line) <- lookup *curr-line-ah
+  var curr-line/ecx: (addr line) <- copy _curr-line
+  #
+  var curr-row/edx: int <- copy top-row
+  # cursor row, col
+  var cursor-row: int
+  var cursor-row-addr: (addr int)
+  var tmp/eax: (addr int) <- address cursor-row
+  copy-to cursor-row-addr, tmp
+  var cursor-col: int
+  var cursor-col-addr: (addr int)
+  tmp <- address cursor-col
+  copy-to cursor-col-addr, tmp
+  # render all but final line without stack
+  {
+    var next-line-ah/eax: (addr handle line) <- get curr-line, next
+    var next-line/eax: (addr line) <- lookup *next-line-ah
+    compare next-line, 0
+    break-if-=
+    {
+      var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+      var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+      var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
+      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      # it's enough to pass in the first word of the path, because if the path isn't a singleton the word is guaranteed to be unique
+      render-line-without-stack screen, curr-line, curr-row, left-col, cursor-word, cursor-row-addr, cursor-col-addr
+    }
+    curr-line <- copy next-line
+    curr-row <- increment
+    loop
+  }
+  #
+  render-final-line-with-stack screen, functions, bindings, sandbox, curr-row, left-col, cursor-row-addr, cursor-col-addr
+  render-rename-dialog screen, sandbox, cursor-row, cursor-col
+  move-cursor screen, cursor-row, cursor-col
+}
+
+fn render-final-line-with-stack screen: (addr screen), functions: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int, cursor-row-addr: (addr int), cursor-col-addr: (addr int) {
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
   # expanded-words
   var expanded-words/edi: (addr handle call-path) <- get sandbox, expanded-words
   # line
@@ -603,9 +641,6 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ebx: (addr word) <- copy _cursor-word
-#?   print-string 0, "cursor word is "
-#?   print-word 0, cursor-word
-#?   print-string 0, "\n"
   # cursor-col
   var cursor-col: int
   var cursor-col-a/edx: (addr int) <- address cursor-col
@@ -620,13 +655,7 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   var curr-path/eax: (addr handle call-path-element) <- address curr-path-storage
   allocate curr-path  # leak
   initialize-path-from-sandbox sandbox, curr-path
-#?   print-string 0, "==\n"
-  var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, 3, left-col, curr-path, cursor-word, cursor-call-path, cursor-col-a  # input-row=3
-  # if necessary, draw the rename-word modal dialog
-  var cursor-row/eax: int <- call-depth-at-cursor _sandbox
-  render-rename-dialog screen, sandbox, cursor-row, cursor-col
-  # Finally, position the cursor correctly.
-  move-cursor screen, cursor-row, cursor-col
+  var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, top-row, left-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
 }
 
 fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
@@ -671,6 +700,49 @@ fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-
   print-word screen, word
 }
 
+# Render just the words in 'line'.
+fn render-line-without-stack screen: (addr screen), _line: (addr line), curr-row: int, left-col: int, cursor-word: (addr word), cursor-row-addr: (addr int), cursor-col-addr: (addr int) {
+  # curr-word
+  var line/eax: (addr line) <- copy _line
+  var first-word-ah/eax: (addr handle word) <- get line, data
+  var _curr-word/eax: (addr word) <- lookup *first-word-ah
+  var curr-word/esi: (addr word) <- copy _curr-word
+  #
+  # loop-carried dependency
+  var curr-col/ecx: int <- copy left-col
+  #
+  {
+    compare curr-word, 0
+    break-if-=
+    var old-col/edx: int <- copy curr-col
+    reset-formatting screen
+    move-cursor screen, curr-row, curr-col
+    print-word screen, curr-word
+    {
+      var max-width/eax: int <- word-length curr-word
+      curr-col <- add max-width
+      curr-col <- add 1  # margin-right
+    }
+    # cache cursor column if necessary
+    {
+      compare curr-word, cursor-word
+      break-if-=
+      var dest/ecx: (addr int) <- copy cursor-row-addr
+      var src/eax: int <- copy curr-row
+      copy-to *dest, src
+      dest <- copy cursor-col-addr
+      copy-to *dest, old-col
+      var cursor-index-in-word/eax: int <- cursor-index curr-word
+      add-to *dest, cursor-index-in-word
+    }
+    # loop update
+    var next-word-ah/edx: (addr handle word) <- get curr-word, next
+    var _curr-word/eax: (addr word) <- lookup *next-word-ah
+    curr-word <- copy _curr-word
+    loop
+  }
+}
+
 fn call-depth-at-cursor _sandbox: (addr sandbox) -> result/eax: int {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -696,7 +768,7 @@ fn call-path-element-length _x: (addr handle call-path-element) -> result/eax: i
 # Also render any expanded function calls using recursive calls.
 #
 # Along the way, compute the column the cursor should be positioned at (cursor-col-a).
-fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-col-a: (addr int) -> right-col/ecx: int {
+fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-row-addr: (addr int), cursor-col-addr: (addr int) -> right-col/ecx: int {
 #?   print-string 0, "--\n"
   # curr-word
   var line/esi: (addr line) <- copy _line
@@ -770,7 +842,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       var callee-body-first-word/edx: (addr handle word) <- get callee-body, data
       # - render subsidiary stack
       push-to-call-path-element curr-path, callee-body-first-word  # leak
-      curr-col <- render-line screen, functions, callee-bindings, callee-body, expanded-words, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-col-a
+      curr-col <- render-line screen, functions, callee-bindings, callee-body, expanded-words, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
       drop-from-call-path-element curr-path
       #
       move-cursor screen, top-row, curr-col
@@ -794,7 +866,12 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         compare found?, 0  # false
         break-if-= $render-line:cache-cursor-column
       }
-      var dest/edi: (addr int) <- copy cursor-col-a
+      var dest/edi: (addr int) <- copy cursor-row-addr
+      {
+        var src/eax: int <- copy top-row
+        copy-to *dest, src
+      }
+      dest <- copy cursor-col-addr
       copy-to *dest, old-col
       var cursor-index-in-word/eax: int <- cursor-index curr-word
       add-to *dest, cursor-index-in-word
