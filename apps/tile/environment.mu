@@ -597,6 +597,7 @@ fn evaluate-environment _env: (addr environment), stack: (addr value-stack) {
 }
 
 fn render _env: (addr environment) {
+#?   print-string 0, "==\n"
   var env/esi: (addr environment) <- copy _env
   clear-canvas env
   # screen
@@ -688,9 +689,6 @@ fn render-final-line-with-stack screen: (addr screen), functions: (addr handle f
   var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ebx: (addr word) <- copy _cursor-word
-  # cursor-col
-  var cursor-col: int
-  var cursor-col-a/edx: (addr int) <- address cursor-col
   # cursor-call-path
   var cursor-call-path: (addr handle call-path-element)
   {
@@ -700,6 +698,7 @@ fn render-final-line-with-stack screen: (addr screen), functions: (addr handle f
   # final line
   var line-ah/eax: (addr handle line) <- get sandbox, data
   var curr-line/eax: (addr line) <- lookup *line-ah
+  var first-line/edx: (addr line) <- copy curr-line
   $render-final-line-with-stack:line-loop: {
     var next-line-ah/ecx: (addr handle line) <- get curr-line, next
     {
@@ -717,7 +716,7 @@ fn render-final-line-with-stack screen: (addr screen), functions: (addr handle f
   allocate curr-path  # leak
   initialize-path-from-line curr-line, curr-path
   #
-  var dummy/ecx: int <- render-line screen, functions, bindings, curr-line, expanded-words, top-row, left-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
+  var dummy/ecx: int <- render-line screen, functions, bindings, first-line, curr-line, expanded-words, top-row, left-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
 }
 
 fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
@@ -849,7 +848,7 @@ fn call-path-element-length _x: (addr handle call-path-element) -> result/eax: i
 # Also render any expanded function calls using recursive calls.
 #
 # Along the way, compute the column the cursor should be positioned at (cursor-col-addr).
-fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-row-addr: (addr int), cursor-col-addr: (addr int) -> right-col/ecx: int {
+fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-row-addr: (addr int), cursor-col-addr: (addr int) -> right-col/ecx: int {
 #?   print-string 0, "--\n"
   # curr-word
   var line/esi: (addr line) <- copy _line
@@ -921,7 +920,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       var callee-body-first-word/edx: (addr handle word) <- get callee-body, data
       # - render subsidiary stack
       push-to-call-path-element curr-path, callee-body-first-word  # leak
-      curr-col <- render-line screen, functions, callee-bindings, callee-body, expanded-words, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
+      curr-col <- render-line screen, functions, callee-bindings, callee-body, callee-body, expanded-words, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
       drop-from-call-path-element curr-path
       #
       move-cursor screen, top-row, curr-col
@@ -937,7 +936,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?     print-string 0, "rendering column from "
 #?     print-int32-decimal 0, curr-col
 #?     print-string 0, "\n"
-    curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col
+    curr-col <- render-column screen, functions, bindings, first-line, line, curr-word, top-row, curr-col
     # cache cursor column if necessary
     $render-line:cache-cursor-column: {
 #?       print-string 0, "cache cursor? "
@@ -993,7 +992,7 @@ fn callee functions: (addr handle function), word: (addr word), out: (addr handl
 #   - starting somewhere below at left-col: the stack result from interpreting first-world to final-word (inclusive)
 #
 # Return the farthest column written.
-fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int -> right-col/ecx: int {
+fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), line: (addr line), final-word: (addr word), top-row: int, left-col: int -> right-col/ecx: int {
 #?   print-string 0, "render-column\n"
   var max-width/esi: int <- copy 0
   {
@@ -1004,7 +1003,7 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
     initialize-value-stack stack-addr, 0x10  # max-words
-    evaluate functions, bindings, scratch, final-word, stack-addr
+    evaluate functions, bindings, first-line, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy top-row
     curr-row <- add 3  # stack-margin-top
@@ -1017,6 +1016,8 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
       move-cursor screen, curr-row, indented-col
       {
         var val/eax: int <- pop-int-from-value-stack stack-addr
+#?         print-int32-decimal 0, val
+#?         print-string 0, "\n"
         render-integer screen, val, max-width
       }
       curr-row <- increment
