@@ -48,6 +48,26 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         push-int-to-value-stack out, a
         break $evaluate:process-word
       }
+      # if curr-stream defines a binding, save top of stack to bindings
+      {
+        var new-byte/eax: byte <- read-byte curr-stream
+        compare new-byte, 0x3d  # '='
+        break-if-!=
+        var key-h: (handle array byte)
+        var key/ecx: (addr handle array byte) <- address key-h
+        stream-to-string curr-stream, key
+        var foo/eax: (addr array byte) <- lookup *key
+        var val/eax: int <- pop-int-from-value-stack out
+        bind-int-in-table bindings, key, val
+        var line/eax: (addr line) <- copy scratch
+        var next-line-ah/eax: (addr handle line) <- get line, next
+        var next-line/eax: (addr line) <- lookup *next-line-ah
+        compare next-line, 0
+        break-if-= $evaluate:process-word
+        evaluate functions, bindings, next-line, end, out
+        break $evaluate:process-word
+      }
+      rewind-stream curr-stream
       # if curr-stream is a known function name, call it appropriately
       {
         var callee-h: (handle function)
@@ -73,11 +93,6 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var val/eax: (addr value) <- lookup *val-ah
         compare val, 0
         break-if-=
-#?         print-string-to-real-screen "value of "
-#?         print-string-to-real-screen curr-string
-#?         print-string-to-real-screen " is "
-#?         print-int32-hex-to-real-screen result
-#?         print-string-to-real-screen "\n"
         push-value-stack out, val
         break $evaluate:process-word
       }
@@ -96,6 +111,30 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
     #
     loop
   }
+}
+
+fn test-evaluate {
+  var line-storage: line
+  var line/esi: (addr line) <- address line-storage
+  var first-word-ah/eax: (addr handle word) <- get line-storage, data
+  allocate-word-with first-word-ah, "3"
+  append-word-with *first-word-ah, "=a"
+  var next-line-ah/eax: (addr handle line) <- get line-storage, next
+  allocate next-line-ah
+  var next-line/eax: (addr line) <- lookup *next-line-ah
+  var first-word-ah/eax: (addr handle word) <- get next-line, data
+  allocate-word-with first-word-ah, "a"
+  var functions-storage: (handle function)
+  var functions/ecx: (addr handle function) <- address functions-storage
+  var table-storage: table
+  var table/ebx: (addr table) <- address table-storage
+  initialize-table table, 0x10
+  var stack-storage: value-stack
+  var stack/edi: (addr value-stack) <- address stack-storage
+  initialize-value-stack stack, 0x10
+  evaluate functions, table, line, 0, stack
+  var x/eax: int <- pop-int-from-value-stack stack
+  check-ints-equal x, 3, "F - test-evaluate"
 }
 
 fn find-function first: (addr handle function), name: (addr stream byte), out: (addr handle function) {
