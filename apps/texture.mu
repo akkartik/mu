@@ -28,19 +28,24 @@ fn main -> exit-status/ebx: int {
       # r
       var tmp/eax: int <- copy col
       tmp <- multiply row
-      tmp <- and 0xff
+      tmp <- and 0x7f
+      tmp <- add 0x80
+      tmp <- copy 0xff
       print-int32-decimal 0, tmp
       print-string 0, " "
       # g
       tmp <- copy row
       tmp <- multiply col
-      tmp <- and col
+      tmp <- and 0x7f
+      tmp <- add 0x80
+#?       tmp <- copy 0xcf
       print-int32-decimal 0, tmp
       print-string 0, " "
       # b
       tmp <- copy row
       tmp <- multiply col
-      tmp <- and row
+      tmp <- and 0x7f
+      tmp <- add 0x80
       print-int32-decimal 0, tmp
       print-string 0, "\n"
       col <- increment
