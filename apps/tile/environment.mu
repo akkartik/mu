@@ -390,7 +390,7 @@ $process-sandbox:body: {
     increment-final-element cursor-call-path
     break $process-sandbox:body
   }
-  compare key, 0x12  # ctrl-r
+  compare key, 0xe  # ctrl-n
   $process:rename-word: {
     break-if-!=
     # TODO: ensure current word is not a function
@@ -1118,9 +1118,9 @@ fn clear-canvas _env: (addr environment) {
   reset-formatting screen
   print-string screen, " clear line  "
   start-reverse-video screen
-  print-string screen, " ctrl-r "
+  print-string screen, " ctrl-n "
   reset-formatting screen
-  print-string screen, " rename word  "
+  print-string screen, " name value  "
   start-reverse-video screen
   print-string screen, " ctrl-d "
   reset-formatting screen
