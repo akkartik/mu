@@ -669,7 +669,7 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
       render-line-without-stack screen, curr-line, curr-row, left-col, cursor-word, cursor-row-addr, cursor-col-addr
     }
     curr-line <- copy next-line
-    curr-row <- increment
+    curr-row <- add 2
     loop
   }
   #
