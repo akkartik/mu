@@ -77,9 +77,16 @@ fn test {
   initialize-environment-with-fake-screen env, 5, 0xa
   var g/eax: grapheme <- copy 0x31  # '1'
   process env, g
+  g <- copy 0x20  # space
+  process env, g
   g <- copy 0x32  # '2'
   process env, g
-  g <- copy 0x20  # space
+  render env
+  g <- copy 0x12  # 'ctrl-r'
+  process env, g
+  g <- copy 0x61  # 'a'
+  process env, g
+  g <- copy 0xa  # newline
   process env, g
   render env
 }

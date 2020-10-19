@@ -347,6 +347,15 @@ fn initialize-path-from-sandbox _in: (addr sandbox), _out: (addr handle call-pat
   copy-object src, dest
 }
 
+fn initialize-path-from-line _line: (addr line), _out: (addr handle call-path-element) {
+  var line/eax: (addr line) <- copy _line
+  var src/esi: (addr handle word) <- get line, data
+  var out-ah/edi: (addr handle call-path-element) <- copy _out
+  var out/eax: (addr call-path-element) <- lookup *out-ah
+  var dest/edi: (addr handle word) <- get out, word
+  copy-object src, dest
+}
+
 fn find-in-call-path in: (addr handle call-path), needle: (addr handle call-path-element) -> result/eax: boolean {
   var curr-ah/esi: (addr handle call-path) <- copy in
   var out/edi: boolean <- copy 0  # false
@@ -399,10 +408,15 @@ $call-path-element-match?:body: {
   # compare word addresses, not contents
   var x-data-ah/ecx: (addr handle word) <- get x, word
   var x-data-a/eax: (addr word) <- lookup *x-data-ah
-  var x-data/ecx: int <- copy *x-data-a
+  var x-data/ecx: int <- copy x-data-a
   var y-data-ah/eax: (addr handle word) <- get y, word
   var y-data-a/eax: (addr word) <- lookup *y-data-ah
-  var y-data/eax: int <- copy *y-data-a
+  var y-data/eax: int <- copy y-data-a
+#?   print-string 0, "match? "
+#?   print-int32-hex 0, x-data
+#?   print-string 0, " vs "
+#?   print-int32-hex 0, y-data
+#?   print-string 0, "\n"
   compare x-data, y-data
   {
     break-if-=

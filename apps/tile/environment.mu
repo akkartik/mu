@@ -433,7 +433,7 @@ $process-sandbox-rename:body: {
   compare key, 0xa  # enter
   $process-sandbox-rename:commit: {
     break-if-!=
-#?     print-string 0, "newline\n"
+#?     print-string 0, "rename\n"
     # new line
     var new-line-h: (handle line)
     var new-line-ah/eax: (addr handle line) <- address new-line-h
@@ -446,9 +446,33 @@ $process-sandbox-rename:body: {
       var cursor-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       var cursor/eax: (addr call-path-element) <- lookup *cursor-ah
       var word-at-cursor-ah/eax: (addr handle word) <- get cursor, word
+#?       print-string 0, "cursor before at word "
+#?       {
+#?         var cursor-word/eax: (addr word) <- lookup *word-at-cursor-ah
+#?         print-word 0, cursor-word
+#?         print-string 0, "\n"
+#?       }
       move-word-contents word-at-cursor-ah, new-line-word-ah
       # copy name to word at cursor
       copy-word-contents-before-cursor new-name-ah, word-at-cursor-ah
+#?       print-string 0, "cursor after at word "
+#?       {
+#?         var cursor-word/eax: (addr word) <- lookup *word-at-cursor-ah
+#?         print-word 0, cursor-word
+#?         print-string 0, "\n"
+#?         var foo/eax: int <- copy cursor-word
+#?         print-int32-hex 0, foo
+#?         print-string 0, "\n"
+#?       }
+#?       print-string 0, "new name word "
+#?       {
+#?         var new-name/eax: (addr word) <- lookup *new-name-ah
+#?         print-word 0, new-name
+#?         print-string 0, "\n"
+#?         var foo/eax: int <- copy new-name
+#?         print-int32-hex 0, foo
+#?         print-string 0, "\n"
+#?       }
     }
     # prepend '=' to name
     {
@@ -467,6 +491,19 @@ $process-sandbox-rename:body: {
     # clear partial-name-for-cursor-word
     var empty: (handle word)
     copy-handle empty, new-name-ah
+#?     # XXX
+#?     var cursor-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+#?     var cursor/eax: (addr call-path-element) <- lookup *cursor-ah
+#?     var word-at-cursor-ah/eax: (addr handle word) <- get cursor, word
+#?     print-string 0, "cursor after rename: "
+#?     {
+#?       var cursor-word/eax: (addr word) <- lookup *word-at-cursor-ah
+#?       print-word 0, cursor-word
+#?       print-string 0, " -- "
+#?       var foo/eax: int <- copy cursor-word
+#?       print-int32-hex 0, foo
+#?       print-string 0, "\n"
+#?     }
     break $process-sandbox-rename:body
   }
   #
@@ -583,7 +620,11 @@ fn render _env: (addr environment) {
 #?     print-word 0, curr-word
 #?     print-string 0, "\n"
 #?   }
-  render-sandbox screen, functions, 0, sandbox, 3, repl-col
+  # bindings
+  var bindings-storage: table
+  var bindings/ebx: (addr table) <- address bindings-storage
+  initialize-table bindings, 0x10
+  render-sandbox screen, functions, bindings, sandbox, 3, repl-col
 }
 
 fn render-sandbox screen: (addr screen), functions: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int {
@@ -604,6 +645,7 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   tmp <- address cursor-col
   copy-to cursor-col-addr, tmp
   # render all but final line without stack
+#?   print-string 0, "render all but final line\n"
   {
     var next-line-ah/eax: (addr handle line) <- get curr-line, next
     var next-line/eax: (addr line) <- lookup *next-line-ah
@@ -614,6 +656,14 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
       var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
       var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
       var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+#?       print-string 0, "cursor 2: "
+#?       {
+#?         print-word 0, cursor-word
+#?         print-string 0, " -- "
+#?         var foo/eax: int <- copy cursor-word
+#?         print-int32-hex 0, foo
+#?         print-string 0, "\n"
+#?       }
       # it's enough to pass in the first word of the path, because if the path isn't a singleton the word is guaranteed to be unique
       render-line-without-stack screen, curr-line, curr-row, left-col, cursor-word, cursor-row-addr, cursor-col-addr
     }
@@ -622,6 +672,7 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
     loop
   }
   #
+#?   print-string 0, "render final line\n"
   render-final-line-with-stack screen, functions, bindings, sandbox, curr-row, left-col, cursor-row-addr, cursor-col-addr
   render-rename-dialog screen, sandbox, cursor-row, cursor-col
   move-cursor screen, cursor-row, cursor-col
@@ -631,10 +682,6 @@ fn render-final-line-with-stack screen: (addr screen), functions: (addr handle f
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   # expanded-words
   var expanded-words/edi: (addr handle call-path) <- get sandbox, expanded-words
-  # line
-  var line-ah/eax: (addr handle line) <- get sandbox, data
-  var _line/eax: (addr line) <- lookup *line-ah
-  var line/ecx: (addr line) <- copy _line
   # cursor-word
   var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
   var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
@@ -650,12 +697,27 @@ fn render-final-line-with-stack screen: (addr screen), functions: (addr handle f
     var src/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
     copy-to cursor-call-path, src
   }
-  #
+  # final line
+  var line-ah/eax: (addr handle line) <- get sandbox, data
+  var curr-line/eax: (addr line) <- lookup *line-ah
+  $render-final-line-with-stack:line-loop: {
+    var next-line-ah/ecx: (addr handle line) <- get curr-line, next
+    {
+      var next-line/eax: (addr line) <- lookup *next-line-ah
+      compare next-line, 0
+      break-if-= $render-final-line-with-stack:line-loop
+    }
+#?     print-string 0, "skipping line\n"
+    curr-line <- lookup *next-line-ah
+    loop
+  }
+  # curr-path
   var curr-path-storage: (handle call-path-element)
-  var curr-path/eax: (addr handle call-path-element) <- address curr-path-storage
+  var curr-path/ecx: (addr handle call-path-element) <- address curr-path-storage
   allocate curr-path  # leak
-  initialize-path-from-sandbox sandbox, curr-path
-  var dummy/ecx: int <- render-line screen, functions, 0, line, expanded-words, top-row, left-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
+  initialize-path-from-line curr-line, curr-path
+  #
+  var dummy/ecx: int <- render-line screen, functions, bindings, curr-line, expanded-words, top-row, left-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
 }
 
 fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
@@ -714,6 +776,12 @@ fn render-line-without-stack screen: (addr screen), _line: (addr line), curr-row
   {
     compare curr-word, 0
     break-if-=
+#?     print-string 0, "-- word in penultimate lines: "
+#?     {
+#?       var foo/eax: int <- copy curr-word
+#?       print-int32-hex 0, foo
+#?     }
+#?     print-string 0, "\n"
     var old-col/edx: int <- copy curr-col
     reset-formatting screen
     move-cursor screen, curr-row, curr-col
@@ -726,7 +794,20 @@ fn render-line-without-stack screen: (addr screen), _line: (addr line), curr-row
     # cache cursor column if necessary
     {
       compare curr-word, cursor-word
-      break-if-=
+      break-if-!=
+#?       print-string 0, "Cursor at "
+#?       print-int32-decimal 0, curr-row
+#?       print-string 0, ", "
+#?       print-int32-decimal 0, old-col
+#?       print-string 0, "\n"
+#?       print-string 0, "contents: "
+#?       print-word 0, cursor-word
+#?       print-string 0, "\n"
+#?       {
+#?         var foo/eax: int <- copy cursor-word
+#?         print-int32-hex 0, foo
+#?         print-string 0, "\n"
+#?       }
       var dest/ecx: (addr int) <- copy cursor-row-addr
       var src/eax: int <- copy curr-row
       copy-to *dest, src
@@ -767,7 +848,7 @@ fn call-path-element-length _x: (addr handle call-path-element) -> result/eax: i
 # Render the line of words in line, along with the state of the stack under each word.
 # Also render any expanded function calls using recursive calls.
 #
-# Along the way, compute the column the cursor should be positioned at (cursor-col-a).
+# Along the way, compute the column the cursor should be positioned at (cursor-col-addr).
 fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-row-addr: (addr int), cursor-col-addr: (addr int) -> right-col/ecx: int {
 #?   print-string 0, "--\n"
   # curr-word
@@ -783,14 +864,12 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
   {
     compare curr-word, 0
     break-if-=
-#?     print-string 0, "-- "
-#?     dump-call-path-element 0, curr-path
-#?     print-word 0, curr-word
-#?     print-string 0, "\n"
-
+#?     print-string 0, "-- word in final line: "
 #?     {
-#?       var dummy/eax: grapheme <- read-key-from-real-keyboard
+#?       var foo/eax: int <- copy curr-word
+#?       print-int32-hex 0, foo
 #?     }
+#?     print-string 0, "\n"
     # if necessary, first render columns for subsidiary stack
     $render-line:subsidiary: {
       {
@@ -861,11 +940,22 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     curr-col <- render-column screen, functions, bindings, line, curr-word, top-row, curr-col
     # cache cursor column if necessary
     $render-line:cache-cursor-column: {
+#?       print-string 0, "cache cursor? "
+#?       {
+#?         var foo/eax: int <- copy curr-word
+#?         print-int32-hex 0, foo
+#?       }
+#?       print-string 0, "\n"
       {
         var found?/eax: boolean <- call-path-element-match? curr-path, cursor-call-path
         compare found?, 0  # false
         break-if-= $render-line:cache-cursor-column
       }
+#?       print-string 0, "cursor at "
+#?       print-int32-decimal 0, top-row
+#?       print-string 0, ", "
+#?       print-int32-decimal 0, old-col
+#?       print-string 0, "\n"
       var dest/edi: (addr int) <- copy cursor-row-addr
       {
         var src/eax: int <- copy top-row
@@ -877,8 +967,14 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       add-to *dest, cursor-index-in-word
     }
     # loop update
+#?     print-string 0, "next word\n"
     var next-word-ah/edx: (addr handle word) <- get curr-word, next
     curr-word <- lookup *next-word-ah
+#?     {
+#?       var foo/eax: int <- copy curr-word
+#?       print-int32-hex 0, foo
+#?       print-string 0, "\n"
+#?     }
     increment-final-element curr-path
     loop
   }
@@ -898,6 +994,7 @@ fn callee functions: (addr handle function), word: (addr word), out: (addr handl
 #
 # Return the farthest column written.
 fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), scratch: (addr line), final-word: (addr word), top-row: int, left-col: int -> right-col/ecx: int {
+#?   print-string 0, "render-column\n"
   var max-width/esi: int <- copy 0
   {
     # indent stack
