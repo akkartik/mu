@@ -82,7 +82,7 @@ fn test {
   g <- copy 0x32  # '2'
   process env, g
   render env
-  g <- copy 0xe  # 'ctrl-n'
+  g <- copy 4  # 'ctrl-d'
   process env, g
   g <- copy 0x61  # 'a'
   process env, g

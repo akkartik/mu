@@ -5,6 +5,7 @@ type sandbox {
   cursor-call-path: (handle call-path-element)
   expanded-words: (handle call-path)
   partial-name-for-cursor-word: (handle word)  # only when renaming word
+  partial-name-for-function: (handle word)  # only when defining function
   #
   next: (handle sandbox)
   prev: (handle sandbox)

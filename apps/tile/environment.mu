@@ -69,16 +69,22 @@ $process:body: {
   var rename-word-mode?/eax: (addr word) <- lookup *rename-word-mode-ah?
   compare rename-word-mode?, 0
   {
-    break-if-!=
-#?     print-string 0, "processing sandbox\n"
-    process-sandbox self, sandbox, key
-    break $process:body
-  }
-  {
     break-if-=
 #?     print-string 0, "processing sandbox rename\n"
     process-sandbox-rename sandbox, key
+    break $process:body
   }
+  var define-function-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-function
+  var define-function-mode?/eax: (addr word) <- lookup *define-function-mode-ah?
+  compare define-function-mode?, 0
+  {
+    break-if-=
+#?     print-string 0, "processing function definition\n"
+    process-sandbox-define sandbox, key
+    break $process:body
+  }
+#?   print-string 0, "processing sandbox\n"
+  process-sandbox self, sandbox, key
 }
 }
 
@@ -401,6 +407,16 @@ $process-sandbox:body: {
     initialize-word new-name
     break $process-sandbox:body
   }
+  compare key, 4  # ctrl-d
+  $process:define-function: {
+    break-if-!=
+    # define function out of line at cursor
+    var new-name-ah/eax: (addr handle word) <- get sandbox, partial-name-for-function
+    allocate new-name-ah
+    var new-name/eax: (addr word) <- lookup *new-name-ah
+    initialize-word new-name
+    break $process-sandbox:body
+  }
   # otherwise insert key within current word
   var g/edx: grapheme <- copy key
   var print?/eax: boolean <- real-grapheme? key
@@ -529,6 +545,60 @@ $process-sandbox-rename:body: {
     var new-name/eax: (addr word) <- lookup *new-name-ah
     add-grapheme-to-word new-name, key
     break $process-sandbox-rename:body
+  }
+  # silently ignore other hotkeys
+}
+}
+
+# collect new name in partial-name-for-function, and then define the last line
+# of the sandbox to be a new function with that name. Replace the last line
+# with a call to the appropriate function.
+# Precondition: cursor-call-path is a singleton (not within a call)
+fn process-sandbox-define _sandbox: (addr sandbox), key: grapheme {
+$process-sandbox-define:body: {
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
+  var new-name-ah/edi: (addr handle word) <- get sandbox, partial-name-for-function
+  # if 'esc' pressed, cancel define
+  compare key, 0x1b  # esc
+  $process-sandbox-define:cancel: {
+    break-if-!=
+    var empty: (handle word)
+    copy-handle empty, new-name-ah
+    break $process-sandbox-define:body
+  }
+  # if 'enter' pressed, perform define
+  compare key, 0xa  # enter
+  $process-sandbox-define:commit: {
+    break-if-!=
+#?     print-string 0, "define\n"
+    # HERE
+    var empty: (handle word)
+    copy-handle empty, new-name-ah
+    break $process-sandbox-define:body
+  }
+  #
+  compare key, 0x7f  # del (backspace on Macs)
+  $process-sandbox-define:backspace: {
+    break-if-!=
+    # if not at start, delete grapheme before cursor
+    var new-name/eax: (addr word) <- lookup *new-name-ah
+    var at-start?/eax: boolean <- cursor-at-start? new-name
+    compare at-start?, 0  # false
+    {
+      break-if-!=
+      var new-name/eax: (addr word) <- lookup *new-name-ah
+      delete-before-cursor new-name
+    }
+    break $process-sandbox-define:body
+  }
+  # otherwise insert key within current word
+  var print?/eax: boolean <- real-grapheme? key
+  $process-sandbox-define:real-grapheme: {
+    compare print?, 0  # false
+    break-if-=
+    var new-name/eax: (addr word) <- lookup *new-name-ah
+    add-grapheme-to-word new-name, key
+    break $process-sandbox-define:body
   }
   # silently ignore other hotkeys
 }
@@ -675,7 +745,9 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   #
 #?   print-string 0, "render final line\n"
   render-final-line-with-stack screen, functions, bindings, sandbox, curr-row, left-col, cursor-row-addr, cursor-col-addr
+  # at most one of the following dialogs will be rendered
   render-rename-dialog screen, sandbox, cursor-row, cursor-col
+  render-define-dialog screen, sandbox, cursor-row, cursor-col
   move-cursor screen, cursor-row, cursor-col
 }
 
@@ -753,6 +825,48 @@ fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-
   # draw the word, positioned appropriately around the cursor
   var start-col/ecx: int <- copy cursor-col
   var word-ah?/edx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
+  var word/eax: (addr word) <- lookup *word-ah?
+  var cursor-index/eax: int <- cursor-index word
+  start-col <- subtract cursor-index
+  move-cursor screen, cursor-row, start-col
+  var word/eax: (addr word) <- lookup *word-ah?
+  print-word screen, word
+}
+
+fn render-define-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
+  var sandbox/edi: (addr sandbox) <- copy _sandbox
+  var define-function-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-function
+  var define-function-mode?/eax: (addr word) <- lookup *define-function-mode-ah?
+  compare define-function-mode?, 0
+  break-if-=
+  # clear a space for the dialog
+  var top-row/eax: int <- copy cursor-row
+  top-row <- subtract 3
+  var bottom-row/ecx: int <- copy cursor-row
+  bottom-row <- add 3
+  var left-col/edx: int <- copy cursor-col
+  left-col <- subtract 0x10
+  var right-col/ebx: int <- copy cursor-col
+  right-col <- add 0x10
+  clear-rect screen, top-row, left-col, bottom-row, right-col
+  draw-box screen, top-row, left-col, bottom-row, right-col
+  # render a little menu for the dialog
+  var menu-row/ecx: int <- copy bottom-row
+  menu-row <- decrement
+  var menu-col/edx: int <- copy left-col
+  menu-col <- add 2
+  move-cursor screen, menu-row, menu-col
+  start-reverse-video screen
+  print-string screen, " esc "
+  reset-formatting screen
+  print-string screen, " cancel  "
+  start-reverse-video screen
+  print-string screen, " enter "
+  reset-formatting screen
+  print-string screen, " define  "
+  # draw the word, positioned appropriately around the cursor
+  var start-col/ecx: int <- copy cursor-col
+  var word-ah?/edx: (addr handle word) <- get sandbox, partial-name-for-function
   var word/eax: (addr word) <- lookup *word-ah?
   var cursor-index/eax: int <- cursor-index word
   start-col <- subtract cursor-index
