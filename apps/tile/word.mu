@@ -264,6 +264,32 @@ fn print-words-in-reverse screen: (addr screen), _words-ah: (addr handle word) {
   print-string screen, " "
 }
 
+fn copy-words _src-ah: (addr handle word), _dest-ah: (addr handle word) {
+  var src-ah/eax: (addr handle word) <- copy _src-ah
+  var src-a/eax: (addr word) <- lookup *src-ah
+  compare src-a, 0
+  break-if-=
+  # copy
+  var dest-ah/edi: (addr handle word) <- copy _dest-ah
+  copy-word src-a, dest-ah
+  # recurse
+  var next-src-ah/esi: (addr handle word) <- get src-a, next
+  var dest-a/eax: (addr word) <- lookup *dest-ah
+  var next-dest-ah/eax: (addr handle word) <- get dest-a, next
+  copy-words next-src-ah, next-dest-ah
+}
+
+fn copy-word _src-a: (addr word), _dest-ah: (addr handle word) {
+  var dest-ah/eax: (addr handle word) <- copy _dest-ah
+  allocate dest-ah
+  var _dest-a/eax: (addr word) <- lookup *dest-ah
+  var dest-a/eax: (addr word) <- copy _dest-a
+  var dest/edi: (addr handle gap-buffer) <- get dest-a, scalar-data
+  var src-a/eax: (addr word) <- copy _src-a
+  var src/eax: (addr handle gap-buffer) <- get src-a, scalar-data
+  copy-gap-buffer src, dest
+}
+
 # one implication of handles: append must take a handle
 fn append-word _self-ah: (addr handle word) {
   var self-ah/esi: (addr handle word) <- copy _self-ah

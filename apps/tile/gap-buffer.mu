@@ -288,3 +288,21 @@ fn test-gap-buffer-equal-from-start? {
   var result/eax: int <- copy _result
   check-ints-equal result, 1, "F - test-gap-buffer-equal-from-start?"
 }
+
+fn copy-gap-buffer _src-ah: (addr handle gap-buffer), _dest-ah: (addr handle gap-buffer) {
+  # obtain src-a, dest-a
+  var src-ah/eax: (addr handle gap-buffer) <- copy _src-ah
+  var _src-a/eax: (addr gap-buffer) <- lookup *src-ah
+  var src-a/esi: (addr gap-buffer) <- copy _src-a
+  var dest-ah/eax: (addr handle gap-buffer) <- copy _dest-ah
+  var _dest-a/eax: (addr gap-buffer) <- lookup *dest-ah
+  var dest-a/edi: (addr gap-buffer) <- copy _dest-a
+  # copy left grapheme-stack
+  var src/ecx: (addr grapheme-stack) <- get src-a, left
+  var dest/edx: (addr grapheme-stack) <- get dest-a, left
+  copy-grapheme-stack src, dest
+  # copy right grapheme-stack
+  src <- get src-a, right
+  dest <- get dest-a, right
+  copy-grapheme-stack src, dest
+}

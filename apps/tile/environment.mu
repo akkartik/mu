@@ -637,10 +637,44 @@ $process-sandbox-define:body: {
 # aren't defined in the rest of 'functions'. Append them in order.
 # Assumes function body is a single line for now.
 fn copy-unbound-words-to-args _functions: (addr handle function) {
+  # target
+  var target-ah/eax: (addr handle function) <- copy _functions
+  var _target/eax: (addr function) <- lookup *target-ah
+  var target/esi: (addr function) <- copy _target
+  var dest/edi: (addr handle word) <- get target, args
+  # next
+  var functions-ah/eax: (addr handle function) <- get target, next
+  var _functions/eax: (addr function) <- lookup *functions-ah
+  var functions/ecx: (addr function) <- copy _functions
+  # src
+  var line-ah/eax: (addr handle line) <- get target, body
+  var line/eax: (addr line) <- lookup *line-ah
+  var curr-ah/eax: (addr handle word) <- get line, data
+  var curr/eax: (addr word) <- lookup *curr-ah
+  {
+    compare curr, 0
+    break-if-=
+    # HERE
+    var next-ah/ecx: (addr handle word) <- get curr, next
+    curr <- lookup *next-ah
+    loop
+  }
 }
 
 # construct a call to `f` with copies of exactly its args
-fn construct-call f: (addr handle function), out: (addr handle word) {
+fn construct-call _f-ah: (addr handle function), out: (addr handle word) {
+  var f-ah/eax: (addr handle function) <- copy _f-ah
+  var _f/eax: (addr function) <- lookup *f-ah
+  var f/esi: (addr function) <- copy _f
+  var name-ah/eax: (addr handle array byte) <- get f, name
+  var name/eax: (addr array byte) <- lookup *name-ah
+  var dest/edi: (addr handle word) <- copy out
+  allocate-word-with dest, name
+  var tmp/eax: (addr word) <- lookup *dest
+  dest <- get tmp, next
+  var _args-ah/eax: (addr handle word) <- get f, args
+  var args-ah/esi: (addr handle word) <- copy _args-ah
+  copy-words args-ah, dest
 }
 
 fn word-index _words: (addr handle word), _n: int, out: (addr handle word) {

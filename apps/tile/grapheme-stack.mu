@@ -62,6 +62,23 @@ $pop-grapheme-stack:body: {
 }
 }
 
+fn copy-grapheme-stack _src: (addr grapheme-stack), dest: (addr grapheme-stack) {
+  var src/esi: (addr grapheme-stack) <- copy _src
+  var data-ah/edi: (addr handle array grapheme) <- get src, data
+  var _data/eax: (addr array grapheme) <- lookup *data-ah
+  var data/edi: (addr array grapheme) <- copy _data
+  var top-addr/ecx: (addr int) <- get src, top
+  var i/eax: int <- copy 0
+  {
+    compare i, *top-addr
+    break-if->=
+    var g/edx: (addr grapheme) <- index data, i
+    push-grapheme-stack dest, *g
+    i <- increment
+    loop
+  }
+}
+
 # dump stack to screen from bottom to top
 # don't move the cursor or anything
 fn render-stack-from-bottom _self: (addr grapheme-stack), screen: (addr screen) {
