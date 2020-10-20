@@ -654,8 +654,13 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
   {
     compare curr, 0
     break-if-=
-    {
-      var bound?/ebx: boolean <- bound? curr, functions-ah
+    $copy-unbound-words-to-args:unbound: {
+      {
+        var is-int?/eax: boolean <- word-is-decimal-integer? curr
+        compare is-int?, 0  # false
+        break-if-!= $copy-unbound-words-to-args:unbound
+      }
+      var bound?/ebx: boolean <- bound-function? curr, functions-ah
       compare bound?, 0  # false
       break-if-!=
       # push copy of curr before dest-ah
@@ -673,14 +678,10 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
   }
 }
 
-fn bound? w: (addr word), functions-ah: (addr handle function) -> result/ebx: boolean {
+fn bound-function? w: (addr word), functions-ah: (addr handle function) -> result/ebx: boolean {
   result <- copy 1  # true
-  # if is-decimal-number(w) return true
-  var subresult/eax: boolean <- word-is-decimal-integer? w
-  compare subresult, 0  # false
-  break-if-!=
   # if w == "+" return true
-  subresult <- word-equal? w, "+"
+  var subresult/eax: boolean <- word-equal? w, "+"
   compare subresult, 0  # false
   break-if-!=
   # if w == "-" return true
