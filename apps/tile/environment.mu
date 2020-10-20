@@ -590,8 +590,8 @@ $process-sandbox-define:body: {
     allocate body-ah
     var body/eax: (addr line) <- lookup *body-ah
     var body-contents/ecx: (addr handle word) <- get body, data
-    var final-line: (handle line)
-    var final-line-ah/eax: (addr handle line) <- address final-line
+    var final-line-storage: (handle line)
+    var final-line-ah/eax: (addr handle line) <- address final-line-storage
     final-line sandbox, final-line-ah
     var final-line/eax: (addr line) <- lookup *final-line-ah
     var final-line-contents/eax: (addr handle word) <- get final-line, data
@@ -605,6 +605,11 @@ $process-sandbox-define:body: {
     # clear partial-name-for-function
     var empty-word: (handle word)
     copy-handle empty-word, new-name-ah
+    # update cursor
+    var final-line/eax: (addr line) <- lookup final-line-storage
+    var cursor-call-path-ah/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    allocate cursor-call-path-ah  # leak
+    initialize-path-from-line final-line, cursor-call-path-ah
     break $process-sandbox-define:body
   }
   #
