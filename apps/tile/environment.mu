@@ -572,7 +572,35 @@ $process-sandbox-define:body: {
   $process-sandbox-define:commit: {
     break-if-!=
 #?     print-string 0, "define\n"
-    # HERE
+    # create new function
+    var new-function: (handle function)
+    var new-function-ah/ecx: (addr handle function) <- address new-function
+    allocate new-function-ah
+    var _new-function/eax: (addr function) <- lookup *new-function-ah
+    var new-function/ebx: (addr function) <- copy _new-function
+    var dest/edx: (addr handle function) <- get new-function, next
+    copy-object functions, dest
+    copy-object new-function-ah, functions
+    # set function name to new-name
+    var new-name/eax: (addr word) <- lookup *new-name-ah
+    var dest/edx: (addr handle array byte) <- get new-function, name
+    word-to-string new-name, dest
+    # move final line to body
+    var body-ah/eax: (addr handle line) <- get new-function, body
+    allocate body-ah
+    var body/eax: (addr line) <- lookup *body-ah
+    var body-contents/ecx: (addr handle word) <- get body, data
+    var final-line: (handle line)
+    var final-line-ah/eax: (addr handle line) <- address final-line
+    final-line sandbox, final-line-ah
+    var final-line/eax: (addr line) <- lookup *final-line-ah
+    var final-line-contents/eax: (addr handle word) <- get final-line, data
+    copy-object final-line-contents, body-contents
+    #
+    copy-unbound-words-to-args functions
+    #
+    construct-call functions, final-line-contents
+    # clear partial-name-for-function
     var empty-word: (handle word)
     copy-handle empty-word, new-name-ah
     break $process-sandbox-define:body
@@ -603,6 +631,16 @@ $process-sandbox-define:body: {
   }
   # silently ignore other hotkeys
 }
+}
+
+# extract from the body of the first function in 'functions' all words that
+# aren't defined in the rest of 'functions'. Append them in order.
+# Assumes function body is a single line for now.
+fn copy-unbound-words-to-args _functions: (addr handle function) {
+}
+
+# construct a call to `f` with copies of exactly its args
+fn construct-call f: (addr handle function), out: (addr handle word) {
 }
 
 fn word-index _words: (addr handle word), _n: int, out: (addr handle word) {
