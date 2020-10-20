@@ -261,6 +261,93 @@ fn create-primitive-functions _self: (addr handle function) {
   prev-word-ah <- get tmp, prev
   copy-object curr-word-ah, prev-word-ah
   tmp <- lookup *prev-word-ah
+  # x 1- = x 1 -
+  var next/esi: (addr handle function) <- get f, next
+  allocate next
+  var _f/eax: (addr function) <- lookup *next
+  var f/esi: (addr function) <- copy _f
+  var name-ah/eax: (addr handle array byte) <- get f, name
+  populate-text-with name-ah, "1-"
+  var args-ah/eax: (addr handle word) <- get f, args
+  allocate args-ah
+  var args/eax: (addr word) <- lookup *args-ah
+  initialize-word-with args, "x"
+  var body-ah/eax: (addr handle line) <- get f, body
+  allocate body-ah
+  var body/eax: (addr line) <- lookup *body-ah
+  initialize-line body
+  var curr-word-ah/ecx: (addr handle word) <- get body, data
+  # *curr-word = "x"
+  allocate curr-word-ah
+  var tmp/eax: (addr word) <- lookup *curr-word-ah
+  curr-word <- copy tmp
+  initialize-word-with curr-word, "x"
+  # *curr-word->next = "1"
+  next-word-ah <- get curr-word, next
+  allocate next-word-ah
+  tmp <- lookup *next-word-ah
+  initialize-word-with tmp, "1"
+  # *curr-word->next->prev = curr-word
+  prev-word-ah <- get tmp, prev
+  copy-object curr-word-ah, prev-word-ah
+  # curr-word = curr-word->next
+  curr-word-ah <- copy next-word-ah
+  curr-word <- copy tmp
+  # *curr-word->next = "-"
+  next-word-ah <- get curr-word, next
+  allocate next-word-ah
+  tmp <- lookup *next-word-ah
+  initialize-word-with tmp, "-"
+  # *curr-word->next->prev = curr-word
+  prev-word-ah <- get tmp, prev
+  copy-object curr-word-ah, prev-word-ah
+  tmp <- lookup *prev-word-ah
+  # x y sub = x y -
+  var next/esi: (addr handle function) <- get f, next
+  allocate next
+  var _f/eax: (addr function) <- lookup *next
+  var f/esi: (addr function) <- copy _f
+  var name-ah/eax: (addr handle array byte) <- get f, name
+  populate-text-with name-ah, "sub"
+  # critical lesson: args are stored in reverse order
+  var args-ah/eax: (addr handle word) <- get f, args
+  allocate args-ah
+  var args/eax: (addr word) <- lookup *args-ah
+  initialize-word-with args, "y"
+  var next-arg-ah/eax: (addr handle word) <- get args, next
+  allocate next-arg-ah
+  var next-arg/eax: (addr word) <- lookup *next-arg-ah
+  initialize-word-with next-arg, "x"
+  var body-ah/eax: (addr handle line) <- get f, body
+  allocate body-ah
+  var body/eax: (addr line) <- lookup *body-ah
+  initialize-line body
+  var curr-word-ah/ecx: (addr handle word) <- get body, data
+  # *curr-word = "x"
+  allocate curr-word-ah
+  var tmp/eax: (addr word) <- lookup *curr-word-ah
+  curr-word <- copy tmp
+  initialize-word-with curr-word, "x"
+  # *curr-word->next = "y"
+  next-word-ah <- get curr-word, next
+  allocate next-word-ah
+  tmp <- lookup *next-word-ah
+  initialize-word-with tmp, "y"
+  # *curr-word->next->prev = curr-word
+  prev-word-ah <- get tmp, prev
+  copy-object curr-word-ah, prev-word-ah
+  # curr-word = curr-word->next
+  curr-word-ah <- copy next-word-ah
+  curr-word <- copy tmp
+  # *curr-word->next = "-"
+  next-word-ah <- get curr-word, next
+  allocate next-word-ah
+  tmp <- lookup *next-word-ah
+  initialize-word-with tmp, "-"
+  # *curr-word->next->prev = curr-word
+  prev-word-ah <- get tmp, prev
+  copy-object curr-word-ah, prev-word-ah
+  tmp <- lookup *prev-word-ah
 }
 
 fn function-body functions: (addr handle function), _word: (addr handle word), out: (addr handle line) {

@@ -183,6 +183,8 @@ fn perform-call _callee: (addr function), caller-stack: (addr value-stack), func
   push-int-to-value-stack caller-stack, result
 }
 
+# pop args from the caller-stack and bind them to successive args
+# implies: function args are stored in reverse order
 fn bind-args _callee: (addr function), caller-stack: (addr value-stack), table: (addr table) {
   var callee/ecx: (addr function) <- copy _callee
   var curr-arg-ah/eax: (addr handle word) <- get callee, args
