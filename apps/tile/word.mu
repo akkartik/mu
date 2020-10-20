@@ -279,6 +279,27 @@ fn copy-words _src-ah: (addr handle word), _dest-ah: (addr handle word) {
   copy-words next-src-ah, next-dest-ah
 }
 
+fn copy-words-in-reverse _src-ah: (addr handle word), _dest-ah: (addr handle word) {
+  var src-ah/eax: (addr handle word) <- copy _src-ah
+  var _src-a/eax: (addr word) <- lookup *src-ah
+  var src-a/esi: (addr word) <- copy _src-a
+  compare src-a, 0
+  break-if-=
+  # recurse
+  var next-src-ah/ecx: (addr handle word) <- get src-a, next
+  var dest-ah/edi: (addr handle word) <- copy _dest-ah
+  copy-words-in-reverse next-src-ah, dest-ah
+  # copy at end
+  {
+    var dest-a/eax: (addr word) <- lookup *dest-ah
+    compare dest-a, 0
+    break-if-=
+    dest-ah <- get dest-a, next
+    loop
+  }
+  copy-word src-a, dest-ah
+}
+
 fn copy-word _src-a: (addr word), _dest-ah: (addr handle word) {
   var dest-ah/eax: (addr handle word) <- copy _dest-ah
   allocate dest-ah

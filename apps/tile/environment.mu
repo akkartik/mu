@@ -599,6 +599,8 @@ $process-sandbox-define:body: {
     #
     copy-unbound-words-to-args functions
     #
+    var empty-word: (handle word)
+    copy-handle empty-word, final-line-contents
     construct-call functions, final-line-contents
     # clear partial-name-for-function
     var empty-word: (handle word)
@@ -698,19 +700,25 @@ fn bound? w: (addr word), functions-ah: (addr handle function) -> result/ebx: bo
 }
 
 # construct a call to `f` with copies of exactly its args
-fn construct-call _f-ah: (addr handle function), out: (addr handle word) {
+fn construct-call _f-ah: (addr handle function), _dest-ah: (addr handle word) {
   var f-ah/eax: (addr handle function) <- copy _f-ah
   var _f/eax: (addr function) <- lookup *f-ah
   var f/esi: (addr function) <- copy _f
+  # append args in reverse
+  var args-ah/eax: (addr handle word) <- get f, args
+  var dest-ah/edi: (addr handle word) <- copy _dest-ah
+  copy-words-in-reverse args-ah, dest-ah
+  # append name
+  {
+    var dest/eax: (addr word) <- lookup *dest-ah
+    compare dest, 0
+    break-if-=
+    dest-ah <- get dest, next
+    loop
+  }
   var name-ah/eax: (addr handle array byte) <- get f, name
   var name/eax: (addr array byte) <- lookup *name-ah
-  var dest/edi: (addr handle word) <- copy out
-  allocate-word-with dest, name
-  var tmp/eax: (addr word) <- lookup *dest
-  dest <- get tmp, next
-  var _args-ah/eax: (addr handle word) <- get f, args
-  var args-ah/esi: (addr handle word) <- copy _args-ah
-  copy-words args-ah, dest
+  allocate-word-with dest-ah, name
 }
 
 fn word-index _words: (addr handle word), _n: int, out: (addr handle word) {
