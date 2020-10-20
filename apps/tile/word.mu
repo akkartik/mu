@@ -238,6 +238,32 @@ fn print-word screen: (addr screen), _self: (addr word) {
   render-gap-buffer screen, data
 }
 
+fn print-words screen: (addr screen), _words-ah: (addr handle word) {
+  var words-ah/eax: (addr handle word) <- copy _words-ah
+  var words-a/eax: (addr word) <- lookup *words-ah
+  compare words-a, 0
+  break-if-=
+  # print
+  print-word screen, words-a
+  print-string screen, " "
+  # recurse
+  var next-ah/eax: (addr handle word) <- get words-a, next
+  print-words screen, next-ah
+}
+
+fn print-words-in-reverse screen: (addr screen), _words-ah: (addr handle word) {
+  var words-ah/eax: (addr handle word) <- copy _words-ah
+  var words-a/eax: (addr word) <- lookup *words-ah
+  compare words-a, 0
+  break-if-=
+  # recurse
+  var next-ah/ecx: (addr handle word) <- get words-a, next
+  print-words screen, next-ah
+  # print
+  print-word screen, words-a
+  print-string screen, " "
+}
+
 # one implication of handles: append must take a handle
 fn append-word _self-ah: (addr handle word) {
   var self-ah/esi: (addr handle word) <- copy _self-ah

@@ -1250,18 +1250,33 @@ fn clear-canvas _env: (addr environment) {
   reset-formatting screen
   print-string screen, " define function  "
   # currently defined functions
-  move-cursor screen, 3, 2
-  print-string screen, "x 2* = x 2 *"
-  move-cursor screen, 4, 2
-  print-string screen, "x 1+ = x 1 +"
-  move-cursor screen, 5, 2
-  print-string screen, "x 2+ = x 1+ 1+"
-  move-cursor screen, 6, 2
-  print-string screen, "x square = x x *"
-  move-cursor screen, 7, 2
-  print-string screen, "x 1- = x 1 -"
-  move-cursor screen, 8, 2
-  print-string screen, "x y sub = x y -"
+  var row/ecx: int <- copy 3
+  var functions/esi: (addr handle function) <- get env, functions
+  {
+    var curr/eax: (addr function) <- lookup *functions
+    compare curr, 0
+    break-if-=
+    move-cursor screen, row, 2
+    render-function screen, curr
+    functions <- get curr, next
+    row <- increment
+    loop
+  }
+}
+
+# only single-line functions supported for now
+fn render-function screen: (addr screen), _f: (addr function) {
+  var f/esi: (addr function) <- copy _f
+  var args/ecx: (addr handle word) <- get f, args
+  print-words-in-reverse screen, args
+  var name-ah/eax: (addr handle array byte) <- get f, name
+  var name/eax: (addr array byte) <- lookup *name-ah
+  print-string screen, name
+  print-string screen, " = "
+  var body-ah/eax: (addr handle line) <- get f, body
+  var body/eax: (addr line) <- lookup *body-ah
+  var body-words-ah/eax: (addr handle word) <- get body, data
+  print-words screen, body-words-ah
 }
 
 fn real-grapheme? g: grapheme -> result/eax: boolean {
