@@ -284,6 +284,7 @@ fn copy-word _src-a: (addr word), _dest-ah: (addr handle word) {
   allocate dest-ah
   var _dest-a/eax: (addr word) <- lookup *dest-ah
   var dest-a/eax: (addr word) <- copy _dest-a
+  initialize-word dest-a
   var dest/edi: (addr handle gap-buffer) <- get dest-a, scalar-data
   var src-a/eax: (addr word) <- copy _src-a
   var src/eax: (addr handle gap-buffer) <- get src-a, scalar-data
@@ -345,4 +346,11 @@ fn word-to-string _self: (addr word), out: (addr handle array byte) {
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   gap-buffer-to-string data, out
+}
+
+fn word-is-decimal-integer? _self: (addr word) -> result/eax: boolean {
+  var self/eax: (addr word) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  result <- gap-buffer-is-decimal-integer? data
 }

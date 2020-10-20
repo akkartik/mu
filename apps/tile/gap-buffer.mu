@@ -306,3 +306,13 @@ fn copy-gap-buffer _src-ah: (addr handle gap-buffer), _dest-ah: (addr handle gap
   dest <- get dest-a, right
   copy-grapheme-stack src, dest
 }
+
+fn gap-buffer-is-decimal-integer? _self: (addr gap-buffer) -> result/eax: boolean {
+  var self/esi: (addr gap-buffer) <- copy _self
+  var curr/ecx: (addr grapheme-stack) <- get self, left
+  result <- grapheme-stack-is-decimal-integer? curr
+  compare result, 0  # false
+  break-if-=
+  curr <- get self, right
+  result <- grapheme-stack-is-decimal-integer? curr
+}

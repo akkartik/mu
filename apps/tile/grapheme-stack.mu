@@ -180,3 +180,22 @@ $suffix-match?:body: {
   result <- copy 1   # true
 }
 }
+
+fn grapheme-stack-is-decimal-integer? _self: (addr grapheme-stack) -> result/eax: boolean {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var data-ah/eax: (addr handle array grapheme) <- get self, data
+  var _data/eax: (addr array grapheme) <- lookup *data-ah
+  var data/edx: (addr array grapheme) <- copy _data
+  var top-addr/ecx: (addr int) <- get self, top
+  var i/ebx: int <- copy 0
+  $grapheme-stack-is-integer?:loop: {
+    compare i, *top-addr
+    break-if->=
+    var g/edx: (addr grapheme) <- index data, i
+    result <- is-decimal-digit? *g
+    compare result, 0  # false
+    break-if-=
+    i <- increment
+    loop
+  }
+}

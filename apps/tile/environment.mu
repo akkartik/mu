@@ -634,18 +634,16 @@ $process-sandbox-define:body: {
 }
 
 # extract from the body of the first function in 'functions' all words that
-# aren't defined in the rest of 'functions'. Append them in order.
+# aren't defined in the rest of 'functions'. Prepend them in reverse order.
 # Assumes function body is a single line for now.
 fn copy-unbound-words-to-args _functions: (addr handle function) {
   # target
   var target-ah/eax: (addr handle function) <- copy _functions
   var _target/eax: (addr function) <- lookup *target-ah
   var target/esi: (addr function) <- copy _target
-  var dest/edi: (addr handle word) <- get target, args
+  var dest-ah/edi: (addr handle word) <- get target, args
   # next
-  var functions-ah/eax: (addr handle function) <- get target, next
-  var _functions/eax: (addr function) <- lookup *functions-ah
-  var functions/ecx: (addr function) <- copy _functions
+  var functions-ah/edx: (addr handle function) <- get target, next
   # src
   var line-ah/eax: (addr handle line) <- get target, body
   var line/eax: (addr line) <- lookup *line-ah
@@ -654,11 +652,49 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
   {
     compare curr, 0
     break-if-=
-    # HERE
+    {
+      var bound?/ebx: boolean <- bound? curr, functions-ah
+      compare bound?, 0  # false
+      break-if-!=
+      # push copy of curr before dest-ah
+      var rest-h: (handle word)
+      var rest-ah/ecx: (addr handle word) <- address rest-h
+      copy-object dest-ah, rest-ah
+      copy-word curr, dest-ah
+      var dest/eax: (addr word) <- lookup *dest-ah
+      var next-ah/eax: (addr handle word) <- get dest, next
+      copy-object rest-ah, next-ah
+    }
     var next-ah/ecx: (addr handle word) <- get curr, next
     curr <- lookup *next-ah
     loop
   }
+}
+
+fn bound? w: (addr word), functions-ah: (addr handle function) -> result/ebx: boolean {
+  result <- copy 1  # true
+  # if is-decimal-number(w) return true
+  var subresult/eax: boolean <- word-is-decimal-integer? w
+  compare subresult, 0  # false
+  break-if-!=
+  # if w == "+" return true
+  subresult <- word-equal? w, "+"
+  compare subresult, 0  # false
+  break-if-!=
+  # if w == "-" return true
+  subresult <- word-equal? w, "-"
+  compare subresult, 0  # false
+  break-if-!=
+  # if w == "*" return true
+  subresult <- word-equal? w, "*"
+  compare subresult, 0  # false
+  break-if-!=
+  # return w in functions
+  var out-h: (handle function)
+  var out/eax: (addr handle function) <- address out-h
+  callee functions-ah, w, out
+  var found?/eax: (addr function) <- lookup *out
+  result <- copy found?
 }
 
 # construct a call to `f` with copies of exactly its args
