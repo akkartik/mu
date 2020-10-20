@@ -767,28 +767,37 @@ fn render-final-line-with-stack screen: (addr screen), functions: (addr handle f
     var src/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
     copy-to cursor-call-path, src
   }
+  # first line
+  var first-line-ah/eax: (addr handle line) <- get sandbox, data
+  var _first-line/eax: (addr line) <- lookup *first-line-ah
+  var first-line/edx: (addr line) <- copy _first-line
   # final line
-  var line-ah/eax: (addr handle line) <- get sandbox, data
-  var curr-line/eax: (addr line) <- lookup *line-ah
-  var first-line/edx: (addr line) <- copy curr-line
-  $render-final-line-with-stack:line-loop: {
-    var next-line-ah/ecx: (addr handle line) <- get curr-line, next
-    {
-      var next-line/eax: (addr line) <- lookup *next-line-ah
-      compare next-line, 0
-      break-if-= $render-final-line-with-stack:line-loop
-    }
-#?     print-string 0, "skipping line\n"
-    curr-line <- lookup *next-line-ah
-    loop
-  }
+  var final-line-storage: (handle line)
+  var final-line-ah/eax: (addr handle line) <- address final-line-storage
+  final-line sandbox, final-line-ah
+  var final-line/eax: (addr line) <- lookup *final-line-ah
   # curr-path
   var curr-path-storage: (handle call-path-element)
   var curr-path/ecx: (addr handle call-path-element) <- address curr-path-storage
   allocate curr-path  # leak
-  initialize-path-from-line curr-line, curr-path
+  initialize-path-from-line final-line, curr-path
   #
-  var dummy/ecx: int <- render-line screen, functions, bindings, first-line, curr-line, expanded-words, top-row, left-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
+  var dummy/ecx: int <- render-line screen, functions, bindings, first-line, final-line, expanded-words, top-row, left-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
+}
+
+fn final-line _sandbox: (addr sandbox), out: (addr handle line) {
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
+  var curr-line-ah/ecx: (addr handle line) <- get sandbox, data
+  {
+    var curr-line/eax: (addr line) <- lookup *curr-line-ah
+    var next-line-ah/edx: (addr handle line) <- get curr-line, next
+    var next-line/eax: (addr line) <- lookup *next-line-ah
+    compare next-line, 0
+    break-if-=
+    curr-line-ah <- copy next-line-ah
+    loop
+  }
+  copy-object curr-line-ah, out
 }
 
 fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
