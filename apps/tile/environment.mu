@@ -654,15 +654,21 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
   {
     compare curr, 0
     break-if-=
-    $copy-unbound-words-to-args:unbound: {
+    $copy-unbound-words-to-args:loop-iter: {
+      # is it a number?
       {
         var is-int?/eax: boolean <- word-is-decimal-integer? curr
         compare is-int?, 0  # false
-        break-if-!= $copy-unbound-words-to-args:unbound
+        break-if-!= $copy-unbound-words-to-args:loop-iter
       }
+      # is it a pre-existing function?
       var bound?/ebx: boolean <- bound-function? curr, functions-ah
       compare bound?, 0  # false
       break-if-!=
+      # is it already bound as an arg?
+      var dup?/ebx: boolean <- arg-exists? _functions, curr  # _functions = target-ah
+      compare dup?, 0  # false
+      break-if-!= $copy-unbound-words-to-args:loop-iter
       # push copy of curr before dest-ah
       var rest-h: (handle word)
       var rest-ah/ecx: (addr handle word) <- address rest-h
@@ -698,6 +704,13 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> resul
   callee functions-ah, w, out
   var found?/eax: (addr function) <- lookup *out
   result <- copy found?
+}
+
+fn arg-exists? _f-ah: (addr handle function), arg: (addr word) -> result/ebx: boolean {
+  var f-ah/eax: (addr handle function) <- copy *_f-ah
+  var f/eax: (addr function) <- lookup *f-ah
+  var args-ah/eax: (addr handle word) <- get f, args
+  result <- word-exists? args-ah, arg
 }
 
 # construct a call to `f` with copies of exactly its args
