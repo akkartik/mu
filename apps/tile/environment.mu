@@ -80,7 +80,8 @@ $process:body: {
   {
     break-if-=
 #?     print-string 0, "processing function definition\n"
-    process-sandbox-define sandbox, key
+    var functions/ecx: (addr handle function) <- get self, functions
+    process-sandbox-define sandbox, functions, key
     break $process:body
   }
 #?   print-string 0, "processing sandbox\n"
@@ -554,7 +555,7 @@ $process-sandbox-rename:body: {
 # of the sandbox to be a new function with that name. Replace the last line
 # with a call to the appropriate function.
 # Precondition: cursor-call-path is a singleton (not within a call)
-fn process-sandbox-define _sandbox: (addr sandbox), key: grapheme {
+fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle function), key: grapheme {
 $process-sandbox-define:body: {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var new-name-ah/edi: (addr handle word) <- get sandbox, partial-name-for-function
@@ -572,8 +573,8 @@ $process-sandbox-define:body: {
     break-if-!=
 #?     print-string 0, "define\n"
     # HERE
-    var empty: (handle word)
-    copy-handle empty, new-name-ah
+    var empty-word: (handle word)
+    copy-handle empty-word, new-name-ah
     break $process-sandbox-define:body
   }
   #
