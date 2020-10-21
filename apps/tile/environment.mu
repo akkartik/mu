@@ -115,7 +115,7 @@ $process-sandbox:body: {
     {
       var cursor-call-path/esi: (addr handle call-path-element) <- get sandbox, cursor-call-path
       var expanded-words/edx: (addr handle call-path) <- get sandbox, expanded-words
-      var curr-word-is-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
+      var curr-word-is-expanded?/eax: boolean <- find-in-call-paths expanded-words, cursor-call-path
       compare curr-word-is-expanded?, 0  # false
       break-if-=
       # update cursor-call-path
@@ -220,7 +220,7 @@ $process-sandbox:body: {
 #?         print-string 0, "c\n"
         {
           var expanded-words/eax: (addr handle call-path) <- get sandbox, expanded-words
-          var curr-word-is-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
+          var curr-word-is-expanded?/eax: boolean <- find-in-call-paths expanded-words, cursor-call-path
           compare curr-word-is-expanded?, 0  # false
           break-if-= $process-sandbox:key-right-arrow-next-word-is-call-expanded
         }
@@ -320,11 +320,11 @@ $process-sandbox:body: {
   compare key, 1  # ctrl-a
   $process-sandbox:start-of-line: {
     break-if-!=
-    # move cursor to initial word of sandbox
+    # move cursor up past all calls and to start of line
     var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
-    initialize-path-from-sandbox sandbox, cursor-call-path-ah
+    drop-nested-calls cursor-call-path-ah
+    move-final-element-to-start-of-line cursor-call-path-ah
     # move cursor to start of initial word
-    var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
     var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
     var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
     var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
@@ -757,7 +757,7 @@ $toggle-cursor-word:body: {
 #?   dump-call-path-element 0, cursor-call-path
 #?   print-string 0, "expanded words:\n"
 #?   dump-call-paths 0, expanded-words
-  var already-expanded?/eax: boolean <- find-in-call-path expanded-words, cursor-call-path
+  var already-expanded?/eax: boolean <- find-in-call-paths expanded-words, cursor-call-path
   compare already-expanded?, 0  # false
   {
     break-if-!=
@@ -1123,7 +1123,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     $render-line:subsidiary: {
       {
 #?         print-string 0, "check sub\n"
-        var display-subsidiary-stack?/eax: boolean <- find-in-call-path expanded-words, curr-path
+        var display-subsidiary-stack?/eax: boolean <- find-in-call-paths expanded-words, curr-path
         compare display-subsidiary-stack?, 0  # false
         break-if-= $render-line:subsidiary
       }

@@ -60,9 +60,7 @@ type call-path {
   next: (handle call-path)
 }
 
-# A call-path is a list of elements, each of which corresponds to some call.
-# Calls are denoted by their position in the caller's body. They also include
-# the function being called.
+# A call-path element is a list of elements, each of which corresponds to some call.
 type call-path-element {
   word: (handle word)
   next: (handle call-path-element)
@@ -444,8 +442,8 @@ fn initialize-path-from-line _line: (addr line), _out: (addr handle call-path-el
   copy-object src, dest
 }
 
-fn find-in-call-path in: (addr handle call-path), needle: (addr handle call-path-element) -> result/eax: boolean {
-  var curr-ah/esi: (addr handle call-path) <- copy in
+fn find-in-call-paths call-paths: (addr handle call-path), needle: (addr handle call-path-element) -> result/eax: boolean {
+  var curr-ah/esi: (addr handle call-path) <- copy call-paths
   var out/edi: boolean <- copy 0  # false
   $find-in-call-path:loop: {
     var curr/eax: (addr call-path) <- lookup *curr-ah
@@ -603,6 +601,19 @@ fn decrement-final-element list: (addr handle call-path-element) {
   copy-object new-ah, val-ah
 }
 
+fn move-final-element-to-start-of-line list: (addr handle call-path-element) {
+  var final-ah/eax: (addr handle call-path-element) <- copy list
+  var final/eax: (addr call-path-element) <- lookup *final-ah
+  var val-ah/ecx: (addr handle word) <- get final, word
+  var val/eax: (addr word) <- lookup *val-ah
+  var new-ah/edx: (addr handle word) <- get val, prev
+  var target/eax: (addr word) <- lookup *new-ah
+  compare target, 0
+  break-if-=
+  copy-object new-ah, val-ah
+  move-final-element-to-start-of-line list
+}
+
 fn push-to-call-path-element list: (addr handle call-path-element), new: (addr handle word) {
   var new-element-storage: (handle call-path-element)
   var new-element-ah/edi: (addr handle call-path-element) <- address new-element-storage
@@ -623,6 +634,17 @@ fn drop-from-call-path-element _list: (addr handle call-path-element) {
   var list/eax: (addr call-path-element) <- lookup *list-ah
   var next/eax: (addr handle call-path-element) <- get list, next
   copy-object next, _list
+}
+
+fn drop-nested-calls _list: (addr handle call-path-element) {
+  var list-ah/esi: (addr handle call-path-element) <- copy _list
+  var list/eax: (addr call-path-element) <- lookup *list-ah
+  var next-ah/edi: (addr handle call-path-element) <- get list, next
+  var next/eax: (addr call-path-element) <- lookup *next-ah
+  compare next, 0
+  break-if-=
+  copy-object next-ah, _list
+  drop-nested-calls _list
 }
 
 fn dump-call-path-element screen: (addr screen), _x-ah: (addr handle call-path-element) {
