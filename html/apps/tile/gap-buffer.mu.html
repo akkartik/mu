@@ -347,6 +347,34 @@ if ('onhashchange' in window) {
 <span id="L288" class="LineNr">288 </span>  <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy _result
 <span id="L289" class="LineNr">289 </span>  <a href='../../102test.subx.html#L23'>check-ints-equal</a> result, <span class="Constant">1</span>, <span class="Constant">&quot;F - test-gap-buffer-equal-from-start?&quot;</span>
 <span id="L290" class="LineNr">290 </span><span class="Delimiter">}</span>
+<span id="L291" class="LineNr">291 </span>
+<span id="L292" class="LineNr">292 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='gap-buffer.mu.html#L292'>copy-gap-buffer</a></span> _src-ah: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>), _dest-ah: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Delimiter">{</span>
+<span id="L293" class="LineNr">293 </span>  <span class="muComment"># obtain src-a, dest-a</span>
+<span id="L294" class="LineNr">294 </span>  <span class="PreProc">var</span> src-ah/<span class="Constant">eax</span>: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="SpecialChar">&lt;-</span> copy _src-ah
+<span id="L295" class="LineNr">295 </span>  <span class="PreProc">var</span> _src-a/<span class="Constant">eax</span>: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *src-ah
+<span id="L296" class="LineNr">296 </span>  <span class="PreProc">var</span> src-a/<span class="Constant">esi</span>: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="SpecialChar">&lt;-</span> copy _src-a
+<span id="L297" class="LineNr">297 </span>  <span class="PreProc">var</span> dest-ah/<span class="Constant">eax</span>: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="SpecialChar">&lt;-</span> copy _dest-ah
+<span id="L298" class="LineNr">298 </span>  <span class="PreProc">var</span> _dest-a/<span class="Constant">eax</span>: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *dest-ah
+<span id="L299" class="LineNr">299 </span>  <span class="PreProc">var</span> dest-a/<span class="Constant">edi</span>: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="SpecialChar">&lt;-</span> copy _dest-a
+<span id="L300" class="LineNr">300 </span>  <span class="muComment"># copy left grapheme-stack</span>
+<span id="L301" class="LineNr">301 </span>  <span class="PreProc">var</span> src/<span class="Constant">ecx</span>: (addr grapheme-stack) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> src-a, left
+<span id="L302" class="LineNr">302 </span>  <span class="PreProc">var</span> dest/<span class="Constant">edx</span>: (addr grapheme-stack) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-a, left
+<span id="L303" class="LineNr">303 </span>  copy-grapheme-stack src, dest
+<span id="L304" class="LineNr">304 </span>  <span class="muComment"># copy right grapheme-stack</span>
+<span id="L305" class="LineNr">305 </span>  src <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> src-a, right
+<span id="L306" class="LineNr">306 </span>  dest <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-a, right
+<span id="L307" class="LineNr">307 </span>  copy-grapheme-stack src, dest
+<span id="L308" class="LineNr">308 </span><span class="Delimiter">}</span>
+<span id="L309" class="LineNr">309 </span>
+<span id="L310" class="LineNr">310 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='gap-buffer.mu.html#L310'>gap-buffer-is-decimal-integer?</a></span> _self: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>)<span class="PreProc"> -&gt; </span>result/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L311" class="LineNr">311 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="SpecialChar">&lt;-</span> copy _self
+<span id="L312" class="LineNr">312 </span>  <span class="PreProc">var</span> curr/<span class="Constant">ecx</span>: (addr grapheme-stack) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, left
+<span id="L313" class="LineNr">313 </span>  result <span class="SpecialChar">&lt;-</span> grapheme-stack-is-decimal-integer? curr
+<span id="L314" class="LineNr">314 </span>  compare result, <span class="Constant">0</span>  <span class="muComment"># false</span>
+<span id="L315" class="LineNr">315 </span>  <span class="PreProc">break-if-=</span>
+<span id="L316" class="LineNr">316 </span>  curr <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, right
+<span id="L317" class="LineNr">317 </span>  result <span class="SpecialChar">&lt;-</span> grapheme-stack-is-decimal-integer? curr
+<span id="L318" class="LineNr">318 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
