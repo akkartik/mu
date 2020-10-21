@@ -279,34 +279,6 @@ fn copy-words _src-ah: (addr handle word), _dest-ah: (addr handle word) {
   copy-words next-src-ah, next-dest-ah
 }
 
-# ABSOLUTELY GHASTLY
-fn word-exists? _haystack-ah: (addr handle word), _needle: (addr word) -> result/ebx: boolean {
-  var needle-name-storage: (handle addr byte)
-  var needle-name-ah/eax: (addr handle array byte) <- address needle-name-storage
-  word-to-string _needle, needle-name-ah  # profligate leak
-  var _needle-name/eax: (addr array byte) <- lookup *needle-name-ah
-  var needle-name/edi: (addr array byte) <- copy _needle-name
-  # base case
-  result <- copy 0   # false
-  var haystack-ah/esi: (addr handle word) <- copy _haystack-ah
-  var curr/eax: (addr word) <- lookup *haystack-ah
-  compare curr, 0
-  break-if-=
-  # check curr
-  var curr-name-storage: (handle addr byte)
-  var curr-name-ah/ecx: (addr handle array byte) <- address curr-name-storage
-  word-to-string curr, curr-name-ah  # profligate leak
-  var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
-  var found?/eax: boolean <- string-equal? needle-name, curr-name
-  result <- copy found?
-  compare result, 0
-  break-if-!=
-  # recurse
-  var curr/eax: (addr word) <- lookup *haystack-ah
-  var next-haystack-ah/eax: (addr handle word) <- get curr, next
-  result <- word-exists? next-haystack-ah, _needle
-}
-
 fn copy-words-in-reverse _src-ah: (addr handle word), _dest-ah: (addr handle word) {
   var src-ah/eax: (addr handle word) <- copy _src-ah
   var _src-a/eax: (addr word) <- lookup *src-ah
@@ -402,4 +374,32 @@ fn word-is-decimal-integer? _self: (addr word) -> result/eax: boolean {
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   result <- gap-buffer-is-decimal-integer? data
+}
+
+# ABSOLUTELY GHASTLY
+fn word-exists? _haystack-ah: (addr handle word), _needle: (addr word) -> result/ebx: boolean {
+  var needle-name-storage: (handle addr byte)
+  var needle-name-ah/eax: (addr handle array byte) <- address needle-name-storage
+  word-to-string _needle, needle-name-ah  # profligate leak
+  var _needle-name/eax: (addr array byte) <- lookup *needle-name-ah
+  var needle-name/edi: (addr array byte) <- copy _needle-name
+  # base case
+  result <- copy 0   # false
+  var haystack-ah/esi: (addr handle word) <- copy _haystack-ah
+  var curr/eax: (addr word) <- lookup *haystack-ah
+  compare curr, 0
+  break-if-=
+  # check curr
+  var curr-name-storage: (handle addr byte)
+  var curr-name-ah/ecx: (addr handle array byte) <- address curr-name-storage
+  word-to-string curr, curr-name-ah  # profligate leak
+  var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
+  var found?/eax: boolean <- string-equal? needle-name, curr-name
+  result <- copy found?
+  compare result, 0
+  break-if-!=
+  # recurse
+  var curr/eax: (addr word) <- lookup *haystack-ah
+  var next-haystack-ah/eax: (addr handle word) <- get curr, next
+  result <- word-exists? next-haystack-ah, _needle
 }
