@@ -679,9 +679,7 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
       var rest-ah/ecx: (addr handle word) <- address rest-h
       copy-object dest-ah, rest-ah
       copy-word curr, dest-ah
-      var dest/eax: (addr word) <- lookup *dest-ah
-      var next-ah/eax: (addr handle word) <- get dest, next
-      copy-object rest-ah, next-ah
+      chain-words dest-ah, rest-ah
     }
     var next-ah/ecx: (addr handle word) <- get curr, next
     curr <- lookup *next-ah
@@ -728,16 +726,9 @@ fn construct-call _f-ah: (addr handle function), _dest-ah: (addr handle word) {
   var dest-ah/edi: (addr handle word) <- copy _dest-ah
   copy-words-in-reverse args-ah, dest-ah
   # append name
-  {
-    var dest/eax: (addr word) <- lookup *dest-ah
-    compare dest, 0
-    break-if-=
-    dest-ah <- get dest, next
-    loop
-  }
   var name-ah/eax: (addr handle array byte) <- get f, name
   var name/eax: (addr array byte) <- lookup *name-ah
-  allocate-word-with dest-ah, name
+  append-word-at-end-with dest-ah, name
 }
 
 fn word-index _words: (addr handle word), _n: int, out: (addr handle word) {

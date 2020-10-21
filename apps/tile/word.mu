@@ -264,6 +264,9 @@ fn print-words-in-reverse screen: (addr screen), _words-ah: (addr handle word) {
   print-string screen, " "
 }
 
+# Gotcha with some word operations: ensure dest-ah isn't in the middle of some
+# existing chain of words. There are two pointers to patch, and you'll forget
+# to do the other one.
 fn copy-words _src-ah: (addr handle word), _dest-ah: (addr handle word) {
   var src-ah/eax: (addr handle word) <- copy _src-ah
   var src-a/eax: (addr word) <- lookup *src-ah
@@ -273,10 +276,11 @@ fn copy-words _src-ah: (addr handle word), _dest-ah: (addr handle word) {
   var dest-ah/edi: (addr handle word) <- copy _dest-ah
   copy-word src-a, dest-ah
   # recurse
+  var rest: (handle word)
+  var rest-ah/ecx: (addr handle word) <- address rest
   var next-src-ah/esi: (addr handle word) <- get src-a, next
-  var dest-a/eax: (addr word) <- lookup *dest-ah
-  var next-dest-ah/eax: (addr handle word) <- get dest-a, next
-  copy-words next-src-ah, next-dest-ah
+  copy-words next-src-ah, rest-ah
+  chain-words dest-ah, rest-ah
 }
 
 fn copy-words-in-reverse _src-ah: (addr handle word), _dest-ah: (addr handle word) {
@@ -289,15 +293,64 @@ fn copy-words-in-reverse _src-ah: (addr handle word), _dest-ah: (addr handle wor
   var next-src-ah/ecx: (addr handle word) <- get src-a, next
   var dest-ah/edi: (addr handle word) <- copy _dest-ah
   copy-words-in-reverse next-src-ah, dest-ah
-  # copy at end
+  #
+  copy-word-at-end src-a, dest-ah
+}
+
+fn copy-word-at-end src: (addr word), _dest-ah: (addr handle word) {
+$copy-word-at-end:body: {
+  var dest-ah/edi: (addr handle word) <- copy _dest-ah
+  # if dest is null, copy and return
+  var dest-a/eax: (addr word) <- lookup *dest-ah
+  compare dest-a, 0
   {
-    var dest-a/eax: (addr word) <- lookup *dest-ah
-    compare dest-a, 0
+    break-if-!=
+    copy-word src, dest-ah
+    break $copy-word-at-end:body
+  }
+  # copy current word
+  var new: (handle word)
+  var new-ah/ecx: (addr handle word) <- address new
+  copy-word src, new-ah
+  # append it at the end
+  var curr-ah/edi: (addr handle word) <- copy dest-ah
+  {
+    var curr-a/eax: (addr word) <- lookup *curr-ah  # curr-a guaranteed not to be null
+    var next-ah/ecx: (addr handle word) <- get curr-a, next
+    var next-a/eax: (addr word) <- lookup *next-ah
+    compare next-a, 0
     break-if-=
-    dest-ah <- get dest-a, next
+    curr-ah <- copy next-ah
     loop
   }
-  copy-word src-a, dest-ah
+  chain-words curr-ah, new-ah
+}
+}
+
+fn append-word-at-end-with _dest-ah: (addr handle word), s: (addr array byte) {
+$append-word-at-end-with:body: {
+  var dest-ah/edi: (addr handle word) <- copy _dest-ah
+  # if dest is null, copy and return
+  var dest-a/eax: (addr word) <- lookup *dest-ah
+  compare dest-a, 0
+  {
+    break-if-!=
+    allocate-word-with dest-ah, s
+    break $append-word-at-end-with:body
+  }
+  # otherwise append at end
+  var curr-ah/edi: (addr handle word) <- copy dest-ah
+  {
+    var curr-a/eax: (addr word) <- lookup *curr-ah  # curr-a guaranteed not to be null
+    var next-ah/ecx: (addr handle word) <- get curr-a, next
+    var next-a/eax: (addr word) <- lookup *next-ah
+    compare next-a, 0
+    break-if-=
+    curr-ah <- copy next-ah
+    loop
+  }
+  append-word-with *curr-ah, s
+}
 }
 
 fn copy-word _src-a: (addr word), _dest-ah: (addr handle word) {
@@ -347,12 +400,14 @@ fn chain-words _self-ah: (addr handle word), _next: (addr handle word) {
   var self-ah/esi: (addr handle word) <- copy _self-ah
   var _self/eax: (addr word) <- lookup *self-ah
   var self/ecx: (addr word) <- copy _self
+  var dest/edx: (addr handle word) <- get self, next
   var next-ah/edi: (addr handle word) <- copy _next
-  var next/eax: (addr word) <- lookup *next-ah
-  var dest/edx: (addr handle word) <- get next, prev
-  copy-object self-ah, dest
-  dest <- get self, next
   copy-object next-ah, dest
+  var next/eax: (addr word) <- lookup *next-ah
+  compare next, 0
+  break-if-=
+  dest <- get next, prev
+  copy-object self-ah, dest
 }
 
 fn emit-word _self: (addr word), out: (addr stream byte) {
