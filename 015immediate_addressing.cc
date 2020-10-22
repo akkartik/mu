@@ -25,7 +25,7 @@ case 0x05: {  // add imm32 to EAX
 
 :(code)
 void test_add_imm32_to_EAX_signed_overflow() {
-  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  Reg[EAX].i = INT_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -39,7 +39,7 @@ void test_add_imm32_to_EAX_signed_overflow() {
 }
 
 void test_add_imm32_to_EAX_unsigned_overflow() {
-  Reg[EAX].u = 0xffffffff;  // largest unsigned number
+  Reg[EAX].u = UINT_MAX;
   Reg[EBX].u = 1;
   run(
       "== code 0x1\n"
@@ -54,7 +54,7 @@ void test_add_imm32_to_EAX_unsigned_overflow() {
 }
 
 void test_add_imm32_to_EAX_unsigned_and_signed_overflow() {
-  Reg[EAX].u = 0x80000000;  // smallest negative signed integer
+  Reg[EAX].u = 0x80000000;  // INT32_MIN
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -127,7 +127,7 @@ case 0x81: {  // combine r/m32 with imm32
 
 :(code)
 void test_add_imm32_to_r32_signed_overflow() {
-  Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
+  Reg[EBX].i = INT_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -145,7 +145,7 @@ void test_add_imm32_to_r32_signed_overflow() {
 }
 
 void test_add_imm32_to_r32_unsigned_overflow() {
-  Reg[EBX].u = 0xffffffff;  // largest unsigned number
+  Reg[EBX].u = UINT_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -163,7 +163,7 @@ void test_add_imm32_to_r32_unsigned_overflow() {
 }
 
 void test_add_imm32_to_r32_unsigned_and_signed_overflow() {
-  Reg[EBX].u = 0x80000000;  // smallest negative signed integer
+  Reg[EBX].u = 0x80000000;  // INT32_MIN
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -243,7 +243,7 @@ case 0x2d: {  // subtract imm32 from EAX
 
 :(code)
 void test_subtract_imm32_from_EAX_signed_overflow() {
-  Reg[EAX].i = 0x80000000;  // smallest negative signed integer
+  Reg[EAX].u = 0x80000000;  // INT32_MIN
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -275,7 +275,7 @@ void test_subtract_imm32_from_EAX_signed_and_unsigned_overflow() {
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
-      "  2d                                 00 00 00 80 \n"  // subtract smallest negative signed integer from EAX
+      "  2d                                 00 00 00 80 \n"  // subtract INT32_MIN from EAX
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract imm32 0x80000000 from EAX\n"
@@ -334,7 +334,7 @@ void test_subtract_imm32_from_mem_at_rm32_signed_overflow() {
       "  81     2b                          ff ff ff 7f \n"  // subtract largest positive signed integer from *EBX
       // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
       "== data 0x2000\n"
-      "00 00 00 80\n"  // smallest negative signed integer
+      "00 00 00 80\n"  // INT32_MIN
   );
   CHECK_TRACE_CONTENTS(
       "run: combine r/m32 with imm32\n"
@@ -373,7 +373,7 @@ void test_subtract_imm32_from_mem_at_rm32_signed_and_unsigned_overflow() {
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
-      "  81     2b                          00 00 00 80 \n"  // subtract smallest negative signed integer from *EBX
+      "  81     2b                          00 00 00 80 \n"  // subtract INT32_MIN from *EBX
       // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
       "== data 0x2000\n"
       "00 00 00 00\n"  // 0
@@ -933,11 +933,11 @@ void test_compare_EAX_with_imm32_lesser_unsigned_and_signed() {
 }
 
 void test_compare_EAX_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
-  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  Reg[EAX].i = INT_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
-      "  3d                                 00 00 00 80\n"  // compare EAX with smallest negative signed integer
+      "  3d                                 00 00 00 80\n"  // compare EAX with INT32_MIN
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EAX with imm32 0x80000000\n"
@@ -946,7 +946,7 @@ void test_compare_EAX_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
 }
 
 void test_compare_EAX_with_imm32_lesser_signed() {
-  Reg[EAX].i = 0xffffffff;  // -1
+  Reg[EAX].i = -1;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -959,7 +959,7 @@ void test_compare_EAX_with_imm32_lesser_signed() {
 }
 
 void test_compare_EAX_with_imm32_lesser_unsigned() {
-  Reg[EAX].i = 0x00000001;  // 1
+  Reg[EAX].i = 1;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -1038,11 +1038,11 @@ void test_compare_rm32_with_imm32_lesser_unsigned_and_signed() {
 }
 
 void test_compare_rm32_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
-  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  Reg[EAX].i = INT_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
-      "  81     f8                          00 00 00 80\n"  // compare EAX with smallest negative signed integer
+      "  81     f8                          00 00 00 80\n"  // compare EAX with INT32_MIN
       // ModR/M in binary: 11 (direct mode) 111 (subop compare) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
@@ -1055,7 +1055,7 @@ void test_compare_rm32_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
 }
 
 void test_compare_rm32_with_imm32_lesser_signed() {
-  Reg[EAX].i = 0xffffffff;  // -1
+  Reg[EAX].i = -1;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -1072,7 +1072,7 @@ void test_compare_rm32_with_imm32_lesser_signed() {
 }
 
 void test_compare_rm32_with_imm32_lesser_unsigned() {
-  Reg[EAX].i = 0x00000001;  // 1
+  Reg[EAX].i = 1;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate

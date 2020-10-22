@@ -10,7 +10,7 @@ void test_add_r32_to_mem_at_rm32() {
       "  01     18                                    \n"  // add EBX to *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 0x1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -45,7 +45,7 @@ void test_add_mem_at_rm32_to_r32() {
       "  03     18                                    \n"  // add *EAX to EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 0x1
   );
   CHECK_TRACE_CONTENTS(
       "run: add r/m32 to EBX\n"
@@ -79,7 +79,7 @@ case 0x03: {  // add r/m32 to r32
 :(code)
 void test_add_mem_at_rm32_to_r32_signed_overflow() {
   Reg[EAX].i = 0x2000;
-  Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
+  Reg[EBX].i = INT32_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -99,7 +99,7 @@ void test_add_mem_at_rm32_to_r32_signed_overflow() {
 
 void test_add_mem_at_rm32_to_r32_unsigned_overflow() {
   Reg[EAX].u = 0x2000;
-  Reg[EBX].u = 0xffffffff;  // largest unsigned number
+  Reg[EBX].u = UINT_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -119,14 +119,14 @@ void test_add_mem_at_rm32_to_r32_unsigned_overflow() {
 
 void test_add_mem_at_rm32_to_r32_unsigned_and_signed_overflow() {
   Reg[EAX].u = 0x2000;
-  Reg[EBX].u = 0x80000000;  // smallest negative signed integer
+  Reg[EBX].i = INT32_MIN;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  03     18                                    \n" // add *EAX to EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "00 00 00 80\n"  // smallest negative signed integer
+      "00 00 00 80\n"  // INT32_MIN
   );
   CHECK_TRACE_CONTENTS(
       "run: add r/m32 to EBX\n"
@@ -149,7 +149,7 @@ void test_subtract_r32_from_mem_at_rm32() {
       "  29     18                                    \n"  // subtract EBX from *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "0a 00 00 00\n"  // 0x0000000a
+      "0a 00 00 00\n"  // 0xa
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract EBX from r/m32\n"
@@ -173,7 +173,7 @@ void test_subtract_mem_at_rm32_from_r32() {
       "  2b     18                                    \n"  // subtract *EAX from EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 0x1
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract r/m32 from EBX\n"
@@ -207,14 +207,14 @@ case 0x2b: {  // subtract r/m32 from r32
 :(code)
 void test_subtract_mem_at_rm32_from_r32_signed_overflow() {
   Reg[EAX].i = 0x2000;
-  Reg[EBX].i = 0x80000000;  // smallest negative signed integer
+  Reg[EBX].i = INT32_MIN;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  2b     18                                    \n"  // subtract *EAX from EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "ff ff ff 7f\n"  // largest positive signed integer
+      "ff ff ff 7f\n"  // INT32_MAX
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract r/m32 from EBX\n"
@@ -254,7 +254,7 @@ void test_subtract_mem_at_rm32_from_r32_signed_and_unsigned_overflow() {
       "  2b     18                                    \n"  // subtract *EAX from EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "00 00 00 80\n"  // smallest negative signed integer
+      "00 00 00 80\n"  // INT32_MIN
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract r/m32 from EBX\n"
@@ -300,7 +300,7 @@ void test_and_mem_at_rm32_with_r32() {
       "  23     18                                    \n"  // and *EAX with EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "ff 00 00 00\n"  // 0x000000ff
+      "ff 00 00 00\n"  // 0xff
   );
   CHECK_TRACE_CONTENTS(
       "run: and r/m32 with EBX\n"
@@ -597,14 +597,14 @@ void test_compare_r32_with_mem_at_rm32_lesser_unsigned_and_signed() {
 
 void test_compare_r32_with_mem_at_rm32_lesser_unsigned_and_signed_due_to_overflow() {
   Reg[EAX].i = 0x2000;
-  Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
+  Reg[EBX].i = INT32_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (lhs EBX) 000 (rhs EAX)
       "== data 0x2000\n"
-      "00 00 00 80\n"  // smallest negative signed integer
+      "00 00 00 80\n"  // INT32_MIN
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
@@ -616,7 +616,7 @@ void test_compare_r32_with_mem_at_rm32_lesser_unsigned_and_signed_due_to_overflo
 
 void test_compare_r32_with_mem_at_rm32_lesser_signed() {
   Reg[EAX].i = 0x2000;
-  Reg[EBX].i = 0xffffffff;  // -1
+  Reg[EBX].i = -1;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -635,7 +635,7 @@ void test_compare_r32_with_mem_at_rm32_lesser_signed() {
 
 void test_compare_r32_with_mem_at_rm32_lesser_unsigned() {
   Reg[EAX].i = 0x2000;
-  Reg[EBX].i = 0x00000001;  // 1
+  Reg[EBX].i = 1;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -701,7 +701,7 @@ void test_copy_mem_at_rm32_to_r32() {
       // op     ModR/M  SIB   displacement  immediate
       "  8b     18                                    \n"  // copy *EAX to EBX
       "== data 0x2000\n"
-      "af 00 00 00\n"  // 0x000000af
+      "af 00 00 00\n"  // 0xaf
   );
   CHECK_TRACE_CONTENTS(
       "run: copy r/m32 to EBX\n"
@@ -734,7 +734,7 @@ void test_jump_mem_at_rm32() {
       "  b8                                 00 00 00 01\n"
       "  b8                                 00 00 00 02\n"
       "== data 0x2000\n"
-      "08 00 00 00\n"  // 0x00000008
+      "08 00 00 00\n"  // 0x8
   );
   CHECK_TRACE_CONTENTS(
       "run: 0x00000001 opcode: ff\n"
@@ -767,7 +767,7 @@ void test_push_mem_at_rm32() {
       // op     ModR/M  SIB   displacement  immediate
       "  ff     30                                    \n"  // push *EAX to stack
       "== data 0x2000\n"
-      "af 00 00 00\n"  // 0x000000af
+      "af 00 00 00\n"  // 0xaf
   );
   CHECK_TRACE_CONTENTS(
       "run: push r/m32\n"
@@ -836,7 +836,7 @@ void test_add_r32_to_mem_at_displacement() {
       "  01     1d            00 20 00 00             \n"  // add EBX to *0x2000
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 101 (dest in disp32)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 0x1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -863,7 +863,7 @@ void test_add_r32_to_mem_at_rm32_plus_disp8() {
       "  01     58            02                      \n"  // add EBX to *(EAX+2)
       // ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 0x1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -903,7 +903,7 @@ void test_add_r32_to_mem_at_rm32_plus_negative_disp8() {
       "  01     58            ff                      \n"  // add EBX to *(EAX-1)
       // ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 0x1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -925,7 +925,7 @@ void test_add_r32_to_mem_at_rm32_plus_disp32() {
       "  01     98            02 00 00 00             \n"  // add EBX to *(EAX+2)
       // ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 0x1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -965,7 +965,7 @@ void test_add_r32_to_mem_at_rm32_plus_negative_disp32() {
       "  01     98            ff ff ff ff             \n"  // add EBX to *(EAX-1)
       // ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 0x1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"

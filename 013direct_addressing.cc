@@ -44,7 +44,7 @@ case 0x01: {  // add r32 to r/m32
 
 :(code)
 void test_add_r32_to_r32_signed_overflow() {
-  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  Reg[EAX].i = INT32_MAX;
   Reg[EBX].i = 1;
   run(
       "== code 0x1\n"  // code segment
@@ -61,7 +61,7 @@ void test_add_r32_to_r32_signed_overflow() {
 }
 
 void test_add_r32_to_r32_unsigned_overflow() {
-  Reg[EAX].u = 0xffffffff;  // largest unsigned number
+  Reg[EAX].u = UINT_MAX;
   Reg[EBX].u = 1;
   run(
       "== code 0x1\n"  // code segment
@@ -78,7 +78,7 @@ void test_add_r32_to_r32_unsigned_overflow() {
 }
 
 void test_add_r32_to_r32_unsigned_and_signed_overflow() {
-  Reg[EAX].u = Reg[EBX].u = 0x80000000;  // smallest negative signed integer
+  Reg[EAX].i = Reg[EBX].i = INT32_MIN;
   run(
       "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -193,8 +193,8 @@ case 0x29: {  // subtract r32 from r/m32
 
 :(code)
 void test_subtract_r32_from_r32_signed_overflow() {
-  Reg[EAX].i = 0x80000000;  // smallest negative signed integer
-  Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
+  Reg[EAX].i = INT32_MIN;
+  Reg[EBX].i = INT32_MAX;
   run(
       "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -228,7 +228,7 @@ void test_subtract_r32_from_r32_unsigned_overflow() {
 
 void test_subtract_r32_from_r32_signed_and_unsigned_overflow() {
   Reg[EAX].i = 0;
-  Reg[EBX].i = 0x80000000;  // smallest negative signed integer
+  Reg[EBX].i = INT32_MIN;
   run(
       "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -894,8 +894,8 @@ void test_compare_r32_with_r32_lesser_unsigned_and_signed() {
 }
 
 void test_compare_r32_with_r32_lesser_unsigned_and_signed_due_to_overflow() {
-  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
-  Reg[EBX].i = 0x80000000;  // smallest negative signed integer
+  Reg[EAX].i = INT32_MAX;
+  Reg[EBX].i = INT32_MIN;
   run(
       "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -910,8 +910,8 @@ void test_compare_r32_with_r32_lesser_unsigned_and_signed_due_to_overflow() {
 }
 
 void test_compare_r32_with_r32_lesser_signed() {
-  Reg[EAX].i = 0xffffffff;  // -1
-  Reg[EBX].i = 0x00000001;  // 1
+  Reg[EAX].i = -1;
+  Reg[EBX].i = 1;
   run(
       "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -926,8 +926,8 @@ void test_compare_r32_with_r32_lesser_signed() {
 }
 
 void test_compare_r32_with_r32_lesser_unsigned() {
-  Reg[EAX].i = 0x00000001;  // 1
-  Reg[EBX].i = 0xffffffff;  // -1
+  Reg[EAX].i = 1;
+  Reg[EBX].i = -1;
   run(
       "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -1241,7 +1241,7 @@ void test_pop_r32() {
       // op     ModR/M  SIB   displacement  immediate
       "  5b                                           \n"  // pop stack to EBX
       "== data 0x2000\n"  // data segment
-      "0a 00 00 00\n"  // 0x0000000a
+      "0a 00 00 00\n"  // 0xa
   );
   CHECK_TRACE_CONTENTS(
       "run: pop into EBX\n"
@@ -1275,3 +1275,6 @@ uint32_t pop() {
   assert(Reg[ESP].u < AFTER_STACK);
   return result;
 }
+
+:(before "End Includes")
+#include <climits>

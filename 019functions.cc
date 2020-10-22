@@ -10,7 +10,7 @@ void test_call_disp32() {
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
-      "  e8                                 a0 00 00 00 \n"  // call function offset at 0x000000a0
+      "  e8                                 a0 00 00 00 \n"  // call function offset at 0xa0
       // next EIP is 6
   );
   CHECK_TRACE_CONTENTS(
@@ -77,7 +77,7 @@ void test_call_mem_at_rm32() {
       "  ff     13                                      \n"  // call function offset at *EBX
       // next EIP is 3
       "== data 0x2000\n"
-      "a0 00 00 00\n"  // 0x000000a0
+      "a0 00 00 00\n"  // 0xa0
   );
   CHECK_TRACE_CONTENTS(
       "run: call to r/m32\n"
@@ -103,7 +103,7 @@ void test_ret() {
       // op     ModR/M  SIB   displacement  immediate
       "  c3                                           \n"  // return
       "== data 0x2000\n"
-      "10 00 00 00\n"  // 0x00000010
+      "10 00 00 00\n"  // 0x10
   );
   CHECK_TRACE_CONTENTS(
       "run: return\n"

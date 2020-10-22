@@ -11,7 +11,7 @@ void test_add_r32_to_mem_at_rm32_with_sib() {
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
       // SIB in binary: 00 (scale 1) 100 (no index) 000 (base EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -64,7 +64,7 @@ void test_add_r32_to_mem_at_base_r32_index_r32() {
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
       // SIB in binary: 00 (scale 1) 001 (index ECX) 000 (base EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -84,7 +84,7 @@ void test_add_r32_to_mem_at_displacement_using_sib() {
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
       // SIB in binary: 00 (scale 1) 100 (no index) 101 (not EBP but disp32)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -108,7 +108,7 @@ void test_add_r32_to_mem_at_base_r32_index_r32_plus_disp8() {
       // ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 100 (dest in SIB)
       // SIB in binary: 00 (scale 1) 001 (index ECX) 000 (base EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -138,7 +138,7 @@ void test_add_r32_to_mem_at_base_r32_index_r32_plus_disp32() {
       // ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 100 (dest in SIB)
       // SIB in binary: 00 (scale 1) 001 (index ECX) 000 (base EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
