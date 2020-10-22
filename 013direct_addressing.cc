@@ -61,7 +61,7 @@ void test_add_r32_to_r32_signed_overflow() {
 }
 
 void test_add_r32_to_r32_unsigned_overflow() {
-  Reg[EAX].u = UINT_MAX;
+  Reg[EAX].u = UINT32_MAX;
   Reg[EBX].u = 1;
   run(
       "== code 0x1\n"  // code segment
@@ -374,7 +374,7 @@ case 3: {  // negate r/m32
 :(code)
 // negate can overflow in exactly one situation
 void test_negate_can_overflow() {
-  Reg[EBX].i = 0x80000000;  // INT_MIN
+  Reg[EBX].i = INT32_MIN;
   run(
       "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate

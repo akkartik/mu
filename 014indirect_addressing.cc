@@ -99,7 +99,7 @@ void test_add_mem_at_rm32_to_r32_signed_overflow() {
 
 void test_add_mem_at_rm32_to_r32_unsigned_overflow() {
   Reg[EAX].u = 0x2000;
-  Reg[EBX].u = UINT_MAX;
+  Reg[EBX].u = UINT32_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
