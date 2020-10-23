@@ -25,7 +25,7 @@ case 0x05: {  // add imm32 to EAX
 
 :(code)
 void test_add_imm32_to_EAX_signed_overflow() {
-  Reg[EAX].i = INT_MAX;
+  Reg[EAX].i = INT32_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -39,7 +39,7 @@ void test_add_imm32_to_EAX_signed_overflow() {
 }
 
 void test_add_imm32_to_EAX_unsigned_overflow() {
-  Reg[EAX].u = UINT_MAX;
+  Reg[EAX].u = UINT32_MAX;
   Reg[EBX].u = 1;
   run(
       "== code 0x1\n"
@@ -54,7 +54,7 @@ void test_add_imm32_to_EAX_unsigned_overflow() {
 }
 
 void test_add_imm32_to_EAX_unsigned_and_signed_overflow() {
-  Reg[EAX].u = 0x80000000;  // INT32_MIN
+  Reg[EAX].i = INT32_MIN;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -127,7 +127,7 @@ case 0x81: {  // combine r/m32 with imm32
 
 :(code)
 void test_add_imm32_to_r32_signed_overflow() {
-  Reg[EBX].i = INT_MAX;
+  Reg[EBX].i = INT32_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -145,7 +145,7 @@ void test_add_imm32_to_r32_signed_overflow() {
 }
 
 void test_add_imm32_to_r32_unsigned_overflow() {
-  Reg[EBX].u = UINT_MAX;
+  Reg[EBX].u = UINT32_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -163,7 +163,7 @@ void test_add_imm32_to_r32_unsigned_overflow() {
 }
 
 void test_add_imm32_to_r32_unsigned_and_signed_overflow() {
-  Reg[EBX].u = 0x80000000;  // INT32_MIN
+  Reg[EBX].i = INT32_MIN;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -243,16 +243,16 @@ case 0x2d: {  // subtract imm32 from EAX
 
 :(code)
 void test_subtract_imm32_from_EAX_signed_overflow() {
-  Reg[EAX].u = 0x80000000;  // INT32_MIN
+  Reg[EAX].i = INT32_MIN;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
-      "  2d                                 ff ff ff 7f \n"  // subtract largest positive signed integer from EAX
+      "  2d                                 01 00 00 00 \n"  // 1 from EAX
   );
   CHECK_TRACE_CONTENTS(
-      "run: subtract imm32 0x7fffffff from EAX\n"
+      "run: subtract imm32 0x00000001 from EAX\n"
       "run: SF=0; ZF=0; CF=0; OF=1\n"
-      "run: storing 0x00000001\n"
+      "run: storing 0x7fffffff\n"  // INT32_MAX
   );
 }
 
@@ -933,7 +933,7 @@ void test_compare_EAX_with_imm32_lesser_unsigned_and_signed() {
 }
 
 void test_compare_EAX_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
-  Reg[EAX].i = INT_MAX;
+  Reg[EAX].i = INT32_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -1038,7 +1038,7 @@ void test_compare_rm32_with_imm32_lesser_unsigned_and_signed() {
 }
 
 void test_compare_rm32_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
-  Reg[EAX].i = INT_MAX;
+  Reg[EAX].i = INT32_MAX;
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
@@ -1274,7 +1274,7 @@ case 0x68: {
 //:: multiply
 
 :(before "End Initialize Op Names")
-put_new(Name, "69", "multiply rm32 by imm32 and store result in r32");
+put_new(Name, "69", "multiply rm32 by imm32 and store result in r32 (imul)");
 
 :(code)
 void test_multiply_imm32() {
