@@ -142,6 +142,10 @@ use it. I might even pull your changes into this repo!
 
 - [mu-normie](https://git.sr.ht/~akkartik/mu-normie): with a more standard
   build system and C++ modules.
+- [mu-x86\_64](https://git.sr.ht/~akkartik/mu-x86_64): experimental fork for
+  64-bit x86 in collaboration with [Max Bernstein](https://bernsteinbear.com).
+  It's brought up a few concrete open problems that I don't have good solutions
+  for yet.
 
 ## Desiderata
 
