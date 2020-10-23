@@ -141,7 +141,7 @@ free to make a fork. If you show it to me, I'll link to it here, so others can
 use it. I might even pull your changes into this repo!
 
 - [mu-normie](https://git.sr.ht/~akkartik/mu-normie): with a more standard
-  build system and C++ modules.
+  build system that organizes the repo by header files and compilation units.
 - [mu-x86\_64](https://git.sr.ht/~akkartik/mu-x86_64): experimental fork for
   64-bit x86 in collaboration with [Max Bernstein](https://bernsteinbear.com).
   It's brought up a few concrete open problems that I don't have good solutions
