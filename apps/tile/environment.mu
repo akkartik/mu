@@ -1256,7 +1256,7 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     evaluate functions, bindings, first-line, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy top-row
-    curr-row <- add 3  # stack-margin-top
+    curr-row <- add 2  # stack-margin-top
     var _max-width/eax: int <- value-stack-max-width stack-addr
     max-width <- copy _max-width
     var i/eax: int <- value-stack-length stack-addr
