@@ -169,10 +169,30 @@ $process-sandbox:body: {
     {
       compare prev-word, 0
       break-if-=
-#?       print-string 0, "previous word\n"
+#?       print-string 0, "move to previous word\n"
       cursor-to-end prev-word
+#?       {
+#?         var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+#?         var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+#?         var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
+#?         var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+#?         var cursor-word/ebx: (addr word) <- copy _cursor-word
+#?         print-string 0, "word at cursor before: "
+#?         print-word 0, cursor-word
+#?         print-string 0, "\n"
+#?       }
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       decrement-final-element cursor-call-path
+#?       {
+#?         var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+#?         var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+#?         var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
+#?         var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+#?         var cursor-word/ebx: (addr word) <- copy _cursor-word
+#?         print-string 0, "word at cursor after: "
+#?         print-word 0, cursor-word
+#?         print-string 0, "\n"
+#?       }
     }
     break $process-sandbox:body
   }
@@ -391,10 +411,30 @@ $process-sandbox:body: {
   compare key, 0x20  # space
   $process-sandbox:space: {
     break-if-!=
-    # insert new word
-    append-word cursor-word-ah
-    var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
-    increment-final-element cursor-call-path
+#?     print-string 0, "space\n"
+    # if cursor is at start of word, insert word before
+    {
+      var at-start?/eax: boolean <- cursor-at-start? cursor-word
+      compare at-start?, 0  # false
+      break-if-=
+      var prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
+      append-word prev-word-ah
+      var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+      decrement-final-element cursor-call-path
+      break $process-sandbox:body
+    }
+    # if cursor is at end of word, insert word after
+    {
+      var at-end?/eax: boolean <- cursor-at-end? cursor-word
+      compare at-end?, 0  # false
+      break-if-=
+      append-word cursor-word-ah
+      var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+      increment-final-element cursor-call-path
+      break $process-sandbox:body
+    }
+    # otherwise split word into two
+    # TODO
     break $process-sandbox:body
   }
   compare key, 0xe  # ctrl-n
@@ -888,6 +928,9 @@ fn render-final-line-with-stack screen: (addr screen), functions: (addr handle f
   var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ebx: (addr word) <- copy _cursor-word
+#?   print-string 0, "word at cursor: "
+#?   print-word 0, cursor-word
+#?   print-string 0, "\n"
   # cursor-call-path
   var cursor-call-path: (addr handle call-path-element)
   {

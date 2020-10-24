@@ -594,10 +594,22 @@ fn decrement-final-element list: (addr handle call-path-element) {
   var final/eax: (addr call-path-element) <- lookup *final-ah
   var val-ah/ecx: (addr handle word) <- get final, word
   var val/eax: (addr word) <- lookup *val-ah
+#?   print-string 0, "replacing "
+#?   {
+#?     var foo/eax: int <- copy val
+#?     print-int32-hex 0, foo
+#?   }
   var new-ah/edx: (addr handle word) <- get val, prev
   var target/eax: (addr word) <- lookup *new-ah
   compare target, 0
   break-if-=
+  # val = val->prev
+#?   print-string 0, " with "
+#?   {
+#?     var foo/eax: int <- copy target
+#?     print-int32-hex 0, foo
+#?   }
+#?   print-string 0, "\n"
   copy-object new-ah, val-ah
 }
 
