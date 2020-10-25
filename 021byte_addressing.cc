@@ -162,7 +162,7 @@ case 0xc6: {  // copy imm8 to r/m8
   const uint8_t modrm = next();
   const uint8_t src = next();
   trace(Callstack_depth+1, "run") << "copy imm8 to r8/m8-at-r32" << end();
-  trace(Callstack_depth+1, "run") << "imm8 is 0x" << HEXWORD << NUM(src) << end();
+  trace(Callstack_depth+1, "run") << "imm8 is 0x" << HEXBYTE << NUM(src) << end();
   const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   if (subop != 0) {
     cerr << "unrecognized subop for opcode c6: " << NUM(subop) << " (only 0/copy currently implemented)\n";
