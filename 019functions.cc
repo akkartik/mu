@@ -51,7 +51,7 @@ void test_call_r32() {
       "run: r/m32 is EBX\n"
       "run: decrementing ESP to 0xbd000060\n"
       "run: pushing value 0x00000003\n"
-      "run: jumping to 0x000000a3\n"
+      "run: jumping to 0x000000a0\n"
   );
 }
 
@@ -60,7 +60,7 @@ case 2: {  // call function pointer at r/m32
   trace(Callstack_depth+1, "run") << "call to r/m32" << end();
   const int32_t* offset = effective_address(modrm);
   push(EIP);
-  EIP += *offset;
+  EIP = *offset;
   trace(Callstack_depth+1, "run") << "jumping to 0x" << HEXWORD << EIP << end();
   ++Callstack_depth;
   break;
@@ -84,7 +84,7 @@ void test_call_mem_at_rm32() {
       "run: effective address is 0x00002000 (EBX)\n"
       "run: decrementing ESP to 0xbd000060\n"
       "run: pushing value 0x00000003\n"
-      "run: jumping to 0x000000a3\n"
+      "run: jumping to 0x000000a0\n"
   );
 }
 
