@@ -191,7 +191,7 @@ void test_add_imm32_to_mem_at_rm32() {
       "  81     03                          0a 0b 0c 0d \n"  // add 0x0d0c0b0a to *EBX
       // ModR/M in binary: 00 (indirect mode) 000 (subop add) 011 (dest EBX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x00000001
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: combine r/m32 with imm32\n"
@@ -294,7 +294,7 @@ void test_subtract_imm32_from_mem_at_rm32() {
       "  81     2b                          01 00 00 00 \n"  // subtract 1 from *EBX
       // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
       "== data 0x2000\n"
-      "0a 00 00 00\n"  // 0x0000000a
+      "0a 00 00 00\n"  // 0xa
   );
   CHECK_TRACE_CONTENTS(
       "run: combine r/m32 with imm32\n"
@@ -654,7 +654,7 @@ void test_and_imm32_with_mem_at_rm32() {
       "  81     23                          0a 0b 0c 0d \n"  // and 0x0d0c0b0a with *EBX
       // ModR/M in binary: 00 (indirect mode) 100 (subop and) 011 (dest EBX)
       "== data 0x2000\n"
-      "ff 00 00 00\n"  // 0x000000ff
+      "ff 00 00 00\n"  // 0xff
   );
   CHECK_TRACE_CONTENTS(
       "run: combine r/m32 with imm32\n"

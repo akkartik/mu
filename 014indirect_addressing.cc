@@ -10,7 +10,7 @@ void test_add_r32_to_mem_at_rm32() {
       "  01     18                                    \n"  // add EBX to *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x1
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -45,7 +45,7 @@ void test_add_mem_at_rm32_to_r32() {
       "  03     18                                    \n"  // add *EAX to EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x1
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add r/m32 to EBX\n"
@@ -173,7 +173,7 @@ void test_subtract_mem_at_rm32_from_r32() {
       "  2b     18                                    \n"  // subtract *EAX from EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x1
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract r/m32 from EBX\n"
@@ -836,7 +836,7 @@ void test_add_r32_to_mem_at_displacement() {
       "  01     1d            00 20 00 00             \n"  // add EBX to *0x2000
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 101 (dest in disp32)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x1
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -863,7 +863,7 @@ void test_add_r32_to_mem_at_rm32_plus_disp8() {
       "  01     58            02                      \n"  // add EBX to *(EAX+2)
       // ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x1
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -903,7 +903,7 @@ void test_add_r32_to_mem_at_rm32_plus_negative_disp8() {
       "  01     58            ff                      \n"  // add EBX to *(EAX-1)
       // ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x1
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -925,7 +925,7 @@ void test_add_r32_to_mem_at_rm32_plus_disp32() {
       "  01     98            02 00 00 00             \n"  // add EBX to *(EAX+2)
       // ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x1
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
@@ -965,7 +965,7 @@ void test_add_r32_to_mem_at_rm32_plus_negative_disp32() {
       "  01     98            ff ff ff ff             \n"  // add EBX to *(EAX-1)
       // ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
       "== data 0x2000\n"
-      "01 00 00 00\n"  // 0x1
+      "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
       "run: add EBX to r/m32\n"
