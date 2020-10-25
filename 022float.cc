@@ -482,7 +482,7 @@ float* effective_address_float(uint8_t modrm) {
 //: compare
 
 :(before "End Initialize Op Names")
-put_new(Name_0f, "2f", "compare: set SF if x32 < xm32 (comiss)");
+put_new(Name_0f, "2f", "compare: set CF if x32 < xm32 (comiss)");
 
 :(code)
 void test_compare_x32_with_mem_at_rm32() {
