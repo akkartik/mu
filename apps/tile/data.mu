@@ -28,11 +28,7 @@ type line {
 }
 
 type word {
-  # at most one of these will be non-null
   scalar-data: (handle gap-buffer)
-  text-data: (handle array byte)
-  box-data: (handle line)  # recurse
-  #
   next: (handle word)
   prev: (handle word)
 }

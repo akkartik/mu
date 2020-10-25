@@ -150,6 +150,13 @@ fn first-grapheme _self: (addr word) -> result/eax: grapheme {
   result <- first-grapheme-in-gap-buffer data
 }
 
+fn grapheme-before-cursor _self: (addr word) -> result/eax: grapheme {
+  var self/esi: (addr word) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  result <- grapheme-before-cursor-in-gap-buffer data
+}
+
 fn add-grapheme-to-word _self: (addr word), c: grapheme {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data

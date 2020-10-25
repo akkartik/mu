@@ -210,6 +210,24 @@ $first-grapheme-in-gap-buffer:body: {
 }
 }
 
+fn grapheme-before-cursor-in-gap-buffer _self: (addr gap-buffer) -> result/eax: grapheme {
+$grapheme-before-cursor-in-gap-buffer:body: {
+  var self/esi: (addr gap-buffer) <- copy _self
+  # try to read from left
+  var left/ecx: (addr grapheme-stack) <- get self, left
+  var top-addr/edx: (addr int) <- get left, top
+  compare *top-addr, 0
+  {
+    break-if-<=
+    result <- pop-grapheme-stack left
+    push-grapheme-stack left, result
+    break $grapheme-before-cursor-in-gap-buffer:body
+  }
+  # give up
+  result <- copy -1
+}
+}
+
 fn delete-before-gap _self: (addr gap-buffer) {
   var self/eax: (addr gap-buffer) <- copy _self
   var left/eax: (addr grapheme-stack) <- get self, left

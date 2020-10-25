@@ -423,6 +423,16 @@ $process-sandbox:body: {
       decrement-final-element cursor-call-path
       break $process-sandbox:body
     }
+    # if start of word is quote and grapheme before cursor is not, just insert it as usual
+    {
+      var first-grapheme/eax: grapheme <- first-grapheme cursor-word
+      compare first-grapheme, 0x22  # double quote
+      break-if-!=
+      var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
+      compare final-grapheme, 0x22  # double quote
+      break-if-=
+      break $process-sandbox:space
+    }
     # otherwise insert word after and move cursor to it for the next key
     # (but we'll continue to track the current cursor-word for the rest of this function)
     append-word cursor-word-ah
