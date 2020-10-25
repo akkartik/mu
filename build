@@ -21,8 +21,8 @@ UNTIL_LAYER=${2:-zzz}
 
 test "$CXX" || export CXX=c++
 test "$CC" || export CC=cc
-test "$CFLAGS" || export CFLAGS="-g -O3 -std=c++98"  # CI has an ancient version; don't expect recent dialects
-export CFLAGS="$CFLAGS -Wall -Wextra -fno-strict-aliasing"
+test "$CXXFLAGS" || export CXXFLAGS="-g -O3 -std=c++98"  # CI has an ancient version; don't expect recent dialects
+export CXXFLAGS="$CXXFLAGS -Wall -Wextra -fno-strict-aliasing"
 
 # return 1 if $1 is older than _any_ of the remaining args
 older_than() {
@@ -73,7 +73,7 @@ noisy_cd() {
 }
 
 older_than tools/enumerate tools/enumerate.cc && {
-  $CXX $CFLAGS tools/enumerate.cc -o tools/enumerate
+  $CXX $CXXFLAGS tools/enumerate.cc -o tools/enumerate
 }
 
 older_than tools/tangle tools/tangle.cc && {
@@ -81,7 +81,7 @@ older_than tools/tangle tools/tangle.cc && {
     grep -h "^[^ #].*) {" tangle.cc  |sed 's/ {.*/;/'  |update tangle.function_list
     grep -h "^[[:space:]]*void test_" tangle.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  |update tangle.test_list
     grep -h "^\s*void test_" tangle.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update tangle.test_name_list
-    $CXX $CFLAGS tangle.cc -o tangle
+    $CXX $CXXFLAGS tangle.cc -o tangle
     ./tangle test
   noisy_cd ..  # no effect; just to show us returning to the parent directory
 }
@@ -97,7 +97,7 @@ grep -h "^\s*void test_" bootstrap.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  |upd
 grep -h "^\s*void test_" bootstrap.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
 
 older_than bootstrap_bin bootstrap.cc *_list && {
-  $CXX $CFLAGS bootstrap.cc -o bootstrap_bin
+  $CXX $CXXFLAGS bootstrap.cc -o bootstrap_bin
   echo
 }
 
