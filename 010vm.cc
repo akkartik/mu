@@ -79,8 +79,8 @@ put_new(Help, "registers",
   "though of course you'll need to be careful to ignore instructions and flag registers\n"
   "that SubX doesn't support.\n"
   "\n"
-  "It isn't simple, but if this is the processor you have running on your computer.\n"
-  "Might as well get good at it.\n"
+  "It isn't simple, but if this is the processor you have running on your computer,\n"
+  "might as well get good at it.\n"
 );
 
 :(before "End Globals")
