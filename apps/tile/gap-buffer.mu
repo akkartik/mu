@@ -216,6 +216,12 @@ fn delete-before-gap _self: (addr gap-buffer) {
   var dummy/eax: grapheme <- pop-grapheme-stack left
 }
 
+fn pop-after-gap _self: (addr gap-buffer) -> result/eax: grapheme {
+  var self/eax: (addr gap-buffer) <- copy _self
+  var right/eax: (addr grapheme-stack) <- get self, right
+  result <- pop-grapheme-stack right
+}
+
 fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> result/eax: boolean {
 $gap-buffer-equal?:body: {
   var self/esi: (addr gap-buffer) <- copy _self

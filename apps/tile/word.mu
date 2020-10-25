@@ -213,6 +213,13 @@ fn delete-before-cursor _self: (addr word) {
   delete-before-gap data
 }
 
+fn pop-after-cursor _self: (addr word) -> result/eax: grapheme {
+  var self/esi: (addr word) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  result <- pop-after-gap data
+}
+
 fn delete-next _self: (addr word) {
 $delete-next:body: {
   var self/esi: (addr word) <- copy _self

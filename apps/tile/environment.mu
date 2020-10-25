@@ -434,7 +434,21 @@ $process-sandbox:body: {
       break $process-sandbox:body
     }
     # otherwise split word into two
-    # TODO
+    append-word cursor-word-ah
+    var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    increment-final-element cursor-call-path
+    var next-word-ah/eax: (addr handle word) <- get cursor-word, next
+    var _next-word/eax: (addr word) <- lookup *next-word-ah
+    var next-word/ebx: (addr word) <- copy _next-word
+    {
+      var at-end?/eax: boolean <- cursor-at-end? cursor-word
+      compare at-end?, 0  # false
+      break-if-!=
+      var g/eax: grapheme <- pop-after-cursor cursor-word
+      add-grapheme-to-word next-word, g
+      loop
+    }
+    cursor-to-start next-word
     break $process-sandbox:body
   }
   compare key, 0xe  # ctrl-n
