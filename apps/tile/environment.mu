@@ -423,20 +423,17 @@ $process-sandbox:body: {
       decrement-final-element cursor-call-path
       break $process-sandbox:body
     }
-    # if cursor is at end of word, insert word after
-    {
-      var at-end?/eax: boolean <- cursor-at-end? cursor-word
-      compare at-end?, 0  # false
-      break-if-=
-      append-word cursor-word-ah
-      var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
-      increment-final-element cursor-call-path
-      break $process-sandbox:body
-    }
-    # otherwise split word into two
+    # otherwise insert word after and move cursor to it for the next key
+    # (but we'll continue to track the current cursor-word for the rest of this function)
     append-word cursor-word-ah
     var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
     increment-final-element cursor-call-path
+    # if cursor is at end of word, that's all
+    var at-end?/eax: boolean <- cursor-at-end? cursor-word
+    compare at-end?, 0  # false
+    break-if-!= $process-sandbox:body
+    # otherwise we're in the middle of a word
+    # move everything after cursor to the (just created) next word
     var next-word-ah/eax: (addr handle word) <- get cursor-word, next
     var _next-word/eax: (addr word) <- lookup *next-word-ah
     var next-word/ebx: (addr word) <- copy _next-word
