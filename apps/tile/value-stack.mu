@@ -27,7 +27,7 @@ fn push-int-to-value-stack _self: (addr value-stack), _val: int {
   var top/edx: int <- copy *top-addr
   var dest-offset/edx: (offset value) <- compute-offset data, top
   var dest-addr/edx: (addr value) <- index data, dest-offset
-  var dest-addr2/eax: (addr int) <- get dest-addr, scalar-data
+  var dest-addr2/eax: (addr int) <- get dest-addr, int-data
   var val/esi: int <- copy _val
 #?   print-int32-hex-to-real-screen val
   copy-to *dest-addr2, val
@@ -62,7 +62,7 @@ $pop-int-from-value-stack:body: {
   var top/edx: int <- copy *top-addr
   var dest-offset/edx: (offset value) <- compute-offset data, top
   var result-addr/eax: (addr value) <- index data, dest-offset
-  var result-addr2/eax: (addr int) <- get result-addr, scalar-data
+  var result-addr2/eax: (addr int) <- get result-addr, int-data
   val <- copy *result-addr2
 }
 }
@@ -100,7 +100,7 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
     break-if->=
     var o/edx: (offset value) <- compute-offset data, i
     var g/edx: (addr value) <- index data, o
-    var g2/edx: (addr int) <- get g, scalar-data
+    var g2/edx: (addr int) <- get g, int-data
     var w/eax: int <- decimal-size *g2
     compare w, out
     {

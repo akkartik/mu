@@ -34,9 +34,8 @@ type word {
 }
 
 type value {
-  scalar-data: int
-  text-data: (handle array byte)
-  box-data: (handle line)
+  type: int
+  int-data: int  # if type = 0
 }
 
 type table {

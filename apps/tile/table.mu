@@ -43,7 +43,7 @@ fn make-binding _self: (addr bind), key: (addr handle array byte), _val: int {
   var dest2/eax: (addr handle value) <- get self, value
   allocate dest2
   var dest3/eax: (addr value) <- lookup *dest2
-  var dest4/eax: (addr int) <- get dest3, scalar-data
+  var dest4/eax: (addr int) <- get dest3, int-data
   var val/ecx: int <- copy _val
   copy-to *dest4, val
 }
