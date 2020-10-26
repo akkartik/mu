@@ -109,7 +109,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break-if-!=
         var h: (handle array byte)
         var s/eax: (addr handle array byte) <- address h
-        stream-to-string curr-stream, s  # leak
+        unquote-stream-to-string curr-stream, s  # leak
         push-string-to-value-stack out, *s
         break $evaluate:process-word
       }

@@ -130,6 +130,8 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
       break-if-!=
       var s-ah/eax: (addr handle array byte) <- get g, text-data
       var s/eax: (addr array byte) <- lookup *s-ah
+      compare s, 0
+      break-if-=
       var w/eax: int <- length s
       compare w, out
       break-if-<=
