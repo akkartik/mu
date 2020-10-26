@@ -134,6 +134,42 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         copy-handle empty, target-string-ah
         break $evaluate:process-word
       }
+      {
+        var is-read?/eax: boolean <- stream-data-equal? curr-stream, "read"
+        compare is-read?, 0
+        break-if-=
+        # pop target-val from out
+        var out2/esi: (addr value-stack) <- copy out
+        var top-addr/ecx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        var data-ah/eax: (addr handle array value) <- get out2, data
+        var data/eax: (addr array value) <- lookup *data-ah
+        var top/edx: int <- copy *top-addr
+        top <- decrement
+        var dest-offset/edx: (offset value) <- compute-offset data, top
+        var target-val/edx: (addr value) <- index data, dest-offset
+        # check target-val is a file
+        var target-type-addr/eax: (addr int) <- get target-val, type
+        compare *target-type-addr, 3  # file
+        break-if-!=
+        # read a line from the file and save in target-val
+        # read target-val as a filename and save the handle in target-val
+        var file-ah/eax: (addr handle buffered-file) <- get target-val, file-data
+        var file/eax: (addr buffered-file) <- lookup *file-ah
+        var s: (stream byte 0x100)
+        var s-addr/ecx: (addr stream byte) <- address s
+        read-line-buffered file, s-addr
+        var target/eax: (addr handle array byte) <- get target-val, text-data
+        stream-to-string s-addr, target
+        # save result into target-val
+        var type-addr/eax: (addr int) <- get target-val, type
+        copy-to *type-addr, 1  # string
+        var target-file-ah/eax: (addr handle buffered-file) <- get target-val, file-data
+        var empty: (handle buffered-file)
+        copy-handle empty, target-file-ah
+        break $evaluate:process-word
+      }
       # if curr-stream defines a binding, save top of stack to bindings
       {
         var done?/eax: boolean <- stream-empty? curr-stream
