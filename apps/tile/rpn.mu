@@ -215,6 +215,60 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         perform-call callee, out, functions
         break $evaluate:process-word
       }
+      # HACKS: we're trying to avoid turning this into Forth
+      {
+        var is-dup?/eax: boolean <- stream-data-equal? curr-stream, "dup"
+        compare is-dup?, 0
+        break-if-=
+        # read src-val from out
+        var out2/esi: (addr value-stack) <- copy out
+        var top-addr/ecx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        var data-ah/eax: (addr handle array value) <- get out2, data
+        var data/eax: (addr array value) <- lookup *data-ah
+        var top/ecx: int <- copy *top-addr
+        top <- decrement
+        var offset/edx: (offset value) <- compute-offset data, top
+        var src-val/edx: (addr value) <- index data, offset
+        # push a copy of it
+        top <- increment
+        var offset/ebx: (offset value) <- compute-offset data, top
+        var target-val/ebx: (addr value) <- index data, offset
+        copy-object src-val, target-val
+        # commit
+        var top-addr/ecx: (addr int) <- get out2, top
+        increment *top-addr
+        break $evaluate:process-word
+      }
+      {
+        var is-swap?/eax: boolean <- stream-data-equal? curr-stream, "swap"
+        compare is-swap?, 0
+        break-if-=
+        # read top-val from out
+        var out2/esi: (addr value-stack) <- copy out
+        var top-addr/ecx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        var data-ah/eax: (addr handle array value) <- get out2, data
+        var data/eax: (addr array value) <- lookup *data-ah
+        var top/ecx: int <- copy *top-addr
+        top <- decrement
+        var offset/edx: (offset value) <- compute-offset data, top
+        var top-val/edx: (addr value) <- index data, offset
+        # read next val from out
+        top <- decrement
+        var offset/ebx: (offset value) <- compute-offset data, top
+        var pen-top-val/ebx: (addr value) <- index data, offset
+        # swap
+        var tmp: value
+        var tmp-a/eax: (addr value) <- address tmp
+        copy-object top-val, tmp-a
+        copy-object pen-top-val, top-val
+        copy-object tmp-a, pen-top-val
+        break $evaluate:process-word
+      }
+      # END HACKS
       # if it's a name, push its value
       {
         compare bindings, 0
