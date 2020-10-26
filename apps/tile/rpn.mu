@@ -53,6 +53,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare is-len?, 0
         break-if-=
 #?         print-string 0, "is len\n"
+        # pop target-val from out
         var out2/esi: (addr value-stack) <- copy out
         var top-addr/ecx: (addr int) <- get out2, top
         compare *top-addr, 0
@@ -64,6 +65,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         top <- decrement
         var dest-offset/edx: (offset value) <- compute-offset data, top
         var target-val/edx: (addr value) <- index data, dest-offset
+        # check target-val is a string
         var target-type-addr/eax: (addr int) <- get target-val, type
 #?         print-string 0, "checking type: "
 #?         {
@@ -74,9 +76,11 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare *target-type-addr, 1  # string
         break-if-!=
 #?         print-string 0, "is string\n"
+        # compute length
         var src-ah/eax: (addr handle array byte) <- get target-val, text-data
         var src/eax: (addr array byte) <- lookup *src-ah
         var result/ebx: int <- length src
+        # save result into target-val
         var type-addr/eax: (addr int) <- get target-val, type
         copy-to *type-addr, 0  # int
         var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
@@ -94,6 +98,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var new-byte/eax: byte <- read-byte curr-stream
         compare new-byte, 0x3d  # '='
         break-if-!=
+        # pop target-val from out
         var out2/esi: (addr value-stack) <- copy out
         var top-addr/ecx: (addr int) <- get out2, top
         compare *top-addr, 0
@@ -104,10 +109,12 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         top <- decrement
         var dest-offset/edx: (offset value) <- compute-offset data, top
         var target-val/edx: (addr value) <- index data, dest-offset
+        # create binding from curr-stream to target-val
         var key-h: (handle array byte)
         var key/ecx: (addr handle array byte) <- address key-h
         stream-to-string curr-stream, key
         bind-in-table bindings, key, target-val
+        # process next line if necessary
         var line/eax: (addr line) <- copy scratch
         var next-line-ah/eax: (addr handle line) <- get line, next
         var next-line/eax: (addr line) <- lookup *next-line-ah
@@ -238,14 +245,23 @@ fn perform-call _callee: (addr function), caller-stack: (addr value-stack), func
 #?   print-string-to-real-screen "about to enter recursive eval\n"
   evaluate functions, table, body, 0, stack
 #?   print-string-to-real-screen "exited recursive eval\n"
-  # stitch result from stack into caller
-  var result/eax: int <- pop-int-from-value-stack stack
-  push-int-to-value-stack caller-stack, result
+  # pop target-val from out
+  var top-addr/ecx: (addr int) <- get stack, top
+  compare *top-addr, 0
+  break-if-<=
+  var data-ah/eax: (addr handle array value) <- get stack, data
+  var data/eax: (addr array value) <- lookup *data-ah
+  var top/edx: int <- copy *top-addr
+  top <- decrement
+  var dest-offset/edx: (offset value) <- compute-offset data, top
+  var target-val/edx: (addr value) <- index data, dest-offset
+  # stitch target-val into caller-stack
+  push-value-stack caller-stack, target-val
 }
 
 # pop args from the caller-stack and bind them to successive args
 # implies: function args are stored in reverse order
-fn bind-args _callee: (addr function), caller-stack: (addr value-stack), table: (addr table) {
+fn bind-args _callee: (addr function), _caller-stack: (addr value-stack), table: (addr table) {
   var callee/ecx: (addr function) <- copy _callee
   var curr-arg-ah/eax: (addr handle word) <- get callee, args
   var curr-arg/eax: (addr word) <- lookup *curr-arg-ah
@@ -258,14 +274,19 @@ fn bind-args _callee: (addr function), caller-stack: (addr value-stack), table: 
     # create binding
     word-to-string curr-arg, curr-key
     {
-#?       var tmp/eax: (addr array byte) <- lookup *curr-key
-#?       print-string-to-real-screen "binding "
-#?       print-string-to-real-screen tmp
-#?       print-string-to-real-screen " to "
-      var curr-val/eax: int <- pop-int-from-value-stack caller-stack
-#?       print-int32-decimal-to-real-screen curr-val
-#?       print-string-to-real-screen "\n"
-      bind-int-in-table table, curr-key, curr-val
+      # pop target-val from caller-stack
+      var caller-stack/esi: (addr value-stack) <- copy _caller-stack
+      var top-addr/ecx: (addr int) <- get caller-stack, top
+      compare *top-addr, 0
+      break-if-<=
+      decrement *top-addr
+      var data-ah/eax: (addr handle array value) <- get caller-stack, data
+      var data/eax: (addr array value) <- lookup *data-ah
+      var top/ebx: int <- copy *top-addr
+      var dest-offset/ebx: (offset value) <- compute-offset data, top
+      var target-val/ebx: (addr value) <- index data, dest-offset
+      # create binding from curr-key to target-val
+      bind-in-table table, curr-key, target-val
     }
     #
     var next-arg-ah/edx: (addr handle word) <- get curr-arg, next

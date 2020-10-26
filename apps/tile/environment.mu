@@ -762,6 +762,10 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> resul
   subresult <- word-equal? w, "*"
   compare subresult, 0  # false
   break-if-!=
+  # if w == "len" return true
+  subresult <- word-equal? w, "len"
+  compare subresult, 0  # false
+  break-if-!=
   # return w in functions
   var out-h: (handle function)
   var out/eax: (addr handle function) <- address out-h

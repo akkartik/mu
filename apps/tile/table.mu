@@ -4,16 +4,6 @@ fn initialize-table _self: (addr table), n: int {
   populate data-ah, n
 }
 
-fn bind-int-in-table _self: (addr table), key: (addr handle array byte), val: int {
-  var self/esi: (addr table) <- copy _self
-  var data-ah/esi: (addr handle array bind) <- get self, data
-  var _data/eax: (addr array bind) <- lookup *data-ah
-  var data/esi: (addr array bind) <- copy _data
-  var next-empty-slot-index/eax: (offset bind) <- next-empty-slot data, key
-  var dest/eax: (addr bind) <- index data, next-empty-slot-index
-  make-int-binding dest, key, val
-}
-
 fn bind-in-table _self: (addr table), key: (addr handle array byte), val: (addr value) {
   var self/esi: (addr table) <- copy _self
   var data-ah/esi: (addr handle array bind) <- get self, data
