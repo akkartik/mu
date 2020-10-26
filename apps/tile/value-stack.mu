@@ -34,6 +34,21 @@ fn push-int-to-value-stack _self: (addr value-stack), _val: int {
   increment *top-addr
 }
 
+fn push-string-to-value-stack _self: (addr value-stack), val: (handle array byte) {
+  var self/esi: (addr value-stack) <- copy _self
+  var top-addr/ecx: (addr int) <- get self, top
+  var data-ah/edx: (addr handle array value) <- get self, data
+  var data/eax: (addr array value) <- lookup *data-ah
+  var top/edx: int <- copy *top-addr
+  var dest-offset/edx: (offset value) <- compute-offset data, top
+  var dest-addr/edx: (addr value) <- index data, dest-offset
+  var dest-addr2/eax: (addr handle array byte) <- get dest-addr, text-data
+  copy-handle val, dest-addr2
+  var dest-addr3/eax: (addr int) <- get dest-addr, type
+  copy-to *dest-addr3, 1  # type string
+  increment *top-addr
+}
+
 fn push-value-stack _self: (addr value-stack), val: (addr value) {
   var self/esi: (addr value-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
@@ -100,10 +115,23 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
     break-if->=
     var o/edx: (offset value) <- compute-offset data, i
     var g/edx: (addr value) <- index data, o
-    var g2/edx: (addr int) <- get g, int-data
-    var w/eax: int <- decimal-size *g2
-    compare w, out
+    var type/eax: (addr int) <- get g, type
     {
+      compare *type, 0
+      break-if-!=
+      var g2/edx: (addr int) <- get g, int-data
+      var w/eax: int <- decimal-size *g2
+      compare w, out
+      break-if-<=
+      copy-to out, w
+    }
+    {
+      compare *type, 1
+      break-if-!=
+      var s-ah/eax: (addr handle array byte) <- get g, text-data
+      var s/eax: (addr array byte) <- lookup *s-ah
+      var w/eax: int <- length s
+      compare w, out
       break-if-<=
       copy-to out, w
     }

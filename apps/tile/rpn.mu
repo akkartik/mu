@@ -99,6 +99,20 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         push-value-stack out, val
         break $evaluate:process-word
       }
+      # if the word starts with a quote and ends with a quote, return it directly
+      {
+        var start/eax: byte <- stream-first curr-stream
+        compare start, 0x22  # double-quote
+        break-if-!=
+        var end/eax: byte <- stream-final curr-stream
+        compare end, 0x22  # double-quote
+        break-if-!=
+        var h: (handle array byte)
+        var s/eax: (addr handle array byte) <- address h
+        stream-to-string curr-stream, s  # leak
+        push-string-to-value-stack out, *s
+        break $evaluate:process-word
+      }
       # otherwise assume it's a literal int and push it
       {
         var n/eax: int <- parse-decimal-int-from-stream curr-stream

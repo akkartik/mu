@@ -1323,19 +1323,37 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     curr-row <- add 2  # stack-margin-top
     var _max-width/eax: int <- value-stack-max-width stack-addr
     max-width <- copy _max-width
-    var i/eax: int <- value-stack-length stack-addr
     {
-      compare i, 0
+      var top-addr/ecx: (addr int) <- get stack-addr, top
+      compare *top-addr, 0
       break-if-<=
+      decrement *top-addr
       move-cursor screen, curr-row, indented-col
       {
-        var val/eax: int <- pop-int-from-value-stack stack-addr
-#?         print-int32-decimal 0, val
-#?         print-string 0, "\n"
-        render-integer screen, val, max-width
+        var data-ah/eax: (addr handle array value) <- get stack-addr, data
+        var data/eax: (addr array value) <- lookup *data-ah
+        var top/edx: int <- copy *top-addr
+        var dest-offset/edx: (offset value) <- compute-offset data, top
+        var val-addr/eax: (addr value) <- index data, dest-offset
+        $render-column:render-value: {
+          var val-type/ecx: (addr int) <- get val-addr, type
+          # per-type rendering logic goes here
+          {
+            compare *val-type, 1  # string
+            break-if-!=
+            var val-ah/eax: (addr handle array byte) <- get val-addr, text-data
+            var val/eax: (addr array byte) <- lookup *val-ah
+            start-color screen, 0, 7
+            print-grapheme screen, 0x20  # space
+            print-string screen, val
+            break $render-column:render-value
+          }
+          # render ints by default for now
+          var val-addr2/eax: (addr int) <- get val-addr, int-data
+          render-integer screen, *val-addr2, max-width
+        }
       }
       curr-row <- increment
-      i <- decrement
       loop
     }
   }

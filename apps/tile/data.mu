@@ -36,6 +36,7 @@ type word {
 type value {
   type: int
   int-data: int  # if type = 0
+  text-data: (handle array byte)  # if type = 1
 }
 
 type table {

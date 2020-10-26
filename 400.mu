@@ -177,5 +177,7 @@ sig new-buffered-file out: (addr handle buffered-file)
 sig stream-empty? s: (addr stream _) -> result/eax: boolean
 sig stream-full? s: (addr stream _) -> result/eax: boolean
 sig stream-to-string in: (addr stream _), out: (addr handle array _)
+sig stream-first s: (addr stream byte) -> result/eax: byte
+sig stream-final s: (addr stream byte) -> result/eax: byte
 
 #sig copy-bytes src: (addr byte), dest: (addr byte), n: int
