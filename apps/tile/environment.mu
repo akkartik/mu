@@ -1426,7 +1426,7 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, " ctrl-q "
   reset-formatting screen
   print-string screen, " quit "
-  var menu-start/ecx: int <- copy repl-col
+  var menu-start/ebx: int <- copy repl-col
   menu-start <- subtract 0x40  # 64 = half the size of the menu
   move-cursor screen, *nrows, menu-start
   start-reverse-video screen
@@ -1457,14 +1457,24 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, " ctrl-d "
   reset-formatting screen
   print-string screen, " define function  "
+  # primitives
+  var start-col/ecx: int <- copy repl-col
+  start-col <- subtract 0x18
+  move-cursor screen, 1, start-col
+  print-string screen, "primitives:"
+  move-cursor screen, 4, start-col
+  print-string screen, "functions:"
+  start-col <- add 2
+  move-cursor screen, 2, start-col
+  print-string screen, "+ - *"
   # currently defined functions
-  var row/ecx: int <- copy 3
+  var row/ebx: int <- copy 5
   var functions/esi: (addr handle function) <- get env, functions
   {
     var curr/eax: (addr function) <- lookup *functions
     compare curr, 0
     break-if-=
-    move-cursor screen, row, 2
+    move-cursor screen, row, start-col
     render-function screen, curr
     functions <- get curr, next
     row <- increment
