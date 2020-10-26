@@ -55,6 +55,27 @@ fn push-string-to-value-stack _self: (addr value-stack), val: (handle array byte
   increment *top-addr
 }
 
+fn push-array-to-value-stack _self: (addr value-stack), val: (handle array int) {
+  var self/esi: (addr value-stack) <- copy _self
+  var top-addr/ecx: (addr int) <- get self, top
+  var data-ah/edx: (addr handle array value) <- get self, data
+  var data/eax: (addr array value) <- lookup *data-ah
+  var top/edx: int <- copy *top-addr
+  var dest-offset/edx: (offset value) <- compute-offset data, top
+  var dest-addr/edx: (addr value) <- index data, dest-offset
+  var dest-addr2/eax: (addr handle array int) <- get dest-addr, array-data
+  copy-handle val, dest-addr2
+  var dest-addr3/eax: (addr int) <- get dest-addr, type
+#?   print-string 0, "setting type to 1: "
+#?   {
+#?     var foo/eax: int <- copy dest-addr3
+#?     print-int32-hex 0, foo
+#?   }
+#?   print-string 0, "\n"
+  copy-to *dest-addr3, 2  # type array
+  increment *top-addr
+}
+
 fn push-value-stack _self: (addr value-stack), val: (addr value) {
   var self/esi: (addr value-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
@@ -123,7 +144,7 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
     var g/edx: (addr value) <- index data, o
     var type/eax: (addr int) <- get g, type
     {
-      compare *type, 0
+      compare *type, 0  # int
       break-if-!=
       var g2/edx: (addr int) <- get g, int-data
       var w/eax: int <- decimal-size *g2
@@ -132,7 +153,7 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
       copy-to out, w
     }
     {
-      compare *type, 1
+      compare *type, 1  # string
       break-if-!=
       var s-ah/eax: (addr handle array byte) <- get g, text-data
       var s/eax: (addr array byte) <- lookup *s-ah
@@ -143,8 +164,47 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
       break-if-<=
       copy-to out, w
     }
+    {
+      compare *type, 2  # array
+      break-if-!=
+      var a-ah/eax: (addr handle array int) <- get g, array-data
+      var a/eax: (addr array int) <- lookup *a-ah
+      compare a, 0
+      break-if-=
+      var w/eax: int <- array-decimal-size a
+      compare w, out
+      break-if-<=
+      copy-to out, w
+    }
     i <- increment
     loop
   }
   result <- copy out
+}
+
+# keep sync'd with print-array-of-ints
+fn array-decimal-size _a: (addr array int) -> result/eax: int {
+  var a/esi: (addr array int) <- copy _a
+  var max/ecx: int <- length a
+  var i/eax: int <- copy 0
+  var out/edi: int <- copy 0
+  {
+    compare i, max
+    break-if->=
+    {
+      compare i, 0
+      break-if-=
+      out <- increment  # for space
+    }
+    var x/ecx: (addr int) <- index a, i
+    {
+      var w/eax: int <- decimal-size *x
+      out <- add w
+    }
+    i <- increment
+    loop
+  }
+  result <- copy out
+  # we won't add 2 for surrounding brackets since we don't surround arrays in
+  # spaces like other value types
 }

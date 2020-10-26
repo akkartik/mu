@@ -203,6 +203,25 @@ $print-string:body: {
 }
 }
 
+fn print-array-of-ints-in-decimal screen: (addr screen), _a: (addr array int) {
+  var a/esi: (addr array int) <- copy _a
+  var max/ecx: int <- length a
+  var i/eax: int <- copy 0
+  {
+    compare i, max
+    break-if->=
+    {
+      compare i, 0
+      break-if-=
+      print-string screen, " "
+    }
+    var x/ecx: (addr int) <- index a, i
+    print-int32-decimal screen, *x
+    i <- increment
+    loop
+  }
+}
+
 fn print-grapheme screen: (addr screen), c: grapheme {
 $print-grapheme:body: {
   compare screen, 0

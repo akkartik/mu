@@ -37,6 +37,7 @@ type value {
   type: int
   int-data: int  # if type = 0
   text-data: (handle array byte)  # if type = 1
+  array-data: (handle array int)  # if type = 2
 }
 
 type table {

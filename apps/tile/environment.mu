@@ -424,12 +424,24 @@ $process-sandbox:body: {
       break $process-sandbox:body
     }
     # if start of word is quote and grapheme before cursor is not, just insert it as usual
+    # TODO: support string escaping
     {
       var first-grapheme/eax: grapheme <- first-grapheme cursor-word
       compare first-grapheme, 0x22  # double quote
       break-if-!=
       var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
       compare final-grapheme, 0x22  # double quote
+      break-if-=
+      break $process-sandbox:space
+    }
+    # if start of word is '[' and grapheme before cursor is not ']', just insert it as usual
+    # TODO: support nested arrays
+    {
+      var first-grapheme/eax: grapheme <- first-grapheme cursor-word
+      compare first-grapheme, 0x5b  # '['
+      break-if-!=
+      var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
+      compare final-grapheme, 0x5d  # ']'
       break-if-=
       break $process-sandbox:space
     }
@@ -1352,6 +1364,14 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
             print-string screen, val
             break $render-column:render-value
           }
+          {
+            compare *val-type, 2  # array
+            break-if-!=
+            var val-ah/eax: (addr handle array int) <- get val-addr, array-data
+            var val/eax: (addr array int) <- lookup *val-ah
+            render-array screen, val
+            break $render-column:render-value
+          }
           # render ints by default for now
           var val-addr2/eax: (addr int) <- get val-addr, int-data
           render-integer screen, *val-addr2, max-width
@@ -1408,6 +1428,14 @@ fn render-integer screen: (addr screen), val: int, max-width: int {
   print-grapheme screen, 0x20  # space
   print-int32-decimal-right-justified screen, val, max-width
   print-grapheme screen, 0x20  # space
+}
+
+fn render-array screen: (addr screen), val: (addr array int) {
+  start-color screen, 0, 7
+  # don't surround in spaces
+  print-grapheme screen, 0x5b  # '['
+  print-array-of-ints-in-decimal screen, val
+  print-grapheme screen, 0x5d  # ']'
 }
 
 fn hash-color val: int -> result/eax: int {

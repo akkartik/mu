@@ -65,30 +65,42 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         top <- decrement
         var dest-offset/edx: (offset value) <- compute-offset data, top
         var target-val/edx: (addr value) <- index data, dest-offset
-        # check target-val is a string
+        # check target-val is a string or array
         var target-type-addr/eax: (addr int) <- get target-val, type
-#?         print-string 0, "checking type: "
-#?         {
-#?           var foo/eax: int <- copy target-type-addr
-#?           print-int32-hex 0, foo
-#?         }
-#?         print-string 0, "\n"
         compare *target-type-addr, 1  # string
-        break-if-!=
-#?         print-string 0, "is string\n"
-        # compute length
-        var src-ah/eax: (addr handle array byte) <- get target-val, text-data
-        var src/eax: (addr array byte) <- lookup *src-ah
-        var result/ebx: int <- length src
-        # save result into target-val
-        var type-addr/eax: (addr int) <- get target-val, type
-        copy-to *type-addr, 0  # int
-        var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
-        var empty: (handle array byte)
-        copy-handle empty, target-string-ah
-        var target/eax: (addr int) <- get target-val, int-data
-        copy-to *target, result
-        break $evaluate:process-word
+        {
+          break-if-!=
+          # compute length
+          var src-ah/eax: (addr handle array byte) <- get target-val, text-data
+          var src/eax: (addr array byte) <- lookup *src-ah
+          var result/ebx: int <- length src
+          # save result into target-val
+          var type-addr/eax: (addr int) <- get target-val, type
+          copy-to *type-addr, 0  # int
+          var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
+          var empty: (handle array byte)
+          copy-handle empty, target-string-ah
+          var target/eax: (addr int) <- get target-val, int-data
+          copy-to *target, result
+          break $evaluate:process-word
+        }
+        compare *target-type-addr, 2  # array of ints
+        {
+          break-if-!=
+          # compute length
+          var src-ah/eax: (addr handle array int) <- get target-val, array-data
+          var src/eax: (addr array int) <- lookup *src-ah
+          var result/ebx: int <- length src
+          # save result into target-val
+          var type-addr/eax: (addr int) <- get target-val, type
+          copy-to *type-addr, 0  # int
+          var target-array-ah/eax: (addr handle array int) <- get target-val, array-data
+          var empty: (handle array int)
+          copy-handle empty, target-array-ah
+          var target/eax: (addr int) <- get target-val, int-data
+          copy-to *target, result
+          break $evaluate:process-word
+        }
       }
       # if curr-stream defines a binding, save top of stack to bindings
       {
@@ -152,7 +164,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         push-value-stack out, val
         break $evaluate:process-word
       }
-      # if the word starts with a quote and ends with a quote, return it directly
+      # if the word starts with a quote and ends with a quote, turn it into a string
       {
         var start/eax: byte <- stream-first curr-stream
         compare start, 0x22  # double-quote
@@ -164,6 +176,25 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var s/eax: (addr handle array byte) <- address h
         unquote-stream-to-string curr-stream, s  # leak
         push-string-to-value-stack out, *s
+        break $evaluate:process-word
+      }
+      # if the word starts with a '[' and ends with a ']', turn it into an array
+      {
+        var start/eax: byte <- stream-first curr-stream
+        compare start, 0x5b  # '['
+        break-if-!=
+        var end/eax: byte <- stream-final curr-stream
+        compare end, 0x5d  # ']'
+        break-if-!=
+        # wastefully create a new string to strip quotes
+        var h: (handle array int)
+        var tmp-ah/eax: (addr handle array byte) <- address h
+        unquote-stream-to-string curr-stream, tmp-ah  # leak
+        var tmp/eax: (addr array byte) <- lookup *tmp-ah
+        var h2: (handle array int)
+        var array-ah/ecx: (addr handle array int) <- address h2
+        parse-array-of-ints tmp, array-ah  # leak
+        push-array-to-value-stack out, *array-ah
         break $evaluate:process-word
       }
       # otherwise assume it's a literal int and push it
