@@ -176,6 +176,19 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
       break-if-<=
       copy-to out, w
     }
+    {
+      compare *type, 3  # file handle
+      break-if-!=
+      var f-ah/eax: (addr handle buffered-file) <- get g, file-data
+      var f/eax: (addr buffered-file) <- lookup *f-ah
+      compare f, 0
+      break-if-=
+      # TODO
+      var w/eax: int <- copy 4
+      compare w, out
+      break-if-<=
+      copy-to out, w
+    }
     i <- increment
     loop
   }

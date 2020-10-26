@@ -778,6 +778,14 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> resul
   subresult <- word-equal? w, "len"
   compare subresult, 0  # false
   break-if-!=
+  # if w == "open" return true
+  subresult <- word-equal? w, "open"
+  compare subresult, 0  # false
+  break-if-!=
+  # if w == "read" return true
+  subresult <- word-equal? w, "read"
+  compare subresult, 0  # false
+  break-if-!=
   # return w in functions
   var out-h: (handle function)
   var out/eax: (addr handle function) <- address out-h
@@ -1372,6 +1380,16 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
             render-array screen, val
             break $render-column:render-value
           }
+          {
+            compare *val-type, 3  # file
+            break-if-!=
+            var val-ah/eax: (addr handle buffered-file) <- get val-addr, file-data
+            var val/eax: (addr buffered-file) <- lookup *val-ah
+            start-color screen, 0, 7
+            # TODO
+            print-string screen, " FILE "
+            break $render-column:render-value
+          }
           # render ints by default for now
           var val-addr2/eax: (addr int) <- get val-addr, int-data
           render-integer screen, *val-addr2, max-width
@@ -1498,7 +1516,7 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, "functions:"
   start-col <- add 2
   move-cursor screen, 2, start-col
-  print-string screen, "+ - * len"
+  print-string screen, "+ - * len open read"
   # currently defined functions
   var row/ebx: int <- copy 5
   var functions/esi: (addr handle function) <- get env, functions
