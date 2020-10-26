@@ -94,12 +94,20 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var new-byte/eax: byte <- read-byte curr-stream
         compare new-byte, 0x3d  # '='
         break-if-!=
+        var out2/esi: (addr value-stack) <- copy out
+        var top-addr/ecx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        var data-ah/eax: (addr handle array value) <- get out2, data
+        var data/eax: (addr array value) <- lookup *data-ah
+        var top/edx: int <- copy *top-addr
+        top <- decrement
+        var dest-offset/edx: (offset value) <- compute-offset data, top
+        var target-val/edx: (addr value) <- index data, dest-offset
         var key-h: (handle array byte)
         var key/ecx: (addr handle array byte) <- address key-h
         stream-to-string curr-stream, key
-        var foo/eax: (addr array byte) <- lookup *key
-        var val/eax: int <- pop-int-from-value-stack out
-        bind-int-in-table bindings, key, val
+        bind-in-table bindings, key, target-val
         var line/eax: (addr line) <- copy scratch
         var next-line-ah/eax: (addr handle line) <- get line, next
         var next-line/eax: (addr line) <- lookup *next-line-ah

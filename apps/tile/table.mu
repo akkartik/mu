@@ -11,6 +11,16 @@ fn bind-int-in-table _self: (addr table), key: (addr handle array byte), val: in
   var data/esi: (addr array bind) <- copy _data
   var next-empty-slot-index/eax: (offset bind) <- next-empty-slot data, key
   var dest/eax: (addr bind) <- index data, next-empty-slot-index
+  make-int-binding dest, key, val
+}
+
+fn bind-in-table _self: (addr table), key: (addr handle array byte), val: (addr value) {
+  var self/esi: (addr table) <- copy _self
+  var data-ah/esi: (addr handle array bind) <- get self, data
+  var _data/eax: (addr array bind) <- lookup *data-ah
+  var data/esi: (addr array bind) <- copy _data
+  var next-empty-slot-index/eax: (offset bind) <- next-empty-slot data, key
+  var dest/eax: (addr bind) <- index data, next-empty-slot-index
   make-binding dest, key, val
 }
 
@@ -36,7 +46,7 @@ fn next-empty-slot _data: (addr array bind), key: (addr handle array byte) -> re
   }
 }
 
-fn make-binding _self: (addr bind), key: (addr handle array byte), _val: int {
+fn make-int-binding _self: (addr bind), key: (addr handle array byte), _val: int {
   var self/esi: (addr bind) <- copy _self
   var dest/eax: (addr handle array byte) <- get self, key
   copy-object key, dest
@@ -46,6 +56,16 @@ fn make-binding _self: (addr bind), key: (addr handle array byte), _val: int {
   var dest4/eax: (addr int) <- get dest3, int-data
   var val/ecx: int <- copy _val
   copy-to *dest4, val
+}
+
+fn make-binding _self: (addr bind), key: (addr handle array byte), val: (addr value) {
+  var self/esi: (addr bind) <- copy _self
+  var dest/eax: (addr handle array byte) <- get self, key
+  copy-object key, dest
+  var dest2/eax: (addr handle value) <- get self, value
+  allocate dest2
+  var dest3/eax: (addr value) <- lookup *dest2
+  copy-object val, dest3
 }
 
 fn lookup-binding _self: (addr table), key: (addr array byte), out: (addr handle value) {
