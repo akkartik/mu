@@ -45,6 +45,12 @@ fn push-string-to-value-stack _self: (addr value-stack), val: (handle array byte
   var dest-addr2/eax: (addr handle array byte) <- get dest-addr, text-data
   copy-handle val, dest-addr2
   var dest-addr3/eax: (addr int) <- get dest-addr, type
+#?   print-string 0, "setting type to 1: "
+#?   {
+#?     var foo/eax: int <- copy dest-addr3
+#?     print-int32-hex 0, foo
+#?   }
+#?   print-string 0, "\n"
   copy-to *dest-addr3, 1  # type string
   increment *top-addr
 }

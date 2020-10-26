@@ -48,6 +48,44 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         push-int-to-value-stack out, a
         break $evaluate:process-word
       }
+      {
+        var is-len?/eax: boolean <- stream-data-equal? curr-stream, "len"
+        compare is-len?, 0
+        break-if-=
+#?         print-string 0, "is len\n"
+        var out2/esi: (addr value-stack) <- copy out
+        var top-addr/ecx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+#?         print-string 0, "stack has stuff\n"
+        var data-ah/eax: (addr handle array value) <- get out2, data
+        var data/eax: (addr array value) <- lookup *data-ah
+        var top/edx: int <- copy *top-addr
+        top <- decrement
+        var dest-offset/edx: (offset value) <- compute-offset data, top
+        var target-val/edx: (addr value) <- index data, dest-offset
+        var target-type-addr/eax: (addr int) <- get target-val, type
+#?         print-string 0, "checking type: "
+#?         {
+#?           var foo/eax: int <- copy target-type-addr
+#?           print-int32-hex 0, foo
+#?         }
+#?         print-string 0, "\n"
+        compare *target-type-addr, 1  # string
+        break-if-!=
+#?         print-string 0, "is string\n"
+        var src-ah/eax: (addr handle array byte) <- get target-val, text-data
+        var src/eax: (addr array byte) <- lookup *src-ah
+        var result/ebx: int <- length src
+        var type-addr/eax: (addr int) <- get target-val, type
+        copy-to *type-addr, 0  # int
+        var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
+        var empty: (handle array byte)
+        copy-handle empty, target-string-ah
+        var target/eax: (addr int) <- get target-val, int-data
+        copy-to *target, result
+        break $evaluate:process-word
+      }
       # if curr-stream defines a binding, save top of stack to bindings
       {
         var done?/eax: boolean <- stream-empty? curr-stream

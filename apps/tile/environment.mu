@@ -1466,7 +1466,7 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, "functions:"
   start-col <- add 2
   move-cursor screen, 2, start-col
-  print-string screen, "+ - *"
+  print-string screen, "+ - * len"
   # currently defined functions
   var row/ebx: int <- copy 5
   var functions/esi: (addr handle function) <- get env, functions
