@@ -151,49 +151,53 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
 }
 
 fn value-width _v: (addr value) -> result/eax: int {
-$value-width:body: {
-  var v/esi: (addr value) <- copy _v
-  var type/eax: (addr int) <- get v, type
-  {
-    compare *type, 0  # int
-    break-if-!=
-    var v-int/edx: (addr int) <- get v, int-data
-    result <- decimal-size *v-int
-    break $value-width:body
+  var out/edi: int <- copy 0
+  $value-width:body: {
+    var v/esi: (addr value) <- copy _v
+    var type/eax: (addr int) <- get v, type
+    {
+      compare *type, 0  # int
+      break-if-!=
+      var v-int/edx: (addr int) <- get v, int-data
+      var _out/eax: int <- decimal-size *v-int
+      out <- copy _out
+      break $value-width:body
+    }
+    {
+      compare *type, 1  # string
+      break-if-!=
+      var s-ah/eax: (addr handle array byte) <- get v, text-data
+      var s/eax: (addr array byte) <- lookup *s-ah
+      compare s, 0
+      break-if-=
+      var _out/eax: int <- length s
+      out <- copy _out
+      break $value-width:body
+    }
+    {
+      compare *type, 2  # array
+      break-if-!=
+      var a-ah/eax: (addr handle array value) <- get v, array-data
+      var a/eax: (addr array value) <- lookup *a-ah
+      compare a, 0
+      break-if-=
+      var _out/eax: int <- array-width a
+      out <- copy _out
+      break $value-width:body
+    }
+    {
+      compare *type, 3  # file handle
+      break-if-!=
+      var f-ah/eax: (addr handle buffered-file) <- get v, file-data
+      var f/eax: (addr buffered-file) <- lookup *f-ah
+      compare f, 0
+      break-if-=
+      # TODO
+      out <- copy 4
+      break $value-width:body
+    }
   }
-  {
-    compare *type, 1  # string
-    break-if-!=
-    var s-ah/eax: (addr handle array byte) <- get v, text-data
-    var s/eax: (addr array byte) <- lookup *s-ah
-    compare s, 0
-    break-if-=
-    result <- length s
-    break $value-width:body
-  }
-  {
-    compare *type, 2  # array
-    break-if-!=
-    var a-ah/eax: (addr handle array value) <- get v, array-data
-    var a/eax: (addr array value) <- lookup *a-ah
-    compare a, 0
-    break-if-=
-    result <- array-width a
-    break $value-width:body
-  }
-  {
-    compare *type, 3  # file handle
-    break-if-!=
-    var f-ah/eax: (addr handle buffered-file) <- get v, file-data
-    var f/eax: (addr buffered-file) <- lookup *f-ah
-    compare f, 0
-    break-if-=
-    # TODO
-    result <- copy 4
-    break $value-width:body
-    var w/eax: int <- copy 4
-  }
-}
+  result <- copy out
 }
 
 # keep sync'd with render-array
