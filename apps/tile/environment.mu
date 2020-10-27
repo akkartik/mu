@@ -1415,9 +1415,14 @@ $render-value:body: {
     break-if-!=
     var val-ah/eax: (addr handle array byte) <- get val, text-data
     var val-string/eax: (addr array byte) <- lookup *val-ah
+    start-color screen, 0xf2, 7
+    print-code-point screen, 0x275d
+    reset-formatting screen
     start-color screen, 0, 7
-    print-grapheme screen, 0x20  # space
     print-string screen, val-string
+    start-color screen, 0xf2, 7
+    print-code-point screen, 0x275e
+    reset-formatting screen
     break $render-value:body
   }
   compare *val-type, 2  # array
