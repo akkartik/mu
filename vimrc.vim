@@ -116,6 +116,9 @@ imap <Leader>ah <Esc>F<Space>a(addr handle <Esc>A)
 imap <Leader>aa <Esc>F<Space>a(addr array <Esc>A)
 imap <Leader>ha <Esc>F<Space>a(handle array <Esc>A)
 imap <Leader>aha <Esc>F<Space>a(addr handle array <Esc>A)
+imap <Leader>as <Esc>F<Space>a(addr stream <Esc>A)
+imap <Leader>hs <Esc>F<Space>a(handle stream <Esc>A)
+imap <Leader>ahs <Esc>F<Space>a(addr handle stream <Esc>A)
 imap <Leader>o <Esc>F<Space>a(offset <Esc>A)
 imap ,- <-
 imap -. ->
