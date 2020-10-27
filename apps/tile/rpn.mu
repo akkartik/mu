@@ -161,7 +161,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var s-addr/ecx: (addr stream byte) <- address s
         read-line-buffered file, s-addr
         var target/eax: (addr handle array byte) <- get target-val, text-data
-        stream-to-string s-addr, target
+        stream-to-array s-addr, target
         # save result into target-val
         var type-addr/eax: (addr int) <- get target-val, type
         copy-to *type-addr, 1  # string
@@ -192,7 +192,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         # create binding from curr-stream to target-val
         var key-h: (handle array byte)
         var key/ecx: (addr handle array byte) <- address key-h
-        stream-to-string curr-stream, key
+        stream-to-array curr-stream, key
         bind-in-table bindings, key, target-val
         # process next line if necessary
         var line/eax: (addr line) <- copy scratch
@@ -275,7 +275,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break-if-=
         var tmp: (handle array byte)
         var curr-string-ah/edx: (addr handle array byte) <- address tmp
-        stream-to-string curr-stream, curr-string-ah  # unfortunate leak
+        stream-to-array curr-stream, curr-string-ah  # unfortunate leak
         var curr-string/eax: (addr array byte) <- lookup *curr-string-ah
         var val-storage: (handle value)
         var val-ah/edi: (addr handle value) <- address val-storage
@@ -296,7 +296,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break-if-!=
         var h: (handle array byte)
         var s/eax: (addr handle array byte) <- address h
-        unquote-stream-to-string curr-stream, s  # leak
+        unquote-stream-to-array curr-stream, s  # leak
         push-string-to-value-stack out, *s
         break $evaluate:process-word
       }
@@ -311,7 +311,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         # wastefully create a new input string to strip quotes
         var h: (handle array value)
         var input-ah/eax: (addr handle array byte) <- address h
-        unquote-stream-to-string curr-stream, input-ah  # leak
+        unquote-stream-to-array curr-stream, input-ah  # leak
         # wastefully parse input into int-array
         # TODO: support parsing arrays of other types
         var input/eax: (addr array byte) <- lookup *input-ah

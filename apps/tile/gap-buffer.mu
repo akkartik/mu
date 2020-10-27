@@ -31,7 +31,7 @@ fn gap-buffer-to-string self: (addr gap-buffer), out: (addr handle array byte) {
   var s-storage: (stream byte 0x100)
   var s/ecx: (addr stream byte) <- address s-storage
   emit-gap-buffer self, s
-  stream-to-string s, out
+  stream-to-array s, out
 }
 
 fn emit-gap-buffer _self: (addr gap-buffer), out: (addr stream byte) {
