@@ -1555,7 +1555,7 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, " define function  "
   # primitives
   var start-col/ecx: int <- copy repl-col
-  start-col <- subtract 0x18
+  start-col <- subtract 0x20
   move-cursor screen, 1, start-col
   print-string screen, "primitives:"
   start-col <- add 2
@@ -1576,8 +1576,7 @@ fn clear-canvas _env: (addr environment) {
     var curr/eax: (addr function) <- lookup *functions
     compare curr, 0
     break-if-=
-    move-cursor screen, row, start-col
-    render-function screen, curr
+    row <- render-function screen, row, start-col, curr
     functions <- get curr, next
     row <- increment
     loop
@@ -1585,18 +1584,25 @@ fn clear-canvas _env: (addr environment) {
 }
 
 # only single-line functions supported for now
-fn render-function screen: (addr screen), _f: (addr function) {
+fn render-function screen: (addr screen), row: int, col: int, _f: (addr function) -> out-row/ebx: int {
   var f/esi: (addr function) <- copy _f
   var args/ecx: (addr handle word) <- get f, args
+  move-cursor screen, row, col
   print-words-in-reverse screen, args
   var name-ah/eax: (addr handle array byte) <- get f, name
   var name/eax: (addr array byte) <- lookup *name-ah
+  start-bold screen
   print-string screen, name
-  print-string screen, " = "
+  reset-formatting screen
+  increment row
+  add-to col, 2
+  move-cursor screen, row, col
+  print-string screen, "= "
   var body-ah/eax: (addr handle line) <- get f, body
   var body/eax: (addr line) <- lookup *body-ah
   var body-words-ah/eax: (addr handle word) <- get body, data
   print-words screen, body-words-ah
+  out-row <- copy row
 }
 
 fn real-grapheme? g: grapheme -> result/eax: boolean {
