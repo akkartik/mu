@@ -159,6 +159,14 @@ fn test-to-grapheme-four-bytes-max {
 # read the next grapheme from a stream of bytes
 fn read-grapheme in: (addr stream byte) -> out/eax: grapheme {
 $read-grapheme:body: {
+  # if at eof, return EOF
+  {
+    var eof?/eax: boolean <- stream-empty? in
+    compare eof?, 0  # false
+    break-if-=
+    out <- copy 0xffffffff
+    break $read-grapheme:body
+  }
   var c/eax: byte <- read-byte in
   var num-trailers/ecx: int <- copy 0
   $read-grapheme:compute-length: {

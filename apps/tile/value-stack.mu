@@ -172,6 +172,11 @@ fn value-width _v: (addr value) -> result/eax: int {
       break-if-=
       var _out/eax: int <- length s
       out <- copy _out
+      compare out, 0xd  # max string size
+      {
+        break-if-<=
+        out <- copy 0xd
+      }
       break $value-width:body
     }
     {

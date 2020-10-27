@@ -1415,13 +1415,31 @@ $render-value:body: {
     break-if-!=
     var val-ah/eax: (addr handle array byte) <- get val, text-data
     var val-string/eax: (addr array byte) <- lookup *val-ah
+    compare val-string, 0
+    break-if-=
+    var orig-len/ecx: int <- length val-string
+    var truncated: (handle array byte)
+    var truncated-ah/esi: (addr handle array byte) <- address truncated
+    substring val-string, 0, 0xc, truncated-ah
+    var truncated-string/eax: (addr array byte) <- lookup *truncated-ah
+#?     {
+#?       var foo/eax: int <- copy truncated-string
+#?       print-int32-hex 0, foo
+#?       print-string 0, "\n"
+#?     }
+    var len/edx: int <- length truncated-string
     start-color screen, 0xf2, 7
-    print-code-point screen, 0x275d
+    print-code-point screen, 0x275d  # open-quote
     reset-formatting screen
     start-color screen, 0, 7
-    print-string screen, val-string
+    print-string screen, truncated-string
     start-color screen, 0xf2, 7
-    print-code-point screen, 0x275e
+    compare len, orig-len
+    {
+      break-if-=
+      print-code-point screen, 0x2026  # ellipses
+    }
+    print-code-point screen, 0x275e  # close-quote
     reset-formatting screen
     break $render-value:body
   }
