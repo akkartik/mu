@@ -37,7 +37,7 @@ type value {
   type: int
   int-data: int  # if type = 0
   text-data: (handle array byte)  # if type = 1
-  array-data: (handle array int)  # if type = 2
+  array-data: (handle array value)  # if type = 2
   file-data: (handle buffered-file)  # if type = 3
 }
 

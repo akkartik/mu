@@ -88,14 +88,14 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         {
           break-if-!=
           # compute length
-          var src-ah/eax: (addr handle array int) <- get target-val, array-data
-          var src/eax: (addr array int) <- lookup *src-ah
+          var src-ah/eax: (addr handle array value) <- get target-val, array-data
+          var src/eax: (addr array value) <- lookup *src-ah
           var result/ebx: int <- length src
           # save result into target-val
           var type-addr/eax: (addr int) <- get target-val, type
           copy-to *type-addr, 0  # int
-          var target-array-ah/eax: (addr handle array int) <- get target-val, array-data
-          var empty: (handle array int)
+          var target-array-ah/eax: (addr handle array value) <- get target-val, array-data
+          var empty: (handle array value)
           copy-handle empty, target-array-ah
           var target/eax: (addr int) <- get target-val, int-data
           copy-to *target, result
@@ -308,15 +308,40 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var end/eax: byte <- stream-final curr-stream
         compare end, 0x5d  # ']'
         break-if-!=
-        # wastefully create a new string to strip quotes
-        var h: (handle array int)
-        var tmp-ah/eax: (addr handle array byte) <- address h
-        unquote-stream-to-string curr-stream, tmp-ah  # leak
-        var tmp/eax: (addr array byte) <- lookup *tmp-ah
+        # wastefully create a new input string to strip quotes
+        var h: (handle array value)
+        var input-ah/eax: (addr handle array byte) <- address h
+        unquote-stream-to-string curr-stream, input-ah  # leak
+        # wastefully parse input into int-array
+        # TODO: support parsing arrays of other types
+        var input/eax: (addr array byte) <- lookup *input-ah
         var h2: (handle array int)
-        var array-ah/ecx: (addr handle array int) <- address h2
-        parse-array-of-ints tmp, array-ah  # leak
-        push-array-to-value-stack out, *array-ah
+        var int-array-ah/esi: (addr handle array int) <- address h2
+        parse-array-of-ints input, int-array-ah  # leak
+        var _int-array/eax: (addr array int) <- lookup *int-array-ah
+        var int-array/esi: (addr array int) <- copy _int-array
+        var len/ebx: int <- length int-array
+        # push value-array of same size as int-array
+        var h3: (handle array value)
+        var value-array-ah/eax: (addr handle array value) <- address h3
+        populate value-array-ah, len
+        push-array-to-value-stack out, *value-array-ah
+        # copy int-array into value-array
+        var _value-array/eax: (addr array value) <- lookup *value-array-ah
+        var value-array/edi: (addr array value) <- copy _value-array
+        var i/eax: int <- copy 0
+        {
+          compare i, len
+          break-if->=
+          var src-addr/ecx: (addr int) <- index int-array, i
+          var src/ecx: int <- copy *src-addr
+          var dest-offset/edx: (offset value) <- compute-offset value-array, i
+          var dest-val/edx: (addr value) <- index value-array, dest-offset
+          var dest/edx: (addr int) <- get dest-val, int-data
+          copy-to *dest, src
+          i <- increment
+          loop
+        }
         break $evaluate:process-word
       }
       # otherwise assume it's a literal int and push it

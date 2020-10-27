@@ -1407,8 +1407,8 @@ $render-value:body: {
   compare *val-type, 2  # array
   {
     break-if-!=
-    var val-ah/eax: (addr handle array int) <- get val, array-data
-    var val-array/eax: (addr array int) <- lookup *val-ah
+    var val-ah/eax: (addr handle array value) <- get val, array-data
+    var val-array/eax: (addr array value) <- lookup *val-ah
     render-array screen, val-array
     break $render-value:body
   }
@@ -1430,6 +1430,14 @@ $render-value:body: {
 
 # synaesthesia
 fn render-integer screen: (addr screen), val: int, max-width: int {
+$render-integer:body: {
+  # if max-width is 0, we're inside an array. No coloring.
+  compare max-width, 0
+  {
+    break-if-!=
+    print-int32-decimal screen, val
+    break $render-integer:body
+  }
   var bg/eax: int <- hash-color val
   var fg/ecx: int <- copy 7
   {
@@ -1452,12 +1460,29 @@ fn render-integer screen: (addr screen), val: int, max-width: int {
   print-int32-decimal-right-justified screen, val, max-width
   print-grapheme screen, 0x20  # space
 }
+}
 
-fn render-array screen: (addr screen), val: (addr array int) {
+fn render-array screen: (addr screen), _a: (addr array value) {
   start-color screen, 0, 7
   # don't surround in spaces
   print-grapheme screen, 0x5b  # '['
-  print-array-of-ints-in-decimal screen, val
+  var a/esi: (addr array value) <- copy _a
+  var max/ecx: int <- length a
+  var i/eax: int <- copy 0
+  {
+    compare i, max
+    break-if->=
+    {
+      compare i, 0
+      break-if-=
+      print-string screen, " "
+    }
+    var off/ecx: (offset value) <- compute-offset a, i
+    var x/ecx: (addr value) <- index a, off
+    render-value screen, x, 0
+    i <- increment
+    loop
+  }
   print-grapheme screen, 0x5d  # ']'
 }
 
