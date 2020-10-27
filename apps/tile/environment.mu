@@ -1358,42 +1358,8 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
         var data/eax: (addr array value) <- lookup *data-ah
         var top/edx: int <- copy *top-addr
         var dest-offset/edx: (offset value) <- compute-offset data, top
-        var val-addr/eax: (addr value) <- index data, dest-offset
-        $render-column:render-value: {
-          var val-type/ecx: (addr int) <- get val-addr, type
-          # per-type rendering logic goes here
-          {
-            compare *val-type, 1  # string
-            break-if-!=
-            var val-ah/eax: (addr handle array byte) <- get val-addr, text-data
-            var val/eax: (addr array byte) <- lookup *val-ah
-            start-color screen, 0, 7
-            print-grapheme screen, 0x20  # space
-            print-string screen, val
-            break $render-column:render-value
-          }
-          {
-            compare *val-type, 2  # array
-            break-if-!=
-            var val-ah/eax: (addr handle array int) <- get val-addr, array-data
-            var val/eax: (addr array int) <- lookup *val-ah
-            render-array screen, val
-            break $render-column:render-value
-          }
-          {
-            compare *val-type, 3  # file
-            break-if-!=
-            var val-ah/eax: (addr handle buffered-file) <- get val-addr, file-data
-            var val/eax: (addr buffered-file) <- lookup *val-ah
-            start-color screen, 0, 7
-            # TODO
-            print-string screen, " FILE "
-            break $render-column:render-value
-          }
-          # render ints by default for now
-          var val-addr2/eax: (addr int) <- get val-addr, int-data
-          render-integer screen, *val-addr2, max-width
-        }
+        var val/eax: (addr value) <- index data, dest-offset
+        render-value screen, val, max-width
       }
       curr-row <- increment
       loop
@@ -1421,6 +1387,45 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
 #?   print-string 0, " => "
 #?   print-int32-decimal 0, right-col
 #?   print-string 0, "\n"
+}
+
+fn render-value screen: (addr screen), _val: (addr value), max-width: int {
+$render-value:body: {
+  var val/esi: (addr value) <- copy _val
+  var val-type/ecx: (addr int) <- get val, type
+  # per-type rendering logic goes here
+  compare *val-type, 1  # string
+  {
+    break-if-!=
+    var val-ah/eax: (addr handle array byte) <- get val, text-data
+    var val-string/eax: (addr array byte) <- lookup *val-ah
+    start-color screen, 0, 7
+    print-grapheme screen, 0x20  # space
+    print-string screen, val-string
+    break $render-value:body
+  }
+  compare *val-type, 2  # array
+  {
+    break-if-!=
+    var val-ah/eax: (addr handle array int) <- get val, array-data
+    var val-array/eax: (addr array int) <- lookup *val-ah
+    render-array screen, val-array
+    break $render-value:body
+  }
+  compare *val-type, 3  # file
+  {
+    break-if-!=
+    var val-ah/eax: (addr handle buffered-file) <- get val, file-data
+    var val-file/eax: (addr buffered-file) <- lookup *val-ah
+    start-color screen, 0, 7
+    # TODO
+    print-string screen, " FILE "
+    break $render-value:body
+  }
+  # render ints by default for now
+  var val-int/eax: (addr int) <- get val, int-data
+  render-integer screen, *val-int, max-width
+}
 }
 
 # synaesthesia
