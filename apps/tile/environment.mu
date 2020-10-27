@@ -786,6 +786,10 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> resul
   subresult <- word-equal? w, "read"
   compare subresult, 0  # false
   break-if-!=
+  # if w == "slurp" return true
+  subresult <- word-equal? w, "slurp"
+  compare subresult, 0  # false
+  break-if-!=
   # if w == "dup" return true
   subresult <- word-equal? w, "dup"
   compare subresult, 0  # false
@@ -1554,7 +1558,7 @@ fn clear-canvas _env: (addr environment) {
   move-cursor screen, 2, start-col
   print-string screen, "+ - * len"
   move-cursor screen, 3, start-col
-  print-string screen, "open read"
+  print-string screen, "open read slurp"
   move-cursor screen, 4, start-col
   print-string screen, "dup swap"
   # currently defined functions
