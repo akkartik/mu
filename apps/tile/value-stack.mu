@@ -137,7 +137,7 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
     break-if->=
     var o/edx: (offset value) <- compute-offset data, i
     var v/edx: (addr value) <- index data, o
-    var w/eax: int <- value-width v
+    var w/eax: int <- value-width v, 1  # top-level=true
     # if (w > out) w = out
     {
       compare w, out
@@ -150,7 +150,7 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
   result <- copy out
 }
 
-fn value-width _v: (addr value) -> result/eax: int {
+fn value-width _v: (addr value), top-level: boolean -> result/eax: int {
   var out/edi: int <- copy 0
   $value-width:core: {
     var v/esi: (addr value) <- copy _v
@@ -177,8 +177,14 @@ fn value-width _v: (addr value) -> result/eax: int {
         break-if-<=
         out <- copy 0xd
       }
-      # we won't add 2 for surrounding quotes since we don't surround arrays
-      # in spaces like other value types
+      # if it's a nested string, include space for quotes
+      # we don't do this for the top-level, where the quotes will overflow
+      # into surrounding padding.
+      compare top-level, 0  # false
+      {
+        break-if-!=
+        out <- add 2
+      }
       break $value-width:core
     }
     {
@@ -224,7 +230,7 @@ fn array-width _a: (addr array value) -> result/eax: int {
     var off/ecx: (offset value) <- compute-offset a, i
     var x/ecx: (addr value) <- index a, off
     {
-      var w/eax: int <- value-width x
+      var w/eax: int <- value-width x, 0
       out <- add w
     }
     i <- increment
