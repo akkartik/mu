@@ -152,7 +152,7 @@ fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
 
 fn value-width _v: (addr value) -> result/eax: int {
   var out/edi: int <- copy 0
-  $value-width:body: {
+  $value-width:core: {
     var v/esi: (addr value) <- copy _v
     var type/eax: (addr int) <- get v, type
     {
@@ -161,7 +161,7 @@ fn value-width _v: (addr value) -> result/eax: int {
       var v-int/edx: (addr int) <- get v, int-data
       var _out/eax: int <- decimal-size *v-int
       out <- copy _out
-      break $value-width:body
+      break $value-width:core
     }
     {
       compare *type, 1  # string
@@ -179,7 +179,7 @@ fn value-width _v: (addr value) -> result/eax: int {
       }
       # we won't add 2 for surrounding quotes since we don't surround arrays
       # in spaces like other value types
-      break $value-width:body
+      break $value-width:core
     }
     {
       compare *type, 2  # array
@@ -190,7 +190,7 @@ fn value-width _v: (addr value) -> result/eax: int {
       break-if-=
       var _out/eax: int <- array-width a
       out <- copy _out
-      break $value-width:body
+      break $value-width:core
     }
     {
       compare *type, 3  # file handle
@@ -201,7 +201,7 @@ fn value-width _v: (addr value) -> result/eax: int {
       break-if-=
       # TODO
       out <- copy 4
-      break $value-width:body
+      break $value-width:core
     }
   }
   result <- copy out
