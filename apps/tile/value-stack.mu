@@ -177,6 +177,8 @@ fn value-width _v: (addr value) -> result/eax: int {
         break-if-<=
         out <- copy 0xd
       }
+      # we won't add 2 for surrounding quotes since we don't surround arrays
+      # in spaces like other value types
       break $value-width:body
     }
     {

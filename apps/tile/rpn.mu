@@ -229,27 +229,30 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         # read target-val as a filename and save the handle in target-val
         var file-ah/eax: (addr handle buffered-file) <- get target-val, file-data
         var file/eax: (addr buffered-file) <- lookup *file-ah
-        var h: (handle array (handle array byte))
-        var ah/ecx: (addr handle array (handle array byte)) <- address h
+        var s: (stream byte 0x100)
+        var s-addr/ecx: (addr stream byte) <- address s
+        slurp file, s-addr
+        var tmp-ah/eax: (addr handle array byte) <- get target-val, text-data
+        stream-to-array s-addr, tmp-ah
+        var tmp/eax: (addr array byte) <- lookup *tmp-ah
 #?         enable-screen-type-mode
-#?         clear-screen 0
-        read-lines file, ah
-#?         {
-#?           var x/eax: (addr array (handle array byte)) <- lookup h
-#?           var len/eax: int <- length x
-#?           var foo/eax: int <- copy len
-#?           print-string 0, "aa: "
-#?           print-int32-hex 0, foo
-#?           print-string 0, "\n"
-#?         }
+#?         print-string 0, tmp
+        var h: (handle array (handle array byte))
+        {
+          var ah/edx: (addr handle array (handle array byte)) <- address h
+          split-string tmp, 0xa, ah
+        }
         var target/eax: (addr handle array value) <- get target-val, array-data
         save-lines h, target
         # save result into target-val
         var type-addr/eax: (addr int) <- get target-val, type
         copy-to *type-addr, 2  # array
         var target-file-ah/eax: (addr handle buffered-file) <- get target-val, file-data
-        var empty: (handle buffered-file)
-        copy-handle empty, target-file-ah
+        var empty-file: (handle buffered-file)
+        copy-handle empty-file, target-file-ah
+        var target-text-ah/eax: (addr handle array byte) <- get target-val, text-data
+        var empty-text: (handle array byte)
+        copy-handle empty-text, target-text-ah
         break $evaluate:process-word
       }
       # if curr-stream defines a binding, save top of stack to bindings

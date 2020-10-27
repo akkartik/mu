@@ -84,3 +84,42 @@ fn test-substring {
   var out/eax: (addr array byte) <- lookup *out-ah
   check-strings-equal out, "bcde", "F - test-substring/middle-too-small"
 }
+
+fn split-string in: (addr array byte), delim: grapheme, out: (addr handle array (handle array byte)) {
+  var in-stream: (stream byte 0x100)
+  var in-stream-addr/esi: (addr stream byte) <- address in-stream
+  write in-stream-addr, in
+  var tokens-stream: (stream (handle array byte) 0x100)
+  var tokens-stream-addr/edi: (addr stream (handle array byte)) <- address tokens-stream
+  var curr-stream: (stream byte 0x100)
+  var curr-stream-addr/ecx: (addr stream byte) <- address curr-stream
+  $split-string:core: {
+    var g/eax: grapheme <- read-grapheme in-stream-addr
+    compare g, 0xffffffff
+    break-if-=
+#?     print-grapheme-to-real-screen g
+#?     print-string-to-real-screen "\n"
+    compare g, delim
+    {
+      break-if-!=
+      # token complete; flush
+      var token: (handle array byte)
+      var token-ah/eax: (addr handle array byte) <- address token
+      stream-to-array curr-stream-addr, token-ah
+      write-to-stream tokens-stream-addr, token-ah
+      clear-stream curr-stream-addr
+      loop $split-string:core
+    }
+    write-grapheme curr-stream-addr, g
+    loop
+  }
+  stream-to-array tokens-stream-addr, out
+}
+
+fn test-split-string {
+  var out-h: (handle array (handle array byte))
+  var out-ah/edi: (addr handle array (handle array byte)) <- address out-h
+  # prefix substrings
+  split-string "bab", 0x61, out-ah
+  # no crash
+}
