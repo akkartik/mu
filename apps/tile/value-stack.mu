@@ -227,3 +227,29 @@ fn array-width _a: (addr array value) -> result/eax: int {
   # we won't add 2 for surrounding brackets since we don't surround arrays in
   # spaces like other value types
 }
+
+fn save-lines in-h: (handle array (handle array byte)), _out-ah: (addr handle array value) {
+  var _in/eax: (addr array (handle array byte)) <- lookup in-h
+  var in/esi: (addr array (handle array byte)) <- copy _in
+  var len/ecx: int <- length in
+  var out-ah/edi: (addr handle array value) <- copy _out-ah
+  populate out-ah, len
+  var out/eax: (addr array value) <- lookup *out-ah
+  # copy in into out
+  var i/ebx: int <- copy 0
+  {
+    compare i, len
+    break-if->=
+#?     print-int32-hex 0, i
+#?     print-string 0, "\n"
+    var src/ecx: (addr handle array byte) <- index in, i
+    var dest-offset/edx: (offset value) <- compute-offset out, i
+    var dest-val/edx: (addr value) <- index out, dest-offset
+    var dest/eax: (addr handle array byte) <- get dest-val, text-data
+    copy-object src, dest
+    var type/edx: (addr int) <- get dest-val, type
+    copy-to *type, 1  # string
+    i <- increment
+    loop
+  }
+}

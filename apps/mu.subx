@@ -17120,8 +17120,16 @@ $array-element-type-id:skip-array:
     # if t->is-atom? abort
     81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
     0f 85/jump-if-!= $array-element-type-id:error2/disp32
-    # return t->left->value
+    # t = t->left
     (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    # if (!t->is-atom?) t = t->left     # TODO: assumes array element size can be determined from just first word of array element type
+    # if (t->is-atom == false) t = lookup(t->left)
+    {
+      81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    }
+    # return t->value
     8b/-> *(eax+4) 0/r32/eax  # Type-tree-value
 $array-element-type-id:end:
     # . epilogue
