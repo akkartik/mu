@@ -1550,14 +1550,16 @@ fn clear-canvas _env: (addr environment) {
   start-col <- subtract 0x18
   move-cursor screen, 1, start-col
   print-string screen, "primitives:"
-  move-cursor screen, 5, start-col
-  print-string screen, "functions:"
   start-col <- add 2
   move-cursor screen, 2, start-col
   print-string screen, "+ - * len open read"
   move-cursor screen, 3, start-col
   print-string screen, "dup swap"
   # currently defined functions
+  start-col <- subtract 2
+  move-cursor screen, 5, start-col
+  print-string screen, "functions:"
+  start-col <- add 2
   var row/ebx: int <- copy 6
   var functions/esi: (addr handle function) <- get env, functions
   {
