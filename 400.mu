@@ -140,6 +140,7 @@ sig write-int out: (addr stream byte), n: int
 #sig top s: (addr stack) -> n/eax: int
 sig array-equal? a: (addr array int), b: (addr array int) -> result/eax: boolean
 sig parse-array-of-ints s: (addr array byte), out: (addr handle array int)
+sig parse-array-of-decimal-ints s: (addr array byte), out: (addr handle array int)
 sig check-array-equal a: (addr array int), expected: (addr string), msg: (addr string)
 #sig push-n-zero-bytes n: int
 sig kernel-string-to-string ad: (addr allocation-descriptor), in: (addr kernel-string), out: (addr handle array byte)

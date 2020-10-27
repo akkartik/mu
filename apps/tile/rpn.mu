@@ -402,7 +402,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var input/eax: (addr array byte) <- lookup *input-ah
         var h2: (handle array int)
         var int-array-ah/esi: (addr handle array int) <- address h2
-        parse-array-of-ints input, int-array-ah  # leak
+        parse-array-of-decimal-ints input, int-array-ah  # leak
         var _int-array/eax: (addr array int) <- lookup *int-array-ah
         var int-array/esi: (addr array int) <- copy _int-array
         var len/ebx: int <- length int-array
