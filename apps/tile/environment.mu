@@ -786,6 +786,14 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> resul
   subresult <- word-equal? w, "read"
   compare subresult, 0  # false
   break-if-!=
+  # if w == "dup" return true
+  subresult <- word-equal? w, "dup"
+  compare subresult, 0  # false
+  break-if-!=
+  # if w == "swap" return true
+  subresult <- word-equal? w, "swap"
+  compare subresult, 0  # false
+  break-if-!=
   # return w in functions
   var out-h: (handle function)
   var out/eax: (addr handle function) <- address out-h
@@ -1542,13 +1550,15 @@ fn clear-canvas _env: (addr environment) {
   start-col <- subtract 0x18
   move-cursor screen, 1, start-col
   print-string screen, "primitives:"
-  move-cursor screen, 4, start-col
+  move-cursor screen, 5, start-col
   print-string screen, "functions:"
   start-col <- add 2
   move-cursor screen, 2, start-col
   print-string screen, "+ - * len open read"
+  move-cursor screen, 3, start-col
+  print-string screen, "dup swap"
   # currently defined functions
-  var row/ebx: int <- copy 5
+  var row/ebx: int <- copy 6
   var functions/esi: (addr handle function) <- get env, functions
   {
     var curr/eax: (addr function) <- lookup *functions
