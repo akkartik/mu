@@ -1430,10 +1430,7 @@ $render-value:body: {
     var len/edx: int <- length truncated-string
     start-color screen, 0xf2, 7
     print-code-point screen, 0x275d  # open-quote
-    reset-formatting screen
-    start-color screen, 0, 7
     print-string screen, truncated-string
-    start-color screen, 0xf2, 7
     compare len, orig-len
     {
       break-if-=
@@ -1502,7 +1499,7 @@ $render-integer:body: {
 }
 
 fn render-array screen: (addr screen), _a: (addr array value) {
-  start-color screen, 0, 7
+  start-color screen, 0xf2, 7
   # don't surround in spaces
   print-grapheme screen, 0x5b  # '['
   var a/esi: (addr array value) <- copy _a
