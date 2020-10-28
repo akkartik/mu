@@ -504,7 +504,7 @@ void test_compare_x32_with_mem_at_rm32() {
 }
 
 :(before "End Two-Byte Opcodes Starting With 0f")
-case 0x2f: {  // set SF if x32 < x/m32
+case 0x2f: {  // set CF if x32 < x/m32
   const uint8_t modrm = next();
   const uint8_t reg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "compare " << Xname[reg1] << " with x/m32" << end();
