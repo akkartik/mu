@@ -247,7 +247,7 @@ void test_subtract_imm32_from_EAX_signed_overflow() {
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
-      "  2d                                 01 00 00 00 \n"  // 1 from EAX
+      "  2d                                 01 00 00 00 \n"  // subtract 1 from EAX
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract imm32 0x00000001 from EAX\n"
@@ -331,7 +331,7 @@ void test_subtract_imm32_from_mem_at_rm32_signed_overflow() {
   run(
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
-      "  81     2b                          ff ff ff 7f \n"  // subtract largest positive signed integer from *EBX
+      "  81     2b                          ff ff ff 7f \n"  // subtract INT32_MAX from *EBX
       // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
       "== data 0x2000\n"
       "00 00 00 80\n"  // INT32_MIN
