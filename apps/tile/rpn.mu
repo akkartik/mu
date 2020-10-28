@@ -279,13 +279,6 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var key/ecx: (addr handle array byte) <- address key-h
         stream-to-array curr-stream, key
         bind-in-table bindings, key, target-val
-        # process next line if necessary
-        var line/eax: (addr line) <- copy scratch
-        var next-line-ah/eax: (addr handle line) <- get line, next
-        var next-line/eax: (addr line) <- lookup *next-line-ah
-        compare next-line, 0
-        break-if-= $evaluate:process-word
-        evaluate functions, bindings, next-line, end, out
         break $evaluate:process-word
       }
       rewind-stream curr-stream
@@ -444,6 +437,13 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
     #
     loop
   }
+  # process next line if necessary
+  var line/eax: (addr line) <- copy scratch
+  var next-line-ah/eax: (addr handle line) <- get line, next
+  var next-line/eax: (addr line) <- lookup *next-line-ah
+  compare next-line, 0
+  break-if-=
+  evaluate functions, bindings, next-line, end, out
 }
 
 fn test-evaluate {
