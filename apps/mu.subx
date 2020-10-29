@@ -8447,6 +8447,519 @@ test-read-from-stream-with-output:
     5d/pop-to-ebp
     c3/return
 
+test-convert-write-to-stream:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var s/esi: (addr stream int) <- copy 0\n")
+    (write _test-input-stream "  var o/ecx: (addr int) <- copy 0\n")
+    (write _test-input-stream "  write-to-stream s, o\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                            "F - test-convert-write-to-stream/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                  "F - test-convert-write-to-stream/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                   "F - test-convert-write-to-stream/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"          "F - test-convert-write-to-stream/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                             "F - test-convert-write-to-stream/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"           "F - test-convert-write-to-stream/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %esi"        "F - test-convert-write-to-stream/6")
+    (check-next-stream-line-equal _test-output-stream "    be/copy-to-esi 0/imm32"      "F - test-convert-write-to-stream/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"        "F - test-convert-write-to-stream/8")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0/imm32"      "F - test-convert-write-to-stream/9")
+    (check-next-stream-line-equal _test-output-stream "    (write-to-stream %esi %ecx 0x00000004)"  "F - test-convert-write-to-stream/10")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"         "F - test-convert-write-to-stream/11")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %esi"         "F - test-convert-write-to-stream/12")
+    (check-next-stream-line-equal _test-output-stream "  }"                             "F - test-convert-write-to-stream/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"          "F - test-convert-write-to-stream/14")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                  "F - test-convert-write-to-stream/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"          "F - test-convert-write-to-stream/16")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                 "F - test-convert-write-to-stream/17")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                     "F - test-convert-write-to-stream/18")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-write-to-stream-with-correct-payload-size:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var s/esi: (addr stream handle int) <- copy 0\n")
+    (write _test-input-stream "  var o/ecx: (addr handle int) <- copy 0\n")
+    (write _test-input-stream "  write-to-stream s, o\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                            "F - test-convert-write-to-stream-with-correct-payload-size/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                  "F - test-convert-write-to-stream-with-correct-payload-size/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                   "F - test-convert-write-to-stream-with-correct-payload-size/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"          "F - test-convert-write-to-stream-with-correct-payload-size/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                             "F - test-convert-write-to-stream-with-correct-payload-size/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"           "F - test-convert-write-to-stream-with-correct-payload-size/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %esi"        "F - test-convert-write-to-stream-with-correct-payload-size/6")
+    (check-next-stream-line-equal _test-output-stream "    be/copy-to-esi 0/imm32"      "F - test-convert-write-to-stream-with-correct-payload-size/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"        "F - test-convert-write-to-stream-with-correct-payload-size/8")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0/imm32"      "F - test-convert-write-to-stream-with-correct-payload-size/9")
+    (check-next-stream-line-equal _test-output-stream "    (write-to-stream %esi %ecx 0x00000008)"  "F - test-convert-write-to-stream-with-correct-payload-size/10")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"         "F - test-convert-write-to-stream-with-correct-payload-size/11")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %esi"         "F - test-convert-write-to-stream-with-correct-payload-size/12")
+    (check-next-stream-line-equal _test-output-stream "  }"                             "F - test-convert-write-to-stream-with-correct-payload-size/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"          "F - test-convert-write-to-stream-with-correct-payload-size/14")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                  "F - test-convert-write-to-stream-with-correct-payload-size/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"          "F - test-convert-write-to-stream-with-correct-payload-size/16")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                 "F - test-convert-write-to-stream-with-correct-payload-size/17")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                     "F - test-convert-write-to-stream-with-correct-payload-size/18")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-write-to-stream-with-non-stream-atom-base-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: int\n")
+    (write _test-input-stream "  write-to-stream a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-write-to-stream-with-non-stream-atom-base-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt write-to-stream: var 'a' must be an addr to a stream"  "F - test-write-to-stream-with-non-stream-atom-base-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-write-to-stream-with-non-stream-atom-base-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-write-to-stream-with-non-stream-compound-base-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (handle int)\n")
+    (write _test-input-stream "  write-to-stream a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-write-to-stream-with-non-stream-compound-base-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt write-to-stream: var 'a' must be an addr to a stream"  "F - test-write-to-stream-with-non-stream-compound-base-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-write-to-stream-with-non-stream-compound-base-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-write-to-stream-with-non-stream-compound-base-type-2:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (addr int)\n")
+    (write _test-input-stream "  write-to-stream a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-write-to-stream-with-non-stream-compound-base-type-2: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt write-to-stream: var 'a' must be an addr to a stream"  "F - test-write-to-stream-with-non-stream-compound-base-type-2: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-write-to-stream-with-non-stream-compound-base-type-2: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-write-to-stream-with-stream-atom-base-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: stream\n")
+    (write _test-input-stream "  write-to-stream a, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-write-to-stream-with-stream-atom-base-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt write-to-stream: var 'a' must be an addr to a stream"  "F - test-write-to-stream-with-stream-atom-base-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-write-to-stream-with-stream-atom-base-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-write-to-stream-with-wrong-index-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a/eax: (addr stream int) <- copy 0\n")
+    (write _test-input-stream "  var b: boolean\n")
+    (write _test-input-stream "  write-to-stream a, b\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-write-to-stream-with-wrong-index-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt write-to-stream: target 'b' must be an address"  "F - test-write-to-stream-with-wrong-index-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-write-to-stream-with-wrong-index-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-write-to-stream-with-no-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  write-to-stream\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-write-to-stream-with-no-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt write-to-stream: too few inouts (2 required)"  "F - test-write-to-stream-with-no-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-write-to-stream-with-no-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-write-to-stream-with-too-few-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (addr stream int)\n")
+    (write _test-input-stream "  write-to-stream a\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-write-to-stream-with-too-few-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt write-to-stream: too few inouts (2 required)"  "F - test-write-to-stream-with-too-few-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-write-to-stream-with-too-few-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-write-to-stream-with-too-many-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (addr stream int)\n")
+    (write _test-input-stream "  var b: (addr int)\n")
+    (write _test-input-stream "  write-to-stream a, b, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-write-to-stream-with-too-many-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt write-to-stream: too many inouts (2 required)"  "F - test-write-to-stream-with-too-many-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-write-to-stream-with-too-many-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-write-to-stream-with-output:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (addr stream int)\n")
+    (write _test-input-stream "  var b/eax: (addr int) <- copy 0\n")
+    (write _test-input-stream "  b <- write-to-stream a, b\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-write-to-stream-with-output: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt write-to-stream: unexpected output"  "F - test-write-to-stream-with-output: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-write-to-stream-with-output: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
@@ -15148,12 +15661,167 @@ check-mu-write-to-stream-stmt:  # stmt: (addr stmt), fn: (addr function), err: (
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+8) 6/r32/esi
+    # - check for 0 inouts
+    # var base/ecx: (addr var) = stmt->inouts->value
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+$check-mu-write-to-stream-stmt:check-no-inouts:
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-mu-write-to-stream-stmt:error-too-few-inouts/disp32
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %ecx 0/r32/eax
+    # - check base type is (addr stream T)
+    # var base-type/ebx: (addr type-tree) = lookup(base->type)
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
+    89/<- %ebx 0/r32/eax
+$check-mu-write-to-stream-stmt:check-base-is-compound:
+    # if base-type is an atom, abort
+    81 7/subop/compare *ebx 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $check-mu-write-to-stream-stmt:error-invalid-base-type/disp32
+$check-mu-write-to-stream-stmt:check-base-is-addr:
+    # if type->left not addr, abort
+    (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+    (is-simple-mu-type? %eax 2)  # addr => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-write-to-stream-stmt:error-invalid-base-type/disp32
+$check-mu-write-to-stream-stmt:check-base-is-addr-to-stream:
+    # base-type = base-type->right
+    (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
+    89/<- %ebx 0/r32/eax
+    # ensure base-type->left == stream
+    (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    (is-simple-mu-type? %eax 0xb)  # stream => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-write-to-stream-stmt:error-invalid-base-type/disp32
+    # - check target type is (addr T)
+    # var target/ecx: (addr stmt-var) = stmt->inouts->next->value
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+$check-mu-write-to-stream-stmt:check-single-inout:
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-mu-write-to-stream-stmt:error-too-few-inouts/disp32
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %ecx 0/r32/eax
+    # var target-type/edx: (addr type-tree)
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
+    89/<- %edx 0/r32/eax
+    # if target-type is an atom, it must be a literal or int
+$check-mu-write-to-stream-stmt:check-target-is-compound:
+    81 7/subop/compare *edx 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $check-mu-write-to-stream-stmt:error-target-type-not-address/disp32
+$check-mu-write-to-stream-stmt:check-target-type:
+    # target type must start with (addr ...)
+    (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
+    (is-simple-mu-type? %eax 2)  # addr => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-write-to-stream-stmt:error-target-type-not-address/disp32
+    # if tail(base-type) != tail(target-type) abort
+    (type-tail %ebx)  # => eax
+    89/<- %ebx 0/r32/eax
+    (type-tail %edx)  # => eax
+    (type-equal? %ebx %eax)  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-write-to-stream-stmt:error-invalid-target-type/disp32
+$check-mu-write-to-stream-stmt:check-too-many-inouts:
+    # - check for too many inouts
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $check-mu-write-to-stream-stmt:error-too-many-inouts/disp32
+$check-mu-write-to-stream-stmt:check-unexpected-output:
+    # - check for any output
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $check-mu-write-to-stream-stmt:error-unexpected-output/disp32
 $check-mu-write-to-stream-stmt:end:
     # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$check-mu-write-to-stream-stmt:error-invalid-base-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt write-to-stream: var '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' must be an addr to a stream\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-write-to-stream-stmt:error-too-few-inouts:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt write-to-stream: too few inouts (2 required)\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-write-to-stream-stmt:error-target-type-not-address:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt write-to-stream: target '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' must be an address\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-write-to-stream-stmt:error-invalid-target-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt write-to-stream: second inout '")
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' does not have the right type\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-write-to-stream-stmt:error-too-many-inouts:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt write-to-stream: too many inouts (2 required)\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-write-to-stream-stmt:error-unexpected-output:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt write-to-stream: unexpected output\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
 
 check-mu-convert-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
