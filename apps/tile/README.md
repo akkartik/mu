@@ -20,3 +20,14 @@ To run a conventional REPL (for debugging):
 ```
 ./a.elf type
 ```
+
+## hacking
+
+Unlike the top-level directory, this is just a prototype so far. There are no
+tests.
+
+To add a new primitive you'll need to hard-code it into the `evaluate`
+function (apps/tile/rpn.mu).
+
+There's also a second place you'll want to teach about predefined primitives:
+`bound-function?` (apps/tile/environment.mu)
