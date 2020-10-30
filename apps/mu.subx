@@ -19184,11 +19184,8 @@ $emit-cleanup-code-until-target:check-for-previous-spill:
           3d/compare-eax-and 0/imm32/false
           74/jump-if-= break/disp8
 $emit-cleanup-code-until-target:reclaim-var-in-register:
-          (emit-indent *(ebp+8) *Curr-block-depth)
-          (write-buffered *(ebp+8) "8f 0/subop/pop %")
           (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register Var-register => eax
-          (write-buffered *(ebp+8) %eax)
-          (write-buffered *(ebp+8) Newline)
+          (emit-pop-register *(ebp+8) %eax)
         }
         eb/jump $emit-cleanup-code-until-target:continue/disp8
       }
