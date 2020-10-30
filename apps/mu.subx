@@ -2606,58 +2606,7 @@ test-always-shadow-outermost-reg-vars-in-function:
     5d/pop-to-ebp
     c3/return
 
-_pending-test-clobber-dead-local:
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # setup
-    (clear-stream _test-input-stream)
-    (clear-stream $_test-input-buffered-file->buffer)
-    (clear-stream _test-output-stream)
-    (clear-stream $_test-output-buffered-file->buffer)
-    #
-    (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "  var x/ecx: int <- copy 3\n")
-    (write _test-input-stream "  {\n")
-    (write _test-input-stream "    var y/ecx: int <- copy 4\n")
-    (write _test-input-stream "  }\n")
-    (write _test-input-stream "}\n")
-    # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
-    (flush _test-output-buffered-file)
-#?     # dump _test-output-stream {{{
-#?     (write 2 "^")
-#?     (write-stream 2 _test-output-stream)
-#?     (write 2 "$\n")
-#?     (rewind-stream _test-output-stream)
-#?     # }}}
-    # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-clobber-dead-local/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-clobber-dead-local/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-clobber-dead-local/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-clobber-dead-local/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-clobber-dead-local/4")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-clobber-dead-local/5")
-    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-clobber-dead-local/6")
-    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"  "F - test-clobber-dead-local/7")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-clobber-dead-local/8")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-clobber-dead-local/9")
-    (check-next-stream-line-equal _test-output-stream "      b9/copy-to-ecx 4/imm32"  "F - test-clobber-dead-local/10")  # no push/pop here
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-clobber-dead-local/11")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-clobber-dead-local/12")
-    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-clobber-dead-local/13")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-clobber-dead-local/14")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-clobber-dead-local/15")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-clobber-dead-local/16")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-clobber-dead-local/17")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-clobber-dead-local/18")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-clobber-dead-local/19")
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-test-shadow-live-local:
+test-shadow-local:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2684,29 +2633,29 @@ test-shadow-live-local:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-shadow-live-local/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-shadow-live-local/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-shadow-live-local/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-shadow-live-local/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-shadow-live-local/4")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-shadow-live-local/5")
-    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-shadow-live-local/6")
-    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"  "F - test-shadow-live-local/7")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-shadow-live-local/8")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-shadow-live-local/9")
-    (check-next-stream-line-equal _test-output-stream "      ff 6/subop/push %ecx"  "F - test-shadow-live-local/10")
-    (check-next-stream-line-equal _test-output-stream "      b9/copy-to-ecx 4/imm32"  "F - test-shadow-live-local/11")
-    (check-next-stream-line-equal _test-output-stream "      8f 0/subop/pop %ecx" "F - test-shadow-live-local/12")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-shadow-live-local/13")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-shadow-live-local/14")
-    (check-next-stream-line-equal _test-output-stream "    41/increment-ecx"    "F - test-shadow-live-local/15")
-    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-shadow-live-local/16")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-shadow-live-local/17")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-shadow-live-local/18")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-shadow-live-local/19")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-shadow-live-local/20")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-shadow-live-local/21")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-shadow-live-local/22")
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-shadow-local/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-shadow-local/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-shadow-local/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-shadow-local/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-shadow-local/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-shadow-local/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-shadow-local/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"  "F - test-shadow-local/7")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-shadow-local/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-shadow-local/9")
+    (check-next-stream-line-equal _test-output-stream "      ff 6/subop/push %ecx"  "F - test-shadow-local/10")
+    (check-next-stream-line-equal _test-output-stream "      b9/copy-to-ecx 4/imm32"  "F - test-shadow-local/11")
+    (check-next-stream-line-equal _test-output-stream "      8f 0/subop/pop %ecx" "F - test-shadow-local/12")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-shadow-local/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-shadow-local/14")
+    (check-next-stream-line-equal _test-output-stream "    41/increment-ecx"    "F - test-shadow-local/15")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-shadow-local/16")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-shadow-local/17")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-shadow-local/18")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-shadow-local/19")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-shadow-local/20")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-shadow-local/21")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-shadow-local/22")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -2922,7 +2871,7 @@ test-spill-different-register-in-block:
     5d/pop-to-ebp
     c3/return
 
-test-shadow-live-output:
+test-shadow-output:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2949,27 +2898,27 @@ test-shadow-live-output:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-shadow-live-output/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-shadow-live-output/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-shadow-live-output/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-shadow-live-output/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-shadow-live-output/4")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-shadow-live-output/5")
-    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"  "F - test-shadow-live-output/7")  # no push because it's an output reg
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-shadow-live-output/8")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-shadow-live-output/9")
-    (check-next-stream-line-equal _test-output-stream "      ff 6/subop/push %ecx"  "F - test-shadow-live-output/10")
-    (check-next-stream-line-equal _test-output-stream "      b9/copy-to-ecx 4/imm32"  "F - test-shadow-live-output/11")
-    (check-next-stream-line-equal _test-output-stream "      8f 0/subop/pop %ecx" "F - test-shadow-live-output/12")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-shadow-live-output/13")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-shadow-live-output/14")
-    (check-next-stream-line-equal _test-output-stream "    41/increment-ecx"    "F - test-shadow-live-output/15")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-shadow-live-output/17")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-shadow-live-output/18")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-shadow-live-output/19")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-shadow-live-output/20")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-shadow-live-output/21")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-shadow-live-output/21")
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-shadow-output/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-shadow-output/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-shadow-output/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-shadow-output/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-shadow-output/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-shadow-output/5")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"  "F - test-shadow-output/7")  # no push because it's an output reg
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-shadow-output/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-shadow-output/9")
+    (check-next-stream-line-equal _test-output-stream "      ff 6/subop/push %ecx"  "F - test-shadow-output/10")
+    (check-next-stream-line-equal _test-output-stream "      b9/copy-to-ecx 4/imm32"  "F - test-shadow-output/11")
+    (check-next-stream-line-equal _test-output-stream "      8f 0/subop/pop %ecx" "F - test-shadow-output/12")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-shadow-output/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-shadow-output/14")
+    (check-next-stream-line-equal _test-output-stream "    41/increment-ecx"    "F - test-shadow-output/15")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-shadow-output/17")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-shadow-output/18")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-shadow-output/19")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-shadow-output/20")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-shadow-output/21")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-shadow-output/21")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -3048,14 +2997,16 @@ test-local-clobbered-by-fn-output:
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-local-clobbered-by-fn-output/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-local-clobbered-by-fn-output/4")
     (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-local-clobbered-by-fn-output/5")
-    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 4/imm32"  "F - test-local-clobbered-by-fn-output/6")  # no push because it's an output reg
-    (check-next-stream-line-equal _test-output-stream "    89/<- %ecx 0x00000001/r32"  "F - test-local-clobbered-by-fn-output/7")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-local-clobbered-by-fn-output/8")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-local-clobbered-by-fn-output/9")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-local-clobbered-by-fn-output/10")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-local-clobbered-by-fn-output/11")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-local-clobbered-by-fn-output/12")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-local-clobbered-by-fn-output/13")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-local-clobbered-by-fn-output/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 4/imm32"  "F - test-local-clobbered-by-fn-output/7")
+    (check-next-stream-line-equal _test-output-stream "    89/<- %ecx 0x00000001/r32"  "F - test-local-clobbered-by-fn-output/8")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"  "F - test-local-clobbered-by-fn-output/9")  # not a pop because there's already a function output in the reg
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-local-clobbered-by-fn-output/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-local-clobbered-by-fn-output/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-local-clobbered-by-fn-output/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-local-clobbered-by-fn-output/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-local-clobbered-by-fn-output/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-local-clobbered-by-fn-output/15")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -18585,7 +18536,7 @@ $emit-subx-stmt-list:zero-arg-unconditional-loop:
             # unconditional loops with a target
             {
               0f 84/jump-if-= break/disp32
-              (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10))
+              (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10) *(ebp+0x14))
               e9/jump $emit-subx-stmt-list:clean-up/disp32
             }
           }
@@ -18602,7 +18553,7 @@ $emit-subx-stmt-list:unconditional-break:
             # simple unconditional breaks without a target
             0f 84/jump-if-= $emit-subx-stmt-list:emit-cleanup/disp32  # easy: just skip remaining statements
             # unconditional breaks with a target
-            (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10))
+            (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10) *(ebp+0x14))
             e9/jump $emit-subx-stmt-list:clean-up/disp32
           }
           # }}}
@@ -18654,7 +18605,7 @@ $emit-subx-stmt-list:conditional-branch-with-target:
             ff 0/subop/increment *Curr-block-depth
             #
             (emit-reverse-break *(ebp+8) %ecx)
-            (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10))
+            (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10) *(ebp+0x14))
             # cleanup epilogue
             ff 1/subop/decrement *Curr-block-depth
             (emit-indent *(ebp+8) *Curr-block-depth)
@@ -18686,7 +18637,7 @@ $emit-subx-stmt-list:check-for-reg-var-def:
         0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:reg-var-def:
         # TODO: ensure that there's exactly one output
-        (push-output-and-maybe-emit-spill *(ebp+8) %ecx *(ebp+0x10) %esi *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
+        (push-output-and-maybe-emit-spill *(ebp+8) %ecx *(ebp+0x10) %esi *(ebp+0x18) *(ebp+0x1c))
         # emit the instruction as usual
         (emit-subx-stmt *(ebp+8) %ecx Primitives *(ebp+0x18) *(ebp+0x1c))
         #
@@ -18699,7 +18650,7 @@ $emit-subx-stmt-list:continue:
       e9/jump loop/disp32
     }
 $emit-subx-stmt-list:emit-cleanup:
-    (emit-cleanup-code-until-depth *(ebp+8) *(ebp+0x10) *Curr-block-depth)
+    (emit-cleanup-code-until-depth *(ebp+8) *(ebp+0x10) *Curr-block-depth *(ebp+0x14))
 $emit-subx-stmt-list:clean-up:
     (clean-up-stack-offset-state *(ebp+0x10) *Curr-block-depth)
     (clean-up-blocks *(ebp+0x10) *Curr-block-depth *(ebp+0x14))
@@ -18715,7 +18666,7 @@ $emit-subx-stmt-list:end:
     c3/return
 
 # 'later-stmts' includes 'stmt', but will behave the same even without it; reg-var-def stmts are guaranteed not to write to function outputs.
-push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-var-def), vars: (addr stack (handle var)), later-stmts: (addr list stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-var-def), vars: (addr stack (handle var)), later-stmts: (addr list stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -18744,14 +18695,9 @@ push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
     # ensure that v is in a register
     81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
     0f 84/jump-if-= $push-output-and-maybe-emit-spill:abort/disp32
-    # var emit-spill?/edx: boolean = not-yet-spilled-this-block? && will-not-write-some-register?(fn)
+    # var emit-spill?/edx: boolean = not-yet-spilled-this-block?(v, vars)
     (not-yet-spilled-this-block? %ecx *(ebp+0x10))  # => eax
     89/<- %edx 0/r32/eax
-    3d/compare-eax-and 0/imm32/false
-    0f 84/jump-if-= $push-output-and-maybe-emit-spill:push/disp32
-    (will-not-write-some-register? %ecx *(ebp+0x14) *(ebp+0x18))  # => eax
-    89/<- %edx 0/r32/eax
-    # check emit-spill?
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $push-output-and-maybe-emit-spill:push/disp32
     # TODO: assert(size-of(output) == 4)
@@ -18779,14 +18725,14 @@ $push-output-and-maybe-emit-spill:end:
 
 $push-output-and-maybe-emit-spill:abort:
     # error("var '" var->name "' initialized from an instruction must live in a register\n")
-    (write-buffered *(ebp+0x1c) "var '")
-    (write-buffered *(ebp+0x1c) *eax)  # Var-name
-    (write-buffered *(ebp+0x1c) "' initialized from an instruction must live in a register\n")
-    (flush *(ebp+0x1c))
-    (stop *(ebp+0x20) 1)
+    (write-buffered *(ebp+0x18) "var '")
+    (write-buffered *(ebp+0x18) *eax)  # Var-name
+    (write-buffered *(ebp+0x18) "' initialized from an instruction must live in a register\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
     # never gets here
 
-emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file), stmt: (addr stmt1), vars: (addr stack live-var)
+emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file), stmt: (addr stmt1), vars: (addr stack live-var), fn: (addr function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -18800,7 +18746,7 @@ emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
     # clean up until target block
-    (emit-cleanup-code-until-target *(ebp+8) *(ebp+0x10) %eax)
+    (emit-cleanup-code-until-target *(ebp+8) *(ebp+0x10) %eax *(ebp+0x14))
     # emit jump to target block
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "e9/jump ")
@@ -18984,7 +18930,7 @@ $emit-unconditional-jump-to-depth:end:
 
 # emit clean-up code for 'vars' until some block depth
 # doesn't actually modify 'vars' so we need traverse manually inside the stack
-emit-cleanup-code-until-depth:  # out: (addr buffered-file), vars: (addr stack live-var), until-block-depth: int
+emit-cleanup-code-until-depth:  # out: (addr buffered-file), vars: (addr stack live-var), until-block-depth: int, fn: (addr function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -19032,8 +18978,7 @@ $emit-cleanup-code-until-depth:check-for-previous-spill:
           3d/compare-eax-and 0/imm32/false
           74/jump-if-= break/disp8
 $emit-cleanup-code-until-depth:reclaim-var-in-register:
-          (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register Var-register => eax
-          (emit-pop-register *(ebp+8) %eax)
+          (emit-pop-register *(ebp+8) %ebx *(ebp+0xc) *(ebp+0x14))
         }
         eb/jump $emit-cleanup-code-until-depth:continue/disp8
       }
@@ -19105,16 +19050,21 @@ $emit-push-register:end:
     5d/pop-to-ebp
     c3/return
 
-emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
+emit-pop-register:  # out: (addr buffered-file), regvar: (addr var), vars: (addr stack live-var), fn: (addr function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    # eax = reg
-    8b/-> *(ebp+0xc) 0/r32/eax
+    51/push-ecx
+    56/push-esi
+    # esi = regvar
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var reg/ecx: (addr array byte) = lookup(regvar->register)
+    (lookup *(esi+0x18) *(esi+0x1c))  # Var-register Var-register => eax
+    89/<- %ecx 0/r32/eax
     # var prefix/eax: byte = reg->data[0]
-    8a/copy-byte *(eax+4) 0/r32/AL
+    8a/copy-byte *(ecx+4) 0/r32/AL
     81 4/subop/and %eax 0xff/imm32
     # if (prefix == 'x') pop to xmm register
     {
@@ -19124,8 +19074,7 @@ emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "f3 0f 10/-> *esp ")
       # var prefix/eax: byte = reg->data[3]
-      8b/-> *(ebp+0xc) 0/r32/eax
-      8a/copy-byte *(eax+7) 0/r32/AL
+      8a/copy-byte *(ecx+7) 0/r32/AL
       81 4/subop/and %eax 0xff/imm32
       (write-byte-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) "/x32\n")
@@ -19136,10 +19085,12 @@ emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
     # otherwise pop to gp register
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "8f 0/subop/pop %")
-    (write-buffered *(ebp+8) *(ebp+0xc))
+    (write-buffered *(ebp+8) %ecx)
     (write-buffered *(ebp+8) Newline)
 $emit-pop-register:end:
     # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -19148,7 +19099,7 @@ $emit-pop-register:end:
 
 # emit clean-up code for 'vars' until a given label is encountered
 # doesn't actually modify 'vars' so we need traverse manually inside the stack
-emit-cleanup-code-until-target:  # out: (addr buffered-file), vars: (addr stack live-var), until-block-label: (addr array byte)
+emit-cleanup-code-until-target:  # out: (addr buffered-file), vars: (addr stack live-var), until-block-label: (addr array byte), fn: (addr function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -19188,8 +19139,7 @@ $emit-cleanup-code-until-target:check-for-previous-spill:
           3d/compare-eax-and 0/imm32/false
           74/jump-if-= break/disp8
 $emit-cleanup-code-until-target:reclaim-var-in-register:
-          (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register Var-register => eax
-          (emit-pop-register *(ebp+8) %eax)
+          (emit-pop-register *(ebp+8) %ebx *(ebp+0xc) *(ebp+0x14))
         }
         eb/jump $emit-cleanup-code-until-target:continue/disp8
       }
@@ -19364,35 +19314,6 @@ $not-yet-spilled-this-block?:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-# could the register of 'v' ever be written to by one of the vars in fn-outputs?
-will-not-write-some-register?:  # v: (addr var), stmts: (addr list stmt), fn: (addr function) -> result/eax: boolean
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # eax = v
-    8b/-> *(ebp+8) 0/r32/eax
-    # var reg/eax: (addr array byte) = lookup(v->register)
-    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
-    # var target/eax: (addr var) = find-register(fn-outputs, reg)
-    (find-register *(ebp+0x10) %eax)  # => eax
-    # if (target == 0) return true
-    {
-      3d/compare-eax-and 0/imm32
-      75/jump-if-!= break/disp8
-      b8/copy-to-eax 1/imm32/true
-      eb/jump $will-not-write-some-register?:end/disp8
-    }
-    # return !assigns-in-stmts?(stmts, target)
-    (assigns-in-stmts? *(ebp+0xc) %eax)  # => eax
-    3d/compare-eax-and 0/imm32/false
-    # assume: true = 1, so no need to mask with 0x000000ff
-    0f 94/set-if-= %al
-$will-not-write-some-register?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -19617,14 +19538,8 @@ $same-register-spilled-before?:end:
 # This would be a simple series of pops, if it wasn't for fn outputs, which
 # can occur anywhere in the stack.
 # So we have to _compact_ the entire array underlying the stack.
-#
-# We want to allow a fn output register to be written to by locals before the
-# output is set.
-# So fn outputs can't just be pushed at the start of the function.
-#
-# We want to allow other locals to shadow a fn output register after the
-# output is set.
-# So the output can't just always override anything in the stack. Sequence matters.
+# If a register already contains a function output, we drop the var to avoid
+# clobbering it.
 clean-up-blocks:  # vars: (addr stack live-var), until-block-depth: int, fn: (addr function)
     # pseudocode:
     #   to = vars->top  (which points outside the stack)
