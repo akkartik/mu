@@ -19109,6 +19109,8 @@ emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
     # eax = reg
     8b/-> *(ebp+0xc) 0/r32/eax
     # var prefix/eax: byte = reg->data[0]
@@ -19137,6 +19139,8 @@ emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
     (write-buffered *(ebp+8) *(ebp+0xc))
     (write-buffered *(ebp+8) Newline)
 $emit-pop-register:end:
+    # . restore registers
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
