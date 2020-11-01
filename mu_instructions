@@ -215,6 +215,22 @@ Comparisons must always start with a register:
 compare var1/xreg1, var2/xreg2    => "0f 2f/compare %" xreg2 " " xreg1 "/x32"
 compare var1/xreg1, var2          => "0f 2f/compare *(ebp+" var2.stack-offset ") " xreg1 "/x32"
 
+## Blocks
+
+In themselves, blocks generate no instructions. However, if a block contains
+variable declarations, they must be cleaned up when the block ends.
+
+Clean up var on the stack         => "81 0/subop/add %esp " size-of(var) "/imm32"
+Clean up var/reg                  => "8f 0/subop/pop %" reg
+
+Clean up var/xreg                 => "f3 0f 10/-> *esp " xreg "/x32"
+                                     "81 0/subop/add %esp 4/imm32"
+
+## Jumps
+
+Besides having to clean up any variable declarations (see above) between
+themselves and their target, jumps translate like this:
+
 break                             => "e9/jump break/disp32"
 break label                       => "e9/jump " label ":break/disp32"
 loop                              => "e9/jump loop/disp32"
