@@ -37,6 +37,10 @@ Conversely, registers that are just read from must not be passed as inputs.
 The following chart shows all the instruction forms supported by Mu, along with
 the SubX instruction they're translated to.
 
+<span class="muComment">## Integer instructions</span>
+
+These instructions use the general-purpose registers.
+
 var/<span class="Constant">eax</span> <span class="SpecialChar">&lt;-</span> increment              =&gt; <span class="Constant">&quot;40/increment-eax&quot;</span>
 var/<span class="Constant">ecx</span> <span class="SpecialChar">&lt;-</span> increment              =&gt; <span class="Constant">&quot;41/increment-ecx&quot;</span>
 var/<span class="Constant">edx</span> <span class="SpecialChar">&lt;-</span> increment              =&gt; <span class="Constant">&quot;42/increment-edx&quot;</span>
@@ -150,11 +154,10 @@ compare *var/reg, n               =&gt; <span class="Constant">&quot;81 7/subop/
 var/reg <span class="SpecialChar">&lt;-</span> multiply var2          =&gt; <span class="Constant">&quot;0f af/multiply *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="SpecialChar">&lt;-</span> multiply *var2/reg2    =&gt; <span class="Constant">&quot;0f af/multiply *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
-<span class="muComment"># Floating-point operations</span>
+<span class="muComment">## Floating-point operations</span>
 
-All the instructions so far use Intel's general-purpose integer registers.
-However, some of them translate to different SubX if their arguments are in
-floating-point registers.
+These instructions operate on either floating-point registers (xreg) or
+general-purpose registers (reg) in indirect mode.
 
 var/xreg <span class="SpecialChar">&lt;-</span> add var2/xreg2        =&gt; <span class="Constant">&quot;f3 0f 58/add %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 var/xreg <span class="SpecialChar">&lt;-</span> add var2              =&gt; <span class="Constant">&quot;f3 0f 58/add *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>

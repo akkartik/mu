@@ -13,6 +13,10 @@ Conversely, registers that are just read from must not be passed as inputs.
 The following chart shows all the instruction forms supported by Mu, along with
 the SubX instruction they're translated to.
 
+## Integer instructions
+
+These instructions use the general-purpose registers.
+
 var/eax <- increment              => "40/increment-eax"
 var/ecx <- increment              => "41/increment-ecx"
 var/edx <- increment              => "42/increment-edx"
@@ -126,11 +130,10 @@ compare *var/reg, n               => "81 7/subop/compare *" reg " " n "/imm32"
 var/reg <- multiply var2          => "0f af/multiply *(ebp+" var2.stack-offset ") " reg "/r32"
 var/reg <- multiply *var2/reg2    => "0f af/multiply *" reg2 " " reg "/r32"
 
-# Floating-point operations
+## Floating-point operations
 
-All the instructions so far use Intel's general-purpose integer registers.
-However, some of them translate to different SubX if their arguments are in
-floating-point registers.
+These instructions operate on either floating-point registers (xreg) or
+general-purpose registers (reg) in indirect mode.
 
 var/xreg <- add var2/xreg2        => "f3 0f 58/add %" xreg2 " " xreg1 "/x32"
 var/xreg <- add var2              => "f3 0f 58/add *(ebp+" var2.stack-offset ") " xreg "/x32"
