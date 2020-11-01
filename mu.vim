@@ -51,7 +51,7 @@ syntax match muAssign "<-"
 highlight link muAssign SpecialChar
 
 " common keywords
-syntax match muControl "^return\>\| return\>"
+syntax match muControl "\<return\>\|\<return-if[^ ]*\>"
 syntax match muControl "\<jump\>\|\<jump-if[^ ]*"
 syntax match muControl "\<break\>\|\<break-if[^ ]*"
 syntax match muControl "\<loop\>\|\<loop-if[^ ]*"
