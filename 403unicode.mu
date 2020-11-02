@@ -19,8 +19,7 @@
 #
 # The day we want to support combining characters, this function will need to
 # take multiple code points. Or something.
-fn to-grapheme in: code-point -> out/eax: grapheme {
-$to-grapheme:body: {
+fn to-grapheme in: code-point -> _/eax: grapheme {
   var c/eax: int <- copy in
   var num-trailers/ecx: int <- copy 0
   var first/edx: int <- copy 0
@@ -29,8 +28,8 @@ $to-grapheme:body: {
     compare c, 0x7f
     {
       break-if->
-      out <- copy c
-      break $to-grapheme:body
+      var g/eax: grapheme <- copy c
+      return g
     }
     # 2 bytes
     compare c, 0x7ff
@@ -88,8 +87,7 @@ $to-grapheme:body: {
   result <- or c
   result <- or first
   #
-  out <- copy result
-}
+  return result
 }
 
 # single-byte code point have identical graphemes
@@ -157,15 +155,13 @@ fn test-to-grapheme-four-bytes-max {
 }
 
 # read the next grapheme from a stream of bytes
-fn read-grapheme in: (addr stream byte) -> out/eax: grapheme {
-$read-grapheme:body: {
+fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
   # if at eof, return EOF
   {
     var eof?/eax: boolean <- stream-empty? in
     compare eof?, 0  # false
     break-if-=
-    out <- copy 0xffffffff
-    break $read-grapheme:body
+    return 0xffffffff
   }
   var c/eax: byte <- read-byte in
   var num-trailers/ecx: int <- copy 0
@@ -174,15 +170,14 @@ $read-grapheme:body: {
     compare c, 0xc0
     {
       break-if->=
-      out <- copy c
-      num-trailers <- copy 0
-      break $read-grapheme:body
+      var g/eax: grapheme <- copy c
+      return g
     }
     compare c, 0xfe
     {
       break-if-<
-      out <- copy c
-      break $read-grapheme:body
+      var g/eax: grapheme <- copy c
+      return g
     }
     # 2 bytes
     compare c, 0xe0
@@ -230,8 +225,7 @@ $read-grapheme:abort: {
     num-trailers <- decrement
     loop
   }
-  out <- copy result
-}
+  return result
 }
 
 fn test-read-grapheme {
@@ -261,8 +255,7 @@ fn test-read-grapheme {
   check-ints-equal n, 0x65, "F - test grapheme/6"
 }
 
-fn read-grapheme-buffered in: (addr buffered-file) -> out/eax: grapheme {
-$read-grapheme-buffered:body: {
+fn read-grapheme-buffered in: (addr buffered-file) -> _/eax: grapheme {
   var c/eax: byte <- read-byte-buffered in
   var num-trailers/ecx: int <- copy 0
   $read-grapheme-buffered:compute-length: {
@@ -270,15 +263,14 @@ $read-grapheme-buffered:body: {
     compare c, 0xc0
     {
       break-if->=
-      out <- copy c
-      num-trailers <- copy 0
-      break $read-grapheme-buffered:body
+      var g/eax: grapheme <- copy c
+      return g
     }
     compare c, 0xfe
     {
       break-if-<
-      out <- copy c
-      break $read-grapheme-buffered:body
+      var g/eax: grapheme <- copy c
+      return g
     }
     # 2 bytes
     compare c, 0xe0
@@ -326,14 +318,13 @@ $read-grapheme-buffered:abort: {
     num-trailers <- decrement
     loop
   }
-  out <- copy result
-}
+  return result
 }
 
 # needed because available primitives only shift by a literal/constant number of bits
-fn shift-left-bytes n: int, k: int -> result/eax: int {
+fn shift-left-bytes n: int, k: int -> _/eax: int {
   var i/ecx: int <- copy 0
-  result <- copy n
+  var result/eax: int <- copy n
   {
     compare i, k
     break-if->=
@@ -343,6 +334,7 @@ fn shift-left-bytes n: int, k: int -> result/eax: int {
     i <- increment
     loop
   }
+  return result
 }
 
 fn test-shift-left-bytes-0 {

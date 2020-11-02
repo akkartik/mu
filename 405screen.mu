@@ -57,150 +57,135 @@ fn initialize-screen screen: (addr screen), nrows: int, ncols: int {
   copy-to *dest, 7
 }
 
-fn screen-size screen: (addr screen) -> nrows/eax: int, ncols/ecx: int {
-$screen-size:body: {
+fn screen-size screen: (addr screen) -> _/eax: int, _/ecx: int {
+  var nrows/eax: int <- copy 0
+  var ncols/ecx: int <- copy 0
   compare screen, 0
   {
     break-if-!=
     nrows, ncols <- real-screen-size
-    break $screen-size:body
+    return nrows, ncols
   }
-  {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var tmp/edx: (addr int) <- get screen-addr, num-rows
-    nrows <- copy *tmp
-    tmp <- get screen-addr, num-cols
-    ncols <- copy *tmp
-  }
-}
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var tmp/edx: (addr int) <- get screen-addr, num-rows
+  nrows <- copy *tmp
+  tmp <- get screen-addr, num-cols
+  ncols <- copy *tmp
+  return nrows, ncols
 }
 
 fn clear-screen screen: (addr screen) {
-$clear-screen:body: {
   compare screen, 0
   {
     break-if-!=
     clear-real-screen
-    break $clear-screen:body
+    return
   }
+  # fake screen
+  var space/edi: grapheme <- copy 0x20
+  move-cursor screen, 1, 1
+  var screen-addr/esi: (addr screen) <- copy screen
+  var i/eax: int <- copy 1
+  var nrows/ecx: (addr int) <- get screen-addr, num-rows
   {
-    break-if-=
-    # fake screen
-    var space/edi: grapheme <- copy 0x20
-    move-cursor screen, 1, 1
-    var screen-addr/esi: (addr screen) <- copy screen
-    var i/eax: int <- copy 1
-    var nrows/ecx: (addr int) <- get screen-addr, num-rows
+    compare i, *nrows
+    break-if->
+    var j/edx: int <- copy 1
+    var ncols/ebx: (addr int) <- get screen-addr, num-cols
     {
-      compare i, *nrows
+      compare j, *ncols
       break-if->
-      var j/edx: int <- copy 1
-      var ncols/ebx: (addr int) <- get screen-addr, num-cols
-      {
-        compare j, *ncols
-        break-if->
-        print-grapheme screen, space
-        j <- increment
-        loop
-      }
-      i <- increment
+      print-grapheme screen, space
+      j <- increment
       loop
     }
-    move-cursor screen, 1, 1
+    i <- increment
+    loop
   }
-}
+  move-cursor screen, 1, 1
 }
 
 fn move-cursor screen: (addr screen), row: int, column: int {
-$move-cursor:body: {
   compare screen, 0
   {
     break-if-!=
     move-cursor-on-real-screen row, column
-    break $move-cursor:body
+    return
   }
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  # row < 0 is ignored
   {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    # row < 0 is ignored
-    {
-      compare row, 0
-      break-if-< $move-cursor:body
-    }
-    # row = 0 is treated same as 1
-    {
-      compare row, 0
-      break-if-!=
-      copy-to row, 1
-    }
-    # row > num-rows saturates to num-rows
-    {
-      var nrows-addr/eax: (addr int) <- get screen-addr, num-rows
-      var nrows/eax: int <- copy *nrows-addr
-      compare row, nrows
-      break-if-<=
-      copy-to row, nrows
-    }
-    # column < 0 is ignored
-    {
-      compare column, 0
-      break-if-< $move-cursor:body
-    }
-    # column = 0 is treated same as 1
-    {
-      compare column, 0
-      break-if-!=
-      copy-to column, 1
-    }
-    # column > num-cols saturates to num-cols+1 (so wrapping to next row)
-    {
-      var ncols-addr/eax: (addr int) <- get screen-addr, num-cols
-      var ncols/eax: int <- copy *ncols-addr
-      compare column, ncols
-      break-if-<=
-      copy-to column, ncols
-      increment column
-    }
-    # screen->cursor-row = row
-    var dest/edi: (addr int) <- get screen-addr, cursor-row
-    var src/eax: int <- copy row
-    copy-to *dest, src
-    # screen->cursor-col = column
-    dest <- get screen-addr, cursor-col
-    src <- copy column
-    copy-to *dest, src
+    compare row, 0
+    break-if->=
+    return
   }
-}
+  # row = 0 is treated same as 1
+  {
+    compare row, 0
+    break-if-!=
+    copy-to row, 1
+  }
+  # row > num-rows saturates to num-rows
+  {
+    var nrows-addr/eax: (addr int) <- get screen-addr, num-rows
+    var nrows/eax: int <- copy *nrows-addr
+    compare row, nrows
+    break-if-<=
+    copy-to row, nrows
+  }
+  # column < 0 is ignored
+  {
+    compare column, 0
+    break-if->=
+    return
+  }
+  # column = 0 is treated same as 1
+  {
+    compare column, 0
+    break-if-!=
+    copy-to column, 1
+  }
+  # column > num-cols saturates to num-cols+1 (so wrapping to next row)
+  {
+    var ncols-addr/eax: (addr int) <- get screen-addr, num-cols
+    var ncols/eax: int <- copy *ncols-addr
+    compare column, ncols
+    break-if-<=
+    copy-to column, ncols
+    increment column
+  }
+  # screen->cursor-row = row
+  var dest/edi: (addr int) <- get screen-addr, cursor-row
+  var src/eax: int <- copy row
+  copy-to *dest, src
+  # screen->cursor-col = column
+  dest <- get screen-addr, cursor-col
+  src <- copy column
+  copy-to *dest, src
 }
 
 fn print-string screen: (addr screen), s: (addr array byte) {
-$print-string:body: {
   compare screen, 0
   {
     break-if-!=
     print-string-to-real-screen s
-    break $print-string:body
+    return
   }
+  # fake screen
+  var s2: (stream byte 0x100)
+  var s2-addr/esi: (addr stream byte) <- address s2
+  write s2-addr, s
+  var screen-addr/edi: (addr screen) <- copy screen
   {
-    break-if-=
-    # fake screen
-    var s2: (stream byte 0x100)
-    var s2-addr/esi: (addr stream byte) <- address s2
-    write s2-addr, s
-    var screen-addr/edi: (addr screen) <- copy screen
-    {
-      var done?/eax: boolean <- stream-empty? s2-addr
-      compare done?, 0
-      break-if-!=
-      var g/eax: grapheme <- read-grapheme s2-addr
-      print-grapheme screen, g
-      loop
-    }
+    var done?/eax: boolean <- stream-empty? s2-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- read-grapheme s2-addr
+    print-grapheme screen, g
+    loop
   }
-}
 }
 
 fn print-array-of-ints-in-decimal screen: (addr screen), _a: (addr array int) {
@@ -223,85 +208,81 @@ fn print-array-of-ints-in-decimal screen: (addr screen), _a: (addr array int) {
 }
 
 fn print-grapheme screen: (addr screen), c: grapheme {
-$print-grapheme:body: {
   compare screen, 0
   {
     break-if-!=
     print-grapheme-to-real-screen c
-    break $print-grapheme:body
+    return
   }
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var cursor-col-addr/edx: (addr int) <- get screen-addr, cursor-col
+  # adjust cursor if necessary
+  # to avoid premature scrolling it's important to do this lazily, at the last possible time
   {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var cursor-col-addr/edx: (addr int) <- get screen-addr, cursor-col
-    # adjust cursor if necessary
-    # to avoid premature scrolling it's important to do this lazily, at the last possible time
-    {
-      # next row
-      var num-cols-addr/ecx: (addr int) <- get screen-addr, num-cols
-      var num-cols/ecx: int <- copy *num-cols-addr
-      compare *cursor-col-addr, num-cols
-      break-if-<=
-      copy-to *cursor-col-addr, 1
-      var cursor-row-addr/ebx: (addr int) <- get screen-addr, cursor-row
-      increment *cursor-row-addr
-      # scroll
-      var num-rows-addr/eax: (addr int) <- get screen-addr, num-rows
-      var num-rows/eax: int <- copy *num-rows-addr
-      compare *cursor-row-addr, num-rows
-      break-if-<=
-      copy-to *cursor-row-addr, num-rows
-      # if (top-index > data size) top-index = 0, otherwise top-index += num-cols
-      $print-grapheme:perform-scroll: {
-        var top-index-addr/ebx: (addr int) <- get screen-addr, top-index
-        var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
-        var data/eax: (addr array screen-cell) <- lookup *data-ah
-        var max-index/edi: int <- length data
-        compare *top-index-addr, max-index
-        {
-          break-if->=
-          add-to *top-index-addr, num-cols
-          break $print-grapheme:perform-scroll
-        }
-        {
-          break-if-<
-          copy-to *top-index-addr, 0
-        }
+    # next row
+    var num-cols-addr/ecx: (addr int) <- get screen-addr, num-cols
+    var num-cols/ecx: int <- copy *num-cols-addr
+    compare *cursor-col-addr, num-cols
+    break-if-<=
+    copy-to *cursor-col-addr, 1
+    var cursor-row-addr/ebx: (addr int) <- get screen-addr, cursor-row
+    increment *cursor-row-addr
+    # scroll
+    var num-rows-addr/eax: (addr int) <- get screen-addr, num-rows
+    var num-rows/eax: int <- copy *num-rows-addr
+    compare *cursor-row-addr, num-rows
+    break-if-<=
+    copy-to *cursor-row-addr, num-rows
+    # if (top-index > data size) top-index = 0, otherwise top-index += num-cols
+    $print-grapheme:perform-scroll: {
+      var top-index-addr/ebx: (addr int) <- get screen-addr, top-index
+      var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+      var data/eax: (addr array screen-cell) <- lookup *data-ah
+      var max-index/edi: int <- length data
+      compare *top-index-addr, max-index
+      {
+        break-if->=
+        add-to *top-index-addr, num-cols
+        break $print-grapheme:perform-scroll
+      }
+      {
+        break-if-<
+        copy-to *top-index-addr, 0
       }
     }
-    var idx/ecx: int <- current-screen-cell-index screen-addr
-#?     print-string-to-real-screen "printing grapheme at screen index "
-#?     print-int32-hex-to-real-screen idx
-#?     print-string-to-real-screen ": "
-    var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
-    var data/eax: (addr array screen-cell) <- lookup *data-ah
-    var offset/ecx: (offset screen-cell) <- compute-offset data, idx
-    var dest-cell/ecx: (addr screen-cell) <- index data, offset
-    var src-cell/eax: (addr screen-cell) <- get screen-addr, curr-attributes
-    copy-object src-cell, dest-cell
-    var dest/eax: (addr grapheme) <- get dest-cell, data
-    var c2/ecx: grapheme <- copy c
-#?     print-grapheme-to-real-screen c2
-#?     print-string-to-real-screen "\n"
-    copy-to *dest, c2
-    increment *cursor-col-addr
   }
-}
+  var idx/ecx: int <- current-screen-cell-index screen-addr
+#?   print-string-to-real-screen "printing grapheme at screen index "
+#?   print-int32-hex-to-real-screen idx
+#?   print-string-to-real-screen ": "
+  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+  var dest-cell/ecx: (addr screen-cell) <- index data, offset
+  var src-cell/eax: (addr screen-cell) <- get screen-addr, curr-attributes
+  copy-object src-cell, dest-cell
+  var dest/eax: (addr grapheme) <- get dest-cell, data
+  var c2/ecx: grapheme <- copy c
+#?   print-grapheme-to-real-screen c2
+#?   print-string-to-real-screen "\n"
+  copy-to *dest, c2
+  increment *cursor-col-addr
 }
 
-fn current-screen-cell-index screen-on-stack: (addr screen) -> result/ecx: int {
+fn current-screen-cell-index screen-on-stack: (addr screen) -> _/ecx: int {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var cursor-row-addr/ecx: (addr int) <- get screen, cursor-row
   var cursor-col-addr/eax: (addr int) <- get screen, cursor-col
-  result <- screen-cell-index screen, *cursor-row-addr, *cursor-col-addr
+  var result/ecx: int <- screen-cell-index screen, *cursor-row-addr, *cursor-col-addr
+  return result
 }
 
-fn screen-cell-index screen-on-stack: (addr screen), row: int, col: int -> result/ecx: int {
+fn screen-cell-index screen-on-stack: (addr screen), row: int, col: int -> _/ecx: int {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var num-cols-addr/eax: (addr int) <- get screen, num-cols
   var num-cols/eax: int <- copy *num-cols-addr
-  result <- copy row
+  var result/ecx: int <- copy row
   result <- subtract 1
   result <- multiply num-cols
   result <- add col
@@ -317,15 +298,17 @@ fn screen-cell-index screen-on-stack: (addr screen), row: int, col: int -> resul
     break-if-<
     result <- subtract max-index
   }
+  return result
 }
 
-fn screen-grapheme-at screen-on-stack: (addr screen), row: int, col: int -> result/eax: grapheme {
+fn screen-grapheme-at screen-on-stack: (addr screen), row: int, col: int -> _/eax: grapheme {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen-addr, row, col
-  result <- screen-grapheme-at-idx screen-addr, idx
+  var result/eax: grapheme <- screen-grapheme-at-idx screen-addr, idx
+  return result
 }
 
-fn screen-grapheme-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: grapheme {
+fn screen-grapheme-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: grapheme {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -333,16 +316,18 @@ fn screen-grapheme-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> r
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
   var src/eax: (addr grapheme) <- get cell, data
-  result <- copy *src
+  var result/eax: grapheme <- copy *src
+  return result
 }
 
-fn screen-color-at screen-on-stack: (addr screen), row: int, col: int -> result/eax: int {
+fn screen-color-at screen-on-stack: (addr screen), row: int, col: int -> _/eax: int {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen-addr, row, col
-  result <- screen-color-at-idx screen-addr, idx
+  var result/eax: int <- screen-color-at-idx screen-addr, idx
+  return result
 }
 
-fn screen-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: int {
+fn screen-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: int {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -350,16 +335,18 @@ fn screen-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> resu
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
   var src/eax: (addr int) <- get cell, color
-  result <- copy *src
+  var result/eax: int <- copy *src
+  return result
 }
 
-fn screen-background-color-at screen-on-stack: (addr screen), row: int, col: int -> result/eax: int {
+fn screen-background-color-at screen-on-stack: (addr screen), row: int, col: int -> _/eax: int {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen-addr, row, col
-  result <- screen-background-color-at-idx screen-addr, idx
+  var result/eax: int <- screen-background-color-at-idx screen-addr, idx
+  return result
 }
 
-fn screen-background-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: int {
+fn screen-background-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: int {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -367,16 +354,17 @@ fn screen-background-color-at-idx screen-on-stack: (addr screen), idx-on-stack: 
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
   var src/eax: (addr int) <- get cell, background-color
-  result <- copy *src
+  return *src
 }
 
-fn screen-bold-at? screen-on-stack: (addr screen), row: int, col: int -> result/eax: boolean {
+fn screen-bold-at? screen-on-stack: (addr screen), row: int, col: int -> _/eax: boolean {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen-addr, row, col
-  result <- screen-bold-at-idx? screen-addr, idx
+  var result/eax: boolean <- screen-bold-at-idx? screen-addr, idx
+  return result
 }
 
-fn screen-bold-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: boolean {
+fn screen-bold-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: boolean {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -384,16 +372,17 @@ fn screen-bold-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> resu
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
   var src/eax: (addr boolean) <- get cell, bold?
-  result <- copy *src
+  return *src
 }
 
-fn screen-underline-at? screen-on-stack: (addr screen), row: int, col: int -> result/eax: boolean {
+fn screen-underline-at? screen-on-stack: (addr screen), row: int, col: int -> _/eax: boolean {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen-addr, row, col
-  result <- screen-underline-at-idx? screen-addr, idx
+  var result/eax: boolean <- screen-underline-at-idx? screen-addr, idx
+  return result
 }
 
-fn screen-underline-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: boolean {
+fn screen-underline-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: boolean {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -401,16 +390,17 @@ fn screen-underline-at-idx? screen-on-stack: (addr screen), idx-on-stack: int ->
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
   var src/eax: (addr boolean) <- get cell, underline?
-  result <- copy *src
+  return *src
 }
 
-fn screen-reverse-at? screen-on-stack: (addr screen), row: int, col: int -> result/eax: boolean {
+fn screen-reverse-at? screen-on-stack: (addr screen), row: int, col: int -> _/eax: boolean {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen-addr, row, col
-  result <- screen-reverse-at-idx? screen-addr, idx
+  var result/eax: boolean <- screen-reverse-at-idx? screen-addr, idx
+  return result
 }
 
-fn screen-reverse-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: boolean {
+fn screen-reverse-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: boolean {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -418,16 +408,17 @@ fn screen-reverse-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> r
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
   var src/eax: (addr boolean) <- get cell, reverse?
-  result <- copy *src
+  return *src
 }
 
-fn screen-blink-at? screen-on-stack: (addr screen), row: int, col: int -> result/eax: boolean {
+fn screen-blink-at? screen-on-stack: (addr screen), row: int, col: int -> _/eax: boolean {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen-addr, row, col
-  result <- screen-blink-at-idx? screen-addr, idx
+  var result/eax: boolean <- screen-blink-at-idx? screen-addr, idx
+  return result
 }
 
-fn screen-blink-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> result/eax: boolean {
+fn screen-blink-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: boolean {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -435,7 +426,7 @@ fn screen-blink-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> res
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
   var src/eax: (addr boolean) <- get cell, blink?
-  result <- copy *src
+  return *src
 }
 
 fn print-code-point screen: (addr screen), c: code-point {
@@ -444,229 +435,175 @@ fn print-code-point screen: (addr screen), c: code-point {
 }
 
 fn print-int32-hex screen: (addr screen), n: int {
-$print-int32-hex:body: {
   compare screen, 0
   {
     break-if-!=
     print-int32-hex-to-real-screen n
-    break $print-int32-hex:body
+    return
   }
+  # fake screen
+  var s2: (stream byte 0x100)
+  var s2-addr/esi: (addr stream byte) <- address s2
+  write-int32-hex s2-addr, n
+  var screen-addr/edi: (addr screen) <- copy screen
   {
-    break-if-=
-    # fake screen
-    var s2: (stream byte 0x100)
-    var s2-addr/esi: (addr stream byte) <- address s2
-    write-int32-hex s2-addr, n
-    var screen-addr/edi: (addr screen) <- copy screen
-    {
-      var done?/eax: boolean <- stream-empty? s2-addr
-      compare done?, 0
-      break-if-!=
-      var g/eax: grapheme <- read-grapheme s2-addr
-      print-grapheme screen, g
-      loop
-    }
+    var done?/eax: boolean <- stream-empty? s2-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- read-grapheme s2-addr
+    print-grapheme screen, g
+    loop
   }
-}
 }
 
 fn print-int32-hex-bits screen: (addr screen), n: int, bits: int {
-$print-int32-hex-bits:body: {
   compare screen, 0
   {
     break-if-!=
     print-int32-hex-bits-to-real-screen n, bits
-    break $print-int32-hex-bits:body
+    return
   }
+  # fake screen
+  var s2: (stream byte 0x100)
+  var s2-addr/esi: (addr stream byte) <- address s2
+  write-int32-hex-bits s2-addr, n, bits
+  var screen-addr/edi: (addr screen) <- copy screen
   {
-    break-if-=
-    # fake screen
-    var s2: (stream byte 0x100)
-    var s2-addr/esi: (addr stream byte) <- address s2
-    write-int32-hex-bits s2-addr, n, bits
-    var screen-addr/edi: (addr screen) <- copy screen
-    {
-      var done?/eax: boolean <- stream-empty? s2-addr
-      compare done?, 0
-      break-if-!=
-      var g/eax: grapheme <- read-grapheme s2-addr
-      print-grapheme screen, g
-      loop
-    }
+    var done?/eax: boolean <- stream-empty? s2-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- read-grapheme s2-addr
+    print-grapheme screen, g
+    loop
   }
-}
 }
 
 fn print-int32-decimal screen: (addr screen), n: int {
-$print-int32-decimal:body: {
   compare screen, 0
   {
     break-if-!=
     print-int32-decimal-to-real-screen n
-    break $print-int32-decimal:body
+    return
   }
-  {
-    break-if-=
-    # fake screen
-  }
-}
+  # fake screen
+  # TODO
 }
 
 fn reset-formatting screen: (addr screen) {
-$reset-formatting:body: {
   compare screen, 0
   {
     break-if-!=
     reset-formatting-on-real-screen
-    break $reset-formatting:body
+    return
   }
-  {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var dest/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
-    var default-cell: screen-cell
-    var bg/eax: (addr int) <- get default-cell, background-color
-    copy-to *bg, 7
-    var default-cell-addr/eax: (addr screen-cell) <- address default-cell
-    copy-object default-cell-addr, dest
-  }
-}
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var dest/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
+  var default-cell: screen-cell
+  var bg/eax: (addr int) <- get default-cell, background-color
+  copy-to *bg, 7
+  var default-cell-addr/eax: (addr screen-cell) <- address default-cell
+  copy-object default-cell-addr, dest
 }
 
 fn start-color screen: (addr screen), fg: int, bg: int {
-$start-color:body: {
   compare screen, 0
   {
     break-if-!=
     start-color-on-real-screen fg, bg
-    break $start-color:body
+    return
   }
-  {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
-    var dest/edx: (addr int) <- get attr, color
-    var src/eax: int <- copy fg
-    copy-to *dest, src
-    var dest/edx: (addr int) <- get attr, background-color
-    var src/eax: int <- copy bg
-    copy-to *dest, src
-  }
-}
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
+  var dest/edx: (addr int) <- get attr, color
+  var src/eax: int <- copy fg
+  copy-to *dest, src
+  var dest/edx: (addr int) <- get attr, background-color
+  var src/eax: int <- copy bg
+  copy-to *dest, src
 }
 
 fn start-bold screen: (addr screen) {
-$start-bold:body: {
   compare screen, 0
   {
     break-if-!=
     start-bold-on-real-screen
-    break $start-bold:body
+    return
   }
-  {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
-    var dest/edx: (addr boolean) <- get attr, bold?
-    copy-to *dest, 1
-  }
-}
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
+  var dest/edx: (addr boolean) <- get attr, bold?
+  copy-to *dest, 1
 }
 
 fn start-underline screen: (addr screen) {
-$start-underline:body: {
   compare screen, 0
   {
     break-if-!=
     start-underline-on-real-screen
-    break $start-underline:body
+    return
   }
-  {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
-    var dest/edx: (addr boolean) <- get attr, underline?
-    copy-to *dest, 1
-  }
-}
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
+  var dest/edx: (addr boolean) <- get attr, underline?
+  copy-to *dest, 1
 }
 
 fn start-reverse-video screen: (addr screen) {
-$start-reverse-video:body: {
   compare screen, 0
   {
     break-if-!=
     start-reverse-video-on-real-screen
-    break $start-reverse-video:body
+    return
   }
-  {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
-    var dest/edx: (addr boolean) <- get attr, reverse?
-    copy-to *dest, 1
-  }
-}
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
+  var dest/edx: (addr boolean) <- get attr, reverse?
+  copy-to *dest, 1
 }
 
 fn start-blinking screen: (addr screen) {
-$start-blinking:body: {
   compare screen, 0
   {
     break-if-!=
     start-blinking-on-real-screen
-    break $start-blinking:body
+    return
   }
-  {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
-    var dest/edx: (addr boolean) <- get attr, blink?
-    copy-to *dest, 1
-  }
-}
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var attr/ecx: (addr screen-cell) <- get screen-addr, curr-attributes
+  var dest/edx: (addr boolean) <- get attr, blink?
+  copy-to *dest, 1
 }
 
 fn hide-cursor screen: (addr screen) {
-$hide-cursor:body: {
   compare screen, 0
   {
     break-if-!=
     hide-cursor-on-real-screen
-    break $hide-cursor:body
+    return
   }
-  {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var hide?/ecx: (addr boolean) <- get screen-addr, cursor-hide?
-    copy-to *hide?, 1
-  }
-}
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var hide?/ecx: (addr boolean) <- get screen-addr, cursor-hide?
+  copy-to *hide?, 1
 }
 
 fn show-cursor screen: (addr screen) {
-$show-cursor:body: {
   compare screen, 0
   {
     break-if-!=
     show-cursor-on-real-screen
-    break $show-cursor:body
+    return
   }
-  {
-    break-if-=
-    # fake screen
-    var screen-addr/esi: (addr screen) <- copy screen
-    var hide?/ecx: (addr boolean) <- get screen-addr, cursor-hide?
-    copy-to *hide?, 0
-  }
-}
+  # fake screen
+  var screen-addr/esi: (addr screen) <- copy screen
+  var hide?/ecx: (addr boolean) <- get screen-addr, cursor-hide?
+  copy-to *hide?, 0
 }
 
 # validate data on screen regardless of attributes (color, bold, etc.)

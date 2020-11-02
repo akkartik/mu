@@ -1,6 +1,6 @@
 # slow, iterative divide instruction
 # preconditions: _nr >= 0, _dr > 0
-fn try-divide _nr: int, _dr: int -> result/eax: int {
+fn try-divide _nr: int, _dr: int -> _/eax: int {
   # x = next power-of-2 multiple of _dr after _nr
   var x/ecx: int <- copy 1
   {
@@ -30,11 +30,12 @@ fn try-divide _nr: int, _dr: int -> result/eax: int {
     i <- increment
     loop
   }
-  result <- copy i
+  var result/eax: int <- copy i
   result <- decrement
 #?   print-string 0, "=> "
 #?   print-int32-hex 0, result
 #?   print-string 0, "\n"
+  return result
 }
 
 fn test-try-divide-1 {
@@ -83,13 +84,14 @@ fn test-try-divide-9 {
 }
 
 # only positive dr for now
-fn try-modulo nr: int, dr: int -> result/eax: int {
+fn try-modulo nr: int, dr: int -> _/eax: int {
   var _positive-nr/eax: int <- abs nr
   var positive-nr/ecx: int <- copy _positive-nr
-  var tmp/eax: int <- try-divide positive-nr, dr
-  tmp <- multiply dr
-  tmp <- subtract positive-nr
+  var result/eax: int <- try-divide positive-nr, dr
+  result <- multiply dr
+  result <- subtract positive-nr
   result <- negate
+  return result
 }
 
 fn test-try-modulo-negative-nr {
@@ -97,9 +99,12 @@ fn test-try-modulo-negative-nr {
   check-ints-equal result, 3, "F - test-try-modulo-negative-nr"
 }
 
-fn abs n: int -> result/eax: int {
-  result <- copy n
-  compare n, 0
-  break-if->=
-  result <- negate
+fn abs n: int -> _/eax: int {
+  var result/eax: int <- copy n
+  {
+    compare n, 0
+    break-if->=
+    result <- negate
+  }
+  return result
 }

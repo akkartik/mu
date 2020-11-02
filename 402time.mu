@@ -3,23 +3,27 @@ type timespec {
   tv_nsec: int
 }
 
+# return time in seconds since epoch
 # TODO: y2038
-fn time -> secs/eax: int {
+fn time -> _/eax: int {
   var t: timespec
   var clock/ebx: int <- copy 0  # CLOCK_MONOTONIC
   var t-addr/ecx: (addr timespec) <- address t
   syscall_clock_gettime
   var t-secs-addr/ecx: (addr int) <- get t-addr, tv_sec
-  secs <- copy *t-secs-addr
+  var secs/eax: int <- copy *t-secs-addr
+  return secs
 }
 
-fn ntime -> nsecs/eax: int {
+# return time in nanoseconds since epoch
+fn ntime -> _/eax: int {
   var t: timespec
   var clock/ebx: int <- copy 0  # CLOCK_MONOTONIC
   var t-addr/ecx: (addr timespec) <- address t
   syscall_clock_gettime
   var t-nsecs-addr/ecx: (addr int) <- get t-addr, tv_nsec
-  nsecs <- copy *t-nsecs-addr
+  var nsecs/eax: int <- copy *t-nsecs-addr
+  return nsecs
 }
 
 # nsecs must be less than 999999999 or 0x3b9ac9ff nanoseconds
