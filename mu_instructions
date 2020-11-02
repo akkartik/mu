@@ -290,6 +290,17 @@ Similar float variants like `break-if-float<` are aliases for the corresponding
 `addr` equivalents. The x86 instruction set stupidly has floating-point
 operations only update a subset of flags.
 
+## Returns
+
+The `return` instruction cleans up variable declarations just like an unconditional
+`jump` to end of function, but also emits a series of copies before the final
+`jump`, copying each argument of `return` to the register appropriate to the
+respective function output. This doesn't work if a function output register
+contains a later `return` argument (e.g. if the registers for two outputs are
+swapped in `return`), so you can't do that.
+
+return                            => "c3/return"
+
 ---
 
 In the following instructions types are provided for clarity even if they must

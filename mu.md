@@ -85,6 +85,10 @@ fn g {
 }
 ```
 
+You can exit a function at any time with the `return` instruction. Give it the
+right number of arguments, and it'll assign them respectively to the function's
+outputs before jumping back to the caller.
+
 The function `main` is special; it is where the program starts running. It
 must always return a single int in register `ebx` (as the exit status of the
 process). It can also optionally accept an array of strings as input (from the
