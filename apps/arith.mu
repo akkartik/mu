@@ -32,6 +32,7 @@
 # Error handling is non-existent. This is just a prototype.
 
 fn main -> exit-status/ebx: int {
+  enable-keyboard-immediate-mode
   var look/esi: grapheme <- copy 0  # lookahead
   var n/eax: int <- copy 0  # result of each expression
   print-string 0, "press ctrl-c or ctrl-d to exit\n"
@@ -50,6 +51,7 @@ fn main -> exit-status/ebx: int {
     #
     loop
   }
+  enable-keyboard-type-mode
   exit-status <- copy 0
 }
 
@@ -244,8 +246,9 @@ fn skip-spaces _look: grapheme -> look/esi: grapheme {
 
 fn get-char -> look/esi: grapheme {
   var tmp/eax: grapheme <- read-key-from-real-keyboard
+  print-grapheme-to-real-screen tmp
   look <- copy tmp
-  compare look, 0
+  compare look, 4
   {
     break-if-!=
     print-string 0, "^D\n"

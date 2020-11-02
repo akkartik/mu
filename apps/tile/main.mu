@@ -87,10 +87,10 @@ fn test {
 fn repl {
   {
     # prompt
-    var line-storage: (stream byte 0x100)
-    var line/ecx: (addr stream byte) <- address line-storage
     print-string-to-real-screen "> "
     # read
+    var line-storage: (stream byte 0x100)
+    var line/ecx: (addr stream byte) <- address line-storage
     clear-stream line
     read-line-from-real-keyboard line
     var done?/eax: boolean <- stream-empty? line
