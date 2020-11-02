@@ -32,7 +32,7 @@
 # Error handling is non-existent. This is just a prototype.
 
 fn main -> exit-status/ebx: int {
-  var look/esi: byte <- copy 0  # lookahead
+  var look/esi: grapheme <- copy 0  # lookahead
   var n/eax: int <- copy 0  # result of each expression
   print-string 0, "press ctrl-c or ctrl-d to exit\n"
   # read-eval-print loop
@@ -53,14 +53,14 @@ fn main -> exit-status/ebx: int {
   exit-status <- copy 0
 }
 
-fn simplify -> result/eax: int, look/esi: byte {
+fn simplify -> result/eax: int, look/esi: grapheme {
   # prime the pump
   look <- get-char
   # do it
   result, look <- expression look
 }
 
-fn expression _look: byte -> result/eax: int, look/esi: byte {
+fn expression _look: grapheme -> result/eax: int, look/esi: grapheme {
   look <- copy _look  # should be a no-op
   # read arg
   result, look <- term look
@@ -103,7 +103,7 @@ fn expression _look: byte -> result/eax: int, look/esi: byte {
   look <- skip-spaces look
 }
 
-fn term _look: byte -> result/eax: int, look/esi: byte {
+fn term _look: grapheme -> result/eax: int, look/esi: grapheme {
   look <- copy _look  # should be a no-op
   # read arg
   look <- skip-spaces look
@@ -146,7 +146,7 @@ fn term _look: byte -> result/eax: int, look/esi: byte {
   }
 }
 
-fn factor _look: byte -> result/eax: int, look/esi: byte {
+fn factor _look: grapheme -> result/eax: int, look/esi: grapheme {
 $factor:body: {
   look <- copy _look  # should be a no-op
   look <- skip-spaces look
@@ -165,7 +165,7 @@ $factor:body: {
 }  # $factor:body
 }
 
-fn is-mul-or-div? c: byte -> result/eax: boolean {
+fn is-mul-or-div? c: grapheme -> result/eax: boolean {
 $is-mul-or-div?:body: {
   compare c, 0x2a  # '*'
   {
@@ -183,7 +183,7 @@ $is-mul-or-div?:body: {
 }  # $is-mul-or-div?:body
 }
 
-fn is-add-or-sub? c: byte -> result/eax: boolean {
+fn is-add-or-sub? c: grapheme -> result/eax: boolean {
 $is-add-or-sub?:body: {
   compare c, 0x2b  # '+'
   {
@@ -201,12 +201,12 @@ $is-add-or-sub?:body: {
 }  # $is-add-or-sub?:body
 }
 
-fn operator _look: byte -> op/ecx: byte, look/esi: byte {
+fn operator _look: grapheme -> op/ecx: byte, look/esi: grapheme {
   op <- copy _look
   look <- get-char
 }
 
-fn num _look: byte -> result/eax: int, look/esi: byte {
+fn num _look: grapheme -> result/eax: int, look/esi: grapheme {
   look <- copy _look  # should be a no-op
   var out/edi: int <- copy 0
   {
@@ -232,7 +232,7 @@ fn num _look: byte -> result/eax: int, look/esi: byte {
   result <- copy out
 }
 
-fn skip-spaces _look: byte -> look/esi: byte {
+fn skip-spaces _look: grapheme -> look/esi: grapheme {
   look <- copy _look  # should be a no-op
   {
     compare look, 0x20
@@ -242,8 +242,8 @@ fn skip-spaces _look: byte -> look/esi: byte {
   }
 }
 
-fn get-char -> look/esi: byte {
-  var tmp/eax: byte <- read-key-from-real-keyboard
+fn get-char -> look/esi: grapheme {
+  var tmp/eax: grapheme <- read-key-from-real-keyboard
   look <- copy tmp
   compare look, 0
   {
