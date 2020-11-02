@@ -4,7 +4,7 @@
 #   $ ./translate_mu apps/tui.mu
 #   $ ./a.elf
 
-fn main -> exit-status/ebx: int {
+fn main -> _/ebx: int {
   var nrows/eax: int <- copy 0
   var ncols/ecx: int <- copy 0
   nrows, ncols <- screen-size 0
@@ -30,5 +30,5 @@ fn main -> exit-status/ebx: int {
   var x-int/eax: int <- copy x
   print-int32-hex 0, x-int
   print-string 0, "\n"
-  exit-status <- copy 0
+  return 0
 }

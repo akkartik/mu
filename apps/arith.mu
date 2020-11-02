@@ -31,7 +31,7 @@
 #
 # Error handling is non-existent. This is just a prototype.
 
-fn main -> exit-status/ebx: int {
+fn main -> _/ebx: int {
   enable-keyboard-immediate-mode
   var look/esi: grapheme <- copy 0  # lookahead
   var n/eax: int <- copy 0  # result of each expression
@@ -52,19 +52,22 @@ fn main -> exit-status/ebx: int {
     loop
   }
   enable-keyboard-type-mode
-  exit-status <- copy 0
+  return 0
 }
 
-fn simplify -> result/eax: int, look/esi: grapheme {
+fn simplify -> _/eax: int, _2/esi: grapheme {
   # prime the pump
-  look <- get-char
+  var look/esi: grapheme <- get-char
   # do it
+  var result/eax: int <- copy 0
   result, look <- expression look
+  return result, look
 }
 
-fn expression _look: grapheme -> result/eax: int, look/esi: grapheme {
-  look <- copy _look  # should be a no-op
+fn expression _look: grapheme -> _/eax: int, _2/esi: grapheme {
+  var look/esi: grapheme <- copy _look
   # read arg
+  var result/eax: int <- copy 0
   result, look <- term look
   $expression:loop: {
     # while next non-space char in ['+', '-']
@@ -103,12 +106,14 @@ fn expression _look: grapheme -> result/eax: int, look/esi: grapheme {
     loop
   }
   look <- skip-spaces look
+  return result, look
 }
 
-fn term _look: grapheme -> result/eax: int, look/esi: grapheme {
-  look <- copy _look  # should be a no-op
+fn term _look: grapheme -> _/eax: int, _2/esi: grapheme {
+  var look/esi: grapheme <- copy _look
   # read arg
   look <- skip-spaces look
+  var result/eax: int <- copy 0
   result, look <- factor look
   $term:loop: {
     # while next non-space char in ['*', '/']
@@ -146,74 +151,69 @@ fn term _look: grapheme -> result/eax: int, look/esi: grapheme {
     }
     loop
   }
+  return result, look
 }
 
-fn factor _look: grapheme -> result/eax: int, look/esi: grapheme {
-$factor:body: {
-  look <- copy _look  # should be a no-op
+fn factor _look: grapheme -> _/eax: int, _2/esi: grapheme {
+  var look/esi: grapheme <- copy _look  # should be a no-op
   look <- skip-spaces look
   # if next char is not '(', parse a number
   compare look, 0x28  # '('
   {
     break-if-=
+    var result/eax: int <- copy 0
     result, look <- num look
-    break $factor:body
+    return result, look
   }
   # otherwise recurse
   look <- get-char  # '('
+  var result/eax: int <- copy 0
   result, look <- expression look
   look <- skip-spaces look
   look <- get-char  # ')'
-}  # $factor:body
+  return result, look
 }
 
-fn is-mul-or-div? c: grapheme -> result/eax: boolean {
-$is-mul-or-div?:body: {
+fn is-mul-or-div? c: grapheme -> _/eax: boolean {
   compare c, 0x2a  # '*'
   {
     break-if-!=
-    result <- copy 1  # true
-    break $is-mul-or-div?:body
+    return 1  # true
   }
   compare c, 0x2f  # '/'
   {
     break-if-!=
-    result <- copy 1  # true
-    break $is-mul-or-div?:body
+    return 1  # true
   }
-  result <- copy 0  # false
-}  # $is-mul-or-div?:body
+  return 0  # false
 }
 
-fn is-add-or-sub? c: grapheme -> result/eax: boolean {
-$is-add-or-sub?:body: {
+fn is-add-or-sub? c: grapheme -> _/eax: boolean {
   compare c, 0x2b  # '+'
   {
     break-if-!=
-    result <- copy 1  # true
-    break $is-add-or-sub?:body
+    return 1  # true
   }
   compare c, 0x2d  # '-'
   {
     break-if-!=
-    result <- copy 1  # true
-    break $is-add-or-sub?:body
+    return 1  # true
   }
-  result <- copy 0  # false
-}  # $is-add-or-sub?:body
+  return 0  # false
 }
 
-fn operator _look: grapheme -> op/ecx: byte, look/esi: grapheme {
-  op <- copy _look
-  look <- get-char
+fn operator _look: grapheme -> _/ecx: byte, _2/esi: grapheme {
+  var op/ecx: byte <- copy _look
+  var look/esi: grapheme <- get-char
+  return op, look
 }
 
-fn num _look: grapheme -> result/eax: int, look/esi: grapheme {
-  look <- copy _look  # should be a no-op
-  var out/edi: int <- copy 0
+fn num _look: grapheme -> _/eax: int, _2/esi: grapheme {
+  var look/esi: grapheme <- copy _look
+  var result/edi: int <- copy 0
   {
     var first-digit/eax: int <- to-decimal-digit look
-    out <- copy first-digit
+    result <- copy first-digit
   }
   {
     look <- get-char
@@ -221,37 +221,38 @@ fn num _look: grapheme -> result/eax: int, look/esi: grapheme {
     var digit?/eax: boolean <- is-decimal-digit? look
     compare digit?, 0  # false
     break-if-=
-    # out *= 10
+    # result *= 10
     {
       var ten/eax: int <- copy 0xa
-      out <- multiply ten
+      result <- multiply ten
     }
-    # out += digit(look)
+    # result += digit(look)
     var digit/eax: int <- to-decimal-digit look
-    out <- add digit
+    result <- add digit
     loop
   }
-  result <- copy out
+  return result, look
 }
 
-fn skip-spaces _look: grapheme -> look/esi: grapheme {
-  look <- copy _look  # should be a no-op
+fn skip-spaces _look: grapheme -> _/esi: grapheme {
+  var look/esi: grapheme <- copy _look  # should be a no-op
   {
     compare look, 0x20
     break-if-!=
     look <- get-char
     loop
   }
+  return look
 }
 
-fn get-char -> look/esi: grapheme {
-  var tmp/eax: grapheme <- read-key-from-real-keyboard
-  print-grapheme-to-real-screen tmp
-  look <- copy tmp
+fn get-char -> _/esi: grapheme {
+  var look/eax: grapheme <- read-key-from-real-keyboard
+  print-grapheme-to-real-screen look
   compare look, 4
   {
     break-if-!=
     print-string 0, "^D\n"
     syscall_exit
   }
+  return look
 }

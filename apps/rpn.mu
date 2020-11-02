@@ -26,7 +26,7 @@
 #
 # Error handling is non-existent. This is just a prototype.
 
-fn main -> exit-status/ebx: int {
+fn main -> _/ebx: int {
   var in-storage: (stream byte 0x100)
   var in/esi: (addr stream byte) <- address in-storage
   print-string 0, "press ctrl-c or ctrl-d to exit\n"
@@ -48,7 +48,7 @@ fn main -> exit-status/ebx: int {
     #
     loop
   }
-  exit-status <- copy 0
+  return 0
 }
 
 type int-stack {
@@ -56,7 +56,7 @@ type int-stack {
   top: int
 }
 
-fn simplify in: (addr stream byte) -> result/eax: int {
+fn simplify in: (addr stream byte) -> _/eax: int {
   var word-storage: slice
   var word/ecx: (addr slice) <- address word-storage
   var stack-storage: int-stack
@@ -106,7 +106,8 @@ fn simplify in: (addr stream byte) -> result/eax: int {
     push-int-stack stack, n
     loop
   }
-  result <- pop-int-stack stack
+  var result/eax: int <- pop-int-stack stack
+  return result
 }
 
 fn initialize-int-stack _self: (addr int-stack), n: int {
@@ -129,21 +130,19 @@ fn push-int-stack _self: (addr int-stack), _val: int {
   add-to *top-addr, 1
 }
 
-fn pop-int-stack _self: (addr int-stack) -> val/eax: int {
-$pop-int-stack:body: {
+fn pop-int-stack _self: (addr int-stack) -> _/eax: int {
   var self/esi: (addr int-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
   {
     compare *top-addr, 0
     break-if->
-    val <- copy 0
-    break $pop-int-stack:body
+    return 0
   }
   subtract-from *top-addr, 1
   var data-ah/edx: (addr handle array int) <- get self, data
   var data/eax: (addr array int) <- lookup *data-ah
   var top/edx: int <- copy *top-addr
   var result-addr/eax: (addr int) <- index data, top
-  val <- copy *result-addr
-}
+  var val/eax: int <- copy *result-addr
+  return val
 }

@@ -6,7 +6,7 @@
 #   $ ./translate_mu apps/texture.mu
 #   $ ./a.elf > a.ppm
 
-fn main -> exit-status/ebx: int {
+fn main -> _/ebx: int {
 #?   var width/esi: int <- copy 0x190  # 400
 #?   var height/edi: int <- copy 0xe1  # 225; aspect ratio 16:9
   var width/esi: int <- copy 0xff
@@ -54,5 +54,5 @@ fn main -> exit-status/ebx: int {
     row <- increment
     loop
   }
-  exit-status <- copy 0
+  return 0
 }
