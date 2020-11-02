@@ -18900,12 +18900,16 @@ $emit-subx-stmt-list:return:
             (emit-outputs *(ebp+8) %ecx *(ebp+0x14))
             (emit-cleanup-code-for-non-outputs *(ebp+8) *(ebp+0x10) *(ebp+0x14))
             # emit jump to end of function
+            # getting at the name of the label is challenging
             (emit-indent *(ebp+8) *Curr-block-depth)
-            (write-buffered *(ebp+8) "e9/jump $")
+            (write-buffered *(ebp+8) "e9/jump ")
+            # var b/eax: (addr array byte) = fn->body->var->name
             8b/-> *(ebp+0x14) 0/r32/eax
-            (lookup *eax *(eax+4))  # Function-name Function-name => eax
+            (lookup *(eax+0x18) *(eax+0x1c))  # Function-body Function-body => eax
+            (lookup *(eax+0xc) *(eax+0x10))  # Block-var Block-var => eax
+            (lookup *eax *(eax+4))  # Var-name Var-name => eax
             (write-buffered *(ebp+8) %eax)
-            (write-buffered *(ebp+8) ":0x00000001:break/disp32\n")
+            (write-buffered *(ebp+8) ":break/disp32\n")
             e9/jump $emit-subx-stmt-list:clean-up/disp32
           }
           # }}}
