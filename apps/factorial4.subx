@@ -22,7 +22,7 @@
 
 == code
 
-factorial:  # n: int -> int/eax
+factorial:  # n: int -> _/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -33,16 +33,15 @@ factorial:  # n: int -> int/eax
     {
       7f/jump-if-> break/disp8
       b8/copy-to-eax 1/imm32
+      eb/jump $factorial:end/disp8
     }
-    # if (n > 1) return n * factorial(n-1)
-    {
-      7e/jump-if-<= break/disp8
-      # var tmp/ecx: int = n-1
-      8b/-> *(ebp+8) 1/r32/ecx
-      49/decrement-ecx
-      (factorial %ecx)  # => eax
-      f7 4/subop/multiply-into-eax *(ebp+8)
-    }
+    # n > 1; return n * factorial(n-1)
+    8b/-> *(ebp+8) 1/r32/ecx
+    49/decrement-ecx
+    (factorial %ecx)  # => eax
+    f7 4/subop/multiply-into-eax *(ebp+8)
+    # TODO: check for overflow
+$factorial:end:
     # restore registers
     59/pop-to-ecx
     # . epilogue
@@ -70,20 +69,20 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
       # ebx = factorial(5)
       (factorial 5)  # => eax
       89/<- %ebx 0/r32/eax
+      eb/jump $main:end/disp8
     }
-    # otherwise if an arg exists and is "test", then return run_tests()
+    # otherwise if first arg is "test", then return run_tests()
     {
-      # if (argc <= 1) break
-      81 7/subop/compare *ebp 1/imm32
-      7e/jump-if-<= break/disp8
       # if (!kernel-string-equal?(argv[1], "test")) break
       (kernel-string-equal? *(ebp+8) "test")  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       #
       (run-tests)
-      # ebx = *Num-test-failures
+      # exit(*Num-test-failures)
       8b/-> *Num-test-failures 3/r32/ebx
+      eb/jump $main:end/disp8
     }
-
+    bb/copy-to-ebx 0/imm32
+$main:end:
     e8/call  syscall_exit/disp32

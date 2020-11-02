@@ -8,6 +8,6 @@
 #   $ echo $?
 #   42
 
-fn main -> result/ebx: int {
-  result <- copy 0x2a  # Mu requires hexadecimal
+fn main -> _/ebx: int {
+  return 0x2a  # Mu requires hexadecimal
 }

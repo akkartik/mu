@@ -4,7 +4,7 @@
 #   $ ./translate_mu apps/hello.mu
 #   $ ./a.elf
 
-fn main -> exit-status/ebx: int {
+fn main -> _/ebx: int {
   print-string 0, "Hello world!\n"
-  exit-status <- copy 0
+  return 0
 }

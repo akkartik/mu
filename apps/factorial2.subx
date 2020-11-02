@@ -20,31 +20,33 @@
 
 == code
 
-factorial:  # n: int -> int/eax
+factorial:  # n: int -> _/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    53/push-ebx
+    # save registers
+    51/push-ecx
     # if (n <= 1) return 1
     b8/copy-to-eax 1/imm32
     81 7/subop/compare *(ebp+8) 1/imm32
     7e/jump-if-<= $factorial:end/disp8
-    # var ebx: int = n-1
-    8b/-> *(ebp+8) 3/r32/ebx
-    4b/decrement-ebx
-    # var eax: int = factorial(n-1)
+    # n > 1; return n * factorial(n-1)
+    8b/-> *(ebp+8) 1/r32/ecx
+    49/decrement-ecx
+    # var tmp/eax: int = factorial(n-1)
     # . . push args
-    53/push-ebx
+    51/push-ecx
     # . . call
     e8/call factorial/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # return n * factorial(n-1)
+    # return n * tmp
     f7 4/subop/multiply-into-eax *(ebp+8)
     # TODO: check for overflow
 $factorial:end:
+    # restore registers
+    59/pop-to-ecx
     # . epilogue
-    5b/pop-to-ebx
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
@@ -73,7 +75,7 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     # . prologue
     89/<- %ebp 4/r32/esp
 
-    # initialize heap
+    # initialize heap (needed by tests elsewhere)
     # . Heap = new-segment(Heap-size)
     # . . push args
     68/push Heap/imm32
@@ -83,11 +85,21 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     # . . discard args
     81 0/subop/add %esp 8/imm32
 
-    # - if argc > 1 and argv[1] == "test", then return run_tests()
-    # if (argc <= 1) goto run-main
+    # if (argc <= 1) return factorial(5)
     81 7/subop/compare *ebp 1/imm32
-    7e/jump-if-<= $run-main/disp8
-    # if (!kernel-string-equal?(argv[1], "test")) goto run-main
+    7f/jump-if-> $main:run-tests/disp8
+    # . . push args
+    68/push 5/imm32
+    # . . call
+    e8/call factorial/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # .
+    89/<- %ebx 0/r32/eax
+    eb/jump $main:end/disp8
+$main:run-tests:
+    # otherwise if first arg is "test", then return run_tests()
+    # if (!kernel-string-equal?(argv[1], "test")) goto do-nothing
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
     68/push "test"/imm32
@@ -96,24 +108,15 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     e8/call kernel-string-equal?/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
-    # . if (eax == false) goto run-main
+    # . if (eax == false) goto do-nothing
     3d/compare-eax-and 0/imm32/false
-    74/jump-if-= $run-main/disp8
+    74/jump-if-= $main:do-nothing/disp8
     # run-tests()
     e8/call run-tests/disp32
-    # syscall(exit, *Num-test-failures)
+    # exit(*Num-test-failures)
     8b/-> *Num-test-failures 3/r32/ebx
     eb/jump $main:end/disp8
-$run-main:
-    # - otherwise return factorial(5)
-    # ebx = factorial(5)
-    # . . push args
-    68/push 5/imm32
-    # . . call
-    e8/call factorial/disp32
-    # . . discard args
-    81 0/subop/add %esp 4/imm32
-    #
-    89/<- %ebx 0/r32/eax
+$main:do-nothing:
+    bb/copy-to-ebx 0/imm32
 $main:end:
     e8/call  syscall_exit/disp32

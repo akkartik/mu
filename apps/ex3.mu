@@ -7,8 +7,8 @@
 #   $ echo $?
 #   55
 
-fn main -> result/ebx: int {
-  result <- copy 0
+fn main -> _/ebx: int {
+  var result/ebx: int <- copy 0
   var i/eax: int <- copy 1
   {
     compare i, 0xa
@@ -17,4 +17,5 @@ fn main -> result/ebx: int {
     i <- increment
     loop
   }
+  return result
 }

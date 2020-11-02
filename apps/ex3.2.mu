@@ -6,7 +6,7 @@
 #   $ echo $?
 #   55
 
-fn main -> result/ebx: int {
+fn main -> _/ebx: int {
   # populate a
   var a: (array int 0xb)  # 11; we waste index 0
   var i/ecx: int <- copy 1
@@ -19,7 +19,7 @@ fn main -> result/ebx: int {
     loop
   }
   # sum
-  result <- copy 0
+  var result/edx: int <- copy 0
   i <- copy 1
   {
     compare i, 0xb
@@ -29,4 +29,5 @@ fn main -> result/ebx: int {
     i <- increment
     loop
   }
+  return result
 }

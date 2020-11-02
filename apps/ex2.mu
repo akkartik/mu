@@ -7,11 +7,13 @@
 #   $ echo $?
 #   7
 
-fn main -> result/ebx: int {
-  result <- do-add 3 4
+fn main -> _/ebx: int {
+  var result/eax: int <- do-add 3 4
+  return result
 }
 
-fn do-add a: int, b: int -> result/ebx: int {
-  result <- copy a
+fn do-add a: int, b: int -> _/eax: int {
+  var result/ebx: int <- copy a
   result <- add b
+  return result
 }
