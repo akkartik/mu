@@ -747,6 +747,139 @@ test-convert-function-distinguishes-args:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-return-literal:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo -> x/eax: int {\n")
+    (write _test-input-stream "  return 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-return-literal/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-return-literal/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-return-literal/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-return-literal/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-return-literal/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-return-literal/5")
+    (check-next-stream-line-equal _test-output-stream "    c7 0/subop/copy %eax 0/imm32"  "F - test-convert-function-with-return-literal/6")
+    (check-next-stream-line-equal _test-output-stream "    e9/jump $foo:0x00000001:break/disp32"  "F - test-convert-function-with-return-literal/7")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-return-literal/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-return-literal/9")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-return-literal/10")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-return-literal/11")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-return-literal/12")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-return-literal/13")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-return:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo -> x/eax: int {\n")
+    (write _test-input-stream "  var y: int\n")
+    (write _test-input-stream "  return y\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-return/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-return/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-return/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-return/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-return/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-return/5")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-with-return/6")  # y
+    (check-next-stream-line-equal _test-output-stream "    8b/-> *(ebp+0xfffffffc) 0x00000000/r32" "F - test-convert-function-with-return/7")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-return/8")
+    (check-next-stream-line-equal _test-output-stream "    e9/jump $foo:0x00000001:break/disp32"  "F - test-convert-function-with-return/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-return/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-return/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-return/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-return/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-return/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-return/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-return-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo -> x/eax: int {\n")
+    (write _test-input-stream "  var y/eax: int <- copy 3\n")
+    (write _test-input-stream "  return y\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-return-register/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-return-register/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-return-register/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-return-register/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-return-register/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-return-register/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-function-with-return-register/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 3/imm32"  "F - test-convert-function-with-return-register/7")
+    (check-next-stream-line-equal _test-output-stream "    8b/-> %eax 0x00000000/r32" "F - test-convert-function-with-return-register/8")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 4/imm32"  "F - test-convert-function-with-return-register/9")
+    (check-next-stream-line-equal _test-output-stream "    e9/jump $foo:0x00000001:break/disp32"  "F - test-convert-function-with-return-register/10")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-return-register/11")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-return-register/12")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-return-register/13")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-return-register/14")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-return-register/15")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-return-register/16")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-returns-result:
     # . prologue
     55/push-ebp
@@ -10079,139 +10212,6 @@ test-length-with-too-many-outputs:
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
-    5d/pop-to-ebp
-    c3/return
-
-test-convert-function-with-return-literal:
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # setup
-    (clear-stream _test-input-stream)
-    (clear-stream $_test-input-buffered-file->buffer)
-    (clear-stream _test-output-stream)
-    (clear-stream $_test-output-buffered-file->buffer)
-    #
-    (write _test-input-stream "fn foo -> x/eax: int {\n")
-    (write _test-input-stream "  return 0\n")
-    (write _test-input-stream "}\n")
-    # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
-    (flush _test-output-buffered-file)
-#?     # dump _test-output-stream {{{
-#?     (write 2 "^")
-#?     (write-stream 2 _test-output-stream)
-#?     (write 2 "$\n")
-#?     (rewind-stream _test-output-stream)
-#?     # }}}
-    # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-return-literal/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-return-literal/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-return-literal/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-return-literal/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-return-literal/4")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-return-literal/5")
-    (check-next-stream-line-equal _test-output-stream "    c7 0/subop/copy %eax 0/imm32"  "F - test-convert-function-with-return-literal/6")
-    (check-next-stream-line-equal _test-output-stream "    e9/jump $foo:0x00000001:break/disp32"  "F - test-convert-function-with-return-literal/7")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-return-literal/8")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-return-literal/9")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-return-literal/10")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-return-literal/11")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-return-literal/12")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-return-literal/13")
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-test-convert-function-with-return:
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # setup
-    (clear-stream _test-input-stream)
-    (clear-stream $_test-input-buffered-file->buffer)
-    (clear-stream _test-output-stream)
-    (clear-stream $_test-output-buffered-file->buffer)
-    #
-    (write _test-input-stream "fn foo -> x/eax: int {\n")
-    (write _test-input-stream "  var y: int\n")
-    (write _test-input-stream "  return y\n")
-    (write _test-input-stream "}\n")
-    # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
-    (flush _test-output-buffered-file)
-#?     # dump _test-output-stream {{{
-#?     (write 2 "^")
-#?     (write-stream 2 _test-output-stream)
-#?     (write 2 "$\n")
-#?     (rewind-stream _test-output-stream)
-#?     # }}}
-    # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-return/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-return/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-return/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-return/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-return/4")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-return/5")
-    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-with-return/6")  # y
-    (check-next-stream-line-equal _test-output-stream "    8b/-> *(ebp+0xfffffffc) 0x00000000/r32" "F - test-convert-function-with-return/7")
-    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-return/8")
-    (check-next-stream-line-equal _test-output-stream "    e9/jump $foo:0x00000001:break/disp32"  "F - test-convert-function-with-return/9")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-return/10")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-return/11")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-return/12")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-return/13")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-return/14")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-return/15")
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-test-convert-function-with-return-register:
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # setup
-    (clear-stream _test-input-stream)
-    (clear-stream $_test-input-buffered-file->buffer)
-    (clear-stream _test-output-stream)
-    (clear-stream $_test-output-buffered-file->buffer)
-    #
-    (write _test-input-stream "fn foo -> x/eax: int {\n")
-    (write _test-input-stream "  var y/eax: int <- copy 3\n")
-    (write _test-input-stream "  return y\n")
-    (write _test-input-stream "}\n")
-    # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
-    (flush _test-output-buffered-file)
-#?     # dump _test-output-stream {{{
-#?     (write 2 "^")
-#?     (write-stream 2 _test-output-stream)
-#?     (write 2 "$\n")
-#?     (rewind-stream _test-output-stream)
-#?     # }}}
-    # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-return-register/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-return-register/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-return-register/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-return-register/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-return-register/4")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-return-register/5")
-    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-function-with-return-register/6")
-    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 3/imm32"  "F - test-convert-function-with-return-register/7")
-    (check-next-stream-line-equal _test-output-stream "    8b/-> %eax 0x00000000/r32" "F - test-convert-function-with-return-register/8")
-    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 4/imm32"  "F - test-convert-function-with-return-register/9")
-    (check-next-stream-line-equal _test-output-stream "    e9/jump $foo:0x00000001:break/disp32"  "F - test-convert-function-with-return-register/10")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-return-register/11")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-return-register/12")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-return-register/13")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-return-register/14")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-return-register/15")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-return-register/16")
-    # . epilogue
-    89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
