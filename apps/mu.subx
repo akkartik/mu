@@ -925,6 +925,94 @@ test-return-with-wrong-type:
     5d/pop-to-ebp
     c3/return
 
+test-return-with-too-few-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo -> _/eax: int {\n")
+    (write _test-input-stream "  return\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-return-with-too-few-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: return: too few inouts"  "F - test-return-with-too-few-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-return-with-too-few-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-return-with-too-many-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo -> _/eax: int {\n")
+    (write _test-input-stream "  return 0, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-return-with-too-many-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: return: too many inouts"  "F - test-return-with-too-many-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-return-with-too-many-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-literal-arg:
     # . prologue
     55/push-ebp
@@ -15951,7 +16039,8 @@ check-mu-return-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buff
       81 7/subop/compare %esi 0/imm32
       0f 84/jump-if-= break/disp32
       # if curr is null, abort
-      # TODO
+      81 7/subop/compare %edi 0/imm32
+      0f 84/jump-if-= $check-mu-return-stmt:error-too-few-inouts/disp32
       # var template-type/ecx: (addr type-tree) = template->value->type
       (lookup *esi *(esi+4))  # List-value List-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
@@ -15983,6 +16072,8 @@ check-mu-return-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buff
       e9/jump loop/disp32
     }
     # TODO: if curr is not null, abort
+    81 7/subop/compare %edi 0/imm32
+    0f 85/jump-if-!= $check-mu-return-stmt:error-too-many-inouts/disp32
 $check-mu-return-stmt:end:
     # . reclaim locals
     81 0/subop/add %esp 0x6c/imm32
@@ -16007,6 +16098,26 @@ $check-mu-return-stmt:error1:
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
     (write-buffered *(ebp+0x10) %eax)
     (write-buffered *(ebp+0x10) "' has the wrong type\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-return-stmt:error-too-few-inouts:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": return: too few inouts\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-return-stmt:error-too-many-inouts:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": return: too many inouts\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
