@@ -7,7 +7,7 @@
 #   $ ./translate_mu apps/raytracing/1.mu
 #   $ ./a.elf > 1.ppm
 
-fn main -> exit-status/ebx: int {
+fn main -> _/ebx: int {
   print-string 0, "P3\n256 256\n255\n"
   var j/ecx: int <- copy 0xff
   {
@@ -27,5 +27,5 @@ fn main -> exit-status/ebx: int {
     j <- decrement
     loop
   }
-  exit-status <- copy 1
+  return 0
 }

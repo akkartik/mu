@@ -83,15 +83,13 @@ fn push-value-stack _self: (addr value-stack), val: (addr value) {
   increment *top-addr
 }
 
-fn pop-int-from-value-stack _self: (addr value-stack) -> val/eax: int {
-$pop-int-from-value-stack:body: {
+fn pop-int-from-value-stack _self: (addr value-stack) -> _/eax: int {
   var self/esi: (addr value-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
   {
     compare *top-addr, 0
     break-if->
-    val <- copy -1
-    break $pop-int-from-value-stack:body
+    return -1
   }
   decrement *top-addr
   var data-ah/edx: (addr handle array value) <- get self, data
@@ -100,145 +98,134 @@ $pop-int-from-value-stack:body: {
   var dest-offset/edx: (offset value) <- compute-offset data, top
   var result-addr/eax: (addr value) <- index data, dest-offset
   var result-addr2/eax: (addr int) <- get result-addr, int-data
-  val <- copy *result-addr2
-}
+  return *result-addr2
 }
 
-fn value-stack-empty? _self: (addr value-stack) -> result/eax: boolean {
-$value-stack-empty?:body: {
+fn value-stack-empty? _self: (addr value-stack) -> _/eax: boolean {
   var self/esi: (addr value-stack) <- copy _self
   var top/eax: (addr int) <- get self, top
   compare *top, 0
   {
     break-if-!=
-    result <- copy 1  # true
-    break $value-stack-empty?:body
+    return 1  # true
   }
-  result <- copy 0  # false
-}
+  return 0  # false
 }
 
-fn value-stack-length _self: (addr value-stack) -> result/eax: int {
+fn value-stack-length _self: (addr value-stack) -> _/eax: int {
   var self/esi: (addr value-stack) <- copy _self
   var top-addr/eax: (addr int) <- get self, top
-  result <- copy *top-addr
+  return *top-addr
 }
 
-fn value-stack-max-width _self: (addr value-stack) -> result/eax: int {
+fn value-stack-max-width _self: (addr value-stack) -> _/eax: int {
   var self/esi: (addr value-stack) <- copy _self
   var data-ah/edi: (addr handle array value) <- get self, data
   var _data/eax: (addr array value) <- lookup *data-ah
   var data/edi: (addr array value) <- copy _data
   var top-addr/ecx: (addr int) <- get self, top
   var i/ebx: int <- copy 0
-  var out: int
+  var result: int
   {
     compare i, *top-addr
     break-if->=
     var o/edx: (offset value) <- compute-offset data, i
     var v/edx: (addr value) <- index data, o
     var w/eax: int <- value-width v, 1  # top-level=true
-    # if (w > out) w = out
+    # if (w > result) w = result
     {
-      compare w, out
+      compare w, result
       break-if-<=
-      copy-to out, w
+      copy-to result, w
     }
     i <- increment
     loop
   }
-  result <- copy out
+  return result
 }
 
-fn value-width _v: (addr value), top-level: boolean -> result/eax: int {
-  var out/edi: int <- copy 0
-  $value-width:core: {
-    var v/esi: (addr value) <- copy _v
-    var type/eax: (addr int) <- get v, type
-    {
-      compare *type, 0  # int
-      break-if-!=
-      var v-int/edx: (addr int) <- get v, int-data
-      var _out/eax: int <- decimal-size *v-int
-      out <- copy _out
-      break $value-width:core
-    }
-    {
-      compare *type, 1  # string
-      break-if-!=
-      var s-ah/eax: (addr handle array byte) <- get v, text-data
-      var s/eax: (addr array byte) <- lookup *s-ah
-      compare s, 0
-      break-if-=
-      var _out/eax: int <- length s
-      out <- copy _out
-      compare out, 0xd  # max string size
-      {
-        break-if-<=
-        out <- copy 0xd
-      }
-      # if it's a nested string, include space for quotes
-      # we don't do this for the top-level, where the quotes will overflow
-      # into surrounding padding.
-      compare top-level, 0  # false
-      {
-        break-if-!=
-        out <- add 2
-      }
-      break $value-width:core
-    }
-    {
-      compare *type, 2  # array
-      break-if-!=
-      var a-ah/eax: (addr handle array value) <- get v, array-data
-      var a/eax: (addr array value) <- lookup *a-ah
-      compare a, 0
-      break-if-=
-      var _out/eax: int <- array-width a
-      out <- copy _out
-      break $value-width:core
-    }
-    {
-      compare *type, 3  # file handle
-      break-if-!=
-      var f-ah/eax: (addr handle buffered-file) <- get v, file-data
-      var f/eax: (addr buffered-file) <- lookup *f-ah
-      compare f, 0
-      break-if-=
-      # TODO
-      out <- copy 4
-      break $value-width:core
-    }
+fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
+  var v/esi: (addr value) <- copy _v
+  var type/eax: (addr int) <- get v, type
+  {
+    compare *type, 0  # int
+    break-if-!=
+    var v-int/edx: (addr int) <- get v, int-data
+    var result/eax: int <- decimal-size *v-int
+    return result
   }
-  result <- copy out
+  {
+    compare *type, 1  # string
+    break-if-!=
+    var s-ah/eax: (addr handle array byte) <- get v, text-data
+    var s/eax: (addr array byte) <- lookup *s-ah
+    compare s, 0
+    break-if-=
+    var result/eax: int <- length s
+    compare result, 0xd  # max string size
+    {
+      break-if-<=
+      result <- copy 0xd
+    }
+    # if it's a nested string, include space for quotes
+    # we don't do this for the top-level, where the quotes will overflow
+    # into surrounding padding.
+    compare top-level, 0  # false
+    {
+      break-if-!=
+      result <- add 2
+    }
+    return result
+  }
+  {
+    compare *type, 2  # array
+    break-if-!=
+    var a-ah/eax: (addr handle array value) <- get v, array-data
+    var a/eax: (addr array value) <- lookup *a-ah
+    compare a, 0
+    break-if-=
+    var result/eax: int <- array-width a
+    return result
+  }
+  {
+    compare *type, 3  # file handle
+    break-if-!=
+    var f-ah/eax: (addr handle buffered-file) <- get v, file-data
+    var f/eax: (addr buffered-file) <- lookup *f-ah
+    compare f, 0
+    break-if-=
+    # TODO: visualizing file handles
+    return 4
+  }
+  return 0
 }
 
 # keep sync'd with render-array
-fn array-width _a: (addr array value) -> result/eax: int {
+fn array-width _a: (addr array value) -> _/eax: int {
   var a/esi: (addr array value) <- copy _a
   var max/ecx: int <- length a
   var i/eax: int <- copy 0
-  var out/edi: int <- copy 0
+  var result/edi: int <- copy 0
   {
     compare i, max
     break-if->=
     {
       compare i, 0
       break-if-=
-      out <- increment  # for space
+      result <- increment  # for space
     }
     var off/ecx: (offset value) <- compute-offset a, i
     var x/ecx: (addr value) <- index a, off
     {
       var w/eax: int <- value-width x, 0
-      out <- add w
+      result <- add w
     }
     i <- increment
     loop
   }
-  result <- copy out
   # we won't add 2 for surrounding brackets since we don't surround arrays in
   # spaces like other value types
+  return result
 }
 
 fn save-lines in-h: (handle array (handle array byte)), _out-ah: (addr handle array value) {

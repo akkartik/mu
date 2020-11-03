@@ -760,61 +760,65 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
   }
 }
 
-fn bound-function? w: (addr word), functions-ah: (addr handle function) -> result/ebx: boolean {
-  result <- copy 1  # true
-  # if w == "+" return true
-  var subresult/eax: boolean <- word-equal? w, "+"
-  compare subresult, 0  # false
-  break-if-!=
-  # if w == "-" return true
-  subresult <- word-equal? w, "-"
-  compare subresult, 0  # false
-  break-if-!=
-  # if w == "*" return true
-  subresult <- word-equal? w, "*"
-  compare subresult, 0  # false
-  break-if-!=
-  # if w == "len" return true
-  subresult <- word-equal? w, "len"
-  compare subresult, 0  # false
-  break-if-!=
-  # if w == "open" return true
-  subresult <- word-equal? w, "open"
-  compare subresult, 0  # false
-  break-if-!=
-  # if w == "read" return true
-  subresult <- word-equal? w, "read"
-  compare subresult, 0  # false
-  break-if-!=
-  # if w == "slurp" return true
-  subresult <- word-equal? w, "slurp"
-  compare subresult, 0  # false
-  break-if-!=
-  # if w == "lines" return true
-  subresult <- word-equal? w, "lines"
-  compare subresult, 0  # false
-  break-if-!=
-  # if w == "dup" return true
-  subresult <- word-equal? w, "dup"
-  compare subresult, 0  # false
-  break-if-!=
-  # if w == "swap" return true
-  subresult <- word-equal? w, "swap"
-  compare subresult, 0  # false
-  break-if-!=
-  # return w in functions
-  var out-h: (handle function)
-  var out/eax: (addr handle function) <- address out-h
-  callee functions-ah, w, out
-  var found?/eax: (addr function) <- lookup *out
-  result <- copy found?
+fn bound-function? w: (addr word), functions-ah: (addr handle function) -> _/ebx: boolean {
+  var result/ebx: boolean <- copy 1  # true
+  {
+    # if w == "+" return true
+    var subresult/eax: boolean <- word-equal? w, "+"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "-" return true
+    subresult <- word-equal? w, "-"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "*" return true
+    subresult <- word-equal? w, "*"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "len" return true
+    subresult <- word-equal? w, "len"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "open" return true
+    subresult <- word-equal? w, "open"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "read" return true
+    subresult <- word-equal? w, "read"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "slurp" return true
+    subresult <- word-equal? w, "slurp"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "lines" return true
+    subresult <- word-equal? w, "lines"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "dup" return true
+    subresult <- word-equal? w, "dup"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "swap" return true
+    subresult <- word-equal? w, "swap"
+    compare subresult, 0  # false
+    break-if-!=
+    # return w in functions
+    var out-h: (handle function)
+    var out/eax: (addr handle function) <- address out-h
+    callee functions-ah, w, out
+    var found?/eax: (addr function) <- lookup *out
+    result <- copy found?
+  }
+  return result
 }
 
-fn arg-exists? _f-ah: (addr handle function), arg: (addr word) -> result/ebx: boolean {
+fn arg-exists? _f-ah: (addr handle function), arg: (addr word) -> _/ebx: boolean {
   var f-ah/eax: (addr handle function) <- copy *_f-ah
   var f/eax: (addr function) <- lookup *f-ah
   var args-ah/eax: (addr handle word) <- get f, args
-  result <- word-exists? args-ah, arg
+  var result/ebx: boolean <- word-exists? args-ah, arg
+  return result
 }
 
 # construct a call to `f` with copies of exactly its args
@@ -1177,32 +1181,33 @@ fn render-line-without-stack screen: (addr screen), _line: (addr line), curr-row
   }
 }
 
-fn call-depth-at-cursor _sandbox: (addr sandbox) -> result/eax: int {
+fn call-depth-at-cursor _sandbox: (addr sandbox) -> _/eax: int {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var cursor-call-path/edi: (addr handle call-path-element) <- get sandbox, cursor-call-path
-  result <- call-path-element-length cursor-call-path
-  result <- add 2  # input-row-1
+  var result/eax: int <- call-path-element-length cursor-call-path
+  result <- add 2  # input-row - 1
+  return result
 }
 
-fn call-path-element-length _x: (addr handle call-path-element) -> result/eax: int {
+fn call-path-element-length _x: (addr handle call-path-element) -> _/eax: int {
   var curr-ah/ecx: (addr handle call-path-element) <- copy _x
-  var out/edi: int <- copy 0
+  var result/edi: int <- copy 0
   {
     var curr/eax: (addr call-path-element) <- lookup *curr-ah
     compare curr, 0
     break-if-=
     curr-ah <- get curr, next
-    out <- increment
+    result <- increment
     loop
   }
-  result <- copy out
+  return result
 }
 
 # Render the line of words in line, along with the state of the stack under each word.
 # Also render any expanded function calls using recursive calls.
 #
 # Along the way, compute the column the cursor should be positioned at (cursor-col-addr).
-fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-row-addr: (addr int), cursor-col-addr: (addr int) -> right-col/ecx: int {
+fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-row-addr: (addr int), cursor-col-addr: (addr int) -> _/ecx: int {
 #?   print-string 0, "--\n"
   # curr-word
   var line/esi: (addr line) <- copy _line
@@ -1331,7 +1336,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     increment-final-element curr-path
     loop
   }
-  right-col <- copy curr-col
+  return curr-col
 }
 
 fn callee functions: (addr handle function), word: (addr word), out: (addr handle function) {
@@ -1346,7 +1351,7 @@ fn callee functions: (addr handle function), word: (addr word), out: (addr handl
 #   - starting somewhere below at left-col: the stack result from interpreting first-world to final-word (inclusive)
 #
 # Return the farthest column written.
-fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), line: (addr line), final-word: (addr word), top-row: int, left-col: int -> right-col/ecx: int {
+fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), line: (addr line), final-word: (addr word), top-row: int, left-col: int -> _/ecx: int {
 #?   print-string 0, "render-column\n"
   var max-width/esi: int <- copy 0
   {
@@ -1396,13 +1401,14 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
   }
 
   # post-process right-col
-  right-col <- copy left-col
+  var right-col/ecx: int <- copy left-col
   right-col <- add max-width
   right-col <- add 1  # margin-right
 #?   print-int32-decimal 0, left-col
 #?   print-string 0, " => "
 #?   print-int32-decimal 0, right-col
 #?   print-string 0, "\n"
+  return right-col
 }
 
 fn render-value screen: (addr screen), _val: (addr value), max-width: int {
@@ -1522,8 +1528,9 @@ fn render-array screen: (addr screen), _a: (addr array value) {
   print-grapheme screen, 0x5d  # ']'
 }
 
-fn hash-color val: int -> result/eax: int {
-  result <- try-modulo val, 7  # assumes that 7 is always the background color
+fn hash-color val: int -> _/eax: int {
+  var result/eax: int <- try-modulo val, 7  # assumes that 7 is always the background color
+  return result
 }
 
 fn clear-canvas _env: (addr environment) {
@@ -1604,7 +1611,7 @@ fn clear-canvas _env: (addr environment) {
 }
 
 # only single-line functions supported for now
-fn render-function screen: (addr screen), row: int, col: int, _f: (addr function) -> out-row/ebx: int {
+fn render-function screen: (addr screen), row: int, col: int, _f: (addr function) -> _/ebx: int {
   var f/esi: (addr function) <- copy _f
   var args/ecx: (addr handle word) <- get f, args
   move-cursor screen, row, col
@@ -1622,48 +1629,41 @@ fn render-function screen: (addr screen), row: int, col: int, _f: (addr function
   var body/eax: (addr line) <- lookup *body-ah
   var body-words-ah/eax: (addr handle word) <- get body, data
   print-words screen, body-words-ah
-  out-row <- copy row
+  return row
 }
 
-fn real-grapheme? g: grapheme -> result/eax: boolean {
-$real-grapheme?:body: {
+fn real-grapheme? g: grapheme -> _/eax: boolean {
   # if g == newline return true
   compare g, 0xa
   {
     break-if-!=
-    result <- copy 1  # true
-    break $real-grapheme?:body
+    return 1  # true
   }
   # if g == tab return true
   compare g, 9
   {
     break-if-!=
-    result <- copy 1  # true
-    break $real-grapheme?:body
+    return 1  # true
   }
   # if g < 32 return false
   compare g, 0x20
   {
     break-if->=
-    result <- copy 0  # false
-    break $real-grapheme?:body
+    return 0  # false
   }
   # if g <= 255 return true
   compare g, 0xff
   {
     break-if->
-    result <- copy 1  # true
-    break $real-grapheme?:body
+    return 1  # true
   }
   # if (g&0xff == Esc) it's an escape sequence
   and-with g, 0xff
   compare g, 0x1b  # Esc
   {
     break-if-!=
-    result <- copy 0  # false
-    break $real-grapheme?:body
+    return 0  # false
   }
   # otherwise return true
-  result <- copy 1  # true
-}
+  return 1  # true
 }

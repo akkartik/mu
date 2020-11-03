@@ -166,107 +166,102 @@ fn print-screen-cell screen: (addr screen), _cell: (addr screen-cell) {
 #?   print-string-to-real-screen "\n"
 }
 
-fn surface-screen-cell-index _self: (addr surface), row: int, col: int -> result/eax: int {
+fn surface-screen-cell-index _self: (addr surface), row: int, col: int -> _/eax: int {
   var self/esi: (addr surface) <- copy _self
 #?   print-int32-hex-to-real-screen row
 #?   print-string-to-real-screen ", "
 #?   print-int32-hex-to-real-screen col
 #?   print-string-to-real-screen "\n"
-  result <- copy -1
-  compare row, 1
-  break-if-<
-  compare col, 1
-  break-if-<
-  var nrows-addr/ecx: (addr int) <- get self, nrows
-  var nrows/ecx: int <- copy *nrows-addr
-  compare row, nrows
-  break-if->
-  var ncols-addr/ecx: (addr int) <- get self, ncols
-  var ncols/ecx: int <- copy *ncols-addr
-  compare col, ncols
-  break-if->
-#?   print-string-to-real-screen "!\n"
-  result <- copy row
-  result <- subtract 1
-  result <- multiply ncols
-  result <- add col
-  result <- subtract 1
+  var result/eax: int <- copy -1
+  {
+    compare row, 1
+    break-if-<
+    compare col, 1
+    break-if-<
+    var nrows-addr/ecx: (addr int) <- get self, nrows
+    var nrows/ecx: int <- copy *nrows-addr
+    compare row, nrows
+    break-if->
+    var ncols-addr/ecx: (addr int) <- get self, ncols
+    var ncols/ecx: int <- copy *ncols-addr
+    compare col, ncols
+    break-if->
+  #?   print-string-to-real-screen "!\n"
+    result <- copy row
+    result <- subtract 1
+    result <- multiply ncols
+    result <- add col
+    result <- subtract 1
+  }
+  return result
 }
 
-fn screen-row-to-surface _self: (addr surface), screen-row: int -> result/ecx: int {
+fn screen-row-to-surface _self: (addr surface), screen-row: int -> _/ecx: int {
   var self/esi: (addr surface) <- copy _self
-  result <- copy screen-row
+  var result/ecx: int <- copy screen-row
   var tmp/eax: (addr int) <- get self, pin-row
   result <- add *tmp
   tmp <- get self, pin-screen-row
   result <- subtract *tmp
+  return result
 }
 
-fn max a: int, b: int -> result/eax: int {
-$max:body: {
-  var a2/eax: int <- copy a
-  compare a2, b
+fn max _a: int, b: int -> _/eax: int {
+  var a/eax: int <- copy _a
+  compare a, b
   {
     break-if->
-    result <- copy b
-    break $max:body
+    return b
   }
-  {
-    break-if-<=
-    result <- copy a2
-  }
-}
+  return a
 }
 
-fn min a: int, b: int -> result/eax: int {
-$min:body: {
-  var a2/eax: int <- copy a
-  compare a2, b
+fn min _a: int, b: int -> _/eax: int {
+  var a/eax: int <- copy _a
+  compare a, b
   {
     break-if->
-    result <- copy a2
-    break $min:body
+    return a
   }
-  {
-    break-if-<=
-    result <- copy b
-  }
-}
+  return b
 }
 
-fn screen-col-to-surface _self: (addr surface), screen-col: int -> result/edx: int {
+fn screen-col-to-surface _self: (addr surface), screen-col: int -> _/edx: int {
   var self/esi: (addr surface) <- copy _self
-  result <- copy screen-col
+  var result/edx: int <- copy screen-col
   var tmp/eax: (addr int) <- get self, pin-col
   result <- add *tmp
   tmp <- get self, pin-screen-col
   result <- subtract *tmp
+  return result
 }
 
-fn surface-row-to-screen _self: (addr surface), row: int -> result/ecx: int {
+fn surface-row-to-screen _self: (addr surface), row: int -> _/ecx: int {
   var self/esi: (addr surface) <- copy _self
-  result <- copy row
+  var result/ecx: int <- copy row
   var tmp/eax: (addr int) <- get self, pin-screen-row
   result <- add *tmp
   tmp <- get self, pin-row
   result <- subtract *tmp
+  return result
 }
 
-fn surface-col-to-screen _self: (addr surface), col: int -> result/edx: int {
+fn surface-col-to-screen _self: (addr surface), col: int -> _/edx: int {
   var self/esi: (addr surface) <- copy _self
-  result <- copy col
+  var result/edx: int <- copy col
   var tmp/eax: (addr int) <- get self, pin-screen-col
   result <- add *tmp
   tmp <- get self, pin-col
   result <- subtract *tmp
+  return result
 }
 
 # assumes last line doesn't end in '\n'
-fn num-lines in: (addr array byte) -> result/ecx: int {
+fn num-lines in: (addr array byte) -> _/ecx: int {
   var s: (stream byte 0x100)
   var s-addr/esi: (addr stream byte) <- address s
   write s-addr, in
-  result <- copy 1
+  var result/ecx: int <- copy 1
   {
     var done?/eax: boolean <- stream-empty? s-addr
     compare done?, 0  # false
@@ -277,13 +272,14 @@ fn num-lines in: (addr array byte) -> result/ecx: int {
     result <- increment
     loop
   }
+  return result
 }
 
-fn first-line-length in: (addr array byte) -> result/edx: int {
+fn first-line-length in: (addr array byte) -> _/edx: int {
   var s: (stream byte 0x100)
   var s-addr/esi: (addr stream byte) <- address s
   write s-addr, in
-  result <- copy 0
+  var result/edx: int <- copy 0
   {
     var done?/eax: boolean <- stream-empty? s-addr
     compare done?, 0  # false
@@ -294,6 +290,7 @@ fn first-line-length in: (addr array byte) -> result/edx: int {
     result <- increment
     loop
   }
+  return result
 }
 
 fn fill-in _out: (addr array screen-cell), in: (addr array byte) {

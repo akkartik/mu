@@ -162,10 +162,10 @@ $print-float:body: {
 }
 }
 
-#? fn main -> r/ebx: int {
+#? fn main -> _/ebx: int {
 #?   run-tests
 #? #?   test-print-float-negative-zero
 #? #?   print-int32-hex 0, 0
 #? #?   test-print-float-normal
-#?   r <- copy 0
+#?   return 0
 #? }

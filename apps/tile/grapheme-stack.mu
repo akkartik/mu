@@ -17,18 +17,15 @@ fn clear-grapheme-stack _self: (addr grapheme-stack) {
   copy-to *top, 0
 }
 
-fn grapheme-stack-empty? _self: (addr grapheme-stack) -> result/eax: boolean {
-$grapheme-stack-empty?:body: {
+fn grapheme-stack-empty? _self: (addr grapheme-stack) -> _/eax: boolean {
   var self/esi: (addr grapheme-stack) <- copy _self
   var top/eax: (addr int) <- get self, top
   compare *top, 0
   {
     break-if-!=
-    result <- copy 1  # true
-    break $grapheme-stack-empty?:body
+    return 1  # true
   }
-  result <- copy 0  # false
-}
+  return 0  # false
 }
 
 fn push-grapheme-stack _self: (addr grapheme-stack), _val: grapheme {
@@ -43,23 +40,20 @@ fn push-grapheme-stack _self: (addr grapheme-stack), _val: grapheme {
   add-to *top-addr, 1
 }
 
-fn pop-grapheme-stack _self: (addr grapheme-stack) -> val/eax: grapheme {
-$pop-grapheme-stack:body: {
+fn pop-grapheme-stack _self: (addr grapheme-stack) -> _/eax: grapheme {
   var self/esi: (addr grapheme-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
   {
     compare *top-addr, 0
     break-if->
-    val <- copy -1
-    break $pop-grapheme-stack:body
+    return -1
   }
   subtract-from *top-addr, 1
   var data-ah/edx: (addr handle array grapheme) <- get self, data
   var data/eax: (addr array grapheme) <- lookup *data-ah
   var top/edx: int <- copy *top-addr
   var result-addr/eax: (addr grapheme) <- index data, top
-  val <- copy *result-addr
-}
+  return *result-addr
 }
 
 fn copy-grapheme-stack _src: (addr grapheme-stack), dest: (addr grapheme-stack) {
@@ -120,8 +114,7 @@ fn render-stack-from-top _self: (addr grapheme-stack), screen: (addr screen) {
 
 # compare from bottom
 # beware: modifies 'stream', which must be disposed of after a false result
-fn prefix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> result/eax: boolean {
-$prefix-match?:body: {
+fn prefix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> _/eax: boolean {
   var self/esi: (addr grapheme-stack) <- copy _self
   var data-ah/edi: (addr handle array grapheme) <- get self, data
   var _data/eax: (addr array grapheme) <- lookup *data-ah
@@ -138,21 +131,18 @@ $prefix-match?:body: {
       {
         compare expected, *curr-a
         break-if-=
-        result <- copy 0  # false
-        break $prefix-match?:body
+        return 0  # false
       }
     }
     i <- increment
     loop
   }
-  result <- copy 1   # true
-}
+  return 1   # true
 }
 
 # compare from bottom
 # beware: modifies 'stream', which must be disposed of after a false result
-fn suffix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> result/eax: boolean {
-$suffix-match?:body: {
+fn suffix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> _/eax: boolean {
   var self/esi: (addr grapheme-stack) <- copy _self
   var data-ah/edi: (addr handle array grapheme) <- get self, data
   var _data/eax: (addr array grapheme) <- lookup *data-ah
@@ -170,24 +160,23 @@ $suffix-match?:body: {
       {
         compare expected, *curr-a
         break-if-=
-        result <- copy 0  # false
-        break $suffix-match?:body
+        return 0  # false
       }
     }
     i <- decrement
     loop
   }
-  result <- copy 1   # true
-}
+  return 1   # true
 }
 
-fn grapheme-stack-is-decimal-integer? _self: (addr grapheme-stack) -> result/eax: boolean {
+fn grapheme-stack-is-decimal-integer? _self: (addr grapheme-stack) -> _/eax: boolean {
   var self/esi: (addr grapheme-stack) <- copy _self
   var data-ah/eax: (addr handle array grapheme) <- get self, data
   var _data/eax: (addr array grapheme) <- lookup *data-ah
   var data/edx: (addr array grapheme) <- copy _data
   var top-addr/ecx: (addr int) <- get self, top
   var i/ebx: int <- copy 0
+  var result/eax: boolean <- copy 1  # true
   $grapheme-stack-is-integer?:loop: {
     compare i, *top-addr
     break-if->=
@@ -198,4 +187,5 @@ fn grapheme-stack-is-decimal-integer? _self: (addr grapheme-stack) -> result/eax
     i <- increment
     loop
   }
+  return result
 }

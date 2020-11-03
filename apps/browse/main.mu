@@ -1,33 +1,29 @@
-fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
+fn main args-on-stack: (addr array addr array byte) -> _/ebx: int {
   var args/eax: (addr array addr array byte) <- copy args-on-stack
   var len/ecx: int <- length args
-  $main-body: {
-    # if (len(args) <= 1) print usage and exit
-    compare len, 1
-    {
-      break-if->
-      print-string-to-real-screen "usage: browse [filename]\n"
-      print-string-to-real-screen "    or browse test\n"
-      exit-status <- copy 1
-      break $main-body
-    }
-    # if (args[1] == "test") run-tests()
-    var tmp/ecx: (addr addr array byte) <- index args, 1
-    var tmp2/eax: boolean <- string-equal? *tmp, "test"
-    compare tmp2, 0
-    {
-      break-if-=
-      run-tests
-      exit-status <- copy 0  # TODO: get at Num-test-failures somehow
-      break $main-body
-    }
-    # otherwise interactive mode
-    exit-status <- interactive args-on-stack
+  # if (len(args) <= 1) print usage and exit
+  compare len, 1
+  {
+    break-if->
+    print-string-to-real-screen "usage: browse [filename]\n"
+    print-string-to-real-screen "    or browse test\n"
+    return 1
   }
+  # if (args[1] == "test") run-tests()
+  var tmp/ecx: (addr addr array byte) <- index args, 1
+  var tmp2/eax: boolean <- string-equal? *tmp, "test"
+  compare tmp2, 0
+  {
+    break-if-=
+    run-tests
+    return 0  # TODO: get at Num-test-failures somehow
+  }
+  # otherwise interactive mode
+  var result/ebx: int <- interactive args-on-stack
+  return result
 }
 
-fn interactive _args: (addr array addr array byte) -> exit-status/ebx: int {
-$interactive:body: {
+fn interactive _args: (addr array addr array byte) -> _/ebx: int {
   # initialize fs from args[1]
   var args/eax: (addr array addr array byte) <- copy _args
   var arg/eax: (addr addr array byte) <- index args, 1
@@ -42,8 +38,7 @@ $interactive:body: {
     compare fs, 0
     break-if-!=
     print-string-to-real-screen "file not found\n"
-    exit-status <- copy 1
-    break $interactive:body
+    return 1
   }
   #
   enable-screen-grid-mode
@@ -62,8 +57,7 @@ $interactive:body: {
   }
   enable-keyboard-type-mode
   enable-screen-type-mode
-  exit-status <- copy 0
-}
+  return 0
 }
 
 fn render screen: (addr paginated-screen), fs: (addr buffered-file) {

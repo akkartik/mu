@@ -122,8 +122,7 @@ fn start-drawing _self: (addr paginated-screen) {
   reposition-cursor self
 }
 
-fn done-drawing? _self: (addr paginated-screen) -> result/eax: boolean {
-$done-drawing?:body: {
+fn done-drawing? _self: (addr paginated-screen) -> _/eax: boolean {
   # if (self->leftcol == left-margin + 1) return false
   var self/esi: (addr paginated-screen) <- copy _self
   var tmp/eax: (addr int) <- get self, left-margin
@@ -133,8 +132,7 @@ $done-drawing?:body: {
   $done-drawing:first-page?: {
     compare first-col, *tmp
     break-if-!=
-    result <- copy 0
-    break $done-drawing?:body
+    return 0  # false
   }
   # return self->rightcol > self->ncols + 1
   tmp <- get self, ncols
@@ -149,14 +147,9 @@ $done-drawing?:body: {
   compare *tmp, max
   {
     break-if->
-    result <- copy 0  # false
-    break $done-drawing?:body
+    return 0  # false
   }
-  {
-    break-if-<=
-    result <- copy 1  # true
-  }
-}
+  return 1  # true
 }
 
 fn add-grapheme _self: (addr paginated-screen), c: grapheme {

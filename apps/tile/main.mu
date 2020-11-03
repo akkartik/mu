@@ -1,4 +1,4 @@
-fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
+fn main args-on-stack: (addr array addr array byte) -> _/ebx: int {
   var args/eax: (addr array addr array byte) <- copy args-on-stack
   var len/ecx: int <- length args
   $main-body: {
@@ -12,8 +12,7 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
       {
         break-if-=
         run-tests
-        exit-status <- copy 0  # TODO: get at Num-test-failures somehow
-        break $main-body
+        return 0  # TODO: get at Num-test-failures somehow
       }
       # if single arg is 'screen', run in full-screen mode
       tmp2 <- string-equal? *tmp, "screen"
@@ -21,8 +20,7 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
       {
         break-if-=
         interactive
-        exit-status <- copy 0
-        break $main-body
+        return 0
       }
       # if single arg is 'type', run in typewriter mode
       tmp2 <- string-equal? *tmp, "type"
@@ -30,8 +28,7 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
       {
         break-if-=
         repl
-        exit-status <- copy 0
-        break $main-body
+        return 0
       }
       # if single arg is 'test' ...
       tmp2 <- string-equal? *tmp, "test2"
@@ -39,8 +36,7 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
       {
         break-if-=
         test
-        exit-status <- copy 0
-        break $main-body
+        return 0
       }
     }
     # otherwise error message
@@ -48,7 +44,7 @@ fn main args-on-stack: (addr array addr array byte) -> exit-status/ebx: int {
     print-string-to-real-screen "  to run tests: tile test\n"
     print-string-to-real-screen "  full-screen mode: tile screen\n"
     print-string-to-real-screen "  regular REPL: tile type\n"
-    exit-status <- copy 1
+    return 1
   }
 }
 
@@ -72,16 +68,17 @@ fn interactive {
 }
 
 fn test {
-  var env-storage: environment
-  var env/esi: (addr environment) <- address env-storage
-  initialize-environment-with-fake-screen env, 5, 0xa
-  var g/eax: grapheme <- copy 0x22  # '"'
-  process env, g
-  g <- copy 0x61  # 'a'
-  process env, g
-  g <- copy 0x22  # '"'
-  process env, g
-  render env
+  test-surface-pin-at-origin
+#?   var env-storage: environment
+#?   var env/esi: (addr environment) <- address env-storage
+#?   initialize-environment-with-fake-screen env, 5, 0xa
+#?   var g/eax: grapheme <- copy 0x22  # '"'
+#?   process env, g
+#?   g <- copy 0x61  # 'a'
+#?   process env, g
+#?   g <- copy 0x22  # '"'
+#?   process env, g
+#?   render env
 }
 
 fn repl {

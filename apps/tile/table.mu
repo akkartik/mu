@@ -15,10 +15,11 @@ fn bind-in-table _self: (addr table), key: (addr handle array byte), val: (addr 
 }
 
 # manual test: full array of binds
-fn next-empty-slot _data: (addr array bind), key: (addr handle array byte) -> result/eax: (offset bind) {
+fn next-empty-slot _data: (addr array bind), key: (addr handle array byte) -> _/eax: (offset bind) {
   var data/esi: (addr array bind) <- copy _data
   var len/ecx: int <- length data
   var i/edx: int <- copy 0
+  var result/eax: (offset bind) <- copy 0
   $next-empty-slot:loop: {
     result <- compute-offset data, i
     compare i, len
@@ -34,6 +35,7 @@ fn next-empty-slot _data: (addr array bind), key: (addr handle array byte) -> re
     i <- increment
     loop
   }
+  return result
 }
 
 fn make-int-binding _self: (addr bind), key: (addr handle array byte), _val: int {

@@ -96,18 +96,20 @@ fn copy-word-contents-before-cursor _src-ah: (addr handle word), _dest-ah: (addr
   }
 }
 
-fn word-equal? _self: (addr word), s: (addr array byte) -> result/eax: boolean {
+fn word-equal? _self: (addr word), s: (addr array byte) -> _/eax: boolean {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  result <- gap-buffer-equal? data, s
+  var result/eax: boolean <- gap-buffer-equal? data, s
+  return result
 }
 
-fn word-length _self: (addr word) -> result/eax: int {
+fn word-length _self: (addr word) -> _/eax: int {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  result <- gap-buffer-length data
+  var result/eax: int <- gap-buffer-length data
+  return result
 }
 
 fn first-word _in: (addr handle word), out: (addr handle word) {
@@ -143,18 +145,20 @@ fn final-word _in: (addr handle word), out: (addr handle word) {
   copy-object curr-ah, out
 }
 
-fn first-grapheme _self: (addr word) -> result/eax: grapheme {
+fn first-grapheme _self: (addr word) -> _/eax: grapheme {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  result <- first-grapheme-in-gap-buffer data
+  var result/eax: grapheme <- first-grapheme-in-gap-buffer data
+  return result
 }
 
-fn grapheme-before-cursor _self: (addr word) -> result/eax: grapheme {
+fn grapheme-before-cursor _self: (addr word) -> _/eax: grapheme {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  result <- grapheme-before-cursor-in-gap-buffer data
+  var result/eax: grapheme <- grapheme-before-cursor-in-gap-buffer data
+  return result
 }
 
 fn add-grapheme-to-word _self: (addr word), c: grapheme {
@@ -164,18 +168,20 @@ fn add-grapheme-to-word _self: (addr word), c: grapheme {
   add-grapheme-at-gap data, c
 }
 
-fn cursor-at-start? _self: (addr word) -> result/eax: boolean {
+fn cursor-at-start? _self: (addr word) -> _/eax: boolean {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  result <- gap-at-start? data
+  var result/eax: boolean <- gap-at-start? data
+  return result
 }
 
 fn cursor-at-end? _self: (addr word) -> result/eax: boolean {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  result <- gap-at-end? data
+  var result/eax: boolean <- gap-at-end? data
+  return result
 }
 
 fn cursor-left _self: (addr word) {
@@ -206,11 +212,12 @@ fn cursor-to-end _self: (addr word) {
   gap-to-end data
 }
 
-fn cursor-index _self: (addr word) -> result/eax: int {
+fn cursor-index _self: (addr word) -> _/eax: int {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  result <- gap-index data
+  var result/eax: int <- gap-index data
+  return result
 }
 
 fn delete-before-cursor _self: (addr word) {
@@ -220,29 +227,28 @@ fn delete-before-cursor _self: (addr word) {
   delete-before-gap data
 }
 
-fn pop-after-cursor _self: (addr word) -> result/eax: grapheme {
+fn pop-after-cursor _self: (addr word) -> _/eax: grapheme {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  result <- pop-after-gap data
+  var result/eax: grapheme <- pop-after-gap data
+  return result
 }
 
 fn delete-next _self: (addr word) {
-$delete-next:body: {
   var self/esi: (addr word) <- copy _self
   var next-ah/edi: (addr handle word) <- get self, next
   var next/eax: (addr word) <- lookup *next-ah
   compare next, 0
-  break-if-= $delete-next:body
+  break-if-=
   var next-next-ah/ecx: (addr handle word) <- get next, next
   var self-ah/esi: (addr handle word) <- get next, prev
   copy-object next-next-ah, next-ah
   var new-next/eax: (addr word) <- lookup *next-next-ah
   compare new-next, 0
-  break-if-= $delete-next:body
+  break-if-=
   var dest/eax: (addr handle word) <- get new-next, prev
   copy-object self-ah, dest
-}
 }
 
 fn print-word screen: (addr screen), _self: (addr word) {
@@ -312,7 +318,6 @@ fn copy-words-in-reverse _src-ah: (addr handle word), _dest-ah: (addr handle wor
 }
 
 fn copy-word-at-end src: (addr word), _dest-ah: (addr handle word) {
-$copy-word-at-end:body: {
   var dest-ah/edi: (addr handle word) <- copy _dest-ah
   # if dest is null, copy and return
   var dest-a/eax: (addr word) <- lookup *dest-ah
@@ -320,7 +325,7 @@ $copy-word-at-end:body: {
   {
     break-if-!=
     copy-word src, dest-ah
-    break $copy-word-at-end:body
+    return
   }
   # copy current word
   var new: (handle word)
@@ -339,10 +344,8 @@ $copy-word-at-end:body: {
   }
   chain-words curr-ah, new-ah
 }
-}
 
 fn append-word-at-end-with _dest-ah: (addr handle word), s: (addr array byte) {
-$append-word-at-end-with:body: {
   var dest-ah/edi: (addr handle word) <- copy _dest-ah
   # if dest is null, copy and return
   var dest-a/eax: (addr word) <- lookup *dest-ah
@@ -350,7 +353,7 @@ $append-word-at-end-with:body: {
   {
     break-if-!=
     allocate-word-with dest-ah, s
-    break $append-word-at-end-with:body
+    return
   }
   # otherwise append at end
   var curr-ah/edi: (addr handle word) <- copy dest-ah
@@ -364,7 +367,6 @@ $append-word-at-end-with:body: {
     loop
   }
   append-word-with *curr-ah, s
-}
 }
 
 fn copy-word _src-a: (addr word), _dest-ah: (addr handle word) {
@@ -511,37 +513,43 @@ fn word-to-string _self: (addr word), out: (addr handle array byte) {
   gap-buffer-to-string data, out
 }
 
-fn word-is-decimal-integer? _self: (addr word) -> result/eax: boolean {
+fn word-is-decimal-integer? _self: (addr word) -> _/eax: boolean {
   var self/eax: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  result <- gap-buffer-is-decimal-integer? data
+  var result/eax: boolean <- gap-buffer-is-decimal-integer? data
+  return result
 }
 
 # ABSOLUTELY GHASTLY
-fn word-exists? _haystack-ah: (addr handle word), _needle: (addr word) -> result/ebx: boolean {
+fn word-exists? _haystack-ah: (addr handle word), _needle: (addr word) -> _/ebx: boolean {
   var needle-name-storage: (handle addr byte)
   var needle-name-ah/eax: (addr handle array byte) <- address needle-name-storage
   word-to-string _needle, needle-name-ah  # profligate leak
   var _needle-name/eax: (addr array byte) <- lookup *needle-name-ah
   var needle-name/edi: (addr array byte) <- copy _needle-name
   # base case
-  result <- copy 0   # false
   var haystack-ah/esi: (addr handle word) <- copy _haystack-ah
   var curr/eax: (addr word) <- lookup *haystack-ah
   compare curr, 0
-  break-if-=
+  {
+    break-if-!=
+    return 0  # false
+  }
   # check curr
   var curr-name-storage: (handle addr byte)
   var curr-name-ah/ecx: (addr handle array byte) <- address curr-name-storage
   word-to-string curr, curr-name-ah  # profligate leak
   var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
   var found?/eax: boolean <- string-equal? needle-name, curr-name
-  result <- copy found?
-  compare result, 0
-  break-if-!=
+  compare found?, 0
+  {
+    break-if-=
+    return 1  # true
+  }
   # recurse
   var curr/eax: (addr word) <- lookup *haystack-ah
   var next-haystack-ah/eax: (addr handle word) <- get curr, next
-  result <- word-exists? next-haystack-ah, _needle
+  var result/ebx: boolean <- word-exists? next-haystack-ah, _needle
+  return result
 }

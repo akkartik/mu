@@ -29,41 +29,35 @@ fn push-int-stack _self: (addr int-stack), _val: int {
   add-to *top-addr, 1
 }
 
-fn pop-int-stack _self: (addr int-stack) -> val/eax: int {
-$pop-int-stack:body: {
+fn pop-int-stack _self: (addr int-stack) -> _/eax: int {
   var self/esi: (addr int-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
   {
     compare *top-addr, 0
     break-if->
-    val <- copy 0
-    break $pop-int-stack:body
+    return 0
   }
   subtract-from *top-addr, 1
   var data-ah/edx: (addr handle array int) <- get self, data
   var data/eax: (addr array int) <- lookup *data-ah
   var top/edx: int <- copy *top-addr
   var result-addr/eax: (addr int) <- index data, top
-  val <- copy *result-addr
-}
+  return *result-addr
 }
 
-fn int-stack-empty? _self: (addr int-stack) -> result/eax: boolean {
-$int-stack-empty?:body: {
+fn int-stack-empty? _self: (addr int-stack) -> _/eax: boolean {
   var self/esi: (addr int-stack) <- copy _self
   var top-addr/eax: (addr int) <- get self, top
   compare *top-addr, 0
   {
     break-if-!=
-    result <- copy 1  # true
-    break $int-stack-empty?:body
+    return 1  # true
   }
-  result <- copy 0  # false
-}
+  return 0  # false
 }
 
-fn int-stack-length _self: (addr int-stack) -> result/eax: int {
+fn int-stack-length _self: (addr int-stack) -> _/eax: int {
   var self/esi: (addr int-stack) <- copy _self
   var top-addr/eax: (addr int) <- get self, top
-  result <- copy *top-addr
+  return *top-addr
 }

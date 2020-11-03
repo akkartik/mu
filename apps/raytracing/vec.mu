@@ -102,18 +102,19 @@ fn vec3-unit in: (addr vec3), out: (addr vec3) {
   vec3-scale-down out, len
 }
 
-fn vec3-length v: (addr vec3) -> result/xmm0: float {
-  result <- vec3-length-squared v
+fn vec3-length v: (addr vec3) -> _/xmm0: float {
+  var result/xmm0: float <- vec3-length-squared v
   result <- square-root result
+  return result
 }
 
-fn vec3-length-squared _v: (addr vec3) -> result/xmm0: float {
+fn vec3-length-squared _v: (addr vec3) -> _/xmm0: float {
   var v/esi: (addr vec3) <- copy _v
   # result = v.x * v.x
   var src/eax: (addr float) <- get v, x
   var tmp/xmm1: float <- copy *src
   tmp <- multiply tmp
-  result <- copy tmp
+  var result/xmm0: float <- copy tmp
   # result += v.y * v.y
   src <- get v, y
   tmp <- copy *src
@@ -124,6 +125,7 @@ fn vec3-length-squared _v: (addr vec3) -> result/xmm0: float {
   tmp <- copy *src
   tmp <- multiply tmp
   result <- add tmp
+  return result
 }
 
 fn vec3-dot _v1: (addr vec3), _v2: (addr vec3) -> result/xmm0: float {

@@ -377,27 +377,28 @@ fn function-body functions: (addr handle function), _word: (addr handle word), o
   }
 }
 
-fn body-length functions: (addr handle function), function-name: (addr handle word) -> result/eax: int {
+fn body-length functions: (addr handle function), function-name: (addr handle word) -> _/eax: int {
   var body-storage: (handle line)
   var body-ah/edi: (addr handle line) <- address body-storage
   function-body functions, function-name, body-ah
   var body/eax: (addr line) <- lookup *body-ah
-  result <- line-length body
+  var result/eax: int <- line-length body
+  return result
 }
 
-fn line-length _in: (addr line) -> result/eax: int {
+fn line-length _in: (addr line) -> _/eax: int {
   var in/esi: (addr line) <- copy _in
   var curr-ah/ecx: (addr handle word) <- get in, data
-  var out/edi: int <- copy 0
+  var result/edi: int <- copy 0
   {
     var curr/eax: (addr word) <- lookup *curr-ah
     compare curr, 0
     break-if-=
     curr-ah <- get curr, next
-    out <- increment
+    result <- increment
     loop
   }
-  result <- copy out
+  return result
 }
 
 fn populate-text-with _out: (addr handle array byte), _in: (addr array byte) {
@@ -440,9 +441,8 @@ fn initialize-path-from-line _line: (addr line), _out: (addr handle call-path-el
   copy-object src, dest
 }
 
-fn find-in-call-paths call-paths: (addr handle call-path), needle: (addr handle call-path-element) -> result/eax: boolean {
+fn find-in-call-paths call-paths: (addr handle call-path), needle: (addr handle call-path-element) -> _/eax: boolean {
   var curr-ah/esi: (addr handle call-path) <- copy call-paths
-  var out/edi: boolean <- copy 0  # false
   $find-in-call-path:loop: {
     var curr/eax: (addr call-path) <- lookup *curr-ah
     compare curr, 0
@@ -453,18 +453,16 @@ fn find-in-call-paths call-paths: (addr handle call-path), needle: (addr handle 
       compare match?, 0  # false
       {
         break-if-=
-        out <- copy 1  # true
-        break $find-in-call-path:loop
+        return 1  # true
       }
     }
     curr-ah <- get curr, next
     loop
   }
-  result <- copy out
+  return 0  # false
 }
 
-fn call-path-element-match? _x: (addr handle call-path-element), _y: (addr handle call-path-element) -> result/eax: boolean {
-$call-path-element-match?:body: {
+fn call-path-element-match? _x: (addr handle call-path-element), _y: (addr handle call-path-element) -> _/eax: boolean {
   var x-ah/eax: (addr handle call-path-element) <- copy _x
   var x-a/eax: (addr call-path-element) <- lookup *x-ah
   var x/esi: (addr call-path-element) <- copy x-a
@@ -474,20 +472,17 @@ $call-path-element-match?:body: {
   compare x, y
   {
     break-if-!=
-    result <- copy 1  # true
-    break $call-path-element-match?:body
+    return 1  # true
   }
   compare x, 0
   {
     break-if-!=
-    result <- copy 0  # false
-    break $call-path-element-match?:body
+    return 0  # false
   }
   compare y, 0
   {
     break-if-!=
-    result <- copy 0  # false
-    break $call-path-element-match?:body
+    return 0  # false
   }
   # compare word addresses, not contents
   var x-data-ah/ecx: (addr handle word) <- get x, word
@@ -504,13 +499,12 @@ $call-path-element-match?:body: {
   compare x-data, y-data
   {
     break-if-=
-    result <- copy 0  # false
-    break $call-path-element-match?:body
+    return 0  # false
   }
   var x-next/ecx: (addr handle call-path-element) <- get x, next
   var y-next/eax: (addr handle call-path-element) <- get y, next
-  result <- call-path-element-match? x-next, y-next
-}
+  var result/eax: boolean <- call-path-element-match? x-next, y-next
+  return result
 }
 
 # order is irrelevant
@@ -551,7 +545,6 @@ fn deep-copy-call-path-element _src: (addr handle call-path-element), _dest: (ad
 }
 
 fn delete-in-call-path list: (addr handle call-path), needle: (addr handle call-path-element) {
-$delete-in-call-path:body: {
   var curr-ah/esi: (addr handle call-path) <- copy list
   $delete-in-call-path:loop: {
     var _curr/eax: (addr call-path) <- lookup *curr-ah
@@ -572,7 +565,6 @@ $delete-in-call-path:body: {
     curr-ah <- get curr, next
     loop
   }
-}
 }
 
 fn increment-final-element list: (addr handle call-path-element) {
@@ -658,7 +650,6 @@ fn drop-nested-calls _list: (addr handle call-path-element) {
 }
 
 fn dump-call-path-element screen: (addr screen), _x-ah: (addr handle call-path-element) {
-$dump-call-path-element:body: {
   var x-ah/ecx: (addr handle call-path-element) <- copy _x-ah
   var _x/eax: (addr call-path-element) <- lookup *x-ah
   var x/esi: (addr call-path-element) <- copy _x
@@ -672,17 +663,12 @@ $dump-call-path-element:body: {
     break-if-=
     print-string screen, " "
     dump-call-path-element screen, next-ah
-    break $dump-call-path-element:body
+    return
   }
-  {
-    break-if-!=
-    print-string screen, "\n"
-  }
-}
+  print-string screen, "\n"
 }
 
 fn dump-call-paths screen: (addr screen), _x-ah: (addr handle call-path) {
-$dump-call-paths:body: {
   var x-ah/ecx: (addr handle call-path) <- copy _x-ah
   var x/eax: (addr call-path) <- lookup *x-ah
   compare x, 0
@@ -695,7 +681,5 @@ $dump-call-paths:body: {
   {
     break-if-=
     dump-call-paths screen, next-ah
-    break $dump-call-paths:body
   }
-}
 }

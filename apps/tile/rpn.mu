@@ -560,10 +560,10 @@ fn bind-args _callee: (addr function), _caller-stack: (addr value-stack), table:
 
 # Copy of 'simplify' that just tracks the maximum stack depth needed
 # Doesn't actually need to simulate the stack, since every word has a predictable effect.
-fn max-stack-depth first-word: (addr word), final-word: (addr word) -> result/edi: int {
+fn max-stack-depth first-word: (addr word), final-word: (addr word) -> _/edi: int {
   var curr-word/eax: (addr word) <- copy first-word
   var curr-depth/ecx: int <- copy 0
-  result <- copy 0
+  var result/edi: int <- copy 0
   $max-stack-depth:loop: {
     $max-stack-depth:process-word: {
       # handle operators
@@ -606,4 +606,5 @@ fn max-stack-depth first-word: (addr word), final-word: (addr word) -> result/ed
     #
     loop
   }
+  return result
 }
