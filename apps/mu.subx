@@ -880,6 +880,51 @@ test-convert-function-with-return-register:
     5d/pop-to-ebp
     c3/return
 
+test-return-with-wrong-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo -> _/eax: int {\n")
+    (write _test-input-stream "  var x/eax: boolean <- copy 0\n")
+    (write _test-input-stream "  return x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-return-with-wrong-type: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: return: 'x' has the wrong type"  "F - test-return-with-wrong-type: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-return-with-wrong-type: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-literal-arg:
     # . prologue
     55/push-ebp
@@ -15882,12 +15927,89 @@ check-mu-return-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buff
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    57/push-edi
+    # var type-parameters/edx: (addr table (handle array byte) (addr type-tree) 8)
+    81 5/subop/subtract %esp 0x60/imm32
+    68/push 0x60/imm32/size
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %edx 4/r32/esp
+    # var template/esi: (addr list var) = fn->outputs
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *(eax+0x10) *(eax+0x14))  # Function-outputs Function-outputs => eax
+    89/<- %esi 0/r32/eax
+    # var curr/edi: (addr stmt-var) = stmt->inouts
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *(eax+0xc) *(eax+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %edi 0/r32/eax
+    {
+      # if template is null, break
+      81 7/subop/compare %esi 0/imm32
+      0f 84/jump-if-= break/disp32
+      # if curr is null, abort
+      # TODO
+      # var template-type/ecx: (addr type-tree) = template->value->type
+      (lookup *esi *(esi+4))  # List-value List-value => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      89/<- %ecx 0/r32/eax
+      # var curr-type/eax: (addr type-tree) = curr->value->type
+      (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      # if (curr->is-deref?) curr-type = payload of curr-type
+      81 7/subop/compare *(edi+0x10) 0/imm32/false  # Stmt-var-is-deref
+      {
+        74/jump-if-= break/disp8
+        (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+        # if t->right is null, t = t->left
+        81 7/subop/compare *(eax+0xc) 0/imm32  # Type-tree-right
+        75/jump-if-!= break/disp8
+        (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      }
+      # if (curr-type != template-type) abort
+      (type-match? %ecx %eax %edx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= $check-mu-return-stmt:error1/disp32
+      # template = template->next
+      (lookup *(esi+8) *(esi+0xc))  # List-next List-next => eax
+      89/<- %esi 0/r32/eax
+      # curr = curr->next
+      (lookup *(edi+8) *(edi+0xc))  # Stmt-var-next Stmt-var-next => eax
+      89/<- %edi 0/r32/eax
+      #
+      e9/jump loop/disp32
+    }
+    # TODO: if curr is not null, abort
 $check-mu-return-stmt:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x6c/imm32
     # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$check-mu-return-stmt:error1:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": return: '")
+    (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' has the wrong type\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
 
 check-mu-get-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
@@ -19834,8 +19956,8 @@ reg-in-function-outputs?:  # fn: (addr function), target: (addr array byte) -> r
     # . save registers
     51/push-ecx
     # var curr/ecx: (addr list var) = lookup(fn->outputs)
-    8b/-> *(ebp+8) 1/r32/ecx
-    (lookup *(ecx+0x10) *(ecx+0x14))  # Function-outputs Function-outputs => eax
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *(eax+0x10) *(eax+0x14))  # Function-outputs Function-outputs => eax
     89/<- %ecx 0/r32/eax
     # while curr != null
     {

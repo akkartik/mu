@@ -68,7 +68,7 @@ fn to-grapheme in: code-point -> _/eax: grapheme {
     }
   }
   # emit trailer bytes, 6 bits from 'in', first two bits '10'
-  var result/edi: int <- copy 0
+  var result/edi: grapheme <- copy 0
   {
     compare num-trailers, 0
     break-if-<=
@@ -211,7 +211,7 @@ $read-grapheme:abort: {
     }
   }
   # prepend trailer bytes
-  var result/edi: int <- copy c
+  var result/edi: grapheme <- copy c
   var num-byte-shifts/edx: int <- copy 1
   {
     compare num-trailers, 0
@@ -304,7 +304,7 @@ $read-grapheme-buffered:abort: {
     }
   }
   # prepend trailer bytes
-  var result/edi: int <- copy c
+  var result/edi: grapheme <- copy c
   var num-byte-shifts/edx: int <- copy 1
   {
     compare num-trailers, 0
