@@ -128,7 +128,7 @@ fn vec3-length-squared _v: (addr vec3) -> _/xmm0: float {
   return result
 }
 
-fn vec3-dot _v1: (addr vec3), _v2: (addr vec3) -> result/xmm0: float {
+fn vec3-dot _v1: (addr vec3), _v2: (addr vec3) -> _/xmm0: float {
 }
 
 fn vec3-cross _v1: (addr vec3), _v2: (addr vec3), out: (addr vec3) {

@@ -21,7 +21,7 @@
 # A program is a sequence of function and type definitions.
 #
 # Function example:
-#   fn foo n: int -> result/eax: int {
+#   fn foo n: int -> _/eax: int {
 #     ...
 #   }
 #
@@ -35,7 +35,8 @@
 # Variables not explicitly placed in a register are on the stack.
 #
 # Function inputs are always passed in memory (on the stack), while outputs
-# are always returned in registers.
+# are always returned in registers. Outputs can't be named; they use the
+# dummy value '_'.
 #
 # Blocks mostly consist of statements.
 #
@@ -757,7 +758,7 @@ test-convert-function-with-return-literal:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
     #
-    (write _test-input-stream "fn foo -> x/eax: int {\n")
+    (write _test-input-stream "fn foo -> _/eax: int {\n")
     (write _test-input-stream "  return 0\n")
     (write _test-input-stream "}\n")
     # convert
@@ -799,7 +800,7 @@ test-convert-function-with-return:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
     #
-    (write _test-input-stream "fn foo -> x/eax: int {\n")
+    (write _test-input-stream "fn foo -> _/eax: int {\n")
     (write _test-input-stream "  var y: int\n")
     (write _test-input-stream "  return y\n")
     (write _test-input-stream "}\n")
@@ -844,7 +845,7 @@ test-convert-function-with-return-register:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
     #
-    (write _test-input-stream "fn foo -> x/eax: int {\n")
+    (write _test-input-stream "fn foo -> _/eax: int {\n")
     (write _test-input-stream "  var y/eax: int <- copy 3\n")
     (write _test-input-stream "  return y\n")
     (write _test-input-stream "}\n")
@@ -877,6 +878,50 @@ test-convert-function-with-return-register:
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-return-register/16")
     # . epilogue
     89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-function-with-named-output:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo -> x/eax: int {\n")
+    (write _test-input-stream "  return 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-function-with-named-output: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: function outputs cannot be named; rename 'x' in the header to '_'"  "F - test-function-with-named-output: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-function-with-named-output: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
     5d/pop-to-ebp
     c3/return
 
@@ -1687,7 +1732,7 @@ test-convert-function-call:
     (write _test-input-stream "  var result/ebx: int <- foo\n")
     (write _test-input-stream "  return result\n")
     (write _test-input-stream "}\n")
-    (write _test-input-stream "fn foo -> result/ebx: int {\n")
+    (write _test-input-stream "fn foo -> _/ebx: int {\n")
     (write _test-input-stream "  var result/ebx: int <- copy 3\n")
     (write _test-input-stream "  return result\n")
     (write _test-input-stream "}\n")
@@ -2178,7 +2223,7 @@ test-convert-function-call-with-incorrect-output-type:
     (write _test-input-stream "fn f {\n")
     (write _test-input-stream "  var x/eax: int <- g\n")
     (write _test-input-stream "}\n")
-    (write _test-input-stream "fn g -> a/eax: foo {\n")
+    (write _test-input-stream "fn g -> _/eax: foo {\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
@@ -2223,7 +2268,7 @@ test-convert-function-call-with-too-few-outputs:
     (write _test-input-stream "fn f {\n")
     (write _test-input-stream "  g\n")
     (write _test-input-stream "}\n")
-    (write _test-input-stream "fn g -> a/eax: int {\n")
+    (write _test-input-stream "fn g -> _/eax: int {\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
@@ -2314,7 +2359,7 @@ test-convert-function-call-with-missing-output-register:
     (write _test-input-stream "  var x: int\n")
     (write _test-input-stream "  x <- g\n")
     (write _test-input-stream "}\n")
-    (write _test-input-stream "fn g -> a/eax: int {\n")
+    (write _test-input-stream "fn g -> _/eax: int {\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
@@ -2359,7 +2404,7 @@ test-convert-function-call-with-incorrect-output-register:
     (write _test-input-stream "fn f {\n")
     (write _test-input-stream "  var x/ecx: int <- g\n")
     (write _test-input-stream "}\n")
-    (write _test-input-stream "fn g -> a/eax: int {\n")
+    (write _test-input-stream "fn g -> _/eax: int {\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
@@ -10110,7 +10155,7 @@ test-convert-function-with-return-register-and-local:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
     #
-    (write _test-input-stream "fn foo -> x/eax: int {\n")
+    (write _test-input-stream "fn foo -> _/eax: int {\n")
     (write _test-input-stream "  var y/eax: int <- copy 3\n")
     (write _test-input-stream "  var z/ecx: int <- copy 4\n")
     (write _test-input-stream "  return y\n")
@@ -10160,7 +10205,7 @@ test-convert-function-with-return-register-and-local-2:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
     #
-    (write _test-input-stream "fn foo -> x/eax: int {\n")
+    (write _test-input-stream "fn foo -> _/eax: int {\n")
     (write _test-input-stream "  var y/eax: int <- copy 3\n")
     (write _test-input-stream "  var z/ecx: int <- copy 4\n")
     (write _test-input-stream "  return z\n")
@@ -10210,7 +10255,7 @@ test-convert-function-with-return-float-register-and-local:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
     #
-    (write _test-input-stream "fn foo -> f/xmm1: float {\n")
+    (write _test-input-stream "fn foo -> _/xmm1: float {\n")
     (write _test-input-stream "  var y/eax: int <- copy 3\n")
     (write _test-input-stream "  var g/xmm0: float <- convert y\n")
     (write _test-input-stream "  var h/xmm1: float <- convert y\n")
@@ -10267,7 +10312,7 @@ test-convert-function-with-return-and-local-vars:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
     #
-    (write _test-input-stream "fn foo -> a/eax: int {\n")
+    (write _test-input-stream "fn foo -> _/eax: int {\n")
     (write _test-input-stream "  {\n")
     (write _test-input-stream "    var x: int\n")
     (write _test-input-stream "    {\n")
@@ -10579,7 +10624,7 @@ $parse-mu:error2:
 # ✗ fn foo x: {
 # ✓ fn foo x: int {
 # ✓ fn foo x: int {
-# ✓ fn foo x: int -> y/eax: int {
+# ✓ fn foo x: int -> _/eax: int {
 # TODO:
 #   disallow outputs of type `(... addr ...)`
 #   disallow inputs of type `(... addr ... addr ...)`
@@ -10610,6 +10655,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     #     assert(word-slice not in '}' '->')
     #     var v: (handle var) = parse-var-with-type(word-slice, first-line)
     #     assert(v->register != null)
+    #     assert(v->name == "_")
     #     out->outputs = append(v, out->outputs)
     #   done:
     #
@@ -10719,6 +10765,11 @@ $populate-mu-function-header:check-for-out:
       (lookup *ebx *(ebx+4))  # => eax
       81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
       0f 84/jump-if-= $populate-mu-function-header:error3/disp32
+      # assert(var->name == "_")
+      (lookup *eax *(eax+4))  # Var-name Var-name => eax
+      (string-equal? %eax "_")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= $populate-mu-function-header:error4/disp32
       # out->outputs = append(v, out->outputs)
       8d/copy-address *(edi+0x10) 0/r32/eax  # Function-outputs
       (append-list Heap  *ebx *(ebx+4)  *(edi+0x10) *(edi+0x14)  %eax)  # Function-outputs, Function-outputs
@@ -10786,12 +10837,28 @@ $populate-mu-function-header:error3:
     (stop *(ebp+0x18) 1)
     # never gets here
 
+$populate-mu-function-header:error4:
+    # error("fn " fn ": function outputs cannot be named; rename '" var "' in the header to '_'")
+    (write-buffered *(ebp+0x14) "fn ")
+    50/push-eax
+    (lookup *edi *(edi+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x14) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0x14) ": function outputs cannot be named; rename '")
+    (lookup *ebx *(ebx+4))  # => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x14) %eax)
+    (write-buffered *(ebp+0x14) "' in the header to '_'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
+    # never gets here
+
 # scenarios considered:
 # ✓ fn foo
 # ✗ fn foo {
 # ✓ fn foo x
 # ✓ fn foo x: int
-# ✓ fn foo x: int -> y/eax: int
+# ✓ fn foo x: int -> _/eax: int
 # TODO:
 #   disallow outputs of type `(... addr ...)`
 #   disallow inputs of type `(... addr ... addr ...)`
@@ -11104,7 +11171,7 @@ test-function-header-with-multiple-args-and-outputs:
     8b/-> *Primitive-type-ids 0/r32/eax
     89/<- *Type-id 0/r32/eax  # stream-write
     (clear-stream _test-input-stream)
-    (write _test-input-stream "foo a: int, b: int, c: int -> x/ecx: int y/edx: int {\n")
+    (write _test-input-stream "foo a: int, b: int, c: int -> _/ecx: int _/edx: int {\n")
     # result/ecx: function
     2b/subtract *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
@@ -11173,7 +11240,7 @@ $test-function-header-with-multiple-args-and-outputs:out0:
     89/<- %ebx 0/r32/eax
     # check v->name
     (lookup *ebx *(ebx+4))  # Var-name Var-name => eax
-    (check-strings-equal %eax "x" "F - test-function-header-with-multiple-args-and-outputs/output:0")
+    (check-strings-equal %eax "_" "F - test-function-header-with-multiple-args-and-outputs/output:0")
     # check v->register
     (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register Var-register => eax
     (check-strings-equal %eax "ecx" "F - test-function-header-with-multiple-args-and-outputs/output:0/register")
@@ -11191,7 +11258,7 @@ $test-function-header-with-multiple-args-and-outputs:out1:
     89/<- %ebx 0/r32/eax
     # check v->name
     (lookup *ebx *(ebx+4))  # Var-name Var-name => eax
-    (check-strings-equal %eax "y" "F - test-function-header-with-multiple-args-and-outputs/output:1")
+    (check-strings-equal %eax "_" "F - test-function-header-with-multiple-args-and-outputs/output:1")
     # check v->register
     (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register Var-register => eax
     (check-strings-equal %eax "edx" "F - test-function-header-with-multiple-args-and-outputs/output:1/register")

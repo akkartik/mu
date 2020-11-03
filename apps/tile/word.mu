@@ -176,7 +176,7 @@ fn cursor-at-start? _self: (addr word) -> _/eax: boolean {
   return result
 }
 
-fn cursor-at-end? _self: (addr word) -> result/eax: boolean {
+fn cursor-at-end? _self: (addr word) -> _/eax: boolean {
   var self/esi: (addr word) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah

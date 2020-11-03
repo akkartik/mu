@@ -55,7 +55,7 @@ fn main -> _/ebx: int {
   return 0
 }
 
-fn simplify -> _/eax: int, _2/esi: grapheme {
+fn simplify -> _/eax: int, _/esi: grapheme {
   # prime the pump
   var look/esi: grapheme <- get-char
   # do it
@@ -64,7 +64,7 @@ fn simplify -> _/eax: int, _2/esi: grapheme {
   return result, look
 }
 
-fn expression _look: grapheme -> _/eax: int, _2/esi: grapheme {
+fn expression _look: grapheme -> _/eax: int, _/esi: grapheme {
   var look/esi: grapheme <- copy _look
   # read arg
   var result/eax: int <- copy 0
@@ -109,7 +109,7 @@ fn expression _look: grapheme -> _/eax: int, _2/esi: grapheme {
   return result, look
 }
 
-fn term _look: grapheme -> _/eax: int, _2/esi: grapheme {
+fn term _look: grapheme -> _/eax: int, _/esi: grapheme {
   var look/esi: grapheme <- copy _look
   # read arg
   look <- skip-spaces look
@@ -154,7 +154,7 @@ fn term _look: grapheme -> _/eax: int, _2/esi: grapheme {
   return result, look
 }
 
-fn factor _look: grapheme -> _/eax: int, _2/esi: grapheme {
+fn factor _look: grapheme -> _/eax: int, _/esi: grapheme {
   var look/esi: grapheme <- copy _look  # should be a no-op
   look <- skip-spaces look
   # if next char is not '(', parse a number
@@ -202,13 +202,13 @@ fn is-add-or-sub? c: grapheme -> _/eax: boolean {
   return 0  # false
 }
 
-fn operator _look: grapheme -> _/ecx: byte, _2/esi: grapheme {
+fn operator _look: grapheme -> _/ecx: byte, _/esi: grapheme {
   var op/ecx: byte <- copy _look
   var look/esi: grapheme <- get-char
   return op, look
 }
 
-fn num _look: grapheme -> _/eax: int, _2/esi: grapheme {
+fn num _look: grapheme -> _/eax: int, _/esi: grapheme {
   var look/esi: grapheme <- copy _look
   var result/edi: int <- copy 0
   {

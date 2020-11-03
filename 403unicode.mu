@@ -369,7 +369,7 @@ fn test-shift-left-bytes-5 {
 
 # To run all tests, uncomment this and run:
 #   $ ./translate_mu  &&  ./a.elf
-#? fn main -> r/ebx: int {
+#? fn main -> _/ebx: int {
 #?   run-tests
 #?   r <- copy 0
 #? }

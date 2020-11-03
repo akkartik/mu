@@ -1424,8 +1424,8 @@ fn test-check-screen-blinking {
   check-screen-row-in-blinking screen, 1, "a c", "F - test-check-screen-blinking"
 }
 
-#? fn main -> exit-status/ebx: int {
+#? fn main -> _/ebx: int {
 #? #?   test-check-screen-color
 #?   run-tests
-#?   exit-status <- copy 0
+#?   return 0
 #? }
