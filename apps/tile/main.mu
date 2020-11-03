@@ -1,51 +1,49 @@
 fn main args-on-stack: (addr array addr array byte) -> _/ebx: int {
   var args/eax: (addr array addr array byte) <- copy args-on-stack
   var len/ecx: int <- length args
-  $main-body: {
-    compare len, 2
+  compare len, 2
+  {
+    break-if-!=
+    # if single arg is 'test', run tests
+    var tmp/ecx: (addr addr array byte) <- index args, 1
+    var tmp2/eax: boolean <- string-equal? *tmp, "test"
+    compare tmp2, 0  # false
     {
-      break-if-!=
-      # if single arg is 'test', run tests
-      var tmp/ecx: (addr addr array byte) <- index args, 1
-      var tmp2/eax: boolean <- string-equal? *tmp, "test"
-      compare tmp2, 0  # false
-      {
-        break-if-=
-        run-tests
-        return 0  # TODO: get at Num-test-failures somehow
-      }
-      # if single arg is 'screen', run in full-screen mode
-      tmp2 <- string-equal? *tmp, "screen"
-      compare tmp2, 0  # false
-      {
-        break-if-=
-        interactive
-        return 0
-      }
-      # if single arg is 'type', run in typewriter mode
-      tmp2 <- string-equal? *tmp, "type"
-      compare tmp2, 0  # false
-      {
-        break-if-=
-        repl
-        return 0
-      }
-      # if single arg is 'test' ...
-      tmp2 <- string-equal? *tmp, "test2"
-      compare tmp2, 0  # false
-      {
-        break-if-=
-        test
-        return 0
-      }
+      break-if-=
+      run-tests
+      return 0  # TODO: get at Num-test-failures somehow
     }
-    # otherwise error message
-    print-string-to-real-screen "usage:\n"
-    print-string-to-real-screen "  to run tests: tile test\n"
-    print-string-to-real-screen "  full-screen mode: tile screen\n"
-    print-string-to-real-screen "  regular REPL: tile type\n"
-    return 1
+    # if single arg is 'screen', run in full-screen mode
+    tmp2 <- string-equal? *tmp, "screen"
+    compare tmp2, 0  # false
+    {
+      break-if-=
+      interactive
+      return 0
+    }
+    # if single arg is 'type', run in typewriter mode
+    tmp2 <- string-equal? *tmp, "type"
+    compare tmp2, 0  # false
+    {
+      break-if-=
+      repl
+      return 0
+    }
+    # if single arg is 'test' ...
+    tmp2 <- string-equal? *tmp, "test2"
+    compare tmp2, 0  # false
+    {
+      break-if-=
+      test
+      return 0
+    }
   }
+  # otherwise error message
+  print-string-to-real-screen "usage:\n"
+  print-string-to-real-screen "  to run tests: tile test\n"
+  print-string-to-real-screen "  full-screen mode: tile screen\n"
+  print-string-to-real-screen "  regular REPL: tile type\n"
+  return 1
 }
 
 fn interactive {
