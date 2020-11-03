@@ -19,7 +19,6 @@ a { color:inherit; }
 .SpecialChar { color: #d70000; }
 .Delimiter { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
-.muTest { color: #5f8700; }
 .Constant { color: #008787; }
 .PreProc { color: #c000c0; }
 -->
@@ -60,68 +59,17 @@ if ('onhashchange' in window) {
 <span id="L1" class="LineNr"> 1 </span><span class="muComment"># print 'n' with enough leading spaces to be right-justified in 'width'</span>
 <span id="L2" class="LineNr"> 2 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='407print-int32-decimal-right-justified.mu.html#L2'>print-int32-decimal-right-justified</a></span> <a href='405screen.mu.html#L9'>screen</a>: (addr <a href='405screen.mu.html#L9'>screen</a>), n: int, _width: int <span class="Delimiter">{</span>
 <span id="L3" class="LineNr"> 3 </span>  <span class="muComment"># tweak things for negative numbers</span>
-<span id="L4" class="LineNr"> 4 </span>  <span class="PreProc">var</span> n-width/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> n
-<span id="L5" class="LineNr"> 5 </span>  <span class="PreProc">var</span> width/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy _width
+<span id="L4" class="LineNr"> 4 </span>  <span class="PreProc">var</span> n-width/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='311decimal-int.subx.html#L300'>decimal-size</a> n
+<span id="L5" class="LineNr"> 5 </span>  <span class="PreProc">var</span> width/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy _width
 <span id="L6" class="LineNr"> 6 </span>  <span class="Delimiter">{</span>
 <span id="L7" class="LineNr"> 7 </span>    compare n-width, width
 <span id="L8" class="LineNr"> 8 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L9" class="LineNr"> 9 </span>    <a href='405screen.mu.html#L206'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">0x20</span>  <span class="muComment"># space</span>
+<span id="L9" class="LineNr"> 9 </span>    <a href='405screen.mu.html#L210'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">0x20</span>  <span class="muComment"># space</span>
 <span id="L10" class="LineNr">10 </span>    width <span class="SpecialChar">&lt;-</span> decrement
 <span id="L11" class="LineNr">11 </span>    <span class="PreProc">loop</span>
 <span id="L12" class="LineNr">12 </span>  <span class="Delimiter">}</span>
 <span id="L13" class="LineNr">13 </span>  <a href='405screen.mu.html#L481'>print-int32-decimal</a> <a href='405screen.mu.html#L9'>screen</a>, n
 <span id="L14" class="LineNr">14 </span><span class="Delimiter">}</span>
-<span id="L15" class="LineNr">15 </span>
-<span id="L16" class="LineNr">16 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a></span> n: int<span class="PreProc"> -&gt; </span>result/<span class="Constant">ecx</span>: int <span class="Delimiter">{</span>
-<span id="L17" class="LineNr">17 </span>  result <span class="SpecialChar">&lt;-</span> copy <span class="Constant">1</span>
-<span id="L18" class="LineNr">18 </span>  <span class="PreProc">var</span> curr/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy n
-<span id="L19" class="LineNr">19 </span>  <span class="muComment"># account for '-'</span>
-<span id="L20" class="LineNr">20 </span>  compare curr, <span class="Constant">0</span>
-<span id="L21" class="LineNr">21 </span>  <span class="Delimiter">{</span>
-<span id="L22" class="LineNr">22 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L23" class="LineNr">23 </span>    curr <span class="SpecialChar">&lt;-</span> negate
-<span id="L24" class="LineNr">24 </span>    result <span class="SpecialChar">&lt;-</span> increment
-<span id="L25" class="LineNr">25 </span>  <span class="Delimiter">}</span>
-<span id="L26" class="LineNr">26 </span>  <span class="muComment"># now we're dealing with a positive number</span>
-<span id="L27" class="LineNr">27 </span>  <span class="Delimiter">{</span>
-<span id="L28" class="LineNr">28 </span>    compare curr, <span class="Constant">0xa</span>
-<span id="L29" class="LineNr">29 </span>    <span class="PreProc">break-if-&lt;</span>
-<span id="L30" class="LineNr">30 </span>    curr <span class="SpecialChar">&lt;-</span> <a href='406try-divide.mu.html#L3'>try-divide</a> curr, <span class="Constant">0xa</span>
-<span id="L31" class="LineNr">31 </span>    result <span class="SpecialChar">&lt;-</span> increment
-<span id="L32" class="LineNr">32 </span>    <span class="PreProc">loop</span>
-<span id="L33" class="LineNr">33 </span>  <span class="Delimiter">}</span>
-<span id="L34" class="LineNr">34 </span><span class="Delimiter">}</span>
-<span id="L35" class="LineNr">35 </span>
-<span id="L36" class="LineNr">36 </span><span class="PreProc">fn</span> <span class="muTest"><a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a></span> <span class="Delimiter">{</span>
-<span id="L37" class="LineNr">37 </span>  <span class="PreProc">var</span> x/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">0</span>
-<span id="L38" class="LineNr">38 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">1</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 0&quot;</span>
-<span id="L39" class="LineNr">39 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">1</span>
-<span id="L40" class="LineNr">40 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">1</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 1&quot;</span>
-<span id="L41" class="LineNr">41 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">4</span>
-<span id="L42" class="LineNr">42 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">1</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 4&quot;</span>
-<span id="L43" class="LineNr">43 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">9</span>
-<span id="L44" class="LineNr">44 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">1</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 9&quot;</span>
-<span id="L45" class="LineNr">45 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">0xa</span>
-<span id="L46" class="LineNr">46 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">2</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 10&quot;</span>
-<span id="L47" class="LineNr">47 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">0xb</span>
-<span id="L48" class="LineNr">48 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">2</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 11&quot;</span>
-<span id="L49" class="LineNr">49 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">0x4f</span>  <span class="muComment"># 79</span>
-<span id="L50" class="LineNr">50 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">2</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 79&quot;</span>
-<span id="L51" class="LineNr">51 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">0x63</span>  <span class="muComment"># 99</span>
-<span id="L52" class="LineNr">52 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">2</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 100&quot;</span>
-<span id="L53" class="LineNr">53 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">0x64</span>  <span class="muComment"># 100</span>
-<span id="L54" class="LineNr">54 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">3</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 100&quot;</span>
-<span id="L55" class="LineNr">55 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">0x65</span>  <span class="muComment"># 101</span>
-<span id="L56" class="LineNr">56 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">3</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 101&quot;</span>
-<span id="L57" class="LineNr">57 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">0x3e7</span>  <span class="muComment"># 999</span>
-<span id="L58" class="LineNr">58 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">3</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 999&quot;</span>
-<span id="L59" class="LineNr">59 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">0x3e8</span>  <span class="muComment"># 1000</span>
-<span id="L60" class="LineNr">60 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">4</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: 1000&quot;</span>
-<span id="L61" class="LineNr">61 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">-1</span>
-<span id="L62" class="LineNr">62 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">2</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: -1&quot;</span>
-<span id="L63" class="LineNr">63 </span>  x <span class="SpecialChar">&lt;-</span> <a href='407print-int32-decimal-right-justified.mu.html#L16'>int-width-decimal</a> <span class="Constant">-0xb</span>  <span class="muComment"># -11</span>
-<span id="L64" class="LineNr">64 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> x, <span class="Constant">3</span>, <span class="Constant">&quot;F - <a href='407print-int32-decimal-right-justified.mu.html#L36'>test-int-width-decimal</a>: -11&quot;</span>
-<span id="L65" class="LineNr">65 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

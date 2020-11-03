@@ -22,6 +22,7 @@ a { color:inherit; }
 .subxS1Comment { color: #0000af; }
 .subxFunction { color: #af5f00; text-decoration: underline; }
 .Constant { color: #008787; }
+.subxMinorFunction { color: #875f5f; }
 .subxH1Comment { color: #005faf; text-decoration: underline; }
 -->
 </style>
@@ -231,7 +232,7 @@ if ('onhashchange' in window) {
 <span id="L171" class="LineNr">171 </span>    5d/pop-to-ebp
 <span id="L172" class="LineNr">172 </span>    c3/return
 <span id="L173" class="LineNr">173 </span>
-<span id="L174" class="LineNr">174 </span><span class="subxFunction">parse-array-of-ints</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), s: (addr string), out: (addr handle array int)</span>
+<span id="L174" class="LineNr">174 </span><span class="subxMinorFunction">_parse-array-of-ints</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), s: (addr array byte), out: (addr handle array int)</span>
 <span id="L175" class="LineNr">175 </span>    <span class="subxComment"># pseudocode</span>
 <span id="L176" class="LineNr">176 </span>    <span class="subxComment">#   end = &amp;s-&gt;data[s-&gt;size]</span>
 <span id="L177" class="LineNr">177 </span>    <span class="subxComment">#   curr = s-&gt;data</span>
@@ -276,25 +277,25 @@ if ('onhashchange' in window) {
 <span id="L216" class="LineNr">216 </span>    01/add-to %edx 1/r32/ecx
 <span id="L217" class="LineNr">217 </span>    <span class="subxComment"># var size/ebx: int = 0</span>
 <span id="L218" class="LineNr">218 </span>    31/xor-with %ebx 3/r32/ebx
-<span id="L219" class="LineNr">219 </span><span class="Constant">$parse-array-of-ints:loop1</span>:
+<span id="L219" class="LineNr">219 </span><span class="Constant">$_parse-array-of-ints:loop1</span>:
 <span id="L220" class="LineNr">220 </span>    <span class="subxComment"># if (curr &gt;= end) break</span>
 <span id="L221" class="LineNr">221 </span>    39/compare %ecx 2/r32/edx
-<span id="L222" class="LineNr">222 </span>    73/jump-if-addr&gt;= $parse-array-of-ints:break1/disp8
+<span id="L222" class="LineNr">222 </span>    73/jump-if-addr&gt;= $_parse-array-of-ints:break1/disp8
 <span id="L223" class="LineNr">223 </span>    <span class="subxComment"># curr = skip-chars-matching-in-slice(curr, end, ' ')</span>
 <span id="L224" class="LineNr">224 </span>    (<a href='124next-token.subx.html#L804'>skip-chars-matching-in-slice</a> %ecx %edx 0x20)  <span class="subxComment"># =&gt; eax</span>
 <span id="L225" class="LineNr">225 </span>    89/&lt;- %ecx 0/r32/eax
 <span id="L226" class="LineNr">226 </span>    <span class="subxComment"># if (curr &gt;= end) break</span>
 <span id="L227" class="LineNr">227 </span>    39/compare %ecx 2/r32/edx
-<span id="L228" class="LineNr">228 </span>    73/jump-if-addr&gt;= $parse-array-of-ints:break1/disp8
+<span id="L228" class="LineNr">228 </span>    73/jump-if-addr&gt;= $_parse-array-of-ints:break1/disp8
 <span id="L229" class="LineNr">229 </span>    <span class="subxComment"># curr = skip-chars-not-matching-in-slice(curr, end, ' ')</span>
 <span id="L230" class="LineNr">230 </span>    (<a href='124next-token.subx.html#L973'>skip-chars-not-matching-in-slice</a> %ecx %edx 0x20)  <span class="subxComment"># =&gt; eax</span>
 <span id="L231" class="LineNr">231 </span>    89/&lt;- %ecx 0/r32/eax
 <span id="L232" class="LineNr">232 </span>    <span class="subxComment"># size += 4</span>
 <span id="L233" class="LineNr">233 </span>    81 0/subop/add %ebx 4/imm32
-<span id="L234" class="LineNr">234 </span>    eb/jump $parse-array-of-ints:loop1/disp8
-<span id="L235" class="LineNr">235 </span><span class="Constant">$parse-array-of-ints:break1</span>:
+<span id="L234" class="LineNr">234 </span>    eb/jump $_parse-array-of-ints:loop1/disp8
+<span id="L235" class="LineNr">235 </span><span class="Constant">$_parse-array-of-ints:break1</span>:
 <span id="L236" class="LineNr">236 </span>    (<a href='120allocate.subx.html#L576'>allocate-array</a> *(ebp+8) %ebx *(ebp+0x10))
-<span id="L237" class="LineNr">237 </span><span class="Constant">$parse-array-of-ints:pass2</span>:
+<span id="L237" class="LineNr">237 </span><span class="Constant">$_parse-array-of-ints:pass2</span>:
 <span id="L238" class="LineNr">238 </span>    <span class="subxComment"># var slice/edi: slice = {s-&gt;data, 0}</span>
 <span id="L239" class="LineNr">239 </span>    68/push 0/imm32/end
 <span id="L240" class="LineNr">240 </span>    8d/copy-address *(esi+4) 7/r32/edi
@@ -304,16 +305,16 @@ if ('onhashchange' in window) {
 <span id="L244" class="LineNr">244 </span>    8b/-&gt; *(ebp+0x10) 0/r32/eax
 <span id="L245" class="LineNr">245 </span>    (<a href='120allocate.subx.html#L256'>lookup</a> *eax *(eax+4))  <span class="subxComment"># =&gt; eax</span>
 <span id="L246" class="LineNr">246 </span>    8d/copy-address *(eax+4) 1/r32/ecx
-<span id="L247" class="LineNr">247 </span><span class="Constant">$parse-array-of-ints:loop2</span>:
+<span id="L247" class="LineNr">247 </span><span class="Constant">$_parse-array-of-ints:loop2</span>:
 <span id="L248" class="LineNr">248 </span>    <span class="subxComment"># if (slice-&gt;start &gt;= end) break</span>
 <span id="L249" class="LineNr">249 </span>    39/compare *edi 2/r32/edx
-<span id="L250" class="LineNr">250 </span>    73/jump-if-addr&gt;= $parse-array-of-ints:end/disp8
+<span id="L250" class="LineNr">250 </span>    73/jump-if-addr&gt;= $_parse-array-of-ints:end/disp8
 <span id="L251" class="LineNr">251 </span>    <span class="subxComment"># slice-&gt;start = skip-chars-matching-in-slice(slice-&gt;start, end, ' ')</span>
 <span id="L252" class="LineNr">252 </span>    (<a href='124next-token.subx.html#L804'>skip-chars-matching-in-slice</a> *edi %edx 0x20)  <span class="subxComment"># =&gt; eax</span>
 <span id="L253" class="LineNr">253 </span>    89/&lt;- *edi 0/r32/eax
 <span id="L254" class="LineNr">254 </span>    <span class="subxComment"># if (slice-&gt;start &gt;= end) break</span>
 <span id="L255" class="LineNr">255 </span>    39/compare *edi 2/r32/edx
-<span id="L256" class="LineNr">256 </span>    73/jump-if-addr&gt;= $parse-array-of-ints:end/disp8
+<span id="L256" class="LineNr">256 </span>    73/jump-if-addr&gt;= $_parse-array-of-ints:end/disp8
 <span id="L257" class="LineNr">257 </span>    <span class="subxComment"># slice-&gt;end = skip-chars-not-matching-in-slice(slice-&gt;start, end, ' ')</span>
 <span id="L258" class="LineNr">258 </span>    (<a href='124next-token.subx.html#L973'>skip-chars-not-matching-in-slice</a> *edi %edx 0x20)  <span class="subxComment"># =&gt; eax</span>
 <span id="L259" class="LineNr">259 </span>    89/&lt;- *(edi+4) 0/r32/eax
@@ -325,8 +326,8 @@ if ('onhashchange' in window) {
 <span id="L265" class="LineNr">265 </span>    <span class="subxComment"># slice-&gt;start = slice-&gt;end</span>
 <span id="L266" class="LineNr">266 </span>    8b/-&gt; *(edi+4) 0/r32/eax
 <span id="L267" class="LineNr">267 </span>    89/&lt;- *edi 0/r32/eax
-<span id="L268" class="LineNr">268 </span>    eb/jump $parse-array-of-ints:loop2/disp8
-<span id="L269" class="LineNr">269 </span><span class="Constant">$parse-array-of-ints:end</span>:
+<span id="L268" class="LineNr">268 </span>    eb/jump $_parse-array-of-ints:loop2/disp8
+<span id="L269" class="LineNr">269 </span><span class="Constant">$_parse-array-of-ints:end</span>:
 <span id="L270" class="LineNr">270 </span>    <span class="subxS1Comment"># . reclaim locals</span>
 <span id="L271" class="LineNr">271 </span>    81 0/subop/add %esp 8/imm32
 <span id="L272" class="LineNr">272 </span>    <span class="subxS1Comment"># . restore registers</span>
@@ -356,7 +357,7 @@ if ('onhashchange' in window) {
 <span id="L296" class="LineNr">296 </span>    68/push 0xc/imm32/size
 <span id="L297" class="LineNr">297 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L298" class="LineNr">298 </span>    <span class="subxComment">#</span>
-<span id="L299" class="LineNr">299 </span>    (<a href='301array-equal.subx.html#L174'>parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="Constant">&quot;1 2 3&quot;</span> %esi)
+<span id="L299" class="LineNr">299 </span>    (<a href='301array-equal.subx.html#L174'>_parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="Constant">&quot;1 2 3&quot;</span> %esi)
 <span id="L300" class="LineNr">300 </span>    (<a href='120allocate.subx.html#L256'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
 <span id="L301" class="LineNr">301 </span>    (<a href='301array-equal.subx.html#L5'>array-equal?</a> %ecx %eax)  <span class="subxComment"># =&gt; eax</span>
 <span id="L302" class="LineNr">302 </span>    (<a href='102test.subx.html#L23'>check-ints-equal</a> %eax 1 <span class="Constant">&quot;F - test-parse-array-of-ints&quot;</span>)
@@ -375,7 +376,7 @@ if ('onhashchange' in window) {
 <span id="L315" class="LineNr">315 </span>    68/push 0/imm32
 <span id="L316" class="LineNr">316 </span>    89/&lt;- %esi 4/r32/esp
 <span id="L317" class="LineNr">317 </span>    <span class="subxComment">#</span>
-<span id="L318" class="LineNr">318 </span>    (<a href='301array-equal.subx.html#L174'>parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="Constant">&quot;&quot;</span> %esi)
+<span id="L318" class="LineNr">318 </span>    (<a href='301array-equal.subx.html#L174'>_parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="Constant">&quot;&quot;</span> %esi)
 <span id="L319" class="LineNr">319 </span>    (<a href='120allocate.subx.html#L256'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
 <span id="L320" class="LineNr">320 </span>    (<a href='102test.subx.html#L23'>check-ints-equal</a> *eax 0 <span class="Constant">&quot;F - test-parse-array-of-ints-empty&quot;</span>)
 <span id="L321" class="LineNr">321 </span>    <span class="subxS1Comment"># . epilogue</span>
@@ -393,7 +394,7 @@ if ('onhashchange' in window) {
 <span id="L333" class="LineNr">333 </span>    68/push 0/imm32
 <span id="L334" class="LineNr">334 </span>    89/&lt;- %esi 4/r32/esp
 <span id="L335" class="LineNr">335 </span>    <span class="subxComment">#</span>
-<span id="L336" class="LineNr">336 </span>    (<a href='301array-equal.subx.html#L174'>parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="SpecialChar"><a href='102test.subx.html#L93'>Space</a></span> %esi)
+<span id="L336" class="LineNr">336 </span>    (<a href='301array-equal.subx.html#L174'>_parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="SpecialChar"><a href='102test.subx.html#L93'>Space</a></span> %esi)
 <span id="L337" class="LineNr">337 </span>    (<a href='120allocate.subx.html#L256'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
 <span id="L338" class="LineNr">338 </span>    (<a href='102test.subx.html#L23'>check-ints-equal</a> *eax 0 <span class="Constant">&quot;F - test-parse-array-of-ints-just-whitespace&quot;</span>)
 <span id="L339" class="LineNr">339 </span>    <span class="subxS1Comment"># . epilogue</span>
@@ -416,7 +417,7 @@ if ('onhashchange' in window) {
 <span id="L356" class="LineNr">356 </span>    68/push 0xc/imm32/size
 <span id="L357" class="LineNr">357 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L358" class="LineNr">358 </span>    <span class="subxComment">#</span>
-<span id="L359" class="LineNr">359 </span>    (<a href='301array-equal.subx.html#L174'>parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="Constant">&quot; 1 2  3  &quot;</span> %esi)
+<span id="L359" class="LineNr">359 </span>    (<a href='301array-equal.subx.html#L174'>_parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="Constant">&quot; 1 2  3  &quot;</span> %esi)
 <span id="L360" class="LineNr">360 </span>    (<a href='120allocate.subx.html#L256'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
 <span id="L361" class="LineNr">361 </span>    (<a href='301array-equal.subx.html#L5'>array-equal?</a> %ecx %eax)  <span class="subxComment"># =&gt; eax</span>
 <span id="L362" class="LineNr">362 </span>    (<a href='102test.subx.html#L23'>check-ints-equal</a> %eax 1 <span class="Constant">&quot;F - test-parse-array-of-ints-extra-whitespace&quot;</span>)
@@ -425,52 +426,64 @@ if ('onhashchange' in window) {
 <span id="L365" class="LineNr">365 </span>    5d/pop-to-ebp
 <span id="L366" class="LineNr">366 </span>    c3/return
 <span id="L367" class="LineNr">367 </span>
-<span id="L368" class="LineNr">368 </span><span class="subxComment"># helper for later tests</span>
-<span id="L369" class="LineNr">369 </span><span class="subxComment"># compare an array with a string representation of an array literal</span>
-<span id="L370" class="LineNr">370 </span><span class="subxFunction">check-array-equal</span>:  <span class="subxComment"># a: (addr array int), expected: (addr string), msg: (addr string)</span>
-<span id="L371" class="LineNr">371 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L372" class="LineNr">372 </span>    55/push-ebp
-<span id="L373" class="LineNr">373 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L374" class="LineNr">374 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L375" class="LineNr">375 </span>    50/push-eax
-<span id="L376" class="LineNr">376 </span>    56/push-esi
-<span id="L377" class="LineNr">377 </span>    <span class="subxComment"># var h/esi: handle</span>
-<span id="L378" class="LineNr">378 </span>    68/push 0/imm32
-<span id="L379" class="LineNr">379 </span>    68/push 0/imm32
-<span id="L380" class="LineNr">380 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L381" class="LineNr">381 </span>    <span class="subxComment"># var b/eax: (addr array int) = parse-array-of-ints(Heap, expected)</span>
-<span id="L382" class="LineNr">382 </span>    (<a href='301array-equal.subx.html#L174'>parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> *(ebp+0xc) %esi)
-<span id="L383" class="LineNr">383 </span>    (<a href='120allocate.subx.html#L256'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
-<span id="L384" class="LineNr">384 </span>    <span class="subxComment">#</span>
-<span id="L385" class="LineNr">385 </span>    (<a href='301array-equal.subx.html#L5'>array-equal?</a> *(ebp+8) %eax)
-<span id="L386" class="LineNr">386 </span>    (<a href='102test.subx.html#L23'>check-ints-equal</a> %eax 1 *(ebp+0x10))
-<span id="L387" class="LineNr">387 </span><span class="Constant">$check-array-equal:end</span>:
-<span id="L388" class="LineNr">388 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L389" class="LineNr">389 </span>    5e/pop-to-esi
-<span id="L390" class="LineNr">390 </span>    58/pop-to-eax
-<span id="L391" class="LineNr">391 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L392" class="LineNr">392 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L393" class="LineNr">393 </span>    5d/pop-to-ebp
-<span id="L394" class="LineNr">394 </span>    c3/return
-<span id="L395" class="LineNr">395 </span>
-<span id="L396" class="LineNr">396 </span><span class="subxTest">test-check-array-equal</span>:
-<span id="L397" class="LineNr">397 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L398" class="LineNr">398 </span>    55/push-ebp
-<span id="L399" class="LineNr">399 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L400" class="LineNr">400 </span>    <span class="subxComment"># var ecx: (array int) = [1, 2, 3]</span>
-<span id="L401" class="LineNr">401 </span>    68/push 3/imm32
-<span id="L402" class="LineNr">402 </span>    68/push 2/imm32
-<span id="L403" class="LineNr">403 </span>    68/push 1/imm32
-<span id="L404" class="LineNr">404 </span>    68/push 0xc/imm32/size
-<span id="L405" class="LineNr">405 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L406" class="LineNr">406 </span>    <span class="subxComment">#</span>
-<span id="L407" class="LineNr">407 </span>    (<a href='301array-equal.subx.html#L370'>check-array-equal</a> %ecx <span class="Constant">&quot;1 2 3&quot;</span> <span class="Constant">&quot;F - test-check-array-equal&quot;</span>)
-<span id="L408" class="LineNr">408 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L409" class="LineNr">409 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L410" class="LineNr">410 </span>    5d/pop-to-ebp
-<span id="L411" class="LineNr">411 </span>    c3/return
-<span id="L412" class="LineNr">412 </span>
-<span id="L413" class="LineNr">413 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L368" class="LineNr">368 </span><span class="subxFunction">parse-array-of-ints</span>:  <span class="subxComment"># s: (addr array byte), out: (addr handle array int)</span>
+<span id="L369" class="LineNr">369 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L370" class="LineNr">370 </span>    55/push-ebp
+<span id="L371" class="LineNr">371 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L372" class="LineNr">372 </span>    <span class="subxComment">#</span>
+<span id="L373" class="LineNr">373 </span>    (<a href='301array-equal.subx.html#L174'>_parse-array-of-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> *(ebp+8) *(ebp+0xc))
+<span id="L374" class="LineNr">374 </span><span class="Constant">$parse-array-of-ints:end</span>:
+<span id="L375" class="LineNr">375 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L376" class="LineNr">376 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L377" class="LineNr">377 </span>    5d/pop-to-ebp
+<span id="L378" class="LineNr">378 </span>    c3/return
+<span id="L379" class="LineNr">379 </span>
+<span id="L380" class="LineNr">380 </span><span class="subxComment"># helper for later tests</span>
+<span id="L381" class="LineNr">381 </span><span class="subxComment"># compare an array with a string representation of an array literal</span>
+<span id="L382" class="LineNr">382 </span><span class="subxFunction">check-array-equal</span>:  <span class="subxComment"># a: (addr array int), expected: (addr string), msg: (addr string)</span>
+<span id="L383" class="LineNr">383 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L384" class="LineNr">384 </span>    55/push-ebp
+<span id="L385" class="LineNr">385 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L386" class="LineNr">386 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L387" class="LineNr">387 </span>    50/push-eax
+<span id="L388" class="LineNr">388 </span>    56/push-esi
+<span id="L389" class="LineNr">389 </span>    <span class="subxComment"># var h/esi: handle</span>
+<span id="L390" class="LineNr">390 </span>    68/push 0/imm32
+<span id="L391" class="LineNr">391 </span>    68/push 0/imm32
+<span id="L392" class="LineNr">392 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L393" class="LineNr">393 </span>    <span class="subxComment"># var b/eax: (addr array int) = parse-array-of-ints(Heap, expected)</span>
+<span id="L394" class="LineNr">394 </span>    (<a href='301array-equal.subx.html#L368'>parse-array-of-ints</a> *(ebp+0xc) %esi)
+<span id="L395" class="LineNr">395 </span>    (<a href='120allocate.subx.html#L256'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
+<span id="L396" class="LineNr">396 </span>    <span class="subxComment">#</span>
+<span id="L397" class="LineNr">397 </span>    (<a href='301array-equal.subx.html#L5'>array-equal?</a> *(ebp+8) %eax)
+<span id="L398" class="LineNr">398 </span>    (<a href='102test.subx.html#L23'>check-ints-equal</a> %eax 1 *(ebp+0x10))
+<span id="L399" class="LineNr">399 </span><span class="Constant">$check-array-equal:end</span>:
+<span id="L400" class="LineNr">400 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L401" class="LineNr">401 </span>    5e/pop-to-esi
+<span id="L402" class="LineNr">402 </span>    58/pop-to-eax
+<span id="L403" class="LineNr">403 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L404" class="LineNr">404 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L405" class="LineNr">405 </span>    5d/pop-to-ebp
+<span id="L406" class="LineNr">406 </span>    c3/return
+<span id="L407" class="LineNr">407 </span>
+<span id="L408" class="LineNr">408 </span><span class="subxTest">test-check-array-equal</span>:
+<span id="L409" class="LineNr">409 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L410" class="LineNr">410 </span>    55/push-ebp
+<span id="L411" class="LineNr">411 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L412" class="LineNr">412 </span>    <span class="subxComment"># var ecx: (array int) = [1, 2, 3]</span>
+<span id="L413" class="LineNr">413 </span>    68/push 3/imm32
+<span id="L414" class="LineNr">414 </span>    68/push 2/imm32
+<span id="L415" class="LineNr">415 </span>    68/push 1/imm32
+<span id="L416" class="LineNr">416 </span>    68/push 0xc/imm32/size
+<span id="L417" class="LineNr">417 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L418" class="LineNr">418 </span>    <span class="subxComment">#</span>
+<span id="L419" class="LineNr">419 </span>    (<a href='301array-equal.subx.html#L382'>check-array-equal</a> %ecx <span class="Constant">&quot;1 2 3&quot;</span> <span class="Constant">&quot;F - test-check-array-equal&quot;</span>)
+<span id="L420" class="LineNr">420 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L421" class="LineNr">421 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L422" class="LineNr">422 </span>    5d/pop-to-ebp
+<span id="L423" class="LineNr">423 </span>    c3/return
+<span id="L424" class="LineNr">424 </span>
+<span id="L425" class="LineNr">425 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>
