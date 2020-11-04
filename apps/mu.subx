@@ -16372,8 +16372,8 @@ check-mu-return-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buff
       (type-match? %ecx %eax %edx)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $check-mu-return-stmt:error1/disp32
-      # if register-within-list?(curr, original template, curr-template) abort
-      (register-within-list? %edi %esi %ebx)  # => eax
+      # if register-within-list-with-conflict?(curr, original template, curr-template, stmt) abort
+      (register-within-list-with-conflict? %edi %esi %ebx *(ebp+8))  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $check-mu-return-stmt:error2/disp32
       # template = template->next
@@ -16451,7 +16451,10 @@ $check-mu-return-stmt:error-too-many-inouts:
     (stop *(ebp+0x14) 1)
     # never gets here
 
-register-within-list?:  # s: (addr stmt-var), start: (addr list var), end: (addr list var) -> result/eax: boolean
+# return false if s's register is not between start (inclusive) and end (exclusive)
+# return false if the positionally corresponding register in stmt->inouts (where s comes from) is also s's register
+# otherwise return true
+register-within-list-with-conflict?:  # s: (addr stmt-var), start: (addr list var), end: (addr list var), stmt: (addr stmt) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -16465,9 +16468,13 @@ register-within-list?:  # s: (addr stmt-var), start: (addr list var), end: (addr
     8b/-> *(ebp+8) 0/r32/eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+#?     (write-buffered Stderr "AA: ")
+#?     (write-buffered Stderr %eax)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
     # if (var->register == 0) return false
     3d/compare-eax-and 0/imm32
-    0f 84/jump-if-= $register-within-list?:end/disp32  # eax turns into result
+    0f 84/jump-if-= $register-within-list-with-conflict?:end/disp32  # eax turns into result
     89/<- %ebx 0/r32/eax
     # var curr/ecx: (addr list var) = start
     8b/-> *(ebp+0xc) 1/r32/ecx
@@ -16476,21 +16483,30 @@ register-within-list?:  # s: (addr stmt-var), start: (addr list var), end: (addr
     {
       # if (curr == 0) break
       81 7/subop/compare %edi 0/imm32
-      74/jump-if-= break/disp8
+      0f 84/jump-if-= break/disp32
       # if (curr == end) break
       39/compare %ecx 2/r32/edx
-      74/jump-if-= break/disp8
+      0f 84/jump-if-= break/disp32
       # var curr-reg/eax: (addr array byte) = curr->value->register
       (lookup *ecx *(ecx+4))  # List-value List-value => eax
       (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
       # if (curr-reg == 0) continue
       3d/compare-eax-and 0/imm32
-      74/jump-if-= $register-within-list?:continue/disp8
-      # if (curr-reg == target) return true
+      74/jump-if-= $register-within-list-with-conflict?:continue/disp8
+      # if (curr-reg == target) check for conflict
       (string-equal? %eax %ebx)  # => eax
       3d/compare-eax-and 0/imm32/false
-      75/jump-if-!= $register-within-list?:end/disp8
-$register-within-list?:continue:
+      {
+        74/jump-if-= break/disp8
+#?         (write-buffered Stderr "conflict?\n")
+#?         (flush Stderr)
+        # var return-inouts/eax: (addr stmt-var) = stmt->inouts
+        8b/-> *(ebp+0x14) 0/r32/eax
+        (lookup *(eax+0xc) *(eax+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+        (register-conflict? %ebx %eax *(ebp+0xc))  # => eax
+        eb/jump $register-within-list-with-conflict?:end/disp8
+      }
+$register-within-list-with-conflict?:continue:
       # curr = curr->next
       (lookup *(ecx+8) *(ecx+0xc))  # List-next List-next => eax
       89/<- %ecx 0/r32/eax
@@ -16498,7 +16514,87 @@ $register-within-list?:continue:
     }
     # return false
     b8/copy-to-eax 0/imm32/false
-$register-within-list?:end:
+$register-within-list-with-conflict?:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# At the first occurrence of register 'reg' in fn-outputs,
+# check if the corresponding element of return-inouts has a different register.
+# This hacky helper is intended to be called in one specific place. Don't
+# reuse it as is.
+register-conflict?:  # reg: (addr array byte), return-inouts: (addr stmt-var), fn-outputs: (addr list var) => result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+#?     (write-buffered Stderr "BB: ")
+#?     (write-buffered Stderr *(ebp+8))
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
+    # var curr-output/edi: (addr list var) = fn-outputs
+    8b/-> *(ebp+0x10) 7/r32/edi
+    # var curr-inout/esi: (addr stmt-var) = return-inouts
+    8b/-> *(ebp+0xc) 6/r32/esi
+    {
+      # if (curr-output == 0) abort
+      81 7/subop/compare %edi 0/imm32
+      0f 84/jump-if-= break/disp32
+      # if (curr-output->value->register != reg) continue
+      (lookup *edi *(edi+4))  # List-value List-value => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      (string-equal? %eax *(ebp+8))  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if= $register-conflict?:continue/disp32
+#?       (write-buffered Stderr "rescan\n")
+#?       (flush Stderr)
+      # var curr-reg/eax: (addr array byte) = curr-inout->value->register
+      (lookup *esi *(esi+4))  # List-value List-value => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      # if (curr-reg == 0) return true
+      3d/compare-eax-and 0/imm32
+      {
+        75/jump-if-!= break/disp8
+#?         (write-buffered Stderr "no register\n")
+#?         (flush Stderr)
+        b8/copy-to-eax 1/imm32/true
+        e9/jump $register-conflict?:end/disp32
+      }
+      # return (curr-reg != reg)
+      (string-equal? %eax *(ebp+8))  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 94/set-if-= %al
+#?       (write-buffered Stderr "final: ")
+#?       (write-int32-hex-buffered Stderr %eax)
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
+      eb/jump $register-conflict?:end/disp8
+$register-conflict?:continue:
+      # curr-output = curr-output->next
+      (lookup *(edi+8) *(edi+0xc))  # List-next List-next => eax
+      89/<- %edi 0/r32/eax
+      # curr-inout = curr-inout->next
+      (lookup *(esi+8) *(esi+0xc))  # Stmt-var-next Stmt-var-next => eax
+      89/<- %esi 0/r32/eax
+      e9/jump loop/disp32
+    }
+    # should never get here
+    (write-buffered Stderr "register-conflict? misused\n")
+    (flush Stderr)
+    e8/call syscall_exit/disp32
+$register-conflict?:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
