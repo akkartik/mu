@@ -60,128 +60,126 @@ if ('onhashchange' in window) {
 <span id="L1" class="LineNr">  1 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L1'>main</a></span> args-on-stack: (addr array addr array byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">ebx</span>: int <span class="Delimiter">{</span>
 <span id="L2" class="LineNr">  2 </span>  <span class="PreProc">var</span> args/<span class="Constant">eax</span>: (addr array addr array byte) <span class="SpecialChar">&lt;-</span> copy args-on-stack
 <span id="L3" class="LineNr">  3 </span>  <span class="PreProc">var</span> len/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> length args
-<span id="L4" class="LineNr">  4 </span>  $main-body: <span class="Delimiter">{</span>
-<span id="L5" class="LineNr">  5 </span>    compare len, <span class="Constant">2</span>
-<span id="L6" class="LineNr">  6 </span>    <span class="Delimiter">{</span>
-<span id="L7" class="LineNr">  7 </span>      <span class="PreProc">break-if-!=</span>
-<span id="L8" class="LineNr">  8 </span>      <span class="muComment"># if single arg is 'test', run tests</span>
-<span id="L9" class="LineNr">  9 </span>      <span class="PreProc">var</span> tmp/<span class="Constant">ecx</span>: (addr addr array byte) <span class="SpecialChar">&lt;-</span> index args, <span class="Constant">1</span>
-<span id="L10" class="LineNr"> 10 </span>      <span class="PreProc">var</span> tmp2/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='../../105string-equal.subx.html#L15'>string-equal?</a> *tmp, <span class="Constant">&quot;test&quot;</span>
-<span id="L11" class="LineNr"> 11 </span>      compare tmp2, <span class="Constant">0</span>  <span class="muComment"># false</span>
-<span id="L12" class="LineNr"> 12 </span>      <span class="Delimiter">{</span>
-<span id="L13" class="LineNr"> 13 </span>        <span class="PreProc">break-if-=</span>
-<span id="L14" class="LineNr"> 14 </span>        run-tests
-<span id="L15" class="LineNr"> 15 </span>        <span class="PreProc">return</span> <span class="Constant">0</span>  <span class="muComment"># TODO: get at Num-test-failures somehow</span>
-<span id="L16" class="LineNr"> 16 </span>      <span class="Delimiter">}</span>
-<span id="L17" class="LineNr"> 17 </span>      <span class="muComment"># if single arg is 'screen', run in full-screen mode</span>
-<span id="L18" class="LineNr"> 18 </span>      tmp2 <span class="SpecialChar">&lt;-</span> <a href='../../105string-equal.subx.html#L15'>string-equal?</a> *tmp, <span class="Constant">&quot;screen&quot;</span>
-<span id="L19" class="LineNr"> 19 </span>      compare tmp2, <span class="Constant">0</span>  <span class="muComment"># false</span>
-<span id="L20" class="LineNr"> 20 </span>      <span class="Delimiter">{</span>
-<span id="L21" class="LineNr"> 21 </span>        <span class="PreProc">break-if-=</span>
-<span id="L22" class="LineNr"> 22 </span>        <a href='main.mu.html#L51'>interactive</a>
-<span id="L23" class="LineNr"> 23 </span>        <span class="PreProc">return</span> <span class="Constant">0</span>
-<span id="L24" class="LineNr"> 24 </span>      <span class="Delimiter">}</span>
-<span id="L25" class="LineNr"> 25 </span>      <span class="muComment"># if single arg is 'type', run in typewriter mode</span>
-<span id="L26" class="LineNr"> 26 </span>      tmp2 <span class="SpecialChar">&lt;-</span> <a href='../../105string-equal.subx.html#L15'>string-equal?</a> *tmp, <span class="Constant">&quot;type&quot;</span>
-<span id="L27" class="LineNr"> 27 </span>      compare tmp2, <span class="Constant">0</span>  <span class="muComment"># false</span>
-<span id="L28" class="LineNr"> 28 </span>      <span class="Delimiter">{</span>
-<span id="L29" class="LineNr"> 29 </span>        <span class="PreProc">break-if-=</span>
-<span id="L30" class="LineNr"> 30 </span>        <a href='main.mu.html#L84'>repl</a>
-<span id="L31" class="LineNr"> 31 </span>        <span class="PreProc">return</span> <span class="Constant">0</span>
-<span id="L32" class="LineNr"> 32 </span>      <span class="Delimiter">}</span>
-<span id="L33" class="LineNr"> 33 </span>      <span class="muComment"># if single arg is 'test' ...</span>
-<span id="L34" class="LineNr"> 34 </span>      tmp2 <span class="SpecialChar">&lt;-</span> <a href='../../105string-equal.subx.html#L15'>string-equal?</a> *tmp, <span class="Constant">&quot;test2&quot;</span>
-<span id="L35" class="LineNr"> 35 </span>      compare tmp2, <span class="Constant">0</span>  <span class="muComment"># false</span>
-<span id="L36" class="LineNr"> 36 </span>      <span class="Delimiter">{</span>
-<span id="L37" class="LineNr"> 37 </span>        <span class="PreProc">break-if-=</span>
-<span id="L38" class="LineNr"> 38 </span>        <a href='main.mu.html#L70'>test</a>
-<span id="L39" class="LineNr"> 39 </span>        <span class="PreProc">return</span> <span class="Constant">0</span>
-<span id="L40" class="LineNr"> 40 </span>      <span class="Delimiter">}</span>
-<span id="L41" class="LineNr"> 41 </span>    <span class="Delimiter">}</span>
-<span id="L42" class="LineNr"> 42 </span>    <span class="muComment"># otherwise error message</span>
-<span id="L43" class="LineNr"> 43 </span>    <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;usage:\n&quot;</span>
-<span id="L44" class="LineNr"> 44 </span>    <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;  to run tests: tile test\n&quot;</span>
-<span id="L45" class="LineNr"> 45 </span>    <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;  full-screen mode: tile screen\n&quot;</span>
-<span id="L46" class="LineNr"> 46 </span>    <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;  regular REPL: tile type\n&quot;</span>
-<span id="L47" class="LineNr"> 47 </span>    <span class="PreProc">return</span> <span class="Constant">1</span>
-<span id="L48" class="LineNr"> 48 </span>  <span class="Delimiter">}</span>
-<span id="L49" class="LineNr"> 49 </span><span class="Delimiter">}</span>
-<span id="L50" class="LineNr"> 50 </span>
-<span id="L51" class="LineNr"> 51 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L51'>interactive</a></span> <span class="Delimiter">{</span>
-<span id="L52" class="LineNr"> 52 </span>  <a href='../../304screen.subx.html#L6'>enable-screen-grid-mode</a>
-<span id="L53" class="LineNr"> 53 </span>  <a href='../../305keyboard.subx.html#L6'>enable-keyboard-immediate-mode</a>
-<span id="L54" class="LineNr"> 54 </span>  <span class="PreProc">var</span> env-storage: environment
-<span id="L55" class="LineNr"> 55 </span>  <span class="PreProc">var</span> env/<span class="Constant">esi</span>: (addr environment) <span class="SpecialChar">&lt;-</span> address env-storage
-<span id="L56" class="LineNr"> 56 </span>  initialize-environment env
-<span id="L57" class="LineNr"> 57 </span>  draw-screen env
-<span id="L58" class="LineNr"> 58 </span>  <span class="Delimiter">{</span>
-<span id="L59" class="LineNr"> 59 </span>    <span class="PreProc">var</span> key/<span class="Constant">eax</span>: grapheme <span class="SpecialChar">&lt;-</span> <a href='../../305keyboard.subx.html#L132'>read-key-from-real-keyboard</a>
-<span id="L60" class="LineNr"> 60 </span>    compare key, <span class="Constant">0x11</span>  <span class="muComment"># 'ctrl-q'</span>
-<span id="L61" class="LineNr"> 61 </span>    <span class="PreProc">break-if-=</span>
-<span id="L62" class="LineNr"> 62 </span>    process env, key
-<span id="L63" class="LineNr"> 63 </span>    render env
-<span id="L64" class="LineNr"> 64 </span>    <span class="PreProc">loop</span>
-<span id="L65" class="LineNr"> 65 </span>  <span class="Delimiter">}</span>
-<span id="L66" class="LineNr"> 66 </span>  <a href='../../305keyboard.subx.html#L72'>enable-keyboard-type-mode</a>
-<span id="L67" class="LineNr"> 67 </span>  <a href='../../304screen.subx.html#L24'>enable-screen-type-mode</a>
-<span id="L68" class="LineNr"> 68 </span><span class="Delimiter">}</span>
-<span id="L69" class="LineNr"> 69 </span>
-<span id="L70" class="LineNr"> 70 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L70'>test</a></span> <span class="Delimiter">{</span>
-<span id="L71" class="LineNr"> 71 </span>  test-surface-pin-at-origin
-<span id="L72" class="LineNr"> 72 </span><span class="CommentedCode">#?   var env-storage: environment</span>
-<span id="L73" class="LineNr"> 73 </span><span class="CommentedCode">#?   var env/esi: (addr environment) &lt;- address env-storage</span>
-<span id="L74" class="LineNr"> 74 </span><span class="CommentedCode">#?   initialize-environment-with-fake-screen env, 5, 0xa</span>
-<span id="L75" class="LineNr"> 75 </span><span class="CommentedCode">#?   var g/eax: grapheme &lt;- copy 0x22  # '&quot;'</span>
+<span id="L4" class="LineNr">  4 </span>  compare len, <span class="Constant">2</span>
+<span id="L5" class="LineNr">  5 </span>  <span class="Delimiter">{</span>
+<span id="L6" class="LineNr">  6 </span>    <span class="PreProc">break-if-!=</span>
+<span id="L7" class="LineNr">  7 </span>    <span class="muComment"># if single arg is 'test', run tests</span>
+<span id="L8" class="LineNr">  8 </span>    <span class="PreProc">var</span> tmp/<span class="Constant">ecx</span>: (addr addr array byte) <span class="SpecialChar">&lt;-</span> index args, <span class="Constant">1</span>
+<span id="L9" class="LineNr">  9 </span>    <span class="PreProc">var</span> tmp2/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='../../105string-equal.subx.html#L15'>string-equal?</a> *tmp, <span class="Constant">&quot;test&quot;</span>
+<span id="L10" class="LineNr"> 10 </span>    compare tmp2, <span class="Constant">0</span>  <span class="muComment"># false</span>
+<span id="L11" class="LineNr"> 11 </span>    <span class="Delimiter">{</span>
+<span id="L12" class="LineNr"> 12 </span>      <span class="PreProc">break-if-=</span>
+<span id="L13" class="LineNr"> 13 </span>      run-tests
+<span id="L14" class="LineNr"> 14 </span>      <span class="PreProc">return</span> <span class="Constant">0</span>  <span class="muComment"># TODO: get at Num-test-failures somehow</span>
+<span id="L15" class="LineNr"> 15 </span>    <span class="Delimiter">}</span>
+<span id="L16" class="LineNr"> 16 </span>    <span class="muComment"># if single arg is 'screen', run in full-screen mode</span>
+<span id="L17" class="LineNr"> 17 </span>    tmp2 <span class="SpecialChar">&lt;-</span> <a href='../../105string-equal.subx.html#L15'>string-equal?</a> *tmp, <span class="Constant">&quot;screen&quot;</span>
+<span id="L18" class="LineNr"> 18 </span>    compare tmp2, <span class="Constant">0</span>  <span class="muComment"># false</span>
+<span id="L19" class="LineNr"> 19 </span>    <span class="Delimiter">{</span>
+<span id="L20" class="LineNr"> 20 </span>      <span class="PreProc">break-if-=</span>
+<span id="L21" class="LineNr"> 21 </span>      <a href='main.mu.html#L49'>interactive</a>
+<span id="L22" class="LineNr"> 22 </span>      <span class="PreProc">return</span> <span class="Constant">0</span>
+<span id="L23" class="LineNr"> 23 </span>    <span class="Delimiter">}</span>
+<span id="L24" class="LineNr"> 24 </span>    <span class="muComment"># if single arg is 'type', run in typewriter mode</span>
+<span id="L25" class="LineNr"> 25 </span>    tmp2 <span class="SpecialChar">&lt;-</span> <a href='../../105string-equal.subx.html#L15'>string-equal?</a> *tmp, <span class="Constant">&quot;type&quot;</span>
+<span id="L26" class="LineNr"> 26 </span>    compare tmp2, <span class="Constant">0</span>  <span class="muComment"># false</span>
+<span id="L27" class="LineNr"> 27 </span>    <span class="Delimiter">{</span>
+<span id="L28" class="LineNr"> 28 </span>      <span class="PreProc">break-if-=</span>
+<span id="L29" class="LineNr"> 29 </span>      <a href='main.mu.html#L82'>repl</a>
+<span id="L30" class="LineNr"> 30 </span>      <span class="PreProc">return</span> <span class="Constant">0</span>
+<span id="L31" class="LineNr"> 31 </span>    <span class="Delimiter">}</span>
+<span id="L32" class="LineNr"> 32 </span>    <span class="muComment"># if single arg is 'test' ...</span>
+<span id="L33" class="LineNr"> 33 </span>    tmp2 <span class="SpecialChar">&lt;-</span> <a href='../../105string-equal.subx.html#L15'>string-equal?</a> *tmp, <span class="Constant">&quot;test2&quot;</span>
+<span id="L34" class="LineNr"> 34 </span>    compare tmp2, <span class="Constant">0</span>  <span class="muComment"># false</span>
+<span id="L35" class="LineNr"> 35 </span>    <span class="Delimiter">{</span>
+<span id="L36" class="LineNr"> 36 </span>      <span class="PreProc">break-if-=</span>
+<span id="L37" class="LineNr"> 37 </span>      <a href='main.mu.html#L68'>test</a>
+<span id="L38" class="LineNr"> 38 </span>      <span class="PreProc">return</span> <span class="Constant">0</span>
+<span id="L39" class="LineNr"> 39 </span>    <span class="Delimiter">}</span>
+<span id="L40" class="LineNr"> 40 </span>  <span class="Delimiter">}</span>
+<span id="L41" class="LineNr"> 41 </span>  <span class="muComment"># otherwise error message</span>
+<span id="L42" class="LineNr"> 42 </span>  <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;usage:\n&quot;</span>
+<span id="L43" class="LineNr"> 43 </span>  <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;  to run tests: tile test\n&quot;</span>
+<span id="L44" class="LineNr"> 44 </span>  <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;  full-screen mode: tile screen\n&quot;</span>
+<span id="L45" class="LineNr"> 45 </span>  <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;  regular REPL: tile type\n&quot;</span>
+<span id="L46" class="LineNr"> 46 </span>  <span class="PreProc">return</span> <span class="Constant">1</span>
+<span id="L47" class="LineNr"> 47 </span><span class="Delimiter">}</span>
+<span id="L48" class="LineNr"> 48 </span>
+<span id="L49" class="LineNr"> 49 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L49'>interactive</a></span> <span class="Delimiter">{</span>
+<span id="L50" class="LineNr"> 50 </span>  <a href='../../304screen.subx.html#L6'>enable-screen-grid-mode</a>
+<span id="L51" class="LineNr"> 51 </span>  <a href='../../305keyboard.subx.html#L6'>enable-keyboard-immediate-mode</a>
+<span id="L52" class="LineNr"> 52 </span>  <span class="PreProc">var</span> env-storage: environment
+<span id="L53" class="LineNr"> 53 </span>  <span class="PreProc">var</span> env/<span class="Constant">esi</span>: (addr environment) <span class="SpecialChar">&lt;-</span> address env-storage
+<span id="L54" class="LineNr"> 54 </span>  initialize-environment env
+<span id="L55" class="LineNr"> 55 </span>  draw-screen env
+<span id="L56" class="LineNr"> 56 </span>  <span class="Delimiter">{</span>
+<span id="L57" class="LineNr"> 57 </span>    <span class="PreProc">var</span> key/<span class="Constant">eax</span>: grapheme <span class="SpecialChar">&lt;-</span> <a href='../../305keyboard.subx.html#L132'>read-key-from-real-keyboard</a>
+<span id="L58" class="LineNr"> 58 </span>    compare key, <span class="Constant">0x11</span>  <span class="muComment"># 'ctrl-q'</span>
+<span id="L59" class="LineNr"> 59 </span>    <span class="PreProc">break-if-=</span>
+<span id="L60" class="LineNr"> 60 </span>    process env, key
+<span id="L61" class="LineNr"> 61 </span>    render env
+<span id="L62" class="LineNr"> 62 </span>    <span class="PreProc">loop</span>
+<span id="L63" class="LineNr"> 63 </span>  <span class="Delimiter">}</span>
+<span id="L64" class="LineNr"> 64 </span>  <a href='../../305keyboard.subx.html#L72'>enable-keyboard-type-mode</a>
+<span id="L65" class="LineNr"> 65 </span>  <a href='../../304screen.subx.html#L24'>enable-screen-type-mode</a>
+<span id="L66" class="LineNr"> 66 </span><span class="Delimiter">}</span>
+<span id="L67" class="LineNr"> 67 </span>
+<span id="L68" class="LineNr"> 68 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L68'>test</a></span> <span class="Delimiter">{</span>
+<span id="L69" class="LineNr"> 69 </span>  test-surface-pin-at-origin
+<span id="L70" class="LineNr"> 70 </span><span class="CommentedCode">#?   var env-storage: environment</span>
+<span id="L71" class="LineNr"> 71 </span><span class="CommentedCode">#?   var env/esi: (addr environment) &lt;- address env-storage</span>
+<span id="L72" class="LineNr"> 72 </span><span class="CommentedCode">#?   initialize-environment-with-fake-screen env, 5, 0xa</span>
+<span id="L73" class="LineNr"> 73 </span><span class="CommentedCode">#?   var g/eax: grapheme &lt;- copy 0x22  # '&quot;'</span>
+<span id="L74" class="LineNr"> 74 </span><span class="CommentedCode">#?   process env, g</span>
+<span id="L75" class="LineNr"> 75 </span><span class="CommentedCode">#?   g &lt;- copy 0x61  # 'a'</span>
 <span id="L76" class="LineNr"> 76 </span><span class="CommentedCode">#?   process env, g</span>
-<span id="L77" class="LineNr"> 77 </span><span class="CommentedCode">#?   g &lt;- copy 0x61  # 'a'</span>
+<span id="L77" class="LineNr"> 77 </span><span class="CommentedCode">#?   g &lt;- copy 0x22  # '&quot;'</span>
 <span id="L78" class="LineNr"> 78 </span><span class="CommentedCode">#?   process env, g</span>
-<span id="L79" class="LineNr"> 79 </span><span class="CommentedCode">#?   g &lt;- copy 0x22  # '&quot;'</span>
-<span id="L80" class="LineNr"> 80 </span><span class="CommentedCode">#?   process env, g</span>
-<span id="L81" class="LineNr"> 81 </span><span class="CommentedCode">#?   render env</span>
-<span id="L82" class="LineNr"> 82 </span><span class="Delimiter">}</span>
-<span id="L83" class="LineNr"> 83 </span>
-<span id="L84" class="LineNr"> 84 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L84'>repl</a></span> <span class="Delimiter">{</span>
-<span id="L85" class="LineNr"> 85 </span>  <span class="Delimiter">{</span>
-<span id="L86" class="LineNr"> 86 </span>    <span class="muComment"># prompt</span>
-<span id="L87" class="LineNr"> 87 </span>    <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;&gt; &quot;</span>
-<span id="L88" class="LineNr"> 88 </span>    <span class="muComment"># read</span>
-<span id="L89" class="LineNr"> 89 </span>    <span class="PreProc">var</span> line-storage: (stream byte <span class="Constant">0x100</span>)
-<span id="L90" class="LineNr"> 90 </span>    <span class="PreProc">var</span> line/<span class="Constant">ecx</span>: (addr stream byte) <span class="SpecialChar">&lt;-</span> address line-storage
-<span id="L91" class="LineNr"> 91 </span>    <a href='../../106stream.subx.html#L17'>clear-stream</a> line
-<span id="L92" class="LineNr"> 92 </span>    <a href='../../305keyboard.subx.html#L158'>read-line-from-real-keyboard</a> line
-<span id="L93" class="LineNr"> 93 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='../../309stream.subx.html#L6'>stream-empty?</a> line
-<span id="L94" class="LineNr"> 94 </span>    compare done?, <span class="Constant">0</span>  <span class="muComment"># false</span>
-<span id="L95" class="LineNr"> 95 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L96" class="LineNr"> 96 </span>    <span class="muComment"># parse</span>
-<span id="L97" class="LineNr"> 97 </span>    <span class="PreProc">var</span> env-storage: environment
-<span id="L98" class="LineNr"> 98 </span>    <span class="PreProc">var</span> env/<span class="Constant">esi</span>: (addr environment) <span class="SpecialChar">&lt;-</span> address env-storage
-<span id="L99" class="LineNr"> 99 </span>    initialize-environment env
-<span id="L100" class="LineNr">100 </span>    <span class="Delimiter">{</span>
-<span id="L101" class="LineNr">101 </span>      <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='../../309stream.subx.html#L6'>stream-empty?</a> line
-<span id="L102" class="LineNr">102 </span>      compare done?, <span class="Constant">0</span>  <span class="muComment"># false</span>
-<span id="L103" class="LineNr">103 </span>      <span class="PreProc">break-if-!=</span>
-<span id="L104" class="LineNr">104 </span>      <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="SpecialChar">&lt;-</span> <a href='../../403unicode.mu.html#L158'>read-grapheme</a> line
-<span id="L105" class="LineNr">105 </span>      process env, g
-<span id="L106" class="LineNr">106 </span>      <span class="PreProc">loop</span>
-<span id="L107" class="LineNr">107 </span>    <span class="Delimiter">}</span>
-<span id="L108" class="LineNr">108 </span>    <span class="muComment"># eval</span>
-<span id="L109" class="LineNr">109 </span>    <span class="PreProc">var</span> stack-storage: value-stack
-<span id="L110" class="LineNr">110 </span>    <span class="PreProc">var</span> stack/<span class="Constant">edi</span>: (addr value-stack) <span class="SpecialChar">&lt;-</span> address stack-storage
-<span id="L111" class="LineNr">111 </span>    initialize-value-stack stack, <span class="Constant">0x10</span>
-<span id="L112" class="LineNr">112 </span>    evaluate-environment env, stack
-<span id="L113" class="LineNr">113 </span>    <span class="muComment"># print</span>
-<span id="L114" class="LineNr">114 </span>    <span class="PreProc">var</span> empty?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> value-stack-empty? stack
-<span id="L115" class="LineNr">115 </span>    <span class="Delimiter">{</span>
-<span id="L116" class="LineNr">116 </span>      compare empty?, <span class="Constant">0</span>  <span class="muComment"># false</span>
-<span id="L117" class="LineNr">117 </span>      <span class="PreProc">break-if-!=</span>
-<span id="L118" class="LineNr">118 </span>      <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> pop-int-from-value-stack stack
-<span id="L119" class="LineNr">119 </span>      <a href='../../304screen.subx.html#L252'>print-int32-decimal-to-real-screen</a> result
-<span id="L120" class="LineNr">120 </span>      <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;\n&quot;</span>
-<span id="L121" class="LineNr">121 </span>    <span class="Delimiter">}</span>
-<span id="L122" class="LineNr">122 </span>    <span class="muComment">#</span>
-<span id="L123" class="LineNr">123 </span>    <span class="PreProc">loop</span>
-<span id="L124" class="LineNr">124 </span>  <span class="Delimiter">}</span>
-<span id="L125" class="LineNr">125 </span><span class="Delimiter">}</span>
+<span id="L79" class="LineNr"> 79 </span><span class="CommentedCode">#?   render env</span>
+<span id="L80" class="LineNr"> 80 </span><span class="Delimiter">}</span>
+<span id="L81" class="LineNr"> 81 </span>
+<span id="L82" class="LineNr"> 82 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L82'>repl</a></span> <span class="Delimiter">{</span>
+<span id="L83" class="LineNr"> 83 </span>  <span class="Delimiter">{</span>
+<span id="L84" class="LineNr"> 84 </span>    <span class="muComment"># prompt</span>
+<span id="L85" class="LineNr"> 85 </span>    <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;&gt; &quot;</span>
+<span id="L86" class="LineNr"> 86 </span>    <span class="muComment"># read</span>
+<span id="L87" class="LineNr"> 87 </span>    <span class="PreProc">var</span> line-storage: (stream byte <span class="Constant">0x100</span>)
+<span id="L88" class="LineNr"> 88 </span>    <span class="PreProc">var</span> line/<span class="Constant">ecx</span>: (addr stream byte) <span class="SpecialChar">&lt;-</span> address line-storage
+<span id="L89" class="LineNr"> 89 </span>    <a href='../../106stream.subx.html#L17'>clear-stream</a> line
+<span id="L90" class="LineNr"> 90 </span>    <a href='../../305keyboard.subx.html#L158'>read-line-from-real-keyboard</a> line
+<span id="L91" class="LineNr"> 91 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='../../309stream.subx.html#L6'>stream-empty?</a> line
+<span id="L92" class="LineNr"> 92 </span>    compare done?, <span class="Constant">0</span>  <span class="muComment"># false</span>
+<span id="L93" class="LineNr"> 93 </span>    <span class="PreProc">break-if-!=</span>
+<span id="L94" class="LineNr"> 94 </span>    <span class="muComment"># parse</span>
+<span id="L95" class="LineNr"> 95 </span>    <span class="PreProc">var</span> env-storage: environment
+<span id="L96" class="LineNr"> 96 </span>    <span class="PreProc">var</span> env/<span class="Constant">esi</span>: (addr environment) <span class="SpecialChar">&lt;-</span> address env-storage
+<span id="L97" class="LineNr"> 97 </span>    initialize-environment env
+<span id="L98" class="LineNr"> 98 </span>    <span class="Delimiter">{</span>
+<span id="L99" class="LineNr"> 99 </span>      <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='../../309stream.subx.html#L6'>stream-empty?</a> line
+<span id="L100" class="LineNr">100 </span>      compare done?, <span class="Constant">0</span>  <span class="muComment"># false</span>
+<span id="L101" class="LineNr">101 </span>      <span class="PreProc">break-if-!=</span>
+<span id="L102" class="LineNr">102 </span>      <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="SpecialChar">&lt;-</span> <a href='../../403unicode.mu.html#L158'>read-grapheme</a> line
+<span id="L103" class="LineNr">103 </span>      process env, g
+<span id="L104" class="LineNr">104 </span>      <span class="PreProc">loop</span>
+<span id="L105" class="LineNr">105 </span>    <span class="Delimiter">}</span>
+<span id="L106" class="LineNr">106 </span>    <span class="muComment"># eval</span>
+<span id="L107" class="LineNr">107 </span>    <span class="PreProc">var</span> stack-storage: value-stack
+<span id="L108" class="LineNr">108 </span>    <span class="PreProc">var</span> stack/<span class="Constant">edi</span>: (addr value-stack) <span class="SpecialChar">&lt;-</span> address stack-storage
+<span id="L109" class="LineNr">109 </span>    initialize-value-stack stack, <span class="Constant">0x10</span>
+<span id="L110" class="LineNr">110 </span>    evaluate-environment env, stack
+<span id="L111" class="LineNr">111 </span>    <span class="muComment"># print</span>
+<span id="L112" class="LineNr">112 </span>    <span class="PreProc">var</span> empty?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> value-stack-empty? stack
+<span id="L113" class="LineNr">113 </span>    <span class="Delimiter">{</span>
+<span id="L114" class="LineNr">114 </span>      compare empty?, <span class="Constant">0</span>  <span class="muComment"># false</span>
+<span id="L115" class="LineNr">115 </span>      <span class="PreProc">break-if-!=</span>
+<span id="L116" class="LineNr">116 </span>      <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> pop-int-from-value-stack stack
+<span id="L117" class="LineNr">117 </span>      <a href='../../304screen.subx.html#L252'>print-int32-decimal-to-real-screen</a> result
+<span id="L118" class="LineNr">118 </span>      <a href='../../304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;\n&quot;</span>
+<span id="L119" class="LineNr">119 </span>    <span class="Delimiter">}</span>
+<span id="L120" class="LineNr">120 </span>    <span class="muComment">#</span>
+<span id="L121" class="LineNr">121 </span>    <span class="PreProc">loop</span>
+<span id="L122" class="LineNr">122 </span>  <span class="Delimiter">}</span>
+<span id="L123" class="LineNr">123 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
