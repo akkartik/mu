@@ -666,6 +666,49 @@ test-convert-function-with-arg:
     5d/pop-to-ebp
     c3/return
 
+test-function-with-inout-in-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo x/eax: int {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-function-with-inout-in-register: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: function inout 'x' cannot be in a register"  "F - test-function-with-inout-in-register: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-function-with-inout-in-register: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-arg-and-body:
     # . prologue
     55/push-ebp
@@ -878,6 +921,92 @@ test-convert-function-with-return-register:
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-return-register/16")
     # . epilogue
     89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-function-with-output-without-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo -> _: int {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-function-with-output-without-register: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: function output '_' must be in a register, in instruction 'fn foo -> _: int {"  "F - test-function-with-output-without-register: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-function-with-output-without-register: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-function-with-outputs-in-conflicting-registers:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo -> _/eax: int, _/eax: int {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-function-with-outputs-in-conflicting-registers: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: outputs must be in unique registers"  "F - test-function-with-outputs-in-conflicting-registers: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-function-with-outputs-in-conflicting-registers: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
     5d/pop-to-ebp
     c3/return
 
@@ -11044,7 +11173,7 @@ $populate-mu-function-header:error2:
     58/pop-to-eax
     (write-buffered *(ebp+0x14) ": function inout '")
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
-    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x14) %eax)
     (write-buffered *(ebp+0x14) "' cannot be in a register")
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
@@ -15683,14 +15812,16 @@ check-mu-function:  # fn: (addr function), err: (addr buffered-file), ed: (addr 
     56/push-esi
     # esi = f
     8b/-> *(ebp+8) 6/r32/esi
-    # TODO: anything to check in header?
-    # var body/eax: (addr block) = lookup(f->body)
+    # outputs
+    (lookup *(esi+0x10) *(esi+0x14))  # Function-outputs Function-outputs => eax
+    (check-all-unique-registers %eax %esi *(ebp+0xc) *(ebp+0x10))
+    # body
     (lookup *(esi+0x18) *(esi+0x1c))  # Function-body Function-body => eax
     (check-mu-block %eax *(ebp+8) *(ebp+0xc) *(ebp+0x10))
     # if function has no outputs, we're done
     81 7/subop/compare *(esi+0x10) 0/imm32
     74/jump-if-= $check-mu-function:end/disp8
-    # final checks
+    # some final checks on body
     (check-final-stmt-is-return %eax %esi *(ebp+0xc) *(ebp+0x10))
     (check-no-breaks %eax %esi *(ebp+0xc) *(ebp+0x10))
 $check-mu-function:end:
@@ -16451,6 +16582,64 @@ $check-mu-return-stmt:error-too-many-inouts:
     (stop *(ebp+0x14) 1)
     # never gets here
 
+check-all-unique-registers:  # outputs: (addr list var), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    # var table/esi: (addr table (handle array byte) int 8)
+    81 5/subop/subtract %esp 0x60/imm32
+    68/push 0x60/imm32/size
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %esi 4/r32/esp
+    # var curr/ecx: (addr list var) = outputs
+    8b/-> *(ebp+8) 1/r32/ecx
+    {
+      # if (curr == 0) break
+      81 7/subop/compare %ecx 0/imm32
+      0f 84/jump-if-= break/disp32
+      # var reg/eax: (addr array byte) = curr->value->register  # guaranteed to exist
+      (lookup *ecx *(ecx+4))  # List-value List-value => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      # if reg exists in table, abort
+      (maybe-get %esi %eax 0xc)  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-!= $check-all-unique-registers:abort/disp32
+      # insert reg in table
+      (lookup *ecx *(ecx+4))  # List-value List-value => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      (get-or-insert %esi %eax 0xc Heap)
+      # curr = curr->next
+      (lookup *(ecx+8) *(ecx+0xc))  # List-next List-next => eax
+      89/<- %ecx 0/r32/eax
+      e9/jump loop/disp32
+    }
+$check-all-unique-registers:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x6c/imm32
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$check-all-unique-registers:abort:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": outputs must be in unique registers\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
 # return false if s's register is not between start (inclusive) and end (exclusive)
 # return false if the positionally corresponding register in stmt->inouts (where s comes from) is also s's register
 # otherwise return true
@@ -16616,6 +16805,8 @@ check-final-stmt-is-return:  # block: (addr block), fn: (addr function), err: (a
     # var curr/ecx: (addr list stmt) = block->stmts
     8b/-> *(ebp+8) 0/r32/eax
     (lookup *(eax+4) *(eax+8))  # Block-stmts Block-stmts => eax
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $check-final-stmt-is-return:end/disp8
     89/<- %ecx 0/r32/eax
     {
       # if curr->next == 0, break
@@ -16666,6 +16857,8 @@ check-no-breaks:  # block: (addr block), fn: (addr function), err: (addr buffere
     # var curr/ecx: (addr list stmt) = block->stmts
     8b/-> *(ebp+8) 0/r32/eax
     (lookup *(eax+4) *(eax+8))  # Block-stmts Block-stmts => eax
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-no-breaks:end/disp32
     89/<- %ecx 0/r32/eax
     {
       # if curr->next == 0, break
