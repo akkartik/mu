@@ -1184,7 +1184,7 @@ test-return-unavailable-value:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-return-unavailable-value: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: return: 'x' no longer available"  "F - test-return-unavailable-value: error message")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: return: 'x' is no longer available"  "F - test-return-unavailable-value: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-return-unavailable-value: exit status")
     # don't restore from ebp
@@ -1204,7 +1204,7 @@ test-convert-return-with-duplicate-values:
     (clear-stream $_test-output-buffered-file->buffer)
     #
     (write _test-input-stream "fn foo -> _/eax: int, _/ecx: int {\n")
-    (write _test-input-stream "  var x/eax: int <- copy 0\n")
+    (write _test-input-stream "  var x/eax: int <- copy 0x34\n")
     (write _test-input-stream "  return x, x\n")
     (write _test-input-stream "}\n")
     # convert
@@ -1224,7 +1224,7 @@ test-convert-return-with-duplicate-values:
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-return-with-duplicate-values/4")
     (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-return-with-duplicate-values/5")
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-return-with-duplicate-values/6")
-    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"  "F - test-convert-return-with-duplicate-values/7")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0x34/imm32"  "F - test-convert-return-with-duplicate-values/7")
     (check-next-stream-line-equal _test-output-stream "    8b/-> %eax 0x00000000/r32"  "F - test-convert-return-with-duplicate-values/8")
     (check-next-stream-line-equal _test-output-stream "    8b/-> %eax 0x00000001/r32"  "F - test-convert-return-with-duplicate-values/9")
     (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 4/imm32"  "F - test-convert-return-with-duplicate-values/10")
@@ -16278,6 +16278,7 @@ check-mu-return-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buff
     50/push-eax
     51/push-ecx
     52/push-edx
+    53/push-ebx
     56/push-esi
     57/push-edi
     # var type-parameters/edx: (addr table (handle array byte) (addr type-tree) 8)
@@ -16290,19 +16291,21 @@ check-mu-return-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buff
     8b/-> *(ebp+0xc) 0/r32/eax
     (lookup *(eax+0x10) *(eax+0x14))  # Function-outputs Function-outputs => eax
     89/<- %esi 0/r32/eax
+    # var curr-template/ebx: (addr list var) = fn->outputs
+    89/<- %ebx 0/r32/eax
     # var curr/edi: (addr stmt-var) = stmt->inouts
     8b/-> *(ebp+8) 0/r32/eax
     (lookup *(eax+0xc) *(eax+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     89/<- %edi 0/r32/eax
     {
       # if template is null, break
-      81 7/subop/compare %esi 0/imm32
+      81 7/subop/compare %ebx 0/imm32
       0f 84/jump-if-= break/disp32
       # if curr is null, abort
       81 7/subop/compare %edi 0/imm32
       0f 84/jump-if-= $check-mu-return-stmt:error-too-few-inouts/disp32
       # var template-type/ecx: (addr type-tree) = template->value->type
-      (lookup *esi *(esi+4))  # List-value List-value => eax
+      (lookup *ebx *(ebx+4))  # List-value List-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
       89/<- %ecx 0/r32/eax
       # var curr-type/eax: (addr type-tree) = curr->value->type
@@ -16322,9 +16325,13 @@ check-mu-return-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buff
       (type-match? %ecx %eax %edx)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $check-mu-return-stmt:error1/disp32
+      # if register-within-list?(curr, original template, curr-template) abort
+      (register-within-list? %edi %esi %ebx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $check-mu-return-stmt:error2/disp32
       # template = template->next
-      (lookup *(esi+8) *(esi+0xc))  # List-next List-next => eax
-      89/<- %esi 0/r32/eax
+      (lookup *(ebx+8) *(ebx+0xc))  # List-next List-next => eax
+      89/<- %ebx 0/r32/eax
       # curr = curr->next
       (lookup *(edi+8) *(edi+0xc))  # Stmt-var-next Stmt-var-next => eax
       89/<- %edi 0/r32/eax
@@ -16340,6 +16347,7 @@ $check-mu-return-stmt:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
+    5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
@@ -16358,6 +16366,20 @@ $check-mu-return-stmt:error1:
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
     (write-buffered *(ebp+0x10) %eax)
     (write-buffered *(ebp+0x10) "' has the wrong type\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-return-stmt:error2:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": return: '")
+    (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' is no longer available\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
@@ -16381,6 +16403,65 @@ $check-mu-return-stmt:error-too-many-inouts:
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
+
+register-within-list?:  # s: (addr stmt-var), start: (addr list var), end: (addr list var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # var target/ebx: (addr array byte) = s->value->register
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    # if (var->register == 0) return false
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $register-within-list?:end/disp32  # eax turns into result
+    89/<- %ebx 0/r32/eax
+    # var curr/ecx: (addr list var) = start
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # edx = end
+    8b/-> *(ebp+0x10) 2/r32/edx
+    {
+      # if (curr == 0) break
+      81 7/subop/compare %edi 0/imm32
+      74/jump-if-= break/disp8
+      # if (curr == end) break
+      39/compare %ecx 2/r32/edx
+      74/jump-if-= break/disp8
+      # var curr-reg/eax: (addr array byte) = curr->value->register
+      (lookup *ecx *(ecx+4))  # List-value List-value => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      # if (curr-reg == 0) continue
+      3d/compare-eax-and 0/imm32
+      74/jump-if-= $register-within-list?:continue/disp8
+      # if (curr-reg == target) return true
+      (string-equal? %eax %ebx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-= $register-within-list?:end/disp8
+$register-within-list?:continue:
+      # curr = curr->next
+      (lookup *(ecx+8) *(ecx+0xc))  # List-next List-next => eax
+      89/<- %ecx 0/r32/eax
+      e9/jump loop/disp32
+    }
+    # return false
+    b8/copy-to-eax 0/imm32/false
+$register-within-list?:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 check-final-stmt-is-return:  # block: (addr block), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
