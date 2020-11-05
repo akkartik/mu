@@ -523,7 +523,7 @@ fn word-is-decimal-integer? _self: (addr word) -> _/eax: boolean {
 
 # ABSOLUTELY GHASTLY
 fn word-exists? _haystack-ah: (addr handle word), _needle: (addr word) -> _/ebx: boolean {
-  var needle-name-storage: (handle addr byte)
+  var needle-name-storage: (handle array byte)
   var needle-name-ah/eax: (addr handle array byte) <- address needle-name-storage
   word-to-string _needle, needle-name-ah  # profligate leak
   var _needle-name/eax: (addr array byte) <- lookup *needle-name-ah
@@ -537,7 +537,7 @@ fn word-exists? _haystack-ah: (addr handle word), _needle: (addr word) -> _/ebx:
     return 0  # false
   }
   # check curr
-  var curr-name-storage: (handle addr byte)
+  var curr-name-storage: (handle array byte)
   var curr-name-ah/ecx: (addr handle array byte) <- address curr-name-storage
   word-to-string curr, curr-name-ah  # profligate leak
   var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
