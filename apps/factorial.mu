@@ -36,7 +36,7 @@ fn test-factorial {
   check-ints-equal result, 0x78, "F - test-factorial"
 }
 
-fn main args-on-stack: (addr array (addr array byte)) -> _/ebx: int {
+fn main args-on-stack: (addr array addr array byte) -> _/ebx: int {
   var args/eax: (addr array addr array byte) <- copy args-on-stack
   # len = length(args)
   var len/ecx: int <- length args
