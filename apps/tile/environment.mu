@@ -814,7 +814,7 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> _/ebx
 }
 
 fn arg-exists? _f-ah: (addr handle function), arg: (addr word) -> _/ebx: boolean {
-  var f-ah/eax: (addr handle function) <- copy *_f-ah
+  var f-ah/eax: (addr handle function) <- copy _f-ah
   var f/eax: (addr function) <- lookup *f-ah
   var args-ah/eax: (addr handle word) <- get f, args
   var result/ebx: boolean <- word-exists? args-ah, arg
