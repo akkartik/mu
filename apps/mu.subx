@@ -7385,6 +7385,36 @@ test-compare-invalid-value-to-address:
     5d/pop-to-ebp
     c3/return
 
+test-compare-address:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: (addr int) <- copy 0\n")
+    (write _test-input-stream "  var y/ecx: (addr int) <- copy 0\n")
+    (write _test-input-stream "  compare y, x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # not bothering checking output
+    (check-next-stream-line-equal _test-error-stream  ""  "F - test-compare-address: error message")
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-compare-two-vars-in-memory:
     # . prologue
     55/push-ebp
@@ -17654,6 +17684,7 @@ $check-mu-compare-stmt:types:
     0f 8f/jump-if-> $check-mu-compare-stmt:error-left-too-large/disp32
     # if (left-type == right-type) return
     (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
     (type-match? %eax %ecx %edx)  # => eax
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-!= $check-mu-compare-stmt:end/disp32
