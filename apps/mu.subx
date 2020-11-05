@@ -6929,6 +6929,51 @@ test-copy-to-with-no-input:
     5d/pop-to-ebp
     c3/return
 
+test-copy-to-with-no-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: boolean\n")
+    (write _test-input-stream "  copy-to x, x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-copy-to-with-no-register: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: source (second inout) is in memory"  "F - test-copy-to-with-no-register: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-copy-to-with-no-register: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-copy-to-with-too-many-inouts:
     # . prologue
     55/push-ebp
@@ -7103,9 +7148,329 @@ test-copy-to-non-scalar:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-copy-to-non-scalar: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: 'x' is too large to copy"  "F - test-copy-to-non-scalar: error message")
+#?     (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: 'x' is too large to copy"  "F - test-copy-to-non-scalar: error message")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: source (second inout) is in memory"  "F - test-copy-to-non-scalar: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-copy-to-non-scalar: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-with-no-inout:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: boolean\n")
+    (write _test-input-stream "  compare\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-compare-with-no-inout: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt 'compare' must have two inouts"  "F - test-compare-with-no-inout: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-compare-with-no-inout: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-with-no-input:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: boolean\n")
+    (write _test-input-stream "  compare x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-compare-with-no-input: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt 'compare' must have two inouts"  "F - test-compare-with-no-input: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-compare-with-no-input: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-with-too-many-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: boolean\n")
+    (write _test-input-stream "  compare x, 0, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-compare-with-too-many-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt 'compare' must have two inouts"  "F - test-compare-with-too-many-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-compare-with-too-many-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-with-output:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: boolean <- copy 0\n")
+    (write _test-input-stream "  var y/ecx: boolean <- copy 0\n")
+    (write _test-input-stream "  x <- compare y, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-compare-with-output: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt 'compare' must not have any outputs"  "F - test-compare-with-output: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-compare-with-output: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-invalid-value-to-address:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: int <- copy 0\n")
+    (write _test-input-stream "  var y: (addr int)\n")
+    (write _test-input-stream "  compare y, x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-compare-invalid-value-to-address: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt compare: 'y' must be a non-addr scalar"  "F - test-compare-invalid-value-to-address: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-compare-invalid-value-to-address: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-two-vars-in-memory:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: boolean\n")
+    (write _test-input-stream "  compare x, x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-compare-two-vars-in-memory: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt compare: both inouts are in memory"  "F - test-compare-two-vars-in-memory: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-compare-two-vars-in-memory: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-non-scalar:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: (handle int)\n")
+    (write _test-input-stream "  var y: int\n")
+    (write _test-input-stream "  compare y, x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-compare-non-scalar: output should be empty")
+#?     (check-next-stream-line-equal _test-error-stream  "fn foo: stmt compare: 'x' is too large to compare"  "F - test-compare-non-scalar: error message")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt compare: both inouts are in memory"  "F - test-compare-non-scalar: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-compare-non-scalar: exit status")
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
@@ -17105,6 +17470,20 @@ $check-mu-copy-to-stmt:types:
     (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
     89/<- %ecx 0/r32/eax
+    # if src not in register or literal, abort
+    # (we can't use stack-offset because it hasn't been computed yet)
+    {
+      (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+0x8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-simple-mu-type? %eax 0)  # => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-!= break/disp8
+      (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-!= break/disp8
+      e9/jump $check-mu-copy-to-stmt:error-src-not-literal-or-in-register/disp32
+    }
     # if src is not a scalar, abort
     (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
     (size-of %eax)  # => eax
@@ -17167,6 +17546,16 @@ $check-mu-copy-to-stmt:error-too-many-outputs:
     (stop *(ebp+0x14) 1)
     # never gets here
 
+$check-mu-copy-to-stmt:error-src-not-literal-or-in-register:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt copy-to: source (second inout) is in memory\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
 $check-mu-copy-to-stmt:error-src-too-large:
     (write-buffered *(ebp+0x10) "fn ")
     8b/-> *(ebp+0xc) 0/r32/eax
@@ -17186,12 +17575,175 @@ check-mu-compare-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buf
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    57/push-edi
+    # var type-parameters/edx: (addr table (handle array byte) (addr type-tree) 8)
+    81 5/subop/subtract %esp 0x60/imm32
+    68/push 0x60/imm32/size
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %edx 4/r32/esp
+    # esi = stmt
+    8b/-> *(ebp+8) 6/r32/esi
+$check-mu-compare-stmt:check-for-output:
+    # if stmt->outputs abort
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-!= $check-mu-compare-stmt:error-too-many-outputs/disp32
+$check-mu-compare-stmt:get-left:
+    # var left/edi: (addr stmt-var) = stmt->inouts
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %edi 0/r32/eax
+    # zero inouts
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-mu-compare-stmt:error-incorrect-inouts/disp32
+$check-mu-compare-stmt:get-right:
+    # var right/esi: (addr stmt-var) = left->next
+    (lookup *(edi+8) *(edi+0xc))  # Stmt-var-next Stmt-var-next => eax
+    89/<- %esi 0/r32/eax
+    # 1 inout
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-mu-compare-stmt:error-incorrect-inouts/disp32
+    # > 2 inouts
+    (lookup *(esi+8) *(esi+0xc))  # Stmt-var-next Stmt-var-next => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-!= $check-mu-compare-stmt:error-incorrect-inouts/disp32
+    # if both inouts are in memory, abort
+    {
+$check-mu-compare-stmt:both-in-mem:
+      (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+0x8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-simple-mu-type? %eax 0)  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-!= break/disp32
+      (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-!= break/disp8
+      (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+0x8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-simple-mu-type? %eax 0)  # => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-!= break/disp8
+      (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-!= break/disp8
+      e9/jump $check-mu-compare-stmt:error-both-in-memory/disp32
+    }
+$check-mu-compare-stmt:types:
+    # var right-type/ecx: (addr type-tree) = right->value->type
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    89/<- %ecx 0/r32/eax
+    # if right is not a scalar, abort
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (size-of %eax)  # => eax
+    3d/compare-eax-and 4/imm32
+    0f 8f/jump-if-> $check-mu-compare-stmt:error-right-too-large/disp32
+    # var left-type/eax: (addr type-tree) = left->value->type
+    (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    # if left is not a scalar, abort
+    (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (size-of %eax)  # => eax
+    3d/compare-eax-and 4/imm32
+    0f 8f/jump-if-> $check-mu-compare-stmt:error-left-too-large/disp32
+    # if (left-type == right-type) return
+    (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (type-match? %eax %ecx %edx)  # => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-!= $check-mu-compare-stmt:end/disp32
+    # if left is an addr and right is 0, return
+    {
+      (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-mu-addr-type? %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *eax *(eax+4))  # Var-name Var-name => eax
+      (string-equal? %eax "0")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      eb/jump $check-mu-compare-stmt:end/disp8
+    }
+    # if left is not number-like, abort
+    (check-mu-numberlike-arg %edi *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
 $check-mu-compare-stmt:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x6c/imm32
     # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$check-mu-compare-stmt:error-incorrect-inouts:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt 'compare' must have two inouts\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-compare-stmt:error-too-many-outputs:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt 'compare' must not have any outputs\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-compare-stmt:error-both-in-memory:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt compare: both inouts are in memory\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-compare-stmt:error-left-too-large:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt compare: '")
+    (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' is too large to compare\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-compare-stmt:error-right-too-large:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt compare: '")
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' is too large to compare\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
 
 check-mu-address-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
