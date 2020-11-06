@@ -763,6 +763,7 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
 fn bound-function? w: (addr word), functions-ah: (addr handle function) -> _/ebx: boolean {
   var result/ebx: boolean <- copy 1  # true
   {
+    ## numbers
     # if w == "+" return true
     var subresult/eax: boolean <- word-equal? w, "+"
     compare subresult, 0  # false
@@ -775,10 +776,12 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> _/ebx
     subresult <- word-equal? w, "*"
     compare subresult, 0  # false
     break-if-!=
+    ## strings/arrays
     # if w == "len" return true
     subresult <- word-equal? w, "len"
     compare subresult, 0  # false
     break-if-!=
+    ## files
     # if w == "open" return true
     subresult <- word-equal? w, "open"
     compare subresult, 0  # false
@@ -795,6 +798,7 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> _/ebx
     subresult <- word-equal? w, "lines"
     compare subresult, 0  # false
     break-if-!=
+    ## hacks
     # if w == "dup" return true
     subresult <- word-equal? w, "dup"
     compare subresult, 0  # false

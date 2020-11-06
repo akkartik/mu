@@ -14,7 +14,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
 #?     print-stream-to-real-screen curr-stream
 #?     print-string-to-real-screen "\n"
     $evaluate:process-word: {
-      # if curr-stream is an operator, perform it
+      ### if curr-stream is an operator, perform it
+      ## numbers
       {
         var is-add?/eax: boolean <- stream-data-equal? curr-stream, "+"
         compare is-add?, 0
@@ -48,6 +49,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         push-int-to-value-stack out, a
         break $evaluate:process-word
       }
+      ## strings/arrays
       {
         var is-len?/eax: boolean <- stream-data-equal? curr-stream, "len"
         compare is-len?, 0
@@ -102,6 +104,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           break $evaluate:process-word
         }
       }
+      ## files
       {
         var is-open?/eax: boolean <- stream-data-equal? curr-stream, "open"
         compare is-open?, 0
@@ -255,45 +258,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         copy-handle empty-text, target-text-ah
         break $evaluate:process-word
       }
-      # if curr-stream defines a binding, save top of stack to bindings
-      {
-        var done?/eax: boolean <- stream-empty? curr-stream
-        compare done?, 0  # false
-        break-if-!=
-        var new-byte/eax: byte <- read-byte curr-stream
-        compare new-byte, 0x3d  # '='
-        break-if-!=
-        # pop target-val from out
-        var out2/esi: (addr value-stack) <- copy out
-        var top-addr/ecx: (addr int) <- get out2, top
-        compare *top-addr, 0
-        break-if-<=
-        var data-ah/eax: (addr handle array value) <- get out2, data
-        var data/eax: (addr array value) <- lookup *data-ah
-        var top/edx: int <- copy *top-addr
-        top <- decrement
-        var dest-offset/edx: (offset value) <- compute-offset data, top
-        var target-val/edx: (addr value) <- index data, dest-offset
-        # create binding from curr-stream to target-val
-        var key-h: (handle array byte)
-        var key/ecx: (addr handle array byte) <- address key-h
-        stream-to-array curr-stream, key
-        bind-in-table bindings, key, target-val
-        break $evaluate:process-word
-      }
-      rewind-stream curr-stream
-      # if curr-stream is a known function name, call it appropriately
-      {
-        var callee-h: (handle function)
-        var callee-ah/eax: (addr handle function) <- address callee-h
-        find-function functions, curr-stream, callee-ah
-        var callee/eax: (addr function) <- lookup *callee-ah
-        compare callee, 0
-        break-if-=
-        perform-call callee, out, functions
-        break $evaluate:process-word
-      }
-      # HACKS: we're trying to avoid turning this into Forth
+      ## HACKS: we're trying to avoid turning this into Forth
       {
         var is-dup?/eax: boolean <- stream-data-equal? curr-stream, "dup"
         compare is-dup?, 0
@@ -346,8 +311,45 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         copy-object tmp-a, pen-top-val
         break $evaluate:process-word
       }
-      # END HACKS
-      # if it's a name, push its value
+      ### if curr-stream defines a binding, save top of stack to bindings
+      {
+        var done?/eax: boolean <- stream-empty? curr-stream
+        compare done?, 0  # false
+        break-if-!=
+        var new-byte/eax: byte <- read-byte curr-stream
+        compare new-byte, 0x3d  # '='
+        break-if-!=
+        # pop target-val from out
+        var out2/esi: (addr value-stack) <- copy out
+        var top-addr/ecx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        var data-ah/eax: (addr handle array value) <- get out2, data
+        var data/eax: (addr array value) <- lookup *data-ah
+        var top/edx: int <- copy *top-addr
+        top <- decrement
+        var dest-offset/edx: (offset value) <- compute-offset data, top
+        var target-val/edx: (addr value) <- index data, dest-offset
+        # create binding from curr-stream to target-val
+        var key-h: (handle array byte)
+        var key/ecx: (addr handle array byte) <- address key-h
+        stream-to-array curr-stream, key
+        bind-in-table bindings, key, target-val
+        break $evaluate:process-word
+      }
+      rewind-stream curr-stream
+      ### if curr-stream is a known function name, call it appropriately
+      {
+        var callee-h: (handle function)
+        var callee-ah/eax: (addr handle function) <- address callee-h
+        find-function functions, curr-stream, callee-ah
+        var callee/eax: (addr function) <- lookup *callee-ah
+        compare callee, 0
+        break-if-=
+        perform-call callee, out, functions
+        break $evaluate:process-word
+      }
+      ### if it's a name, push its value
       {
         compare bindings, 0
         break-if-=
@@ -364,7 +366,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         push-value-stack out, val
         break $evaluate:process-word
       }
-      # if the word starts with a quote and ends with a quote, turn it into a string
+      ### if the word starts with a quote and ends with a quote, turn it into a string
       {
         var start/eax: byte <- stream-first curr-stream
         compare start, 0x22  # double-quote
@@ -378,7 +380,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         push-string-to-value-stack out, *s
         break $evaluate:process-word
       }
-      # if the word starts with a '[' and ends with a ']', turn it into an array
+      ### if the word starts with a '[' and ends with a ']', turn it into an array
       {
         var start/eax: byte <- stream-first curr-stream
         compare start, 0x5b  # '['
@@ -422,7 +424,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         }
         break $evaluate:process-word
       }
-      # otherwise assume it's a literal int and push it
+      ### otherwise assume it's a literal number and push it
       {
         var n/eax: int <- parse-decimal-int-from-stream curr-stream
         push-int-to-value-stack out, n
