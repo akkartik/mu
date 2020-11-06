@@ -420,9 +420,12 @@ Type-id:  # (stream (addr array byte))
                     # only 4-byte graphemes in utf-8 are currently supported;
                     # unclear how we should deal with larger clusters.
   "float"/imm32     # 15
-  # Keep Primitive-type-ids in sync if you add types here.
   # 0x40
-  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32  # 16 reserved for literal strings; value is just the name
+           # Not to be used directly, so we don't include a name here.
+           # TODO: move this up next to literal ints
+  # Keep Primitive-type-ids in sync if you add types here.
+          0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
@@ -430,7 +433,7 @@ Type-id:  # (stream (addr array byte))
   0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
 
 Primitive-type-ids:  # (addr int)
-  0x40
+  0x44
 
 # == Type definitions
 # Program->types contains some typeinfo for each type definition.
@@ -1709,6 +1712,52 @@ test-convert-function-call-with-literal-arg:
     (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-literal-arg/32")
     (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-literal-arg/33")
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-literal-arg/34")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-literal-string-arg:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  string-func \"abc\"\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "sig string-func in: (addr array byte)\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    # no errors
+    # not bothering checking output
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-call-with-null-addr:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  bar 0\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "sig bar in: (addr int)\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    # no errors
+    # not bothering checking output
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -6924,6 +6973,107 @@ test-copy-invalid-value-to-address:
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-copy-null-value-to-addr:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var y/ecx: (addr int) <- copy 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # no errors
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-copy-invalid-value-to-offset:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: int <- copy 0\n")
+    (write _test-input-stream "  var y/ecx: (offset int) <- copy x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-copy-invalid-value-to-address: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy: 'y' must be a non-addr non-offset scalar"  "F - test-copy-invalid-value-to-address: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-copy-invalid-value-to-offset: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-copy-null-value-to-offset:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var y/ecx: (offset int) <- copy 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # no errors
+    # . epilogue
+    89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
@@ -12695,7 +12845,7 @@ test-allocate-non-addr:
     (tailor-exit-descriptor %edx 0x10)
     #
     (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "  var y/ecx: (handle int) <- copy 0\n")
+    (write _test-input-stream "  var y: (handle int)\n")
     (write _test-input-stream "  allocate y\n")
     (write _test-input-stream "}\n")
     # convert
@@ -12949,7 +13099,7 @@ test-populate-non-addr:
     (tailor-exit-descriptor %edx 0x10)
     #
     (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "  var y/ecx: (handle int) <- copy 0\n")
+    (write _test-input-stream "  var y: (handle int)\n")
     (write _test-input-stream "  populate y, 3\n")
     (write _test-input-stream "}\n")
     # convert
@@ -13248,7 +13398,7 @@ test-populate-stream-non-addr:
     (tailor-exit-descriptor %edx 0x10)
     #
     (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "  var y/ecx: (handle int) <- copy 0\n")
+    (write _test-input-stream "  var y: (handle int)\n")
     (write _test-input-stream "  populate-stream y, 3\n")
     (write _test-input-stream "}\n")
     # convert
@@ -16482,7 +16632,7 @@ $lookup-var-or-literal:literal:
       81 7/subop/compare %ecx 0x22/imm32/dquote
       75/jump-if-!= break/disp8
 $lookup-var-or-literal:literal-string:
-      (new-literal Heap %esi *(ebp+0x10))
+      (new-literal-string Heap %esi *(ebp+0x10))
       eb/jump $lookup-var-or-literal:end/disp8
     }
     # otherwise return lookup-var(name, vars)
@@ -17256,6 +17406,47 @@ new-literal:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr
     # nothing else to do; default type is 'literal'
     c7 0/subop/copy *eax 1/imm32/true  # Type-tree-is-atom
 $new-literal:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+new-literal-string:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # var s/ecx: (handle array byte)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    # s = slice-to-string(name)
+    (slice-to-string Heap *(ebp+0xc) %ecx)
+    # allocate to out
+    (new-var *(ebp+8) *ecx *(ecx+4) *(ebp+0x10))
+    # var out-addr/ecx: (addr var) = lookup(*out)
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    (lookup *ecx *(ecx+4))  # => eax
+    89/<- %ecx 0/r32/eax
+    # out-addr->block-depth = *Curr-block-depth
+    8b/-> *Curr-block-depth 0/r32/eax
+    89/<- *(ecx+0x10) 0/r32/eax  # Var-block-depth
+    # out-addr->type/eax = new type
+    8d/copy-address *(ecx+8) 0/r32/eax  # Var-type
+    (allocate *(ebp+8) *Type-tree-size %eax)
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
+    # out-addr->type->value = literal-string
+    c7 0/subop/copy *(eax+4) 0x10/imm32/type-id-string-literal  # Type-tree-value
+    # out-addr->type->is-atom? = true
+    c7 0/subop/copy *eax 1/imm32/true  # Type-tree-is-atom
+$new-literal-string:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
     # . restore registers
@@ -19189,7 +19380,7 @@ check-mu-numberlike-output:  # v: (addr stmt-var), stmt: (addr stmt), fn: (addr 
     # . save registers
     50/push-eax
     #
-    (is-mu-numberlike-output? *(ebp+8))  # => eax
+    (is-mu-numberlike-output-var? *(ebp+8))  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-numberlike-output:fail/disp32
 $check-mu-numberlike-output:end:
@@ -19220,17 +19411,29 @@ $check-mu-numberlike-output:fail:
     (stop *(ebp+0x18) 1)
     # never gets here
 
-is-mu-numberlike-output?:  # v: (addr stmt-var) -> result/eax: boolean
+is-mu-numberlike-output-var?:  # v: (addr stmt-var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    (is-mu-numberlike-output? %eax)  # => eax
+$is-mu-numberlike-output-var?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+is-mu-numberlike-output?:  # v: (addr type-tree) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     56/push-esi
     # var t/esi: (addr type-tree) = lookup(v->value->type)
-    8b/-> *(ebp+8) 0/r32/eax
-    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
-    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-    89/<- %esi 0/r32/eax
+    8b/-> *(ebp+8) 6/r32/esi
 $is-mu-numberlike-output?:check-int:
     # if t is an int, return
     (is-simple-mu-type? %esi 1)  # int => eax
@@ -19355,6 +19558,23 @@ $check-mu-copy-stmt:types:
       (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
       (is-mu-addr-type? %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *eax *(eax+4))  # Var-name Var-name => eax
+      (string-equal? %eax "0")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      e9/jump $check-mu-copy-stmt:end/disp32
+    }
+    # if output is an offset and inout is 0, return
+    {
+      (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 7)  # offset => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22662,10 +22882,16 @@ $check-mu-call:check-for-inouts:
       # if (expected == 0) error
       81 7/subop/compare %edx 0/imm32
       0f 84/jump-if-= break/disp32
-$check-mu-call:check-inout-type:
-      # var v/eax: (addr v) = lookup(inouts->value)
+$check-mu-call:check-null-addr:
+      # if (inouts->value->name == "0") continue
       (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
-      # var t/ebx: (addr type-tree) = lookup(v->type)
+      (lookup *eax *(eax+4))  # Var-name Var-name => eax
+      (string-equal? %eax "0")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $check-mu-call:continue-to-next-inout/disp32
+$check-mu-call:check-inout-type:
+      # var t/ebx: (addr type-tree) = inouts->value->type
+      (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
       89/<- %ebx 0/r32/eax
       # if (inouts->is-deref?) t = t->right  # TODO: check that t->left is an addr
@@ -22914,16 +23140,35 @@ $check-mu-call:end:
     5d/pop-to-ebp
     c3/return
 
-# like type-equal? but takes literals into account
+# like type-equal? but takes literals type parameters into account
 type-match?:  # def: (addr type-tree), call: (addr type-tree), type-parameters: (addr table (handle array byte) (addr type-tree)) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # if (call == literal) return true  # TODO: more precise
-    (is-simple-mu-type? *(ebp+0xc) 0)  # literal => eax
-    3d/compare-eax-and 0/imm32/false
-    b8/copy-to-eax 1/imm32/true
-    75/jump-if-!= $type-match?:end/disp8
+    # if (call is literal and def is numberlike) return true
+    {
+$type-match?:check-literal-int:
+      (is-simple-mu-type? *(ebp+0xc) 0)  # literal => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (is-mu-numberlike-output? *(ebp+8))  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      b8/copy-to-eax 1/imm32/true
+      e9/jump $type-match?:end/disp32
+    }
+    # if (call is literal-string and def is string) return true
+    {
+$type-match?:check-literal-string:
+      (is-simple-mu-type? *(ebp+0xc) 0x10)  # literal-string => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (is-mu-string-type? *(ebp+8))  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      b8/copy-to-eax 1/imm32/true
+      e9/jump $type-match?:end/disp32
+    }
 $type-match?:baseline:
     # otherwise fall back
     (type-component-match? *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
@@ -31367,9 +31612,20 @@ $emit-subx-call-operand:stack:
     # else if (operand->type == literal) emit "__"
     {
       (lookup *(esi+8) *(esi+0xc))  # Var-type Var-type => eax
-      81 7/subop/compare *(eax+4) 0/imm32  # Type-tree-left
+      81 7/subop/compare *(eax+4) 0/imm32  # Type-tree-value
       75/jump-if-!= break/disp8
 $emit-subx-call-operand:literal:
+      (write-buffered *(ebp+8) Space)
+      (lookup *esi *(esi+4))  # Var-name Var-name => eax
+      (write-buffered *(ebp+8) %eax)
+      e9/jump $emit-subx-call-operand:end/disp32
+    }
+    # else if (operand->type == literal-string) emit "__"
+    {
+      (lookup *(esi+8) *(esi+0xc))  # Var-type Var-type => eax
+      81 7/subop/compare *(eax+4) 0x10/imm32  # Type-tree-value
+      75/jump-if-!= break/disp8
+$emit-subx-call-operand:literal-string:
       (write-buffered *(ebp+8) Space)
       (lookup *esi *(esi+4))  # Var-name Var-name => eax
       (write-buffered *(ebp+8) %eax)
@@ -32008,6 +32264,46 @@ is-mu-array-type?:  # a: (addr type-tree) -> result/eax: boolean
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
 $is-mu-array-type?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+is-mu-string-type?:  # a: (addr type-tree) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    56/push-esi
+    # esi = a
+    8b/-> *(ebp+8) 6/r32/esi
+    # if (a->is-atom?) return false
+    81 7/subop/compare *esi 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $is-mu-string-type?:return-false/disp32
+    # if a is not an addr, return false
+    (is-mu-addr-type? %esi)  # => eax
+    3d/compare-eax-with 0/imm32/false
+    0f 84/jump-if-= $is-mu-string-type?:end/disp32  # eax changes var
+    # if a is not an array, return false
+    (lookup *(esi+0xc) *(esi+0x10))  # Type-tree-right Type-tree-right => eax
+    (is-mu-array-type? %eax)  # => eax
+    3d/compare-eax-with 0/imm32/false
+    74/jump-if-= $is-mu-string-type?:end/disp8  # eax changes var
+    # var p/eax: (addr type-tree) = payload of a
+    (lookup *(esi+0xc) *(esi+0x10))  # Type-tree-right Type-tree-right => eax
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # if p is an atom, return false
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    75/jump-if-!= $is-mu-string-type?:return-false/disp8
+    # return (p == byte)
+    (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    (is-simple-mu-type? %eax 8)  # byte => eax
+    eb/jump $is-mu-string-type?:end/disp8
+$is-mu-string-type?:return-false:
+    b8/copy-to-eax 0/imm32/false
+$is-mu-string-type?:end:
+    # . restore registers
+    5e/pop-to-esi
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
