@@ -12618,6 +12618,305 @@ test-allocate-deref-address:
     5d/pop-to-ebp
     c3/return
 
+test-populate-with-no-inout:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  populate\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-populate-with-no-inout: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt 'populate' must have two inouts"  "F - test-populate-with-no-inout: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-populate-with-no-inout: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-populate-with-too-many-inouts:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: (addr handle int)\n")
+    (write _test-input-stream "  populate x, 3, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-populate-with-too-many-inouts: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt 'populate' must have two inouts"  "F - test-populate-with-too-many-inouts: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-populate-with-too-many-inouts: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-populate-with-output:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: boolean <- copy 0\n")
+    (write _test-input-stream "  var y/ecx: (addr handle int) <- copy 0\n")
+    (write _test-input-stream "  x <- populate y\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-populate-with-output: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt 'populate' must not have any outputs"  "F - test-populate-with-output: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-populate-with-output: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-populate-non-addr:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var y/ecx: (handle int) <- copy 0\n")
+    (write _test-input-stream "  populate y, 3\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-populate-non-addr: output must be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt populate: first inout 'y' must have type (addr handle array ...)"  "F - test-populate-non-addr: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-populate-non-addr: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-populate-non-addr-handle:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var y/ecx: (addr int) <- copy 0\n")
+    (write _test-input-stream "  populate y, 3\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-populate-non-addr-handle: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt populate: first inout 'y' must have type (addr handle array ...)"  "F - test-populate-non-addr-handle: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-populate-non-addr-handle: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-populate-non-addr-handle-array:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var y/ecx: (addr handle int) <- copy 0\n")
+    (write _test-input-stream "  populate y, 3\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-populate-non-addr-handle-array: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt populate: first inout 'y' must have type (addr handle array ...)"  "F - test-populate-non-addr-handle-array: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-populate-non-addr-handle-array: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-populate-deref-address:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var y/ecx: (addr addr handle array int) <- copy 0\n")
+    (write _test-input-stream "  populate *y, 3\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # not bothering checking output
+    (check-next-stream-line-equal _test-error-stream  ""  "F - test-populate-deref-address: error message")
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
@@ -20926,8 +21225,8 @@ $check-mu-allocate-stmt:check-for-output:
     (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-!= $check-mu-allocate-stmt:error-too-many-outputs/disp32
-$check-mu-allocate-stmt:get-arg:
-    # var arg/edi: (addr stmt-var) = stmt->inouts
+$check-mu-allocate-stmt:get-target:
+    # var target/edi: (addr stmt-var) = stmt->inouts
     (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     89/<- %edi 0/r32/eax
     # zero inouts
@@ -20938,17 +21237,17 @@ $check-mu-allocate-stmt:get-arg:
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-!= $check-mu-allocate-stmt:error-incorrect-inouts/disp32
 $check-mu-allocate-stmt:check-type:
-    # var arg-type/ebx: (addr type-tree) = arg->value->type
+    # var target-type/ebx: (addr type-tree) = target->value->type
     (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
     89/<- %ebx 0/r32/eax
-    # if (arg->is-deref?) arg-type = arg-type->payload
+    # if (target->is-deref?) target-type = target-type->payload
     8b/-> *(edi+0x10) 0/r32/eax  # Stmt-var-is-deref
     3d/compare-eax-and 0/imm32/false
     {
       74/jump-if-= break/disp8
       (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
-      # if arg-type->right is null, arg-type = arg-type->left
+      # if target-type->right is null, target-type = target-type->left
       81 7/subop/compare *(eax+0xc) 0/imm32  # Type-tree-right
       {
         75/jump-if-!= break/disp8
@@ -20956,14 +21255,15 @@ $check-mu-allocate-stmt:check-type:
       }
       89/<- %ebx 0/r32/eax
     }
-    # if arg-type is not addr, abort
+    # if target-type is not addr, abort
     (is-mu-addr-type? %ebx)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-allocate-stmt:error-invalid-type/disp32
-    # if arg-type->right is an atom, abort
+    # if target-type->right is an atom, abort
     (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
     81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
     0f 85/jump-if-!= $check-mu-allocate-stmt:error-invalid-type/disp32
+    # if target-type->right->left is not handle, abort
     (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
     (is-simple-mu-type? %eax 4)  # handle => eax
     3d/compare-eax-and 0/imm32/false
@@ -21019,12 +21319,152 @@ check-mu-populate-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr bu
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
+    51/push-ecx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+8) 6/r32/esi
+$check-mu-populate-stmt:check-for-output:
+    # if stmt->outputs abort
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-!= $check-mu-populate-stmt:error-too-many-outputs/disp32
+$check-mu-populate-stmt:get-target:
+    # var target/edi: (addr stmt-var) = stmt->inouts
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %edi 0/r32/eax
+    # zero inouts
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-mu-populate-stmt:error-incorrect-inouts/disp32
+$check-mu-populate-stmt:get-length:
+    # var length/esi: (addr stmt-var) = dest->next
+    (lookup *(edi+8) *(edi+0xc))  # Stmt-var-next Stmt-var-next => eax
+    89/<- %esi 0/r32/eax
+    # 1 inout
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-mu-copy-object-stmt:error-incorrect-inouts/disp32
+    # > 2 inouts
+    (lookup *(esi+8) *(esi+0xc))  # Stmt-var-next Stmt-var-next => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-!= $check-mu-populate-stmt:error-incorrect-inouts/disp32
+$check-mu-populate-stmt:check-target-type:
+    # var target-type/ebx: (addr type-tree) = target->value->type
+    (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    89/<- %ebx 0/r32/eax
+$check-mu-populate-stmt:check-target-type-deref:
+    # if (target->is-deref?) target-type = target-type->payload
+    8b/-> *(edi+0x10) 0/r32/eax  # Stmt-var-is-deref
+    3d/compare-eax-and 0/imm32/false
+    {
+      74/jump-if-= break/disp8
+      (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
+      # if target-type->right is null, target-type = target-type->left
+      81 7/subop/compare *(eax+0xc) 0/imm32  # Type-tree-right
+      {
+        75/jump-if-!= break/disp8
+        (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      }
+      89/<- %ebx 0/r32/eax
+    }
+$check-mu-populate-stmt:check-target-type-addr:
+    # if target-type is not addr, abort
+    (is-mu-addr-type? %ebx)  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-populate-stmt:error-invalid-target-type/disp32
+    # if target-type->right is an atom, abort
+    (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
+    89/<- %ebx 0/r32/eax
+    81 7/subop/compare *ebx 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $check-mu-populate-stmt:error-invalid-target-type/disp32
+$check-mu-populate-stmt:check-target-type-handle:
+    # if target-type->right->left is not handle, abort
+    (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+    (is-simple-mu-type? %eax 4)  # handle => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-populate-stmt:error-invalid-target-type/disp32
+    # if target-type->right->right is an atom, abort
+    (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
+    89/<- %ebx 0/r32/eax
+    81 7/subop/compare *ebx 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $check-mu-populate-stmt:error-invalid-target-type/disp32
+$check-mu-populate-stmt:check-target-type-array:
+    # if target-type->right->right->left is not array, abort
+    (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+    (is-simple-mu-type? %eax 3)  # array => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-populate-stmt:error-invalid-target-type/disp32
+$check-mu-populate-stmt:check-length-type:
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    89/<- %ebx 0/r32/eax
+    (is-simple-mu-type? %ebx 0)  # literal => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $check-mu-populate-stmt:end/disp8
+    (is-simple-mu-type? %ebx 1)  # int => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-populate-stmt:error-invalid-length-type/disp32
 $check-mu-populate-stmt:end:
     # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$check-mu-populate-stmt:error-incorrect-inouts:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt 'populate' must have two inouts\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-populate-stmt:error-too-many-outputs:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt 'populate' must not have any outputs\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-populate-stmt:error-invalid-target-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt populate: first inout '")
+    (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' must have type (addr handle array ...)\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-populate-stmt:error-invalid-length-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt populate: second inout '")
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' must be an int\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
 
 check-mu-populate-stream-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
