@@ -1,8 +1,8 @@
 
 ## Rendering values
 
-fn render-value screen: (addr screen), _val: (addr value), max-width: int {
-$render-value:body: {
+fn render-value screen: (addr screen), row: int, col: int, _val: (addr value), max-width: int {
+  move-cursor screen, row, col
   var val/esi: (addr value) <- copy _val
   var val-type/ecx: (addr int) <- get val, type
   # per-type rendering logic goes here
@@ -34,15 +34,15 @@ $render-value:body: {
     }
     print-code-point screen, 0x275e  # close-quote
     reset-formatting screen
-    break $render-value:body
+    return
   }
   compare *val-type, 2  # array
   {
     break-if-!=
     var val-ah/eax: (addr handle array value) <- get val, array-data
     var val-array/eax: (addr array value) <- lookup *val-ah
-    render-array screen, val-array
-    break $render-value:body
+    render-array screen, row, col, val-array
+    return
   }
   compare *val-type, 3  # file
   {
@@ -52,22 +52,19 @@ $render-value:body: {
     start-color screen, 0, 7
     # TODO
     print-string screen, " FILE "
-    break $render-value:body
+    return
   }
   compare *val-type, 4  # file
   {
     break-if-!=
     var val-ah/eax: (addr handle screen) <- get val, screen-data
     var val-screen/eax: (addr screen) <- lookup *val-ah
-    start-color screen, 0, 7
-    # TODO
-    print-string screen, " SCREEN "
-    break $render-value:body
+    render-screen screen, row, col, val-screen
+    return
   }
   # render ints by default for now
   var val-int/eax: (addr int) <- get val, int-data
   render-integer screen, *val-int, max-width
-}
 }
 
 # synaesthesia
@@ -104,10 +101,11 @@ $render-integer:body: {
 }
 }
 
-fn render-array screen: (addr screen), _a: (addr array value) {
+fn render-array screen: (addr screen), row: int, col: int, _a: (addr array value) {
   start-color screen, 0xf2, 7
   # don't surround in spaces
   print-grapheme screen, 0x5b  # '['
+  increment col
   var a/esi: (addr array value) <- copy _a
   var max/ecx: int <- length a
   var i/eax: int <- copy 0
@@ -121,16 +119,78 @@ fn render-array screen: (addr screen), _a: (addr array value) {
     }
     var off/ecx: (offset value) <- compute-offset a, i
     var x/ecx: (addr value) <- index a, off
-    render-value screen, x, 0
+    render-value screen, row, col, x, 0
+    {
+      var w/eax: int <- value-width x, 0
+      add-to col, w
+      increment col
+    }
     i <- increment
     loop
   }
   print-grapheme screen, 0x5d  # ']'
 }
 
+fn render-screen screen: (addr screen), row: int, col: int, _val: (addr screen) {
+  move-cursor screen, row, col
+  start-color screen, 0, 0xf6
+  var val/esi: (addr screen) <- copy _val
+  var ncols-a/ecx: (addr int) <- get val, num-cols
+  print-upper-border screen, *ncols-a
+  var r/edx: int <- copy 0
+  var nrows-a/ebx: (addr int) <- get val, num-rows
+  {
+    compare r, *nrows-a
+    break-if->=
+    increment row  # mutate arg
+    move-cursor screen, row, col
+    print-string screen, " "
+    var c/edi: int <- copy 0
+    {
+      compare c, *ncols-a
+      break-if->=
+      print-string screen, " "  # TODO
+      c <- increment
+      loop
+    }
+    print-string screen, " "
+    r <- increment
+    loop
+  }
+  increment row  # mutate arg
+  move-cursor screen, row, col
+  print-lower-border screen, *ncols-a
+}
+
 fn hash-color val: int -> _/eax: int {
   var result/eax: int <- try-modulo val, 7  # assumes that 7 is always the background color
   return result
+}
+
+fn print-upper-border screen: (addr screen), width: int {
+  print-code-point screen, 0x250c  # top-left corner
+  var i/eax: int <- copy 0
+  {
+    compare i, width
+    break-if->=
+    print-code-point screen, 0x2500  # horizontal line
+    i <- increment
+    loop
+  }
+  print-code-point screen, 0x2510  # top-right corner
+}
+
+fn print-lower-border screen: (addr screen), width: int {
+  print-code-point screen, 0x2514  # bottom-left corner
+  var i/eax: int <- copy 0
+  {
+    compare i, width
+    break-if->=
+    print-code-point screen, 0x2500  # horizontal line
+    i <- increment
+    loop
+  }
+  print-code-point screen, 0x2518  # bottom-right corner
 }
 
 fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
@@ -193,8 +253,10 @@ fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
     var screen/eax: (addr screen) <- lookup *screen-ah
     compare screen, 0
     break-if-=
-    # TODO: visualizing screen
-    return 6
+    var ncols/ecx: (addr int) <- get screen, num-cols
+    var result/eax: int <- copy *ncols
+    result <- add 2  # left/right margins
+    return *ncols
   }
   return 0
 }
