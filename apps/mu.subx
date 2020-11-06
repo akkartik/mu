@@ -19188,46 +19188,12 @@ check-mu-numberlike-output:  # v: (addr stmt-var), stmt: (addr stmt), fn: (addr 
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    56/push-esi
-    # var t/esi: (addr type-tree) = lookup(v->value->type)
-    8b/-> *(ebp+8) 0/r32/eax
-    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
-    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-    89/<- %esi 0/r32/eax
-$check-mu-numberlike-output:check-int:
-    # if t is an int, return
-    (is-simple-mu-type? %esi 1)  # int => eax
+    #
+    (is-mu-numberlike-output? *(ebp+8))  # => eax
     3d/compare-eax-and 0/imm32/false
-    0f 85/jump-if-!= $check-mu-numberlike-output:end/disp32
-$check-mu-numberlike-output:check-float:
-    # if t is a float, return
-    (is-simple-mu-type? %esi 0xf)  # float => eax
-    3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $check-mu-numberlike-output:end/disp8
-$check-mu-numberlike-output:check-boolean:
-    # if t is a boolean, return
-    (is-simple-mu-type? %esi 5)  # boolean => eax
-    3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $check-mu-numberlike-output:end/disp8
-$check-mu-numberlike-output:check-byte:
-    # if t is a byte, return
-    (is-simple-mu-type? %esi 8)  # byte => eax
-    3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $check-mu-numberlike-output:end/disp8
-$check-mu-numberlike-output:check-code-point:
-    # if t is a code-point, return
-    (is-simple-mu-type? %esi 0xd)  # code-point => eax
-    3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $check-mu-numberlike-output:end/disp8
-$check-mu-numberlike-output:check-grapheme:
-    # if t is a grapheme, return
-    (is-simple-mu-type? %esi 0xe)  # grapheme => eax
-    3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $check-mu-numberlike-output:end/disp8
-    e9/jump $check-mu-numberlike-output:fail/disp32
+    0f 84/jump-if-= $check-mu-numberlike-output:fail/disp32
 $check-mu-numberlike-output:end:
     # . restore registers
-    5e/pop-to-esi
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -19253,6 +19219,60 @@ $check-mu-numberlike-output:fail:
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
     # never gets here
+
+is-mu-numberlike-output?:  # v: (addr stmt-var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    56/push-esi
+    # var t/esi: (addr type-tree) = lookup(v->value->type)
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    89/<- %esi 0/r32/eax
+$is-mu-numberlike-output?:check-int:
+    # if t is an int, return
+    (is-simple-mu-type? %esi 1)  # int => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $is-mu-numberlike-output?:return-true/disp32
+$is-mu-numberlike-output?:check-float:
+    # if t is a float, return
+    (is-simple-mu-type? %esi 0xf)  # float => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
+$is-mu-numberlike-output?:check-boolean:
+    # if t is a boolean, return
+    (is-simple-mu-type? %esi 5)  # boolean => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
+$is-mu-numberlike-output?:check-byte:
+    # if t is a byte, return
+    (is-simple-mu-type? %esi 8)  # byte => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
+$is-mu-numberlike-output?:check-code-point:
+    # if t is a code-point, return
+    (is-simple-mu-type? %esi 0xd)  # code-point => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
+$is-mu-numberlike-output?:check-grapheme:
+    # if t is a grapheme, return
+    (is-simple-mu-type? %esi 0xe)  # grapheme => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
+$is-mu-numberlike-output?:return-false:
+    b8/copy-to-eax 0/imm32/false
+    eb/jump $is-mu-numberlike-output?:end/disp8
+$is-mu-numberlike-output?:return-true:
+    b8/copy-to-eax 1/imm32/true
+$is-mu-numberlike-output?:end:
+    # . restore registers
+    5e/pop-to-esi
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 check-mu-copy-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
