@@ -798,6 +798,11 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> _/ebx
     subresult <- word-equal? w, "lines"
     compare subresult, 0  # false
     break-if-!=
+    ## screens
+    # if w == "fake-screen" return true
+    subresult <- word-equal? w, "fake-screen"
+    compare subresult, 0  # false
+    break-if-!=
     ## hacks
     # if w == "dup" return true
     subresult <- word-equal? w, "dup"
@@ -1473,6 +1478,8 @@ fn clear-canvas _env: (addr environment) {
   move-cursor screen, 3, start-col
   print-string screen, "open read slurp lines"
   move-cursor screen, 4, start-col
+  print-string screen, "fake-screen"
+  move-cursor screen, 5, start-col
   print-string screen, "dup swap"
   # currently defined functions
   start-col <- subtract 2

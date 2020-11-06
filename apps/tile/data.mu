@@ -39,6 +39,7 @@ type value {
   text-data: (handle array byte)  # if type = 1
   array-data: (handle array value)  # if type = 2
   file-data: (handle buffered-file)  # if type = 3
+  screen-data: (handle screen)  # if type = 4
 }
 
 type table {

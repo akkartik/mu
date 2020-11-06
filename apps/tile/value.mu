@@ -54,6 +54,16 @@ $render-value:body: {
     print-string screen, " FILE "
     break $render-value:body
   }
+  compare *val-type, 4  # file
+  {
+    break-if-!=
+    var val-ah/eax: (addr handle screen) <- get val, screen-data
+    var val-screen/eax: (addr screen) <- lookup *val-ah
+    start-color screen, 0, 7
+    # TODO
+    print-string screen, " SCREEN "
+    break $render-value:body
+  }
   # render ints by default for now
   var val-int/eax: (addr int) <- get val, int-data
   render-integer screen, *val-int, max-width
@@ -175,6 +185,16 @@ fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
     break-if-=
     # TODO: visualizing file handles
     return 4
+  }
+  {
+    compare *type, 4  # screen
+    break-if-!=
+    var screen-ah/eax: (addr handle screen) <- get v, screen-data
+    var screen/eax: (addr screen) <- lookup *screen-ah
+    compare screen, 0
+    break-if-=
+    # TODO: visualizing screen
+    return 6
   }
   return 0
 }

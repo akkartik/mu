@@ -258,6 +258,39 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         copy-handle empty-text, target-text-ah
         break $evaluate:process-word
       }
+      ## screens
+      {
+        var is-fake-screen?/eax: boolean <- stream-data-equal? curr-stream, "fake-screen"
+        compare is-fake-screen?, 0
+        break-if-=
+        var out2/esi: (addr value-stack) <- copy out
+        var top-addr/ecx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        # pop width and height from out
+        var _nrows/eax: int <- pop-int-from-value-stack out2
+        var nrows/edx: int <- copy _nrows
+        var _ncols/eax: int <- pop-int-from-value-stack out2
+        var ncols/ebx: int <- copy _ncols
+        # define a new screen with those dimensions
+        var screen-h: (handle screen)
+        var screen-ah/eax: (addr handle screen) <- address screen-h
+        allocate screen-ah
+        var screen/eax: (addr screen) <- lookup screen-h
+        initialize-screen screen, nrows, ncols
+        # push screen to stack
+        var data-ah/eax: (addr handle array value) <- get out2, data
+        var data/eax: (addr array value) <- lookup *data-ah
+        var top/edx: int <- copy *top-addr
+        increment *top-addr
+        var dest-offset/edx: (offset value) <- compute-offset data, top
+        var target-val/edx: (addr value) <- index data, dest-offset
+        var type/eax: (addr int) <- get target-val, type
+        copy-to *type, 4  # screen
+        var dest/eax: (addr handle screen) <- get target-val, screen-data
+        copy-handle screen-h, dest
+        break $evaluate:process-word
+      }
       ## HACKS: we're trying to avoid turning this into Forth
       {
         var is-dup?/eax: boolean <- stream-data-equal? curr-stream, "dup"
