@@ -1477,15 +1477,17 @@ fn clear-canvas _env: (addr environment) {
   move-cursor screen, 3, start-col
   print-string screen, "open read slurp lines"
   move-cursor screen, 4, start-col
-  print-string screen, "fake-screen"
+  print-string screen, "fake-screen print move"
   move-cursor screen, 5, start-col
+  print-string screen, "up down left right"
+  move-cursor screen, 6, start-col
   print-string screen, "dup swap"
   # currently defined functions
   start-col <- subtract 2
-  move-cursor screen, 6, start-col
+  move-cursor screen, 8, start-col
   print-string screen, "functions:"
   start-col <- add 2
-  var row/ebx: int <- copy 7
+  var row/ebx: int <- copy 9
   var functions/esi: (addr handle function) <- get env, functions
   {
     var curr/eax: (addr function) <- lookup *functions
