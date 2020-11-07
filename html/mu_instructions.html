@@ -239,6 +239,22 @@ Comparisons must always start with a register:
 compare var1/xreg1, var2/xreg2    =&gt; <span class="Constant">&quot;0f 2f/compare %&quot;</span> xreg2 <span class="Constant">&quot; &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 compare var1/xreg1, var2          =&gt; <span class="Constant">&quot;0f 2f/compare *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> xreg1 <span class="Constant">&quot;/x32&quot;</span>
 
+<span class="muComment">## Blocks</span>
+
+In themselves, blocks generate no instructions. However, if a block contains
+variable declarations, they must be cleaned up when the block ends.
+
+Clean up var on the stack         =&gt; <span class="Constant">&quot;81 0/subop/add %esp &quot;</span> size-of(var) <span class="Constant">&quot;/imm32&quot;</span>
+Clean up var/reg                  =&gt; <span class="Constant">&quot;8f 0/subop/pop %&quot;</span> reg
+
+Clean up var/xreg                 =&gt; <span class="Constant">&quot;f3 0f 10/-&gt; *esp &quot;</span> xreg <span class="Constant">&quot;/x32&quot;</span>
+                                     <span class="Constant">&quot;81 0/subop/add %esp 4/imm32&quot;</span>
+
+<span class="muComment">## Jumps</span>
+
+Besides having to clean up any variable declarations (see above) between
+themselves and their target, jumps translate like this:
+
 <span class="PreProc">break</span>                             =&gt; <span class="Constant">&quot;e9/jump break/disp32&quot;</span>
 <span class="PreProc">break</span> label                       =&gt; <span class="Constant">&quot;e9/jump &quot;</span> label <span class="Constant">&quot;:break/disp32&quot;</span>
 <span class="PreProc">loop</span>                              =&gt; <span class="Constant">&quot;e9/jump loop/disp32&quot;</span>
@@ -297,6 +313,17 @@ compare var1/xreg1, var2          =&gt; <span class="Constant">&quot;0f 2f/compa
 Similar float variants like `<span class="PreProc">break-if-float&lt;`</span> are aliases for the corresponding
 `addr` equivalents. The x86 instruction set stupidly has floating-point
 operations only update a subset of flags.
+
+<span class="muComment">## Returns</span>
+
+The `<span class="PreProc">return</span>` instruction cleans up variable declarations just like an unconditional
+`<span class="PreProc">jump</span>` to end of function, but also emits a series of copies before the final
+`<span class="PreProc">jump</span>`, copying each argument of `<span class="PreProc">return</span>` to the register appropriate to the
+respective function output. This doesn't work if a function output register
+contains a later `<span class="PreProc">return</span>` argument (e.g. if the registers for two outputs are
+swapped in `<span class="PreProc">return</span>`), so you can't do that.
+
+<span class="PreProc">return</span>                            =&gt; <span class="Constant">&quot;c3/return&quot;</span>
 
 ---
 
