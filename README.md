@@ -189,7 +189,7 @@ Mu builds on many ideas that have come before, especially:
 - [David Parnas](http://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf)
   and others for highlighting the value of separating concerns and stepwise
   refinement;
-- The folklore of debugging by print and the trace facility in many lisp
+- The folklore of debugging by print and the trace facility in many Lisp
   systems;
 - Automated tests for showing the value of developing programs inside an
   elaborate harness;
