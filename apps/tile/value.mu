@@ -316,3 +316,27 @@ fn array-width _a: (addr array value) -> _/eax: int {
   # spaces like other value types
   return result
 }
+
+fn value-height _v: (addr value) -> _/eax: int {
+  var v/esi: (addr value) <- copy _v
+  var type/eax: (addr int) <- get v, type
+  {
+    compare *type, 3  # file handle
+    break-if-!=
+    # TODO: visualizing file handles
+    return 1
+  }
+  {
+    compare *type, 4  # screen
+    break-if-!=
+    var screen-ah/eax: (addr handle screen) <- get v, screen-data
+    var screen/eax: (addr screen) <- lookup *screen-ah
+    compare screen, 0
+    break-if-=
+    var nrows/ecx: (addr int) <- get screen, num-rows
+    var result/eax: int <- copy *nrows
+    result <- add 2  # top and bottom border
+    return result
+  }
+  return 1
+}

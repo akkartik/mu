@@ -1388,7 +1388,8 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
       var dest-offset/ecx: (offset value) <- compute-offset data, top
       var val/eax: (addr value) <- index data, dest-offset
       render-value-at screen, curr-row, indented-col, val, max-width
-      curr-row <- increment
+      var height/eax: int <- value-height val
+      curr-row <- add height
       loop
     }
   }
