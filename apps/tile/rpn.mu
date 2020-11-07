@@ -291,6 +291,43 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         copy-handle screen-h, dest
         break $evaluate:process-word
       }
+      {
+        var is-print?/eax: boolean <- stream-data-equal? curr-stream, "print"
+        compare is-print?, 0
+        break-if-=
+        var out2/esi: (addr value-stack) <- copy out
+        var top-addr/ecx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        # pop string from out
+        var out2/esi: (addr value-stack) <- copy out
+        var top-addr/ecx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        decrement *top-addr
+        var data-ah/eax: (addr handle array value) <- get out2, data
+        var _data/eax: (addr array value) <- lookup *data-ah
+        var data/edi: (addr array value) <- copy _data
+        var top/eax: int <- copy *top-addr
+        var dest-offset/edx: (offset value) <- compute-offset data, top
+        var s/esi: (addr value) <- index data, dest-offset
+        # select screen from top of out (but don't pop it)
+        compare *top-addr, 0
+        break-if-<=
+        var top/eax: int <- copy *top-addr
+        top <- decrement
+        var dest-offset/edx: (offset value) <- compute-offset data, top
+        var target-val/edx: (addr value) <- index data, dest-offset
+        var type/eax: (addr int) <- get target-val, type
+        compare *type, 4  # screen
+        break-if-!=
+        var dest-ah/eax: (addr handle screen) <- get target-val, screen-data
+        var dest/eax: (addr screen) <- lookup *dest-ah
+        var r/ecx: (addr int) <- get dest, cursor-row
+        var c/edx: (addr int) <- get dest, cursor-col
+        render-value-at dest, *r, *c, s, 0
+        break $evaluate:process-word
+      }
       ## HACKS: we're trying to avoid turning this into Forth
       {
         var is-dup?/eax: boolean <- stream-data-equal? curr-stream, "dup"

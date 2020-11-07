@@ -1,7 +1,7 @@
 
 ## Rendering values
 
-fn render-value screen: (addr screen), row: int, col: int, _val: (addr value), max-width: int {
+fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value), max-width: int {
   move-cursor screen, row, col
   var val/esi: (addr value) <- copy _val
   var val-type/ecx: (addr int) <- get val, type
@@ -41,7 +41,7 @@ fn render-value screen: (addr screen), row: int, col: int, _val: (addr value), m
     break-if-!=
     var val-ah/eax: (addr handle array value) <- get val, array-data
     var val-array/eax: (addr array value) <- lookup *val-ah
-    render-array screen, row, col, val-array
+    render-array-at screen, row, col, val-array
     return
   }
   compare *val-type, 3  # file
@@ -101,7 +101,7 @@ $render-integer:body: {
 }
 }
 
-fn render-array screen: (addr screen), row: int, col: int, _a: (addr array value) {
+fn render-array-at screen: (addr screen), row: int, col: int, _a: (addr array value) {
   start-color screen, 0xf2, 7
   # don't surround in spaces
   print-grapheme screen, 0x5b  # '['
@@ -119,7 +119,7 @@ fn render-array screen: (addr screen), row: int, col: int, _a: (addr array value
     }
     var off/ecx: (offset value) <- compute-offset a, i
     var x/ecx: (addr value) <- index a, off
-    render-value screen, row, col, x, 0
+    render-value-at screen, row, col, x, 0
     {
       var w/eax: int <- value-width x, 0
       add-to col, w
@@ -289,7 +289,7 @@ fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
   return 0
 }
 
-# keep sync'd with render-array
+# keep sync'd with render-array-at
 fn array-width _a: (addr array value) -> _/eax: int {
   var a/esi: (addr array value) <- copy _a
   var max/ecx: int <- length a
