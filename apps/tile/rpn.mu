@@ -300,7 +300,6 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare *top-addr, 0
         break-if-<=
         # pop string from out
-        var out2/esi: (addr value-stack) <- copy out
         var top-addr/ecx: (addr int) <- get out2, top
         compare *top-addr, 0
         break-if-<=
@@ -334,6 +333,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare is-move?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
+        # pop args
         var _r/eax: int <- pop-int-from-value-stack out2
         var r/ecx: int <- copy _r
         var _c/eax: int <- pop-int-from-value-stack out2
@@ -362,8 +362,13 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare is-up?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
-        # select screen from top of out (but don't pop it)
         var top-addr/ebx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        # pop args
+        var _d/eax: int <- pop-int-from-value-stack out2
+        var d/ecx: int <- copy _d
+        # select screen from top of out (but don't pop it)
         compare *top-addr, 0
         break-if-<=
         var data-ah/eax: (addr handle array value) <- get out2, data
@@ -382,7 +387,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var dest/eax: (addr int) <- get target, cursor-row
         compare *dest, 1
         break-if-<= $evaluate:process-word
-        decrement *dest
+        subtract-from *dest, d
         break $evaluate:process-word
       }
       {
@@ -390,8 +395,13 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare is-down?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
-        # select screen from top of out (but don't pop it)
         var top-addr/ebx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        # pop args
+        var _d/eax: int <- pop-int-from-value-stack out2
+        var d/ecx: int <- copy _d
+        # select screen from top of out (but don't pop it)
         compare *top-addr, 0
         break-if-<=
         var data-ah/eax: (addr handle array value) <- get out2, data
@@ -407,12 +417,14 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
         var target/edi: (addr screen) <- copy _target
-        var bound-a/ecx: (addr int) <- get target, num-rows
-        var bound/ecx: int <- copy *bound-a
         var dest/eax: (addr int) <- get target, cursor-row
-        compare *dest, bound
-        break-if->= $evaluate:process-word
-        increment *dest
+        {
+          var bound-a/ecx: (addr int) <- get target, num-rows
+          var bound/ecx: int <- copy *bound-a
+          compare *dest, bound
+          break-if->= $evaluate:process-word
+        }
+        add-to *dest, d
         break $evaluate:process-word
       }
       {
@@ -420,8 +432,13 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare is-left?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
-        # select screen from top of out (but don't pop it)
         var top-addr/ebx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        # pop args
+        var _d/eax: int <- pop-int-from-value-stack out2
+        var d/ecx: int <- copy _d
+        # select screen from top of out (but don't pop it)
         compare *top-addr, 0
         break-if-<=
         var data-ah/eax: (addr handle array value) <- get out2, data
@@ -440,7 +457,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var dest/eax: (addr int) <- get target, cursor-col
         compare *dest, 1
         break-if-<= $evaluate:process-word
-        decrement *dest
+        subtract-from *dest, d
         break $evaluate:process-word
       }
       {
@@ -448,8 +465,13 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare is-right?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
-        # select screen from top of out (but don't pop it)
         var top-addr/ebx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        # pop args
+        var _d/eax: int <- pop-int-from-value-stack out2
+        var d/ecx: int <- copy _d
+        # select screen from top of out (but don't pop it)
         compare *top-addr, 0
         break-if-<=
         var data-ah/eax: (addr handle array value) <- get out2, data
@@ -465,12 +487,14 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
         var target/edi: (addr screen) <- copy _target
-        var bound-a/ecx: (addr int) <- get target, num-cols
-        var bound/ecx: int <- copy *bound-a
         var dest/eax: (addr int) <- get target, cursor-col
-        compare *dest, bound
-        break-if->= $evaluate:process-word
-        increment *dest
+        {
+          var bound-a/ecx: (addr int) <- get target, num-cols
+          var bound/ecx: int <- copy *bound-a
+          compare *dest, bound
+          break-if->= $evaluate:process-word
+        }
+        add-to *dest, d
         break $evaluate:process-word
       }
       ## HACKS: we're trying to avoid turning this into Forth
