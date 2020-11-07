@@ -311,7 +311,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var top/eax: int <- copy *top-addr
         var dest-offset/edx: (offset value) <- compute-offset data, top
         var s/esi: (addr value) <- index data, dest-offset
-        # select screen from top of out (but don't pop it)
+        # select target screen from top of out (but don't pop it)
         compare *top-addr, 0
         break-if-<=
         var top/eax: int <- copy *top-addr
@@ -321,11 +321,40 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var type/eax: (addr int) <- get target-val, type
         compare *type, 4  # screen
         break-if-!=
+        # print string to target screen
         var dest-ah/eax: (addr handle screen) <- get target-val, screen-data
         var dest/eax: (addr screen) <- lookup *dest-ah
         var r/ecx: (addr int) <- get dest, cursor-row
         var c/edx: (addr int) <- get dest, cursor-col
         render-value-at dest, *r, *c, s, 0
+        break $evaluate:process-word
+      }
+      {
+        var is-move?/eax: boolean <- stream-data-equal? curr-stream, "move"
+        compare is-move?, 0
+        break-if-=
+        var out2/esi: (addr value-stack) <- copy out
+        var _r/eax: int <- pop-int-from-value-stack out2
+        var r/ecx: int <- copy _r
+        var _c/eax: int <- pop-int-from-value-stack out2
+        var c/edx: int <- copy _c
+        # select screen from top of out (but don't pop it)
+        var top-addr/ebx: (addr int) <- get out2, top
+        compare *top-addr, 0
+        break-if-<=
+        var data-ah/eax: (addr handle array value) <- get out2, data
+        var _data/eax: (addr array value) <- lookup *data-ah
+        var data/edi: (addr array value) <- copy _data
+        var top/eax: int <- copy *top-addr
+        top <- decrement
+        var target-offset/eax: (offset value) <- compute-offset data, top
+        var target-val/ebx: (addr value) <- index data, target-offset
+        var type/eax: (addr int) <- get target-val, type
+        compare *type, 4  # screen
+        break-if-!=
+        var target-ah/eax: (addr handle screen) <- get target-val, screen-data
+        var target/eax: (addr screen) <- lookup *target-ah
+        move-cursor target, r, c
         break $evaluate:process-word
       }
       ## HACKS: we're trying to avoid turning this into Forth
