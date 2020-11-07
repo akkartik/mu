@@ -1382,14 +1382,12 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
       compare *top-addr, 0
       break-if-<=
       decrement *top-addr
-      {
-        var data-ah/eax: (addr handle array value) <- get stack-addr, data
-        var data/eax: (addr array value) <- lookup *data-ah
-        var top/ecx: int <- copy *top-addr
-        var dest-offset/ecx: (offset value) <- compute-offset data, top
-        var val/eax: (addr value) <- index data, dest-offset
-        render-value-at screen, curr-row, indented-col, val, max-width
-      }
+      var data-ah/eax: (addr handle array value) <- get stack-addr, data
+      var data/eax: (addr array value) <- lookup *data-ah
+      var top/ecx: int <- copy *top-addr
+      var dest-offset/ecx: (offset value) <- compute-offset data, top
+      var val/eax: (addr value) <- index data, dest-offset
+      render-value-at screen, curr-row, indented-col, val, max-width
       curr-row <- increment
       loop
     }
