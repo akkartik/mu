@@ -316,8 +316,7 @@ fn screen-grapheme-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
   var src/eax: (addr grapheme) <- get cell, data
-  var result/eax: grapheme <- copy *src
-  return result
+  return *src
 }
 
 fn screen-color-at screen-on-stack: (addr screen), row: int, col: int -> _/eax: int {

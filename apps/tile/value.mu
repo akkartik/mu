@@ -131,25 +131,26 @@ fn render-array screen: (addr screen), row: int, col: int, _a: (addr array value
   print-grapheme screen, 0x5d  # ']'
 }
 
-fn render-screen screen: (addr screen), row: int, col: int, _val: (addr screen) {
+fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (addr screen) {
+  reset-formatting screen
+  start-color screen, 0xf2, 7
   move-cursor screen, row, col
-  start-color screen, 0, 0xf6
-  var val/esi: (addr screen) <- copy _val
-  var ncols-a/ecx: (addr int) <- get val, num-cols
+  var target-screen/esi: (addr screen) <- copy _target-screen
+  var ncols-a/ecx: (addr int) <- get target-screen, num-cols
   print-upper-border screen, *ncols-a
-  var r/edx: int <- copy 0
-  var nrows-a/ebx: (addr int) <- get val, num-rows
+  var r/edx: int <- copy 1
+  var nrows-a/ebx: (addr int) <- get target-screen, num-rows
   {
     compare r, *nrows-a
-    break-if->=
+    break-if->
     increment row  # mutate arg
     move-cursor screen, row, col
     print-string screen, " "
-    var c/edi: int <- copy 0
+    var c/edi: int <- copy 1
     {
       compare c, *ncols-a
-      break-if->=
-      print-string screen, " "  # TODO
+      break-if->
+      print-screen-cell-of-fake-screen screen, target-screen, r, c
       c <- increment
       loop
     }
@@ -159,12 +160,39 @@ fn render-screen screen: (addr screen), row: int, col: int, _val: (addr screen) 
   }
   increment row  # mutate arg
   move-cursor screen, row, col
+  start-color screen, 0xf2, 7
   print-lower-border screen, *ncols-a
 }
 
 fn hash-color val: int -> _/eax: int {
   var result/eax: int <- try-modulo val, 7  # assumes that 7 is always the background color
   return result
+}
+
+fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen), _row: int, _col: int {
+  start-color screen, 0, 0xf6
+  var target/esi: (addr screen) <- copy _target
+  var row/ecx: int <- copy _row
+  var col/edx: int <- copy _col
+  # if cursor is at screen-cell, add some fancy
+  {
+    var cursor-row/eax: (addr int) <- get target, cursor-row
+    compare *cursor-row, row
+    break-if-!=
+    var cursor-col/eax: (addr int) <- get target, cursor-col
+    compare *cursor-col, col
+    break-if-!=
+    start-blinking screen
+    start-color screen, 0, 1
+  }
+  var g/eax: grapheme <- screen-grapheme-at target, row, col
+  {
+    compare g, 0
+    break-if-!=
+    g <- copy 0x20  # space
+  }
+  print-grapheme screen, g
+  reset-formatting screen
 }
 
 fn print-upper-border screen: (addr screen), width: int {
