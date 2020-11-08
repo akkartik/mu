@@ -8424,6 +8424,51 @@ test-get-with-wrong-base-type-2:
     5d/pop-to-ebp
     c3/return
 
+test-get-with-wrong-base-type-3:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (handle int)\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- get a, y\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-get-with-wrong-base-type-3: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt get: var 'a' must have a 'type' definition"  "F - test-get-with-wrong-base-type-3: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-get-with-wrong-base-type-3: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-get-with-wrong-offset-type:
     # . prologue
     55/push-ebp
@@ -20781,6 +20826,12 @@ $check-mu-get-stmt:base-is-addr-to-atom-in-register:
     }
 $check-mu-get-stmt:check-base-typeinfo:
     # ensure type is a container
+    81 7/subop/compare *ebx 0/imm32/false  # Type-tree-is-atom
+    {
+      75/jump-if-!= break/disp8
+      (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
+      89/<- %ebx 0/r32/eax
+    }
     # var base-type-id/ebx: type-id = base-type->value
     8b/-> *(ebx+4) 3/r32/ebx  # Type-tree-value
     (is-container? %ebx)  # => eax
@@ -20962,7 +21013,12 @@ $check-mu-get-stmt:error-bad-field:
     (write-buffered *(ebp+0x10) ": stmt get: type '")
     # . write(Type-id->data[tmp])
     bf/copy-to-edi Type-id/imm32
-    (write-buffered *(ebp+0x10) *(edi+ebx<<2+0xc))
+    8b/-> *(edi+ebx<<2+0xc) 6/r32/esi
+    {
+      81 7/subop/compare %esi 0/imm32
+      74/jump-if-= break/disp8
+      (write-buffered *(ebp+0x10) %esi)
+    }
     # .
     (write-buffered *(ebp+0x10) "' has no member called '")
     (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
@@ -21004,7 +21060,12 @@ $check-mu-get-stmt:error-bad-output-type:
     (write-buffered *(ebp+0x10) %ecx)
     (write-buffered *(ebp+0x10) "' of type '")
     bf/copy-to-edi Type-id/imm32
-    (write-buffered *(ebp+0x10) *(edi+ebx<<2+0xc))
+    8b/-> *(edi+ebx<<2+0xc) 6/r32/esi
+    {
+      81 7/subop/compare %esi 0/imm32
+      74/jump-if-= break/disp8
+      (write-buffered *(ebp+0x10) %esi)
+    }
     (write-buffered *(ebp+0x10) "'\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
