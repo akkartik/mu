@@ -1363,7 +1363,10 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?     print-string 0, "rendering column from "
 #?     print-int32-decimal 0, curr-col
 #?     print-string 0, "\n"
-    curr-col <- render-column screen, functions, bindings, first-line, line, curr-word, top-row, curr-col
+    var bindings2-storage: table
+    var bindings2/ebx: (addr table) <- address bindings2-storage
+    shallow-copy-table-values bindings, bindings2
+    curr-col <- render-column screen, functions, bindings2, first-line, line, curr-word, top-row, curr-col
     # cache cursor column if necessary
     $render-line:cache-cursor-column: {
 #?       print-string 0, "cache cursor? "
@@ -1431,7 +1434,6 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
     initialize-value-stack stack-addr, 0x10  # max-words
-    initialize-table bindings, 0x10
     evaluate functions, bindings, first-line, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy top-row

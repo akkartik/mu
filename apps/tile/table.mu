@@ -4,6 +4,33 @@ fn initialize-table _self: (addr table), n: int {
   populate data-ah, n
 }
 
+fn shallow-copy-table-values _src: (addr table), dest: (addr table) {
+  var src/eax: (addr table) <- copy _src
+  var src-data-ah/eax: (addr handle array bind) <- get src, data
+  var _src-data/eax: (addr array bind) <- lookup *src-data-ah
+  var src-data/esi: (addr array bind) <- copy _src-data
+  var n/ecx: int <- length src-data
+  initialize-table dest, n
+  var i/eax: int <- copy 0
+  {
+    compare i, n
+    break-if->=
+    {
+      var offset/edx: (offset bind) <- compute-offset src-data, i
+      var src-bind/ecx: (addr bind) <- index src-data, offset
+      var key-ah/ebx: (addr handle array byte) <- get src-bind, key
+      var key/eax: (addr array byte) <- lookup *key-ah
+      compare key, 0
+      break-if-=
+      var val-ah/eax: (addr handle value) <- get src-bind, value
+      var val/eax: (addr value) <- lookup *val-ah
+      bind-in-table dest, key-ah, val
+    }
+    i <- increment
+    loop
+  }
+}
+
 fn bind-in-table _self: (addr table), key: (addr handle array byte), val: (addr value) {
   var self/esi: (addr table) <- copy _self
   var data-ah/esi: (addr handle array bind) <- get self, data
