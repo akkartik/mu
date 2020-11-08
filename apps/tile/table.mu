@@ -65,18 +65,18 @@ fn lookup-binding _self: (addr table), key: (addr array byte), out: (addr handle
   var data-ah/esi: (addr handle array bind) <- get self, data
   var _data/eax: (addr array bind) <- lookup *data-ah
   var data/esi: (addr array bind) <- copy _data
-  var len/edx: int <- length data
-  var i/ebx: int <- copy 0
+  var i/edx: int <- length data
   $lookup-binding:loop: {
-    compare i, len
-    break-if->=
+    i <- decrement
+    compare i, 0
+    break-if-<
     {
       var offset/edx: (offset bind) <- compute-offset data, i
       var target-bind/esi: (addr bind) <- index data, offset
       var target2/edx: (addr handle array byte) <- get target-bind, key
       var target3/eax: (addr array byte) <- lookup *target2
       compare target3, 0
-      break-if-= $lookup-binding:loop
+      break-if-=
       var is-match?/eax: boolean <- string-equal? target3, key
       compare is-match?, 0  # false
       break-if-=
@@ -85,7 +85,6 @@ fn lookup-binding _self: (addr table), key: (addr array byte), out: (addr handle
       copy-object target, out
       break $lookup-binding:loop
     }
-    i <- increment
     loop
   }
 }
