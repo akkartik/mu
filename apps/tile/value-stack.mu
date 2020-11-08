@@ -32,6 +32,8 @@ fn push-int-to-value-stack _self: (addr value-stack), _val: int {
 #?   print-int32-hex-to-real-screen val
   copy-to *dest-addr2, val
   increment *top-addr
+  dest-addr2 <- get dest-addr, type
+  copy-to *dest-addr2, 0  # int
 }
 
 fn push-string-to-value-stack _self: (addr value-stack), val: (handle array byte) {
