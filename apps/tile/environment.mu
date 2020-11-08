@@ -1528,7 +1528,7 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, " define function  "
   # primitives
   var start-col/ecx: int <- copy repl-col
-  start-col <- subtract 0x20
+  start-col <- subtract 0x28
   move-cursor screen, 1, start-col
   print-string screen, "primitives:"
   start-col <- add 2
