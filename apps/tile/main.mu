@@ -66,17 +66,30 @@ fn interactive {
 }
 
 fn test {
-  test-surface-pin-at-origin
-#?   var env-storage: environment
-#?   var env/esi: (addr environment) <- address env-storage
-#?   initialize-environment-with-fake-screen env, 5, 0xa
-#?   var g/eax: grapheme <- copy 0x22  # '"'
-#?   process env, g
-#?   g <- copy 0x61  # 'a'
-#?   process env, g
-#?   g <- copy 0x22  # '"'
-#?   process env, g
-#?   render env
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment-with-fake-screen env, 0x20, 0xa0
+  process-all env, "3 3 fake-screen =s"
+  process env, 0xc  # ctrl-l
+  process-all env, "s 1 down "
+  render env
+#?   var fake-screen-ah/eax: (addr handle screen) <- get env, screen
+#?   var fake-screen/eax: (addr screen) <- lookup *fake-screen-ah
+#?   render-screen 0, 1, 1, fake-screen
+}
+
+fn process-all env: (addr environment), cmds: (addr array byte) {
+  var cmds-stream: (stream byte 0x100)
+  var cmds-stream-a/esi: (addr stream byte) <- address cmds-stream
+  write cmds-stream-a, cmds
+  {
+    var done?/eax: boolean <- stream-empty? cmds-stream-a
+    compare done?, 0  # false
+    break-if-!=
+    var g/eax: grapheme <- read-grapheme cmds-stream-a
+    process env, g
+    loop
+  }
 }
 
 fn repl {

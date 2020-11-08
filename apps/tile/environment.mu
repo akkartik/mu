@@ -1396,6 +1396,7 @@ fn callee functions: (addr handle function), word: (addr word), out: (addr handl
 #
 # Return the farthest column written.
 fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), line: (addr line), final-word: (addr word), top-row: int, left-col: int -> _/ecx: int {
+#?   print-string 0, "== "
 #?   print-string 0, "render-column\n"
   var max-width/esi: int <- copy 0
   {
@@ -1406,6 +1407,7 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
     initialize-value-stack stack-addr, 0x10  # max-words
+    initialize-table bindings, 0x10
     evaluate functions, bindings, first-line, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy top-row

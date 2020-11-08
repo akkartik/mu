@@ -145,6 +145,7 @@ fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (add
     break-if->
     increment row  # mutate arg
     move-cursor screen, row, col
+#?     print-string screen, "\n"
     print-string screen, " "
     var c/edi: int <- copy 1
     {
@@ -159,6 +160,7 @@ fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (add
     loop
   }
   increment row  # mutate arg
+#?   print-string screen, "\n"
   move-cursor screen, row, col
   start-color screen, 0xf2, 7
   print-lower-border screen, *ncols-a
