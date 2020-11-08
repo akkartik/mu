@@ -384,10 +384,20 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
         var target/edi: (addr screen) <- copy _target
-        var dest/eax: (addr int) <- get target, cursor-row
-        compare *dest, 1
-        break-if-<= $evaluate:process-word
-        subtract-from *dest, d
+        var r/edx: (addr int) <- get target, cursor-row
+        var c/eax: (addr int) <- get target, cursor-col
+        var col/eax: int <- copy *c
+        {
+          compare d, 0
+          break-if-<=
+          compare *r, 1
+          break-if-<=
+          print-string target "│"
+          decrement *r
+          move-cursor target, *r, col
+          d <- decrement
+          loop
+        }
         break $evaluate:process-word
       }
       {
@@ -417,14 +427,22 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
         var target/edi: (addr screen) <- copy _target
-        var dest/eax: (addr int) <- get target, cursor-row
+        var bound-a/ebx: (addr int) <- get target, num-rows
+        var bound/ebx: int <- copy *bound-a
+        var r/edx: (addr int) <- get target, cursor-row
+        var c/eax: (addr int) <- get target, cursor-col
+        var col/eax: int <- copy *c
         {
-          var bound-a/ecx: (addr int) <- get target, num-rows
-          var bound/ecx: int <- copy *bound-a
-          compare *dest, bound
-          break-if->= $evaluate:process-word
+          compare d, 0
+          break-if-<=
+          compare *r, bound
+          break-if->=
+          print-string target "│"
+          increment *r
+          move-cursor target, *r, col
+          d <- decrement
+          loop
         }
-        add-to *dest, d
         break $evaluate:process-word
       }
       {
@@ -454,10 +472,21 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
         var target/edi: (addr screen) <- copy _target
-        var dest/eax: (addr int) <- get target, cursor-col
-        compare *dest, 1
-        break-if-<= $evaluate:process-word
-        subtract-from *dest, d
+        var c/edx: (addr int) <- get target, cursor-col
+        var r/eax: (addr int) <- get target, cursor-row
+        var row/eax: int <- copy *r
+        {
+          compare d, 0
+          break-if-<=
+          compare *c, 1
+          break-if-<=
+          print-string target "─"
+          decrement *c
+          decrement *c  # second one to undo the print above
+          move-cursor target, row, *c
+          d <- decrement
+          loop
+        }
         break $evaluate:process-word
       }
       {
@@ -487,14 +516,22 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
         var target/edi: (addr screen) <- copy _target
-        var dest/eax: (addr int) <- get target, cursor-col
+        var bound-a/ebx: (addr int) <- get target, num-rows
+        var bound/ebx: int <- copy *bound-a
+        var c/edx: (addr int) <- get target, cursor-col
+        var r/eax: (addr int) <- get target, cursor-row
+        var row/eax: int <- copy *r
         {
-          var bound-a/ecx: (addr int) <- get target, num-cols
-          var bound/ecx: int <- copy *bound-a
-          compare *dest, bound
-          break-if->= $evaluate:process-word
+          compare d, 0
+          break-if-<=
+          compare *c, bound
+          break-if->=
+          print-string target "─"
+          increment *c
+          move-cursor target, row, *c
+          d <- decrement
+          loop
         }
-        add-to *dest, d
         break $evaluate:process-word
       }
       ## HACKS: we're trying to avoid turning this into Forth
