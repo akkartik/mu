@@ -16532,17 +16532,19 @@ $add-operation-and-inputs-to-stmt:inout-is-deref:
         ba/copy-to-edx 1/imm32/true
       }
       (lookup-var-or-literal %ecx *(ebp+0x10) %esi *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
-      # if is-deref? is true and out is on the stack, abort
+      # if (is-deref?) some additional checks
       81 7/subop/compare %edx 0/imm32/false
       {
         74/jump-if-= break/disp8
+        # if var is not in register, abort
         (lookup *esi *(esi+4))  # => eax
         81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
-        75/jump-if-!= break/disp8
-        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-        (is-simple-mu-type? %eax 0)  # literal => eax
-        3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= $add-operation-and-inputs-to-stmt:error-deref-on-stack/disp32
+        # if var is not an address, abort
+        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+        (is-mu-addr-type? %eax)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        0f 84/jump-if-= $add-operation-and-inputs-to-stmt:error-deref-non-addr/disp32
       }
 $add-operation-and-inputs-to-stmt:save-var:
       8d/copy-address *(edi+0xc) 0/r32/eax
@@ -16580,7 +16582,7 @@ $add-operation-and-inputs-to-stmt:abort:
     # never gets here
 
 $add-operation-and-inputs-to-stmt:error-deref-on-stack:
-    # error("fn ___: invalid identifier in '" line "'\n")
+    # error("fn ___: cannot dereference var ___ on stack\n")
     (write-buffered *(ebp+0x18) "fn ")
     8b/-> *(ebp+0x14) 0/r32/eax
     (lookup *eax *(eax+4))  # Function-name Function-name => eax
@@ -16591,6 +16593,22 @@ $add-operation-and-inputs-to-stmt:error-deref-on-stack:
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
     (write-buffered *(ebp+0x18) %eax)
     (write-buffered *(ebp+0x18) "' on stack\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
+    # never gets here
+
+$add-operation-and-inputs-to-stmt:error-deref-non-addr:
+    # error("fn ___: cannot dereference non-addr var ___\n")
+    (write-buffered *(ebp+0x18) "fn ")
+    8b/-> *(ebp+0x14) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x18) %eax)
+    (rewind-stream *(ebp+0xc))
+    (write-buffered *(ebp+0x18) ": cannot dereference non-addr var '")
+    (lookup *esi *(esi+4))  # => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x18) %eax)
+    (write-buffered *(ebp+0x18) "'\n")
     (flush *(ebp+0x18))
     (stop *(ebp+0x1c) 1)
     # never gets here
@@ -22955,7 +22973,7 @@ $check-mu-call:check-inout-type:
       (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
       89/<- %ebx 0/r32/eax
-      # if (inouts->is-deref?) t = t->right  # TODO: check that t->left is an addr
+      # if (inouts->is-deref?) t = t->right
       81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
       {
         74/jump-if-= break/disp8
