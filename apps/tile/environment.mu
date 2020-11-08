@@ -810,6 +810,30 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> _/ebx
     subresult <- word-equal? w, "fake-screen"
     compare subresult, 0  # false
     break-if-!=
+    # if w == "print" return true
+    subresult <- word-equal? w, "print"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "move" return true
+    subresult <- word-equal? w, "move"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "up" return true
+    subresult <- word-equal? w, "up"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "down" return true
+    subresult <- word-equal? w, "down"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "left" return true
+    subresult <- word-equal? w, "left"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "right" return true
+    subresult <- word-equal? w, "right"
+    compare subresult, 0  # false
+    break-if-!=
     ## hacks
     # if w == "dup" return true
     subresult <- word-equal? w, "dup"
