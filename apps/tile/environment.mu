@@ -272,6 +272,13 @@ $process-sandbox:body: {
     toggle-cursor-word sandbox
     break $process-sandbox:body
   }
+  compare key, 0xc  # ctrl-l
+  $process-sandbox:new-line: {
+    break-if-!=
+    # new line in sandbox
+    append-line sandbox
+    break $process-sandbox:body
+  }
   # word-based motions
   compare key, 2  # ctrl-b
   $process-sandbox:prev-word: {
@@ -888,6 +895,34 @@ $toggle-cursor-word:body: {
     delete-in-call-path expanded-words cursor-call-path
   }
 }
+}
+
+fn append-line _sandbox: (addr sandbox) {
+  var sandbox/esi: (addr sandbox) <- copy _sandbox
+  var line-ah/ecx: (addr handle line) <- get sandbox, data
+  {
+    var line/eax: (addr line) <- lookup *line-ah
+    var next-line-ah/edx: (addr handle line) <- get line, next
+    var next-line/eax: (addr line) <- lookup *next-line-ah
+    compare next-line, 0
+    break-if-=
+    line-ah <- copy next-line-ah
+    loop
+  }
+  var line/eax: (addr line) <- lookup *line-ah
+  var final-line-ah/edx: (addr handle line) <- get line, next
+  allocate final-line-ah
+  var final-line/eax: (addr line) <- lookup *final-line-ah
+  initialize-line final-line
+  var final-prev/eax: (addr handle line) <- get final-line, prev
+  copy-object line-ah, final-prev
+  # clear cursor
+  var final-line/eax: (addr line) <- lookup *final-line-ah
+  var word-ah/ecx: (addr handle word) <- get final-line, data
+  var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+  var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
+  var dest/eax: (addr handle word) <- get cursor-call-path, word
+  copy-object word-ah, dest
 }
 
 #############
