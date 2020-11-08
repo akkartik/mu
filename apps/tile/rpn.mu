@@ -527,7 +527,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           compare *c, bound
           break-if->=
           print-string target "─"
-          increment *c
+          # no increment; the print took care of it
           move-cursor target, row, *c
           d <- decrement
           loop
