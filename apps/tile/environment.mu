@@ -1431,6 +1431,7 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
     initialize-value-stack stack-addr, 0x10  # max-words
+    initialize-table bindings, 0x10
     evaluate functions, bindings, first-line, final-word, stack-addr
     # render stack
     var curr-row/edx: int <- copy top-row
