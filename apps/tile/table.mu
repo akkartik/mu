@@ -53,42 +53,42 @@ fn shallow-copy-table-values _src: (addr table), dest: (addr table) {
 #?         print-string-to-real-screen "\n"
 #?       }
       bind-in-table dest, key-ah, val
-      var foo: (handle value)
-      var foo2/ecx: (addr handle value) <- address foo
-      var foo3/eax: (addr array byte) <- lookup *key-ah
-      print-string-to-real-screen foo3
-      print-string-to-real-screen " -> "
-      lookup-binding dest, foo3, foo2
-      var _foo4/eax: (addr value) <- lookup *foo2
-      var foo4/ecx: (addr value) <- copy _foo4
-      var foo5/eax: (addr int) <- get foo4, type
-      print-int32-hex-to-real-screen *foo5
-      print-string-to-real-screen ": "
-      var foo6/eax: (addr int) <- get foo4, int-data
-      print-int32-hex-to-real-screen *foo6
-      print-string-to-real-screen " "
-      var foo7/eax: (addr handle array byte) <- get foo4, text-data
-      var foo8/eax: (addr array byte) <- lookup *foo7
-      var foo9/eax: int <- copy foo8
-      print-int32-hex-to-real-screen foo9
-      print-string-to-real-screen " "
-      var foo10/eax: (addr handle array value) <- get foo4, array-data
-      var foo11/eax: (addr array value) <- lookup *foo10
-      var foo12/eax: int <- copy foo11
-      print-int32-hex-to-real-screen foo12
-      print-string-to-real-screen " "
-      var foo10/eax: (addr handle array value) <- get foo4, array-data
-      var foo13/eax: (addr handle buffered-file) <- get foo4, file-data
-      var foo14/eax: (addr buffered-file) <- lookup *foo13
-      var foo15/eax: int <- copy foo14
-      print-int32-hex-to-real-screen foo15
-      print-string-to-real-screen " "
-      var foo10/eax: (addr handle array value) <- get foo4, array-data
-      var foo16/eax: (addr handle screen) <- get foo4, screen-data
-      var foo17/eax: (addr screen) <- lookup *foo16
-      var foo18/eax: int <- copy foo17
-      print-int32-hex-to-real-screen foo18
-      print-string-to-real-screen "\n"
+#?       var foo: (handle value)
+#?       var foo2/ecx: (addr handle value) <- address foo
+#?       var foo3/eax: (addr array byte) <- lookup *key-ah
+#?       print-string-to-real-screen foo3
+#?       print-string-to-real-screen " -> "
+#?       lookup-binding dest, foo3, foo2
+#?       var _foo4/eax: (addr value) <- lookup *foo2
+#?       var foo4/ecx: (addr value) <- copy _foo4
+#?       var foo5/eax: (addr int) <- get foo4, type
+#?       print-int32-hex-to-real-screen *foo5
+#?       print-string-to-real-screen ": "
+#?       var foo6/eax: (addr int) <- get foo4, int-data
+#?       print-int32-hex-to-real-screen *foo6
+#?       print-string-to-real-screen " "
+#?       var foo7/eax: (addr handle array byte) <- get foo4, text-data
+#?       var foo8/eax: (addr array byte) <- lookup *foo7
+#?       var foo9/eax: int <- copy foo8
+#?       print-int32-hex-to-real-screen foo9
+#?       print-string-to-real-screen " "
+#?       var foo10/eax: (addr handle array value) <- get foo4, array-data
+#?       var foo11/eax: (addr array value) <- lookup *foo10
+#?       var foo12/eax: int <- copy foo11
+#?       print-int32-hex-to-real-screen foo12
+#?       print-string-to-real-screen " "
+#?       var foo10/eax: (addr handle array value) <- get foo4, array-data
+#?       var foo13/eax: (addr handle buffered-file) <- get foo4, file-data
+#?       var foo14/eax: (addr buffered-file) <- lookup *foo13
+#?       var foo15/eax: int <- copy foo14
+#?       print-int32-hex-to-real-screen foo15
+#?       print-string-to-real-screen " "
+#?       var foo10/eax: (addr handle array value) <- get foo4, array-data
+#?       var foo16/eax: (addr handle screen) <- get foo4, screen-data
+#?       var foo17/eax: (addr screen) <- lookup *foo16
+#?       var foo18/eax: int <- copy foo17
+#?       print-int32-hex-to-real-screen foo18
+#?       print-string-to-real-screen "\n"
     }
     i <- increment
     loop

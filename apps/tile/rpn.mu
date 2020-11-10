@@ -11,9 +11,9 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
     break-if-=
     # update curr-stream
     emit-word curr, curr-stream
-    print-string-to-real-screen "eval: "
-    print-stream-to-real-screen curr-stream
-    print-string-to-real-screen "\n"
+#?     print-string-to-real-screen "eval: "
+#?     print-stream-to-real-screen curr-stream
+#?     print-string-to-real-screen "\n"
     $evaluate:process-word: {
       ### if curr-stream is an operator, perform it
       ## numbers

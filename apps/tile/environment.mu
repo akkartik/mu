@@ -1276,8 +1276,8 @@ fn call-path-element-length _x: (addr handle call-path-element) -> _/eax: int {
 #
 # Along the way, compute the column the cursor should be positioned at (cursor-col-addr).
 fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-row-addr: (addr int), cursor-col-addr: (addr int) -> _/ecx: int {
-  print-string 0, "## render-line: "
-  dump-table bindings
+#?   print-string 0, "## render-line: "
+#?   dump-table bindings
   # curr-word
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
@@ -1291,9 +1291,9 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
   {
     compare curr-word, 0
     break-if-=
-    print-string 0, "-- word "
-    print-word 0, curr-word
-    print-string 0, "\n"
+#?     print-string 0, "-- word "
+#?     print-word 0, curr-word
+#?     print-string 0, "\n"
 #?     print-string 0, "-- word in final line: "
 #?     {
 #?       var foo/eax: int <- copy curr-word
@@ -1330,8 +1330,8 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         increment top-row
       }
       # obtain stack at call site
-      print-string 0, "sub 0 bindings: "
-      dump-table bindings
+#?       print-string 0, "sub 0 bindings: "
+#?       dump-table bindings
       var stack-storage: value-stack
       var stack/edx: (addr value-stack) <- address stack-storage
       initialize-value-stack stack, 0x10
@@ -1340,12 +1340,12 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         var prev-word/eax: (addr word) <- lookup *prev-word-ah
         compare prev-word, 0
         break-if-=
-        print-string 0, "sub 1 bindings: "
-        dump-table bindings
+#?         print-string 0, "sub 1 bindings: "
+#?         dump-table bindings
         evaluate functions, bindings, first-line, prev-word, stack
       }
-      print-string 0, "sub 2 bindings: "
-      dump-table bindings
+#?       print-string 0, "sub 2 bindings: "
+#?       dump-table bindings
       # construct new bindings
       var callee-bindings-storage: table
       var callee-bindings/esi: (addr table) <- address callee-bindings-storage
@@ -1357,11 +1357,11 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       var callee-body-first-word/edx: (addr handle word) <- get callee-body, data
       # - render subsidiary stack
       push-to-call-path-element curr-path, callee-body-first-word  # leak
-      print-string 0, "subsidiary { "
-      dump-table callee-bindings
-      syscall_exit
+#?       print-string 0, "subsidiary { "
+#?       dump-table callee-bindings
+#?       syscall_exit
       curr-col <- render-line screen, functions, callee-bindings, callee-body, callee-body, expanded-words, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
-      print-string 0, "}\n"
+#?       print-string 0, "}\n"
       drop-from-call-path-element curr-path
       #
       move-cursor screen, top-row, curr-col
@@ -1377,23 +1377,23 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?     print-string 0, "rendering column from "
 #?     print-int32-decimal 0, curr-col
 #?     print-string 0, "\n"
-    print-string 0, "main 0 bindings: "
-    dump-table bindings
+#?     print-string 0, "main 0 bindings: "
+#?     dump-table bindings
     var bindings2-storage: table
     var bindings2/ebx: (addr table) <- address bindings2-storage
     shallow-copy-table-values bindings, bindings2
-    print-string 0, "main 1 bindings: "
-    dump-table bindings
-    print-string 0, "main 1 bindings2: "
-    dump-table bindings2
-    print-string 0, "word: "
-    print-word 0, curr-word
-    print-string 0, "\n"
+#?     print-string 0, "main 1 bindings: "
+#?     dump-table bindings
+#?     print-string 0, "main 1 bindings2: "
+#?     dump-table bindings2
+#?     print-string 0, "word: "
+#?     print-word 0, curr-word
+#?     print-string 0, "\n"
     curr-col <- render-column screen, functions, bindings2, first-line, line, curr-word, top-row, curr-col
-    print-string 0, "main 2 bindings: "
-    dump-table bindings
-    print-string 0, "main 2 bindings2: "
-    dump-table bindings2
+#?     print-string 0, "main 2 bindings: "
+#?     dump-table bindings
+#?     print-string 0, "main 2 bindings2: "
+#?     dump-table bindings2
     # cache cursor column if necessary
     $render-line:cache-cursor-column: {
 #?       print-string 0, "cache cursor? "
@@ -1450,8 +1450,8 @@ fn callee functions: (addr handle function), word: (addr word), out: (addr handl
 #
 # Return the farthest column written.
 fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), line: (addr line), final-word: (addr word), top-row: int, left-col: int -> _/ecx: int {
-  print-string 0, "render-column: "
-  dump-table bindings
+#?   print-string 0, "render-column: "
+#?   dump-table bindings
   var max-width/esi: int <- copy 0
   {
     # indent stack
