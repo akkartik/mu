@@ -5,6 +5,9 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
   move-cursor screen, row, col
   var val/esi: (addr value) <- copy _val
   var val-type/ecx: (addr int) <- get val, type
+#?   print-string-to-real-screen "value type: "
+#?   print-int32-decimal-to-real-screen *val-type
+#?   print-string-to-real-screen "\n"
   # per-type rendering logic goes here
   compare *val-type, 1  # string
   {
@@ -54,7 +57,7 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
     print-string screen, " FILE "
     return
   }
-  compare *val-type, 4  # file
+  compare *val-type, 4  # screen
   {
     break-if-!=
     var val-ah/eax: (addr handle screen) <- get val, screen-data

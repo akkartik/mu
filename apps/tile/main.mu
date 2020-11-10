@@ -71,11 +71,14 @@ fn test {
   initialize-environment-with-fake-screen env, 0x20, 0xa0
   process-all env, "3 3 fake-screen =s"
   process env, 0xc  # ctrl-l
-  process-all env, "s 1 down "
+  process-all env, "s 1 down 1 right"
+  process env, 4  # ctrl-d: start defining function
+  process-all env, "foo"
+  process env, 0xa  # newline: define function
+  process env, 0x435b1b  # right-arrow
+#?   process env, 5  # ctrl-e: end of line
+  process env, 0xa  # newline: expand
   render env
-#?   var fake-screen-ah/eax: (addr handle screen) <- get env, screen
-#?   var fake-screen/eax: (addr screen) <- lookup *fake-screen-ah
-#?   render-screen 0, 1, 1, fake-screen
 }
 
 fn process-all env: (addr environment), cmds: (addr array byte) {
