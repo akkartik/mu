@@ -1342,7 +1342,10 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         break-if-=
 #?         print-string 0, "sub 1 bindings: "
 #?         dump-table bindings
-        evaluate functions, bindings, first-line, prev-word, stack
+        var bindings2-storage: table
+        var bindings2/ebx: (addr table) <- address bindings2-storage
+        shallow-copy-table-values bindings, bindings2
+        evaluate functions, bindings2, first-line, prev-word, stack
       }
 #?       print-string 0, "sub 2 bindings: "
 #?       dump-table bindings
@@ -1454,14 +1457,18 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
 #?   dump-table bindings
   var max-width/esi: int <- copy 0
   {
-    # indent stack
-    var indented-col/ebx: int <- copy left-col
-    indented-col <- add 1  # margin-right
     # compute stack
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
     initialize-value-stack stack-addr, 0x10  # max-words
-    evaluate functions, bindings, first-line, final-word, stack-addr
+    # copy bindings
+    var bindings2-storage: table
+    var bindings2/ebx: (addr table) <- address bindings2-storage
+    shallow-copy-table-values bindings, bindings2
+    evaluate functions, bindings2, first-line, final-word, stack-addr
+    # indent stack
+    var indented-col/ebx: int <- copy left-col
+    indented-col <- add 1  # margin-right
     # render stack
     var curr-row/edx: int <- copy top-row
     curr-row <- add 2  # stack-margin-top
