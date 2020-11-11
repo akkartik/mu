@@ -279,7 +279,6 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         allocate screen-ah
         var screen/eax: (addr screen) <- lookup screen-h
         initialize-screen screen, nrows, ncols
-#?         render-screen 0, 5, 5, screen
         # push screen to stack
         var data-ah/eax: (addr handle array value) <- get out2, data
         var data/eax: (addr array value) <- lookup *data-ah
@@ -410,7 +409,6 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var top-addr/ebx: (addr int) <- get out2, top
         compare *top-addr, 0
         break-if-<=
-#?         print-string 0, "DOWN\n"
         # pop args
         var _d/eax: int <- pop-int-from-value-stack out2
         var d/ecx: int <- copy _d
@@ -430,8 +428,6 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
         var target/edi: (addr screen) <- copy _target
-#?         print-string 0, "before:\n"
-#?         render-screen 0, 5, 5, target
         var bound-a/ebx: (addr int) <- get target, num-rows
         var bound/ebx: int <- copy *bound-a
         var r/edx: (addr int) <- get target, cursor-row
@@ -448,8 +444,6 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           d <- decrement
           loop
         }
-#?         print-string 0, "after:\n"
-#?         render-screen 0, 5, 5, target
         break $evaluate:process-word
       }
       {
@@ -613,9 +607,6 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         top <- decrement
         var dest-offset/edx: (offset value) <- compute-offset data, top
         var target-val/edx: (addr value) <- index data, dest-offset
-#?         var tmp-ah/eax: (addr handle screen) <- get target-val, screen-data
-#?         var tmp/eax: (addr screen) <- lookup *tmp-ah
-#?         render-screen 0, 5, 5, tmp
         # create binding from curr-stream to target-val
         var key-h: (handle array byte)
         var key/ecx: (addr handle array byte) <- address key-h
@@ -649,11 +640,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var val/eax: (addr value) <- lookup *val-ah
         compare val, 0
         break-if-=
-#?         print-string-to-real-screen "AA\n"
         push-value-stack out, val
-#?         var tmp-ah/eax: (addr handle screen) <- get val, screen-data
-#?         var tmp/eax: (addr screen) <- lookup *tmp-ah
-#?         render-screen 0, 5, 5, tmp
         break $evaluate:process-word
       }
       ### if the word starts with a quote and ends with a quote, turn it into a string

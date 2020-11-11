@@ -1294,12 +1294,6 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?     print-string 0, "-- word "
 #?     print-word 0, curr-word
 #?     print-string 0, "\n"
-#?     print-string 0, "-- word in final line: "
-#?     {
-#?       var foo/eax: int <- copy curr-word
-#?       print-int32-hex 0, foo
-#?     }
-#?     print-string 0, "\n"
     # if necessary, first render columns for subsidiary stack
     $render-line:subsidiary: {
       {
@@ -1330,8 +1324,6 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         increment top-row
       }
       # obtain stack at call site
-#?       print-string 0, "sub 0 bindings: "
-#?       dump-table bindings
       var stack-storage: value-stack
       var stack/edx: (addr value-stack) <- address stack-storage
       initialize-value-stack stack, 0x10
@@ -1340,15 +1332,11 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         var prev-word/eax: (addr word) <- lookup *prev-word-ah
         compare prev-word, 0
         break-if-=
-#?         print-string 0, "sub 1 bindings: "
-#?         dump-table bindings
         var bindings2-storage: table
         var bindings2/ebx: (addr table) <- address bindings2-storage
         shallow-copy-table-values bindings, bindings2
         evaluate functions, bindings2, first-line, prev-word, stack
       }
-#?       print-string 0, "sub 2 bindings: "
-#?       dump-table bindings
       # construct new bindings
       var callee-bindings-storage: table
       var callee-bindings/esi: (addr table) <- address callee-bindings-storage
@@ -1380,23 +1368,10 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
 #?     print-string 0, "rendering column from "
 #?     print-int32-decimal 0, curr-col
 #?     print-string 0, "\n"
-#?     print-string 0, "main 0 bindings: "
-#?     dump-table bindings
     var bindings2-storage: table
     var bindings2/ebx: (addr table) <- address bindings2-storage
     shallow-copy-table-values bindings, bindings2
-#?     print-string 0, "main 1 bindings: "
-#?     dump-table bindings
-#?     print-string 0, "main 1 bindings2: "
-#?     dump-table bindings2
-#?     print-string 0, "word: "
-#?     print-word 0, curr-word
-#?     print-string 0, "\n"
     curr-col <- render-column screen, functions, bindings2, first-line, line, curr-word, top-row, curr-col
-#?     print-string 0, "main 2 bindings: "
-#?     dump-table bindings
-#?     print-string 0, "main 2 bindings2: "
-#?     dump-table bindings2
     # cache cursor column if necessary
     $render-line:cache-cursor-column: {
 #?       print-string 0, "cache cursor? "

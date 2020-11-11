@@ -5,9 +5,6 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
   move-cursor screen, row, col
   var val/esi: (addr value) <- copy _val
   var val-type/ecx: (addr int) <- get val, type
-#?   print-string-to-real-screen "value type: "
-#?   print-int32-decimal-to-real-screen *val-type
-#?   print-string-to-real-screen "\n"
   # per-type rendering logic goes here
   compare *val-type, 1  # string
   {
@@ -148,7 +145,6 @@ fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (add
     break-if->
     increment row  # mutate arg
     move-cursor screen, row, col
-#?     print-string screen, "\n"
     print-string screen, " "
     var c/edi: int <- copy 1
     {
@@ -163,7 +159,6 @@ fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (add
     loop
   }
   increment row  # mutate arg
-#?   print-string screen, "\n"
   move-cursor screen, row, col
   start-color screen, 0xf2, 7
   print-lower-border screen, *ncols-a
