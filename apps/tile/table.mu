@@ -36,29 +36,11 @@ fn deep-copy-table _src: (addr table), _dest: (addr table) {
       var src-val-ah/eax: (addr handle value) <- get src-bind, value
       var _src-val/eax: (addr value) <- lookup *src-val-ah
       var src-val/ecx: (addr value) <- copy _src-val
-#?       {
-#?         print-string 0, "src type: "
-#?         var foo/eax: (addr int) <- get src-val, type
-#?         print-int32-decimal 0, *foo
-#?         print-string 0, "\n"
-#?       }
       var dest-val-ah/eax: (addr handle value) <- get dest-bind, value
       allocate dest-val-ah
       var dest-val/eax: (addr value) <- lookup *dest-val-ah
-#?       {
-#?         var foo/eax: int <- copy dest-val
-#?         print-string 0, "iter: "
-#?         print-int32-hex 0, foo
-#?         print-string 0, "\n"
-#?       }
 #?       print-string 0, "deep copy value {\n"
       deep-copy-value src-val, dest-val
-#?       {
-#?         print-string 0, "dest: "
-#?         var foo/eax: (addr int) <- get dest-val, type
-#?         print-int32-decimal 0, *foo
-#?         print-string 0, "\n"
-#?       }
 #?       print-string 0, "}\n"
     }
     i <- increment

@@ -1,12 +1,6 @@
 fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value), max-width: int {
   move-cursor screen, row, col
   var val/esi: (addr value) <- copy _val
-#?           {
-#?             print-string 0, "val: "
-#?             var y0/eax: int <- copy val
-#?             print-int32-hex 0, y0
-#?             print-string 0, "\n"
-#?           }
   var val-type/ecx: (addr int) <- get val, type
   # per-type rendering logic goes here
   compare *val-type, 1  # string
@@ -58,12 +52,6 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
 #?     print-string 0, "render-screen"
     var val-ah/eax: (addr handle screen) <- get val, screen-data
     var val-screen/eax: (addr screen) <- lookup *val-ah
-#?     {
-#?       print-string 0, " -- "
-#?       var foo/eax: int <- copy val-screen
-#?       print-int32-hex 0, foo
-#?       print-string 0, " {\n"
-#?     }
     render-screen screen, row, col, val-screen
 #?     print-string 0, "}\n"
     return
@@ -142,11 +130,6 @@ fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (add
   start-color screen, 0xf2, 7
   move-cursor screen, row, col
   var target-screen/esi: (addr screen) <- copy _target-screen
-#?   {
-#?     var foo/eax: int <- copy target-screen
-#?     print-int32-hex 0, foo
-#?     print-string 0, "\n"
-#?   }
   var ncols-a/ecx: (addr int) <- get target-screen, num-cols
   print-upper-border screen, *ncols-a
   var r/edx: int <- copy 1
