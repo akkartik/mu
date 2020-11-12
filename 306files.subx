@@ -16,10 +16,39 @@ open:  # filename: (addr array byte), write?: boolean, out: (addr handle buffere
     # . save registers
     50/push-eax
     51/push-ecx
+    # var new-fd/ecx: fd
+    (open-fd *(ebp+8) *(ebp+0xc))  # => eax
+    89/<- %ecx 0/r32/eax
+    # if fd < 0 return
+    3d/compare-eax-with 0/imm32
+    7c/jump-if-< $open:end/disp8
+    # allocate a buffered-file
+    (allocate Heap 0x1010 *(ebp+0x10))  # file-buffer-size + 16 for other fields
+    # var out-addr/eax: (addr buffered-file)
+    8b/-> *(ebp+0x10) 0/r32/eax
+    (lookup *eax *(eax+4))  # => eax
+    # out-addr->size = 4KB
+    c7 0/subop/copy *(eax+0xc) 0x1000/imm32/file-buffer-size  # Stream-size + 4 for fd
+    # out-addr->fd = fd
+    89/<- *eax 1/r32/ecx
+$open:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+open-fd:  # filename: (addr array byte), write?: boolean -> result/eax: fd
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
     52/push-edx
     53/push-ebx
     56/push-esi
-    57/push-edi
     # ecx = filename
     8b/-> *(ebp+8) 1/r32/ecx
     # var size/edx: int = filename->length + 1 for the trailing null character
@@ -36,38 +65,22 @@ open:  # filename: (addr array byte), write?: boolean, out: (addr handle buffere
     (write %esi %ecx)
     # spill edx
     52/push-edx
-    # var fd/ecx: fd = open(filename)
+    # var fd/eax: fd = open(filename)
     8d/copy-address *(esi+0xc) 3/r32/ebx
     8b/-> *(ebp+0xc) 1/r32/ecx/flags
     ba/copy-to-edx 0x180/imm32/permissions
     e8/call syscall_open/disp32
-    89/<- %ecx 0/r32/eax
     # restore edx
     5a/pop-to-edx
-    # if fd < 0 return
-    3d/compare-eax-with 0/imm32
-    7c/jump-if-< $open:end/disp8
-    # allocate a buffered-file
-    (allocate Heap 0x1010 *(ebp+0x10))  # file-buffer-size + 16 for other fields
-    # var out-addr/edi: (addr buffered-file)
-    8b/-> *(ebp+0x10) 7/r32/edi
-    (lookup *edi *(edi+4))  # => eax
-    89/<- %edi 0/r32/eax
-    # out-addr->size = 4KB
-    c7 0/subop/copy *(edi+0xc) 0x1000/imm32/file-buffer-size  # Stream-size + 4 for fd
-    # out-addr->fd = fd
-    89/<- *edi 1/r32/ecx
-$open:end:
+$open-fd:end:
     # . reclaim locals
     01/add-to %esp 2/r32/edx
     81 0/subop/add %esp 0xc/imm32
     # . restore registers
-    5f/pop-to-edi
     5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
-    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
