@@ -82,6 +82,40 @@ fn push-value-stack _self: (addr value-stack), val: (addr value) {
   var dest-offset/edx: (offset value) <- compute-offset data, top
   var dest-addr/edx: (addr value) <- index data, dest-offset
   copy-object val, dest-addr
+#?   {
+#?     print-string 0, "push-value-stack/src: "
+#?     var x5/eax: (addr value) <- copy val
+#?     {
+#?       var y0/eax: int <- copy x5
+#?       print-int32-hex 0, y0
+#?       print-string 0, " -- "
+#?     }
+#?     var x6/eax: (addr int) <- get x5, type
+#?     compare x6, 0
+#?     break-if-=
+#?     print-int32-hex 0, *x6
+#?     print-string 0, "\n"
+#?   }
+#?   {
+#?     print-string 0, "push-value-stack/dest: "
+#?     var x5/eax: (addr value) <- copy dest-addr
+#?     {
+#?       var y0/eax: int <- copy x5
+#?       print-int32-hex 0, y0
+#?       print-string 0, " -- "
+#?     }
+#?     compare x5, 0
+#?     break-if-=
+#?     var x6/eax: (addr handle screen) <- get x5, screen-data
+#?     var x7/eax: (addr screen) <- lookup *x6
+#?     compare x7, 0
+#?     break-if-=
+#?     {
+#?       var foo/eax: int <- copy x7
+#?       print-int32-hex 0, foo
+#?     }
+#?     print-string 0, "\n"
+#?   }
   increment *top-addr
 }
 

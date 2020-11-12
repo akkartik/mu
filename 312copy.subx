@@ -1,0 +1,68 @@
+== code
+
+copy-array-object:  # src: (addr array T), dest-ah: (addr handle array T)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (copy-array Heap *(ebp+8) *(ebp+0xc))
+$copy-array-object:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# create an independent copy of file src into dest
+# there's no way to do this without knowing the filename
+copy-file:  # src: (addr buffered-file), dest-ah: (addr handle buffered-file), filename: (addr array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = src
+    8b/-> *(ebp+8) 6/r32/esi
+    # var n/ecx: int = src->buffer->size + 16
+    8b/-> *(esi+0xc) 0/r32/eax
+    05/add-to-eax 0x10/imm32  # buffered-file fields before buffer contents
+    89/<- %ecx 0/r32/eax
+    #
+    (allocate Heap %ecx *(ebp+0xc))
+    # var dest/edi: (addr buffered-file) = lookup(*dest-ah)
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # => eax
+    89/<- %edi 0/r32/eax
+    #
+    (copy-bytes %esi %edi %ecx)
+    # var offset/ecx: int = lseek(src->fd, 0, SEEK_CUR)
+    8b/-> *esi 3/r32/ebx
+    b9/copy-to-ecx 0/imm32/offset
+    ba/copy-to-edx 1/imm32/whence:SEEK_CUR
+    (syscall_lseek)
+    89/<- %ecx 0/r32/eax
+    # at this point dest is identical to src, including file descriptor. Now
+    # create an independent copy of the file descriptor
+    (open-fd *(ebp+0x10) 0)  # false => eax
+    89/<- *edi 0/r32/eax
+    # replicate offset in the new fd
+    89/<- %ebx 0/r32/eax  # fd
+    51/push-ecx  # offset
+    ba/copy-to-edx 0/imm32/whence:SEEK_SET
+    (syscall_lseek)
+$copy-file:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return

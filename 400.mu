@@ -183,3 +183,5 @@ sig stream-first s: (addr stream byte) -> result/eax: byte
 sig stream-final s: (addr stream byte) -> result/eax: byte
 
 #sig copy-bytes src: (addr byte), dest: (addr byte), n: int
+sig copy-array-object src: (addr array _), dest-ah: (addr handle array _)
+sig copy-file src: (addr buffered-file), dest-ah: (addr handle buffered-file), filename: (addr array byte)

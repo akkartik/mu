@@ -134,6 +134,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var type-addr/eax: (addr int) <- get target-val, type
         copy-to *type-addr, 3  # file
         var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
+        var filename-ah/ecx: (addr handle array byte) <- get target-val, filename
+        copy-object target-string-ah, filename-ah
         var empty: (handle array byte)
         copy-handle empty, target-string-ah
         break $evaluate:process-word
@@ -607,6 +609,12 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         top <- decrement
         var dest-offset/edx: (offset value) <- compute-offset data, top
         var target-val/edx: (addr value) <- index data, dest-offset
+#?           {
+#?             print-string 0, "DD: "
+#?             var y0/eax: int <- copy target-val
+#?             print-int32-hex 0, y0
+#?             print-string 0, "\n"
+#?           }
         # create binding from curr-stream to target-val
         var key-h: (handle array byte)
         var key/ecx: (addr handle array byte) <- address key-h
@@ -640,6 +648,12 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var val/eax: (addr value) <- lookup *val-ah
         compare val, 0
         break-if-=
+#?           {
+#?             print-string 0, "UU: "
+#?             var y0/eax: int <- copy val
+#?             print-int32-hex 0, y0
+#?             print-string 0, "\n"
+#?           }
         push-value-stack out, val
         break $evaluate:process-word
       }

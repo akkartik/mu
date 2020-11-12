@@ -77,6 +77,7 @@ fn test {
   process env, 0xa  # newline: define function
   process env, 0x435b1b  # right-arrow
 #?   process env, 5  # ctrl-e: end of line
+  print-string 0, "==\n"
   process env, 0xa  # newline: expand
   render env
 }

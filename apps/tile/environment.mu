@@ -967,7 +967,7 @@ fn evaluate-environment _env: (addr environment), stack: (addr value-stack) {
 }
 
 fn render _env: (addr environment) {
-#?   print-string 0, "==\n"
+#?   print-string 0, "== render\n"
   var env/esi: (addr environment) <- copy _env
   clear-canvas env
   # screen
@@ -983,19 +983,13 @@ fn render _env: (addr environment) {
   # sandbox
   var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-#?   {
-#?     var line-ah/eax: (addr handle line) <- get sandbox, data
-#?     var line/eax: (addr line) <- lookup *line-ah
-#?     var first-word-ah/eax: (addr handle word) <- get line, data
-#?     var curr-word/eax: (addr word) <- lookup *first-word-ah
-#?     print-word 0, curr-word
-#?     print-string 0, "\n"
-#?   }
   # bindings
   var bindings-storage: table
   var bindings/ebx: (addr table) <- address bindings-storage
   initialize-table bindings, 0x10
+#?   print-string 0, "render-sandbox {\n"
   render-sandbox screen, functions, bindings, sandbox, 3, repl-col
+#?   print-string 0, "render-sandbox }\n"
 }
 
 fn render-sandbox screen: (addr screen), functions: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int {
@@ -1027,14 +1021,6 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
       var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
       var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
       var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
-#?       print-string 0, "cursor 2: "
-#?       {
-#?         print-word 0, cursor-word
-#?         print-string 0, " -- "
-#?         var foo/eax: int <- copy cursor-word
-#?         print-int32-hex 0, foo
-#?         print-string 0, "\n"
-#?       }
       # it's enough to pass in the first word of the path, because if the path isn't a singleton the word is guaranteed to be unique
       render-line-without-stack screen, curr-line, curr-row, left-col, cursor-word, cursor-row-addr, cursor-col-addr
     }
@@ -1043,7 +1029,6 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
     loop
   }
   #
-#?   print-string 0, "render final line\n"
   render-final-line-with-stack screen, functions, bindings, sandbox, curr-row, left-col, cursor-row-addr, cursor-col-addr
   # at most one of the following dialogs will be rendered
   render-rename-dialog screen, sandbox, cursor-row, cursor-col
@@ -1276,14 +1261,12 @@ fn call-path-element-length _x: (addr handle call-path-element) -> _/eax: int {
 #
 # Along the way, compute the column the cursor should be positioned at (cursor-col-addr).
 fn render-line screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), _line: (addr line), expanded-words: (addr handle call-path), top-row: int, left-col: int, curr-path: (addr handle call-path-element), cursor-word: (addr word), cursor-call-path: (addr handle call-path-element), cursor-row-addr: (addr int), cursor-col-addr: (addr int) -> _/ecx: int {
-#?   print-string 0, "## render-line: "
+#?   print-string 0, "render-line\n"
 #?   dump-table bindings
   # curr-word
   var line/esi: (addr line) <- copy _line
   var first-word-ah/eax: (addr handle word) <- get line, data
   var curr-word/eax: (addr word) <- lookup *first-word-ah
-  var debug-row: int
-  copy-to debug-row, 0x20
   #
   # loop-carried dependency
   var curr-col/ecx: int <- copy left-col
@@ -1334,7 +1317,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
         break-if-=
         var bindings2-storage: table
         var bindings2/ebx: (addr table) <- address bindings2-storage
-        shallow-copy-table-values bindings, bindings2
+        deep-copy-table bindings, bindings2
         evaluate functions, bindings2, first-line, prev-word, stack
       }
       # construct new bindings
@@ -1348,7 +1331,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       var callee-body-first-word/edx: (addr handle word) <- get callee-body, data
       # - render subsidiary stack
       push-to-call-path-element curr-path, callee-body-first-word  # leak
-#?       print-string 0, "subsidiary { "
+#?       print-string 0, "subsidiary {\n"
 #?       dump-table callee-bindings
 #?       syscall_exit
       curr-col <- render-line screen, functions, callee-bindings, callee-body, callee-body, expanded-words, top-row, curr-col, curr-path, cursor-word, cursor-call-path, cursor-row-addr, cursor-col-addr
@@ -1363,33 +1346,21 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     }
     # render main column
     var old-col/edx: int <- copy curr-col
-#?     move-cursor 0, debug-row, 1
-#?     increment debug-row
-#?     print-string 0, "rendering column from "
-#?     print-int32-decimal 0, curr-col
-#?     print-string 0, "\n"
     var bindings2-storage: table
     var bindings2/ebx: (addr table) <- address bindings2-storage
-    shallow-copy-table-values bindings, bindings2
+#?     print-string 0, "deep-copy {\n"
+    deep-copy-table bindings, bindings2
+#?     print-string 0, "}\n"
+#?     print-string 0, "render column {\n"
     curr-col <- render-column screen, functions, bindings2, first-line, line, curr-word, top-row, curr-col
+#?     print-string 0, "}\n"
     # cache cursor column if necessary
     $render-line:cache-cursor-column: {
-#?       print-string 0, "cache cursor? "
-#?       {
-#?         var foo/eax: int <- copy curr-word
-#?         print-int32-hex 0, foo
-#?       }
-#?       print-string 0, "\n"
       {
         var found?/eax: boolean <- call-path-element-match? curr-path, cursor-call-path
         compare found?, 0  # false
         break-if-= $render-line:cache-cursor-column
       }
-#?       print-string 0, "cursor at "
-#?       print-int32-decimal 0, top-row
-#?       print-string 0, ", "
-#?       print-int32-decimal 0, old-col
-#?       print-string 0, "\n"
       var dest/edi: (addr int) <- copy cursor-row-addr
       {
         var src/eax: int <- copy top-row
@@ -1428,7 +1399,7 @@ fn callee functions: (addr handle function), word: (addr word), out: (addr handl
 #
 # Return the farthest column written.
 fn render-column screen: (addr screen), functions: (addr handle function), bindings: (addr table), first-line: (addr line), line: (addr line), final-word: (addr word), top-row: int, left-col: int -> _/ecx: int {
-#?   print-string 0, "render-column: "
+#?   print-string 0, "render-column\n"
 #?   dump-table bindings
   var max-width/esi: int <- copy 0
   {
@@ -1439,7 +1410,9 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     # copy bindings
     var bindings2-storage: table
     var bindings2/ebx: (addr table) <- address bindings2-storage
-    shallow-copy-table-values bindings, bindings2
+#?     print-string 0, "deep copy table {\n"
+    deep-copy-table bindings, bindings2
+#?     print-string 0, "}\n"
     evaluate functions, bindings2, first-line, final-word, stack-addr
     # indent stack
     var indented-col/ebx: int <- copy left-col

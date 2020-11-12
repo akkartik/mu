@@ -1,9 +1,12 @@
-
-## Rendering values
-
 fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value), max-width: int {
   move-cursor screen, row, col
   var val/esi: (addr value) <- copy _val
+#?           {
+#?             print-string 0, "val: "
+#?             var y0/eax: int <- copy val
+#?             print-int32-hex 0, y0
+#?             print-string 0, "\n"
+#?           }
   var val-type/ecx: (addr int) <- get val, type
   # per-type rendering logic goes here
   compare *val-type, 1  # string
@@ -18,11 +21,6 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
     var truncated-ah/esi: (addr handle array byte) <- address truncated
     substring val-string, 0, 0xc, truncated-ah
     var truncated-string/eax: (addr array byte) <- lookup *truncated-ah
-#?     {
-#?       var foo/eax: int <- copy truncated-string
-#?       print-int32-hex 0, foo
-#?       print-string 0, "\n"
-#?     }
     var len/edx: int <- length truncated-string
     start-color screen, 0xf2, 7
     print-code-point screen, 0x275d  # open-quote
@@ -57,9 +55,17 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
   compare *val-type, 4  # screen
   {
     break-if-!=
+#?     print-string 0, "render-screen"
     var val-ah/eax: (addr handle screen) <- get val, screen-data
     var val-screen/eax: (addr screen) <- lookup *val-ah
+#?     {
+#?       print-string 0, " -- "
+#?       var foo/eax: int <- copy val-screen
+#?       print-int32-hex 0, foo
+#?       print-string 0, " {\n"
+#?     }
     render-screen screen, row, col, val-screen
+#?     print-string 0, "}\n"
     return
   }
   # render ints by default for now
@@ -136,6 +142,11 @@ fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (add
   start-color screen, 0xf2, 7
   move-cursor screen, row, col
   var target-screen/esi: (addr screen) <- copy _target-screen
+#?   {
+#?     var foo/eax: int <- copy target-screen
+#?     print-int32-hex 0, foo
+#?     print-string 0, "\n"
+#?   }
   var ncols-a/ecx: (addr int) <- get target-screen, num-cols
   print-upper-border screen, *ncols-a
   var r/edx: int <- copy 1
@@ -339,4 +350,92 @@ fn value-height _v: (addr value) -> _/eax: int {
     return result
   }
   return 1
+}
+
+fn deep-copy-value _src: (addr value), _dest: (addr value) {
+#?   print-string 0, "deep-copy-value\n"
+  var src/esi: (addr value) <- copy _src
+  var dest/edi: (addr value) <- copy _dest
+  var type/ebx: (addr int) <- get src, type
+  var y/ecx: (addr int) <- get dest, type
+  copy-object type, y
+  compare *type, 0   # int
+  {
+    break-if-!=
+#?     print-string 0, "int value\n"
+    var x/eax: (addr int) <- get src, int-data
+    y <- get dest, int-data
+    copy-object x, y
+    return
+  }
+  compare *type, 1  # string
+  {
+    break-if-!=
+#?     print-string 0, "string value\n"
+    var src-ah/eax: (addr handle array byte) <- get src, text-data
+    var src/eax: (addr array byte) <- lookup *src-ah
+    var dest-ah/edx: (addr handle array byte) <- get dest, text-data
+    copy-array-object src, dest-ah
+    return
+  }
+  compare *type, 2  # array
+  {
+    break-if-!=
+#?     print-string 0, "array value\n"
+    var src-ah/eax: (addr handle array value) <- get src, array-data
+    var _src/eax: (addr array value) <- lookup *src-ah
+    var src/esi: (addr array value) <- copy _src
+    var n/ecx: int <- length src
+    var dest-ah/edx: (addr handle array value) <- get dest, array-data
+    populate dest-ah, n
+    var _dest/eax: (addr array value) <- lookup *dest-ah
+    var dest/edi: (addr array value) <- copy _dest
+    var i/eax: int <- copy 0
+    {
+      compare i, n
+      break-if->=
+      {
+        var offset/edx: (offset value) <- compute-offset src, i
+        var src-element/eax: (addr value) <- index src, offset
+        var dest-element/ecx: (addr value) <- index dest, offset
+        deep-copy-value src-element, dest-element
+      }
+      i <- increment
+      loop
+    }
+    copy-array-object src, dest-ah
+    return
+  }
+  compare *type, 3  # file
+  {
+    break-if-!=
+#?     print-string 0, "file value\n"
+    var src-filename-ah/eax: (addr handle array byte) <- get src, filename
+    var _src-filename/eax: (addr array byte) <- lookup *src-filename-ah
+    var src-filename/ecx: (addr array byte) <- copy _src-filename
+    var dest-filename-ah/ebx: (addr handle array byte) <- get dest, filename
+    copy-array-object src-filename, dest-filename-ah
+    var src-file-ah/eax: (addr handle buffered-file) <- get src, file-data
+    var src-file/eax: (addr buffered-file) <- lookup *src-file-ah
+    var dest-file-ah/edx: (addr handle buffered-file) <- get dest, file-data
+    copy-file src-file, dest-file-ah, src-filename
+    return
+  }
+  compare *type, 4  # screen
+  {
+    break-if-!=
+#?     print-string 0, "screen value\n"
+    var src-screen-ah/eax: (addr handle screen) <- get src, screen-data
+    var _src-screen/eax: (addr screen) <- lookup *src-screen-ah
+    var src-screen/ecx: (addr screen) <- copy _src-screen
+    var dest-screen-ah/eax: (addr handle screen) <- get dest, screen-data
+    allocate dest-screen-ah
+    var dest-screen/eax: (addr screen) <- lookup *dest-screen-ah
+    copy-object src-screen, dest-screen
+    var dest-screen-data-ah/ebx: (addr handle array screen-cell) <- get dest-screen, data
+    var src-screen-data-ah/eax: (addr handle array screen-cell) <- get src-screen, data
+    var src-screen-data/eax: (addr array screen-cell) <- lookup *src-screen-data-ah
+    copy-array-object src-screen-data, dest-screen-data-ah
+    return
+  }
 }
