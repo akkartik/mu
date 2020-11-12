@@ -91,227 +91,145 @@ if ('onhashchange' in window) {
 <span id="L32" class="LineNr"> 32 </span><span class="CommentedCode">#?   print-int32-hex-to-real-screen val</span>
 <span id="L33" class="LineNr"> 33 </span>  copy-to *dest-addr2, val
 <span id="L34" class="LineNr"> 34 </span>  increment *top-addr
-<span id="L35" class="LineNr"> 35 </span><span class="Delimiter">}</span>
-<span id="L36" class="LineNr"> 36 </span>
-<span id="L37" class="LineNr"> 37 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L37'>push-string-to-value-stack</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>), val: (handle array byte) <span class="Delimiter">{</span>
-<span id="L38" class="LineNr"> 38 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
-<span id="L39" class="LineNr"> 39 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L40" class="LineNr"> 40 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edx</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
-<span id="L41" class="LineNr"> 41 </span>  <span class="PreProc">var</span> data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
-<span id="L42" class="LineNr"> 42 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> copy *top-addr
-<span id="L43" class="LineNr"> 43 </span>  <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L44" class="LineNr"> 44 </span>  <span class="PreProc">var</span> dest-addr/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, dest-offset
-<span id="L45" class="LineNr"> 45 </span>  <span class="PreProc">var</span> dest-addr2/<span class="Constant">eax</span>: (addr handle array byte) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-addr, text-data
-<span id="L46" class="LineNr"> 46 </span>  <a href='../../120allocate.subx.html#L489'>copy-handle</a> val, dest-addr2
-<span id="L47" class="LineNr"> 47 </span>  <span class="PreProc">var</span> dest-addr3/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-addr, <span class="PreProc">type</span>
-<span id="L48" class="LineNr"> 48 </span><span class="CommentedCode">#?   print-string 0, &quot;setting type to 1: &quot;</span>
-<span id="L49" class="LineNr"> 49 </span><span class="CommentedCode">#?   {</span>
-<span id="L50" class="LineNr"> 50 </span><span class="CommentedCode">#?     var foo/eax: int &lt;- copy dest-addr3</span>
-<span id="L51" class="LineNr"> 51 </span><span class="CommentedCode">#?     print-int32-hex 0, foo</span>
-<span id="L52" class="LineNr"> 52 </span><span class="CommentedCode">#?   }</span>
-<span id="L53" class="LineNr"> 53 </span><span class="CommentedCode">#?   print-string 0, &quot;\n&quot;</span>
-<span id="L54" class="LineNr"> 54 </span>  copy-to *dest-addr3, <span class="Constant">1</span>  <span class="muComment"># type string</span>
-<span id="L55" class="LineNr"> 55 </span>  increment *top-addr
-<span id="L56" class="LineNr"> 56 </span><span class="Delimiter">}</span>
-<span id="L57" class="LineNr"> 57 </span>
-<span id="L58" class="LineNr"> 58 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L58'>push-array-to-value-stack</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>), val: (handle array value) <span class="Delimiter">{</span>
-<span id="L59" class="LineNr"> 59 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
-<span id="L60" class="LineNr"> 60 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L61" class="LineNr"> 61 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edx</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
-<span id="L62" class="LineNr"> 62 </span>  <span class="PreProc">var</span> data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
-<span id="L63" class="LineNr"> 63 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> copy *top-addr
-<span id="L64" class="LineNr"> 64 </span>  <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L65" class="LineNr"> 65 </span>  <span class="PreProc">var</span> dest-addr/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, dest-offset
-<span id="L66" class="LineNr"> 66 </span>  <span class="PreProc">var</span> dest-addr2/<span class="Constant">eax</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-addr, array-data
-<span id="L67" class="LineNr"> 67 </span>  <a href='../../120allocate.subx.html#L489'>copy-handle</a> val, dest-addr2
-<span id="L68" class="LineNr"> 68 </span>  <span class="muComment"># update type</span>
-<span id="L69" class="LineNr"> 69 </span>  <span class="PreProc">var</span> dest-addr3/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-addr, <span class="PreProc">type</span>
-<span id="L70" class="LineNr"> 70 </span>  copy-to *dest-addr3, <span class="Constant">2</span>  <span class="muComment"># type array</span>
-<span id="L71" class="LineNr"> 71 </span>  increment *top-addr
-<span id="L72" class="LineNr"> 72 </span><span class="Delimiter">}</span>
-<span id="L73" class="LineNr"> 73 </span>
-<span id="L74" class="LineNr"> 74 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L74'>push-value-stack</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>), val: (addr value) <span class="Delimiter">{</span>
-<span id="L75" class="LineNr"> 75 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
-<span id="L76" class="LineNr"> 76 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L77" class="LineNr"> 77 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edx</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
-<span id="L78" class="LineNr"> 78 </span>  <span class="PreProc">var</span> data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
-<span id="L79" class="LineNr"> 79 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> copy *top-addr
-<span id="L80" class="LineNr"> 80 </span>  <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L81" class="LineNr"> 81 </span>  <span class="PreProc">var</span> dest-addr/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, dest-offset
-<span id="L82" class="LineNr"> 82 </span>  copy-object val, dest-addr
-<span id="L83" class="LineNr"> 83 </span>  increment *top-addr
-<span id="L84" class="LineNr"> 84 </span><span class="Delimiter">}</span>
-<span id="L85" class="LineNr"> 85 </span>
-<span id="L86" class="LineNr"> 86 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L86'>pop-int-from-value-stack</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
-<span id="L87" class="LineNr"> 87 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
-<span id="L88" class="LineNr"> 88 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L89" class="LineNr"> 89 </span>  <span class="Delimiter">{</span>
-<span id="L90" class="LineNr"> 90 </span>    compare *top-addr, <span class="Constant">0</span>
-<span id="L91" class="LineNr"> 91 </span>    <span class="PreProc">break-if-&gt;</span>
-<span id="L92" class="LineNr"> 92 </span>    <span class="PreProc">return</span> <span class="Constant">-1</span>
-<span id="L93" class="LineNr"> 93 </span>  <span class="Delimiter">}</span>
-<span id="L94" class="LineNr"> 94 </span>  decrement *top-addr
-<span id="L95" class="LineNr"> 95 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edx</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
-<span id="L96" class="LineNr"> 96 </span>  <span class="PreProc">var</span> data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
-<span id="L97" class="LineNr"> 97 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> copy *top-addr
-<span id="L98" class="LineNr"> 98 </span>  <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L99" class="LineNr"> 99 </span>  <span class="PreProc">var</span> result-addr/<span class="Constant">eax</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, dest-offset
-<span id="L100" class="LineNr">100 </span>  <span class="PreProc">var</span> result-addr2/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> result-addr, int-data
-<span id="L101" class="LineNr">101 </span>  <span class="PreProc">return</span> *result-addr2
-<span id="L102" class="LineNr">102 </span><span class="Delimiter">}</span>
-<span id="L103" class="LineNr">103 </span>
-<span id="L104" class="LineNr">104 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L104'>value-stack-empty?</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
-<span id="L105" class="LineNr">105 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
-<span id="L106" class="LineNr">106 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L107" class="LineNr">107 </span>  compare *top, <span class="Constant">0</span>
-<span id="L108" class="LineNr">108 </span>  <span class="Delimiter">{</span>
-<span id="L109" class="LineNr">109 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L110" class="LineNr">110 </span>    <span class="PreProc">return</span> <span class="Constant">1</span>  <span class="muComment"># true</span>
-<span id="L111" class="LineNr">111 </span>  <span class="Delimiter">}</span>
-<span id="L112" class="LineNr">112 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>  <span class="muComment"># false</span>
-<span id="L113" class="LineNr">113 </span><span class="Delimiter">}</span>
-<span id="L114" class="LineNr">114 </span>
-<span id="L115" class="LineNr">115 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L115'>value-stack-length</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
-<span id="L116" class="LineNr">116 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
-<span id="L117" class="LineNr">117 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L118" class="LineNr">118 </span>  <span class="PreProc">return</span> *top-addr
-<span id="L119" class="LineNr">119 </span><span class="Delimiter">}</span>
-<span id="L120" class="LineNr">120 </span>
-<span id="L121" class="LineNr">121 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L121'>value-stack-max-width</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
-<span id="L122" class="LineNr">122 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
-<span id="L123" class="LineNr">123 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edi</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
-<span id="L124" class="LineNr">124 </span>  <span class="PreProc">var</span> _data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
-<span id="L125" class="LineNr">125 </span>  <span class="PreProc">var</span> data/<span class="Constant">edi</span>: (addr array value) <span class="SpecialChar">&lt;-</span> copy _data
-<span id="L126" class="LineNr">126 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
-<span id="L127" class="LineNr">127 </span>  <span class="PreProc">var</span> i/<span class="Constant">ebx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L128" class="LineNr">128 </span>  <span class="PreProc">var</span> result: int
-<span id="L129" class="LineNr">129 </span>  <span class="Delimiter">{</span>
-<span id="L130" class="LineNr">130 </span>    compare i, *top-addr
-<span id="L131" class="LineNr">131 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L132" class="LineNr">132 </span>    <span class="PreProc">var</span> o/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, i
-<span id="L133" class="LineNr">133 </span>    <span class="PreProc">var</span> v/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, o
-<span id="L134" class="LineNr">134 </span>    <span class="PreProc">var</span> w/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='value-stack.mu.html#L147'>value-width</a> v, <span class="Constant">1</span>  <span class="muComment"># top-level=true</span>
-<span id="L135" class="LineNr">135 </span>    <span class="muComment"># if (w &gt; result) w = result</span>
-<span id="L136" class="LineNr">136 </span>    <span class="Delimiter">{</span>
-<span id="L137" class="LineNr">137 </span>      compare w, result
-<span id="L138" class="LineNr">138 </span>      <span class="PreProc">break-if-&lt;=</span>
-<span id="L139" class="LineNr">139 </span>      copy-to result, w
-<span id="L140" class="LineNr">140 </span>    <span class="Delimiter">}</span>
-<span id="L141" class="LineNr">141 </span>    i <span class="SpecialChar">&lt;-</span> increment
-<span id="L142" class="LineNr">142 </span>    <span class="PreProc">loop</span>
-<span id="L143" class="LineNr">143 </span>  <span class="Delimiter">}</span>
-<span id="L144" class="LineNr">144 </span>  <span class="PreProc">return</span> result
-<span id="L145" class="LineNr">145 </span><span class="Delimiter">}</span>
-<span id="L146" class="LineNr">146 </span>
-<span id="L147" class="LineNr">147 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L147'>value-width</a></span> _v: (addr value), top-level: boolean<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
-<span id="L148" class="LineNr">148 </span>  <span class="PreProc">var</span> v/<span class="Constant">esi</span>: (addr value) <span class="SpecialChar">&lt;-</span> copy _v
-<span id="L149" class="LineNr">149 </span>  <span class="PreProc">var</span> <span class="PreProc">type</span>/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> v, <span class="PreProc">type</span>
-<span id="L150" class="LineNr">150 </span>  <span class="Delimiter">{</span>
-<span id="L151" class="LineNr">151 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">0</span>  <span class="muComment"># int</span>
-<span id="L152" class="LineNr">152 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L153" class="LineNr">153 </span>    <span class="PreProc">var</span> v-int/<span class="Constant">edx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> v, int-data
-<span id="L154" class="LineNr">154 </span>    <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='../../311decimal-int.subx.html#L300'>decimal-size</a> *v-int
-<span id="L155" class="LineNr">155 </span>    <span class="PreProc">return</span> result
-<span id="L156" class="LineNr">156 </span>  <span class="Delimiter">}</span>
-<span id="L157" class="LineNr">157 </span>  <span class="Delimiter">{</span>
-<span id="L158" class="LineNr">158 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">1</span>  <span class="muComment"># string</span>
-<span id="L159" class="LineNr">159 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L160" class="LineNr">160 </span>    <span class="PreProc">var</span> s-ah/<span class="Constant">eax</span>: (addr handle array byte) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> v, text-data
-<span id="L161" class="LineNr">161 </span>    <span class="PreProc">var</span> s/<span class="Constant">eax</span>: (addr array byte) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *s-ah
-<span id="L162" class="LineNr">162 </span>    compare s, <span class="Constant">0</span>
-<span id="L163" class="LineNr">163 </span>    <span class="PreProc">break-if-=</span>
-<span id="L164" class="LineNr">164 </span>    <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> length s
-<span id="L165" class="LineNr">165 </span>    compare result, <span class="Constant">0xd</span>  <span class="muComment"># max string size</span>
-<span id="L166" class="LineNr">166 </span>    <span class="Delimiter">{</span>
-<span id="L167" class="LineNr">167 </span>      <span class="PreProc">break-if-&lt;=</span>
-<span id="L168" class="LineNr">168 </span>      result <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0xd</span>
-<span id="L169" class="LineNr">169 </span>    <span class="Delimiter">}</span>
-<span id="L170" class="LineNr">170 </span>    <span class="muComment"># if it's a nested string, include space for quotes</span>
-<span id="L171" class="LineNr">171 </span>    <span class="muComment"># we don't do this for the top-level, where the quotes will overflow</span>
-<span id="L172" class="LineNr">172 </span>    <span class="muComment"># into surrounding padding.</span>
-<span id="L173" class="LineNr">173 </span>    compare top-level, <span class="Constant">0</span>  <span class="muComment"># false</span>
-<span id="L174" class="LineNr">174 </span>    <span class="Delimiter">{</span>
-<span id="L175" class="LineNr">175 </span>      <span class="PreProc">break-if-!=</span>
-<span id="L176" class="LineNr">176 </span>      result <span class="SpecialChar">&lt;-</span> add <span class="Constant">2</span>
-<span id="L177" class="LineNr">177 </span>    <span class="Delimiter">}</span>
-<span id="L178" class="LineNr">178 </span>    <span class="PreProc">return</span> result
-<span id="L179" class="LineNr">179 </span>  <span class="Delimiter">}</span>
-<span id="L180" class="LineNr">180 </span>  <span class="Delimiter">{</span>
-<span id="L181" class="LineNr">181 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">2</span>  <span class="muComment"># array</span>
-<span id="L182" class="LineNr">182 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L183" class="LineNr">183 </span>    <span class="PreProc">var</span> a-ah/<span class="Constant">eax</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> v, array-data
-<span id="L184" class="LineNr">184 </span>    <span class="PreProc">var</span> a/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *a-ah
-<span id="L185" class="LineNr">185 </span>    compare a, <span class="Constant">0</span>
-<span id="L186" class="LineNr">186 </span>    <span class="PreProc">break-if-=</span>
-<span id="L187" class="LineNr">187 </span>    <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='value-stack.mu.html#L204'>array-width</a> a
-<span id="L188" class="LineNr">188 </span>    <span class="PreProc">return</span> result
-<span id="L189" class="LineNr">189 </span>  <span class="Delimiter">}</span>
-<span id="L190" class="LineNr">190 </span>  <span class="Delimiter">{</span>
-<span id="L191" class="LineNr">191 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">3</span>  <span class="muComment"># file handle</span>
-<span id="L192" class="LineNr">192 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L193" class="LineNr">193 </span>    <span class="PreProc">var</span> f-ah/<span class="Constant">eax</span>: (addr handle buffered-file) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> v, file-data
-<span id="L194" class="LineNr">194 </span>    <span class="PreProc">var</span> f/<span class="Constant">eax</span>: (addr buffered-file) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *f-ah
-<span id="L195" class="LineNr">195 </span>    compare f, <span class="Constant">0</span>
-<span id="L196" class="LineNr">196 </span>    <span class="PreProc">break-if-=</span>
-<span id="L197" class="LineNr">197 </span>    <span class="muComment"># TODO: visualizing file handles</span>
-<span id="L198" class="LineNr">198 </span>    <span class="PreProc">return</span> <span class="Constant">4</span>
-<span id="L199" class="LineNr">199 </span>  <span class="Delimiter">}</span>
-<span id="L200" class="LineNr">200 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>
-<span id="L201" class="LineNr">201 </span><span class="Delimiter">}</span>
-<span id="L202" class="LineNr">202 </span>
-<span id="L203" class="LineNr">203 </span><span class="muComment"># keep sync'd with render-array</span>
-<span id="L204" class="LineNr">204 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L204'>array-width</a></span> _a: (addr array value)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
-<span id="L205" class="LineNr">205 </span>  <span class="PreProc">var</span> a/<span class="Constant">esi</span>: (addr array value) <span class="SpecialChar">&lt;-</span> copy _a
-<span id="L206" class="LineNr">206 </span>  <span class="PreProc">var</span> max/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> length a
-<span id="L207" class="LineNr">207 </span>  <span class="PreProc">var</span> i/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L208" class="LineNr">208 </span>  <span class="PreProc">var</span> result/<span class="Constant">edi</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L209" class="LineNr">209 </span>  <span class="Delimiter">{</span>
-<span id="L210" class="LineNr">210 </span>    compare i, max
-<span id="L211" class="LineNr">211 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L212" class="LineNr">212 </span>    <span class="Delimiter">{</span>
-<span id="L213" class="LineNr">213 </span>      compare i, <span class="Constant">0</span>
-<span id="L214" class="LineNr">214 </span>      <span class="PreProc">break-if-=</span>
-<span id="L215" class="LineNr">215 </span>      result <span class="SpecialChar">&lt;-</span> increment  <span class="muComment"># for space</span>
-<span id="L216" class="LineNr">216 </span>    <span class="Delimiter">}</span>
-<span id="L217" class="LineNr">217 </span>    <span class="PreProc">var</span> off/<span class="Constant">ecx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset a, i
-<span id="L218" class="LineNr">218 </span>    <span class="PreProc">var</span> x/<span class="Constant">ecx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index a, off
-<span id="L219" class="LineNr">219 </span>    <span class="Delimiter">{</span>
-<span id="L220" class="LineNr">220 </span>      <span class="PreProc">var</span> w/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='value-stack.mu.html#L147'>value-width</a> x, <span class="Constant">0</span>
-<span id="L221" class="LineNr">221 </span>      result <span class="SpecialChar">&lt;-</span> add w
-<span id="L222" class="LineNr">222 </span>    <span class="Delimiter">}</span>
-<span id="L223" class="LineNr">223 </span>    i <span class="SpecialChar">&lt;-</span> increment
-<span id="L224" class="LineNr">224 </span>    <span class="PreProc">loop</span>
-<span id="L225" class="LineNr">225 </span>  <span class="Delimiter">}</span>
-<span id="L226" class="LineNr">226 </span>  <span class="muComment"># we won't add 2 for surrounding brackets since we don't surround arrays in</span>
-<span id="L227" class="LineNr">227 </span>  <span class="muComment"># spaces like other value types</span>
-<span id="L228" class="LineNr">228 </span>  <span class="PreProc">return</span> result
-<span id="L229" class="LineNr">229 </span><span class="Delimiter">}</span>
-<span id="L230" class="LineNr">230 </span>
-<span id="L231" class="LineNr">231 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L231'>save-lines</a></span> in-h: (handle array (handle array byte)), _out-ah: (addr handle array value) <span class="Delimiter">{</span>
-<span id="L232" class="LineNr">232 </span>  <span class="PreProc">var</span> _in/<span class="Constant">eax</span>: (addr array (handle array byte)) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> in-h
-<span id="L233" class="LineNr">233 </span>  <span class="PreProc">var</span> in/<span class="Constant">esi</span>: (addr array (handle array byte)) <span class="SpecialChar">&lt;-</span> copy _in
-<span id="L234" class="LineNr">234 </span>  <span class="PreProc">var</span> len/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> length in
-<span id="L235" class="LineNr">235 </span>  <span class="PreProc">var</span> out-ah/<span class="Constant">edi</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> copy _out-ah
-<span id="L236" class="LineNr">236 </span>  populate out-ah, len
-<span id="L237" class="LineNr">237 </span>  <span class="PreProc">var</span> out/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *out-ah
-<span id="L238" class="LineNr">238 </span>  <span class="muComment"># copy in into out</span>
-<span id="L239" class="LineNr">239 </span>  <span class="PreProc">var</span> i/<span class="Constant">ebx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L240" class="LineNr">240 </span>  <span class="Delimiter">{</span>
-<span id="L241" class="LineNr">241 </span>    compare i, len
-<span id="L242" class="LineNr">242 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L243" class="LineNr">243 </span><span class="CommentedCode">#?     print-int32-hex 0, i</span>
-<span id="L244" class="LineNr">244 </span><span class="CommentedCode">#?     print-string 0, &quot;\n&quot;</span>
-<span id="L245" class="LineNr">245 </span>    <span class="PreProc">var</span> src/<span class="Constant">ecx</span>: (addr handle array byte) <span class="SpecialChar">&lt;-</span> index in, i
-<span id="L246" class="LineNr">246 </span>    <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset out, i
-<span id="L247" class="LineNr">247 </span>    <span class="PreProc">var</span> dest-val/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index out, dest-offset
-<span id="L248" class="LineNr">248 </span>    <span class="PreProc">var</span> dest/<span class="Constant">eax</span>: (addr handle array byte) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-val, text-data
-<span id="L249" class="LineNr">249 </span>    copy-object src, dest
-<span id="L250" class="LineNr">250 </span>    <span class="PreProc">var</span> <span class="PreProc">type</span>/<span class="Constant">edx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-val, <span class="PreProc">type</span>
-<span id="L251" class="LineNr">251 </span>    copy-to *<span class="PreProc">type</span>, <span class="Constant">1</span>  <span class="muComment"># string</span>
-<span id="L252" class="LineNr">252 </span>    i <span class="SpecialChar">&lt;-</span> increment
-<span id="L253" class="LineNr">253 </span>    <span class="PreProc">loop</span>
-<span id="L254" class="LineNr">254 </span>  <span class="Delimiter">}</span>
-<span id="L255" class="LineNr">255 </span><span class="Delimiter">}</span>
+<span id="L35" class="LineNr"> 35 </span>  dest-addr2 <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-addr, <span class="PreProc">type</span>
+<span id="L36" class="LineNr"> 36 </span>  copy-to *dest-addr2, <span class="Constant">0</span>  <span class="muComment"># int</span>
+<span id="L37" class="LineNr"> 37 </span><span class="Delimiter">}</span>
+<span id="L38" class="LineNr"> 38 </span>
+<span id="L39" class="LineNr"> 39 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L39'>push-string-to-value-stack</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>), val: (handle array byte) <span class="Delimiter">{</span>
+<span id="L40" class="LineNr"> 40 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
+<span id="L41" class="LineNr"> 41 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L42" class="LineNr"> 42 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edx</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
+<span id="L43" class="LineNr"> 43 </span>  <span class="PreProc">var</span> data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
+<span id="L44" class="LineNr"> 44 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> copy *top-addr
+<span id="L45" class="LineNr"> 45 </span>  <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L46" class="LineNr"> 46 </span>  <span class="PreProc">var</span> dest-addr/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, dest-offset
+<span id="L47" class="LineNr"> 47 </span>  <span class="PreProc">var</span> dest-addr2/<span class="Constant">eax</span>: (addr handle array byte) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-addr, text-data
+<span id="L48" class="LineNr"> 48 </span>  <a href='../../120allocate.subx.html#L489'>copy-handle</a> val, dest-addr2
+<span id="L49" class="LineNr"> 49 </span>  <span class="PreProc">var</span> dest-addr3/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-addr, <span class="PreProc">type</span>
+<span id="L50" class="LineNr"> 50 </span><span class="CommentedCode">#?   print-string 0, &quot;setting type to 1: &quot;</span>
+<span id="L51" class="LineNr"> 51 </span><span class="CommentedCode">#?   {</span>
+<span id="L52" class="LineNr"> 52 </span><span class="CommentedCode">#?     var foo/eax: int &lt;- copy dest-addr3</span>
+<span id="L53" class="LineNr"> 53 </span><span class="CommentedCode">#?     print-int32-hex 0, foo</span>
+<span id="L54" class="LineNr"> 54 </span><span class="CommentedCode">#?   }</span>
+<span id="L55" class="LineNr"> 55 </span><span class="CommentedCode">#?   print-string 0, &quot;\n&quot;</span>
+<span id="L56" class="LineNr"> 56 </span>  copy-to *dest-addr3, <span class="Constant">1</span>  <span class="muComment"># type string</span>
+<span id="L57" class="LineNr"> 57 </span>  increment *top-addr
+<span id="L58" class="LineNr"> 58 </span><span class="Delimiter">}</span>
+<span id="L59" class="LineNr"> 59 </span>
+<span id="L60" class="LineNr"> 60 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L60'>push-array-to-value-stack</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>), val: (handle array value) <span class="Delimiter">{</span>
+<span id="L61" class="LineNr"> 61 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
+<span id="L62" class="LineNr"> 62 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L63" class="LineNr"> 63 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edx</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
+<span id="L64" class="LineNr"> 64 </span>  <span class="PreProc">var</span> data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
+<span id="L65" class="LineNr"> 65 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> copy *top-addr
+<span id="L66" class="LineNr"> 66 </span>  <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L67" class="LineNr"> 67 </span>  <span class="PreProc">var</span> dest-addr/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, dest-offset
+<span id="L68" class="LineNr"> 68 </span>  <span class="PreProc">var</span> dest-addr2/<span class="Constant">eax</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-addr, array-data
+<span id="L69" class="LineNr"> 69 </span>  <a href='../../120allocate.subx.html#L489'>copy-handle</a> val, dest-addr2
+<span id="L70" class="LineNr"> 70 </span>  <span class="muComment"># update type</span>
+<span id="L71" class="LineNr"> 71 </span>  <span class="PreProc">var</span> dest-addr3/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-addr, <span class="PreProc">type</span>
+<span id="L72" class="LineNr"> 72 </span>  copy-to *dest-addr3, <span class="Constant">2</span>  <span class="muComment"># type array</span>
+<span id="L73" class="LineNr"> 73 </span>  increment *top-addr
+<span id="L74" class="LineNr"> 74 </span><span class="Delimiter">}</span>
+<span id="L75" class="LineNr"> 75 </span>
+<span id="L76" class="LineNr"> 76 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L76'>push-value-stack</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>), val: (addr value) <span class="Delimiter">{</span>
+<span id="L77" class="LineNr"> 77 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
+<span id="L78" class="LineNr"> 78 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L79" class="LineNr"> 79 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edx</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
+<span id="L80" class="LineNr"> 80 </span>  <span class="PreProc">var</span> data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
+<span id="L81" class="LineNr"> 81 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> copy *top-addr
+<span id="L82" class="LineNr"> 82 </span>  <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L83" class="LineNr"> 83 </span>  <span class="PreProc">var</span> dest-addr/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, dest-offset
+<span id="L84" class="LineNr"> 84 </span>  copy-object val, dest-addr
+<span id="L85" class="LineNr"> 85 </span>  increment *top-addr
+<span id="L86" class="LineNr"> 86 </span><span class="Delimiter">}</span>
+<span id="L87" class="LineNr"> 87 </span>
+<span id="L88" class="LineNr"> 88 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L88'>pop-int-from-value-stack</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L89" class="LineNr"> 89 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
+<span id="L90" class="LineNr"> 90 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L91" class="LineNr"> 91 </span>  <span class="Delimiter">{</span>
+<span id="L92" class="LineNr"> 92 </span>    compare *top-addr, <span class="Constant">0</span>
+<span id="L93" class="LineNr"> 93 </span>    <span class="PreProc">break-if-&gt;</span>
+<span id="L94" class="LineNr"> 94 </span>    <span class="PreProc">return</span> <span class="Constant">-1</span>
+<span id="L95" class="LineNr"> 95 </span>  <span class="Delimiter">}</span>
+<span id="L96" class="LineNr"> 96 </span>  decrement *top-addr
+<span id="L97" class="LineNr"> 97 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edx</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
+<span id="L98" class="LineNr"> 98 </span>  <span class="PreProc">var</span> data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
+<span id="L99" class="LineNr"> 99 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> copy *top-addr
+<span id="L100" class="LineNr">100 </span>  <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L101" class="LineNr">101 </span>  <span class="PreProc">var</span> result-addr/<span class="Constant">eax</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, dest-offset
+<span id="L102" class="LineNr">102 </span>  <span class="PreProc">var</span> result-addr2/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> result-addr, int-data
+<span id="L103" class="LineNr">103 </span>  <span class="PreProc">return</span> *result-addr2
+<span id="L104" class="LineNr">104 </span><span class="Delimiter">}</span>
+<span id="L105" class="LineNr">105 </span>
+<span id="L106" class="LineNr">106 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L106'>value-stack-empty?</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L107" class="LineNr">107 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
+<span id="L108" class="LineNr">108 </span>  <span class="PreProc">var</span> <a href='../../203stack.subx.html#L338'>top</a>/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L109" class="LineNr">109 </span>  compare *top, <span class="Constant">0</span>
+<span id="L110" class="LineNr">110 </span>  <span class="Delimiter">{</span>
+<span id="L111" class="LineNr">111 </span>    <span class="PreProc">break-if-!=</span>
+<span id="L112" class="LineNr">112 </span>    <span class="PreProc">return</span> <span class="Constant">1</span>  <span class="muComment"># true</span>
+<span id="L113" class="LineNr">113 </span>  <span class="Delimiter">}</span>
+<span id="L114" class="LineNr">114 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>  <span class="muComment"># false</span>
+<span id="L115" class="LineNr">115 </span><span class="Delimiter">}</span>
+<span id="L116" class="LineNr">116 </span>
+<span id="L117" class="LineNr">117 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L117'>value-stack-length</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L118" class="LineNr">118 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
+<span id="L119" class="LineNr">119 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">eax</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L120" class="LineNr">120 </span>  <span class="PreProc">return</span> *top-addr
+<span id="L121" class="LineNr">121 </span><span class="Delimiter">}</span>
+<span id="L122" class="LineNr">122 </span>
+<span id="L123" class="LineNr">123 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L123'>value-stack-max-width</a></span> _self: (addr <a href='value-stack.mu.html#L3'>value-stack</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L124" class="LineNr">124 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='value-stack.mu.html#L3'>value-stack</a>) <span class="SpecialChar">&lt;-</span> copy _self
+<span id="L125" class="LineNr">125 </span>  <span class="PreProc">var</span> data-ah/<span class="Constant">edi</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, data
+<span id="L126" class="LineNr">126 </span>  <span class="PreProc">var</span> _data/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *data-ah
+<span id="L127" class="LineNr">127 </span>  <span class="PreProc">var</span> data/<span class="Constant">edi</span>: (addr array value) <span class="SpecialChar">&lt;-</span> copy _data
+<span id="L128" class="LineNr">128 </span>  <span class="PreProc">var</span> top-addr/<span class="Constant">ecx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, <a href='../../203stack.subx.html#L338'>top</a>
+<span id="L129" class="LineNr">129 </span>  <span class="PreProc">var</span> i/<span class="Constant">ebx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L130" class="LineNr">130 </span>  <span class="PreProc">var</span> result: int
+<span id="L131" class="LineNr">131 </span>  <span class="Delimiter">{</span>
+<span id="L132" class="LineNr">132 </span>    compare i, *top-addr
+<span id="L133" class="LineNr">133 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L134" class="LineNr">134 </span>    <span class="PreProc">var</span> o/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset data, i
+<span id="L135" class="LineNr">135 </span>    <span class="PreProc">var</span> v/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index data, o
+<span id="L136" class="LineNr">136 </span>    <span class="PreProc">var</span> w/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> value-width v, <span class="Constant">1</span>  <span class="muComment"># top-level=true</span>
+<span id="L137" class="LineNr">137 </span>    <span class="muComment"># if (w &gt; result) w = result</span>
+<span id="L138" class="LineNr">138 </span>    <span class="Delimiter">{</span>
+<span id="L139" class="LineNr">139 </span>      compare w, result
+<span id="L140" class="LineNr">140 </span>      <span class="PreProc">break-if-&lt;=</span>
+<span id="L141" class="LineNr">141 </span>      copy-to result, w
+<span id="L142" class="LineNr">142 </span>    <span class="Delimiter">}</span>
+<span id="L143" class="LineNr">143 </span>    i <span class="SpecialChar">&lt;-</span> increment
+<span id="L144" class="LineNr">144 </span>    <span class="PreProc">loop</span>
+<span id="L145" class="LineNr">145 </span>  <span class="Delimiter">}</span>
+<span id="L146" class="LineNr">146 </span>  <span class="PreProc">return</span> result
+<span id="L147" class="LineNr">147 </span><span class="Delimiter">}</span>
+<span id="L148" class="LineNr">148 </span>
+<span id="L149" class="LineNr">149 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value-stack.mu.html#L149'>save-lines</a></span> in-h: (handle array (handle array byte)), _out-ah: (addr handle array value) <span class="Delimiter">{</span>
+<span id="L150" class="LineNr">150 </span>  <span class="PreProc">var</span> _in/<span class="Constant">eax</span>: (addr array (handle array byte)) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> in-h
+<span id="L151" class="LineNr">151 </span>  <span class="PreProc">var</span> in/<span class="Constant">esi</span>: (addr array (handle array byte)) <span class="SpecialChar">&lt;-</span> copy _in
+<span id="L152" class="LineNr">152 </span>  <span class="PreProc">var</span> len/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> length in
+<span id="L153" class="LineNr">153 </span>  <span class="PreProc">var</span> out-ah/<span class="Constant">edi</span>: (addr handle array value) <span class="SpecialChar">&lt;-</span> copy _out-ah
+<span id="L154" class="LineNr">154 </span>  populate out-ah, len
+<span id="L155" class="LineNr">155 </span>  <span class="PreProc">var</span> out/<span class="Constant">eax</span>: (addr array value) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *out-ah
+<span id="L156" class="LineNr">156 </span>  <span class="muComment"># copy in into out</span>
+<span id="L157" class="LineNr">157 </span>  <span class="PreProc">var</span> i/<span class="Constant">ebx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L158" class="LineNr">158 </span>  <span class="Delimiter">{</span>
+<span id="L159" class="LineNr">159 </span>    compare i, len
+<span id="L160" class="LineNr">160 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L161" class="LineNr">161 </span><span class="CommentedCode">#?     print-int32-hex 0, i</span>
+<span id="L162" class="LineNr">162 </span><span class="CommentedCode">#?     print-string 0, &quot;\n&quot;</span>
+<span id="L163" class="LineNr">163 </span>    <span class="PreProc">var</span> src/<span class="Constant">ecx</span>: (addr handle array byte) <span class="SpecialChar">&lt;-</span> index in, i
+<span id="L164" class="LineNr">164 </span>    <span class="PreProc">var</span> dest-offset/<span class="Constant">edx</span>: (offset value) <span class="SpecialChar">&lt;-</span> compute-offset out, i
+<span id="L165" class="LineNr">165 </span>    <span class="PreProc">var</span> dest-val/<span class="Constant">edx</span>: (addr value) <span class="SpecialChar">&lt;-</span> index out, dest-offset
+<span id="L166" class="LineNr">166 </span>    <span class="PreProc">var</span> dest/<span class="Constant">eax</span>: (addr handle array byte) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-val, text-data
+<span id="L167" class="LineNr">167 </span>    copy-object src, dest
+<span id="L168" class="LineNr">168 </span>    <span class="PreProc">var</span> <span class="PreProc">type</span>/<span class="Constant">edx</span>: (addr int) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> dest-val, <span class="PreProc">type</span>
+<span id="L169" class="LineNr">169 </span>    copy-to *<span class="PreProc">type</span>, <span class="Constant">1</span>  <span class="muComment"># string</span>
+<span id="L170" class="LineNr">170 </span>    i <span class="SpecialChar">&lt;-</span> increment
+<span id="L171" class="LineNr">171 </span>    <span class="PreProc">loop</span>
+<span id="L172" class="LineNr">172 </span>  <span class="Delimiter">}</span>
+<span id="L173" class="LineNr">173 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
