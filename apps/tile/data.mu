@@ -619,6 +619,19 @@ fn move-final-element-to-start-of-line list: (addr handle call-path-element) {
   move-final-element-to-start-of-line list
 }
 
+fn move-final-element-to-end-of-line list: (addr handle call-path-element) {
+  var final-ah/eax: (addr handle call-path-element) <- copy list
+  var final/eax: (addr call-path-element) <- lookup *final-ah
+  var val-ah/ecx: (addr handle word) <- get final, word
+  var val/eax: (addr word) <- lookup *val-ah
+  var new-ah/edx: (addr handle word) <- get val, next
+  var target/eax: (addr word) <- lookup *new-ah
+  compare target, 0
+  break-if-=
+  copy-object new-ah, val-ah
+  move-final-element-to-end-of-line list
+}
+
 fn push-to-call-path-element list: (addr handle call-path-element), new: (addr handle word) {
   var new-element-storage: (handle call-path-element)
   var new-element-ah/edi: (addr handle call-path-element) <- address new-element-storage

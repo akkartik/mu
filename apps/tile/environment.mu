@@ -351,7 +351,7 @@ $process-sandbox:body: {
     var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
     drop-nested-calls cursor-call-path-ah
     move-final-element-to-start-of-line cursor-call-path-ah
-    # move cursor to start of initial word
+    # move cursor to start of word
     var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
     var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
     var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
@@ -363,13 +363,13 @@ $process-sandbox:body: {
   compare key, 5  # ctrl-e
   $process-sandbox:end-of-line: {
     break-if-!=
-    # move cursor to final word of sandbox
-    var cursor-call-path-ah/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
-    initialize-path-from-sandbox sandbox, cursor-call-path-ah
+    # move cursor up past all calls and to start of line
+    var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
+    drop-nested-calls cursor-call-path-ah
+    move-final-element-to-end-of-line cursor-call-path-ah
+    # move cursor to end of word
     var cursor-call-path/eax: (addr call-path-element) <- lookup *cursor-call-path-ah
-    var dest/eax: (addr handle word) <- get cursor-call-path, word
-    final-word dest, dest
-    # move cursor to end of final word
+    var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
     var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
     cursor-to-end cursor-word
     # this works because expanded words lie to the right of their bodies
