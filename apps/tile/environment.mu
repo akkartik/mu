@@ -1480,7 +1480,7 @@ fn clear-canvas _env: (addr environment) {
   reset-formatting screen
   print-string screen, " quit "
   var menu-start/ebx: int <- copy repl-col
-  menu-start <- subtract 0x40  # 64 = half the size of the menu
+  menu-start <- subtract 0x48  # 72 = half the size of the menu
   move-cursor screen, *nrows, menu-start
   start-reverse-video screen
   print-string screen, " ctrl-a "
@@ -1497,11 +1497,15 @@ fn clear-canvas _env: (addr environment) {
   start-reverse-video screen
   print-string screen, " ctrl-e "
   reset-formatting screen
-  print-string screen, " ⏭   "
+  print-string screen, " ⏭         "
+  start-reverse-video screen
+  print-string screen, " ctrl-l "
+  reset-formatting screen
+  print-string screen, " new line "
   start-reverse-video screen
   print-string screen, " ctrl-u "
   reset-formatting screen
-  print-string screen, " clear line  "
+  print-string screen, " clear  "
   start-reverse-video screen
   print-string screen, " ctrl-n "
   reset-formatting screen
