@@ -1552,6 +1552,138 @@ test-convert-return-with-duplicate-values-2:
     5d/pop-to-ebp
     c3/return
 
+test-stmt-with-unknown-var:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  x <- copy 0x34\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-stmt-with-unknown-var: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: unknown variable 'x'"  "F - test-stmt-with-unknown-var: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-stmt-with-unknown-var: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-stmt-with-invalid-identifier:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  1 <- copy 0x34\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-stmt-with-invalid-identifier: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: invalid identifier '1'"  "F - test-stmt-with-invalid-identifier: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-stmt-with-invalid-identifier: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-stmt-with-deref-var:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  *x <- copy 0x34\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-stmt-with-deref-var: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: output '*x' should write to a register, and therefore cannot be dereferenced"  "F - test-stmt-with-deref-var: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-stmt-with-deref-var: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-literal-arg:
     # . prologue
     55/push-ebp
@@ -16401,18 +16533,12 @@ $parse-mu-stmt:read-outputs:
         (slice-equal? %ecx "<-")  # => eax
         3d/compare-eax-and 0/imm32/false
         0f 85/jump-if-!= break/disp32
-        # is-deref? = false
-        ba/copy-to-edx 0/imm32/false
-        # if (slice-starts-with?(name, '*')) ++name->start and set is-deref?
+        # if slice-starts-with?(name, "*") abort
         8b/-> *ecx 0/r32/eax  # Slice-start
         8a/copy-byte *eax 0/r32/AL
         81 4/subop/and %eax 0xff/imm32
         3d/compare-eax-and 0x2a/imm32/asterisk
-        {
-          75/jump-if-!= break/disp8
-          ff 0/subop/increment *ecx
-          ba/copy-to-edx 1/imm32/true
-        }
+        0f 84/jump-if-= $parse-mu-stmt:error-output-dereferenced/disp32
         # assert(is-identifier?(name))
         (is-identifier? %ecx)  # => eax
         3d/compare-eax-and 0/imm32/false
@@ -16420,7 +16546,7 @@ $parse-mu-stmt:read-outputs:
         #
         (lookup-var %ecx *(ebp+0xc) %ebx *(ebp+0x10) *(ebp+0x18) *(ebp+0x1c))
         8d/copy-address *(edi+0x14) 0/r32/eax  # Stmt1-outputs
-        (append-stmt-var Heap  *ebx *(ebx+4)  *(edi+0x14) *(edi+0x18)  %edx  %eax)  # Stmt1-outputs
+        (append-stmt-var Heap  *ebx *(ebx+4)  *(edi+0x14) *(edi+0x18)  0  %eax)  # Stmt1-outputs
         #
         e9/jump loop/disp32
       }
@@ -16442,9 +16568,26 @@ $parse-mu-stmt:end:
 
 $parse-mu-stmt:abort:
     # error("invalid identifier '" name "'\n")
-    (write-buffered *(ebp+0x18) "invalid identifier '")
+    (write-buffered *(ebp+0x18) "fn ")
+    8b/-> *(ebp+0x10) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x18) %eax)
+    (write-buffered *(ebp+0x18) ": invalid identifier '")
     (write-slice-buffered *(ebp+0x18) %ecx)
     (write-buffered *(ebp+0x18) "'\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
+    # never gets here
+
+$parse-mu-stmt:error-output-dereferenced:
+    # error("invalid identifier '" name "'\n")
+    (write-buffered *(ebp+0x18) "fn ")
+    8b/-> *(ebp+0x10) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x18) %eax)
+    (write-buffered *(ebp+0x18) ": output '")
+    (write-slice-buffered *(ebp+0x18) %ecx)
+    (write-buffered *(ebp+0x18) "' should write to a register, and therefore cannot be dereferenced\n")
     (flush *(ebp+0x18))
     (stop *(ebp+0x1c) 1)
     # never gets here
