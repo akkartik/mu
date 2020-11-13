@@ -821,6 +821,8 @@ next-word-string-or-expression-without-metadata:  # line: (addr stream byte), ou
     #       ++line->read to skip ')'
     #     out->end = &line->data[line->read]
     #     return
+    #   if line->data[line->read] == '('
+    #     abort
     #   if line->data[line->read] == ')'
     #     ++line->read to skip ')'
     #     # make sure there's nothing else of importance
@@ -923,7 +925,7 @@ $next-word-string-or-expression-without-metadata:string-literal:
 $next-word-string-or-expression-without-metadata:check-for-expression:
     # if (line->data[line->read] != '*') goto next check
     3d/compare-eax-and 0x2a/imm32/asterisk
-    75/jump-if-!= $next-word-string-or-expression-without-metadata:check-for-end-of-call/disp8
+    75/jump-if-!= $next-word-string-or-expression-without-metadata:check-for-open-paren/disp8
     # if (line->data[line->read + 1] == ' ') goto error1
     8a/copy-byte *(esi+ecx+0xd) 0/r32/AL
     3d/compare-eax-and 0x20/imm32/space
@@ -954,6 +956,10 @@ $next-word-string-or-expression-without-metadata:paren:
     89/<- *(edi+4) 0/r32/eax
     # return
     e9/jump $next-word-string-or-expression-without-metadata:end/disp32
+$next-word-string-or-expression-without-metadata:check-for-open-paren:
+    # if (line->data[line->read] == '(') abort
+    3d/compare-eax-and 0x28/imm32/open-paren
+    0f 84/jump-if-= $next-word-string-or-expression-without-metadata:error4a/disp32
 $next-word-string-or-expression-without-metadata:check-for-end-of-call:
     # if (line->data[line->read] != ')') goto next check
     3d/compare-eax-and 0x29/imm32/close-paren
@@ -1175,6 +1181,44 @@ $next-word-string-or-expression-without-metadata:error3:
     # . write-buffered(Stderr, "')")
     # . . push args
     68/push "')"/imm32
+    68/push Stderr/imm32
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . flush(Stderr)
+    # . . push args
+    68/push Stderr/imm32
+    # . . call
+    e8/call flush/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . syscall(exit, 1)
+    bb/copy-to-ebx 1/imm32
+    e8/call syscall_exit/disp32
+    # never gets here
+
+$next-word-string-or-expression-without-metadata:error4a:
+    # print(stderr, "error: unexpected '(' within call in '" line "'")
+    # . write-buffered(Stderr, "error: unexpected '(' within call in '")
+    # . . push args
+    68/push "error: unexpected '(' within call in '"/imm32
+    68/push Stderr/imm32
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . write-stream-data(Stderr, line)
+    # . . push args
+    56/push-esi
+    68/push Stderr/imm32
+    # . . call
+    e8/call write-stream-data/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . write-buffered(Stderr, "'\n")
+    # . . push args
+    68/push "'\n"/imm32
     68/push Stderr/imm32
     # . . call
     e8/call write-buffered/disp32
