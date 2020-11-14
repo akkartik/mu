@@ -179,7 +179,7 @@ static char *terminfo_try_path(const char *path, const char *term) {
 }
 
 void string_copy(char* dest, const char* src, int dest_capacity) {
-  strncpy(dest, src, dest_capacity);
+  strncpy(dest, src, dest_capacity-1);
   dest[dest_capacity-1] = '\0';
 }
 
@@ -218,7 +218,7 @@ static char *load_terminfo(void) {
   if (dirs) {
     // snprintf guarantee for older compilers
     assert(sizeof(tmp) > sizeof(dirs));
-    strncpy(tmp, dirs, sizeof(tmp));
+    string_copy(tmp, dirs, sizeof(tmp));
     char *dir = strtok(tmp, ":");
     while (dir) {
       const char *cdir = dir;
@@ -245,7 +245,7 @@ static const char *terminfo_copy_string(char *data, int str, int table) {
   const char *src = data + table + off;
   int len = strlen(src);
   char *dst = malloc(len+1);
-  string_copy(dst, src, len+1);
+  memcpy(dst, src, len+1);
   return dst;
 }
 
