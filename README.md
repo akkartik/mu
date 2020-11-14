@@ -142,10 +142,16 @@ use it. I might even pull your changes into this repo!
 
 - [mu-normie](https://git.sr.ht/~akkartik/mu-normie): with a more standard
   build system that organizes the repo by header files and compilation units.
+  Stays in sync with this repo.
 - [mu-x86\_64](https://git.sr.ht/~akkartik/mu-x86_64): experimental fork for
   64-bit x86 in collaboration with [Max Bernstein](https://bernsteinbear.com).
   It's brought up a few concrete open problems that I don't have good solutions
   for yet.
+- [uCISC](https://github.com/grokthis/ucisc): a 16-bit processor being
+  designed from scratch by [Robert Butler](https://www.youtube.com/channel/UCh4OpfF7T7UtezGejRTLxCw)
+  and programmed with a SubX-like syntax.
+- [subv](https://git.s-ol.nu/subv): experimental SubX-like syntax by [Sol
+  Bekic](https://mmm.s-ol.nu) for the RISC-V instruction set.
 
 ## Desiderata
 
