@@ -1082,6 +1082,27 @@ test-function-main-with-addr-inout:
     5d/pop-to-ebp
     c3/return
 
+# 'lookup' is an exception, but only in signatures
+test-signature-lookup-with-addr-inout:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "sig lookup h: (handle _T) -> _/eax: (addr _T)\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+    # no errors
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-arg-and-body:
     # . prologue
     55/push-ebp
@@ -14391,6 +14412,9 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     (slice-starts-with? %ecx "loop")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $populate-mu-function-header:error-loop/disp32
+    (slice-equal? %ecx "lookup")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $populate-mu-function-header:error-lookup/disp32
     # save function name
     (slice-to-string Heap %ecx %edi)  # Function-name
     # save function inouts
@@ -14420,7 +14444,7 @@ $populate-mu-function-header:check-for-inout:
       (lookup *ebx *(ebx+4))  # => eax
       81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
       0f 85/jump-if-!= $populate-mu-function-header:error2/disp32
-      # if function name is "main"
+      # if function name is not "main"
       #    and v->type contains an 'addr' anywhere except the start, abort
       {
         (lookup *edi *(edi+4))  # Function-name Function-name => eax
@@ -14585,6 +14609,12 @@ $populate-mu-function-header:error-loop:
     (stop *(ebp+0x18) 1)
     # never gets here
 
+$populate-mu-function-header:error-lookup:
+    (write-buffered *(ebp+0x14) "cannot define a function called 'lookup'\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
+    # never gets here
+
 $populate-mu-function-header:error-addr-output:
     # error("fn " fn ": output cannot have an addr type; that could allow unsafe addresses to escape the function")
     (write-buffered *(ebp+0x14) "fn ")
@@ -14713,6 +14743,23 @@ $populate-mu-function-signature:check-for-inout:
       0f 85/jump-if-!= $populate-mu-function-signature:error1/disp32
       # v = parse-var-with-type(word-slice, first-line)
       (parse-var-with-type %ecx *(ebp+8) %ebx *(ebp+0x10) *(ebp+0x14))
+      # if (v->register != null) abort
+      # . eax: (addr var) = lookup(v)
+      (lookup *ebx *(ebx+4))  # => eax
+      81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
+      0f 85/jump-if-!= $populate-mu-function-signature:error2/disp32
+      # if function name is not "main"
+      #    and v->type contains an 'addr' anywhere except the start, abort
+      {
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (string-equal? %eax "main")  # => eax
+        3d/compare-eax-and 0/imm32/false
+        75/jump-if-!= break/disp8
+        (lookup *ebx *(ebx+4))  # => eax
+        (addr-payload-contains-addr? %eax)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        0f 85/jump-if-!= $populate-mu-function-signature:error-nested-addr-inout/disp32
+      }
       # assert(v->register == null)
       # . eax: (addr var) = lookup(v)
       (lookup *ebx *(ebx+4))  # => eax
@@ -14752,6 +14799,24 @@ $populate-mu-function-signature:check-for-out:
       (lookup *ebx *(ebx+4))  # => eax
       81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
       0f 84/jump-if-= $populate-mu-function-signature:error3/disp32
+      # if (var->name != "_") abort
+      (lookup *eax *(eax+4))  # Var-name Var-name => eax
+      (string-equal? %eax "_")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= $populate-mu-function-signature:error4/disp32
+      # if function name is not "lookup"
+      #    and v->type is an addr, abort
+      {
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (string-equal? %eax "lookup")  # => eax
+        3d/compare-eax-and 0/imm32/false
+        75/jump-if-!= break/disp8
+        (lookup *ebx *(ebx+4))  # => eax
+        (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+        (is-mu-addr-type? %eax)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        0f 85/jump-if-!= $populate-mu-function-signature:error-addr-output/disp32
+      }
       # out->outputs = append(v, out->outputs)
       8d/copy-address *(edi+0x10) 0/r32/eax  # Function-outputs
       (append-list Heap  *ebx *(ebx+4)  *(edi+0x10) *(edi+0x14)  %eax)  # Function-outputs, Function-outputs
@@ -14819,6 +14884,22 @@ $populate-mu-function-signature:error3:
     (stop *(ebp+0x14) 1)
     # never gets here
 
+$populate-mu-function-signature:error4:
+    # error("fn " fn ": function outputs cannot be named; rename '" var "' in the header to '_'")
+    (write-buffered *(ebp+0x10) "fn ")
+    50/push-eax
+    (lookup *edi *(edi+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0x10) ": function outputs cannot be named; rename '")
+    (lookup *ebx *(ebx+4))  # => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' in the header to '_'\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
 $populate-mu-function-signature:error-duplicate:
     (write-buffered *(ebp+0x10) "fn ")
     (write-slice-buffered *(ebp+0x10) %ecx)
@@ -14828,15 +14909,41 @@ $populate-mu-function-signature:error-duplicate:
     # never gets here
 
 $populate-mu-function-signature:error-break:
-    (write-buffered *(ebp+0x14) "Sorry, I've reserved all function names starting with 'break' for now. Please contact mu@akkartik.com.\n")
-    (flush *(ebp+0x14))
-    (stop *(ebp+0x18) 1)
+    (write-buffered *(ebp+0x10) "Sorry, I've reserved all function names starting with 'break' for now. Please contact mu@akkartik.com.\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
     # never gets here
 
 $populate-mu-function-signature:error-loop:
-    (write-buffered *(ebp+0x14) "Sorry, I've reserved all function names starting with 'loop' for now. Please contact mu@akkartik.com.\n")
-    (flush *(ebp+0x14))
-    (stop *(ebp+0x18) 1)
+    (write-buffered *(ebp+0x10) "Sorry, I've reserved all function names starting with 'loop' for now. Please contact mu@akkartik.com.\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$populate-mu-function-signature:error-addr-output:
+    # error("fn " fn ": output cannot have an addr type; that could allow unsafe addresses to escape the function")
+    (write-buffered *(ebp+0x10) "fn ")
+    50/push-eax
+    (lookup *edi *(edi+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0x10) ": output cannot have an addr type; that could allow unsafe addresses to escape the function\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$populate-mu-function-signature:error-nested-addr-inout:
+    # error("fn " fn ": inout '" var "' cannot contain 'addr' anywhere in the type except the first word; that could allow unsafe addresses to escape the function")
+    (write-buffered *(ebp+0x10) "fn ")
+    (lookup *edi *(edi+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": inout '")
+    (lookup *ebx *(ebx+4))  # => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' cannot contain 'addr' anywhere in the type except the first word; that could allow unsafe addresses to escape the function\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
     # never gets here
 
 addr-payload-contains-addr?:  # v: (addr var) -> result/eax: boolean
