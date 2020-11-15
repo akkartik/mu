@@ -845,6 +845,243 @@ test-function-with-inout-in-register:
     5d/pop-to-ebp
     c3/return
 
+test-function-with-addr-output:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo -> _/eax: (addr int) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-function-with-addr-output: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: output cannot have an addr type; that could allow unsafe addresses to escape the function"  "F - test-function-with-addr-output: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-function-with-addr-output: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-function-with-addr-inout:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo a: (addr addr int) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-function-with-addr-inout: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: inout 'a' cannot contain 'addr' anywhere in the type except the first word; that could allow unsafe addresses to escape the function"  "F - test-function-with-addr-inout: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-function-with-addr-inout: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-function-with-addr-inout-2:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo a: (addr array addr int) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-function-with-addr-inout-2: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: inout 'a' cannot contain 'addr' anywhere in the type except the first word; that could allow unsafe addresses to escape the function"  "F - test-function-with-addr-inout-2: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-function-with-addr-inout-2: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-function-with-addr-inout-3:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo a: (addr array (addr int) 3) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-function-with-addr-inout-3: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: inout 'a' cannot contain 'addr' anywhere in the type except the first word; that could allow unsafe addresses to escape the function"  "F - test-function-with-addr-inout-3: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-function-with-addr-inout-3: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-function-with-addr-inout-4:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo a: (array (addr int) 3) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-function-with-addr-inout-4: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: inout 'a' cannot contain 'addr' anywhere in the type except the first word; that could allow unsafe addresses to escape the function"  "F - test-function-with-addr-inout-4: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-function-with-addr-inout-4: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+# 'main' is an exception
+test-function-main-with-addr-inout:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn main a: (addr addr int) {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+    # no errors
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-arg-and-body:
     # . prologue
     55/push-ebp
@@ -14178,11 +14415,23 @@ $populate-mu-function-header:check-for-inout:
       0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       # v = parse-var-with-type(word-slice, first-line)
       (parse-var-with-type %ecx *(ebp+8) %ebx *(ebp+0x14) *(ebp+0x18))
-      # assert(v->register == null)
+      # if (v->register != null) abort
       # . eax: (addr var) = lookup(v)
       (lookup *ebx *(ebx+4))  # => eax
       81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
       0f 85/jump-if-!= $populate-mu-function-header:error2/disp32
+      # if function name is "main"
+      #    and v->type contains an 'addr' anywhere except the start, abort
+      {
+        (lookup *edi *(edi+4))  # Function-name Function-name => eax
+        (string-equal? %eax "main")  # => eax
+        3d/compare-eax-and 0/imm32/false
+        75/jump-if-!= break/disp8
+        (lookup *ebx *(ebx+4))  # => eax
+        (addr-payload-contains-addr? %eax)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        0f 85/jump-if-!= $populate-mu-function-header:error-nested-addr-inout/disp32
+      }
       # v->block-depth is implicitly 0
       #
       # out->inouts = append(v, out->inouts)
@@ -14222,11 +14471,17 @@ $populate-mu-function-header:check-for-out:
       (lookup *ebx *(ebx+4))  # => eax
       81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
       0f 84/jump-if-= $populate-mu-function-header:error3/disp32
-      # assert(var->name == "_")
+      # if (var->name != "_") abort
       (lookup *eax *(eax+4))  # Var-name Var-name => eax
       (string-equal? %eax "_")  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $populate-mu-function-header:error4/disp32
+      # if v->type is an addr, abort
+      (lookup *ebx *(ebx+4))  # => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      (is-mu-addr-type? %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 85/jump-if-!= $populate-mu-function-header:error-addr-output/disp32
       # out->outputs = append(v, out->outputs)
       8d/copy-address *(edi+0x10) 0/r32/eax  # Function-outputs
       (append-list Heap  *ebx *(ebx+4)  *(edi+0x10) *(edi+0x14)  %eax)  # Function-outputs, Function-outputs
@@ -14326,6 +14581,32 @@ $populate-mu-function-header:error-break:
 
 $populate-mu-function-header:error-loop:
     (write-buffered *(ebp+0x14) "Sorry, I've reserved all function names starting with 'loop' for now. Please contact mu@akkartik.com.\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
+    # never gets here
+
+$populate-mu-function-header:error-addr-output:
+    # error("fn " fn ": output cannot have an addr type; that could allow unsafe addresses to escape the function")
+    (write-buffered *(ebp+0x14) "fn ")
+    50/push-eax
+    (lookup *edi *(edi+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x14) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0x14) ": output cannot have an addr type; that could allow unsafe addresses to escape the function\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
+    # never gets here
+
+$populate-mu-function-header:error-nested-addr-inout:
+    # error("fn " fn ": inout '" var "' cannot contain 'addr' anywhere in the type except the first word; that could allow unsafe addresses to escape the function")
+    (write-buffered *(ebp+0x14) "fn ")
+    (lookup *edi *(edi+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x14) %eax)
+    (write-buffered *(ebp+0x14) ": inout '")
+    (lookup *ebx *(ebx+4))  # => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x14) %eax)
+    (write-buffered *(ebp+0x14) "' cannot contain 'addr' anywhere in the type except the first word; that could allow unsafe addresses to escape the function\n")
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
     # never gets here
@@ -14557,6 +14838,60 @@ $populate-mu-function-signature:error-loop:
     (flush *(ebp+0x14))
     (stop *(ebp+0x18) 1)
     # never gets here
+
+addr-payload-contains-addr?:  # v: (addr var) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var t/eax: (addr type-tree) = v->type
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    # if t->right contains addr, return true
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    (type-tree-contains? %eax 2)  # addr => eax
+    # we don't have to look at t->left as long as it's guaranteed to be an atom
+$addr-payload-contains-addr?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+type-tree-contains?:  # t: (addr type-tree), n: type-id -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # if t is null, return false
+    8b/-> *(ebp+8) 0/r32/eax
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $type-tree-contains?:end/disp32  # eax changes type
+    # if t is an atom, return (t->value == n)
+    81 7/subop/compare *eax 0/imm32/false
+    {
+      74/jump-if-= break/disp8
+      8b/-> *(ebp+0xc) 1/r32/ecx
+      39/compare *(eax+4) 1/r32/ecx  # Type-tree-value
+      0f 94/set-if-= %al
+      81 4/subop/and %eax 0xff/imm32
+      eb/jump $type-tree-contains?:end/disp8
+    }
+    # if t->left contains n, return true
+    (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    (type-tree-contains? %eax *(ebp+0xc))  # => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $type-tree-contains?:end/disp8
+    # otherwise return whether t->right contains n
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    (type-tree-contains? %eax *(ebp+0xc))  # => eax
+$type-tree-contains?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 function-exists?:  # s: (addr slice) -> result/eax: boolean
     # . prologue

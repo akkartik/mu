@@ -19,20 +19,13 @@ fn main args-on-stack: (addr array addr array byte) -> _/ebx: int {
     return 0  # TODO: get at Num-test-failures somehow
   }
   # otherwise interactive mode
-  var result/ebx: int <- interactive args-on-stack
-  return result
-}
-
-fn interactive _args: (addr array addr array byte) -> _/ebx: int {
-  # initialize fs from args[1]
-  var args/eax: (addr array addr array byte) <- copy _args
+  var args/eax: (addr array addr array byte) <- copy args-on-stack
   var arg/eax: (addr addr array byte) <- index args, 1
   var filename/eax: (addr array byte) <- copy *arg
   var file-storage: (handle buffered-file)
   var file-storage-addr/esi: (addr handle buffered-file) <- address file-storage
   open filename, 0, file-storage-addr
-  var _fs/eax: (addr buffered-file) <- lookup file-storage
-  var fs/esi: (addr buffered-file) <- copy _fs
+  var fs/eax: (addr buffered-file) <- lookup file-storage
   # if no file, exit
   {
     compare fs, 0
@@ -41,6 +34,11 @@ fn interactive _args: (addr array addr array byte) -> _/ebx: int {
     return 1
   }
   #
+  interactive fs
+  return 0
+}
+
+fn interactive fs: (addr buffered-file) {
   enable-screen-grid-mode
   enable-keyboard-immediate-mode
   # initialize screen state
@@ -57,7 +55,6 @@ fn interactive _args: (addr array addr array byte) -> _/ebx: int {
   }
   enable-keyboard-type-mode
   enable-screen-type-mode
-  return 0
 }
 
 fn render screen: (addr paginated-screen), fs: (addr buffered-file) {
