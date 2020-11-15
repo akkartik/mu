@@ -127,7 +127,6 @@ fn render-array-at screen: (addr screen), row: int, col: int, _a: (addr array va
 
 fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (addr screen) {
   reset-formatting screen
-  start-color screen, 0xf2, 7
   move-cursor screen, row, col
   var target-screen/esi: (addr screen) <- copy _target-screen
   var ncols-a/ecx: (addr int) <- get target-screen, num-cols
@@ -154,7 +153,6 @@ fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (add
   }
   increment row  # mutate arg
   move-cursor screen, row, col
-  start-color screen, 0xf2, 7
   print-lower-border screen, *ncols-a
 }
 
