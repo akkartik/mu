@@ -2422,6 +2422,95 @@ test-convert-function-with-local-var-in-reg:
     5d/pop-to-ebp
     c3/return
 
+test-float-var-in-wrong-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: int <- copy 0\n")
+    (write _test-input-stream "  var y/eax: float <- convert x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-float-var-in-wrong-register: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: float var 'y' should be in a floating-point register"  "F - test-float-var-in-wrong-register: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-float-var-in-wrong-register: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-non-float-var-in-wrong-register:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/xmm5: int <- copy 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-non-float-var-in-wrong-register: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: non-float var 'x' should be in an integer register"  "F - test-non-float-var-in-wrong-register: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-non-float-var-in-wrong-register: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-allocate:
     # . prologue
     55/push-ebp
@@ -15378,6 +15467,26 @@ $parse-var-with-type:write-register:
 $parse-var-with-type:save-type:
     8d/copy-address *(edi+8) 0/r32/eax  # Var-type
     (parse-type Heap *(ebp+0xc) %eax *(ebp+0x18) *(ebp+0x1c))
+$parse-var-with-type:check-register:
+    (lookup *(edi+0x18) *(edi+0x1c))  # Var-register Var-register => eax
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $parse-var-with-type:end/disp8
+    (is-float-register? %eax)  # => eax
+    {
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      # var is in a float register; ensure type is float
+      (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
+      (is-simple-mu-type? %eax 0xf)  # float => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= $parse-var-with-type:error-non-float-in-floating-point-register/disp32
+      eb/jump $parse-var-with-type:end/disp8
+    }
+    # var is not in a float register; ensure type is not float
+    (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
+    (is-simple-mu-type? %eax 0xf)  # float => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $parse-var-with-type:error-float-in-integer-register/disp32
 $parse-var-with-type:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -15405,6 +15514,45 @@ $parse-var-with-type:abort:
     (flush *(ebp+0x18))
     (stop *(ebp+0x1c) 1)
     # never gets here
+
+$parse-var-with-type:error-float-in-integer-register:
+    # error("fn " fn ": float var '" var "' should be in a floating-point register\n")
+    (write-buffered *(ebp+0x18) "fn ")
+    (write-buffered *(ebp+0x18) *(ebp+0x14))
+    (write-buffered *(ebp+0x18) ": float var '")
+    (lookup *edi *(edi+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x18) %eax)
+    (write-buffered *(ebp+0x18) "' should be in a floating-point register\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
+    # never gets here
+
+$parse-var-with-type:error-non-float-in-floating-point-register:
+    # error("fn " fn ": non-float var '" var "' should be in an integer register\n")
+    (write-buffered *(ebp+0x18) "fn ")
+    (write-buffered *(ebp+0x18) *(ebp+0x14))
+    (write-buffered *(ebp+0x18) ": non-float var '")
+    (lookup *edi *(edi+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x18) %eax)
+    (write-buffered *(ebp+0x18) "' should be in an integer register\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
+    # never gets here
+
+is-float-register?:  # r: (addr array byte) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (get Mu-registers-unique *(ebp+8) 0xc "Mu-registers-unique")  # => eax
+    81 7/subop/compare *eax 8/imm32/start-of-floating-point-registers
+    0f 9d/set-if->= %al
+    81 4/subop/and %eax 0xff/imm32
+$is-float-register?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle type-tree), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
