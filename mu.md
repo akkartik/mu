@@ -45,7 +45,9 @@ will provide good error messages to support you.
 
 Further down, this page enumerates all available primitives in Mu, and [a
 separate page](http://akkartik.github.io/mu/html/mu_instructions.html)
-describes how each primitive is translated to machine code.
+describes how each primitive is translated to machine code. There is also a
+useful list of pre-defined functions (implemented in unsafe machine code) in [400.mu](http://akkartik.github.io/mu/html/400.mu.html)
+and [vocabulary.md](vocabulary.md).
 
 ## Functions and calls
 
@@ -471,34 +473,49 @@ Here `var2` can't live in a register.
 
 ## Array operations
 
-Mu arrays are size-prefixed so that operations on them can check bounds as
-necessary at run-time. The `length` statement returns the number of elements
-in an array.
+Here's an example definition of a fixed-length array:
+
+```
+var x: (array int 3)
+```
+
+The length (here `3`) must be an integer literal. We'll show how to create
+dynamically-sized arrays further down.
+
+Arrays can be large; to avoid copying them around on every function call
+you'll usually want to manage `addr`s to them. Here's an example computing the
+address of an array.
+
+```
+var n/eax: (addr array int) <- address x
+```
+
+Addresses to arrays don't include the array length in their type. However, you
+can obtain the length of an array like this:
 
 ```
 var/reg: int <- length arr/reg: (addr array T)
 ```
 
-The `index` statement takes an `addr` to an `array` and returns an `addr` to
-one of its elements, that can be read from or written to.
+To operate on elements of an array, use the `index` statement:
 
 ```
 var/reg: (addr T) <- index arr/reg: (addr array T), n
-var/reg: (addr T) <- index arr: (array T sz), n
+var/reg: (addr T) <- index arr: (array T len), n
 ```
 
 The index can also be a variable in a register, with a caveat:
 
 ```
 var/reg: (addr T) <- index arr/reg: (addr array T), idx/reg: int
-var/reg: (addr T) <- index arr: (array T sz), idx/reg: int
+var/reg: (addr T) <- index arr: (array T len), idx/reg: int
 ```
 
 The caveat: the size of T must be 1, 2, 4 or 8 bytes. The x86 instruction set
 has complex addressing modes that can index into an array in a single instruction
 in these situations.
 
-For types in general you'll need to split up the work, performing a `compute-offset`
+For other sizes of T you'll need to split up the work, performing a `compute-offset`
 before the `index`.
 
 ```
@@ -512,6 +529,40 @@ performing any necessary bounds checking. Now the offset can be passed to
 
 ```
 var/reg: (addr T) <- index arr/reg: (addr array T), idx/reg: (offset T)
+```
+
+## Stream operations
+
+A common use for arrays is as buffers. Save a few items to a scratch space and
+then process them. This pattern is so common (we use it in files) that there's
+special support for it with a built-in type: `stream`.
+
+Streams are like arrays in many ways. You can initialize them with a length:
+
+```
+var x: (stream int 3)
+```
+
+However, streams don't provide random access with an `index` instruction.
+Instead, you write to them sequentially, and read back what you wrote.
+
+```
+read-from-stream s: (addr stream T), out: (addr T)
+write-to-stream s: (addr stream T), in: (addr T)
+var/eax: boolean <- stream-empty? s: (addr stream)
+var/eax: boolean <- stream-full? s: (addr stream)
+```
+
+You can clear streams:
+
+```
+clear-stream f: (addr stream _)
+```
+
+You can also rewind them to reread what's been written:
+
+```
+rewind-stream f: (addr stream _)
 ```
 
 ## Compound types

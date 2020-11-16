@@ -317,11 +317,11 @@ var/reg: (addr T) <- address var2: T
 var/reg <- index arr/rega: (addr array T), idx/regi: int
   | if size-of(T) is 4 or 8
       => "8d/copy-address *(" rega "+" regi "<<" log2(size-of(T)) "+4) " reg "/r32"
-var/reg <- index arr: (array T sz), idx/regi: int
+var/reg <- index arr: (array T len), idx/regi: int
   => "8d/copy-address *(ebp+" regi "<<" log2(size-of(T)) "+" (arr.stack-offset + 4) ") " reg "/r32"
 var/reg <- index arr/rega: (addr array T), n
   => "8d/copy-address *(" rega "+" (n*size-of(T)+4) ") " reg "/r32"
-var/reg <- index arr: (array T sz), n
+var/reg <- index arr: (array T len), n
   => "8d/copy-address *(ebp+" (arr.stack-offset+4+n*size-of(T)) ") " reg "/r32"
 
 var/reg: (offset T) <- compute-offset arr: (addr array T), idx/regi: int  # arr can be in reg or mem
@@ -381,6 +381,8 @@ populate in: (addr handle array T), num  # can be literal or variable on stack o
 
 populate-stream in: (addr handle stream T), num  # can be literal or variable on stack or register
   => "(new-stream Heap " size-of(T) " " num " " in ")"
+
+# Some miscellaneous helpers to avoid error-prone size computations
 
 read-from-stream s: (addr stream T), out: (addr T)
   => "(read-from-stream " s " " out " " size-of(T) ")"
