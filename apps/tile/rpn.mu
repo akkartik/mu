@@ -81,8 +81,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           var type-addr/eax: (addr int) <- get target-val, type
           copy-to *type-addr, 0  # int
           var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
-          var empty: (handle array byte)
-          copy-handle empty, target-string-ah
+          clear-object target-string-ah
           var target/eax: (addr int) <- get target-val, int-data
           copy-to *target, result
           break $evaluate:process-word
@@ -98,8 +97,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           var type-addr/eax: (addr int) <- get target-val, type
           copy-to *type-addr, 0  # int
           var target-array-ah/eax: (addr handle array value) <- get target-val, array-data
-          var empty: (handle array value)
-          copy-handle empty, target-array-ah
+          clear-object target-array-ah
           var target/eax: (addr int) <- get target-val, int-data
           copy-to *target, result
           break $evaluate:process-word
@@ -136,8 +134,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
         var filename-ah/ecx: (addr handle array byte) <- get target-val, filename
         copy-object target-string-ah, filename-ah
-        var empty: (handle array byte)
-        copy-handle empty, target-string-ah
+        clear-object target-string-ah
         break $evaluate:process-word
       }
       {
@@ -172,8 +169,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var type-addr/eax: (addr int) <- get target-val, type
         copy-to *type-addr, 1  # string
         var target-file-ah/eax: (addr handle buffered-file) <- get target-val, file-data
-        var empty: (handle buffered-file)
-        copy-handle empty, target-file-ah
+        clear-object target-file-ah
         break $evaluate:process-word
       }
       {
@@ -208,8 +204,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var type-addr/eax: (addr int) <- get target-val, type
         copy-to *type-addr, 1  # string
         var target-file-ah/eax: (addr handle buffered-file) <- get target-val, file-data
-        var empty: (handle buffered-file)
-        copy-handle empty, target-file-ah
+        clear-object target-file-ah
         break $evaluate:process-word
       }
       {

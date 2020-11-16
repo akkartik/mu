@@ -19977,6 +19977,10 @@ has-primitive-name?:  # stmt: (addr stmt) -> result/eax: boolean
     (string-equal? %esi "copy-object")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $has-primitive-name?:end/disp32
+    # if (name == "clear-object") return true
+    (string-equal? %esi "clear-object")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $has-primitive-name?:end/disp32
     # if (name == "allocate") return true
     (string-equal? %esi "allocate")  # => eax
     3d/compare-eax-and 0/imm32/false
@@ -20119,6 +20123,14 @@ check-mu-primitive:  # stmt: (addr stmt), fn: (addr function), err: (addr buffer
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (check-mu-copy-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      e9/jump $check-mu-primitive:end/disp32
+    }
+    # if (op == "clear-object") check-mu-clear-object-stmt
+    {
+      (string-equal? %ecx "clear-object")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (check-mu-clear-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
       e9/jump $check-mu-primitive:end/disp32
     }
     # if (op == "allocate") check-mu-allocate-stmt
@@ -23053,6 +23065,100 @@ $check-mu-copy-object-stmt:error-invalid-types:
     (lookup *eax *(eax+4))  # Function-name Function-name => eax
     (write-buffered *(ebp+0x10) %eax)
     (write-buffered *(ebp+0x10) ": stmt copy-object: two inouts with identical addr types expected\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+check-mu-clear-object-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+8) 6/r32/esi
+$check-mu-clear-object-stmt:check-for-output:
+    # if stmt->outputs abort
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-!= $check-mu-clear-object-stmt:error-too-many-outputs/disp32
+$check-mu-clear-object-stmt:get-left:
+    # var dest/edi: (addr stmt-var) = stmt->inouts
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %edi 0/r32/eax
+    # zero inouts
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $check-mu-clear-object-stmt:error-incorrect-inouts/disp32
+$check-mu-clear-object-stmt:get-src:
+    # > 1 inout
+    (lookup *(edi+8) *(edi+0xc))  # Stmt-var-next Stmt-var-next => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-!= $check-mu-clear-object-stmt:error-incorrect-inouts/disp32
+$check-mu-clear-object-stmt:types:
+    # var src-type/ecx: (addr type-tree) = src->value->type
+    (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+    89/<- %ecx 0/r32/eax
+    # if (src->is-deref?) src-type = src-type->payload
+    8b/-> *(edi+0x10) 0/r32/eax  # Stmt-var-is-deref
+    3d/compare-eax-and 0/imm32/false
+    {
+      74/jump-if-= break/disp8
+      (lookup *(ecx+0xc) *(ecx+0x10))  # Type-tree-right Type-tree-right => eax
+      # if src-type->right is null, src-type = src-type->left
+      81 7/subop/compare *(eax+0xc) 0/imm32  # Type-tree-right
+      {
+        75/jump-if-!= break/disp8
+        (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      }
+      89/<- %ecx 0/r32/eax
+    }
+    # if src-type is not addr, abort
+    (is-mu-addr-type? %ecx)  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $check-mu-clear-object-stmt:error-invalid-type/disp32
+$check-mu-clear-object-stmt:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$check-mu-clear-object-stmt:error-incorrect-inouts:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt 'clear-object' must have a single inout\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-clear-object-stmt:error-too-many-outputs:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt 'clear-object' must not have any outputs\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-clear-object-stmt:error-invalid-type:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt clear-object: inout must have an addr type\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
@@ -26334,6 +26440,15 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (translate-mu-copy-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
       e9/jump $emit-subx-stmt:end/disp32
     }
+    # clear-object
+    {
+      # if (!string-equal?(stmt->operation, "clear-object")) break
+      (string-equal? %ecx "clear-object")  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      (translate-mu-clear-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      e9/jump $emit-subx-stmt:end/disp32
+    }
     # allocate array
     {
       # if (!string-equal?(stmt->operation, "populate")) break
@@ -27127,13 +27242,42 @@ translate-mu-copy-object-stmt:  # out: (addr buffered-file), stmt: (addr stmt), 
     # var first-inout/eax: (addr stmt-var) = stmt->inouts[0]
     (lookup *(eax+0xc) *(eax+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     (emit-subx-call-operand *(ebp+8) %eax)
+    # var second-inout/eax: (addr stmt-var) = stmt->inouts[1]
     (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
     (emit-subx-call-operand *(ebp+8) %eax)
+    # emit size of inouts
     (write-buffered *(ebp+8) Space)
     (addr-payload-size %eax *(ebp+0x10) *(ebp+0x14))  # => eax
     (write-int32-hex-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) ")\n")
 $translate-mu-copy-object-stmt:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+translate-mu-clear-object-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(zero-out")
+    # eax = stmt
+    8b/-> *(ebp+0xc) 0/r32/eax
+    # var dest/eax: (addr stmt-var) = stmt->inouts[0]
+    (lookup *(eax+0xc) *(eax+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    #
+    (emit-subx-call-operand *(ebp+8) %eax)
+    (write-buffered *(ebp+8) Space)
+    (addr-payload-size %eax *(ebp+0x10) *(ebp+0x14))  # => eax
+    (write-int32-hex-buffered *(ebp+8) %eax)
+    (write-buffered *(ebp+8) ")\n")
+$translate-mu-clear-object-stmt:end:
     # . restore registers
     58/pop-to-eax
     # . epilogue

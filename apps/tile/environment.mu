@@ -522,8 +522,7 @@ $process-sandbox-rename:body: {
   compare key, 0x1b  # esc
   $process-sandbox-rename:cancel: {
     break-if-!=
-    var empty: (handle word)
-    copy-handle empty, new-name-ah
+    clear-object new-name-ah
     break $process-sandbox-rename:body
   }
   # if 'enter' pressed, perform rename
@@ -586,9 +585,7 @@ $process-sandbox-rename:body: {
     # sandbox->data = new-line
     copy-handle new-line-h, sandbox-slot
     # clear partial-name-for-cursor-word
-    var empty: (handle word)
-    copy-handle empty, new-name-ah
-#?     # XXX
+    clear-object new-name-ah
 #?     var cursor-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
 #?     var cursor/eax: (addr call-path-element) <- lookup *cursor-ah
 #?     var word-at-cursor-ah/eax: (addr handle word) <- get cursor, word
@@ -643,8 +640,7 @@ $process-sandbox-define:body: {
   compare key, 0x1b  # esc
   $process-sandbox-define:cancel: {
     break-if-!=
-    var empty: (handle word)
-    copy-handle empty, new-name-ah
+    clear-object new-name-ah
     break $process-sandbox-define:body
   }
   # if 'enter' pressed, perform define
