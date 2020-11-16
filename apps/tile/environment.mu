@@ -1591,13 +1591,24 @@ fn render-functions screen: (addr screen), right-col: int, _env: (addr environme
 # return row, col printed until
 fn render-function-right-aligned screen: (addr screen), row: int, right-col: int, f: (addr function) -> _/ecx: int, _/edx: int {
   var col/edx: int <- copy right-col
-  col <- decrement  # margin
+  col <- subtract 1  # function-right-margin
+  var col2/ebx: int <- copy col
   var width/eax: int <- function-width f
   col <- subtract width
-  render-function screen, row, col, f
   var new-row/ecx: int <- copy row
   var height/eax: int <- function-height f
   new-row <- add height
+  new-row <- decrement
+  col <- subtract 1  # function-left-padding
+  start-color screen, 0, 0xf7
+  clear-rect screen, row, col, new-row, col2
+  col <- add 1
+#?   var dummy/eax: grapheme <- read-key-from-real-keyboard
+  render-function screen, row, col, f
+  new-row <- add 1  # function-bottom-margin
+  col <- subtract 1  # function-left-padding
+  col <- subtract 1  # function-left-margin
+  reset-formatting screen
   return new-row, col
 }
 
@@ -1613,6 +1624,7 @@ fn render-function screen: (addr screen), row: int, col: int, _f: (addr function
   start-bold screen
   print-string screen, name
   reset-formatting screen
+  start-color screen, 0, 0xf7
   increment row
   add-to col, 2
   move-cursor screen, row, col
