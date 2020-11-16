@@ -278,7 +278,7 @@ fn print-words-in-reverse screen: (addr screen), _words-ah: (addr handle word) {
   break-if-=
   # recurse
   var next-ah/ecx: (addr handle word) <- get words-a, next
-  print-words screen, next-ah
+  print-words-in-reverse screen, next-ah
   # print
   print-word screen, words-a
   print-string screen, " "
