@@ -13,7 +13,7 @@ fn main -> _/ebx: int {
 }
 
 fn do-add a: int, b: int -> _/eax: int {
-  var result/ebx: int <- copy a
+  var result/ecx: int <- copy a
   result <- add b
   return result
 }

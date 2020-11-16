@@ -12,24 +12,16 @@ short, the former increments a value in memory, while the latter increments a
 value in a register.
 
 Most languages start from some syntax and do what it takes to implement it.
-Mu, however, is designed as a safe[1] way to program in [a regular subset of
+Mu, however, is designed as a safe way to program in [a regular subset of
 32-bit x86 machine code](subx.md), _satisficing_ rather than optimizing for a
 clean syntax. To keep the mapping to machine code lightweight, Mu exclusively
 uses statements. Most statements map to a single instruction of machine code.
 
-[1] While it's designed to be memory-safe, and already performs many safety
-checks, the Mu compiler is still a work in progress and can currently corrupt
-memory just like C can. I estimate that it'll currently point out 90% of the
-mistakes you make.
-
 Since the x86 instruction set restricts how many memory locations an instruction
 can use, Mu makes registers explicit as well. Variables must be explicitly
 mapped to specific registers; otherwise they live in memory. While you have to
-do your own register allocation, Mu will helpfully point out[2] when you get it
+do your own register allocation, Mu will helpfully point out when you get it
 wrong.
-
-[2] Again, there are some known issues here at the moment. I estimate that
-it'll currently catch 95% of register allocation errors.
 
 Statements consist of 3 parts: the operation, optional _inouts_ and optional
 _outputs_. Outputs come before the operation name and `<-`.
@@ -67,9 +59,9 @@ fn _name_ _inout_ ... -> _output_ ... {
 
 Each function has a header line, and some number of statements, each on a
 separate line. Headers describe inouts and outputs. Inouts can't be registers,
-and outputs _must_ be registers. In the above example, the outputs of both
-`do-add` and `main` have type `int` and are available in register `ebx` at the
-end of the respective calls.
+and outputs _must_ be registers. Outputs can't take names. In the above
+example, the outputs of both `do-add` and `main` have type `int` and are
+available in register `ebx` at the end of the respective calls.
 
 The above program also demonstrates a function call (to the function `do-add`).
 Function calls look the same as primitive statements: they can return (multiple)
@@ -78,7 +70,7 @@ there's one more constraint: output registers must match the function header.
 For example:
 
 ```
-fn f -> x/eax: int {
+fn f -> _/eax: int {
   ...
 }
 fn g {
@@ -97,8 +89,8 @@ process). It can also optionally accept an array of strings as input (from the
 shell command-line). To be precise, `main` must have one of the following
 two signatures:
 
-- `fn main -> x/ebx: int`
-- `fn main args: (addr array (addr array byte)) -> x/ebx: int`
+- `fn main -> _/ebx: int`
+- `fn main args: (addr array (addr array byte)) -> _/ebx: int`
 
 (The names of the inout and output are flexible.)
 
@@ -150,9 +142,9 @@ var name/reg: type <- ...
 Variables on the stack are never initialized. (They're always implicitly
 zeroed out.) Variables in registers are always initialized.
 
-Register variables can go in 6 integer registers: `eax`, `ebx`, `ecx`, `edx`,
-`esi` and `edi`. Floating-point values can go in 8 other registers: `xmm0`,
-`xmm1`, `xmm2`, `xmm3`, `xmm4`, `xmm5`, `xmm6` and `xmm7`.
+Register variables can go in 6 integer registers (`eax`, `ebx`, `ecx`, `edx`,
+`esi`, `edi`) or 8 floating-point registers (`xmm0`, `xmm1`, `xmm2`, `xmm3`,
+`xmm4`, `xmm5`, `xmm6`, `xmm7`).
 
 Defining a variable in a register either clobbers the previous variable (if it
 was defined in the same block) or shadows it temporarily (if it was defined in
