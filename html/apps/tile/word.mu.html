@@ -337,7 +337,7 @@ if ('onhashchange' in window) {
 <span id="L278" class="LineNr">278 </span>  <span class="PreProc">break-if-=</span>
 <span id="L279" class="LineNr">279 </span>  <span class="muComment"># recurse</span>
 <span id="L280" class="LineNr">280 </span>  <span class="PreProc">var</span> next-ah/<span class="Constant">ecx</span>: (addr handle word) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> words-a, next
-<span id="L281" class="LineNr">281 </span>  <a href='word.mu.html#L261'>print-words</a> <a href='../../405screen.mu.html#L9'>screen</a>, next-ah
+<span id="L281" class="LineNr">281 </span>  <a href='word.mu.html#L274'>print-words-in-reverse</a> <a href='../../405screen.mu.html#L9'>screen</a>, next-ah
 <span id="L282" class="LineNr">282 </span>  <span class="muComment"># print</span>
 <span id="L283" class="LineNr">283 </span>  <a href='word.mu.html#L254'>print-word</a> <a href='../../405screen.mu.html#L9'>screen</a>, words-a
 <span id="L284" class="LineNr">284 </span>  <a href='../../405screen.mu.html#L169'>print-string</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot; &quot;</span>
@@ -612,6 +612,24 @@ if ('onhashchange' in window) {
 <span id="L553" class="LineNr">553 </span>  <span class="PreProc">var</span> result/<span class="Constant">ebx</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='word.mu.html#L525'>word-exists?</a> next-haystack-ah, _needle
 <span id="L554" class="LineNr">554 </span>  <span class="PreProc">return</span> result
 <span id="L555" class="LineNr">555 </span><span class="Delimiter">}</span>
+<span id="L556" class="LineNr">556 </span>
+<span id="L557" class="LineNr">557 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L557'>word-list-length</a></span> words: (addr handle word)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L558" class="LineNr">558 </span>  <span class="PreProc">var</span> curr-ah/<span class="Constant">esi</span>: (addr handle word) <span class="SpecialChar">&lt;-</span> copy words
+<span id="L559" class="LineNr">559 </span>  <span class="PreProc">var</span> result/<span class="Constant">edi</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L560" class="LineNr">560 </span>  <span class="Delimiter">{</span>
+<span id="L561" class="LineNr">561 </span>    <span class="PreProc">var</span> curr/<span class="Constant">eax</span>: (addr word) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> *curr-ah
+<span id="L562" class="LineNr">562 </span>    compare curr, <span class="Constant">0</span>
+<span id="L563" class="LineNr">563 </span>    <span class="PreProc">break-if-=</span>
+<span id="L564" class="LineNr">564 </span>    <span class="Delimiter">{</span>
+<span id="L565" class="LineNr">565 </span>      <span class="PreProc">var</span> word-len/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='word.mu.html#L107'>word-length</a> curr
+<span id="L566" class="LineNr">566 </span>      result <span class="SpecialChar">&lt;-</span> add word-len
+<span id="L567" class="LineNr">567 </span>      result <span class="SpecialChar">&lt;-</span> add <span class="Constant">1</span>  <span class="muComment"># inter-word-margin</span>
+<span id="L568" class="LineNr">568 </span>    <span class="Delimiter">}</span>
+<span id="L569" class="LineNr">569 </span>    curr-ah <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> curr, next
+<span id="L570" class="LineNr">570 </span>    <span class="PreProc">loop</span>
+<span id="L571" class="LineNr">571 </span>  <span class="Delimiter">}</span>
+<span id="L572" class="LineNr">572 </span>  <span class="PreProc">return</span> result
+<span id="L573" class="LineNr">573 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

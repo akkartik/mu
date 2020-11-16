@@ -341,11 +341,11 @@ var/reg: (addr T) <span class="SpecialChar">&lt;-</span> address var2: T
 var/reg <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), idx/regi: int
   | if size-of(T) is <span class="Constant">4</span> or <span class="Constant">8</span>
       =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size-of(T)) <span class="Constant">&quot;+4) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
-var/reg <span class="SpecialChar">&lt;-</span> index arr: (array T sz), idx/regi: int
+var/reg <span class="SpecialChar">&lt;-</span> index arr: (array T len), idx/regi: int
   =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size-of(T)) <span class="Constant">&quot;+&quot;</span> (arr.stack-offset + <span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), n
   =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> (n*size-of(T)+<span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
-var/reg <span class="SpecialChar">&lt;-</span> index arr: (array T sz), n
+var/reg <span class="SpecialChar">&lt;-</span> index arr: (array T len), n
   =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> (arr.stack-offset+<span class="Constant">4</span>+n*size-of(T)) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
 var/reg: (offset T) <span class="SpecialChar">&lt;-</span> compute-offset arr: (addr array T), idx/regi: int  <span class="muComment"># arr can be in reg or mem</span>
@@ -405,6 +405,11 @@ populate in: (addr handle array T), num  <span class="muComment"># can be litera
 
 populate-stream in: (addr handle stream T), num  <span class="muComment"># can be literal or variable on stack or register</span>
   =&gt; <span class="Constant">&quot;(new-stream Heap &quot;</span> size-of(T) <span class="Constant">&quot; &quot;</span> num <span class="Constant">&quot; &quot;</span> in <span class="Constant">&quot;)&quot;</span>
+
+<span class="muComment"># Some miscellaneous helpers to avoid error-prone size computations</span>
+
+clear x: (addr T)
+  =&gt; <span class="Constant">&quot;(zero-out &quot;</span> s <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
 
 read-from-stream s: (addr stream T), out: (addr T)
   =&gt; <span class="Constant">&quot;(read-from-stream &quot;</span> s <span class="Constant">&quot; &quot;</span> out <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
