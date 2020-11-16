@@ -45,7 +45,7 @@ and [vocabulary.md](vocabulary.md).
 
 Zooming out from single statements, here's a complete sample program in Mu:
 
-<img alt='ex2.mu' src='html/ex2.mu.png'>
+<img alt='ex2.mu' src='html/ex2.mu.png' width='400px'>
 
 Mu programs are lists of functions. Each function has the following form:
 
@@ -59,9 +59,7 @@ fn _name_ _inout_ ... -> _output_ ... {
 
 Each function has a header line, and some number of statements, each on a
 separate line. Headers describe inouts and outputs. Inouts can't be registers,
-and outputs _must_ be registers. Outputs can't take names. In the above
-example, the outputs of both `do-add` and `main` have type `int` and are
-available in register `ebx` at the end of the respective calls.
+and outputs _must_ be registers. Outputs can't take names.
 
 The above program also demonstrates a function call (to the function `do-add`).
 Function calls look the same as primitive statements: they can return (multiple)
@@ -92,7 +90,7 @@ two signatures:
 - `fn main -> _/ebx: int`
 - `fn main args: (addr array (addr array byte)) -> _/ebx: int`
 
-(The names of the inout and output are flexible.)
+(The name of the inout is flexible.)
 
 Mu encloses multi-word types in parentheses, and types can get quite expressive.
 For example, you read `main`'s inout type as "an address to an array of
@@ -103,7 +101,7 @@ always strings in Mu, you'll quickly learn to mentally shorten this type to
 ## Blocks
 
 Blocks are useful for grouping related statements. They're delimited by `{`
-and `}`, both each alone on a line.
+and `}`, each alone on a line.
 
 Blocks can nest:
 
@@ -225,9 +223,8 @@ var/reg <- multiply var2
 
 Any statement above that takes a variable in memory can be replaced with a
 dereference (`*`) of an address variable (of type `(addr ...)`) in a register.
-(Types can have multiple words, and are wrapped in `()` when they do.) But you
-can't dereference variables in memory. You have to load them into a register
-first.
+You can't dereference variables in memory. You have to load them into a
+register first.
 
 Excluding dereferences, the above statements must operate on non-address
 values with primitive types: `int`, `boolean` or `byte`. (Booleans are really
@@ -238,7 +235,7 @@ to int variables, but not the other way around.
 
 These instructions may use the floating-point registers `xmm0` ... `xmm7`
 (denoted by `/xreg2` or `/xrm32`). They also use integer values on occasion
-(`/rm32` and `/r32`). They can't take literal floating-point values.
+(`/rm32` and `/r32`).
 
 ```
 var/xreg <- add var2/xreg2
@@ -308,9 +305,8 @@ There are no instructions accepting floating-point literals. To obtain integer
 literals in floating-point registers, copy them to general-purpose registers
 and then convert them to floating-point.
 
-One pattern you may have noticed above is that the floating-point instructions
-above always write to registers. The only exceptions are `copy` instructions,
-which can write to memory locations.
+The floating-point instructions above always write to registers. The only
+instructions that can write floats to memory are `copy` instructions.
 
 ```
 var/xreg <- copy var2/xreg2
@@ -319,7 +315,8 @@ var/xreg <- copy var2
 var/xreg <- copy *var2/reg2
 ```
 
-Floating-point comparisons always put a register on the left-hand side:
+Finally, there are floating-point comparisons. They must always put a register
+on the left-hand side:
 
 ```
 compare var1/xreg1, var2/xreg2
@@ -328,7 +325,7 @@ compare var1/xreg1, var2
 
 ## Operating on individual bytes
 
-A special-case is variables of type `byte`. Mu is a 32-bit platform so for the
+A special case is variables of type `byte`. Mu is a 32-bit platform so for the
 most part only supports types that are multiples of 32 bits. However, we do
 want to support strings in ASCII and UTF-8, which will be arrays of 8-bit
 bytes.
@@ -375,7 +372,7 @@ break label
 
 The remaining jump instructions are all conditional. Conditional jumps rely on
 the result of the most recently executed `compare` instruction. (To keep
-programs easy to read, keep compare instructions close to the jump that uses
+programs easy to read, keep `compare` instructions close to the jump that uses
 them.)
 
 ```
@@ -571,7 +568,7 @@ type point {
 
 Mu programs are currently sequences of `fn` and `type` definitions.
 
-Compound types can't include `addr` types for safety (use `handle` instead,
+Compound types can't include `addr` types for safety reasons (use `handle` instead,
 which is described below). They also can't currently include `array`, `stream`
 or `byte` types. Since arrays and streams carry their size with them, supporting
 them in compound types complicates variable initialization. Instead of
@@ -596,39 +593,55 @@ var a/eax: (addr int) <- get p, x
 var a/eax: (addr int) <- get p, y
 ```
 
+You can clear arbitrary types using the `clear-object` function:
+
+```
+clear-object var: (addr T)
+```
+
+Don't clear arrays or streams using `clear-object`; doing so will irreversibly
+make their length 0 as well.
+
+You can shallow-copy arbitrary types using the `copy-object` function:
+
+```
+copy-object src: (addr T), dest: (addr T)
+```
+
 ## Handles for safe access to the heap
 
 We've seen the `addr` type, but it's intended to be short-lived. `addr` values
-should never escape from functions. In particular, save `addr` values inside
-compound `type`s. To do that you need a "fat pointer" called a `handle` that
-is safe to keep around for extended periods and ensures it's used safely
-without corrupting the heap and causing security issues or hard-to-debug
-misbehavior.
+should never escape from functions. Function outputs can't be `addr`s,
+function inouts can't include `addr` in their payload type. Finally, you can't
+save `addr` values inside compound `type`s. To do that you need a "fat
+pointer" called a `handle` that is safe to keep around for extended periods
+and ensures it's used safely without corrupting the heap and causing security
+issues or hard-to-debug misbehavior.
 
 To actually _use_ a `handle`, we have to turn it into an `addr` first using
 the `lookup` statement.
 
 ```
-var y/reg: (addr T) <- lookup x
+var y/reg: (addr T) <- lookup x: (handle T)
 ```
 
-Now operate on the `addr` as usual, safe in the knowledge that you can later
-recover any writes to its payload from `x`.
+Now operate on `y` as usual, safe in the knowledge that you can later recover
+any writes to its payload from `x`.
 
-It's illegal to continue to use this `addr` after a function that reclaims
-heap memory. You have to repeat the lookup from the `handle`. (Luckily Mu
-doesn't implement reclamation yet.)
+It's illegal to continue to use an `addr` after a function that reclaims heap
+memory. You have to repeat the lookup from the `handle`. (Luckily Mu doesn't
+implement reclamation yet.)
 
 Having two kinds of addresses takes some getting used to. Do we pass in
 variables by value, by `addr` or by `handle`? In inputs or outputs? Here are 3
 rules of thumb:
 
-  * Functions that need to look at the payload should accept an `(addr ...)`.
+  * Functions that need to look at the payload should accept an `(addr ...)`
+    where possible.
   * Functions that need to treat a handle as a value, without looking at its
-  payload, should accept a `(handle ...)`. Helpers that save handles into data
-  structures are a common example.
-  * Functions that need to allocate memory should accept an `(addr handle
-  ...)`.
+    payload, should accept a `(handle ...)`. Helpers that save handles into
+    data structures are a common example.
+  * Functions that need to allocate memory should accept an `(addr handle ...)`.
 
 Try to avoid mixing these use cases.
 
@@ -655,21 +668,12 @@ var x: (addr handle T)
 allocate x
 ```
 
-To create handles to array types, use `populate`:
+To create handles to array types (of potentially dynamic size), use `populate`:
 
 ```
 var x: (addr handle array T)
 ... initialize x ...
 populate x, 3  # array of 3 T's
-```
-
-You can copy handles to another variable on the stack like this:
-
-```
-var x: (handle T)
-# ..some code initializing x..
-var y/eax: (addr handle T) <- address ...
-copy-handle x, y
 ```
 
 ## Seams
@@ -689,8 +693,7 @@ the above exceptions.
 
 ## Conclusion
 
-Anything not allowed here is forbidden. Even if the compiler doesn't currently
+Anything not allowed here is forbidden, even if the compiler doesn't currently
 detect and complain about it. Please [contact me](mailto:ak@akkartik.com) or
 [report issues](https://github.com/akkartik/mu/issues) when you encounter a
-missing or misleading error message. Thank you for bearing with the dust! I'm
-here for the long haul, and everything will be clean and checked in due time.
+missing or misleading error message.
