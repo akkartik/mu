@@ -1515,27 +1515,59 @@ fn clear-canvas _env: (addr environment) {
   reset-formatting screen
   print-string screen, " define function  "
   # primitives
-  render-primitives screen, repl-col
+  var dummy/eax: int <- render-primitives screen, *nrows, repl-col
   # currently defined functions
   render-functions screen, repl-col, env
 }
 
-fn render-primitives screen: (addr screen), right-col: int {
-  var left-col/ecx: int <- copy right-col
-  left-col <- subtract 0x28
-  move-cursor screen, 1, left-col
+# return value: top-most row written to
+fn render-primitives screen: (addr screen), bottom-margin-row: int, right-col: int -> _/eax: int {
+  # render primitives from the bottom of the screen upward
+  var row/ecx: int <- copy bottom-margin-row
+  row <- subtract 1
+  var col/edx: int <- copy 1
+  move-cursor screen, row, col
+  row, col <- render-primitive-group screen, row, col, right-col, "numbers: ", "+ - *  "
+  row, col <- render-primitive-group screen, row, col, right-col, "arrays: ", "len  "
+  row, col <- render-primitive-group screen, row, col, right-col, "files: ", "open read slurp lines  "
+  row, col <- render-primitive-group screen, row, col, right-col, "misc: ", "dup swap  "  # hack: keep these at the right of the bottom row
+  row, col <- render-primitive-group screen, row, col, right-col, "screens: ", "fake-screen print move up down left right  "
+  # finally print heading up top
+  row <- decrement
+  move-cursor screen, row, 1
+  start-bold screen
   print-string screen, "primitives:"
-  left-col <- add 2
-  move-cursor screen, 2, left-col
-  print-string screen, "+ - * len"
-  move-cursor screen, 3, left-col
-  print-string screen, "open read slurp lines"
-  move-cursor screen, 4, left-col
-  print-string screen, "fake-screen print move"
-  move-cursor screen, 5, left-col
-  print-string screen, "up down left right"
-  move-cursor screen, 6, left-col
-  print-string screen, "dup swap"
+  return row
+}
+
+# start at row, col and print the given strings
+# move up one row if there isn't enough room before right-col
+# return row, col printed until
+fn render-primitive-group screen: (addr screen), _row: int, _col: int, right-col: int, _heading: (addr array byte), _contents: (addr array byte) -> _/ecx: int, _/edx: int {
+  var row/ecx: int <- copy _row
+  var col/edx: int <- copy _col
+  # decrement row if necessary
+  var new-col/ebx: int <- copy col
+  var heading/esi: (addr array byte) <- copy _heading
+  var len1/eax: int <- length heading
+  new-col <- add len1
+  var contents/edi: (addr array byte) <- copy _contents
+  var len2/eax: int <- length contents
+  new-col <- add len2
+  var bound/eax: int <- copy right-col
+  bound <- decrement
+  {
+    compare new-col, bound
+    break-if-<=
+    row <- decrement
+    col <- copy 1
+  }
+  move-cursor screen, row, col
+  start-color screen, 0xf6, 7
+  print-string screen, heading
+  reset-formatting screen
+  print-string screen, contents
+  return row, new-col
 }
 
 fn render-functions screen: (addr screen), right-col: int, _env: (addr environment) {
