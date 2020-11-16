@@ -1515,33 +1515,43 @@ fn clear-canvas _env: (addr environment) {
   reset-formatting screen
   print-string screen, " define function  "
   # primitives
-  var start-col/ecx: int <- copy repl-col
-  start-col <- subtract 0x28
-  move-cursor screen, 1, start-col
-  print-string screen, "primitives:"
-  start-col <- add 2
-  move-cursor screen, 2, start-col
-  print-string screen, "+ - * len"
-  move-cursor screen, 3, start-col
-  print-string screen, "open read slurp lines"
-  move-cursor screen, 4, start-col
-  print-string screen, "fake-screen print move"
-  move-cursor screen, 5, start-col
-  print-string screen, "up down left right"
-  move-cursor screen, 6, start-col
-  print-string screen, "dup swap"
+  render-primitives screen, repl-col
   # currently defined functions
-  start-col <- subtract 2
-  move-cursor screen, 8, start-col
+  render-functions screen, repl-col, env
+}
+
+fn render-primitives screen: (addr screen), right-col: int {
+  var left-col/ecx: int <- copy right-col
+  left-col <- subtract 0x28
+  move-cursor screen, 1, left-col
+  print-string screen, "primitives:"
+  left-col <- add 2
+  move-cursor screen, 2, left-col
+  print-string screen, "+ - * len"
+  move-cursor screen, 3, left-col
+  print-string screen, "open read slurp lines"
+  move-cursor screen, 4, left-col
+  print-string screen, "fake-screen print move"
+  move-cursor screen, 5, left-col
+  print-string screen, "up down left right"
+  move-cursor screen, 6, left-col
+  print-string screen, "dup swap"
+}
+
+fn render-functions screen: (addr screen), right-col: int, _env: (addr environment) {
+  var left-col/ecx: int <- copy right-col
+  left-col <- subtract 0x28
+  move-cursor screen, 8, left-col
   print-string screen, "functions:"
-  start-col <- add 2
+  left-col <- add 2
   var row/ebx: int <- copy 9
+  var env/esi: (addr environment) <- copy _env
   var functions/esi: (addr handle function) <- get env, functions
   {
     var curr/eax: (addr function) <- lookup *functions
     compare curr, 0
     break-if-=
-    row <- render-function screen, row, start-col, curr
+    row <- render-function screen, row, left-col, curr
     functions <- get curr, next
     row <- increment
     loop
