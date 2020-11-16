@@ -14438,7 +14438,8 @@ $populate-mu-function-header:check-for-inout:
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       # v = parse-var-with-type(word-slice, first-line)
-      (parse-var-with-type %ecx *(ebp+8) %ebx *(ebp+0x14) *(ebp+0x18))
+      (lookup *edi *(edi+4))  # Function-name Function-name => eax
+      (parse-var-with-type %ecx *(ebp+8) %ebx %eax *(ebp+0x14) *(ebp+0x18))
       # if (v->register != null) abort
       # . eax: (addr var) = lookup(v)
       (lookup *ebx *(ebx+4))  # => eax
@@ -14489,7 +14490,8 @@ $populate-mu-function-header:check-for-out:
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       # v = parse-var-with-type(word-slice, first-line)
-      (parse-var-with-type %ecx *(ebp+8) %ebx *(ebp+0x14) *(ebp+0x18))
+      (lookup *edi *(edi+4))  # Function-name Function-name => eax
+      (parse-var-with-type %ecx *(ebp+8) %ebx %eax *(ebp+0x14) *(ebp+0x18))
       # assert(var->register != null)
       # . eax: (addr var) = lookup(v)
       (lookup *ebx *(ebx+4))  # => eax
@@ -14742,7 +14744,8 @@ $populate-mu-function-signature:check-for-inout:
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-function-signature:error1/disp32
       # v = parse-var-with-type(word-slice, first-line)
-      (parse-var-with-type %ecx *(ebp+8) %ebx *(ebp+0x10) *(ebp+0x14))
+      (lookup *edi *(edi+4))  # Function-name Function-name => eax
+      (parse-var-with-type %ecx *(ebp+8) %ebx %eax *(ebp+0x10) *(ebp+0x14))
       # if (v->register != null) abort
       # . eax: (addr var) = lookup(v)
       (lookup *ebx *(ebx+4))  # => eax
@@ -14793,7 +14796,8 @@ $populate-mu-function-signature:check-for-out:
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-function-signature:error1/disp32
       # v = parse-var-with-type(word-slice, first-line)
-      (parse-var-with-type %ecx *(ebp+8) %ebx *(ebp+0x10) *(ebp+0x14))
+      (lookup *edi *(edi+4))  # Function-name Function-name => eax
+      (parse-var-with-type %ecx *(ebp+8) %ebx %eax *(ebp+0x10) *(ebp+0x14))
       # assert(var->register != null)
       # . eax: (addr var) = lookup(v)
       (lookup *ebx *(ebx+4))  # => eax
@@ -15307,7 +15311,7 @@ $test-function-header-with-multiple-args-and-outputs:out1:
 #   x/eax: int,
 # ignores at most one trailing comma
 # WARNING: modifies name
-parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte), out: (addr handle var), err: (addr buffered-file), ed: (addr exit-descriptor)
+parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte), out: (addr handle var), fn-name: (addr array byte), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
     #   var s: slice
     #   if (!slice-ends-with(name, ":"))
@@ -15373,7 +15377,7 @@ $parse-var-with-type:write-register:
     }
 $parse-var-with-type:save-type:
     8d/copy-address *(edi+8) 0/r32/eax  # Var-type
-    (parse-type Heap *(ebp+0xc) %eax *(ebp+0x14) *(ebp+0x18))
+    (parse-type Heap *(ebp+0xc) %eax *(ebp+0x18) *(ebp+0x1c))
 $parse-var-with-type:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -15390,14 +15394,16 @@ $parse-var-with-type:end:
     c3/return
 
 $parse-var-with-type:abort:
-    # error("var should have form 'name: type' in '" line "'\n")
-    (write-buffered *(ebp+0x14) "var should have form 'name: type' in '")
-    (flush *(ebp+0x14))
+    # error("fn " fn ": var should have form 'name: type' in '" line "'\n")
+    (write-buffered *(ebp+0x18) "fn ")
+    (write-buffered *(ebp+0x18) *(ebp+0x14))
+    (write-buffered *(ebp+0x18) ": var should have form 'name: type' in '")
+    (flush *(ebp+0x18))
     (rewind-stream *(ebp+0xc))
-    (write-stream-data *(ebp+0x14) *(ebp+0xc))
-    (write-buffered *(ebp+0x14) "'\n")
-    (flush *(ebp+0x14))
-    (stop *(ebp+0x18) 1)
+    (write-stream-data *(ebp+0x18) *(ebp+0xc))
+    (write-buffered *(ebp+0x18) "'\n")
+    (flush *(ebp+0x18))
+    (stop *(ebp+0x1c) 1)
     # never gets here
 
 parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle type-tree), err: (addr buffered-file), ed: (addr exit-descriptor)
@@ -15882,7 +15888,7 @@ test-parse-var-with-type:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
+    (parse-var-with-type %ecx _test-input-stream %edx 0 Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -15923,7 +15929,7 @@ test-parse-var-with-type-and-register:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
+    (parse-var-with-type %ecx _test-input-stream %edx 0 Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -15967,7 +15973,7 @@ test-parse-var-with-trailing-characters:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
+    (parse-var-with-type %ecx _test-input-stream %edx 0 Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -16010,7 +16016,7 @@ test-parse-var-with-register-and-trailing-characters:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
+    (parse-var-with-type %ecx _test-input-stream %edx 0 Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -16054,7 +16060,7 @@ test-parse-var-with-compound-type:
     68/push 0/imm32
     89/<- %edx 4/r32/esp
     #
-    (parse-var-with-type %ecx _test-input-stream %edx Stderr 0)
+    (parse-var-with-type %ecx _test-input-stream %edx 0 Stderr 0)
     # var v-addr/edx: (addr var) = lookup(v)
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -16820,7 +16826,14 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
     89/<- %edx 4/r32/esp
     # v = parse-var-with-type(next-mu-token(line))
     (next-mu-token *(ebp+8) %ecx)
-    (parse-var-with-type %ecx *(ebp+8) %edx *(ebp+0x18) *(ebp+0x1c))
+    {
+      # just for tests, support null fn
+      8b/-> *(ebp+0x14) 0/r32/eax
+      3d/compare-eax-and 0/imm32
+      74/jump-if-= break/disp8
+      (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    }
+    (parse-var-with-type %ecx *(ebp+8) %edx %eax *(ebp+0x18) *(ebp+0x1c))
     # var v-addr/esi: (addr var)
     (lookup *edx *(edx+4))  # => eax
     89/<- %esi 0/r32/eax
@@ -18869,7 +18882,8 @@ $populate-mu-type:parse-element:
       # must do this first to strip the trailing ':' from word-slice before
       # using it in find-or-create-typeinfo-fields below
       # TODO: clean up that mutation in parse-var-with-type
-      (parse-var-with-type %edx %ecx %esi *(ebp+0x10) *(ebp+0x14))
+      (type-name *edi)  # Typeinfo-id => eax
+      (parse-var-with-type %edx %ecx %esi %eax *(ebp+0x10) *(ebp+0x14))
       # if v is an addr, abort
       (lookup *esi *(esi+4))  # => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
