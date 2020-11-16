@@ -1537,6 +1537,7 @@ fn render-primitives screen: (addr screen), bottom-margin-row: int, right-col: i
   move-cursor screen, row, 1
   start-bold screen
   print-string screen, "primitives:"
+  reset-formatting screen
   return row
 }
 
@@ -1571,27 +1572,38 @@ fn render-primitive-group screen: (addr screen), _row: int, _col: int, right-col
 }
 
 fn render-functions screen: (addr screen), right-col: int, _env: (addr environment) {
-  var left-col/ecx: int <- copy right-col
-  left-col <- subtract 0x28
-  move-cursor screen, 8, left-col
-  print-string screen, "functions:"
-  left-col <- add 2
-  var row/ebx: int <- copy 9
+  var row/ecx: int <- copy 1
+  var dummy-col/edx: int <- copy right-col
   var env/esi: (addr environment) <- copy _env
   var functions/esi: (addr handle function) <- get env, functions
   {
     var curr/eax: (addr function) <- lookup *functions
     compare curr, 0
     break-if-=
-    row <- render-function screen, row, left-col, curr
+    row, dummy-col <- render-function-right-aligned screen, row, right-col, curr
     functions <- get curr, next
-    row <- increment
+    row <- add 1  # inter-function-margin
     loop
   }
 }
 
+# print function starting at row, right-aligned before right-col
+# return row, col printed until
+fn render-function-right-aligned screen: (addr screen), row: int, right-col: int, f: (addr function) -> _/ecx: int, _/edx: int {
+  var col/edx: int <- copy right-col
+  col <- decrement  # margin
+  var width/eax: int <- function-width f
+  col <- subtract width
+  render-function screen, row, col, f
+  var new-row/ecx: int <- copy row
+  var height/eax: int <- function-height f
+  new-row <- add height
+  return new-row, col
+}
+
+# render function starting at row, col
 # only single-line functions supported for now
-fn render-function screen: (addr screen), row: int, col: int, _f: (addr function) -> _/ebx: int {
+fn render-function screen: (addr screen), row: int, col: int, _f: (addr function) {
   var f/esi: (addr function) <- copy _f
   var args/ecx: (addr handle word) <- get f, args
   move-cursor screen, row, col
@@ -1604,12 +1616,11 @@ fn render-function screen: (addr screen), row: int, col: int, _f: (addr function
   increment row
   add-to col, 2
   move-cursor screen, row, col
-  print-string screen, "= "
+  print-string screen, "≡ "
   var body-ah/eax: (addr handle line) <- get f, body
   var body/eax: (addr line) <- lookup *body-ah
   var body-words-ah/eax: (addr handle word) <- get body, data
   print-words screen, body-words-ah
-  return row
 }
 
 fn real-grapheme? g: grapheme -> _/eax: boolean {

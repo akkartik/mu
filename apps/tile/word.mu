@@ -553,3 +553,21 @@ fn word-exists? _haystack-ah: (addr handle word), _needle: (addr word) -> _/ebx:
   var result/ebx: boolean <- word-exists? next-haystack-ah, _needle
   return result
 }
+
+fn word-list-length words: (addr handle word) -> _/eax: int {
+  var curr-ah/esi: (addr handle word) <- copy words
+  var result/edi: int <- copy 0
+  {
+    var curr/eax: (addr word) <- lookup *curr-ah
+    compare curr, 0
+    break-if-=
+    {
+      var word-len/eax: int <- word-length curr
+      result <- add word-len
+      result <- add 1  # inter-word-margin
+    }
+    curr-ah <- get curr, next
+    loop
+  }
+  return result
+}

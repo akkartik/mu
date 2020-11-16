@@ -385,11 +385,11 @@ fn body-length functions: (addr handle function), function-name: (addr handle wo
   var body-ah/edi: (addr handle line) <- address body-storage
   function-body functions, function-name, body-ah
   var body/eax: (addr line) <- lookup *body-ah
-  var result/eax: int <- line-length body
+  var result/eax: int <- num-words-in-line body
   return result
 }
 
-fn line-length _in: (addr line) -> _/eax: int {
+fn num-words-in-line _in: (addr line) -> _/eax: int {
   var in/esi: (addr line) <- copy _in
   var curr-ah/ecx: (addr handle word) <- get in, data
   var result/edi: int <- copy 0
@@ -698,4 +698,64 @@ fn dump-call-paths screen: (addr screen), _x-ah: (addr handle call-path) {
     break-if-=
     dump-call-paths screen, next-ah
   }
+}
+
+fn function-width _self: (addr function) -> _/eax: int {
+  var self/esi: (addr function) <- copy _self
+  var args/ecx: (addr handle word) <- get self, args
+  var arg-width/eax: int <- word-list-length args
+  var result/edi: int <- copy arg-width
+  result <- add 4  # function-header-indent + body-indent
+  var body-ah/eax: (addr handle line) <- get self, body
+  var body-width/eax: int <- body-width body-ah
+  body-width <- add 1  # right margin
+  body-width <- add 2  # body-indent for "≡ "
+  compare result, body-width
+  {
+    break-if->=
+    result <- copy body-width
+  }
+  return result
+}
+
+fn body-width lines: (addr handle line) -> _/eax: int {
+  var curr-ah/esi: (addr handle line) <- copy lines
+  var result/edi: int <- copy 0
+  {
+    var curr/eax: (addr line) <- lookup *curr-ah
+    compare curr, 0
+    break-if-=
+    {
+      var words/ecx: (addr handle word) <- get curr, data
+      var curr-len/eax: int <- word-list-length words
+      compare curr-len, result
+      break-if-<=
+      result <- copy curr-len
+    }
+    curr-ah <- get curr, next
+    loop
+  }
+  return result
+}
+
+fn function-height _self: (addr function) -> _/eax: int {
+  var self/esi: (addr function) <- copy _self
+  var body-ah/eax: (addr handle line) <- get self, body
+  var result/eax: int <- line-list-length body-ah
+  result <- increment  # for function header
+  return result
+}
+
+fn line-list-length lines: (addr handle line) -> _/eax: int {
+  var curr-ah/esi: (addr handle line) <- copy lines
+  var result/edi: int <- copy 0
+  {
+    var curr/eax: (addr line) <- lookup *curr-ah
+    compare curr, 0
+    break-if-=
+    curr-ah <- get curr, next
+    result <- increment
+    loop
+  }
+  return result
 }
