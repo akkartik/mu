@@ -26841,16 +26841,16 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), fn: (a
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    51/push-ecx
-    # ecx = stmt
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    # var base/ecx: (addr var) = stmt->inouts[0]
-    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    53/push-ebx
+    # ebx = stmt
+    8b/-> *(ebp+0xc) 3/r32/ebx
+    # var base/ebx: (addr var) = stmt->inouts[0]
+    (lookup *(ebx+0xc) *(ebx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
-    89/<- %ecx 0/r32/eax
+    89/<- %ebx 0/r32/eax
     # if (var->register) do one thing
     {
-      81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
+      81 7/subop/compare *(ebx+0x18) 0/imm32  # Var-register
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
       (translate-mu-index-stmt-with-array-in-register *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
@@ -26858,7 +26858,7 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), fn: (a
     }
     # if (var->offset) do a different thing
     {
-      81 7/subop/compare *(ecx+0x14) 0/imm32  # Var-offset
+      81 7/subop/compare *(ebx+0x14) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
       (translate-mu-index-stmt-with-array-on-stack *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
@@ -26866,7 +26866,7 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), fn: (a
     }
 $translate-mu-index-stmt:end:
     # . restore registers
-    59/pop-to-ecx
+    5b/pop-to-ebx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
