@@ -101,13 +101,13 @@ if ('onhashchange' in window) {
 <span id="L42" class="LineNr"> 42 </span>  <a href='../../304screen.subx.html#L6'>enable-screen-grid-mode</a>
 <span id="L43" class="LineNr"> 43 </span>  <a href='../../305keyboard.subx.html#L6'>enable-keyboard-immediate-mode</a>
 <span id="L44" class="LineNr"> 44 </span>  <span class="muComment"># initialize screen state</span>
-<span id="L45" class="LineNr"> 45 </span>  <span class="PreProc">var</span> paginated-screen-storage: paginated-screen
-<span id="L46" class="LineNr"> 46 </span>  <span class="PreProc">var</span> paginated-screen/<span class="Constant">eax</span>: (addr paginated-screen) <span class="SpecialChar">&lt;-</span> address paginated-screen-storage
-<span id="L47" class="LineNr"> 47 </span>  initialize-paginated-screen paginated-screen, <span class="Constant">0x40</span>, <span class="Constant">2</span>, <span class="Constant">5</span>
-<span id="L48" class="LineNr"> 48 </span>  <a href='main.mu.html#L391'>normal-text</a> paginated-screen
+<span id="L45" class="LineNr"> 45 </span>  <span class="PreProc">var</span> paginated-screen-storage: <a href='paginated-screen.mu.html#L12'>paginated-screen</a>
+<span id="L46" class="LineNr"> 46 </span>  <span class="PreProc">var</span> <a href='paginated-screen.mu.html#L12'>paginated-screen</a>/<span class="Constant">eax</span>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>) <span class="SpecialChar">&lt;-</span> address paginated-screen-storage
+<span id="L47" class="LineNr"> 47 </span>  <a href='paginated-screen.mu.html#L29'>initialize-paginated-screen</a> <a href='paginated-screen.mu.html#L12'>paginated-screen</a>, <span class="Constant">0x40</span>, <span class="Constant">2</span>, <span class="Constant">5</span>
+<span id="L48" class="LineNr"> 48 </span>  <a href='main.mu.html#L391'>normal-text</a> <a href='paginated-screen.mu.html#L12'>paginated-screen</a>
 <span id="L49" class="LineNr"> 49 </span>  <span class="muComment">#</span>
 <span id="L50" class="LineNr"> 50 </span>  <span class="Delimiter">{</span>
-<span id="L51" class="LineNr"> 51 </span>    <a href='main.mu.html#L60'>render</a> paginated-screen, fs
+<span id="L51" class="LineNr"> 51 </span>    <a href='main.mu.html#L60'>render</a> <a href='paginated-screen.mu.html#L12'>paginated-screen</a>, fs
 <span id="L52" class="LineNr"> 52 </span>    <span class="PreProc">var</span> key/<span class="Constant">eax</span>: grapheme <span class="SpecialChar">&lt;-</span> <a href='../../305keyboard.subx.html#L132'>read-key-from-real-keyboard</a>
 <span id="L53" class="LineNr"> 53 </span>    compare key, <span class="Constant">0x71</span>  <span class="muComment"># 'q'</span>
 <span id="L54" class="LineNr"> 54 </span>    <span class="PreProc">loop-if-!=</span>
@@ -116,8 +116,8 @@ if ('onhashchange' in window) {
 <span id="L57" class="LineNr"> 57 </span>  <a href='../../304screen.subx.html#L24'>enable-screen-type-mode</a>
 <span id="L58" class="LineNr"> 58 </span><span class="Delimiter">}</span>
 <span id="L59" class="LineNr"> 59 </span>
-<span id="L60" class="LineNr"> 60 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L60'>render</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr paginated-screen), fs: (addr buffered-file) <span class="Delimiter">{</span>
-<span id="L61" class="LineNr"> 61 </span>  start-drawing <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L60" class="LineNr"> 60 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L60'>render</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>), fs: (addr buffered-file) <span class="Delimiter">{</span>
+<span id="L61" class="LineNr"> 61 </span>  <a href='paginated-screen.mu.html#L78'>start-drawing</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L62" class="LineNr"> 62 </span>  <a href='main.mu.html#L160'>render-normal</a> <a href='../../405screen.mu.html#L9'>screen</a>, fs
 <span id="L63" class="LineNr"> 63 </span><span class="Delimiter">}</span>
 <span id="L64" class="LineNr"> 64 </span>
@@ -128,9 +128,9 @@ if ('onhashchange' in window) {
 <span id="L69" class="LineNr"> 69 </span>  <a href='../../306files.subx.html#L89'>populate-buffered-file-containing</a> <span class="Constant">&quot;abcdefgh&quot;</span>, input-ah
 <span id="L70" class="LineNr"> 70 </span>  <span class="PreProc">var</span> in/<span class="Constant">eax</span>: (addr buffered-file) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> input-storage
 <span id="L71" class="LineNr"> 71 </span>  <span class="muComment"># output screen</span>
-<span id="L72" class="LineNr"> 72 </span>  <span class="PreProc">var</span> pg: paginated-screen
-<span id="L73" class="LineNr"> 73 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr paginated-screen) <span class="SpecialChar">&lt;-</span> address pg
-<span id="L74" class="LineNr"> 74 </span>  initialize-fake-paginated-screen pg-addr, <span class="Constant">3</span>, <span class="Constant">6</span>, <span class="Constant">2</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 3 rows, 6 columns, 2 pages * 2 columns each</span>
+<span id="L72" class="LineNr"> 72 </span>  <span class="PreProc">var</span> pg: <a href='paginated-screen.mu.html#L12'>paginated-screen</a>
+<span id="L73" class="LineNr"> 73 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>) <span class="SpecialChar">&lt;-</span> address pg
+<span id="L74" class="LineNr"> 74 </span>  <a href='paginated-screen.mu.html#L518'>initialize-fake-paginated-screen</a> pg-addr, <span class="Constant">3</span>, <span class="Constant">6</span>, <span class="Constant">2</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 3 rows, 6 columns, 2 pages * 2 columns each</span>
 <span id="L75" class="LineNr"> 75 </span>  <span class="muComment">#</span>
 <span id="L76" class="LineNr"> 76 </span>  <a href='main.mu.html#L60'>render</a> pg-addr, in
 <span id="L77" class="LineNr"> 77 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../../405screen.mu.html#L9'>screen</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> pg, <a href='../../405screen.mu.html#L9'>screen</a>
@@ -147,9 +147,9 @@ if ('onhashchange' in window) {
 <span id="L88" class="LineNr"> 88 </span>  <a href='../../306files.subx.html#L89'>populate-buffered-file-containing</a> <span class="Constant">&quot;# abc\n\ndef&quot;</span>, input-ah
 <span id="L89" class="LineNr"> 89 </span>  <span class="PreProc">var</span> in/<span class="Constant">eax</span>: (addr buffered-file) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> input-storage
 <span id="L90" class="LineNr"> 90 </span>  <span class="muComment"># output screen</span>
-<span id="L91" class="LineNr"> 91 </span>  <span class="PreProc">var</span> pg: paginated-screen
-<span id="L92" class="LineNr"> 92 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr paginated-screen) <span class="SpecialChar">&lt;-</span> address pg
-<span id="L93" class="LineNr"> 93 </span>  initialize-fake-paginated-screen pg-addr, <span class="Constant">8</span>, <span class="Constant">6</span>, <span class="Constant">5</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 6 columns, single page</span>
+<span id="L91" class="LineNr"> 91 </span>  <span class="PreProc">var</span> pg: <a href='paginated-screen.mu.html#L12'>paginated-screen</a>
+<span id="L92" class="LineNr"> 92 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>) <span class="SpecialChar">&lt;-</span> address pg
+<span id="L93" class="LineNr"> 93 </span>  <a href='paginated-screen.mu.html#L518'>initialize-fake-paginated-screen</a> pg-addr, <span class="Constant">8</span>, <span class="Constant">6</span>, <span class="Constant">5</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 6 columns, single page</span>
 <span id="L94" class="LineNr"> 94 </span>  <span class="muComment">#</span>
 <span id="L95" class="LineNr"> 95 </span>  <a href='main.mu.html#L60'>render</a> pg-addr, in
 <span id="L96" class="LineNr"> 96 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../../405screen.mu.html#L9'>screen</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> pg, <a href='../../405screen.mu.html#L9'>screen</a>
@@ -167,9 +167,9 @@ if ('onhashchange' in window) {
 <span id="L108" class="LineNr">108 </span>  <a href='../../306files.subx.html#L89'>populate-buffered-file-containing</a> <span class="Constant">&quot;a *b* c&quot;</span>, input-ah
 <span id="L109" class="LineNr">109 </span>  <span class="PreProc">var</span> in/<span class="Constant">eax</span>: (addr buffered-file) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> input-storage
 <span id="L110" class="LineNr">110 </span>  <span class="muComment"># output screen</span>
-<span id="L111" class="LineNr">111 </span>  <span class="PreProc">var</span> pg: paginated-screen
-<span id="L112" class="LineNr">112 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr paginated-screen) <span class="SpecialChar">&lt;-</span> address pg
-<span id="L113" class="LineNr">113 </span>  initialize-fake-paginated-screen pg-addr, <span class="Constant">8</span>, <span class="Constant">6</span>, <span class="Constant">5</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 6 columns, single page</span>
+<span id="L111" class="LineNr">111 </span>  <span class="PreProc">var</span> pg: <a href='paginated-screen.mu.html#L12'>paginated-screen</a>
+<span id="L112" class="LineNr">112 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>) <span class="SpecialChar">&lt;-</span> address pg
+<span id="L113" class="LineNr">113 </span>  <a href='paginated-screen.mu.html#L518'>initialize-fake-paginated-screen</a> pg-addr, <span class="Constant">8</span>, <span class="Constant">6</span>, <span class="Constant">5</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 6 columns, single page</span>
 <span id="L114" class="LineNr">114 </span>  <span class="muComment">#</span>
 <span id="L115" class="LineNr">115 </span>  <a href='main.mu.html#L60'>render</a> pg-addr, in
 <span id="L116" class="LineNr">116 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../../405screen.mu.html#L9'>screen</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> pg, <a href='../../405screen.mu.html#L9'>screen</a>
@@ -187,9 +187,9 @@ if ('onhashchange' in window) {
 <span id="L128" class="LineNr">128 </span>  <a href='../../306files.subx.html#L89'>populate-buffered-file-containing</a> <span class="Constant">&quot;a _b_ c&quot;</span>, input-ah
 <span id="L129" class="LineNr">129 </span>  <span class="PreProc">var</span> in/<span class="Constant">eax</span>: (addr buffered-file) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> input-storage
 <span id="L130" class="LineNr">130 </span>  <span class="muComment"># output screen</span>
-<span id="L131" class="LineNr">131 </span>  <span class="PreProc">var</span> pg: paginated-screen
-<span id="L132" class="LineNr">132 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr paginated-screen) <span class="SpecialChar">&lt;-</span> address pg
-<span id="L133" class="LineNr">133 </span>  initialize-fake-paginated-screen pg-addr, <span class="Constant">8</span>, <span class="Constant">6</span>, <span class="Constant">5</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 6 columns, single page</span>
+<span id="L131" class="LineNr">131 </span>  <span class="PreProc">var</span> pg: <a href='paginated-screen.mu.html#L12'>paginated-screen</a>
+<span id="L132" class="LineNr">132 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>) <span class="SpecialChar">&lt;-</span> address pg
+<span id="L133" class="LineNr">133 </span>  <a href='paginated-screen.mu.html#L518'>initialize-fake-paginated-screen</a> pg-addr, <span class="Constant">8</span>, <span class="Constant">6</span>, <span class="Constant">5</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 6 columns, single page</span>
 <span id="L134" class="LineNr">134 </span>  <span class="muComment">#</span>
 <span id="L135" class="LineNr">135 </span>  <a href='main.mu.html#L60'>render</a> pg-addr, in
 <span id="L136" class="LineNr">136 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../../405screen.mu.html#L9'>screen</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> pg, <a href='../../405screen.mu.html#L9'>screen</a>
@@ -205,9 +205,9 @@ if ('onhashchange' in window) {
 <span id="L146" class="LineNr">146 </span>  <a href='../../306files.subx.html#L89'>populate-buffered-file-containing</a> <span class="Constant">&quot;a*b*c&quot;</span>, input-ah
 <span id="L147" class="LineNr">147 </span>  <span class="PreProc">var</span> in/<span class="Constant">eax</span>: (addr buffered-file) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L256'>lookup</a> input-storage
 <span id="L148" class="LineNr">148 </span>  <span class="muComment"># output screen</span>
-<span id="L149" class="LineNr">149 </span>  <span class="PreProc">var</span> pg: paginated-screen
-<span id="L150" class="LineNr">150 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr paginated-screen) <span class="SpecialChar">&lt;-</span> address pg
-<span id="L151" class="LineNr">151 </span>  initialize-fake-paginated-screen pg-addr, <span class="Constant">8</span>, <span class="Constant">6</span>, <span class="Constant">5</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 6 columns, single page</span>
+<span id="L149" class="LineNr">149 </span>  <span class="PreProc">var</span> pg: <a href='paginated-screen.mu.html#L12'>paginated-screen</a>
+<span id="L150" class="LineNr">150 </span>  <span class="PreProc">var</span> pg-addr/<span class="Constant">ecx</span>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>) <span class="SpecialChar">&lt;-</span> address pg
+<span id="L151" class="LineNr">151 </span>  <a href='paginated-screen.mu.html#L518'>initialize-fake-paginated-screen</a> pg-addr, <span class="Constant">8</span>, <span class="Constant">6</span>, <span class="Constant">5</span>, <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="muComment"># 6 columns, single page</span>
 <span id="L152" class="LineNr">152 </span>  <span class="muComment">#</span>
 <span id="L153" class="LineNr">153 </span>  <a href='main.mu.html#L60'>render</a> pg-addr, in
 <span id="L154" class="LineNr">154 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../../405screen.mu.html#L9'>screen</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> pg, <a href='../../405screen.mu.html#L9'>screen</a>
@@ -216,13 +216,13 @@ if ('onhashchange' in window) {
 <span id="L157" class="LineNr">157 </span>  <a href='../../405screen.mu.html#L838'>check-screen-row-in-bold</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">2</span>, <span class="Constant">&quot;      &quot;</span>, <span class="Constant">&quot;F - <a href='main.mu.html#L104'>test-render-bold-text</a>/bold&quot;</span>
 <span id="L158" class="LineNr">158 </span><span class="Delimiter">}</span>
 <span id="L159" class="LineNr">159 </span>
-<span id="L160" class="LineNr">160 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L160'>render-normal</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr paginated-screen), fs: (addr buffered-file) <span class="Delimiter">{</span>
+<span id="L160" class="LineNr">160 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L160'>render-normal</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>), fs: (addr buffered-file) <span class="Delimiter">{</span>
 <span id="L161" class="LineNr">161 </span>  <span class="PreProc">var</span> newline-seen?/<span class="Constant">esi</span>: boolean <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>  <span class="muComment"># false</span>
 <span id="L162" class="LineNr">162 </span>  <span class="PreProc">var</span> start-of-paragraph?/<span class="Constant">edi</span>: boolean <span class="SpecialChar">&lt;-</span> copy <span class="Constant">1</span>  <span class="muComment"># true</span>
 <span id="L163" class="LineNr">163 </span>  <span class="PreProc">var</span> previous-grapheme/<span class="Constant">ebx</span>: grapheme <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L164" class="LineNr">164 </span>$render-normal:<span class="PreProc">loop</span>: <span class="Delimiter">{</span>
 <span id="L165" class="LineNr">165 </span>    <span class="muComment"># if done-drawing?(screen) break</span>
-<span id="L166" class="LineNr">166 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> done-drawing? <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L166" class="LineNr">166 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='paginated-screen.mu.html#L125'>done-drawing?</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L167" class="LineNr">167 </span>    compare done?, <span class="Constant">0</span>  <span class="muComment"># false</span>
 <span id="L168" class="LineNr">168 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L169" class="LineNr">169 </span>    <span class="PreProc">var</span> c/<span class="Constant">eax</span>: grapheme <span class="SpecialChar">&lt;-</span> <a href='../../403unicode.mu.html#L258'>read-grapheme-buffered</a> fs
@@ -245,8 +245,8 @@ if ('onhashchange' in window) {
 <span id="L186" class="LineNr">186 </span>        <span class="muComment"># otherwise render two newlines</span>
 <span id="L187" class="LineNr">187 </span>        <span class="Delimiter">{</span>
 <span id="L188" class="LineNr">188 </span>          <span class="PreProc">break-if-=</span>
-<span id="L189" class="LineNr">189 </span>          add-grapheme <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xa</span>  <span class="muComment"># newline</span>
-<span id="L190" class="LineNr">190 </span>          add-grapheme <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xa</span>  <span class="muComment"># newline</span>
+<span id="L189" class="LineNr">189 </span>          <a href='paginated-screen.mu.html#L155'>add-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xa</span>  <span class="muComment"># newline</span>
+<span id="L190" class="LineNr">190 </span>          <a href='paginated-screen.mu.html#L155'>add-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xa</span>  <span class="muComment"># newline</span>
 <span id="L191" class="LineNr">191 </span>          newline-seen? <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>  <span class="muComment"># false</span>
 <span id="L192" class="LineNr">192 </span>          start-of-paragraph? <span class="SpecialChar">&lt;-</span> copy <span class="Constant">1</span>  <span class="muComment"># true</span>
 <span id="L193" class="LineNr">193 </span>          <span class="PreProc">break</span> $render-normal:loop-body
@@ -280,10 +280,10 @@ if ('onhashchange' in window) {
 <span id="L221" class="LineNr">221 </span>        <span class="Delimiter">{</span>
 <span id="L222" class="LineNr">222 </span>          compare c, <span class="Constant">0x20</span>
 <span id="L223" class="LineNr">223 </span>          <span class="PreProc">break-if-!=</span>
-<span id="L224" class="LineNr">224 </span>          add-grapheme <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xa</span>  <span class="muComment"># newline</span>
+<span id="L224" class="LineNr">224 </span>          <a href='paginated-screen.mu.html#L155'>add-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xa</span>  <span class="muComment"># newline</span>
 <span id="L225" class="LineNr">225 </span>          <span class="PreProc">break</span> $render-normal:flush-buffered-newline
 <span id="L226" class="LineNr">226 </span>        <span class="Delimiter">}</span>
-<span id="L227" class="LineNr">227 </span>        add-grapheme <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x20</span>  <span class="muComment"># space</span>
+<span id="L227" class="LineNr">227 </span>        <a href='paginated-screen.mu.html#L155'>add-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x20</span>  <span class="muComment"># space</span>
 <span id="L228" class="LineNr">228 </span>        <span class="muComment"># fall through to print c</span>
 <span id="L229" class="LineNr">229 </span>      <span class="Delimiter">}</span>
 <span id="L230" class="LineNr">230 </span>      <span class="muComment">## end soft newline support</span>
@@ -301,8 +301,8 @@ if ('onhashchange' in window) {
 <span id="L242" class="LineNr">242 </span>        compare c, <span class="Constant">0x2a</span>  <span class="muComment"># '*'</span>
 <span id="L243" class="LineNr">243 </span>        <span class="Delimiter">{</span>
 <span id="L244" class="LineNr">244 </span>          <span class="PreProc">break-if-!=</span>
-<span id="L245" class="LineNr">245 </span>          start-color-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xec</span>, <span class="Constant">7</span>  <span class="muComment"># 236 = darkish gray</span>
-<span id="L246" class="LineNr">246 </span>          start-bold-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L245" class="LineNr">245 </span>          <a href='paginated-screen.mu.html#L550'>start-color-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xec</span>, <span class="Constant">7</span>  <span class="muComment"># 236 = darkish gray</span>
+<span id="L246" class="LineNr">246 </span>          <a href='paginated-screen.mu.html#L557'>start-bold-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L247" class="LineNr">247 </span>            <a href='main.mu.html#L349'>render-until-asterisk</a> <a href='../../405screen.mu.html#L9'>screen</a>, fs
 <span id="L248" class="LineNr">248 </span>          <a href='main.mu.html#L391'>normal-text</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L249" class="LineNr">249 </span>          <span class="PreProc">break</span> $render-normal:loop-body
@@ -311,22 +311,22 @@ if ('onhashchange' in window) {
 <span id="L252" class="LineNr">252 </span>        compare c, <span class="Constant">0x5f</span>  <span class="muComment"># '_'</span>
 <span id="L253" class="LineNr">253 </span>        <span class="Delimiter">{</span>
 <span id="L254" class="LineNr">254 </span>          <span class="PreProc">break-if-!=</span>
-<span id="L255" class="LineNr">255 </span>          start-color-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xec</span>, <span class="Constant">7</span>  <span class="muComment"># 236 = darkish gray</span>
-<span id="L256" class="LineNr">256 </span>          start-bold-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L255" class="LineNr">255 </span>          <a href='paginated-screen.mu.html#L550'>start-color-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xec</span>, <span class="Constant">7</span>  <span class="muComment"># 236 = darkish gray</span>
+<span id="L256" class="LineNr">256 </span>          <a href='paginated-screen.mu.html#L557'>start-bold-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L257" class="LineNr">257 </span>            <a href='main.mu.html#L370'>render-until-underscore</a> <a href='../../405screen.mu.html#L9'>screen</a>, fs
 <span id="L258" class="LineNr">258 </span>          <a href='main.mu.html#L391'>normal-text</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L259" class="LineNr">259 </span>          <span class="PreProc">break</span> $render-normal:loop-body
 <span id="L260" class="LineNr">260 </span>        <span class="Delimiter">}</span>
 <span id="L261" class="LineNr">261 </span>      <span class="Delimiter">}</span>
 <span id="L262" class="LineNr">262 </span>      <span class="muComment">#</span>
-<span id="L263" class="LineNr">263 </span>      add-grapheme <a href='../../405screen.mu.html#L9'>screen</a>, c
+<span id="L263" class="LineNr">263 </span>      <a href='paginated-screen.mu.html#L155'>add-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a>, c
 <span id="L264" class="LineNr">264 </span>    <span class="Delimiter">}</span>  <span class="muComment"># $render-normal:loop-body</span>
 <span id="L265" class="LineNr">265 </span>    previous-grapheme <span class="SpecialChar">&lt;-</span> copy c
 <span id="L266" class="LineNr">266 </span>    <span class="PreProc">loop</span>
 <span id="L267" class="LineNr">267 </span>  <span class="Delimiter">}</span>  <span class="muComment"># $render-normal:loop</span>
 <span id="L268" class="LineNr">268 </span><span class="Delimiter">}</span>
 <span id="L269" class="LineNr">269 </span>
-<span id="L270" class="LineNr">270 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L270'>render-header-line</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr paginated-screen), fs: (addr buffered-file) <span class="Delimiter">{</span>
+<span id="L270" class="LineNr">270 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L270'>render-header-line</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>), fs: (addr buffered-file) <span class="Delimiter">{</span>
 <span id="L271" class="LineNr">271 </span>$render-header-line:body: <span class="Delimiter">{</span>
 <span id="L272" class="LineNr">272 </span>  <span class="muComment"># compute color based on number of '#'s</span>
 <span id="L273" class="LineNr">273 </span>  <span class="PreProc">var</span> header-level/<span class="Constant">esi</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">1</span>  <span class="muComment"># caller already grabbed one</span>
@@ -334,7 +334,7 @@ if ('onhashchange' in window) {
 <span id="L275" class="LineNr">275 </span>  <span class="Delimiter">{</span>
 <span id="L276" class="LineNr">276 </span>    <span class="muComment"># if done-drawing?(screen) return</span>
 <span id="L277" class="LineNr">277 </span>    <span class="Delimiter">{</span>
-<span id="L278" class="LineNr">278 </span>      <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> done-drawing? <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L278" class="LineNr">278 </span>      <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='paginated-screen.mu.html#L125'>done-drawing?</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L279" class="LineNr">279 </span>      compare done?, <span class="Constant">0</span>  <span class="muComment"># false</span>
 <span id="L280" class="LineNr">280 </span>      <span class="PreProc">break-if-!=</span> $render-header-line:body
 <span id="L281" class="LineNr">281 </span>    <span class="Delimiter">}</span>
@@ -352,7 +352,7 @@ if ('onhashchange' in window) {
 <span id="L293" class="LineNr">293 </span>  <span class="Delimiter">{</span>
 <span id="L294" class="LineNr">294 </span>    <span class="muComment"># if done-drawing?(screen) break</span>
 <span id="L295" class="LineNr">295 </span>    <span class="Delimiter">{</span>
-<span id="L296" class="LineNr">296 </span>      <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> done-drawing? <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L296" class="LineNr">296 </span>      <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='paginated-screen.mu.html#L125'>done-drawing?</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L297" class="LineNr">297 </span>      compare done?, <span class="Constant">0</span>  <span class="muComment"># false</span>
 <span id="L298" class="LineNr">298 </span>      <span class="PreProc">break-if-!=</span>
 <span id="L299" class="LineNr">299 </span>    <span class="Delimiter">}</span>
@@ -365,7 +365,7 @@ if ('onhashchange' in window) {
 <span id="L306" class="LineNr">306 </span>    compare c, <span class="Constant">0xa</span>  <span class="muComment"># newline</span>
 <span id="L307" class="LineNr">307 </span>    <span class="PreProc">break-if-=</span>
 <span id="L308" class="LineNr">308 </span>    <span class="muComment">#</span>
-<span id="L309" class="LineNr">309 </span>    add-grapheme <a href='../../405screen.mu.html#L9'>screen</a>, c
+<span id="L309" class="LineNr">309 </span>    <a href='paginated-screen.mu.html#L155'>add-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a>, c
 <span id="L310" class="LineNr">310 </span>    <span class="muComment">#</span>
 <span id="L311" class="LineNr">311 </span>    <span class="PreProc">loop</span>
 <span id="L312" class="LineNr">312 </span>  <span class="Delimiter">}</span>
@@ -374,41 +374,41 @@ if ('onhashchange' in window) {
 <span id="L315" class="LineNr">315 </span><span class="Delimiter">}</span>
 <span id="L316" class="LineNr">316 </span>
 <span id="L317" class="LineNr">317 </span><span class="muComment"># colors for a light background, going from bright to dark (meeting up with bold-text)</span>
-<span id="L318" class="LineNr">318 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L318'>start-heading</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr paginated-screen), header-level: int <span class="Delimiter">{</span>
+<span id="L318" class="LineNr">318 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L318'>start-heading</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>), header-level: int <span class="Delimiter">{</span>
 <span id="L319" class="LineNr">319 </span>$start-heading:body: <span class="Delimiter">{</span>
-<span id="L320" class="LineNr">320 </span>  start-bold-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L320" class="LineNr">320 </span>  <a href='paginated-screen.mu.html#L557'>start-bold-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L321" class="LineNr">321 </span>  compare header-level, <span class="Constant">1</span>
 <span id="L322" class="LineNr">322 </span>  <span class="Delimiter">{</span>
 <span id="L323" class="LineNr">323 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L324" class="LineNr">324 </span>    start-color-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xa0</span>, <span class="Constant">7</span>
+<span id="L324" class="LineNr">324 </span>    <a href='paginated-screen.mu.html#L550'>start-color-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xa0</span>, <span class="Constant">7</span>
 <span id="L325" class="LineNr">325 </span>    <span class="PreProc">break</span> $start-heading:body
 <span id="L326" class="LineNr">326 </span>  <span class="Delimiter">}</span>
 <span id="L327" class="LineNr">327 </span>  compare header-level, <span class="Constant">2</span>
 <span id="L328" class="LineNr">328 </span>  <span class="Delimiter">{</span>
 <span id="L329" class="LineNr">329 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L330" class="LineNr">330 </span>    start-color-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x7c</span>, <span class="Constant">7</span>
+<span id="L330" class="LineNr">330 </span>    <a href='paginated-screen.mu.html#L550'>start-color-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x7c</span>, <span class="Constant">7</span>
 <span id="L331" class="LineNr">331 </span>    <span class="PreProc">break</span> $start-heading:body
 <span id="L332" class="LineNr">332 </span>  <span class="Delimiter">}</span>
 <span id="L333" class="LineNr">333 </span>  compare header-level, <span class="Constant">3</span>
 <span id="L334" class="LineNr">334 </span>  <span class="Delimiter">{</span>
 <span id="L335" class="LineNr">335 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L336" class="LineNr">336 </span>    start-color-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x58</span>, <span class="Constant">7</span>
+<span id="L336" class="LineNr">336 </span>    <a href='paginated-screen.mu.html#L550'>start-color-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x58</span>, <span class="Constant">7</span>
 <span id="L337" class="LineNr">337 </span>    <span class="PreProc">break</span> $start-heading:body
 <span id="L338" class="LineNr">338 </span>  <span class="Delimiter">}</span>
 <span id="L339" class="LineNr">339 </span>  compare header-level, <span class="Constant">4</span>
 <span id="L340" class="LineNr">340 </span>  <span class="Delimiter">{</span>
 <span id="L341" class="LineNr">341 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L342" class="LineNr">342 </span>    start-color-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x34</span>, <span class="Constant">7</span>
+<span id="L342" class="LineNr">342 </span>    <a href='paginated-screen.mu.html#L550'>start-color-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x34</span>, <span class="Constant">7</span>
 <span id="L343" class="LineNr">343 </span>    <span class="PreProc">break</span> $start-heading:body
 <span id="L344" class="LineNr">344 </span>  <span class="Delimiter">}</span>
-<span id="L345" class="LineNr">345 </span>  start-color-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xe8</span>, <span class="Constant">7</span>
+<span id="L345" class="LineNr">345 </span>  <a href='paginated-screen.mu.html#L550'>start-color-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xe8</span>, <span class="Constant">7</span>
 <span id="L346" class="LineNr">346 </span><span class="Delimiter">}</span>
 <span id="L347" class="LineNr">347 </span><span class="Delimiter">}</span>
 <span id="L348" class="LineNr">348 </span>
-<span id="L349" class="LineNr">349 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L349'>render-until-asterisk</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr paginated-screen), fs: (addr buffered-file) <span class="Delimiter">{</span>
+<span id="L349" class="LineNr">349 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L349'>render-until-asterisk</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>), fs: (addr buffered-file) <span class="Delimiter">{</span>
 <span id="L350" class="LineNr">350 </span>  <span class="Delimiter">{</span>
 <span id="L351" class="LineNr">351 </span>    <span class="muComment"># if done-drawing?(screen) break</span>
-<span id="L352" class="LineNr">352 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> done-drawing? <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L352" class="LineNr">352 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='paginated-screen.mu.html#L125'>done-drawing?</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L353" class="LineNr">353 </span>    compare done?, <span class="Constant">0</span>  <span class="muComment"># false</span>
 <span id="L354" class="LineNr">354 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L355" class="LineNr">355 </span>    <span class="muComment">#</span>
@@ -420,16 +420,16 @@ if ('onhashchange' in window) {
 <span id="L361" class="LineNr">361 </span>    compare c, <span class="Constant">0x2a</span>  <span class="muComment"># '*'</span>
 <span id="L362" class="LineNr">362 </span>    <span class="PreProc">break-if-=</span>
 <span id="L363" class="LineNr">363 </span>    <span class="muComment">#</span>
-<span id="L364" class="LineNr">364 </span>    add-grapheme <a href='../../405screen.mu.html#L9'>screen</a>, c
+<span id="L364" class="LineNr">364 </span>    <a href='paginated-screen.mu.html#L155'>add-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a>, c
 <span id="L365" class="LineNr">365 </span>    <span class="muComment">#</span>
 <span id="L366" class="LineNr">366 </span>    <span class="PreProc">loop</span>
 <span id="L367" class="LineNr">367 </span>  <span class="Delimiter">}</span>
 <span id="L368" class="LineNr">368 </span><span class="Delimiter">}</span>
 <span id="L369" class="LineNr">369 </span>
-<span id="L370" class="LineNr">370 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L370'>render-until-underscore</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr paginated-screen), fs: (addr buffered-file) <span class="Delimiter">{</span>
+<span id="L370" class="LineNr">370 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L370'>render-until-underscore</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>), fs: (addr buffered-file) <span class="Delimiter">{</span>
 <span id="L371" class="LineNr">371 </span>  <span class="Delimiter">{</span>
 <span id="L372" class="LineNr">372 </span>    <span class="muComment"># if done-drawing?(screen) break</span>
-<span id="L373" class="LineNr">373 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> done-drawing? <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L373" class="LineNr">373 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> <a href='paginated-screen.mu.html#L125'>done-drawing?</a> <a href='../../405screen.mu.html#L9'>screen</a>
 <span id="L374" class="LineNr">374 </span>    compare done?, <span class="Constant">0</span>  <span class="muComment"># false</span>
 <span id="L375" class="LineNr">375 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L376" class="LineNr">376 </span>    <span class="muComment">#</span>
@@ -441,15 +441,15 @@ if ('onhashchange' in window) {
 <span id="L382" class="LineNr">382 </span>    compare c, <span class="Constant">0x5f</span>  <span class="muComment"># '_'</span>
 <span id="L383" class="LineNr">383 </span>    <span class="PreProc">break-if-=</span>
 <span id="L384" class="LineNr">384 </span>    <span class="muComment">#</span>
-<span id="L385" class="LineNr">385 </span>    add-grapheme <a href='../../405screen.mu.html#L9'>screen</a>, c
+<span id="L385" class="LineNr">385 </span>    <a href='paginated-screen.mu.html#L155'>add-grapheme</a> <a href='../../405screen.mu.html#L9'>screen</a>, c
 <span id="L386" class="LineNr">386 </span>    <span class="muComment">#</span>
 <span id="L387" class="LineNr">387 </span>    <span class="PreProc">loop</span>
 <span id="L388" class="LineNr">388 </span>  <span class="Delimiter">}</span>
 <span id="L389" class="LineNr">389 </span><span class="Delimiter">}</span>
 <span id="L390" class="LineNr">390 </span>
-<span id="L391" class="LineNr">391 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L391'>normal-text</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr paginated-screen) <span class="Delimiter">{</span>
-<span id="L392" class="LineNr">392 </span>  reset-formatting-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>
-<span id="L393" class="LineNr">393 </span>  start-color-on-paginated-screen <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xec</span>, <span class="Constant">7</span>  <span class="muComment"># 236 = darkish gray</span>
+<span id="L391" class="LineNr">391 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='main.mu.html#L391'>normal-text</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='paginated-screen.mu.html#L12'>paginated-screen</a>) <span class="Delimiter">{</span>
+<span id="L392" class="LineNr">392 </span>  <a href='paginated-screen.mu.html#L585'>reset-formatting-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L393" class="LineNr">393 </span>  <a href='paginated-screen.mu.html#L550'>start-color-on-paginated-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xec</span>, <span class="Constant">7</span>  <span class="muComment"># 236 = darkish gray</span>
 <span id="L394" class="LineNr">394 </span><span class="Delimiter">}</span>
 </pre>
 </body>
