@@ -26853,7 +26853,7 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), fn: (a
       81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
-      (translate-mu-index-stmt-with-array-in-register *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-index-stmt-with-array-in-register *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
       eb/jump $translate-mu-index-stmt:end/disp8
     }
     # if (var->offset) do a different thing
@@ -26861,7 +26861,7 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), fn: (a
       81 7/subop/compare *(ecx+0x14) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
-      (translate-mu-index-stmt-with-array-on-stack *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-index-stmt-with-array-on-stack *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
       eb/jump $translate-mu-index-stmt:end/disp8
     }
 $translate-mu-index-stmt:end:
@@ -26884,7 +26884,7 @@ $translate-mu-index-stmt:error2:
     (stop *(ebp+0x18) 1)
     # never gets here
 
-translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -26932,7 +26932,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
         (write-buffered *(ebp+8) "<<")
         # . log2(array-element-size(base->type))
         # we know size is a power of 2
-        (array-element-size %ebx *(ebp+0x14) *(ebp+0x18))  # => eax
+        (array-element-size %ebx *(ebp+0x10) *(ebp+0x14))  # => eax
         (num-shift-rights %eax)  # => eax
         (write-int32-hex-buffered *(ebp+8) %eax)
         e9/jump $translate-mu-index-stmt-with-array-in-register:emit-register-index-done/disp32
@@ -26968,7 +26968,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-literal-index:
       (parse-hex-int %eax)  # => eax
       89/<- %edx 0/r32/eax
       # offset = idx-value * array-element-size(base->type)
-      (array-element-size %ebx *(ebp+0x14) *(ebp+0x18))  # => eax
+      (array-element-size %ebx *(ebp+0x10) *(ebp+0x14))  # => eax
       f7 4/subop/multiply-into-edx-eax %edx  # clobbers edx
       # offset += 4 for array size
       05/add-to-eax 4/imm32
@@ -27000,7 +27000,7 @@ $translate-mu-index-stmt-with-array-in-register:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-index-stmt-with-array-on-stack:  # out: (addr buffered-file), stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
+translate-mu-index-stmt-with-array-on-stack:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -27043,7 +27043,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-int-register-index:
         (write-buffered *(ebp+8) "<<")
         # . log2(array-element-size(base))
         # TODO: ensure size is a power of 2
-        (array-element-size %ecx *(ebp+0x14) *(ebp+0x18))  # => eax
+        (array-element-size %ecx *(ebp+0x10) *(ebp+0x14))  # => eax
         (num-shift-rights %eax)  # => eax
         (write-int32-hex-buffered *(ebp+8) %eax)
         #
@@ -27085,7 +27085,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-literal-index:
       (parse-hex-int %eax)  # Var-name => eax
       89/<- %edx 0/r32/eax
       # offset = idx-value * array-element-size(base)
-      (array-element-size %ecx *(ebp+0x14) *(ebp+0x18))  # => eax
+      (array-element-size %ecx *(ebp+0x10) *(ebp+0x14))  # => eax
       f7 4/subop/multiply-into-edx-eax %edx  # clobbers edx
       # offset += base->offset
       03/add *(ecx+0x14) 0/r32/eax  # Var-offset
