@@ -115,7 +115,7 @@ always written in hex.
 
 Here's an example program in Mu:
 
-<img alt='ex2.mu' src='html/ex2.mu.png'>
+<img alt='ex2.mu' src='html/ex2.mu.png' width='400px'>
 
 [More details on Mu syntax &rarr;](mu.md)
 
