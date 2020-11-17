@@ -62,6 +62,7 @@ In priority order:
 ## Toolchain
 
 The Mu stack consists of:
+- a prototype Mu shell, a postfix language with a dynamically updating environment
 - the Mu type-safe language;
 - SubX, an unsafe notation for a subset of x86 machine code; and
 - _bare_ SubX, a more rudimentary form of SubX without certain syntax sugar.
@@ -76,19 +77,19 @@ debugging. ([More details.](subx_debugging.md))
 
 ### incomplete tools
 
-The Mu translator is still a work in progress; not all incorrect programs
-result in good error messages.
-
 Once generated, ELF binaries can be packaged up with a Linux kernel into a
-bootable disk image:
+bootable disk image. Here's how you can run the current prototype of the Mu
+shell:
 
 ```sh
-$ ./translate_mu apps/ex2.mu  # emit a.elf
+$ ./translate_mu apps/tile/*.mu  # emit a.elf
 # dependencies
 $ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
 $ tools/iso/linux a.elf
 $ qemu-system-x86_64 -m 256M -cdrom mu_linux.iso -boot d
 ```
+
+<img alt='screenshot of Mu running on Qemu' src='html/20201114-qemu.png'>
 
 The disk image also runs on [any cloud server that supports custom images](http://akkartik.name/post/iso-on-linode).
 
