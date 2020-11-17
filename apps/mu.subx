@@ -25066,7 +25066,7 @@ $emit-subx-stmt-list:conditional-branch-with-target:
           # }}}
         }
 $emit-subx-stmt-list:1-to-1:
-        (emit-subx-stmt *(ebp+8) %ecx Primitives *(ebp+0x18) *(ebp+0x1c))
+        (emit-subx-stmt *(ebp+8) %ecx Primitives *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
         e9/jump $emit-subx-stmt-list:continue/disp32
       }
       {
@@ -25089,7 +25089,7 @@ $emit-subx-stmt-list:reg-var-def:
         # TODO: ensure that there's exactly one output
         (push-output-and-maybe-emit-spill *(ebp+8) %ecx *(ebp+0x10) %esi *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
         # emit the instruction as usual
-        (emit-subx-stmt *(ebp+8) %ecx Primitives *(ebp+0x18) *(ebp+0x1c))
+        (emit-subx-stmt *(ebp+8) %ecx Primitives *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
         #
         eb/jump $emit-subx-stmt-list:continue/disp8
       }
@@ -26374,7 +26374,7 @@ $emit-array-data-initialization:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (addr primitive), err: (addr buffered-file), ed: (addr exit-descriptor)
+emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (addr primitive), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -26392,7 +26392,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "length")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-length-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-length-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # index into array
@@ -26401,7 +26401,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "index")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-index-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-index-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # compute-offset for index into array
@@ -26410,7 +26410,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "compute-offset")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-compute-index-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-compute-index-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # get field from record
@@ -26428,7 +26428,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "allocate")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-allocate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-allocate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # copy-object
@@ -26437,7 +26437,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "copy-object")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-copy-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-copy-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # clear-object
@@ -26446,7 +26446,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "clear-object")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-clear-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-clear-object-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # allocate array
@@ -26455,7 +26455,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "populate")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-populate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-populate-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # allocate stream
@@ -26464,7 +26464,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "populate-stream")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-populate-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-populate-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # read from stream
@@ -26473,7 +26473,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "read-from-stream")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-read-from-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-read-from-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # write to stream
@@ -26482,7 +26482,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "write-to-stream")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (translate-mu-write-to-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x14) *(ebp+0x18))
+      (translate-mu-write-to-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # - if stmt matches a primitive, emit it
@@ -26835,7 +26835,8 @@ $emit-divide-by-shift-right:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+# a little different from other translate- functions; notice the extra 'fn' argument
+translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -26852,7 +26853,7 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (
       81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
-      (translate-mu-index-stmt-with-array-in-register *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      (translate-mu-index-stmt-with-array-in-register *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
       eb/jump $translate-mu-index-stmt:end/disp8
     }
     # if (var->offset) do a different thing
@@ -26860,7 +26861,7 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (
       81 7/subop/compare *(ecx+0x14) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
-      (translate-mu-index-stmt-with-array-on-stack *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
+      (translate-mu-index-stmt-with-array-on-stack *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
       eb/jump $translate-mu-index-stmt:end/disp8
     }
 $translate-mu-index-stmt:end:
@@ -26872,18 +26873,18 @@ $translate-mu-index-stmt:end:
     c3/return
 
 $translate-mu-index-stmt-with-array:error1:
-    (write-buffered *(ebp+0x10) "couldn't translate an index instruction. second (index) input must either lie in a register or be a literal\n")
-    (flush *(ebp+0x10))
-    (stop *(ebp+0x14) 1)
+    (write-buffered *(ebp+0x14) "couldn't translate an index instruction. second (index) input must either lie in a register or be a literal\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
 $translate-mu-index-stmt-with-array:error2:
-    (write-buffered *(ebp+0x10) "couldn't translate an index instruction. second (index) input when in a register must be an int or offset\n")
-    (flush *(ebp+0x10))
-    (stop *(ebp+0x14) 1)
+    (write-buffered *(ebp+0x14) "couldn't translate an index instruction. second (index) input when in a register must be an int or offset\n")
+    (flush *(ebp+0x14))
+    (stop *(ebp+0x18) 1)
     # never gets here
 
-translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -26930,8 +26931,8 @@ $translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
         (write-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) "<<")
         # . log2(array-element-size(base->type))
-        # TODO: ensure size is a power of 2
-        (array-element-size %ebx *(ebp+0x10) *(ebp+0x14))  # => eax
+        # we know size is a power of 2
+        (array-element-size %ebx *(ebp+0x14) *(ebp+0x18))  # => eax
         (num-shift-rights %eax)  # => eax
         (write-int32-hex-buffered *(ebp+8) %eax)
         e9/jump $translate-mu-index-stmt-with-array-in-register:emit-register-index-done/disp32
@@ -26967,7 +26968,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-literal-index:
       (parse-hex-int %eax)  # => eax
       89/<- %edx 0/r32/eax
       # offset = idx-value * array-element-size(base->type)
-      (array-element-size %ebx *(ebp+0x10) *(ebp+0x14))  # => eax
+      (array-element-size %ebx *(ebp+0x14) *(ebp+0x18))  # => eax
       f7 4/subop/multiply-into-edx-eax %edx  # clobbers edx
       # offset += 4 for array size
       05/add-to-eax 4/imm32
@@ -26999,7 +27000,7 @@ $translate-mu-index-stmt-with-array-in-register:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-index-stmt-with-array-on-stack:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+translate-mu-index-stmt-with-array-on-stack:  # out: (addr buffered-file), stmt: (addr stmt), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -27042,7 +27043,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-int-register-index:
         (write-buffered *(ebp+8) "<<")
         # . log2(array-element-size(base))
         # TODO: ensure size is a power of 2
-        (array-element-size %ecx *(ebp+0x10) *(ebp+0x14))  # => eax
+        (array-element-size %ecx *(ebp+0x14) *(ebp+0x18))  # => eax
         (num-shift-rights %eax)  # => eax
         (write-int32-hex-buffered *(ebp+8) %eax)
         #
@@ -27084,7 +27085,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-literal-index:
       (parse-hex-int %eax)  # Var-name => eax
       89/<- %edx 0/r32/eax
       # offset = idx-value * array-element-size(base)
-      (array-element-size %ecx *(ebp+0x10) *(ebp+0x14))  # => eax
+      (array-element-size %ecx *(ebp+0x14) *(ebp+0x18))  # => eax
       f7 4/subop/multiply-into-edx-eax %edx  # clobbers edx
       # offset += base->offset
       03/add *(ecx+0x14) 0/r32/eax  # Var-offset
@@ -33539,7 +33540,7 @@ $test-emit-subx-stmt-primitive:initialize-primitive-subx-name:
     (copy-array Heap "ff 0/subop/increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -33685,7 +33686,7 @@ $test-emit-subx-stmt-primitive-register:initialize-primitive-subx-name:
     (copy-array Heap "ff 0/subop/increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -33863,7 +33864,7 @@ $test-emit-subx-stmt-select-primitive:initialize-primitive-subx-name:
     (copy-array Heap "ff 0/subop/increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -34041,7 +34042,7 @@ $test-emit-subx-stmt-select-primitive-2:initialize-primitive-subx-name:
     (copy-array Heap "ff 0/subop/increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -34129,7 +34130,7 @@ $test-increment-register:initialize-stmt-operation:
     (copy-array Heap "increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -34240,7 +34241,7 @@ $test-add-reg-to-reg:initialize-stmt-operation:
     (copy-array Heap "add" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -34346,7 +34347,7 @@ $test-add-reg-to-mem:initialize-stmt-operation:
     (copy-array Heap "add-to" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -34453,7 +34454,7 @@ $test-add-mem-to-reg:initialize-stmt-operation:
     (copy-array Heap "add" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -34569,7 +34570,7 @@ $test-add-literal-to-eax:initialize-stmt-operation:
     (copy-array Heap "add" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -34685,7 +34686,7 @@ $test-add-literal-to-reg:initialize-stmt-operation:
     (copy-array Heap "add" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -34796,7 +34797,7 @@ $test-add-literal-to-mem:initialize-stmt-operation:
     (copy-array Heap "add-to" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -34912,7 +34913,7 @@ $test-shift-reg-by-literal:initialize-stmt-operation:
     (copy-array Heap "shift-left" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -35023,7 +35024,7 @@ $test-shift-mem-by-literal:initialize-stmt-operation:
     (copy-array Heap "shift-left" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -35133,7 +35134,7 @@ $test-compare-reg-with-reg:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -35239,7 +35240,7 @@ $test-compare-mem-with-reg:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -35345,7 +35346,7 @@ $test-compare-reg-with-mem:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -35456,7 +35457,7 @@ $test-compare-mem-with-literal:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -35571,7 +35572,7 @@ $test-compare-eax-with-literal:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -35686,7 +35687,7 @@ $test-compare-reg-with-literal:initialize-stmt-operation:
     (copy-array Heap "compare" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -35774,7 +35775,7 @@ $test-emit-subx-function-call:initialize-stmt-operation:
     (copy-array Heap "f" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi 0 Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi 0 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -35851,7 +35852,7 @@ $test-emit-subx-function-call-with-literal-arg:initialize-stmt-operation:
     (copy-array Heap "f" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi 0 %ebx Stderr 0)
+    (emit-subx-stmt _test-output-buffered-file %esi 0 %ebx 0 Stderr 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
