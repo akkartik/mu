@@ -337,17 +337,17 @@ var/reg: (addr T) <span class="SpecialChar">&lt;-</span> address var2: T
 
 <span class="muComment"># Array operations</span>
 
-var/reg <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), idx/regi: int
+var/reg: (addr T) <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), idx/regi: int
   | if size-of(T) is <span class="Constant">1</span>, <span class="Constant">2</span>, <span class="Constant">4</span> or <span class="Constant">8</span>
       =&gt; <span class="Constant">&quot;(__check-mu-array-bounds *&quot;</span> rega <span class="Constant">&quot; %&quot;</span> regi <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
          <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size-of(T)) <span class="Constant">&quot;+4) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
-var/reg <span class="SpecialChar">&lt;-</span> index arr: (array T len), idx/regi: int
+var/reg: (addr T) <span class="SpecialChar">&lt;-</span> index arr: (array T len), idx/regi: int
   =&gt; <span class="Constant">&quot;(__check-mu-array-bounds *(ebp+&quot;</span> arr.stack-offset <span class="Constant">&quot;) %&quot;</span> regi <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
      <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size-of(T)) <span class="Constant">&quot;+&quot;</span> (arr.stack-offset + <span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
-var/reg <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), n
+var/reg: (addr T) <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), n
   =&gt; <span class="Constant">&quot;(__check-mu-array-bounds *&quot;</span> rega <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
      <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> (n*size-of(T)+<span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
-var/reg <span class="SpecialChar">&lt;-</span> index arr: (array T len), n
+var/reg: (addr T) <span class="SpecialChar">&lt;-</span> index arr: (array T len), n
   =&gt; <span class="Constant">&quot;(__check-mu-array-bounds *(ebp+&quot;</span> arr.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
      <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> (arr.stack-offset+<span class="Constant">4</span>+n*size-of(T)) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
@@ -355,13 +355,13 @@ var/reg: (offset T) <span class="SpecialChar">&lt;-</span> compute-offset arr: (
   =&gt; <span class="Constant">&quot;69/multiply %&quot;</span> regi <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;/imm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg: (offset T) <span class="SpecialChar">&lt;-</span> compute-offset arr: (addr array T), idx: int       <span class="muComment"># arr can be in reg or mem</span>
   =&gt; <span class="Constant">&quot;69/multiply *(ebp+&quot;</span> idx.stack-offset <span class="Constant">&quot;) &quot;</span> size-of(T) <span class="Constant">&quot;/imm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
-var/reg <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), o/rego: (offset T)
+var/reg: (addr T) <span class="SpecialChar">&lt;-</span> index arr/rega: (addr array T), o/rego: (offset T)
   =&gt; <span class="Constant">&quot;(__check-mu-array-bounds %&quot;</span> rega <span class="Constant">&quot; %&quot;</span> rego <span class="Constant">&quot; 1 \&quot;&quot; function-name &quot;</span>\<span class="Constant">&quot;)&quot;</span>
      <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> rego <span class="Constant">&quot;+4) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
 Computing the length of an array is complex.
 
-var/reg <span class="SpecialChar">&lt;-</span> length arr/reg2: (addr array T)
+var/reg: int <span class="SpecialChar">&lt;-</span> length arr/reg2: (addr array T)
   | if T is byte (TODO)
       =&gt; <span class="Constant">&quot;8b/-&gt; *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
   | if size-of(T) is <span class="Constant">4</span> or <span class="Constant">8</span> or <span class="Constant">16</span> or <span class="Constant">32</span> or <span class="Constant">64</span> or <span class="Constant">128</span>
