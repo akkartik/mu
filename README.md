@@ -62,7 +62,6 @@ In priority order:
 ## Toolchain
 
 The Mu stack consists of:
-- a prototype Mu shell, a postfix language with a dynamically updating environment
 - the Mu type-safe language;
 - SubX, an unsafe notation for a subset of x86 machine code; and
 - _bare_ SubX, a more rudimentary form of SubX without certain syntax sugar.
@@ -77,9 +76,12 @@ debugging. ([More details.](subx_debugging.md))
 
 ### incomplete tools
 
+There's a prototype Mu shell, a postfix language with a dynamically updating
+environment. It might turn into the initial experience when a Mu computer
+boots.
+
 Once generated, ELF binaries can be packaged up with a Linux kernel into a
-bootable disk image. Here's how you can run the current prototype of the Mu
-shell:
+bootable disk image. Here's how the Mu shell might look on startup:
 
 ```sh
 $ ./translate_mu apps/tile/*.mu  # emit a.elf
