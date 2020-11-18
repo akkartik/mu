@@ -681,7 +681,7 @@ populate x, 3  # array of 3 T's
 I said at the start that most instructions map 1:1 to x86 machine code. To
 enforce type- and memory-safety, I was forced to carve out a few exceptions:
 
-* the `index` instruction on arrays, for bounds-checking (not yet implemented)
+* the `index` instruction on arrays, for bounds-checking
 * the `length` instruction on arrays, for translating the array size in bytes
   into the number of elements.
 * the `lookup` instruction on handles, for validating fat-pointer metadata
