@@ -140,8 +140,8 @@ Entry:
 ## Forks
 
 Forks of Mu are encouraged. If you don't like something about this repo, feel
-free to make a fork. If you show it to me, I'll link to it here, so others can
-use it. I might even pull your changes into this repo!
+free to make a fork. If you show it to me, I'll link to it here. I might even
+pull your changes into this repo!
 
 - [mu-normie](https://git.sr.ht/~akkartik/mu-normie): with a more standard
   build system that organizes the repo by header files and compilation units.
