@@ -153,8 +153,8 @@ pull your changes into this repo!
 - [uCISC](https://github.com/grokthis/ucisc): a 16-bit processor being
   designed from scratch by [Robert Butler](https://www.youtube.com/channel/UCh4OpfF7T7UtezGejRTLxCw)
   and programmed with a SubX-like syntax.
-- [subv](https://git.s-ol.nu/subv): experimental SubX-like syntax by [Sol
-  Bekic](https://mmm.s-ol.nu) for the RISC-V instruction set.
+- [subv](https://git.s-ol.nu/subv): experimental SubX-like syntax by [s-ol
+  bekic](https://mmm.s-ol.nu) for the RISC-V instruction set.
 
 ## Desiderata
 
