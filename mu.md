@@ -173,11 +173,11 @@ add-to var1, var2/reg
 var/reg <- add n
 add-to var, n
 
-var1/reg1 <- sub var2/reg2
-var/reg <- sub var2
-sub-from var1, var2/reg
-var/reg <- sub n
-sub-from var, n
+var1/reg1 <- subtract var2/reg2
+var/reg <- subtract var2
+subtract-from var1, var2/reg
+var/reg <- subtract n
+subtract-from var, n
 
 var1/reg1 <- and var2/reg2
 var/reg <- and var2
