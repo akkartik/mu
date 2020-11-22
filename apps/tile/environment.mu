@@ -60,7 +60,6 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 #############
 
 fn process _self: (addr environment), key: grapheme {
-$process:body: {
   var self/esi: (addr environment) <- copy _self
   var sandbox-ah/eax: (addr handle sandbox) <- get self, sandboxes
   var _sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
@@ -72,7 +71,7 @@ $process:body: {
     break-if-=
 #?     print-string 0, "processing sandbox rename\n"
     process-sandbox-rename sandbox, key
-    break $process:body
+    return
   }
   var define-function-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-function
   var define-function-mode?/eax: (addr word) <- lookup *define-function-mode-ah?
@@ -82,15 +81,13 @@ $process:body: {
 #?     print-string 0, "processing function definition\n"
     var functions/ecx: (addr handle function) <- get self, functions
     process-sandbox-define sandbox, functions, key
-    break $process:body
+    return
   }
 #?   print-string 0, "processing sandbox\n"
   process-sandbox self, sandbox, key
 }
-}
 
 fn process-sandbox _self: (addr environment), _sandbox: (addr sandbox), key: grapheme {
-$process-sandbox:body: {
   var self/esi: (addr environment) <- copy _self
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -109,7 +106,7 @@ $process-sandbox:body: {
       break-if-!=
 #?       print-string 0, "cursor left within word\n"
       cursor-left cursor-word
-      break $process-sandbox:body
+      return
     }
     # if current word is expanded, move to the rightmost word in its body
     {
@@ -137,7 +134,7 @@ $process-sandbox:body: {
       var cursor-word-ah/eax: (addr handle word) <- get cursor-call-path, word
       var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
       cursor-to-end cursor-word
-      break $process-sandbox:body
+      return
     }
     # if at first word, look for a caller to jump to
     $process-sandbox:key-left-arrow-first-word: {
@@ -194,7 +191,7 @@ $process-sandbox:body: {
 #?         print-string 0, "\n"
 #?       }
     }
-    break $process-sandbox:body
+    return
   }
   compare key, 0x435b1b  # right-arrow
   $process-sandbox:key-right-arrow: {
@@ -206,7 +203,7 @@ $process-sandbox:body: {
       break-if-!=
 #?       print-string 0, "a\n"
       cursor-right cursor-word
-      break $process-sandbox:body
+      return
     }
     # if at final word, look for a caller to jump to
     {
@@ -221,7 +218,7 @@ $process-sandbox:body: {
       compare next-cursor-element, 0
       break-if-=
       copy-object next-cursor-element-ah, cursor-call-path-ah
-      break $process-sandbox:body
+      return
     }
     # otherwise, move to the next word
     var next-word-ah/edx: (addr handle word) <- get cursor-word, next
@@ -260,24 +257,24 @@ $process-sandbox:body: {
         var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
         cursor-to-start cursor-word
 #?         print-string 0, "d\n"
-        break $process-sandbox:body
+        return
       }
     }
-    break $process-sandbox:body
+    return
   }
   compare key, 0xa  # enter
   {
     break-if-!=
     # toggle display of subsidiary stack
     toggle-cursor-word sandbox
-    break $process-sandbox:body
+    return
   }
   compare key, 0xc  # ctrl-l
   $process-sandbox:new-line: {
     break-if-!=
     # new line in sandbox
     append-line sandbox
-    break $process-sandbox:body
+    return
   }
   # word-based motions
   compare key, 2  # ctrl-b
@@ -292,7 +289,7 @@ $process-sandbox:body: {
       cursor-to-end prev-word
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       decrement-final-element cursor-call-path
-      break $process-sandbox:body
+      return
     }
     # if previous word doesn't exist, try to bump up one level
     {
@@ -312,7 +309,7 @@ $process-sandbox:body: {
       # if so jump to it
       drop-from-call-path-element cursor-call-path-ah
       decrement-final-element cursor-call-path-ah
-      break $process-sandbox:body
+      return
     }
   }
   compare key, 6  # ctrl-f
@@ -329,7 +326,7 @@ $process-sandbox:body: {
       cursor-to-end next-word
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       increment-final-element cursor-call-path
-      break $process-sandbox:body
+      return
     }
     # if next word doesn't exist, try to bump up one level
 #?     print-string 0, "CC\n"
@@ -341,7 +338,7 @@ $process-sandbox:body: {
     break-if-=
 #?     print-string 0, "DD\n"
     copy-object caller-cursor-element-ah, cursor-call-path-ah
-    break $process-sandbox:body
+    return
   }
   # line-based motions
   compare key, 1  # ctrl-a
@@ -358,7 +355,7 @@ $process-sandbox:body: {
     cursor-to-start cursor-word
     # this works as long as the first word isn't expanded
     # but we don't expect to see zero-arg functions first-up
-    break $process-sandbox:body
+    return
   }
   compare key, 5  # ctrl-e
   $process-sandbox:end-of-line: {
@@ -374,14 +371,14 @@ $process-sandbox:body: {
     cursor-to-end cursor-word
     # this works because expanded words lie to the right of their bodies
     # so the final word is always guaranteed to be at the top-level
-    break $process-sandbox:body
+    return
   }
   compare key, 0x15  # ctrl-u
   $process-sandbox:clear-line: {
     break-if-!=
     # clear line in sandbox
     initialize-sandbox sandbox
-    break $process-sandbox:body
+    return
   }
   # if cursor is within a call, disable editing hotkeys below
   var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -389,7 +386,10 @@ $process-sandbox:body: {
   var next-cursor-element-ah/eax: (addr handle call-path-element) <- get cursor-call-path, next
   var next-cursor-element/eax: (addr call-path-element) <- lookup *next-cursor-element-ah
   compare next-cursor-element, 0
-  break-if-!= $process-sandbox:body
+  {
+    break-if-=
+    return
+  }
   # - remaining keys only work at the top row outside any function calls
   compare key, 0x7f  # del (backspace on Macs)
   $process-sandbox:backspace: {
@@ -400,7 +400,7 @@ $process-sandbox:body: {
     {
       break-if-!=
       delete-before-cursor cursor-word
-      break $process-sandbox:body
+      return
     }
     # otherwise delete current word and move to end of prev word
     var prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
@@ -413,7 +413,7 @@ $process-sandbox:body: {
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       decrement-final-element cursor-call-path
     }
-    break $process-sandbox:body
+    return
   }
   compare key, 0x20  # space
   $process-sandbox:space: {
@@ -428,7 +428,7 @@ $process-sandbox:body: {
       append-word prev-word-ah
       var cursor-call-path/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
       decrement-final-element cursor-call-path
-      break $process-sandbox:body
+      return
     }
     # if start of word is quote and grapheme before cursor is not, just insert it as usual
     # TODO: support string escaping
@@ -460,7 +460,10 @@ $process-sandbox:body: {
     # if cursor is at end of word, that's all
     var at-end?/eax: boolean <- cursor-at-end? cursor-word
     compare at-end?, 0  # false
-    break-if-!= $process-sandbox:body
+    {
+      break-if-=
+      return
+    }
     # otherwise we're in the middle of a word
     # move everything after cursor to the (just created) next word
     var next-word-ah/eax: (addr handle word) <- get cursor-word, next
@@ -475,7 +478,7 @@ $process-sandbox:body: {
       loop
     }
     cursor-to-start next-word
-    break $process-sandbox:body
+    return
   }
   compare key, 0xe  # ctrl-n
   $process:rename-word: {
@@ -486,7 +489,7 @@ $process-sandbox:body: {
     allocate new-name-ah
     var new-name/eax: (addr word) <- lookup *new-name-ah
     initialize-word new-name
-    break $process-sandbox:body
+    return
   }
   compare key, 4  # ctrl-d
   $process:define-function: {
@@ -496,7 +499,7 @@ $process-sandbox:body: {
     allocate new-name-ah
     var new-name/eax: (addr word) <- lookup *new-name-ah
     initialize-word new-name
-    break $process-sandbox:body
+    return
   }
   # otherwise insert key within current word
   var g/edx: grapheme <- copy key
@@ -505,17 +508,15 @@ $process-sandbox:body: {
     compare print?, 0  # false
     break-if-=
     add-grapheme-to-word cursor-word, g
-    break $process-sandbox:body
+    return
   }
   # silently ignore other hotkeys
-}
 }
 
 # collect new name in partial-name-for-cursor-word, and then rename the word
 # at cursor to it
 # Precondition: cursor-call-path is a singleton (not within a call)
 fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
-$process-sandbox-rename:body: {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var new-name-ah/edi: (addr handle word) <- get sandbox, partial-name-for-cursor-word
   # if 'esc' pressed, cancel rename
@@ -523,7 +524,7 @@ $process-sandbox-rename:body: {
   $process-sandbox-rename:cancel: {
     break-if-!=
     clear-object new-name-ah
-    break $process-sandbox-rename:body
+    return
   }
   # if 'enter' pressed, perform rename
   compare key, 0xa  # enter
@@ -598,7 +599,7 @@ $process-sandbox-rename:body: {
 #?       print-int32-hex 0, foo
 #?       print-string 0, "\n"
 #?     }
-    break $process-sandbox-rename:body
+    return
   }
   #
   compare key, 0x7f  # del (backspace on Macs)
@@ -613,7 +614,7 @@ $process-sandbox-rename:body: {
       var new-name/eax: (addr word) <- lookup *new-name-ah
       delete-before-cursor new-name
     }
-    break $process-sandbox-rename:body
+    return
   }
   # otherwise insert key within current word
   var print?/eax: boolean <- real-grapheme? key
@@ -622,10 +623,9 @@ $process-sandbox-rename:body: {
     break-if-=
     var new-name/eax: (addr word) <- lookup *new-name-ah
     add-grapheme-to-word new-name, key
-    break $process-sandbox-rename:body
+    return
   }
   # silently ignore other hotkeys
-}
 }
 
 # collect new name in partial-name-for-function, and then define the last line
@@ -633,7 +633,6 @@ $process-sandbox-rename:body: {
 # with a call to the appropriate function.
 # Precondition: cursor-call-path is a singleton (not within a call)
 fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle function), key: grapheme {
-$process-sandbox-define:body: {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var new-name-ah/edi: (addr handle word) <- get sandbox, partial-name-for-function
   # if 'esc' pressed, cancel define
@@ -641,7 +640,7 @@ $process-sandbox-define:body: {
   $process-sandbox-define:cancel: {
     break-if-!=
     clear-object new-name-ah
-    break $process-sandbox-define:body
+    return
   }
   # if 'enter' pressed, perform define
   compare key, 0xa  # enter
@@ -686,7 +685,7 @@ $process-sandbox-define:body: {
     var cursor-call-path-ah/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
     allocate cursor-call-path-ah  # leak
     initialize-path-from-line final-line, cursor-call-path-ah
-    break $process-sandbox-define:body
+    return
   }
   #
   compare key, 0x7f  # del (backspace on Macs)
@@ -701,7 +700,7 @@ $process-sandbox-define:body: {
       var new-name/eax: (addr word) <- lookup *new-name-ah
       delete-before-cursor new-name
     }
-    break $process-sandbox-define:body
+    return
   }
   # otherwise insert key within current word
   var print?/eax: boolean <- real-grapheme? key
@@ -710,10 +709,9 @@ $process-sandbox-define:body: {
     break-if-=
     var new-name/eax: (addr word) <- lookup *new-name-ah
     add-grapheme-to-word new-name, key
-    break $process-sandbox-define:body
+    return
   }
   # silently ignore other hotkeys
-}
 }
 
 # extract from the body of the first function in 'functions' all words that
@@ -873,13 +871,12 @@ fn construct-call _f-ah: (addr handle function), _dest-ah: (addr handle word) {
 }
 
 fn word-index _words: (addr handle word), _n: int, out: (addr handle word) {
-$word-index:body: {
   var n/ecx: int <- copy _n
   {
     compare n, 0
     break-if-!=
     copy-object _words, out
-    break $word-index:body
+    return
   }
   var words-ah/eax: (addr handle word) <- copy _words
   var words/eax: (addr word) <- lookup *words-ah
@@ -887,10 +884,8 @@ $word-index:body: {
   n <- decrement
   word-index next, n, out
 }
-}
 
 fn toggle-cursor-word _sandbox: (addr sandbox) {
-$toggle-cursor-word:body: {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var expanded-words/edi: (addr handle call-path) <- get sandbox, expanded-words
   var cursor-call-path/ecx: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -907,14 +902,13 @@ $toggle-cursor-word:body: {
     insert-in-call-path expanded-words cursor-call-path
 #?     print-string 0, "expanded words now:\n"
 #?     dump-call-paths 0, expanded-words
-    break $toggle-cursor-word:body
+    return
   }
   {
     break-if-=
     # otherwise delete
     delete-in-call-path expanded-words cursor-call-path
   }
-}
 }
 
 fn append-line _sandbox: (addr sandbox) {

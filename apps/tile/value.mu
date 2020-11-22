@@ -63,13 +63,12 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
 
 # synaesthesia
 fn render-integer screen: (addr screen), val: int, max-width: int {
-$render-integer:body: {
   # if max-width is 0, we're inside an array. No coloring.
   compare max-width, 0
   {
     break-if-!=
     print-int32-decimal screen, val
-    break $render-integer:body
+    return
   }
   var bg/eax: int <- hash-color val
   var fg/ecx: int <- copy 7
@@ -92,7 +91,6 @@ $render-integer:body: {
   print-grapheme screen, 0x20  # space
   print-int32-decimal-right-justified screen, val, max-width
   print-grapheme screen, 0x20  # space
-}
 }
 
 fn render-array-at screen: (addr screen), row: int, col: int, _a: (addr array value) {

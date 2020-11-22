@@ -100,7 +100,6 @@ fn render-surface _self: (addr surface) {
 }
 
 fn print-surface-cell-at _self: (addr surface), screen-row: int, screen-col: int {
-$print-surface-cell-at:body: {
   var self/esi: (addr surface) <- copy _self
   var row/ecx: int <- screen-row-to-surface self, screen-row
   var col/edx: int <- screen-col-to-surface self, screen-col
@@ -116,7 +115,7 @@ $print-surface-cell-at:body: {
     var screen-ah/edi: (addr handle screen) <- get self, screen
     var screen/eax: (addr screen) <- lookup *screen-ah
     print-grapheme screen, space
-    break $print-surface-cell-at:body
+    return
   }
   # otherwise print the appropriate screen-cell
   var offset/ecx: (offset screen-cell) <- compute-offset data-addr, idx
@@ -124,7 +123,6 @@ $print-surface-cell-at:body: {
   var screen-ah/edi: (addr handle screen) <- get self, screen
   var screen/eax: (addr screen) <- lookup *screen-ah
   print-screen-cell screen, src
-}
 }
 
 # print a cell with all its formatting at the cursor location
