@@ -16,45 +16,50 @@ fn test-print-float-normal {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  # 0.5
   var half/xmm0: float <- rational 1, 2
   print-float screen, half
-  check-screen-row screen, 1, "1.000000P-01 ", "F - test-print-float-normal"
-}
-
-fn test-print-float-normal-2 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "1.000000P-01 ", "F - test-print-float-normal 0.5"
+  # 0.25
+  clear-screen screen
   var quarter/xmm0: float <- rational 1, 4
   print-float screen, quarter
-  check-screen-row screen, 1, "1.000000P-02 ", "F - test-print-float-normal-2"
-}
-
-fn test-print-float-normal-3 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "1.000000P-02 ", "F - test-print-float-normal 0.25"
+  # 0.75
+  clear-screen screen
   var three-quarters/xmm0: float <- rational 3, 4
   print-float screen, three-quarters
-  check-screen-row screen, 1, "1.800000P-01 ", "F - test-print-float-normal-3"
-}
-
-fn test-print-float-normal-4 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "1.800000P-01 ", "F - test-print-float-normal 0.75"
+  # 0.1
+  clear-screen screen
   var tenth/xmm0: float <- rational 1, 0xa
   print-float screen, tenth
-  check-screen-row screen, 1, "1.99999aP-04 ", "F - test-print-float-normal-4"
+  check-screen-row screen, 1, "1.99999aP-04 ", "F - test-print-float-normal 0.1"
 }
 
 fn test-print-float-integer {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  # 1
   var one-f/xmm0: float <- rational 1, 1
   print-float screen, one-f
-  check-screen-row screen, 1, "1.000000P00 ", "F - test-print-float-integer"
+  check-screen-row screen, 1, "1.000000P00 ", "F - test-print-float-integer 1"
+  # 2
+  clear-screen screen
+  var two-f/xmm0: float <- rational 2, 1
+  print-float screen, two-f
+  check-screen-row screen, 1, "1.000000P01 ", "F - test-print-float-integer 2"
+  # 10
+  clear-screen screen
+  var ten-f/xmm0: float <- rational 0xa, 1
+  print-float screen, ten-f
+  check-screen-row screen, 1, "1.400000P03 ", "F - test-print-float-integer 10"
+  # -10
+  clear-screen screen
+  var minus-ten-f/xmm0: float <- rational -0xa, 1
+  print-float screen, minus-ten-f
+  check-screen-row screen, 1, "-1.400000P03 ", "F - test-print-float-integer -10"
 }
 
 fn test-print-float-zero {
@@ -199,47 +204,30 @@ fn test-print-float-decimal-approximate-normal {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  # 0.5
   var half/xmm0: float <- rational 1, 2
   print-float-decimal-approximate screen, half
-  check-screen-row screen, 1, "0.5 ", "F - test-print-float-decimal-approximate-normal"
-}
-
-fn test-print-float-decimal-approximate-normal-2 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "0.5 ", "F - test-print-float-decimal-approximate-normal 0.5"
+  # 0.25
+  clear-screen screen
   var quarter/xmm0: float <- rational 1, 4
   print-float-decimal-approximate screen, quarter
-  check-screen-row screen, 1, "0.25 ", "F - test-print-float-decimal-approximate-normal-2"
-}
-
-fn test-print-float-decimal-approximate-normal-3 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "0.25 ", "F - test-print-float-decimal-approximate-normal 0.25"
+  # 0.75
+  clear-screen screen
   var three-quarters/xmm0: float <- rational 3, 4
   print-float-decimal-approximate screen, three-quarters
-  check-screen-row screen, 1, "0.75 ", "F - test-print-float-decimal-approximate-normal-3"
-}
-
-# 3 decimal places = ok
-fn test-print-float-decimal-approximate-normal-4 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "0.75 ", "F - test-print-float-decimal-approximate-normal 0.75"
+  # 0.125
+  clear-screen screen
   var eighth/xmm0: float <- rational 1, 8
   print-float-decimal-approximate screen, eighth
-  check-screen-row screen, 1, "0.125 ", "F - test-print-float-decimal-approximate-normal-4"
-}
-
-# Start truncating past 3 decimal places.
-fn test-print-float-decimal-approximate-normal-5 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "0.125 ", "F - test-print-float-decimal-approximate-normal 0.1"
+  # 0.0625; start truncating past 3 decimal places
+  clear-screen screen
   var sixteenth/xmm0: float <- rational 1, 0x10
   print-float-decimal-approximate screen, sixteenth
-  check-screen-row screen, 1, "0.062 ", "F - test-print-float-decimal-approximate-normal-5"
+  check-screen-row screen, 1, "0.062 ", "F - test-print-float-decimal-approximate-normal 0.625"
 }
 
 # print whole integers without decimals
@@ -247,47 +235,30 @@ fn test-print-float-decimal-approximate-integer {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  # 1
   var one-f/xmm0: float <- rational 1, 1
   print-float-decimal-approximate screen, one-f
-  check-screen-row screen, 1, "1 ", "F - test-print-float-decimal-approximate-integer"
-}
-
-fn test-print-float-decimal-approximate-integer-2 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "1 ", "F - test-print-float-decimal-approximate-integer 1"
+  # 2
+  clear-screen screen
   var two-f/xmm0: float <- rational 2, 1
   print-float-decimal-approximate screen, two-f
-  check-screen-row screen, 1, "2 ", "F - test-print-float-decimal-approximate-integer-2"
-}
-
-fn test-print-float-decimal-approximate-integer-3 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
-  var ten/eax: int <- copy 0xa
+  check-screen-row screen, 1, "2 ", "F - test-print-float-decimal-approximate-integer 2"
+  # 10
+  clear-screen screen
   var ten-f/xmm0: float <- rational 0xa, 1
   print-float-decimal-approximate screen, ten-f
-  check-screen-row screen, 1, "10 ", "F - test-print-float-decimal-approximate-integer-3"
-}
-
-fn test-print-float-decimal-approximate-integer-4 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "10 ", "F - test-print-float-decimal-approximate-integer 10"
+  # -10
+  clear-screen screen
   var minus-ten-f/xmm0: float <- rational -0xa, 1
   print-float-decimal-approximate screen, minus-ten-f
-  check-screen-row screen, 1, "-10 ", "F - test-print-float-decimal-approximate-integer-4"
-}
-
-fn test-print-float-decimal-approximate-integer-5 {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
+  check-screen-row screen, 1, "-10 ", "F - test-print-float-decimal-approximate-integer -10"
+  # 100,000 - start using scientific notation
   var hundred-thousand/eax: int <- copy 0x186a0
   var hundred-thousand-f/xmm0: float <- convert hundred-thousand
   print-float-decimal-approximate screen, hundred-thousand-f
-  check-screen-row screen, 1, "100000 ", "F - test-print-float-decimal-approximate-integer-5"
+  check-screen-row screen, 1, "1e5 ", "F - test-print-float-decimal-approximate-integer 100,000"
 }
 
 fn test-print-float-decimal-approximate-zero {
