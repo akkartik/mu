@@ -14,3 +14,10 @@ fn fill-in-sqrt _out: (addr float), n: int {
   result <- square-root result
   copy-to *out, result
 }
+
+fn rational nr: int, dr: int -> _/xmm0: float {
+  var result/xmm0: float <- convert nr
+  var divisor/xmm1: float <- convert dr
+  result <- divide divisor
+  return result
+}
