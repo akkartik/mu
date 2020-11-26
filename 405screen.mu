@@ -485,7 +485,18 @@ fn print-int32-decimal screen: (addr screen), n: int {
     return
   }
   # fake screen
-  # TODO
+  var s2: (stream byte 0x100)
+  var s2-addr/esi: (addr stream byte) <- address s2
+  write-int32-decimal s2-addr, n
+  var screen-addr/edi: (addr screen) <- copy screen
+  {
+    var done?/eax: boolean <- stream-empty? s2-addr
+    compare done?, 0
+    break-if-!=
+    var g/eax: grapheme <- read-grapheme s2-addr
+    print-grapheme screen, g
+    loop
+  }
 }
 
 fn reset-formatting screen: (addr screen) {
