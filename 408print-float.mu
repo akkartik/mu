@@ -367,7 +367,7 @@ fn test-print-float-decimal-approximate-integer-5 {
   var hundred-thousand-f/xmm0: float <- convert hundred-thousand
   print-float-decimal-approximate screen, hundred-thousand-f
   #
-  check-screen-row screen, 1, "1e5 ", "F - test-print-float-decimal-approximate-integer-5"
+  check-screen-row screen, 1, "100000 ", "F - test-print-float-decimal-approximate-integer-5"
 }
 
 fn test-print-float-decimal-approximate-zero {
@@ -505,8 +505,12 @@ fn print-float-decimal-approximate screen: (addr screen), n: float {
     break-if-!=
     var result/eax: int <- copy mantissa
     result <- or 0x00800000  # insert implicit 1
-    result <- repeated-shift-left result, exponent
-    result <- shift-right 0x17  # 24 bits
+#?     print-string 0, "mantissa2: "
+#?     print-int32-hex 0, result
+#?     print-string 0, "\n"
+    var all-but-exponent/edx: int <- copy 0x17  # 23 bits for mantissa treated as a whole number
+    all-but-exponent <- subtract exponent
+    result <- repeated-shift-right result, all-but-exponent
 #?     print-string 0, "result: "
 #?     print-int32-hex 0, result
 #?     print-string 0, "\n"
@@ -525,8 +529,8 @@ fn print-float-decimal-approximate screen: (addr screen), n: float {
     # normal numbers
     print-string screen, "1"
   }
-#?   var mantissa/ebx: int <- copy bits
-#?   mantissa <- and 0x7fffff
+  var mantissa/ebx: int <- copy bits
+  mantissa <- and 0x7fffff
   compare mantissa, 0
   {
     break-if-=
@@ -543,7 +547,7 @@ fn print-float-decimal-approximate screen: (addr screen), n: float {
 }
 
 #? fn main -> _/ebx: int {
-#?   run-tests
-#? #?   test-print-float-decimal-approximate-integer
+#? #?   run-tests
+#?   test-print-float-decimal-approximate-integer-5
 #?   return 0
 #? }
