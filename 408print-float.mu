@@ -90,32 +90,31 @@ fn test-print-float-not-a-number {
 }
 
 fn print-float screen: (addr screen), n: float {
-$print-float:body: {
   # - special names
   var bits/eax: int <- reinterpret n
   compare bits, 0
   {
     break-if-!=
     print-string screen, "0"
-    break $print-float:body
+    return
   }
   compare bits, 0x80000000
   {
     break-if-!=
     print-string screen, "-0"
-    break $print-float:body
+    return
   }
   compare bits, 0x7f800000
   {
     break-if-!=
     print-string screen, "Inf"
-    break $print-float:body
+    return
   }
   compare bits, 0xff800000
   {
     break-if-!=
     print-string screen, "-Inf"
-    break $print-float:body
+    return
   }
   var exponent/ecx: int <- copy bits
   exponent <- shift-right 0x17  # 23 bits of mantissa
@@ -124,7 +123,7 @@ $print-float:body: {
   {
     break-if-!=
     print-string screen, "Nan"
-    break $print-float:body
+    return
   }
   # - regular numbers
   var sign/edx: int <- copy bits
@@ -159,7 +158,6 @@ $print-float:body: {
   }
   var exp-magnitude/eax: int <- abs exponent
   print-int32-hex-bits screen, exp-magnitude, 8
-}
 }
 
 #? fn main -> _/ebx: int {
