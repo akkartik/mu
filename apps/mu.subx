@@ -8102,6 +8102,75 @@ test-copy-to-null-value-to-address:
     5d/pop-to-ebp
     c3/return
 
+test-copy-to-invalid-value-to-offset:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: int <- copy 0\n")
+    (write _test-input-stream "  var y: (offset int)\n")
+    (write _test-input-stream "  copy-to y, x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-copy-to-invalid-value-to-offset: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: 'y' must be a non-addr non-offset scalar"  "F - test-copy-to-invalid-value-to-offset: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-copy-to-invalid-value-to-offset: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
+test-copy-to-null-value-to-offset:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var y: (offset int)\n")
+    (write _test-input-stream "  copy-to y, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+    # no errors
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-copy-to-deref-address:
     # . prologue
     55/push-ebp
@@ -21222,6 +21291,23 @@ $check-mu-copy-to-stmt:types:
       (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
       (is-mu-addr-type? %eax)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *eax *(eax+4))  # Var-name Var-name => eax
+      (string-equal? %eax "0")  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      e9/jump $check-mu-copy-to-stmt:end/disp32
+    }
+    # if dest is an offset and src is 0, return
+    {
+      (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
+      (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
+      81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      (is-simple-mu-type? %eax 7)  # offset => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
