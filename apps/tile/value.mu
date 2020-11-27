@@ -155,8 +155,10 @@ fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (add
 }
 
 fn hash-color val: int -> _/eax: int {
-  var result/eax: int <- try-modulo val, 7  # assumes that 7 is always the background color
-  return result
+  var quotient/eax: int <- copy 0
+  var remainder/edx: int <- copy 0
+  quotient, remainder <- integer-divide val, 7  # assumes that 7 is always the background color
+  return remainder
 }
 
 fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen), _row: int, _col: int {
