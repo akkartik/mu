@@ -3821,6 +3821,35 @@ test-convert-compare-register-with-literal:
     5d/pop-to-ebp
     c3/return
 
+test-convert-compare-byte-with-literal:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: byte <- copy 0\n")
+    (write _test-input-stream "  compare x, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # no errors; output is identical to test-convert-compare-register-with-literal
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-unknown-variable:
     # . prologue
     55/push-ebp
@@ -21735,6 +21764,11 @@ $is-mu-numberlike-output?:check-float:
 $is-mu-numberlike-output?:check-boolean:
     # if t is a boolean, return
     (is-simple-mu-type? %esi 5)  # boolean => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
+$is-mu-numberlike-output?:check-byte:
+    # if t is a byte, return
+    (is-simple-mu-type? %esi 8)  # byte => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
 $is-mu-numberlike-output?:check-code-point:
