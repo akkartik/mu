@@ -78,7 +78,7 @@ fn expression _look: grapheme -> _/eax: int, _/esi: grapheme {
       break-if-= $expression:loop
     }
     # read operator
-    var op/ecx: byte <- copy 0
+    var op/ecx: grapheme <- copy 0
     op, look <- operator look
     # read next arg
     var second/edx: int <- copy 0
@@ -124,7 +124,7 @@ fn term _look: grapheme -> _/eax: int, _/esi: grapheme {
       break-if-= $term:loop
     }
     # read operator
-    var op/ecx: byte <- copy 0
+    var op/ecx: grapheme <- copy 0
     op, look <- operator look
     # read next arg
     var second/edx: int <- copy 0
@@ -202,8 +202,8 @@ fn is-add-or-sub? c: grapheme -> _/eax: boolean {
   return 0  # false
 }
 
-fn operator _look: grapheme -> _/ecx: byte, _/esi: grapheme {
-  var op/ecx: byte <- copy _look
+fn operator _look: grapheme -> _/ecx: grapheme, _/esi: grapheme {
+  var op/ecx: grapheme <- copy _look
   var look/esi: grapheme <- get-char
   return op, look
 }
