@@ -115,7 +115,9 @@ copy-to var, n                    => "c7 0/subop/copy *(ebp+" var.stack-offset "
 copy-to *var/reg, n               => "c7 0/subop/copy *" reg " " n "/imm32"
 
 var/reg <- copy-byte var2/reg2    => "8a/byte-> %" reg2 " " reg "/r32"
+                                     "81 4/subop/and %" reg " 0xff/imm32"
 var/reg <- copy-byte *var2/reg2   => "8a/byte-> *" reg2 " " reg "/r32"
+                                     "81 4/subop/and %" reg " 0xff/imm32"
 copy-byte-to *var1/reg1, var2/reg2  => "88/byte<- *" reg1 " " reg2 "/r32"
 
 compare var1, var2/reg2           => "39/compare *(ebp+" var1.stack-offset ") " reg2 "/r32"

@@ -685,7 +685,8 @@ enforce type- and memory-safety, I was forced to carve out a few exceptions:
 * the `length` instruction on arrays, for translating the array size in bytes
   into the number of elements.
 * the `lookup` instruction on handles, for validating fat-pointer metadata
-* `var` instructions, for initializing memory
+* `var` instructions, to initialize memory
+* byte copies, to initialize memory
 
 If you're curious, [the compiler summary page](http://akkartik.github.io/mu/html/mu_instructions.html)
 has the complete nitty-gritty on how each instruction is implemented. Including
