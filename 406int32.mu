@@ -1,3 +1,5 @@
+# Some slow but convenient helpers
+
 # slow, iterative divide instruction
 # preconditions: _nr >= 0, _dr > 0
 fn try-divide _nr: int, _dr: int -> _/eax: int {
