@@ -7769,7 +7769,7 @@ test-copy-to-non-register:
     5d/pop-to-ebp
     c3/return
 
-test-copy-non-scalar:
+test-copy-from-non-scalar-inout:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7804,10 +7804,10 @@ test-copy-non-scalar:
 #?     (rewind-stream _test-error-stream)
 #?     # }}}
     # check output
-    (check-stream-equal _test-output-stream  ""  "F - test-copy-non-scalar: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy: 'x' is too large to fit in a register"  "F - test-copy-non-scalar: error message")
+    (check-stream-equal _test-output-stream  ""  "F - test-copy-from-non-scalar-inout: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy: 'x' is too large to fit in a register"  "F - test-copy-from-non-scalar-inout: error message")
     # check that stop(1) was called
-    (check-ints-equal *(edx+4) 2 "F - test-copy-non-scalar: exit status")
+    (check-ints-equal *(edx+4) 2 "F - test-copy-from-non-scalar-inout: exit status")
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
@@ -8115,7 +8115,7 @@ test-copy-to-deref-address:
     5d/pop-to-ebp
     c3/return
 
-test-copy-to-non-scalar:
+test-copy-to-from-non-scalar-inout:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8151,11 +8151,11 @@ test-copy-to-non-scalar:
 #?     (rewind-stream _test-error-stream)
 #?     # }}}
     # check output
-    (check-stream-equal _test-output-stream  ""  "F - test-copy-to-non-scalar: output should be empty")
-#?     (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: 'x' is too large to copy"  "F - test-copy-to-non-scalar: error message")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: source (second inout) is in memory"  "F - test-copy-to-non-scalar: error message")
+    (check-stream-equal _test-output-stream  ""  "F - test-copy-to-from-non-scalar-inout: output should be empty")
+#?     (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: 'x' is too large to copy"  "F - test-copy-to-from-non-scalar-inout: error message")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: source (second inout) is in memory"  "F - test-copy-to-from-non-scalar-inout: error message")
     # check that stop(1) was called
-    (check-ints-equal *(edx+4) 2 "F - test-copy-to-non-scalar: exit status")
+    (check-ints-equal *(edx+4) 2 "F - test-copy-to-from-non-scalar-inout: exit status")
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
