@@ -8607,7 +8607,7 @@ test-copy-byte-with-invalid-output-type:
     5d/pop-to-ebp
     c3/return
 
-test-copy-byte-from-invalid-type:
+test-copy-byte-from-non-scalar-inout:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8625,8 +8625,8 @@ test-copy-byte-from-invalid-type:
     (tailor-exit-descriptor %edx 0x10)
     #
     (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "  var x/eax: (addr byte) <- copy 0\n")
-    (write _test-input-stream "  var y/eax: int <- copy-byte x\n")
+    (write _test-input-stream "  var x: (handle int)\n")
+    (write _test-input-stream "  var y/eax: byte <- copy-byte x\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
@@ -8642,54 +8642,10 @@ test-copy-byte-from-invalid-type:
 #?     (rewind-stream _test-error-stream)
 #?     # }}}
     # check output
-    (check-stream-equal _test-output-stream  ""  "F - test-copy-byte-from-invalid-type: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-byte: inout must have type byte"  "F - test-copy-byte-from-invalid-type: error message")
+    (check-stream-equal _test-output-stream  ""  "F - test-copy-byte-from-non-scalar-inout: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-byte: 'x' is too large to fit in a register"  "F - test-copy-byte-from-non-scalar-inout: error message")
     # check that stop(1) was called
-    (check-ints-equal *(edx+4) 2 "F - test-copy-byte-from-invalid-type: exit status")
-    # don't restore from ebp
-    81 0/subop/add %esp 8/imm32
-    # . epilogue
-    5d/pop-to-ebp
-    c3/return
-
-test-copy-byte-with-literal-inout:
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # setup
-    (clear-stream _test-input-stream)
-    (clear-stream $_test-input-buffered-file->buffer)
-    (clear-stream _test-output-stream)
-    (clear-stream $_test-output-buffered-file->buffer)
-    (clear-stream _test-error-stream)
-    (clear-stream $_test-error-buffered-file->buffer)
-    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
-    68/push 0/imm32
-    68/push 0/imm32
-    89/<- %edx 4/r32/esp
-    (tailor-exit-descriptor %edx 0x10)
-    #
-    (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "  var x/eax: byte <- copy-byte 0\n")
-    (write _test-input-stream "}\n")
-    # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
-    # registers except esp clobbered at this point
-    # restore ed
-    89/<- %edx 4/r32/esp
-    (flush _test-output-buffered-file)
-    (flush _test-error-buffered-file)
-#?     # dump _test-error-stream {{{
-#?     (write 2 "^")
-#?     (write-stream 2 _test-error-stream)
-#?     (write 2 "$\n")
-#?     (rewind-stream _test-error-stream)
-#?     # }}}
-    # check output
-    (check-stream-equal _test-output-stream  ""  "F - test-copy-byte-with-literal-inout: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-byte: inout must have type byte"  "F - test-copy-byte-with-literal-inout: error message")
-    # check that stop(1) was called
-    (check-ints-equal *(edx+4) 2 "F - test-copy-byte-with-literal-inout: exit status")
+    (check-ints-equal *(edx+4) 2 "F - test-copy-byte-from-non-scalar-inout: exit status")
     # don't restore from ebp
     81 0/subop/add %esp 8/imm32
     # . epilogue
@@ -8967,52 +8923,6 @@ test-copy-byte-to-with-literal-inout:
     5d/pop-to-ebp
     c3/return
 
-test-copy-byte-to-from-invalid-type:
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # setup
-    (clear-stream _test-input-stream)
-    (clear-stream $_test-input-buffered-file->buffer)
-    (clear-stream _test-output-stream)
-    (clear-stream $_test-output-buffered-file->buffer)
-    (clear-stream _test-error-stream)
-    (clear-stream $_test-error-buffered-file->buffer)
-    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
-    68/push 0/imm32
-    68/push 0/imm32
-    89/<- %edx 4/r32/esp
-    (tailor-exit-descriptor %edx 0x10)
-    #
-    (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "  var x/eax: (addr byte) <- copy 0\n")
-    (write _test-input-stream "  var y: int\n")
-    (write _test-input-stream "  copy-byte-to y, x\n")
-    (write _test-input-stream "}\n")
-    # convert
-    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
-    # registers except esp clobbered at this point
-    # restore ed
-    89/<- %edx 4/r32/esp
-    (flush _test-output-buffered-file)
-    (flush _test-error-buffered-file)
-#?     # dump _test-error-stream {{{
-#?     (write 2 "^")
-#?     (write-stream 2 _test-error-stream)
-#?     (write 2 "$\n")
-#?     (rewind-stream _test-error-stream)
-#?     # }}}
-    # check output
-    (check-stream-equal _test-output-stream  ""  "F - test-copy-byte-to-from-invalid-type: output should be empty")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-byte-to: source (second inout) must have type byte"  "F - test-copy-byte-to-from-invalid-type: error message")
-    # check that stop(1) was called
-    (check-ints-equal *(edx+4) 2 "F - test-copy-byte-to-from-invalid-type: exit status")
-    # don't restore from ebp
-    81 0/subop/add %esp 8/imm32
-    # . epilogue
-    5d/pop-to-ebp
-    c3/return
-
 test-copy-byte-to-deref-address:
     # . prologue
     55/push-ebp
@@ -9031,14 +8941,7 @@ test-copy-byte-to-deref-address:
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
     (flush _test-output-buffered-file)
-#?     # dump _test-error-stream {{{
-#?     (write 2 "^")
-#?     (write-stream 2 _test-error-stream)
-#?     (write 2 "$\n")
-#?     (rewind-stream _test-error-stream)
-#?     # }}}
-    # not bothering checking output
-    (check-next-stream-line-equal _test-error-stream  ""  "F - test-copy-byte-to-deref-address: error message")
+    # no errors
     # . epilogue
     5d/pop-to-ebp
     c3/return
@@ -9062,8 +8965,8 @@ test-copy-byte-to-from-non-scalar-inout:
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x: (handle int)\n")
-    (write _test-input-stream "  var y: int\n")
-    (write _test-input-stream "  copy-byte-to y, x\n")
+    (write _test-input-stream "  var y/eax: (addr byte) <- copy 0\n")
+    (write _test-input-stream "  copy-byte-to *y, x\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
@@ -9080,8 +8983,7 @@ test-copy-byte-to-from-non-scalar-inout:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-copy-byte-to-from-non-scalar-inout: output should be empty")
-#?     (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-byte-to: 'x' is too large to copy"  "F - test-copy-byte-to-from-non-scalar-inout: error message")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-byte-to: source (second inout) must be in a register"  "F - test-copy-byte-to-from-non-scalar-inout: error message")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-byte-to: 'x' is too large to copy"  "F - test-copy-byte-to-from-non-scalar-inout: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-copy-byte-to-from-non-scalar-inout: exit status")
     # don't restore from ebp
@@ -22255,6 +22157,11 @@ $check-mu-copy-byte-stmt:get-inout:
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-!= $check-mu-copy-byte-stmt:error-too-many-inouts/disp32
 $check-mu-copy-byte-stmt:types:
+    # if inout is not a scalar, abort
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (size-of %eax)  # => eax
+    3d/compare-eax-and 4/imm32
+    0f 8f/jump-if-> $check-mu-copy-byte-stmt:error-inout-too-large/disp32
     # var inout-type/ecx: (addr type-tree) = inout->value->type
     (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
@@ -22276,10 +22183,6 @@ $check-mu-copy-byte-stmt:inout-is-deref2:
       }
       89/<- %ecx 0/r32/eax
     }
-    # if inout is not of type byte, abort
-    (is-simple-mu-type? %ecx 8)  # byte => eax
-    3d/compare-eax-and 0/imm32
-    0f 84/jump-if-= $check-mu-copy-byte-stmt:error-invalid-inout-type/disp32
     # if output not in register, abort
     (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
@@ -22370,12 +22273,16 @@ $check-mu-copy-byte-stmt:error-invalid-output-type:
     (stop *(ebp+0x14) 1)
     # never gets here
 
-$check-mu-copy-byte-stmt:error-invalid-inout-type:
+$check-mu-copy-byte-stmt:error-inout-too-large:
     (write-buffered *(ebp+0x10) "fn ")
     8b/-> *(ebp+0xc) 0/r32/eax
     (lookup *eax *(eax+4))  # Function-name Function-name => eax
     (write-buffered *(ebp+0x10) %eax)
-    (write-buffered *(ebp+0x10) ": stmt copy-byte: inout must have type byte\n")
+    (write-buffered *(ebp+0x10) ": stmt copy-byte: '")
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' is too large to fit in a register\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
@@ -22386,7 +22293,6 @@ check-mu-copy-byte-to-stmt:  # stmt: (addr stmt), fn: (addr function), err: (add
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    51/push-ecx
     52/push-edx
     53/push-ebx
     56/push-esi
@@ -22423,10 +22329,11 @@ $check-mu-copy-byte-to-stmt:get-src:
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-!= $check-mu-copy-byte-to-stmt:error-incorrect-inouts/disp32
 $check-mu-copy-byte-to-stmt:types:
-    # var src-type/ecx: (addr type-tree) = src->value->type
+    # if src is not a scalar, abort
     (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
-    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-    89/<- %ecx 0/r32/eax
+    (size-of %eax)  # => eax
+    3d/compare-eax-and 4/imm32
+    0f 8f/jump-if-> $check-mu-copy-byte-to-stmt:error-src-too-large/disp32
     # if src not in register, abort
     {
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22435,10 +22342,6 @@ $check-mu-copy-byte-to-stmt:types:
       75/jump-if-!= break/disp8
       e9/jump $check-mu-copy-byte-to-stmt:error-src-not-in-register/disp32
     }
-    # if src is not a byte, abort
-    (is-simple-mu-type? %ecx 8)  # byte => eax
-    3d/compare-eax-and 0/imm32/false
-    0f 84/jump-if-= $check-mu-copy-byte-to-stmt:error-invalid-src-type/disp32
     # var dest-type/ebx: (addr type-tree) = dest->value->type
     (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
@@ -22472,7 +22375,6 @@ $check-mu-copy-byte-to-stmt:end:
     5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
-    59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -22523,12 +22425,16 @@ $check-mu-copy-byte-to-stmt:error-invalid-dest-type:
     (stop *(ebp+0x14) 1)
     # never gets here
 
-$check-mu-copy-byte-to-stmt:error-invalid-src-type:
+$check-mu-copy-byte-to-stmt:error-src-too-large:
     (write-buffered *(ebp+0x10) "fn ")
     8b/-> *(ebp+0xc) 0/r32/eax
     (lookup *eax *(eax+4))  # Function-name Function-name => eax
     (write-buffered *(ebp+0x10) %eax)
-    (write-buffered *(ebp+0x10) ": stmt copy-byte-to: source (second inout) must have type byte\n")
+    (write-buffered *(ebp+0x10) ": stmt copy-byte-to: '")
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) "' is too large to copy\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here

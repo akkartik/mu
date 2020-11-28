@@ -335,9 +335,9 @@ variables of type 'byte' are only allowed in registers, not on the stack. Here
 are the possible statements for reading bytes to/from memory:
 
 ```
-var/reg <- copy-byte var2/reg2      # var: byte, var2: byte
-var/reg <- copy-byte *var2/reg2     # var: byte, var2: (addr byte)
-copy-byte-to *var1/reg1, var2/reg2  # var1: (addr byte), var2: byte
+var/reg <- copy-byte var2/reg2      # var: byte
+var/reg <- copy-byte *var2/reg2     # var: byte
+copy-byte-to *var1/reg1, var2/reg2  # var1: (addr byte)
 ```
 
 In addition, variables of type 'byte' are restricted to (the lowest bytes of)
