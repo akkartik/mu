@@ -8346,8 +8346,7 @@ test-copy-to-from-non-scalar-inout:
 #?     # }}}
     # check output
     (check-stream-equal _test-output-stream  ""  "F - test-copy-to-from-non-scalar-inout: output should be empty")
-#?     (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: 'x' is too large to copy"  "F - test-copy-to-from-non-scalar-inout: error message")
-    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: source (second inout) is in memory"  "F - test-copy-to-from-non-scalar-inout: error message")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt copy-to: 'x' is too large to copy"  "F - test-copy-to-from-non-scalar-inout: error message")
     # check that stop(1) was called
     (check-ints-equal *(edx+4) 2 "F - test-copy-to-from-non-scalar-inout: exit status")
     # don't restore from ebp
@@ -21835,6 +21834,11 @@ $check-mu-copy-stmt:get-inout:
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-!= $check-mu-copy-stmt:error-too-many-inouts/disp32
 $check-mu-copy-stmt:types:
+    # if inout is not a scalar, abort
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (size-of %eax)  # => eax
+    3d/compare-eax-and 4/imm32
+    0f 8f/jump-if-> $check-mu-copy-stmt:error-inout-too-large/disp32
     # var inout-type/ecx: (addr type-tree) = inout->value->type
     (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
@@ -21858,11 +21862,6 @@ $check-mu-copy-stmt:types:
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
     3d/compare-eax-and 0/imm32
     0f 84/jump-if-= $check-mu-copy-stmt:error-output-not-in-register/disp32
-    # if inout is not a scalar, abort
-    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
-    (size-of %eax)  # => eax
-    3d/compare-eax-and 4/imm32
-    0f 8f/jump-if-> $check-mu-copy-stmt:error-inout-too-large/disp32
     # var output-type/eax: (addr type-tree) = output->value->type
     (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
@@ -22056,6 +22055,11 @@ $check-mu-copy-to-stmt:get-src:
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-!= $check-mu-copy-to-stmt:error-incorrect-inouts/disp32
 $check-mu-copy-to-stmt:types:
+    # if src is not a scalar, abort
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (size-of %eax)  # => eax
+    3d/compare-eax-and 4/imm32
+    0f 8f/jump-if-> $check-mu-copy-to-stmt:error-src-too-large/disp32
     # var src-type/ecx: (addr type-tree) = src->value->type
     (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
@@ -22074,11 +22078,6 @@ $check-mu-copy-to-stmt:types:
       75/jump-if-!= break/disp8
       e9/jump $check-mu-copy-to-stmt:error-src-not-literal-or-in-register/disp32
     }
-    # if src is not a scalar, abort
-    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
-    (size-of %eax)  # => eax
-    3d/compare-eax-and 4/imm32
-    0f 8f/jump-if-> $check-mu-copy-to-stmt:error-src-too-large/disp32
     # var dest-type/ebx: (addr type-tree) = dest->value->type
     (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
