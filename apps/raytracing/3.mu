@@ -29,7 +29,7 @@ fn ray-color _in: (addr ray), _out: (addr rgb) {
   var two-f/xmm2: float <- convert two
   t <- divide two-f
 #?   print-string 0, "t: "
-#?   print-float 0, t
+#?   print-float-hex 0, t
 #?   print-string 0, "\n"
   # whitening = (1.0 - t) * white
   var whitening-storage: rgb
@@ -68,7 +68,7 @@ fn main -> _/ebx: int {
   var aspect-addr/eax: (addr float) <- address aspect
   fill-in-rational aspect-addr, 0x10, 9  # 16/9
 #?   print-string 0, "aspect ratio: "
-#?   print-float 0, aspect
+#?   print-float-hex 0, aspect
 #?   print-string 0, " "
 #?   {
 #?     var foo2/ebx: int <- reinterpret aspect
@@ -83,7 +83,7 @@ fn main -> _/ebx: int {
   var two-f/xmm4: float <- convert tmp
   var viewport-height/xmm7: float <- copy two-f
 #?   print-string 0, "viewport height: "
-#?   print-float 0, viewport-height
+#?   print-float-hex 0, viewport-height
 #?   print-string 0, " "
 #?   {
 #?     var foo: float
@@ -96,7 +96,7 @@ fn main -> _/ebx: int {
   var viewport-width/xmm6: float <- convert tmp
   viewport-width <- multiply aspect
 #?   print-string 0, "viewport width: "
-#?   print-float 0, viewport-width
+#?   print-float-hex 0, viewport-width
 #?   print-string 0, " "
 #?   {
 #?     var foo: float
@@ -170,7 +170,7 @@ fn main -> _/ebx: int {
       var u/xmm0: float <- convert i
       u <- divide image-width-1
 #?       print-string 0, "u: "
-#?       print-float 0, u
+#?       print-float-hex 0, u
 #?       print-string 0, "\n"
       # v = j / (image-height - 1)
       var v/xmm1: float <- convert j
@@ -289,13 +289,13 @@ fn print-rgb-raw screen: (addr screen), _v: (addr rgb) {
   var v/esi: (addr rgb) <- copy _v
   print-string screen, "("
   var tmp/eax: (addr float) <- get v, r
-  print-float screen, *tmp
+  print-float-hex screen, *tmp
   print-string screen, ", "
   tmp <- get v, g
-  print-float screen, *tmp
+  print-float-hex screen, *tmp
   print-string screen, ", "
   tmp <- get v, b
-  print-float screen, *tmp
+  print-float-hex screen, *tmp
   print-string screen, ")"
 }
 
@@ -363,13 +363,13 @@ fn print-vec3 screen: (addr screen), _v: (addr vec3) {
   var v/esi: (addr vec3) <- copy _v
   print-string screen, "("
   var tmp/eax: (addr float) <- get v, x
-  print-float screen, *tmp
+  print-float-hex screen, *tmp
   print-string screen, ", "
   tmp <- get v, y
-  print-float screen, *tmp
+  print-float-hex screen, *tmp
   print-string screen, ", "
   tmp <- get v, z
-  print-float screen, *tmp
+  print-float-hex screen, *tmp
   print-string screen, ")"
 }
 
@@ -451,7 +451,7 @@ fn vec3-scale-down _v: (addr vec3), f: float {
 fn vec3-unit in: (addr vec3), out: (addr vec3) {
   var len/xmm0: float <- vec3-length in
 #?   print-string 0, "len: "
-#?   print-float 0, len
+#?   print-float-hex 0, len
 #?   print-string 0, "\n"
   copy-object in, out
   vec3-scale-down out, len

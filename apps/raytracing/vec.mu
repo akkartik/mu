@@ -8,13 +8,13 @@ fn print-vec3 screen: (addr screen), _v: (addr vec3) {
   var v/esi: (addr vec3) <- copy _v
   print-string screen, "("
   var tmp/eax: (addr float) <- get v, x
-  print-float screen, *tmp
+  print-float-hex screen, *tmp
   print-string screen, ", "
   tmp <- get v, y
-  print-float screen, *tmp
+  print-float-hex screen, *tmp
   print-string screen, ", "
   tmp <- get v, z
-  print-float screen, *tmp
+  print-float-hex screen, *tmp
   print-string screen, ")"
 }
 
@@ -96,7 +96,7 @@ fn vec3-scale-down _v: (addr vec3), f: float {
 fn vec3-unit in: (addr vec3), out: (addr vec3) {
   var len/xmm0: float <- vec3-length in
 #?   print-string 0, "len: "
-#?   print-float 0, len
+#?   print-float-hex 0, len
 #?   print-string 0, "\n"
   copy-object in, out
   vec3-scale-down out, len

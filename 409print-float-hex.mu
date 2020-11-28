@@ -10,77 +10,77 @@
 #                    = 0 | 000000000000000000000000 | 01111110
 #                          zero-pad mantissa          exponent
 #                   =   +1.000000                   P -01
-fn test-print-float-normal {
+fn test-print-float-hex-normal {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
   # 0.5
   var half/xmm0: float <- rational 1, 2
-  print-float screen, half
-  check-screen-row screen, 1, "1.000000P-01 ", "F - test-print-float-normal 0.5"
+  print-float-hex screen, half
+  check-screen-row screen, 1, "1.000000P-01 ", "F - test-print-float-hex-normal 0.5"
   # 0.25
   clear-screen screen
   var quarter/xmm0: float <- rational 1, 4
-  print-float screen, quarter
-  check-screen-row screen, 1, "1.000000P-02 ", "F - test-print-float-normal 0.25"
+  print-float-hex screen, quarter
+  check-screen-row screen, 1, "1.000000P-02 ", "F - test-print-float-hex-normal 0.25"
   # 0.75
   clear-screen screen
   var three-quarters/xmm0: float <- rational 3, 4
-  print-float screen, three-quarters
-  check-screen-row screen, 1, "1.800000P-01 ", "F - test-print-float-normal 0.75"
+  print-float-hex screen, three-quarters
+  check-screen-row screen, 1, "1.800000P-01 ", "F - test-print-float-hex-normal 0.75"
   # 0.1
   clear-screen screen
   var tenth/xmm0: float <- rational 1, 0xa
-  print-float screen, tenth
-  check-screen-row screen, 1, "1.99999aP-04 ", "F - test-print-float-normal 0.1"
+  print-float-hex screen, tenth
+  check-screen-row screen, 1, "1.99999aP-04 ", "F - test-print-float-hex-normal 0.1"
 }
 
-fn test-print-float-integer {
+fn test-print-float-hex-integer {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
   # 1
   var one-f/xmm0: float <- rational 1, 1
-  print-float screen, one-f
-  check-screen-row screen, 1, "1.000000P00 ", "F - test-print-float-integer 1"
+  print-float-hex screen, one-f
+  check-screen-row screen, 1, "1.000000P00 ", "F - test-print-float-hex-integer 1"
   # 2
   clear-screen screen
   var two-f/xmm0: float <- rational 2, 1
-  print-float screen, two-f
-  check-screen-row screen, 1, "1.000000P01 ", "F - test-print-float-integer 2"
+  print-float-hex screen, two-f
+  check-screen-row screen, 1, "1.000000P01 ", "F - test-print-float-hex-integer 2"
   # 10
   clear-screen screen
   var ten-f/xmm0: float <- rational 0xa, 1
-  print-float screen, ten-f
-  check-screen-row screen, 1, "1.400000P03 ", "F - test-print-float-integer 10"
+  print-float-hex screen, ten-f
+  check-screen-row screen, 1, "1.400000P03 ", "F - test-print-float-hex-integer 10"
   # -10
   clear-screen screen
   var minus-ten-f/xmm0: float <- rational -0xa, 1
-  print-float screen, minus-ten-f
-  check-screen-row screen, 1, "-1.400000P03 ", "F - test-print-float-integer -10"
+  print-float-hex screen, minus-ten-f
+  check-screen-row screen, 1, "-1.400000P03 ", "F - test-print-float-hex-integer -10"
 }
 
-fn test-print-float-zero {
+fn test-print-float-hex-zero {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
   var zero: float
-  print-float screen, zero
-  check-screen-row screen, 1, "0 ", "F - test-print-float-zero"
+  print-float-hex screen, zero
+  check-screen-row screen, 1, "0 ", "F - test-print-float-hex-zero"
 }
 
-fn test-print-float-negative-zero {
+fn test-print-float-hex-negative-zero {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
   var n: int
   copy-to n, 0x80000000
   var negative-zero/xmm0: float <- reinterpret n
-  print-float screen, negative-zero
-  check-screen-row screen, 1, "-0 ", "F - test-print-float-negative-zero"
+  print-float-hex screen, negative-zero
+  check-screen-row screen, 1, "-0 ", "F - test-print-float-hex-negative-zero"
 }
 
-fn test-print-float-infinity {
+fn test-print-float-hex-infinity {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
@@ -89,33 +89,33 @@ fn test-print-float-infinity {
   #          0111|1111|1000|0000|0000|0000|0000|0000
   copy-to n, 0x7f800000
   var infinity/xmm0: float <- reinterpret n
-  print-float screen, infinity
-  check-screen-row screen, 1, "Inf ", "F - test-print-float-infinity"
+  print-float-hex screen, infinity
+  check-screen-row screen, 1, "Inf ", "F - test-print-float-hex-infinity"
 }
 
-fn test-print-float-negative-infinity {
+fn test-print-float-hex-negative-infinity {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
   var n: int
   copy-to n, 0xff800000
   var negative-infinity/xmm0: float <- reinterpret n
-  print-float screen, negative-infinity
-  check-screen-row screen, 1, "-Inf ", "F - test-print-float-negative-infinity"
+  print-float-hex screen, negative-infinity
+  check-screen-row screen, 1, "-Inf ", "F - test-print-float-hex-negative-infinity"
 }
 
-fn test-print-float-not-a-number {
+fn test-print-float-hex-not-a-number {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
   var n: int
   copy-to n, 0xffffffff  # exponent must be all 1's, and mantissa must be non-zero
   var negative-infinity/xmm0: float <- reinterpret n
-  print-float screen, negative-infinity
-  check-screen-row screen, 1, "NaN ", "F - test-print-float-not-a-number"
+  print-float-hex screen, negative-infinity
+  check-screen-row screen, 1, "NaN ", "F - test-print-float-hex-not-a-number"
 }
 
-fn print-float screen: (addr screen), n: float {
+fn print-float-hex screen: (addr screen), n: float {
   # - special names
   var bits/eax: int <- reinterpret n
   compare bits, 0
@@ -160,14 +160,14 @@ fn print-float screen: (addr screen), n: float {
     break-if-!=
     print-string screen, "-"
   }
-  $print-float:leading-digit: {
+  $print-float-hex:leading-digit: {
     # check for subnormal numbers
     compare exponent, -0x7f
     {
       break-if-!=
       print-string screen, "0."
       exponent <- increment
-      break $print-float:leading-digit
+      break $print-float-hex:leading-digit
     }
     # normal numbers
     print-string screen, "1."
@@ -189,8 +189,8 @@ fn print-float screen: (addr screen), n: float {
 
 #? fn main -> _/ebx: int {
 #?   run-tests
-#? #?   test-print-float-negative-zero
+#? #?   test-print-float-hex-negative-zero
 #? #?   print-int32-hex 0, 0
-#? #?   test-print-float-normal
+#? #?   test-print-float-hex-normal
 #?   return 0
 #? }
