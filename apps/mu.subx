@@ -8258,7 +8258,7 @@ test-copy-to-non-literal-to-byte:
     (tailor-exit-descriptor %edx 0x10)
     #
     (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "  var x/ecx: int <- copy 3\n")
+    (write _test-input-stream "  var x/ecx: byte <- copy 3\n")
     (write _test-input-stream "  var y/eax: (addr byte) <- copy 0\n")
     (write _test-input-stream "  copy-to *y, x\n")
     (write _test-input-stream "}\n")
@@ -22001,6 +22001,16 @@ $check-mu-copy-to-stmt:dest-is-deref2:
       }
       89/<- %ebx 0/r32/eax
     }
+    # if dest is a byte and src is not a literal, abort
+    {
+$check-mu-copy-to-stmt:final-check-byte:
+      (is-simple-mu-type? %ebx 8)  # byte => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (is-simple-mu-type? %ecx 0)  # literal => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= $check-mu-copy-to-stmt:error-non-literal-to-byte/disp32
+    }
     # if (src-type == dest-type) return
     (type-match? %ebx %ecx %edx)  # => eax
     3d/compare-eax-and 0/imm32
@@ -22033,17 +22043,6 @@ $check-mu-copy-to-stmt:final-check-offset:
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       e9/jump $check-mu-copy-to-stmt:end/disp32
-    }
-    # if dest is a byte, abort if src is not a literal. Otherwise return.
-    {
-$check-mu-copy-to-stmt:final-check-byte:
-      (is-simple-mu-type? %ebx 8)  # byte => eax
-      3d/compare-eax-and 0/imm32/false
-      74/jump-if-= break/disp8
-      (is-simple-mu-type? %ecx 0)  # literal => eax
-      3d/compare-eax-and 0/imm32/false
-      0f 84/jump-if-= $check-mu-copy-to-stmt:error-non-literal-to-byte/disp32
-      eb/jump $check-mu-copy-to-stmt:end/disp8
     }
     # if dest is not number-like, abort
     (check-mu-numberlike-arg %edi *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))
