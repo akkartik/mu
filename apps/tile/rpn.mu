@@ -50,6 +50,26 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         push-number-to-value-stack out, a
         break $evaluate:process-word
       }
+      {
+        var is-div?/eax: boolean <- stream-data-equal? curr-stream, "/"
+        compare is-div?, 0
+        break-if-=
+        var _b/xmm0: float <- pop-number-from-value-stack out
+        var b/xmm1: float <- copy _b
+        var a/xmm0: float <- pop-number-from-value-stack out
+        a <- divide b
+        push-number-to-value-stack out, a
+        break $evaluate:process-word
+      }
+      {
+        var is-sqrt?/eax: boolean <- stream-data-equal? curr-stream, "sqrt"
+        compare is-sqrt?, 0
+        break-if-=
+        var a/xmm0: float <- pop-number-from-value-stack out
+        a <- square-root a
+        push-number-to-value-stack out, a
+        break $evaluate:process-word
+      }
       ## strings/arrays
       {
         var is-len?/eax: boolean <- stream-data-equal? curr-stream, "len"

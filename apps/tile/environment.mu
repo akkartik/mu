@@ -1517,7 +1517,7 @@ fn render-primitives screen: (addr screen), bottom-margin-row: int, right-col: i
   row <- subtract 1
   var col/edx: int <- copy 1
   move-cursor screen, row, col
-  row, col <- render-primitive-group screen, row, col, right-col, "numbers: ", "+ - *  "
+  row, col <- render-primitive-group screen, row, col, right-col, "numbers: ", "+ - * / sqrt  "
   row, col <- render-primitive-group screen, row, col, right-col, "arrays: ", "len  "
   row, col <- render-primitive-group screen, row, col, right-col, "files: ", "open read slurp lines  "
   row, col <- render-primitive-group screen, row, col, right-col, "misc: ", "dup swap  "  # hack: keep these at the right of the bottom row
