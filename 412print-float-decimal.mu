@@ -150,8 +150,8 @@ fn test-print-float-decimal-approximate-not-a-number {
   initialize-screen screen, 5, 0x20  # 32 columns should be more than enough
   var n: int
   copy-to n, 0xffffffff  # exponent must be all 1's, and mantissa must be non-zero
-  var negative-infinity/xmm0: float <- reinterpret n
-  print-float-decimal-approximate screen, negative-infinity, 3
+  var nan/xmm0: float <- reinterpret n
+  print-float-decimal-approximate screen, nan, 3
   check-screen-row screen, 1, "NaN ", "F - test-print-float-decimal-approximate-not-a-number"
 }
 
@@ -214,21 +214,16 @@ fn print-float-decimal-approximate screen: (addr screen), in: float, precision: 
   # unlike https://research.swtch.com/ftoa, no ascii here
   var buf-storage: (array byte 0x7f)
   var buf/edi: (addr array byte) <- address buf-storage
-#?   print-int32-decimal 0, v
-#?   print-string 0, "\n"
   var n/eax: int <- decimal-digits v, buf
-#?   dump-digits buf, n, "init"
   # I suspect we can do without reversing, but we'll follow https://research.swtch.com/ftoa
   # closely for now.
   reverse-digits buf, n
-#?   dump-digits buf, n, "reverse"
 
   # loop if e > 0
   {
     compare e, 0
     break-if-<=
     n <- double-array-of-decimal-digits buf, n
-#?     dump-digits buf, n, "double"
     e <- decrement
     loop
   }
@@ -240,9 +235,6 @@ fn print-float-decimal-approximate screen: (addr screen), in: float, precision: 
     compare e, 0
     break-if->=
     n, dp <- halve-array-of-decimal-digits buf, n, dp
-#?     print-int32-decimal 0, dp
-#?     print-string 0, ", "
-#?     dump-digits buf, n, "halve"
     e <- increment
     loop
   }
