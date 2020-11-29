@@ -76,7 +76,17 @@ fn test-print-float-decimal-approximate-integer {
   var minus-ten-f/xmm0: float <- rational -0xa, 1
   print-float-decimal-approximate screen, minus-ten-f, 3
   check-screen-row screen, 1, "-10 ", "F - test-print-float-decimal-approximate-integer -10"
-  # 100,000 - start using scientific notation
+  # 999
+  clear-screen screen
+  var minus-ten-f/xmm0: float <- rational 0x3e7, 1
+  print-float-decimal-approximate screen, minus-ten-f, 3
+  check-screen-row screen, 1, "999 ", "F - test-print-float-decimal-approximate-integer 1000"
+  # 1000 - start using scientific notation
+  clear-screen screen
+  var minus-ten-f/xmm0: float <- rational 0x3e8, 1
+  print-float-decimal-approximate screen, minus-ten-f, 3
+  check-screen-row screen, 1, "1.00e3 ", "F - test-print-float-decimal-approximate-integer 1000"
+  # 100,000
   clear-screen screen
   var hundred-thousand/eax: int <- copy 0x186a0
   var hundred-thousand-f/xmm0: float <- convert hundred-thousand
@@ -434,7 +444,7 @@ fn print-float-buffer screen: (addr screen), _buf: (addr array byte), n: int, dp
   {
     var dp2/eax: int <- copy dp
     compare dp2, precision
-    break-if-<
+    break-if-<=
     print-float-buffer-in-scientific-notation screen, buf, n, dp, precision
     return
   }
@@ -567,7 +577,7 @@ fn float-size in: float, precision: int -> _/eax: int {
   {
     var dp2/eax: int <- copy dp
     compare dp2, precision
-    break-if-<
+    break-if-<=
     return 8  # hacky for scientific notation
   }
 
