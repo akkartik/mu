@@ -140,9 +140,9 @@ fn test-print-float-decimal-approximate-not-a-number {
 }
 
 # 'precision' controls the maximum width past which we resort to scientific notation
-fn print-float-decimal-approximate screen: (addr screen), n: float, precision: int {
+fn print-float-decimal-approximate screen: (addr screen), in: float, precision: int {
   # - special names
-  var bits/eax: int <- reinterpret n
+  var bits/eax: int <- reinterpret in
   compare bits, 0
   {
     break-if-!=
@@ -490,10 +490,100 @@ fn print-float-buffer-in-scientific-notation screen: (addr screen), _buf: (addr 
   print-int32-decimal screen, dp
 }
 
-# pretty hacky for now
-fn float-size n: float, precision: int -> _/eax: int {
-  var result/eax: int <- copy precision
-  result <- add 4  # 1 for '.', 3 for exponent
+# follows the structure of print-float-decimal-approximate
+# 'precision' controls the maximum width past which we resort to scientific notation
+fn float-size in: float, precision: int -> _/eax: int {
+  # - special names
+  var bits/eax: int <- reinterpret in
+  compare bits, 0
+  {
+    break-if-!=
+    return 1  # "0"
+  }
+  compare bits, 0x80000000
+  {
+    break-if-!=
+    return 2  # "-0"
+  }
+  compare bits, 0x7f800000
+  {
+    break-if-!=
+    return 3  # "Inf"
+  }
+  compare bits, 0xff800000
+  {
+    break-if-!=
+    return 4  # "-Inf"
+  }
+  var exponent/ecx: int <- copy bits
+  exponent <- shift-right 0x17  # 23 bits of mantissa
+  exponent <- and 0xff
+  exponent <- subtract 0x7f
+  compare exponent, 0x80
+  {
+    break-if-!=
+    return 3  # "NaN"
+  }
+  # - regular numbers
+  # v = 1.mantissa (in base 2) << 0x17
+  var v/ebx: int <- copy bits
+  v <- and 0x7fffff
+  v <- or 0x00800000  # insert implicit 1
+  # e = exponent - 0x17
+  var e/ecx: int <- copy exponent
+  e <- subtract 0x17  # move decimal place from before mantissa to after
+
+  # initialize buffer with decimal representation of v
+  var buf-storage: (array byte 0x7f)
+  var buf/edi: (addr array byte) <- address buf-storage
+  var n/eax: int <- decimal-digits v, buf
+  reverse-digits buf, n
+
+  # loop if e > 0
+  {
+    compare e, 0
+    break-if-<=
+    n <- double-array-of-decimal-digits buf, n
+    e <- decrement
+    loop
+  }
+
+  var dp/edx: int <- copy n
+
+  # loop if e < 0
+  {
+    compare e, 0
+    break-if->=
+    n, dp <- halve-array-of-decimal-digits buf, n, dp
+    e <- increment
+    loop
+  }
+
+  compare dp, 0
+  {
+    break-if->=
+    return 8  # hacky for scientific notation
+  }
+  {
+    var dp2/eax: int <- copy dp
+    compare dp2, precision
+    break-if-<
+    return 8  # hacky for scientific notation
+  }
+
+  var result/eax: int <- copy n
+  {
+    compare result, dp
+    break-if->=
+    result <- copy dp
+  }
+  var sign/edx: int <- reinterpret in
+  sign <- shift-right 0x1f
+  {
+    compare sign, 1
+    break-if-!=
+    result <- increment  # for "-"
+  }
   return result
 }
 
