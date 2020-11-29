@@ -490,6 +490,13 @@ fn print-float-buffer-in-scientific-notation screen: (addr screen), _buf: (addr 
   print-int32-decimal screen, dp
 }
 
+# pretty hacky for now
+fn float-size n: float, precision: int -> _/eax: int {
+  var result/eax: int <- copy precision
+  result <- add 4  # 1 for '.', 3 for exponent
+  return result
+}
+
 ## helper
 
 # like check-strings-equal, except array sizes don't have to match

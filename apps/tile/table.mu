@@ -83,15 +83,15 @@ fn next-empty-slot _data: (addr array bind), key: (addr handle array byte) -> _/
   return result
 }
 
-fn make-int-binding _self: (addr bind), key: (addr handle array byte), _val: int {
+fn make-number-binding _self: (addr bind), key: (addr handle array byte), _val: float {
   var self/esi: (addr bind) <- copy _self
   var dest/eax: (addr handle array byte) <- get self, key
   copy-object key, dest
   var dest2/eax: (addr handle value) <- get self, value
   allocate dest2
   var dest3/eax: (addr value) <- lookup *dest2
-  var dest4/eax: (addr int) <- get dest3, int-data
-  var val/ecx: int <- copy _val
+  var dest4/eax: (addr float) <- get dest3, number-data
+  var val/xmm0: float <- copy _val
   copy-to *dest4, val
 }
 

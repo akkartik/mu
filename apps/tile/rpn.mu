@@ -21,33 +21,33 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var is-add?/eax: boolean <- stream-data-equal? curr-stream, "+"
         compare is-add?, 0
         break-if-=
-        var _b/eax: int <- pop-int-from-value-stack out
-        var b/edx: int <- copy _b
-        var a/eax: int <- pop-int-from-value-stack out
+        var _b/xmm0: float <- pop-number-from-value-stack out
+        var b/xmm1: float <- copy _b
+        var a/xmm0: float <- pop-number-from-value-stack out
         a <- add b
-        push-int-to-value-stack out, a
+        push-number-to-value-stack out, a
         break $evaluate:process-word
       }
       {
         var is-sub?/eax: boolean <- stream-data-equal? curr-stream, "-"
         compare is-sub?, 0
         break-if-=
-        var _b/eax: int <- pop-int-from-value-stack out
-        var b/edx: int <- copy _b
-        var a/eax: int <- pop-int-from-value-stack out
+        var _b/xmm0: float <- pop-number-from-value-stack out
+        var b/xmm1: float <- copy _b
+        var a/xmm0: float <- pop-number-from-value-stack out
         a <- subtract b
-        push-int-to-value-stack out, a
+        push-number-to-value-stack out, a
         break $evaluate:process-word
       }
       {
         var is-mul?/eax: boolean <- stream-data-equal? curr-stream, "*"
         compare is-mul?, 0
         break-if-=
-        var _b/eax: int <- pop-int-from-value-stack out
-        var b/edx: int <- copy _b
-        var a/eax: int <- pop-int-from-value-stack out
+        var _b/xmm0: float <- pop-number-from-value-stack out
+        var b/xmm1: float <- copy _b
+        var a/xmm0: float <- pop-number-from-value-stack out
         a <- multiply b
-        push-int-to-value-stack out, a
+        push-number-to-value-stack out, a
         break $evaluate:process-word
       }
       ## strings/arrays
@@ -77,13 +77,14 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           var src-ah/eax: (addr handle array byte) <- get target-val, text-data
           var src/eax: (addr array byte) <- lookup *src-ah
           var result/ebx: int <- length src
+          var result-f/xmm0: float <- convert result
           # save result into target-val
           var type-addr/eax: (addr int) <- get target-val, type
           copy-to *type-addr, 0  # int
           var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
           clear-object target-string-ah
-          var target/eax: (addr int) <- get target-val, int-data
-          copy-to *target, result
+          var target/eax: (addr float) <- get target-val, number-data
+          copy-to *target, result-f
           break $evaluate:process-word
         }
         compare *target-type-addr, 2  # array of ints
@@ -93,13 +94,14 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           var src-ah/eax: (addr handle array value) <- get target-val, array-data
           var src/eax: (addr array value) <- lookup *src-ah
           var result/ebx: int <- length src
+          var result-f/xmm0: float <- convert result
           # save result into target-val
           var type-addr/eax: (addr int) <- get target-val, type
           copy-to *type-addr, 0  # int
           var target-array-ah/eax: (addr handle array value) <- get target-val, array-data
           clear-object target-array-ah
-          var target/eax: (addr int) <- get target-val, int-data
-          copy-to *target, result
+          var target/eax: (addr float) <- get target-val, number-data
+          copy-to *target, result-f
           break $evaluate:process-word
         }
       }
@@ -266,10 +268,10 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare *top-addr, 0
         break-if-<=
         # pop width and height from out
-        var _nrows/eax: int <- pop-int-from-value-stack out2
-        var nrows/edx: int <- copy _nrows
-        var _ncols/eax: int <- pop-int-from-value-stack out2
-        var ncols/ebx: int <- copy _ncols
+        var nrows-f/xmm0: float <- pop-number-from-value-stack out2
+        var nrows/edx: int <- convert nrows-f
+        var ncols-f/xmm0: float <- pop-number-from-value-stack out2
+        var ncols/ebx: int <- convert ncols-f
         # define a new screen with those dimensions
         var screen-h: (handle screen)
         var screen-ah/eax: (addr handle screen) <- address screen-h
@@ -332,10 +334,10 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
         # pop args
-        var _r/eax: int <- pop-int-from-value-stack out2
-        var r/ecx: int <- copy _r
-        var _c/eax: int <- pop-int-from-value-stack out2
-        var c/edx: int <- copy _c
+        var r-f/xmm0: float <- pop-number-from-value-stack out2
+        var r/ecx: int <- convert r-f
+        var c-f/xmm0: float <- pop-number-from-value-stack out2
+        var c/edx: int <- convert c-f
         # select screen from top of out (but don't pop it)
         var top-addr/ebx: (addr int) <- get out2, top
         compare *top-addr, 0
@@ -364,8 +366,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare *top-addr, 0
         break-if-<=
         # pop args
-        var _d/eax: int <- pop-int-from-value-stack out2
-        var d/ecx: int <- copy _d
+        var d-f/xmm0: float <- pop-number-from-value-stack out2
+        var d/ecx: int <- convert d-f
         # select screen from top of out (but don't pop it)
         compare *top-addr, 0
         break-if-<=
@@ -407,8 +409,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare *top-addr, 0
         break-if-<=
         # pop args
-        var _d/eax: int <- pop-int-from-value-stack out2
-        var d/ecx: int <- copy _d
+        var d-f/xmm0: float <- pop-number-from-value-stack out2
+        var d/ecx: int <- convert d-f
         # select screen from top of out (but don't pop it)
         compare *top-addr, 0
         break-if-<=
@@ -452,8 +454,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare *top-addr, 0
         break-if-<=
         # pop args
-        var _d/eax: int <- pop-int-from-value-stack out2
-        var d/ecx: int <- copy _d
+        var d-f/xmm0: float <- pop-number-from-value-stack out2
+        var d/ecx: int <- convert d-f
         # select screen from top of out (but don't pop it)
         compare *top-addr, 0
         break-if-<=
@@ -496,8 +498,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         compare *top-addr, 0
         break-if-<=
         # pop args
-        var _d/eax: int <- pop-int-from-value-stack out2
-        var d/ecx: int <- copy _d
+        var _d/xmm0: float <- pop-number-from-value-stack out2
+        var d/ecx: int <- convert _d
         # select screen from top of out (but don't pop it)
         compare *top-addr, 0
         break-if-<=
@@ -689,10 +691,11 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           break-if->=
           var src-addr/ecx: (addr int) <- index int-array, i
           var src/ecx: int <- copy *src-addr
+          var src-f/xmm0: float <- convert src
           var dest-offset/edx: (offset value) <- compute-offset value-array, i
           var dest-val/edx: (addr value) <- index value-array, dest-offset
-          var dest/edx: (addr int) <- get dest-val, int-data
-          copy-to *dest, src
+          var dest/edx: (addr float) <- get dest-val, number-data
+          copy-to *dest, src-f
           i <- increment
           loop
         }
@@ -701,7 +704,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       ### otherwise assume it's a literal number and push it
       {
         var n/eax: int <- parse-decimal-int-from-stream curr-stream
-        push-int-to-value-stack out, n
+        var n-f/xmm0: float <- convert n
+        push-number-to-value-stack out, n-f
       }
     }
     # termination check
@@ -742,7 +746,8 @@ fn test-evaluate {
   var stack/edi: (addr value-stack) <- address stack-storage
   initialize-value-stack stack, 0x10
   evaluate functions, table, line, 0, stack
-  var x/eax: int <- pop-int-from-value-stack stack
+  var x-f/xmm0: float <- pop-number-from-value-stack stack
+  var x/eax: int <- convert x-f
   check-ints-equal x, 3, "F - test-evaluate"
 }
 

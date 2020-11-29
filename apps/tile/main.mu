@@ -130,9 +130,9 @@ fn repl {
     {
       compare empty?, 0  # false
       break-if-!=
-      var result/eax: int <- pop-int-from-value-stack stack
-      print-int32-decimal-to-real-screen result
-      print-string-to-real-screen "\n"
+      var result/xmm0: float <- pop-number-from-value-stack stack
+      print-float-decimal-approximate 0, result, 3
+      print-string 0, "\n"
     }
     #
     loop

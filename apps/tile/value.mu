@@ -57,20 +57,22 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
     return
   }
   # render ints by default for now
-  var val-int/eax: (addr int) <- get val, int-data
-  render-integer screen, *val-int, max-width
+  var val-num/eax: (addr float) <- get val, number-data
+  render-number screen, *val-num, max-width
 }
 
 # synaesthesia
-fn render-integer screen: (addr screen), val: int, max-width: int {
+# TODO: right-justify
+fn render-number screen: (addr screen), val: float, max-width: int {
   # if max-width is 0, we're inside an array. No coloring.
   compare max-width, 0
   {
     break-if-!=
-    print-int32-decimal screen, val
+    print-float-decimal-approximate screen, val, 3
     return
   }
-  var bg/eax: int <- hash-color val
+  var val-int/eax: int <- convert val
+  var bg/eax: int <- hash-color val-int
   var fg/ecx: int <- copy 7
   {
     compare bg, 2
@@ -89,7 +91,7 @@ fn render-integer screen: (addr screen), val: int, max-width: int {
   }
   start-color screen, fg, bg
   print-grapheme screen, 0x20  # space
-  print-int32-decimal-right-justified screen, val, max-width
+  print-float-decimal-approximate screen, val, 3
   print-grapheme screen, 0x20  # space
 }
 
@@ -219,8 +221,8 @@ fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
   {
     compare *type, 0  # int
     break-if-!=
-    var v-int/edx: (addr int) <- get v, int-data
-    var result/eax: int <- decimal-size *v-int
+    var v-num/edx: (addr float) <- get v, number-data
+    var result/eax: int <- float-size *v-num, 3
     return result
   }
   {
@@ -344,9 +346,9 @@ fn deep-copy-value _src: (addr value), _dest: (addr value) {
   {
     break-if-!=
 #?     print-string 0, "int value\n"
-    var x/eax: (addr int) <- get src, int-data
-    y <- get dest, int-data
-    copy-object x, y
+    var src-n/eax: (addr float) <- get src, number-data
+    var dest-n/ecx: (addr float) <- get dest, number-data
+    copy-object src-n, dest-n
     return
   }
   compare *type, 1  # string

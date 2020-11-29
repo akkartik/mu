@@ -19,7 +19,7 @@ fn clear-value-stack _self: (addr value-stack) {
   copy-to *top, 0
 }
 
-fn push-int-to-value-stack _self: (addr value-stack), _val: int {
+fn push-number-to-value-stack _self: (addr value-stack), _val: float {
   var self/esi: (addr value-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
   var data-ah/edx: (addr handle array value) <- get self, data
@@ -27,13 +27,13 @@ fn push-int-to-value-stack _self: (addr value-stack), _val: int {
   var top/edx: int <- copy *top-addr
   var dest-offset/edx: (offset value) <- compute-offset data, top
   var dest-addr/edx: (addr value) <- index data, dest-offset
-  var dest-addr2/eax: (addr int) <- get dest-addr, int-data
-  var val/esi: int <- copy _val
+  var dest-addr2/eax: (addr float) <- get dest-addr, number-data
+  var val/xmm0: float <- copy _val
 #?   print-int32-hex-to-real-screen val
   copy-to *dest-addr2, val
   increment *top-addr
-  dest-addr2 <- get dest-addr, type
-  copy-to *dest-addr2, 0  # int
+  var type-addr/eax: (addr int) <- get dest-addr, type
+  copy-to *type-addr, 0  # number
 }
 
 fn push-string-to-value-stack _self: (addr value-stack), val: (handle array byte) {
@@ -85,7 +85,7 @@ fn push-value-stack _self: (addr value-stack), val: (addr value) {
   increment *top-addr
 }
 
-fn pop-int-from-value-stack _self: (addr value-stack) -> _/eax: int {
+fn pop-number-from-value-stack _self: (addr value-stack) -> _/xmm0: float {
   var self/esi: (addr value-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
   {
@@ -99,7 +99,7 @@ fn pop-int-from-value-stack _self: (addr value-stack) -> _/eax: int {
   var top/edx: int <- copy *top-addr
   var dest-offset/edx: (offset value) <- compute-offset data, top
   var result-addr/eax: (addr value) <- index data, dest-offset
-  var result-addr2/eax: (addr int) <- get result-addr, int-data
+  var result-addr2/eax: (addr float) <- get result-addr, number-data
   return *result-addr2
 }
 
