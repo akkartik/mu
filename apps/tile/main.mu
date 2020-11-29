@@ -133,6 +133,10 @@ fn repl {
       var result/xmm0: float <- pop-number-from-value-stack stack
       print-float-decimal-approximate 0, result, 3
       print-string 0, "\n"
+      print-string 0, "width: "
+      var width/eax: int <- float-size result, 3
+      print-int32-decimal 0, width
+      print-string 0, "\n"
     }
     #
     loop

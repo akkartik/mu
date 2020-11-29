@@ -595,18 +595,29 @@ fn float-size in: float, precision: int -> _/eax: int {
     return 8  # hacky for scientific notation
   }
 
-  var result/eax: int <- copy n
+  # result = min(n, dp+3)
+  var result/ecx: int <- copy dp
+  result <- add 3
   {
-    compare result, dp
-    break-if->=
-    result <- copy dp
+    compare result, n
+    break-if-<=
+    result <- copy n
   }
+
+  # account for decimal point
+  compare dp, n
+  {
+    break-if->=
+    result <- increment
+  }
+
+  # account for sign
   var sign/edx: int <- reinterpret in
   sign <- shift-right 0x1f
   {
     compare sign, 1
     break-if-!=
-    result <- increment  # for "-"
+    result <- increment
   }
   return result
 }
