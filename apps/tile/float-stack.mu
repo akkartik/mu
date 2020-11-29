@@ -35,7 +35,8 @@ fn pop-float-stack _self: (addr float-stack) -> _/xmm0: float {
   {
     compare *top-addr, 0
     break-if->
-    return 0
+    var zero: float
+    return zero
   }
   subtract-from *top-addr, 1
   var data-ah/edx: (addr handle array float) <- get self, data

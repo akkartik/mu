@@ -29,7 +29,7 @@ fn push-number-to-value-stack _self: (addr value-stack), _val: float {
   var dest-addr/edx: (addr value) <- index data, dest-offset
   var dest-addr2/eax: (addr float) <- get dest-addr, number-data
   var val/xmm0: float <- copy _val
-#?   print-int32-hex-to-real-screen val
+#?   print-float-decimal-approximate 0, val, 3
   copy-to *dest-addr2, val
   increment *top-addr
   var type-addr/eax: (addr int) <- get dest-addr, type
@@ -91,7 +91,9 @@ fn pop-number-from-value-stack _self: (addr value-stack) -> _/xmm0: float {
   {
     compare *top-addr, 0
     break-if->
-    return -1
+    var minus-one/eax: int <- copy -1
+    var minus-one-f/xmm0: float <- convert minus-one
+    return minus-one-f
   }
   decrement *top-addr
   var data-ah/edx: (addr handle array value) <- get self, data
