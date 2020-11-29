@@ -44,12 +44,18 @@ fn test-print-float-decimal-approximate-normal {
   clear-screen screen
   var eighth/xmm0: float <- rational 1, 8
   print-float-decimal-approximate screen, eighth, 3
-  check-screen-row screen, 1, "0.125 ", "F - test-print-float-decimal-approximate-normal 0.1"
+  check-screen-row screen, 1, "0.125 ", "F - test-print-float-decimal-approximate-normal 0.125"
   # 0.0625; start using scientific notation
   clear-screen screen
   var sixteenth/xmm0: float <- rational 1, 0x10
   print-float-decimal-approximate screen, sixteenth, 3
-  check-screen-row screen, 1, "6.25e-2 ", "F - test-print-float-decimal-approximate-normal 0.625"
+  check-screen-row screen, 1, "6.25e-2 ", "F - test-print-float-decimal-approximate-normal 0.0625"
+  # sqrt(2); truncate floats with lots of digits after the decimal but not too many before
+  clear-screen screen
+  var two-f/xmm0: float <- rational 2, 1
+  var sqrt-2/xmm0: float <- square-root two-f
+  print-float-decimal-approximate screen, sqrt-2, 3
+  check-screen-row screen, 1, "1.414 ", "F - test-print-float-decimal-approximate-normal √2"
 }
 
 # print whole integers without decimals
@@ -454,8 +460,16 @@ fn print-float-buffer screen: (addr screen), _buf: (addr array byte), n: int, dp
     print-string screen, "0"
   }
   var i/eax: int <- copy 0
+  # bounds = min(n, dp+3)
+  var limit/edx: int <- copy dp
+  limit <- add 3
   {
-    compare i, n
+    compare limit, n
+    break-if-<=
+    limit <- copy n
+  }
+  {
+    compare i, limit
     break-if->=
     # print '.' if necessary
     compare i, dp
