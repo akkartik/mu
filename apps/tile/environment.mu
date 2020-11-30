@@ -777,6 +777,14 @@ fn bound-function? w: (addr word), functions-ah: (addr handle function) -> _/ebx
     subresult <- word-equal? w, "*"
     compare subresult, 0  # false
     break-if-!=
+    # if w == "/" return true
+    subresult <- word-equal? w, "/"
+    compare subresult, 0  # false
+    break-if-!=
+    # if w == "sqrt" return true
+    subresult <- word-equal? w, "sqrt"
+    compare subresult, 0  # false
+    break-if-!=
     ## strings/arrays
     # if w == "len" return true
     subresult <- word-equal? w, "len"
