@@ -60,6 +60,18 @@ parse-decimal-int-from-stream:  # in: (addr stream byte) -> result/eax: int
     # var end/edx: (addr byte) = &in->data[in->write]
     8b/-> *eax 2/r32/edx
     8d/copy-address *(eax+edx+0xc) 2/r32/edx
+    # trim a trailing newline
+    {
+      # speculatively trim
+      4a/decrement-edx
+      # if it's a newline, break
+      8a/byte-> *edx 0/r32/eax
+      81 4/subop/and %eax 0xff/imm32
+      3d/compare-eax-and 0xa/imm32/newline
+      74/jump-if-= break/disp8
+      # not a newline, so restore it
+      42/increment-edx
+    }
     #
     (parse-decimal-int-helper %ecx %edx)  # => eax
 $parse-decimal-int-from-stream:end:
