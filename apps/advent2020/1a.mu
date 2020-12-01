@@ -1,3 +1,16 @@
+# https://adventofcode.com/2020/day/1
+#
+# To run (on Linux):
+#   $ git clone https://github.com/akkartik/mu
+#   $ cd mu
+#   $ ./translate_mu apps/advent2020/1a.mu
+#   $ ./a.elf < input
+#   found
+#   1353 667
+#   902451
+#
+# You'll need to register to download the 'input' file for yourself.
+
 fn main -> _/ebx: int {
   # data structure
   var numbers-storage: (array int 0x100)  # 256 ints
