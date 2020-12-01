@@ -90,7 +90,7 @@ if ('onhashchange' in window) {
 <span id="L31" class="LineNr"> 31 </span><span class="CommentedCode">#?     (write-buffered Stderr Newline)</span>
 <span id="L32" class="LineNr"> 32 </span><span class="CommentedCode">#?     (flush Stderr)</span>
 <span id="L33" class="LineNr"> 33 </span>    8b/-&gt; *esi 0/r32/eax  <span class="subxComment"># Termios-c_iflag</span>
-<span id="L34" class="LineNr"> 34 </span>    23/and *<span class="SpecialChar"><a href='305keyboard.subx.html#L211'>Keyboard-immediate-mode-iflags</a></span> 0/r32/eax
+<span id="L34" class="LineNr"> 34 </span>    23/and *<span class="SpecialChar"><a href='305keyboard.subx.html#L207'>Keyboard-immediate-mode-iflags</a></span> 0/r32/eax
 <span id="L35" class="LineNr"> 35 </span>    89/&lt;- *esi 0/r32/eax  <span class="subxComment"># Termios-c_iflag</span>
 <span id="L36" class="LineNr"> 36 </span><span class="CommentedCode">#?     (write-buffered Stderr &quot;iflags after: &quot;)</span>
 <span id="L37" class="LineNr"> 37 </span><span class="CommentedCode">#?     (write-int32-hex-buffered Stderr *esi)</span>
@@ -102,7 +102,7 @@ if ('onhashchange' in window) {
 <span id="L43" class="LineNr"> 43 </span><span class="CommentedCode">#?     (write-buffered Stderr Newline)</span>
 <span id="L44" class="LineNr"> 44 </span><span class="CommentedCode">#?     (flush Stderr)</span>
 <span id="L45" class="LineNr"> 45 </span>    8b/-&gt; *(esi+0xc) 0/r32/eax  <span class="subxComment"># Termios-c_lflag</span>
-<span id="L46" class="LineNr"> 46 </span>    23/and *<span class="SpecialChar"><a href='305keyboard.subx.html#L215'>Keyboard-immediate-mode-lflags</a></span> 0/r32/eax
+<span id="L46" class="LineNr"> 46 </span>    23/and *<span class="SpecialChar"><a href='305keyboard.subx.html#L211'>Keyboard-immediate-mode-lflags</a></span> 0/r32/eax
 <span id="L47" class="LineNr"> 47 </span>    89/&lt;- *(esi+0xc) 0/r32/eax  <span class="subxComment"># Termios-c_lflag</span>
 <span id="L48" class="LineNr"> 48 </span><span class="CommentedCode">#?     (write-buffered Stderr &quot;lflags after: &quot;)</span>
 <span id="L49" class="LineNr"> 49 </span><span class="CommentedCode">#?     (write-int32-hex-buffered Stderr *(esi+0xc))</span>
@@ -152,11 +152,11 @@ if ('onhashchange' in window) {
 <span id="L93" class="LineNr"> 93 </span>    e8/call syscall_ioctl/disp32
 <span id="L94" class="LineNr"> 94 </span>    <span class="subxComment"># terminal-info-&gt;c_iflags |= Keyboard-type-mode-iflags</span>
 <span id="L95" class="LineNr"> 95 </span>    8b/-&gt; *esi 0/r32/eax  <span class="subxComment"># Termios-c_iflag</span>
-<span id="L96" class="LineNr"> 96 </span>    0b/or *<span class="SpecialChar"><a href='305keyboard.subx.html#L219'>Keyboard-type-mode-iflags</a></span> 0/r32/eax
+<span id="L96" class="LineNr"> 96 </span>    0b/or *<span class="SpecialChar"><a href='305keyboard.subx.html#L215'>Keyboard-type-mode-iflags</a></span> 0/r32/eax
 <span id="L97" class="LineNr"> 97 </span>    89/&lt;- *esi 0/r32/eax  <span class="subxComment"># Termios-c_iflag</span>
 <span id="L98" class="LineNr"> 98 </span>    <span class="subxComment"># terminal-info-&gt;c_lflags |= Keyboard-type-mode-lflags</span>
 <span id="L99" class="LineNr"> 99 </span>    8b/-&gt; *(esi+0xc) 0/r32/eax  <span class="subxComment"># Termios-c_lflag</span>
-<span id="L100" class="LineNr">100 </span>    0b/or *<span class="SpecialChar"><a href='305keyboard.subx.html#L222'>Keyboard-type-mode-lflags</a></span> 0/r32/eax
+<span id="L100" class="LineNr">100 </span>    0b/or *<span class="SpecialChar"><a href='305keyboard.subx.html#L218'>Keyboard-type-mode-lflags</a></span> 0/r32/eax
 <span id="L101" class="LineNr">101 </span>    89/&lt;- *(esi+0xc) 0/r32/eax  <span class="subxComment"># Termios-c_lflag</span>
 <span id="L102" class="LineNr">102 </span>    <span class="subxComment"># ioctl(*Terminal-file-descriptor, TCSETS, terminal-info)</span>
 <span id="L103" class="LineNr">103 </span>    89/&lt;- %edx 6/r32/esi
@@ -218,68 +218,64 @@ if ('onhashchange' in window) {
 <span id="L159" class="LineNr">159 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L160" class="LineNr">160 </span>    55/push-ebp
 <span id="L161" class="LineNr">161 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L162" class="LineNr">162 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L163" class="LineNr">163 </span>    50/push-eax
-<span id="L164" class="LineNr">164 </span>    <span class="subxComment">#</span>
-<span id="L165" class="LineNr">165 </span>    (<a href='111read.subx.html#L48'>read</a> 0 *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
-<span id="L166" class="LineNr">166 </span><span class="Constant">$read-line-from-real-keyboard:end</span>:
-<span id="L167" class="LineNr">167 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L168" class="LineNr">168 </span>    58/pop-to-eax
-<span id="L169" class="LineNr">169 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L170" class="LineNr">170 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L171" class="LineNr">171 </span>    5d/pop-to-ebp
-<span id="L172" class="LineNr">172 </span>    c3/return
-<span id="L173" class="LineNr">173 </span>
-<span id="L174" class="LineNr">174 </span>== data
-<span id="L175" class="LineNr">175 </span>
-<span id="L176" class="LineNr">176 </span><span class="subxComment"># iflags:   octal     hex</span>
-<span id="L177" class="LineNr">177 </span><span class="subxComment">#  IGNBRK  0000001   0x0001</span>
-<span id="L178" class="LineNr">178 </span><span class="subxComment">#  BRKINT  0000002   0x0002</span>
-<span id="L179" class="LineNr">179 </span><span class="subxComment">#  IGNPAR  0000004   0x0004</span>
-<span id="L180" class="LineNr">180 </span><span class="subxComment">#  PARMRK  0000010   0x0008</span>
-<span id="L181" class="LineNr">181 </span><span class="subxComment">#  INPCK   0000020   0x0010</span>
-<span id="L182" class="LineNr">182 </span><span class="subxComment">#  ISTRIP  0000040   0x0020</span>
-<span id="L183" class="LineNr">183 </span><span class="subxComment">#  INLCR   0000100   0x0040</span>
-<span id="L184" class="LineNr">184 </span><span class="subxComment">#  IGNCR   0000200   0x0080</span>
-<span id="L185" class="LineNr">185 </span><span class="subxComment">#  ICRNL   0000400   0x0100</span>
-<span id="L186" class="LineNr">186 </span><span class="subxComment">#  IUCLC   0001000   0x0200</span>
-<span id="L187" class="LineNr">187 </span><span class="subxComment">#  IXON    0002000   0x0400</span>
-<span id="L188" class="LineNr">188 </span><span class="subxComment">#  IXANY   0004000   0x0800</span>
-<span id="L189" class="LineNr">189 </span><span class="subxComment">#  IXOFF   0010000   0x1000</span>
-<span id="L190" class="LineNr">190 </span><span class="subxComment">#  IMAXBEL 0020000   0x2000</span>
-<span id="L191" class="LineNr">191 </span><span class="subxComment">#  IUTF8   0040000   0x4000</span>
-<span id="L192" class="LineNr">192 </span>
-<span id="L193" class="LineNr">193 </span><span class="subxComment"># lflags:</span>
-<span id="L194" class="LineNr">194 </span><span class="subxComment">#  ISIG   0000001     0x0001</span>
-<span id="L195" class="LineNr">195 </span><span class="subxComment">#  ICANON 0000002     0x0002</span>
-<span id="L196" class="LineNr">196 </span><span class="subxComment">#  ECHO   0000010     0x0008</span>
-<span id="L197" class="LineNr">197 </span><span class="subxComment">#  ECHOE  0000020     0x0010</span>
-<span id="L198" class="LineNr">198 </span><span class="subxComment">#  ECHOK  0000040     0x0020</span>
-<span id="L199" class="LineNr">199 </span><span class="subxComment">#  ECHONL 0000100     0x0040</span>
-<span id="L200" class="LineNr">200 </span><span class="subxComment">#  NOFLSH 0000200     0x0080</span>
-<span id="L201" class="LineNr">201 </span><span class="subxComment">#  TOSTOP 0000400     0x0100</span>
-<span id="L202" class="LineNr">202 </span><span class="subxComment">#  IEXTEN 0100000     0x8000</span>
-<span id="L203" class="LineNr">203 </span>
-<span id="L204" class="LineNr">204 </span><span class="subxComment"># recipe for raw mode according to the termios.3 manpage on Linux:</span>
-<span id="L205" class="LineNr">205 </span><span class="subxComment">#   termios_p-&gt;c_iflag &amp;= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);</span>
-<span id="L206" class="LineNr">206 </span><span class="subxComment">#   termios_p-&gt;c_oflag &amp;= ~OPOST;</span>
-<span id="L207" class="LineNr">207 </span><span class="subxComment">#   termios_p-&gt;c_lflag &amp;= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);</span>
-<span id="L208" class="LineNr">208 </span><span class="subxComment">#   termios_p-&gt;c_cflag &amp;= ~(CSIZE | PARENB);</span>
-<span id="L209" class="LineNr">209 </span><span class="subxComment">#   termios_p-&gt;c_cflag |= CS8;</span>
+<span id="L162" class="LineNr">162 </span>    <span class="subxComment">#</span>
+<span id="L163" class="LineNr">163 </span>    (<a href='122read-line.subx.html#L9'>read-line-buffered</a> <span class="SpecialChar"><a href='112read-byte.subx.html#L14'>Stdin</a></span> *(ebp+8))
+<span id="L164" class="LineNr">164 </span><span class="Constant">$read-line-from-real-keyboard:end</span>:
+<span id="L165" class="LineNr">165 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L166" class="LineNr">166 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L167" class="LineNr">167 </span>    5d/pop-to-ebp
+<span id="L168" class="LineNr">168 </span>    c3/return
+<span id="L169" class="LineNr">169 </span>
+<span id="L170" class="LineNr">170 </span>== data
+<span id="L171" class="LineNr">171 </span>
+<span id="L172" class="LineNr">172 </span><span class="subxComment"># iflags:   octal     hex</span>
+<span id="L173" class="LineNr">173 </span><span class="subxComment">#  IGNBRK  0000001   0x0001</span>
+<span id="L174" class="LineNr">174 </span><span class="subxComment">#  BRKINT  0000002   0x0002</span>
+<span id="L175" class="LineNr">175 </span><span class="subxComment">#  IGNPAR  0000004   0x0004</span>
+<span id="L176" class="LineNr">176 </span><span class="subxComment">#  PARMRK  0000010   0x0008</span>
+<span id="L177" class="LineNr">177 </span><span class="subxComment">#  INPCK   0000020   0x0010</span>
+<span id="L178" class="LineNr">178 </span><span class="subxComment">#  ISTRIP  0000040   0x0020</span>
+<span id="L179" class="LineNr">179 </span><span class="subxComment">#  INLCR   0000100   0x0040</span>
+<span id="L180" class="LineNr">180 </span><span class="subxComment">#  IGNCR   0000200   0x0080</span>
+<span id="L181" class="LineNr">181 </span><span class="subxComment">#  ICRNL   0000400   0x0100</span>
+<span id="L182" class="LineNr">182 </span><span class="subxComment">#  IUCLC   0001000   0x0200</span>
+<span id="L183" class="LineNr">183 </span><span class="subxComment">#  IXON    0002000   0x0400</span>
+<span id="L184" class="LineNr">184 </span><span class="subxComment">#  IXANY   0004000   0x0800</span>
+<span id="L185" class="LineNr">185 </span><span class="subxComment">#  IXOFF   0010000   0x1000</span>
+<span id="L186" class="LineNr">186 </span><span class="subxComment">#  IMAXBEL 0020000   0x2000</span>
+<span id="L187" class="LineNr">187 </span><span class="subxComment">#  IUTF8   0040000   0x4000</span>
+<span id="L188" class="LineNr">188 </span>
+<span id="L189" class="LineNr">189 </span><span class="subxComment"># lflags:</span>
+<span id="L190" class="LineNr">190 </span><span class="subxComment">#  ISIG   0000001     0x0001</span>
+<span id="L191" class="LineNr">191 </span><span class="subxComment">#  ICANON 0000002     0x0002</span>
+<span id="L192" class="LineNr">192 </span><span class="subxComment">#  ECHO   0000010     0x0008</span>
+<span id="L193" class="LineNr">193 </span><span class="subxComment">#  ECHOE  0000020     0x0010</span>
+<span id="L194" class="LineNr">194 </span><span class="subxComment">#  ECHOK  0000040     0x0020</span>
+<span id="L195" class="LineNr">195 </span><span class="subxComment">#  ECHONL 0000100     0x0040</span>
+<span id="L196" class="LineNr">196 </span><span class="subxComment">#  NOFLSH 0000200     0x0080</span>
+<span id="L197" class="LineNr">197 </span><span class="subxComment">#  TOSTOP 0000400     0x0100</span>
+<span id="L198" class="LineNr">198 </span><span class="subxComment">#  IEXTEN 0100000     0x8000</span>
+<span id="L199" class="LineNr">199 </span>
+<span id="L200" class="LineNr">200 </span><span class="subxComment"># recipe for raw mode according to the termios.3 manpage on Linux:</span>
+<span id="L201" class="LineNr">201 </span><span class="subxComment">#   termios_p-&gt;c_iflag &amp;= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);</span>
+<span id="L202" class="LineNr">202 </span><span class="subxComment">#   termios_p-&gt;c_oflag &amp;= ~OPOST;</span>
+<span id="L203" class="LineNr">203 </span><span class="subxComment">#   termios_p-&gt;c_lflag &amp;= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);</span>
+<span id="L204" class="LineNr">204 </span><span class="subxComment">#   termios_p-&gt;c_cflag &amp;= ~(CSIZE | PARENB);</span>
+<span id="L205" class="LineNr">205 </span><span class="subxComment">#   termios_p-&gt;c_cflag |= CS8;</span>
+<span id="L206" class="LineNr">206 </span>
+<span id="L207" class="LineNr">207 </span><span class="SpecialChar">Keyboard-immediate-mode-iflags</span>:  <span class="subxComment"># (addr tcflag_t)</span>
+<span id="L208" class="LineNr">208 </span><span class="CommentedCode">#?     0xfffffa14  # ~IGNBRK &amp; ~BRKINT &amp; ~PARMRK &amp; ~ISTRIP &amp; ~INLCR &amp; ~IGNCR &amp; ~ICRNL &amp; ~IXON</span>
+<span id="L209" class="LineNr">209 </span>    0xffffffff/imm32
 <span id="L210" class="LineNr">210 </span>
-<span id="L211" class="LineNr">211 </span><span class="SpecialChar">Keyboard-immediate-mode-iflags</span>:  <span class="subxComment"># (addr tcflag_t)</span>
-<span id="L212" class="LineNr">212 </span><span class="CommentedCode">#?     0xfffffa14  # ~IGNBRK &amp; ~BRKINT &amp; ~PARMRK &amp; ~ISTRIP &amp; ~INLCR &amp; ~IGNCR &amp; ~ICRNL &amp; ~IXON</span>
-<span id="L213" class="LineNr">213 </span>    0xffffffff/imm32
+<span id="L211" class="LineNr">211 </span><span class="SpecialChar">Keyboard-immediate-mode-lflags</span>:  <span class="subxComment"># (addr tcflag_t)</span>
+<span id="L212" class="LineNr">212 </span><span class="CommentedCode">#?     0xffff7fb4/imm32  # ~ICANON &amp; ~ISIG &amp; ~IEXTEN &amp; ~ECHO &amp; ~ECHONL</span>
+<span id="L213" class="LineNr">213 </span>    0xffffffb5/imm32  <span class="subxComment"># ~ICANON &amp; ~ECHO &amp; ~ECHONL</span>
 <span id="L214" class="LineNr">214 </span>
-<span id="L215" class="LineNr">215 </span><span class="SpecialChar">Keyboard-immediate-mode-lflags</span>:  <span class="subxComment"># (addr tcflag_t)</span>
-<span id="L216" class="LineNr">216 </span><span class="CommentedCode">#?     0xffff7fb4/imm32  # ~ICANON &amp; ~ISIG &amp; ~IEXTEN &amp; ~ECHO &amp; ~ECHONL</span>
-<span id="L217" class="LineNr">217 </span>    0xffffffb5/imm32  <span class="subxComment"># ~ICANON &amp; ~ECHO &amp; ~ECHONL</span>
-<span id="L218" class="LineNr">218 </span>
-<span id="L219" class="LineNr">219 </span><span class="SpecialChar">Keyboard-type-mode-iflags</span>:  <span class="subxComment"># (addr tcflag_t)</span>
-<span id="L220" class="LineNr">220 </span>    0x00000000/imm32  <span class="subxComment"># ~Keyboard-immediate-mode-iflags</span>
-<span id="L221" class="LineNr">221 </span>
-<span id="L222" class="LineNr">222 </span><span class="SpecialChar">Keyboard-type-mode-lflags</span>:  <span class="subxComment"># (addr tcflag_t)</span>
-<span id="L223" class="LineNr">223 </span>    0x0000004a/imm32  <span class="subxComment"># ~Keyboard-immediate-mode-lflags</span>
+<span id="L215" class="LineNr">215 </span><span class="SpecialChar">Keyboard-type-mode-iflags</span>:  <span class="subxComment"># (addr tcflag_t)</span>
+<span id="L216" class="LineNr">216 </span>    0x00000000/imm32  <span class="subxComment"># ~Keyboard-immediate-mode-iflags</span>
+<span id="L217" class="LineNr">217 </span>
+<span id="L218" class="LineNr">218 </span><span class="SpecialChar">Keyboard-type-mode-lflags</span>:  <span class="subxComment"># (addr tcflag_t)</span>
+<span id="L219" class="LineNr">219 </span>    0x0000004a/imm32  <span class="subxComment"># ~Keyboard-immediate-mode-lflags</span>
 </pre>
 </body>
 </html>
