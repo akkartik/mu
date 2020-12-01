@@ -4,7 +4,6 @@ fn initialize-word _self: (addr word) {
   allocate data-ah
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   initialize-gap-buffer data
-  # TODO: sometimes initialize box-data rather than scalar-data
 }
 
 ## some helpers for creating words. mostly for tests
@@ -570,4 +569,32 @@ fn word-list-length words: (addr handle word) -> _/eax: int {
     loop
   }
   return result
+}
+
+# out-ah already has a word allocated and initialized
+fn parse-words in: (addr array byte), out-ah: (addr handle word) {
+  var in-stream: (stream byte 0x100)
+  var in-stream-a/esi: (addr stream byte) <- address in-stream
+  write in-stream-a, in
+  var cursor-word-ah/ebx: (addr handle word) <- copy out-ah
+  $parse-words:loop: {
+    var done?/eax: boolean <- stream-empty? in-stream-a
+    compare done?, 0  # false
+    break-if-!=
+    var _g/eax: grapheme <- read-grapheme in-stream-a
+    var g/ecx: grapheme <- copy _g
+    # if not space, insert
+    compare g, 0x20  # space
+    {
+      break-if-=
+      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      add-grapheme-to-word cursor-word, g
+      loop $parse-words:loop
+    }
+    # otherwise insert word after and move cursor to it
+    append-word cursor-word-ah
+    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    cursor-word-ah <- get cursor-word, next
+    loop
+  }
 }

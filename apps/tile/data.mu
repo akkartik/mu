@@ -112,31 +112,7 @@ fn create-primitive-functions _self: (addr handle function) {
   var body/eax: (addr line) <- lookup *body-ah
   initialize-line body
   var curr-word-ah/ecx: (addr handle word) <- get body, data
-  # *curr-word = "x"
-  allocate curr-word-ah
-  var tmp/eax: (addr word) <- lookup *curr-word-ah
-  var curr-word/edx: (addr word) <- copy tmp
-  initialize-word-with curr-word, "x"
-  # *curr-word->next = "2"
-  var next-word-ah/ebx: (addr handle word) <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "2"
-  # *curr-word->next->prev = curr-word
-  var prev-word-ah/edi: (addr handle word) <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  # curr-word = curr-word->next
-  curr-word-ah <- copy next-word-ah
-  curr-word <- copy tmp
-  # *curr-word->next = "*"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "*"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  tmp <- lookup *prev-word-ah
+  parse-words "x 2 *", curr-word-ah
   # x 1+ = x 1 +
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -152,32 +128,8 @@ fn create-primitive-functions _self: (addr handle function) {
   allocate body-ah
   var body/eax: (addr line) <- lookup *body-ah
   initialize-line body
-  var curr-word-ah/ecx: (addr handle word) <- get body, data
-  # *curr-word = "x"
-  allocate curr-word-ah
-  var tmp/eax: (addr word) <- lookup *curr-word-ah
-  curr-word <- copy tmp
-  initialize-word-with curr-word, "x"
-  # *curr-word->next = "1"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "1"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  # curr-word = curr-word->next
-  curr-word-ah <- copy next-word-ah
-  curr-word <- copy tmp
-  # *curr-word->next = "+"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "+"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  tmp <- lookup *prev-word-ah
+  curr-word-ah <- get body, data
+  parse-words "x 1 +", curr-word-ah
   # x 2+ = x 1+ 1+
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -193,32 +145,8 @@ fn create-primitive-functions _self: (addr handle function) {
   allocate body-ah
   var body/eax: (addr line) <- lookup *body-ah
   initialize-line body
-  var curr-word-ah/ecx: (addr handle word) <- get body, data
-  # *curr-word = "x"
-  allocate curr-word-ah
-  var tmp/eax: (addr word) <- lookup *curr-word-ah
-  curr-word <- copy tmp
-  initialize-word-with curr-word, "x"
-  # *curr-word->next = "1+"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "1+"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  # curr-word = curr-word->next
-  curr-word-ah <- copy next-word-ah
-  curr-word <- copy tmp
-  # *curr-word->next = "1+"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "1+"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  tmp <- lookup *prev-word-ah
+  curr-word-ah <- get body, data
+  parse-words "x 1+ 1+", curr-word-ah
   # x square = x x *
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -234,32 +162,8 @@ fn create-primitive-functions _self: (addr handle function) {
   allocate body-ah
   var body/eax: (addr line) <- lookup *body-ah
   initialize-line body
-  var curr-word-ah/ecx: (addr handle word) <- get body, data
-  # *curr-word = "x"
-  allocate curr-word-ah
-  var tmp/eax: (addr word) <- lookup *curr-word-ah
-  var curr-word/edx: (addr word) <- copy tmp
-  initialize-word-with curr-word, "x"
-  # *curr-word->next = "x"
-  var next-word-ah/ebx: (addr handle word) <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "x"
-  # *curr-word->next->prev = curr-word
-  var prev-word-ah/edi: (addr handle word) <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  # curr-word = curr-word->next
-  curr-word-ah <- copy next-word-ah
-  curr-word <- copy tmp
-  # *curr-word->next = "*"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "*"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  tmp <- lookup *prev-word-ah
+  curr-word-ah <- get body, data
+  parse-words "x x *", curr-word-ah
   # x 1- = x 1 -
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -275,32 +179,8 @@ fn create-primitive-functions _self: (addr handle function) {
   allocate body-ah
   var body/eax: (addr line) <- lookup *body-ah
   initialize-line body
-  var curr-word-ah/ecx: (addr handle word) <- get body, data
-  # *curr-word = "x"
-  allocate curr-word-ah
-  var tmp/eax: (addr word) <- lookup *curr-word-ah
-  curr-word <- copy tmp
-  initialize-word-with curr-word, "x"
-  # *curr-word->next = "1"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "1"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  # curr-word = curr-word->next
-  curr-word-ah <- copy next-word-ah
-  curr-word <- copy tmp
-  # *curr-word->next = "-"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "-"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  tmp <- lookup *prev-word-ah
+  curr-word-ah <- get body, data
+  parse-words "x 1 -", curr-word-ah
   # x y sub = x y -
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -321,32 +201,8 @@ fn create-primitive-functions _self: (addr handle function) {
   allocate body-ah
   var body/eax: (addr line) <- lookup *body-ah
   initialize-line body
-  var curr-word-ah/ecx: (addr handle word) <- get body, data
-  # *curr-word = "x"
-  allocate curr-word-ah
-  var tmp/eax: (addr word) <- lookup *curr-word-ah
-  curr-word <- copy tmp
-  initialize-word-with curr-word, "x"
-  # *curr-word->next = "y"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "y"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  # curr-word = curr-word->next
-  curr-word-ah <- copy next-word-ah
-  curr-word <- copy tmp
-  # *curr-word->next = "-"
-  next-word-ah <- get curr-word, next
-  allocate next-word-ah
-  tmp <- lookup *next-word-ah
-  initialize-word-with tmp, "-"
-  # *curr-word->next->prev = curr-word
-  prev-word-ah <- get tmp, prev
-  copy-object curr-word-ah, prev-word-ah
-  tmp <- lookup *prev-word-ah
+  curr-word-ah <- get body, data
+  parse-words "x y -", curr-word-ah
 }
 
 fn function-body functions: (addr handle function), _word: (addr handle word), out: (addr handle line) {
