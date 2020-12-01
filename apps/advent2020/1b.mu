@@ -30,10 +30,9 @@ fn main -> _/ebx: int {
       loop
     }
   }
-  # phase 2: construct table of 2-sums
-  var two-sums-storage: (array int 0x10000)  # 256 * 256 ints
-  var two-sums/edi: (addr array int) <- address two-sums-storage
-  var i/eax: int <- copy 0
+  # phase 2: for every pair of distinct numbers, check if the rest of the
+  # array has 2020-it
+  var i/edi: int <- copy 0
   {
     compare i, numbers-index
     break-if->=
@@ -46,15 +45,28 @@ fn main -> _/ebx: int {
       {
         compare i, j
         break-if-=
-        var result-index/ebx: int <- copy 0x100
-        result-index <- multiply i
-        result-index <- add j
-        var dest/ebx: (addr int) <- index two-sums, result-index
-        var src/eax: (addr int) <- index numbers, i
-        var result/eax: int <- copy *src
-        var src2/edx: (addr int) <- index numbers, j
-        result <- add *src2
-        copy-to *dest, result
+        var target/ebx: int <- copy 0x7e4  # 2020
+        var src/edi: (addr int) <- index numbers, i
+        target <- subtract *src
+        var src2/ecx: (addr int) <- index numbers, j
+        target <- subtract *src2
+        {
+          var found?/eax: boolean <- find-after numbers, j, target
+          compare found?, 0  # false
+          break-if-=
+          print-string 0, "found\n"
+          print-int32-decimal 0, *src
+          print-string 0, " "
+          print-int32-decimal 0, *src2
+          print-string 0, " "
+          print-int32-decimal 0, target
+          print-string 0, "\n"
+          target <- multiply *src
+          target <- multiply *src2
+          print-int32-decimal 0, target
+          print-string 0, "\n"
+          return 0  # success
+        }
       }
       j <- increment
       loop
@@ -62,8 +74,6 @@ fn main -> _/ebx: int {
     i <- increment
     loop
   }
-  # phase 3: for each number in two-sums, check if 2020-it is in the rest of
-  # the array
   return 1  # not found
 }
 
