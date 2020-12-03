@@ -78,22 +78,33 @@ fn main -> _/ebx: int {
   print-int32-decimal 0, result
   print-string 0, " x "
   product <- multiply result
+  var result/eax: int <- num-trees-hit trees, width, num-rows, 7, 1
+  print-int32-decimal 0, result
+  print-string 0, " x "
+  product <- multiply result
   var result/eax: int <- num-trees-hit trees, width, num-rows, 1, 2
   print-int32-decimal 0, result
   print-string 0, " = "
   product <- multiply result
-  print-int32-decimal 0, product
+  print-int32-hex 0, product
   print-string 0, "\n"
   return 0
 }
 
 fn num-trees-hit trees: (addr array int), width: int, num-rows: int, right: int, down: int -> _/eax: int {
+#?   print-string 0, "== "
+#?   print-int32-decimal 0, right
+#?   print-string 0, " "
+#?   print-int32-decimal 0, down
+#?   print-string 0, "\n"
   var row/ecx: int <- copy 0
   var col/edx: int <- copy 0
   var num-trees-hit/edi: int <- copy 0
   {
     compare row, num-rows
     break-if->=
+#?     print-int32-decimal 0, col
+#?     print-string 0, "\n"
     var curr/eax: int <- index2d trees, row, col, width
     compare curr, 0
     {
@@ -112,6 +123,9 @@ fn index2d _arr: (addr array int), _row: int, _col: int, width: int -> _/eax: in
   var dummy/eax: int <- copy 0
   var col/edx: int <- copy 0
   dummy, col <- integer-divide _col, width
+#?   print-string 0, "  "
+#?   print-int32-decimal 0, col
+#?   print-string 0, "\n"
   # compute index
   var index/eax: int <- copy _row
   index <- multiply width
