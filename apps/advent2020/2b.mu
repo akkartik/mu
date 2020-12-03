@@ -3,7 +3,7 @@
 # To run (on Linux):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu apps/advent2020/2a.mu
+#   $ ./translate_mu apps/advent2020/2b.mu
 #   $ ./a.elf < input
 #
 # You'll need to register to download the 'input' file for yourself.
@@ -25,18 +25,24 @@ fn main -> _/ebx: int {
     print-stream-to-real-screen line
     # slice = next-token(line, '-')
     next-token line, 0x2d, slice
-    # start = parse-int(slice)
-    var _start/eax: int <- parse-decimal-int-from-slice slice
-    var start/ebx: int <- copy _start
+    # pos1 = parse-int(slice)
+    var _pos1/eax: int <- parse-decimal-int-from-slice slice
+    var pos1/ebx: int <- copy _pos1
     var dash/eax: byte <- read-byte line  # skip '-'
     # slice = next-token(line, ' ')
     next-token line, 0x20, slice
-    var _end/eax: int <- parse-decimal-int-from-slice slice
-    var end/esi: int <- copy _end
-    print-int32-decimal 0, start
+    var _pos2/eax: int <- parse-decimal-int-from-slice slice
+    var pos2/esi: int <- copy _pos2
+    print-int32-decimal 0, pos1
     print-string 0, " "
-    print-int32-decimal 0, end
+    print-int32-decimal 0, pos2
     print-string 0, "\n"
+    compare pos1, pos2
+    {
+      break-if-<=
+      print-string 0, "out of order!\n"
+      return 1
+    }
     # letter = next non-space
     skip-chars-matching-whitespace line
     var letter/eax: byte <- read-byte line
@@ -46,7 +52,7 @@ fn main -> _/ebx: int {
     }
     skip-chars-matching-whitespace line
     # now check the rest of the line
-    var is-valid?/eax: boolean <- is-valid? start, end, letter, line
+    var is-valid?/eax: boolean <- is-valid? pos1, pos2, letter, line
     compare is-valid?, 0  # false
     {
       break-if-=
@@ -60,33 +66,57 @@ fn main -> _/ebx: int {
   return 0
 }
 
-fn is-valid? start: int, end: int, letter: byte, password: (addr stream byte) -> _/eax: boolean {
+# ideally password would be a random-access array
+# we'll just track an index
+# one benefit: we can easily start at 1
+fn is-valid? pos1: int, pos2: int, letter: byte, password: (addr stream byte) -> _/eax: boolean {
+  var i/esi: int <- copy 1
   var letter-count/edi: int <- copy 0
-  # for every c in password
+  # while password stream isn't empty
+  #   c = read byte from password
   #   if (c == letter)
-  #     ++letter-count
+  #     if (i == pos1)
+  #       ++letter-count
+  #     if (i == pos2)
+  #       ++letter-count
+  #     ++i
   {
+#?     print-string 0, "  "
+#?     print-int32-decimal 0, i
+#?     print-string 0, "\n"
     var done?/eax: boolean <- stream-empty? password
     compare done?, 0  # false
     break-if-!=
     var c/eax: byte <- read-byte password
+#?     {
+#?       var c2/eax: int <- copy c
+#?       print-int32-decimal 0, c2
+#?       print-string 0, "\n"
+#?     }
     compare c, letter
     {
       break-if-!=
-      letter-count <- increment
+      compare i, pos1
+      {
+        break-if-!=
+        letter-count <- increment
+#?         print-string 0, "  hit\n"
+      }
+      compare i, pos2
+      {
+        break-if-!=
+        letter-count <- increment
+#?         print-string 0, "  hit\n"
+      }
     }
+    i <- increment
     loop
   }
-  # return (start <= letter-count <= end)
-  compare letter-count, start
+  # return (letter-count == 1)
+  compare letter-count, 1
   {
-    break-if->=
-    return 0  # false
+    break-if-!=
+    return 1  # true
   }
-  compare letter-count, end
-  {
-    break-if-<=
-    return 0  # false
-  }
-  return 1  # true
+  return 0  # false
 }
