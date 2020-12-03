@@ -69,28 +69,25 @@ fn main -> _/ebx: int {
   print-string 0, "x"
   print-int32-decimal 0, width
   print-string 0, "\n"
-  var i/eax: int <- copy 0
+  var row/ecx: int <- copy 0
+  var col/edx: int <- copy 0
+  var num-trees-hit/edi: int <- copy 0
   {
-    compare i, num-rows
+    compare row, num-rows
     break-if->=
-    var j/ecx: int <- copy 0
+    var curr/eax: int <- index2d trees, row, col, width
+    compare curr, 0
     {
-      compare j, width
-      break-if->=
-#?       print-int32-decimal 0, i
-#?       print-string 0, " "
-#?       print-int32-decimal 0, j
-#?       print-string 0, "\n"
-      var src/eax: int <- index2d trees, i, j, width
-      print-int32-decimal 0, src
-#?       print-string 0, "\n"
-      j <- increment
-      loop
+      break-if-=
+      num-trees-hit <- increment
     }
-    print-string 0, "\n"
-    i <- increment
+    # right 3, down 1
+    col <- add 3
+    row <- add 1
     loop
   }
+  print-int32-decimal 0, num-trees-hit
+  print-string 0, "\n"
   return 0
 }
 
