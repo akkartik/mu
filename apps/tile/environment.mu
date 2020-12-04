@@ -2,6 +2,7 @@ type environment {
   screen: (handle screen)
   functions: (handle function)
   sandboxes: (handle sandbox)
+  cursor-sandbox: (handle sandbox)
   nrows: int
   ncols: int
   code-separator-col: int
@@ -13,10 +14,13 @@ fn initialize-environment _env: (addr environment) {
   var functions/eax: (addr handle function) <- get env, functions
   create-primitive-functions functions
   # initialize first sandbox
-  var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
+  var sandbox-ah/ecx: (addr handle sandbox) <- get env, sandboxes
   allocate sandbox-ah
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
   initialize-sandbox sandbox
+  # initialize cursor sandbox
+  var cursor-sandbox-ah/eax: (addr handle sandbox) <- get env, cursor-sandbox
+  copy-object sandbox-ah, cursor-sandbox-ah
   # initialize screen
   var screen-ah/eax: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
@@ -61,7 +65,7 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 
 fn process _self: (addr environment), key: grapheme {
   var self/esi: (addr environment) <- copy _self
-  var sandbox-ah/eax: (addr handle sandbox) <- get self, sandboxes
+  var sandbox-ah/eax: (addr handle sandbox) <- get self, cursor-sandbox
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
 #?   print-string 0, "processing sandbox\n"
   process-sandbox self, sandbox, key
@@ -985,14 +989,14 @@ fn render _env: (addr environment) {
   # functions
   var functions/edx: (addr handle function) <- get env, functions
   # sandbox
-  var sandbox-ah/eax: (addr handle sandbox) <- get env, sandboxes
-  var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
+  var cursor-sandbox-ah/eax: (addr handle sandbox) <- get env, cursor-sandbox
+  var cursor-sandbox/eax: (addr sandbox) <- lookup *cursor-sandbox-ah
   # bindings
   var bindings-storage: table
   var bindings/ebx: (addr table) <- address bindings-storage
   initialize-table bindings, 0x10
 #?   print-string 0, "render-sandbox {\n"
-  render-sandbox screen, functions, bindings, sandbox, 3, repl-col
+  render-sandbox screen, functions, bindings, cursor-sandbox, 3, repl-col
 #?   print-string 0, "render-sandbox }\n"
 }
 
