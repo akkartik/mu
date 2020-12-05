@@ -52,13 +52,12 @@ fn interactive {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
-  draw-screen env
   {
+    render env
     var key/eax: grapheme <- read-key-from-real-keyboard
     compare key, 0x11  # 'ctrl-q'
     break-if-=
     process env, key
-    render env
     loop
   }
   enable-keyboard-type-mode
@@ -69,16 +68,6 @@ fn test {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment-with-fake-screen env, 0x20, 0xa0
-  process-all env, "3 3 fake-screen =s"
-  process env, 0xc  # ctrl-l
-  process-all env, "s 1 down 1 right"
-  process env, 4  # ctrl-d: start defining function
-  process-all env, "foo"
-  process env, 0xa  # newline: define function
-  process env, 0x435b1b  # right-arrow
-#?   process env, 5  # ctrl-e: end of line
-  print-string 0, "==\n"
-  process env, 0xa  # newline: expand
   render env
 }
 

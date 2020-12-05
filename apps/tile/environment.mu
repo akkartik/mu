@@ -983,12 +983,13 @@ fn render _env: (addr environment) {
   var _screen/eax: (addr screen) <- lookup *screen-ah
   var screen/edi: (addr screen) <- copy _screen
   # repl-col
-  var _repl-col/eax: (addr int) <- get env, code-separator-col
-  var repl-col/ecx: int <- copy *_repl-col
-  repl-col <- add 2  # repl-margin-left
+  var sep-col/eax: (addr int) <- get env, code-separator-col
   # functions
   var functions/edx: (addr handle function) <- get env, functions
+  render-functions screen, *sep-col, env
   # sandbox
+  var repl-col/ecx: int <- copy *sep-col
+  repl-col <- add 2  # repl-margin-left
   var cursor-sandbox-ah/eax: (addr handle sandbox) <- get env, cursor-sandbox
   var cursor-sandbox/eax: (addr sandbox) <- lookup *cursor-sandbox-ah
   # bindings
@@ -1524,8 +1525,6 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, " define function  "
   # primitives
   var dummy/eax: int <- render-primitives screen, *nrows, sep-col
-  # currently defined functions
-  render-functions screen, sep-col, env
 }
 
 # return value: top-most row written to
