@@ -61,10 +61,10 @@ syntax match muKeyword " -> "
 syntax keyword muKeyword fn sig type var
 highlight link muKeyword PreProc
 
-syntax match muFunction "\(fn\s*\)\@<=\(\S\+\)"
+syntax match muFunction "\(fn\s\+\)\@<=\(\S\+\)"
 highlight link muFunction Identifier
 
-syntax match muTest "\(fn\s*\)\@<=\(test-\S\+\)"
+syntax match muTest "\(fn\s\+\)\@<=\(test-\S\+\)"
 highlight link muTest Identifier
 
 syntax match muData "^type\>"

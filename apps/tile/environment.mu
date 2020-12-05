@@ -2,7 +2,11 @@ type environment {
   screen: (handle screen)
   functions: (handle function)
   sandboxes: (handle sandbox)
+  partial-function-name: (handle word)
+  # at most one of these will be set
+  cursor-function: (handle function)
   cursor-sandbox: (handle sandbox)
+  #
   nrows: int
   ncols: int
   code-separator-col: int
@@ -38,18 +42,6 @@ fn initialize-environment _env: (addr environment) {
   copy-to *dest, repl-col
 }
 
-fn draw-screen _env: (addr environment) {
-  var env/esi: (addr environment) <- copy _env
-  var screen-ah/eax: (addr handle screen) <- get env, screen
-  var _screen/eax: (addr screen) <- lookup *screen-ah
-  var screen/edi: (addr screen) <- copy _screen
-  var dest/edx: (addr int) <- get env, code-separator-col
-  var tmp/eax: int <- copy *dest
-  clear-canvas env
-  tmp <- add 2  # repl-margin-left
-  move-cursor screen, 3, tmp  # input-row
-}
-
 fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int, ncols: int {
   var self/esi: (addr environment) <- copy _self
   var screen-ah/eax: (addr handle screen) <- get self, screen
@@ -65,10 +57,93 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 
 fn process _self: (addr environment), key: grapheme {
   var self/esi: (addr environment) <- copy _self
+  var fn-name-ah/eax: (addr handle word) <- get self, partial-function-name
+  var fn-name/eax: (addr word) <- lookup *fn-name-ah
+  compare fn-name, 0
+  {
+    break-if-=
+#?     print-string 0, "processing goto fn\n"
+    process-goto-dialog self, key
+    return
+  }
+  var function-ah/eax: (addr handle function) <- get self, cursor-function
+  var function/eax: (addr function) <- lookup *function-ah
+  compare function, 0
+  {
+    break-if-=
+#?     print-string 0, "processing function\n"
+    process-function self, function, key
+    return
+  }
   var sandbox-ah/eax: (addr handle sandbox) <- get self, cursor-sandbox
   var sandbox/eax: (addr sandbox) <- lookup *sandbox-ah
-#?   print-string 0, "processing sandbox\n"
-  process-sandbox self, sandbox, key
+  compare sandbox, 0
+  {
+    break-if-=
+#?     print-string 0, "processing sandbox\n"
+    process-sandbox self, sandbox, key
+    return
+  }
+}
+
+# collect new name in partial-function-name, and move the cursor to function with that name
+fn process-goto-dialog _self: (addr environment), key: grapheme {
+  var self/esi: (addr environment) <- copy _self
+  var fn-name-ah/edi: (addr handle word) <- get self, partial-function-name
+  # if 'esc' pressed, cancel goto
+  compare key, 0x1b  # esc
+  $process-goto-dialog:cancel: {
+    break-if-!=
+    clear-object fn-name-ah
+    return
+  }
+  # if 'enter' pressed, location function and set cursor to it
+  compare key, 0xa  # enter
+  $process-goto-dialog:commit: {
+    break-if-!=
+#?     print-string 0, "jump\n"
+    var fn-name/eax: (addr word) <- lookup *fn-name-ah
+    var functions/ecx: (addr handle function) <- get self, functions
+    var dest/edx: (addr handle function) <- get self, cursor-function
+    callee functions, fn-name, dest
+    # we won't clear cursor-sandbox until we start supporting multiple sandboxes
+    clear-object fn-name-ah
+    # there shouldn't be any need to clear state for other dialogs in the sandbox
+    return
+  }
+  #
+  compare key, 0x7f  # del (backspace on Macs)
+  $process-goto-dialog:backspace: {
+    break-if-!=
+    # if not at start, delete grapheme before cursor
+    var fn-name/eax: (addr word) <- lookup *fn-name-ah
+    var at-start?/eax: boolean <- cursor-at-start? fn-name
+    compare at-start?, 0  # false
+    {
+      break-if-!=
+      var fn-name/eax: (addr word) <- lookup *fn-name-ah
+      delete-before-cursor fn-name
+    }
+    return
+  }
+  # otherwise insert key within current word
+  var print?/eax: boolean <- real-grapheme? key
+  $process-goto-dialog:real-grapheme: {
+    compare print?, 0  # false
+    break-if-=
+    var fn-name/eax: (addr word) <- lookup *fn-name-ah
+    add-grapheme-to-word fn-name, key
+    return
+  }
+  # silently ignore other hotkeys
+}
+
+fn process-function _self: (addr environment), _function: (addr function), key: grapheme {
+  var self/esi: (addr environment) <- copy _self
+  var function/edi: (addr function) <- copy _function
+  print-string 0, "processing function\n"
+  syscall_exit
+#?   process-function-edit self, function, key
 }
 
 fn process-sandbox _self: (addr environment), _sandbox: (addr sandbox), key: grapheme {
@@ -348,6 +423,16 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     break-if-=
 #?     print-string 0, "DD\n"
     copy-object caller-cursor-element-ah, cursor-call-path-ah
+    return
+  }
+  compare key, 7  # ctrl-g
+  $process-sandbox-edit:goto-function: {
+    break-if-!=
+    # initialize dialog to name function to jump to
+    var partial-function-name-ah/eax: (addr handle word) <- get self, partial-function-name
+    allocate partial-function-name-ah
+    var partial-function-name/eax: (addr word) <- lookup *partial-function-name-ah
+    initialize-word partial-function-name
     return
   }
   # line-based motions
@@ -982,9 +1067,8 @@ fn render _env: (addr environment) {
   var screen-ah/eax: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
   var screen/edi: (addr screen) <- copy _screen
-  # repl-col
-  var sep-col/eax: (addr int) <- get env, code-separator-col
   # functions
+  var sep-col/eax: (addr int) <- get env, code-separator-col
   var functions/edx: (addr handle function) <- get env, functions
   render-functions screen, *sep-col, env
   # sandbox
@@ -999,6 +1083,47 @@ fn render _env: (addr environment) {
 #?   print-string 0, "render-sandbox {\n"
   render-sandbox screen, functions, bindings, cursor-sandbox, 3, repl-col
 #?   print-string 0, "render-sandbox }\n"
+  # dialogs
+  render-goto-dialog screen, env
+}
+
+fn render-goto-dialog screen: (addr screen), _env: (addr environment) {
+  var env/esi: (addr environment) <- copy _env
+  var goto-function-mode-ah?/eax: (addr handle word) <- get env, partial-function-name
+  var goto-function-mode?/eax: (addr word) <- lookup *goto-function-mode-ah?
+  compare goto-function-mode?, 0  # false
+  break-if-=
+  # clear a space for the dialog
+  var top-row/ebx: int <- copy 3
+  var bottom-row/edx: int <- copy 9
+  var sep-col/eax: (addr int) <- get env, code-separator-col
+  var left-col/ecx: int <- copy *sep-col
+  left-col <- subtract 0x10
+  var right-col/eax: int <- copy *sep-col
+  right-col <- add 0x10
+  clear-rect screen, top-row, left-col, bottom-row, right-col
+  draw-box screen, top-row, left-col, bottom-row, right-col
+  # render a little menu for the dialog
+  var menu-row/eax: int <- copy bottom-row
+  menu-row <- decrement
+  var menu-col/edx: int <- copy left-col
+  menu-col <- add 2
+  move-cursor screen, menu-row, menu-col
+  start-reverse-video screen
+  print-string screen, " esc "
+  reset-formatting screen
+  print-string screen, " cancel  "
+  start-reverse-video screen
+  print-string screen, " enter "
+  reset-formatting screen
+  print-string screen, " jump  "
+  # draw the word, positioned appropriately around the cursor
+  var start-col/ecx: int <- copy left-col
+  start-col <- increment
+  move-cursor screen, 6, start-col  # cursor-row
+  var word-ah?/edx: (addr handle word) <- get env, partial-function-name
+  var word/eax: (addr word) <- lookup *word-ah?
+  print-word screen, word
 }
 
 fn render-sandbox screen: (addr screen), functions: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int {
@@ -1101,7 +1226,7 @@ fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var rename-word-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
   var rename-word-mode?/eax: (addr word) <- lookup *rename-word-mode-ah?
-  compare rename-word-mode?, 0
+  compare rename-word-mode?, 0  # false
   break-if-=
   # clear a space for the dialog
   var top-row/eax: int <- copy cursor-row
@@ -1143,7 +1268,7 @@ fn render-define-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var define-function-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-function
   var define-function-mode?/eax: (addr word) <- lookup *define-function-mode-ah?
-  compare define-function-mode?, 0
+  compare define-function-mode?, 0  # false
   break-if-=
   # clear a space for the dialog
   var top-row/eax: int <- copy cursor-row
@@ -1507,6 +1632,10 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, " ctrl-e "
   reset-formatting screen
   print-string screen, " ⏭         "
+  start-reverse-video screen
+  print-string screen, " ctrl-g "
+  reset-formatting screen
+  print-string screen, " go  "
   start-reverse-video screen
   print-string screen, " ctrl-l "
   reset-formatting screen
