@@ -56,15 +56,107 @@ fn main -> _/ebx: int {
       print-slice-to-real-screen val-slice
       print-string 0, "\n"
       # treat cid as optional
-      var optional?/eax: boolean <- slice-equal? key-slice, "cid"
-      compare optional?, 0  # false
+      var cid?/eax: boolean <- slice-equal? key-slice, "cid"
+      compare cid?, 0  # false
+      loop-if-!=
+      # increment field count
+      curr-passport-field-count <- increment
+      # - validate fields one by one, setting curr-passport-field-count to impossibly high value to signal invalid
+      # byr
       {
-        break-if-!=
-        # otherwise assume there are no invalid fields and no duplicate fields
-        curr-passport-field-count <- increment
-        print-string 0, "-> "
-        print-int32-decimal 0, curr-passport-field-count
-        print-string 0, "\n"
+        var byr?/eax: boolean <- slice-equal? key-slice, "byr"
+        compare byr?, 0  # false
+        break-if-=
+        var byr/eax: int <- parse-decimal-int-from-slice val-slice
+        compare byr, 0x780  # 1920
+        {
+          break-if->=
+          curr-passport-field-count <- copy 8
+        }
+        compare byr, 0x7d2  # 2002
+        {
+          break-if-<=
+          curr-passport-field-count <- copy 8
+        }
+      }
+      # iyr
+      {
+        var iyr?/eax: boolean <- slice-equal? key-slice, "iyr"
+        compare iyr?, 0  # false
+        break-if-=
+        var iyr/eax: int <- parse-decimal-int-from-slice val-slice
+        compare iyr, 0x7da  # 2010
+        {
+          break-if->=
+          curr-passport-field-count <- copy 8
+        }
+        compare iyr, 0x7e4  # 2020
+        {
+          break-if-<=
+          curr-passport-field-count <- copy 8
+        }
+      }
+      # eyr
+      {
+        var eyr?/eax: boolean <- slice-equal? key-slice, "eyr"
+        compare eyr?, 0  # false
+        break-if-=
+        compare iyr, 0x7e4  # 2020
+        {
+          break-if->=
+          curr-passport-field-count <- copy 8
+        }
+        compare iyr, 0x7ee  # 2030
+        {
+          break-if-<=
+          curr-passport-field-count <- copy 8
+        }
+      }
+      # hgt
+      {
+        var hgt?/eax: boolean <- slice-equal? key-slice, "hgt"
+        compare hgt?, 0  # false
+        break-if-=
+      }
+      # hcl
+      {
+        var hcl?/eax: boolean <- slice-equal? key-slice, "hcl"
+        compare hcl?, 0  # false
+        break-if-=
+      }
+      # ecl
+      {
+        var ecl?/eax: boolean <- slice-equal? key-slice, "ecl"
+        compare ecl?, 0  # false
+        break-if-=
+        var amb?/eax: boolean <- slice-equal? val-slice, "amb"
+        compare amb?, 0  # false
+        loop-if-!= $main:word-loop
+        var blu?/eax: boolean <- slice-equal? val-slice, "blu"
+        compare blu?, 0  # false
+        loop-if-!= $main:word-loop
+        var brn?/eax: boolean <- slice-equal? val-slice, "brn"
+        compare brn?, 0  # false
+        loop-if-!= $main:word-loop
+        var gry?/eax: boolean <- slice-equal? val-slice, "gry"
+        compare gry?, 0  # false
+        loop-if-!= $main:word-loop
+        var grn?/eax: boolean <- slice-equal? val-slice, "grn"
+        compare grn?, 0  # false
+        loop-if-!= $main:word-loop
+        var hzl?/eax: boolean <- slice-equal? val-slice, "hzl"
+        compare hzl?, 0  # false
+        loop-if-!= $main:word-loop
+        var oth?/eax: boolean <- slice-equal? val-slice, "oth"
+        compare oth?, 0  # false
+        loop-if-!= $main:word-loop
+        curr-passport-field-count <- copy 8
+      }
+      # pid
+      {
+        var pid?/eax: boolean <- slice-equal? key-slice, "pid"
+        compare pid?, 0  # false
+        break-if-=
       }
       loop
     }
