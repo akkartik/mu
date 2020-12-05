@@ -67,15 +67,18 @@ fn main -> _/ebx: int {
         var byr?/eax: boolean <- slice-equal? key-slice, "byr"
         compare byr?, 0  # false
         break-if-=
+        # 1920 <= byr <= 2002
         var byr/eax: int <- parse-decimal-int-from-slice val-slice
         compare byr, 0x780  # 1920
         {
           break-if->=
+          print-string 0, "invalid\n"
           curr-passport-field-count <- copy 8
         }
         compare byr, 0x7d2  # 2002
         {
           break-if-<=
+          print-string 0, "invalid\n"
           curr-passport-field-count <- copy 8
         }
       }
@@ -84,15 +87,18 @@ fn main -> _/ebx: int {
         var iyr?/eax: boolean <- slice-equal? key-slice, "iyr"
         compare iyr?, 0  # false
         break-if-=
+        # 2010 <= iyr <= 2020
         var iyr/eax: int <- parse-decimal-int-from-slice val-slice
         compare iyr, 0x7da  # 2010
         {
           break-if->=
+          print-string 0, "invalid\n"
           curr-passport-field-count <- copy 8
         }
         compare iyr, 0x7e4  # 2020
         {
           break-if-<=
+          print-string 0, "invalid\n"
           curr-passport-field-count <- copy 8
         }
       }
@@ -101,14 +107,18 @@ fn main -> _/ebx: int {
         var eyr?/eax: boolean <- slice-equal? key-slice, "eyr"
         compare eyr?, 0  # false
         break-if-=
-        compare iyr, 0x7e4  # 2020
+        # 2020 <= eyr <= 2030
+        var eyr/eax: int <- parse-decimal-int-from-slice val-slice
+        compare eyr, 0x7e4  # 2020
         {
           break-if->=
+          print-string 0, "invalid\n"
           curr-passport-field-count <- copy 8
         }
-        compare iyr, 0x7ee  # 2030
+        compare eyr, 0x7ee  # 2030
         {
           break-if-<=
+          print-string 0, "invalid\n"
           curr-passport-field-count <- copy 8
         }
       }
@@ -117,12 +127,117 @@ fn main -> _/ebx: int {
         var hgt?/eax: boolean <- slice-equal? key-slice, "hgt"
         compare hgt?, 0  # false
         break-if-=
+        # convert val
+        var s: (handle array byte)
+        var s2/eax: (addr handle array byte) <- address s
+        _slice-to-string val-slice, s2
+        var s3/eax: (addr array byte) <- lookup *s2
+        var s4/ebx: (addr array byte) <- copy s3
+        # check suffix
+        var start/edx: int <- length s4
+        start <- subtract 2  # luckily both 'in' and 'cm' have the same length
+        {
+          var suffix-h: (handle array byte)
+          var suffix-ah/ecx: (addr handle array byte) <- address suffix-h
+          substring s4, start, 2, suffix-ah
+          var suffix/eax: (addr array byte) <- lookup *suffix-ah
+          {
+            var match?/eax: boolean <- string-equal? suffix, "in"
+            compare match?, 0  # false
+            break-if-=
+            # if suffix is "in", 59 <= val <= 96
+            var num-h: (handle array byte)
+            var num-ah/ecx: (addr handle array byte) <- address num-h
+            substring s4, 0, start, num-ah
+            var num/eax: (addr array byte) <- lookup *num-ah
+            var val/eax: int <- parse-decimal-int num
+            compare val, 0x3b  # 59
+            {
+              break-if->=
+          print-string 0, "invalid\n"
+              curr-passport-field-count <- copy 8
+            }
+            compare val, 0x60  # 96
+            {
+              break-if-<=
+          print-string 0, "invalid\n"
+              curr-passport-field-count <- copy 8
+            }
+            loop $main:word-loop
+          }
+          {
+            var match?/eax: boolean <- string-equal? suffix, "cm"
+            compare match?, 0  # false
+            break-if-=
+            # if suffix is "cm", 150 <= val <= 193
+            var num-h: (handle array byte)
+            var num-ah/ecx: (addr handle array byte) <- address num-h
+            substring s4, 0, start, num-ah
+            var num/eax: (addr array byte) <- lookup *num-ah
+            var val/eax: int <- parse-decimal-int num
+            compare val, 0x96  # 150
+            {
+              break-if->=
+          print-string 0, "invalid\n"
+              curr-passport-field-count <- copy 8
+            }
+            compare val, 0xc1  # 193
+            {
+              break-if-<=
+          print-string 0, "invalid\n"
+              curr-passport-field-count <- copy 8
+            }
+            loop $main:word-loop
+          }
+          print-string 0, "invalid\n"
+          curr-passport-field-count <- copy 8
+          loop $main:word-loop
+        }
       }
       # hcl
       {
         var hcl?/eax: boolean <- slice-equal? key-slice, "hcl"
         compare hcl?, 0  # false
         break-if-=
+        # convert val
+        var s: (handle array byte)
+        var s2/eax: (addr handle array byte) <- address s
+        _slice-to-string val-slice, s2
+        var s3/eax: (addr array byte) <- lookup *s2
+        # check length
+        var len/ebx: int <- length s3
+        compare len, 7
+        {
+          break-if-=
+          print-string 0, "invalid\n"
+          curr-passport-field-count <- copy 8
+          loop $main:word-loop
+        }
+        # check first byte
+        {
+          var c/eax: (addr byte) <- index s3, 0
+          var c2/eax: byte <- copy-byte *c
+          compare c2, 0x23  # '#'
+          break-if-=
+          print-string 0, "invalid2\n"
+          curr-passport-field-count <- copy 8
+          loop $main:word-loop
+        }
+        # check remaining bytes
+        var i/ebx: int <- copy 1  # skip 0
+        {
+          compare i, 7
+          break-if->=
+          var c/eax: (addr byte) <- index s3, i
+          {
+            var c2/eax: byte <- copy-byte *c
+            var valid?/eax: boolean <- is-hex-digit? c2
+            compare valid?, 0
+            loop-if-= $main:word-loop
+          }
+          i <- increment
+          loop
+        }
       }
       # ecl
       {
@@ -150,6 +265,7 @@ fn main -> _/ebx: int {
         var oth?/eax: boolean <- slice-equal? val-slice, "oth"
         compare oth?, 0  # false
         loop-if-!= $main:word-loop
+        print-string 0, "invalid\n"
         curr-passport-field-count <- copy 8
       }
       # pid
@@ -159,14 +275,17 @@ fn main -> _/ebx: int {
         break-if-=
         # convert val
         var s: (handle array byte)
-        var s2: (addr handle array byte) <- address s
+        var s2/eax: (addr handle array byte) <- address s
         _slice-to-string val-slice, s2
+        var s3/eax: (addr array byte) <- lookup *s2
         # check length
-        var len/eax: int <- length s2
+        var len/eax: int <- length s3
         compare len, 9
         {
           break-if-=
+          print-string 0, "invalid\n"
           curr-passport-field-count <- copy 8
+          loop $main:word-loop
         }
         # check valid decimal int
         # parse-decimal-int-from-slice currently returns 0 on invalid parse,
@@ -175,6 +294,7 @@ fn main -> _/ebx: int {
         compare val, 0
         {
           break-if->
+          print-string 0, "invalid\n"
           curr-passport-field-count <- copy 8
         }
       }
