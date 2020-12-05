@@ -94,7 +94,9 @@ sig slice-equal? s: (addr slice), p: (addr array byte) -> _/eax: boolean
 sig slice-starts-with? s: (addr slice), head: (addr array byte) -> _/eax: boolean
 sig write-slice out: (addr stream byte), s: (addr slice)
 sig write-slice-buffered out: (addr buffered-file), s: (addr slice)
+# bad name alert
 sig slice-to-string ad: (addr allocation-descriptor), in: (addr slice), out: (addr handle array byte)
+sig _slice-to-string in: (addr slice), out: (addr handle array byte)
 sig next-token in: (addr stream byte), delimiter: byte, out: (addr slice)
 sig next-token-from-slice start: (addr byte), end: (addr byte), delimiter: byte, out: (addr slice)
 sig skip-chars-matching in: (addr stream byte), delimiter: byte
@@ -113,6 +115,9 @@ sig write-stream-data f: (addr buffered-file), s: (addr stream byte)
 sig write-int32-decimal out: (addr stream byte), n: int
 sig is-decimal-digit? c: grapheme -> _/eax: boolean
 sig to-decimal-digit in: grapheme -> _/eax: int
+# bad name alert
+# next-word really tokenizes
+# next-raw-word really reads whitespace-separated words
 sig next-word line: (addr stream byte), out: (addr slice)  # skips '#' comments
 sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not skip '#' comments
 sig has-metadata? word: (addr slice), s: (addr string) -> _/eax: boolean

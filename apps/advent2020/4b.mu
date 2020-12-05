@@ -157,6 +157,26 @@ fn main -> _/ebx: int {
         var pid?/eax: boolean <- slice-equal? key-slice, "pid"
         compare pid?, 0  # false
         break-if-=
+        # convert val
+        var s: (handle array byte)
+        var s2: (addr handle array byte) <- address s
+        _slice-to-string val-slice, s2
+        # check length
+        var len/eax: int <- length s2
+        compare len, 9
+        {
+          break-if-=
+          curr-passport-field-count <- copy 8
+        }
+        # check valid decimal int
+        # parse-decimal-int-from-slice currently returns 0 on invalid parse,
+        # which isn't ideal but suffices for our purposes
+        var val/eax: int <- parse-decimal-int-from-slice val-slice
+        compare val, 0
+        {
+          break-if->
+          curr-passport-field-count <- copy 8
+        }
       }
       loop
     }
