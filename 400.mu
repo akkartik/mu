@@ -113,7 +113,8 @@ sig write-stream-data f: (addr buffered-file), s: (addr stream byte)
 sig write-int32-decimal out: (addr stream byte), n: int
 sig is-decimal-digit? c: grapheme -> _/eax: boolean
 sig to-decimal-digit in: grapheme -> _/eax: int
-sig next-word line: (addr stream byte), out: (addr slice)
+sig next-word line: (addr stream byte), out: (addr slice)  # skips '#' comments
+sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not skip '#' comments
 sig has-metadata? word: (addr slice), s: (addr string) -> _/eax: boolean
 sig is-valid-name? in: (addr slice) -> _/eax: boolean
 sig is-label? word: (addr slice) -> _/eax: boolean
