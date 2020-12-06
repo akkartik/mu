@@ -3,6 +3,8 @@ type sandbox {
   data: (handle line)
   # display data
   cursor-call-path: (handle call-path-element)
+  cursor-row: int
+  cursor-col: int
   expanded-words: (handle call-path)
   partial-name-for-cursor-word: (handle word)  # only when renaming word
   partial-name-for-function: (handle word)  # only when defining function

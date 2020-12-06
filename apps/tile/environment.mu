@@ -1,3 +1,18 @@
+# The architecture that seems to be crystallizing: the environment has two
+# areas: functions and sandbox.
+#
+# Rendering the environment requires rendering all areas.
+# Displaying the cursor requires displaying cursor for the area controlling the cursor.
+# Processing events for the environment requires processing events for the area controlling the cursor.
+#
+# Areas can have dialogs.
+# There can also be global dialogs (currently just one: goto function).
+# Areas are responsible for rendering their dialogs.
+# In practice this results in dialogs encapsulating the state they need to
+# decide whether to render.
+#
+# This will be useful if we add more areas in the future.
+
 type environment {
   screen: (handle screen)
   functions: (handle function)
@@ -1085,6 +1100,17 @@ fn render _env: (addr environment) {
 #?   print-string 0, "render-sandbox }\n"
   # dialogs
   render-goto-dialog screen, env
+  #
+  position-cursor screen, env
+}
+
+fn position-cursor screen: (addr screen), _env: (addr environment) {
+  var env/eax: (addr environment) <- copy _env
+  var cursor-sandbox-ah/eax: (addr handle sandbox) <- get env, cursor-sandbox
+  var cursor-sandbox/eax: (addr sandbox) <- lookup *cursor-sandbox-ah
+  var cursor-row/ecx: (addr int) <- get cursor-sandbox, cursor-row
+  var cursor-col/eax: (addr int) <- get cursor-sandbox, cursor-col
+  move-cursor screen, *cursor-row, *cursor-col
 }
 
 fn render-goto-dialog screen: (addr screen), _env: (addr environment) {
@@ -1135,13 +1161,11 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   #
   var curr-row/edx: int <- copy top-row
   # cursor row, col
-  var cursor-row: int
   var cursor-row-addr: (addr int)
-  var tmp/eax: (addr int) <- address cursor-row
+  var tmp/eax: (addr int) <- get sandbox, cursor-row
   copy-to cursor-row-addr, tmp
-  var cursor-col: int
   var cursor-col-addr: (addr int)
-  tmp <- address cursor-col
+  tmp <- get sandbox, cursor-col
   copy-to cursor-col-addr, tmp
   # render all but final line without stack
 #?   print-string 0, "render all but final line\n"
@@ -1165,9 +1189,8 @@ fn render-sandbox screen: (addr screen), functions: (addr handle function), bind
   #
   render-final-line-with-stack screen, functions, bindings, sandbox, curr-row, left-col, cursor-row-addr, cursor-col-addr
   # at most one of the following dialogs will be rendered
-  render-rename-dialog screen, sandbox, cursor-row, cursor-col
-  render-define-dialog screen, sandbox, cursor-row, cursor-col
-  move-cursor screen, cursor-row, cursor-col
+  render-rename-dialog screen, sandbox
+  render-define-dialog screen, sandbox
 }
 
 fn render-final-line-with-stack screen: (addr screen), functions: (addr handle function), bindings: (addr table), _sandbox: (addr sandbox), top-row: int, left-col: int, cursor-row-addr: (addr int), cursor-col-addr: (addr int) {
@@ -1222,20 +1245,22 @@ fn final-line _sandbox: (addr sandbox), out: (addr handle line) {
   copy-object curr-line-ah, out
 }
 
-fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
+fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox) {
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var rename-word-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
   var rename-word-mode?/eax: (addr word) <- lookup *rename-word-mode-ah?
   compare rename-word-mode?, 0  # false
   break-if-=
   # clear a space for the dialog
-  var top-row/eax: int <- copy cursor-row
+  var cursor-row/ebx: (addr int) <- get sandbox, cursor-row
+  var top-row/eax: int <- copy *cursor-row
   top-row <- subtract 3
-  var bottom-row/ecx: int <- copy cursor-row
+  var bottom-row/ecx: int <- copy *cursor-row
   bottom-row <- add 3
-  var left-col/edx: int <- copy cursor-col
+  var cursor-col/ebx: (addr int) <- get sandbox, cursor-col
+  var left-col/edx: int <- copy *cursor-col
   left-col <- subtract 0x10
-  var right-col/ebx: int <- copy cursor-col
+  var right-col/ebx: int <- copy *cursor-col
   right-col <- add 0x10
   clear-rect screen, top-row, left-col, bottom-row, right-col
   draw-box screen, top-row, left-col, bottom-row, right-col
@@ -1254,30 +1279,34 @@ fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-
   reset-formatting screen
   print-string screen, " rename  "
   # draw the word, positioned appropriately around the cursor
-  var start-col/ecx: int <- copy cursor-col
+  var cursor-col/ebx: (addr int) <- get sandbox, cursor-col
+  var start-col/ecx: int <- copy *cursor-col
   var word-ah?/edx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
   var word/eax: (addr word) <- lookup *word-ah?
   var cursor-index/eax: int <- cursor-index word
   start-col <- subtract cursor-index
-  move-cursor screen, cursor-row, start-col
+  var cursor-row/ebx: (addr int) <- get sandbox, cursor-row
+  move-cursor screen, *cursor-row, start-col
   var word/eax: (addr word) <- lookup *word-ah?
   print-word screen, word
 }
 
-fn render-define-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-row: int, cursor-col: int {
+fn render-define-dialog screen: (addr screen), _sandbox: (addr sandbox) {
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var define-function-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-function
   var define-function-mode?/eax: (addr word) <- lookup *define-function-mode-ah?
   compare define-function-mode?, 0  # false
   break-if-=
   # clear a space for the dialog
-  var top-row/eax: int <- copy cursor-row
+  var cursor-row/ebx: (addr int) <- get sandbox, cursor-row
+  var top-row/eax: int <- copy *cursor-row
   top-row <- subtract 3
-  var bottom-row/ecx: int <- copy cursor-row
+  var bottom-row/ecx: int <- copy *cursor-row
   bottom-row <- add 3
-  var left-col/edx: int <- copy cursor-col
+  var cursor-col/ebx: (addr int) <- get sandbox, cursor-col
+  var left-col/edx: int <- copy *cursor-col
   left-col <- subtract 0x10
-  var right-col/ebx: int <- copy cursor-col
+  var right-col/ebx: int <- copy *cursor-col
   right-col <- add 0x10
   clear-rect screen, top-row, left-col, bottom-row, right-col
   draw-box screen, top-row, left-col, bottom-row, right-col
@@ -1296,12 +1325,14 @@ fn render-define-dialog screen: (addr screen), _sandbox: (addr sandbox), cursor-
   reset-formatting screen
   print-string screen, " define  "
   # draw the word, positioned appropriately around the cursor
-  var start-col/ecx: int <- copy cursor-col
+  var cursor-col/ebx: (addr int) <- get sandbox, cursor-col
+  var start-col/ecx: int <- copy *cursor-col
   var word-ah?/edx: (addr handle word) <- get sandbox, partial-name-for-function
   var word/eax: (addr word) <- lookup *word-ah?
   var cursor-index/eax: int <- cursor-index word
   start-col <- subtract cursor-index
-  move-cursor screen, cursor-row, start-col
+  var cursor-row/ebx: (addr int) <- get sandbox, cursor-row
+  move-cursor screen, *cursor-row, start-col
   var word/eax: (addr word) <- lookup *word-ah?
   print-word screen, word
 }
