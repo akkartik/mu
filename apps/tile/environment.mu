@@ -1608,7 +1608,6 @@ fn render-line-without-stack screen: (addr screen), _line: (addr line), curr-row
 #?     }
 #?     print-string 0, "\n"
     var old-col/edx: int <- copy curr-col
-    reset-formatting screen
     move-cursor screen, curr-row, curr-col
     print-word screen, curr-word
     {
@@ -2047,16 +2046,14 @@ fn render-function screen: (addr screen), row: int, col: int, _f: (addr function
   move-cursor screen, row, col
   print-string screen, "≡ "
   add-to col, 2
-  var cursor-row/eax: (addr int) <- get f, cursor-row
-  var src/ecx: int <- copy row
-  copy-to *cursor-row, src
-  var cursor-col/eax: (addr int) <- get f, cursor-col
-  src <- copy col
-  copy-to *cursor-col, src
+  var cursor-row/ecx: (addr int) <- get f, cursor-row
+  var cursor-col/edx: (addr int) <- get f, cursor-col
+  var cursor-word-ah/eax: (addr handle word) <- get f, cursor-word
+  var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+  var cursor-word/ebx: (addr word) <- copy _cursor-word
   var body-ah/eax: (addr handle line) <- get f, body
   var body/eax: (addr line) <- lookup *body-ah
-  var body-words-ah/eax: (addr handle word) <- get body, data
-  print-words screen, body-words-ah
+  render-line-without-stack screen, body, row, col, cursor-word, cursor-row, cursor-col
 }
 
 fn real-grapheme? g: grapheme -> _/eax: boolean {
