@@ -1899,20 +1899,6 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
   return right-col
 }
 
-fn clear-canvas _env: (addr environment) {
-  var env/esi: (addr environment) <- copy _env
-  var screen-ah/edi: (addr handle screen) <- get env, screen
-  var _screen/eax: (addr screen) <- lookup *screen-ah
-  var screen/edi: (addr screen) <- copy _screen
-  clear-screen screen
-  var nrows/eax: (addr int) <- get env, nrows
-  var sep-col/ecx: (addr int) <- get env, code-separator-col
-  # divider
-  draw-vertical-line screen, 1, *nrows, *sep-col
-  # primitives
-  var dummy/eax: int <- render-primitives screen, *nrows, *sep-col
-}
-
 # wordstar-style cheatsheet of shortcuts
 fn render-menu _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
@@ -1965,6 +1951,20 @@ fn render-menu _env: (addr environment) {
   print-string screen, " ctrl-d "
   reset-formatting screen
   print-string screen, " define function  "
+}
+
+fn clear-canvas _env: (addr environment) {
+  var env/esi: (addr environment) <- copy _env
+  var screen-ah/edi: (addr handle screen) <- get env, screen
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  clear-screen screen
+  var nrows/eax: (addr int) <- get env, nrows
+  var sep-col/ecx: (addr int) <- get env, code-separator-col
+  # divider
+  draw-vertical-line screen, 1, *nrows, *sep-col
+  # primitives
+  var dummy/eax: int <- render-primitives screen, *nrows, *sep-col
 }
 
 # return value: top-most row written to
