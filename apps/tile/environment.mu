@@ -1921,6 +1921,44 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
 }
 
 fn render-function-menu _env: (addr environment) {
+  var env/esi: (addr environment) <- copy _env
+  var screen-ah/edi: (addr handle screen) <- get env, screen
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  var nrows/eax: (addr int) <- get env, nrows
+  move-cursor screen, *nrows, 0
+  start-reverse-video screen
+  print-string screen, " ctrl-q "
+  reset-formatting screen
+  print-string screen, " quit "
+  var sep-col/ecx: (addr int) <- get env, code-separator-col
+  var menu-start/ebx: int <- copy *sep-col
+  menu-start <- subtract 0x30  # 48 = half the size of the menu
+  move-cursor screen, *nrows, menu-start
+  start-reverse-video screen
+  print-string screen, " ctrl-a "
+  reset-formatting screen
+  print-string screen, " ⏮   "
+  start-reverse-video screen
+  print-string screen, " ctrl-b "
+  reset-formatting screen
+  print-string screen, " ◀ word  "
+  start-reverse-video screen
+  print-string screen, " ctrl-f "
+  reset-formatting screen
+  print-string screen, " word ▶  "
+  start-reverse-video screen
+  print-string screen, " ctrl-e "
+  reset-formatting screen
+  print-string screen, " ⏭         "
+  start-reverse-video screen
+  print-string screen, " ctrl-g "
+  reset-formatting screen
+  print-string screen, " go to function  "
+  start-reverse-video screen
+  print-string screen, " tab "
+  reset-formatting screen
+  print-string screen, " go to sandbox  "
 }
 
 fn render-sandbox-menu _env: (addr environment) {
