@@ -1310,6 +1310,8 @@ fn render _env: (addr environment) {
 #?   print-string 0, "== render\n"
   var env/esi: (addr environment) <- copy _env
   clear-canvas env
+  # menu
+  render-menu env
   # screen
   var screen-ah/eax: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
@@ -1905,13 +1907,25 @@ fn clear-canvas _env: (addr environment) {
   clear-screen screen
   var nrows/eax: (addr int) <- get env, nrows
   var sep-col/ecx: (addr int) <- get env, code-separator-col
+  # divider
   draw-vertical-line screen, 1, *nrows, *sep-col
-  # wordstar-style cheatsheet of shortcuts
+  # primitives
+  var dummy/eax: int <- render-primitives screen, *nrows, *sep-col
+}
+
+# wordstar-style cheatsheet of shortcuts
+fn render-menu _env: (addr environment) {
+  var env/esi: (addr environment) <- copy _env
+  var screen-ah/edi: (addr handle screen) <- get env, screen
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  var nrows/eax: (addr int) <- get env, nrows
   move-cursor screen, *nrows, 0
   start-reverse-video screen
   print-string screen, " ctrl-q "
   reset-formatting screen
   print-string screen, " quit "
+  var sep-col/ecx: (addr int) <- get env, code-separator-col
   var menu-start/ebx: int <- copy *sep-col
   menu-start <- subtract 0x48  # 72 = half the size of the menu
   move-cursor screen, *nrows, menu-start
@@ -1951,8 +1965,6 @@ fn clear-canvas _env: (addr environment) {
   print-string screen, " ctrl-d "
   reset-formatting screen
   print-string screen, " define function  "
-  # primitives
-  var dummy/eax: int <- render-primitives screen, *nrows, *sep-col
 }
 
 # return value: top-most row written to
