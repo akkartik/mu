@@ -1338,6 +1338,27 @@ fn render _env: (addr environment) {
   position-cursor screen, env
 }
 
+# draw a wordstar-style cheatsheet of shortcuts on the bottom line of the screen
+fn render-menu _env: (addr environment) {
+  var env/esi: (addr environment) <- copy _env
+  var cursor-function-ah/eax: (addr handle function) <- get env, cursor-function
+  var cursor-function/eax: (addr function) <- lookup *cursor-function-ah
+  {
+    compare cursor-function, 0
+    break-if-=
+    render-function-menu env
+    return
+  }
+  var cursor-sandbox-ah/eax: (addr handle sandbox) <- get env, cursor-sandbox
+  var cursor-sandbox/eax: (addr sandbox) <- lookup *cursor-sandbox-ah
+  {
+    compare cursor-sandbox, 0
+    break-if-=
+    render-sandbox-menu env
+    return
+  }
+}
+
 # HACK: areas currently responsible for positioning their dialogs' cursors. So
 # we just do nothing here if a dialog is up.
 fn position-cursor screen: (addr screen), _env: (addr environment) {
@@ -1899,8 +1920,10 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
   return right-col
 }
 
-# wordstar-style cheatsheet of shortcuts
-fn render-menu _env: (addr environment) {
+fn render-function-menu _env: (addr environment) {
+}
+
+fn render-sandbox-menu _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
   var screen-ah/edi: (addr handle screen) <- get env, screen
   var _screen/eax: (addr screen) <- lookup *screen-ah
