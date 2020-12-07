@@ -1904,16 +1904,15 @@ fn clear-canvas _env: (addr environment) {
   var screen/edi: (addr screen) <- copy _screen
   clear-screen screen
   var nrows/eax: (addr int) <- get env, nrows
-  var _sep-col/ecx: (addr int) <- get env, code-separator-col
-  var sep-col/ecx: int <- copy *_sep-col
-  draw-vertical-line screen, 1, *nrows, sep-col
+  var sep-col/ecx: (addr int) <- get env, code-separator-col
+  draw-vertical-line screen, 1, *nrows, *sep-col
   # wordstar-style cheatsheet of shortcuts
   move-cursor screen, *nrows, 0
   start-reverse-video screen
   print-string screen, " ctrl-q "
   reset-formatting screen
   print-string screen, " quit "
-  var menu-start/ebx: int <- copy sep-col
+  var menu-start/ebx: int <- copy *sep-col
   menu-start <- subtract 0x48  # 72 = half the size of the menu
   move-cursor screen, *nrows, menu-start
   start-reverse-video screen
@@ -1953,7 +1952,7 @@ fn clear-canvas _env: (addr environment) {
   reset-formatting screen
   print-string screen, " define function  "
   # primitives
-  var dummy/eax: int <- render-primitives screen, *nrows, sep-col
+  var dummy/eax: int <- render-primitives screen, *nrows, *sep-col
 }
 
 # return value: top-most row written to
