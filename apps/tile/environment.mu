@@ -267,6 +267,26 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     cursor-to-end cursor-word
     return
   }
+  # bounce to another function
+  compare key, 7  # ctrl-g
+  $process-function-edit:goto-function: {
+    break-if-!=
+    # initialize dialog to name function to jump to
+    var partial-function-name-ah/eax: (addr handle word) <- get self, partial-function-name
+    allocate partial-function-name-ah
+    var partial-function-name/eax: (addr word) <- lookup *partial-function-name-ah
+    initialize-word partial-function-name
+    return
+  }
+  # bounce to sandbox
+  compare key, 9  # tab
+  $process-function-edit:goto-sandbox: {
+    break-if-!=
+    var function-ah/eax: (addr handle function) <- get self, cursor-function
+    clear-object function-ah
+    return
+  }
+  # editing the current function
   compare key, 0x7f  # del (backspace on Macs)
   $process-function-edit:backspace: {
     break-if-!=
