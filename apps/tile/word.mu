@@ -141,7 +141,7 @@ fn final-word _in: (addr handle word), out: (addr handle word) {
     copy-object next, curr-ah
     loop
   }
-  copy-object curr-ah, out
+  copy-object curr-ah, out  # modify 'out' right at the end, just in case it's same as 'in'
 }
 
 fn first-grapheme _self: (addr word) -> _/eax: grapheme {
@@ -594,6 +594,7 @@ fn parse-words in: (addr array byte), out-ah: (addr handle word) {
     # otherwise insert word after and move cursor to it
     append-word cursor-word-ah
     var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    cursor-to-start cursor-word  # reset cursor in each function
     cursor-word-ah <- get cursor-word, next
     loop
   }

@@ -156,9 +156,215 @@ fn process-goto-dialog _self: (addr environment), key: grapheme {
 fn process-function _self: (addr environment), _function: (addr function), key: grapheme {
   var self/esi: (addr environment) <- copy _self
   var function/edi: (addr function) <- copy _function
-  print-string 0, "processing function\n"
-  syscall_exit
-#?   process-function-edit self, function, key
+  process-function-edit self, function, key
+}
+
+fn process-function-edit _self: (addr environment), _function: (addr function), key: grapheme {
+  var self/esi: (addr environment) <- copy _self
+  var function/edi: (addr function) <- copy _function
+  var cursor-word-ah/ebx: (addr handle word) <- get function, cursor-word
+  var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+  var cursor-word/ecx: (addr word) <- copy _cursor-word
+  compare key, 0x445b1b  # left-arrow
+  $process-function-edit:key-left-arrow: {
+    break-if-!=
+#?     print-string 0, "left-arrow\n"
+    # if not at start, move left within current word
+    var at-start?/eax: boolean <- cursor-at-start? cursor-word
+    compare at-start?, 0  # false
+    {
+      break-if-!=
+#?       print-string 0, "cursor left within word\n"
+      cursor-left cursor-word
+      return
+    }
+    # otherwise move to end of previous word
+    var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
+    var prev-word/eax: (addr word) <- lookup *prev-word-ah
+    {
+      compare prev-word, 0
+      break-if-=
+#?       print-string 0, "move to previous word\n"
+      cursor-to-end prev-word
+      copy-object prev-word-ah, cursor-word-ah
+    }
+    return
+  }
+  compare key, 0x435b1b  # right-arrow
+  $process-function-edit:key-right-arrow: {
+    break-if-!=
+    # if not at end, move right within current word
+    var at-end?/eax: boolean <- cursor-at-end? cursor-word
+    compare at-end?, 0  # false
+    {
+      break-if-!=
+      cursor-right cursor-word
+      return
+    }
+    # otherwise, move to the next word
+    var next-word-ah/edx: (addr handle word) <- get cursor-word, next
+    var next-word/eax: (addr word) <- lookup *next-word-ah
+    {
+      compare next-word, 0
+      break-if-=
+      cursor-to-start next-word
+      copy-object next-word-ah, cursor-word-ah
+    }
+    return
+  }
+  # word-based motions
+  compare key, 2  # ctrl-b
+  $process-function-edit:prev-word: {
+    break-if-!=
+    # jump to previous word if possible
+    var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
+    var prev-word/eax: (addr word) <- lookup *prev-word-ah
+    {
+      compare prev-word, 0
+      break-if-=
+      cursor-to-end prev-word
+      copy-object prev-word-ah, cursor-word-ah
+    }
+    return
+  }
+  compare key, 6  # ctrl-f
+  $process-function-edit:next-word: {
+    break-if-!=
+    # jump to previous word if possible
+    var next-word-ah/edx: (addr handle word) <- get cursor-word, next
+    var next-word/eax: (addr word) <- lookup *next-word-ah
+    {
+      compare next-word, 0
+      break-if-=
+      cursor-to-end next-word
+      copy-object next-word-ah, cursor-word-ah
+    }
+    return
+  }
+  # line-based motions
+  compare key, 1  # ctrl-a
+  $process-function-edit:start-of-line: {
+    break-if-!=
+    # move cursor to start of first word
+    var body-ah/eax: (addr handle line) <- get function, body
+    var body/eax: (addr line) <- lookup *body-ah
+    var body-contents-ah/ecx: (addr handle word) <- get body, data
+    copy-object body-contents-ah, cursor-word-ah
+    var body-contents/eax: (addr word) <- lookup *body-contents-ah
+    cursor-to-start body-contents
+    return
+  }
+  compare key, 5  # ctrl-e
+  $process-function-edit:end-of-line: {
+    break-if-!=
+    # move cursor to end of final word
+    var body-ah/eax: (addr handle line) <- get function, body
+    var body/eax: (addr line) <- lookup *body-ah
+    var body-contents-ah/ecx: (addr handle word) <- get body, data
+    copy-object body-contents-ah, cursor-word-ah
+    final-word cursor-word-ah, cursor-word-ah
+    var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+    cursor-to-end cursor-word
+    return
+  }
+  compare key, 0x7f  # del (backspace on Macs)
+  $process-function-edit:backspace: {
+    break-if-!=
+    # if not at start of some word, delete grapheme before cursor within current word
+    var at-start?/eax: boolean <- cursor-at-start? cursor-word
+    compare at-start?, 0  # false
+    {
+      break-if-!=
+      delete-before-cursor cursor-word
+      return
+    }
+    # otherwise delete current word and move to end of prev word
+    var prev-word-ah/edx: (addr handle word) <- get cursor-word, prev
+    var prev-word/eax: (addr word) <- lookup *prev-word-ah
+    {
+      compare prev-word, 0
+      break-if-=
+      cursor-to-end prev-word
+      delete-next prev-word
+      copy-object prev-word-ah, cursor-word-ah
+    }
+    return
+  }
+  compare key, 0x20  # space
+  $process-function-edit:space: {
+    break-if-!=
+#?     print-string 0, "space\n"
+    # if cursor is at start of word, insert word before
+    {
+      var at-start?/eax: boolean <- cursor-at-start? cursor-word
+      compare at-start?, 0  # false
+      break-if-=
+      var prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
+      append-word prev-word-ah
+      var new-prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
+      copy-object new-prev-word-ah, cursor-word-ah
+      return
+    }
+    # if start of word is quote and grapheme before cursor is not, just insert it as usual
+    # TODO: support string escaping
+    {
+      var first-grapheme/eax: grapheme <- first-grapheme cursor-word
+      compare first-grapheme, 0x22  # double quote
+      break-if-!=
+      var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
+      compare final-grapheme, 0x22  # double quote
+      break-if-=
+      break $process-function-edit:space
+    }
+    # if start of word is '[' and grapheme before cursor is not ']', just insert it as usual
+    # TODO: support nested arrays
+    {
+      var first-grapheme/eax: grapheme <- first-grapheme cursor-word
+      compare first-grapheme, 0x5b  # '['
+      break-if-!=
+      var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
+      compare final-grapheme, 0x5d  # ']'
+      break-if-=
+      break $process-function-edit:space
+    }
+    # otherwise insert word after and move cursor to it for the next key
+    # (but we'll continue to track the current cursor-word for the rest of this function)
+    append-word cursor-word-ah
+    var next-word-ah/eax: (addr handle word) <- get cursor-word, next
+    copy-object next-word-ah, cursor-word-ah
+    # if cursor is at end of word, that's all
+    var at-end?/eax: boolean <- cursor-at-end? cursor-word
+    compare at-end?, 0  # false
+    {
+      break-if-=
+      return
+    }
+    # otherwise we're in the middle of a word
+    # move everything after cursor to the (just created) next word
+    var next-word-ah/eax: (addr handle word) <- get cursor-word, next
+    var _next-word/eax: (addr word) <- lookup *next-word-ah
+    var next-word/ebx: (addr word) <- copy _next-word
+    {
+      var at-end?/eax: boolean <- cursor-at-end? cursor-word
+      compare at-end?, 0  # false
+      break-if-!=
+      var g/eax: grapheme <- pop-after-cursor cursor-word
+      add-grapheme-to-word next-word, g
+      loop
+    }
+    cursor-to-start next-word
+    return
+  }
+  # otherwise insert key within current word
+  var g/edx: grapheme <- copy key
+  var print?/eax: boolean <- real-grapheme? key
+  $process-function-edit:real-grapheme: {
+    compare print?, 0  # false
+    break-if-=
+    add-grapheme-to-word cursor-word, g
+    return
+  }
+  # silently ignore other hotkeys
 }
 
 fn process-sandbox _self: (addr environment), _sandbox: (addr sandbox), key: grapheme {
@@ -783,6 +989,10 @@ fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle func
     copy-object final-line-contents, body-contents
     var cursor-word-ah/ecx: (addr handle word) <- get new-function, cursor-word
     copy-object final-line-contents, cursor-word-ah
+    {
+      var cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+      cursor-to-start cursor-word
+    }
     #
     copy-unbound-words-to-args functions
     #
