@@ -781,6 +781,8 @@ fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle func
     var final-line/eax: (addr line) <- lookup *final-line-ah
     var final-line-contents/eax: (addr handle word) <- get final-line, data
     copy-object final-line-contents, body-contents
+    var cursor-word-ah/ecx: (addr handle word) <- get new-function, cursor-word
+    copy-object final-line-contents, cursor-word-ah
     #
     copy-unbound-words-to-args functions
     #
@@ -1104,13 +1106,51 @@ fn render _env: (addr environment) {
   position-cursor screen, env
 }
 
+# HACK: areas currently responsible for positioning their dialogs' cursors. So
+# we just do nothing here if a dialog is up.
 fn position-cursor screen: (addr screen), _env: (addr environment) {
-  var env/eax: (addr environment) <- copy _env
+  var env/esi: (addr environment) <- copy _env
+  var goto-function-ah/eax: (addr handle word) <- get env, partial-function-name
+  var goto-function/eax: (addr word) <- lookup *goto-function-ah
+  {
+    compare goto-function, 0
+    break-if-=
+    return
+  }
+  var cursor-function-ah/eax: (addr handle function) <- get env, cursor-function
+  var cursor-function/eax: (addr function) <- lookup *cursor-function-ah
+  {
+    compare cursor-function, 0
+    break-if-=
+    var cursor-row/ecx: (addr int) <- get cursor-function, cursor-row
+    var cursor-col/eax: (addr int) <- get cursor-function, cursor-col
+    move-cursor screen, *cursor-row, *cursor-col
+    return
+  }
   var cursor-sandbox-ah/eax: (addr handle sandbox) <- get env, cursor-sandbox
   var cursor-sandbox/eax: (addr sandbox) <- lookup *cursor-sandbox-ah
-  var cursor-row/ecx: (addr int) <- get cursor-sandbox, cursor-row
-  var cursor-col/eax: (addr int) <- get cursor-sandbox, cursor-col
-  move-cursor screen, *cursor-row, *cursor-col
+  {
+    compare cursor-sandbox, 0
+    break-if-=
+    # if in a dialog, return
+    {
+      var partial-word-rename-ah/eax: (addr handle word) <- get cursor-sandbox, partial-name-for-cursor-word
+      var partial-word-rename/eax: (addr word) <- lookup *partial-word-rename-ah
+      compare partial-word-rename, 0
+      break-if-=
+      return
+    }
+    {
+      var partial-function-name-ah/eax: (addr handle word) <- get cursor-sandbox, partial-name-for-function
+      var partial-function-name/eax: (addr word) <- lookup *partial-function-name-ah
+      compare partial-function-name, 0
+      break-if-=
+      return
+    }
+    var cursor-row/ecx: (addr int) <- get cursor-sandbox, cursor-row
+    var cursor-col/eax: (addr int) <- get cursor-sandbox, cursor-col
+    move-cursor screen, *cursor-row, *cursor-col
+  }
 }
 
 fn render-goto-dialog screen: (addr screen), _env: (addr environment) {
@@ -1796,6 +1836,13 @@ fn render-function screen: (addr screen), row: int, col: int, _f: (addr function
   add-to col, 2
   move-cursor screen, row, col
   print-string screen, "≡ "
+  add-to col, 2
+  var cursor-row/eax: (addr int) <- get f, cursor-row
+  var src/ecx: int <- copy row
+  copy-to *cursor-row, src
+  var cursor-col/eax: (addr int) <- get f, cursor-col
+  src <- copy col
+  copy-to *cursor-col, src
   var body-ah/eax: (addr handle line) <- get f, body
   var body/eax: (addr line) <- lookup *body-ah
   var body-words-ah/eax: (addr handle word) <- get body, data

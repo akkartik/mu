@@ -1,13 +1,18 @@
+# widgets in the environment share the following pattern of updates:
+#   process-* functions read keys and update which object the cursor is at
+#   render-* functions print to screen and update which row/col each object's cursor is at
+
 type sandbox {
   setup: (handle line)
   data: (handle line)
-  # display data
+  # bookkeeping for process-*
   cursor-call-path: (handle call-path-element)
-  cursor-row: int
-  cursor-col: int
   expanded-words: (handle call-path)
   partial-name-for-cursor-word: (handle word)  # only when renaming word
   partial-name-for-function: (handle word)  # only when defining function
+  # bookkeeping for render-*
+  cursor-row: int
+  cursor-col: int
   #
   next: (handle sandbox)
   prev: (handle sandbox)
@@ -17,7 +22,12 @@ type function {
   name: (handle array byte)
   args: (handle word)  # in reverse order
   body: (handle line)
-  # some sort of indication of spatial location
+  # bookkeeping for process-*
+  cursor-word: (handle word)
+  # bookkeeping for render-*
+  cursor-row: int
+  cursor-col: int
+  # todo: some sort of indication of spatial location
   next: (handle function)
 }
 
@@ -115,6 +125,8 @@ fn create-primitive-functions _self: (addr handle function) {
   initialize-line body
   var curr-word-ah/ecx: (addr handle word) <- get body, data
   parse-words "x 2 *", curr-word-ah
+  var cursor-word-ah/edx: (addr handle word) <- get f, cursor-word
+  copy-object curr-word-ah, cursor-word-ah
   # x 1+ = x 1 +
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -132,6 +144,8 @@ fn create-primitive-functions _self: (addr handle function) {
   initialize-line body
   curr-word-ah <- get body, data
   parse-words "x 1 +", curr-word-ah
+  var cursor-word-ah/edx: (addr handle word) <- get f, cursor-word
+  copy-object curr-word-ah, cursor-word-ah
   # x 2+ = x 1+ 1+
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -149,6 +163,8 @@ fn create-primitive-functions _self: (addr handle function) {
   initialize-line body
   curr-word-ah <- get body, data
   parse-words "x 1+ 1+", curr-word-ah
+  var cursor-word-ah/edx: (addr handle word) <- get f, cursor-word
+  copy-object curr-word-ah, cursor-word-ah
   # x square = x x *
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -166,6 +182,8 @@ fn create-primitive-functions _self: (addr handle function) {
   initialize-line body
   curr-word-ah <- get body, data
   parse-words "x x *", curr-word-ah
+  var cursor-word-ah/edx: (addr handle word) <- get f, cursor-word
+  copy-object curr-word-ah, cursor-word-ah
   # x 1- = x 1 -
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -183,6 +201,8 @@ fn create-primitive-functions _self: (addr handle function) {
   initialize-line body
   curr-word-ah <- get body, data
   parse-words "x 1 -", curr-word-ah
+  var cursor-word-ah/edx: (addr handle word) <- get f, cursor-word
+  copy-object curr-word-ah, cursor-word-ah
   # x y sub = x y -
   var next/esi: (addr handle function) <- get f, next
   allocate next
@@ -205,6 +225,8 @@ fn create-primitive-functions _self: (addr handle function) {
   initialize-line body
   curr-word-ah <- get body, data
   parse-words "x y -", curr-word-ah
+  var cursor-word-ah/edx: (addr handle word) <- get f, cursor-word
+  copy-object curr-word-ah, cursor-word-ah
 }
 
 fn function-body functions: (addr handle function), _word: (addr handle word), out: (addr handle line) {
