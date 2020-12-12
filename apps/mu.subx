@@ -2554,6 +2554,96 @@ test-convert-function-with-local-var-in-reg:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-local-var-in-same-reg:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: int <- copy 3\n")
+    (write _test-input-stream "  var y/ecx: int <- copy x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-local-var-in-same-reg/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-local-var-in-same-reg/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-var-in-same-reg/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-same-reg/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-var-in-same-reg/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-var-in-same-reg/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-with-local-var-in-same-reg/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"  "F - test-convert-function-with-local-var-in-same-reg/7")
+    # optimization: skip the second copy
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-with-local-var-in-same-reg/8")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-same-reg/9")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-var-in-same-reg/10")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-same-reg/11")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-same-reg/12")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-same-reg/13")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-same-reg/14")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-local-var-in-same-reg-dereferenced:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: (addr int) <- copy 0\n")
+    (write _test-input-stream "  var y/ecx: int <- copy *x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-local-var-in-same-reg-dereferenced/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-local-var-in-same-reg-dereferenced/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-var-in-same-reg-dereferenced/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-same-reg-dereferenced/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-var-in-same-reg-dereferenced/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-var-in-same-reg-dereferenced/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-with-local-var-in-same-reg-dereferenced/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0/imm32"  "F - test-convert-function-with-local-var-in-same-reg-dereferenced/7")
+    (check-next-stream-line-equal _test-output-stream "    8b/-> *ecx 0x00000001/r32"  "F - test-convert-function-with-local-var-in-same-reg-dereferenced/8")  # don't optimize this away
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-with-local-var-in-same-reg-dereferenced/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-same-reg-dereferenced/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-var-in-same-reg-dereferenced/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-same-reg-dereferenced/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-same-reg-dereferenced/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-same-reg-dereferenced/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-same-reg-dereferenced/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-float-var-in-wrong-register:
     # . prologue
     55/push-ebp
@@ -28551,6 +28641,11 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (translate-mu-write-to-stream-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
+    # - optimizations
+    # if copy instruction has same register in source and destination, emit nothing
+    (is-redundant-copy? *(ebp+0xc))  # => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= $emit-subx-stmt:end/disp8
     # - if stmt matches a primitive, emit it
     {
 $emit-subx-stmt:check-for-primitive:
@@ -28570,6 +28665,52 @@ $emit-subx-stmt:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+is-redundant-copy?:  # stmt: (addr stmt) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    56/push-esi
+    57/push-edi
+    # esi = stmt
+    8b/-> *(ebp+8) 6/r32/esi
+    # if stmt->operation != "copy" return false
+    (lookup *(esi+4) *(esi+8))  # Stmt1-operation Stmt1-operation => eax
+    (string-equal? %eax "copy")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 84/jump-if-= $is-redundant-copy?:end/disp32
+    # var output-reg/edi: (addr stmt-var) = stmt->outputs->value->register
+    (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    # . if output-reg == null, return false
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $is-redundant-copy?:end/disp8
+    89/<- %edi 0/r32/eax
+    # return (inout->value->register == output->value->register)
+    (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    # . if inout->is-deref return false
+    81 7/subop/compare *(eax+0x10) 0/imm32/false  # Stmt-var-is-deref
+    {
+      74/jump-if-= break/disp8
+      b8/copy-to-eax 0/imm32/false
+      e9/jump $is-redundant-copy?:end/disp32
+    }
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    # . if inout-reg == null, return false
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $is-redundant-copy?:end/disp8
+    (string-equal? %eax %edi)  # => eax
+$is-redundant-copy?:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
