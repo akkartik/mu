@@ -9446,6 +9446,51 @@ test-compare-non-scalar:
     5d/pop-to-ebp
     c3/return
 
+test-compare-with-string-literal:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    (clear-stream _test-error-stream)
+    (clear-stream $_test-error-buffered-file->buffer)
+    # var ed/edx: exit-descriptor = tailor-exit-descriptor(16)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (tailor-exit-descriptor %edx 0x10)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: (addr array byte) <- copy 0\n")
+    (write _test-input-stream "  compare x, \"abc\"\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file _test-error-buffered-file %edx)
+    # registers except esp clobbered at this point
+    # restore ed
+    89/<- %edx 4/r32/esp
+    (flush _test-output-buffered-file)
+    (flush _test-error-buffered-file)
+#?     # dump _test-error-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-error-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-error-stream)
+#?     # }}}
+    # check output
+    (check-stream-equal _test-output-stream  ""  "F - test-compare-with-string-literal: output should be empty")
+    (check-next-stream-line-equal _test-error-stream  "fn foo: stmt compare: string literal \"abc\" is not supported; use the string-equal? function"  "F - test-compare-with-string-literal: error message")
+    # check that stop(1) was called
+    (check-ints-equal *(edx+4) 2 "F - test-compare-with-string-literal: exit status")
+    # don't restore from ebp
+    81 0/subop/add %esp 8/imm32
+    # . epilogue
+    5d/pop-to-ebp
+    c3/return
+
 test-address-with-no-inout:
     # . prologue
     55/push-ebp
@@ -22611,6 +22656,10 @@ $check-mu-compare-stmt:types:
       }
       89/<- %ecx 0/r32/eax
     }
+    # if right-type is a literal string, abort
+    (is-simple-mu-type? %ecx 0x10)  # string-literal => eax
+    3d/compare-eax-and 0/imm32/false
+    0f 85/jump-if-!= $check-mu-compare-stmt:error-right-string-literal/disp32
     # if right is not a scalar, abort
     (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
     (size-of %eax)  # => eax
@@ -22728,6 +22777,20 @@ $check-mu-compare-stmt:error-right-too-large:
     (lookup *eax *(eax+4))  # Var-name Var-name => eax
     (write-buffered *(ebp+0x10) %eax)
     (write-buffered *(ebp+0x10) "' is too large to compare\n")
+    (flush *(ebp+0x10))
+    (stop *(ebp+0x14) 1)
+    # never gets here
+
+$check-mu-compare-stmt:error-right-string-literal:
+    (write-buffered *(ebp+0x10) "fn ")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) ": stmt compare: string literal ")
+    (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0x10) %eax)
+    (write-buffered *(ebp+0x10) " is not supported; use the string-equal? function\n")
     (flush *(ebp+0x10))
     (stop *(ebp+0x14) 1)
     # never gets here
