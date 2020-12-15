@@ -2011,7 +2011,7 @@ fn render-sandbox-menu _env: (addr environment) {
   start-reverse-video screen
   print-string screen, " ctrl-n "
   reset-formatting screen
-  print-string screen, " name value  "
+  print-string screen, " name word  "
   start-reverse-video screen
   print-string screen, " ctrl-d "
   reset-formatting screen
