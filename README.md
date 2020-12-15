@@ -11,7 +11,7 @@ Running the code you want to run, and nothing else.
 $ git clone https://github.com/akkartik/mu
 $ cd mu
 $ ./translate_mu apps/ex2.mu  # emit a.elf
-$ ./a.elf  # adds 3 and 4
+$ ./a.elf  # add 3 and 4
 $ echo $?
 7
 ```
