@@ -1,4 +1,4 @@
-fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value), max-width: int {
+fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value), top-level?: boolean {
   move-cursor screen, row, col
   var val/esi: (addr value) <- copy _val
   var val-type/ecx: (addr int) <- get val, type
@@ -58,14 +58,14 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
   }
   # render ints by default for now
   var val-num/eax: (addr float) <- get val, number-data
-  render-number screen, *val-num, max-width
+  render-number screen, *val-num, top-level?
 }
 
 # synaesthesia
 # TODO: right-justify
-fn render-number screen: (addr screen), val: float, max-width: int {
-  # if max-width is 0, we're inside an array. No coloring.
-  compare max-width, 0
+fn render-number screen: (addr screen), val: float, top-level?: boolean {
+  # if we're inside an array, don't color
+  compare top-level?, 0
   {
     break-if-!=
     print-float-decimal-approximate screen, val, 3

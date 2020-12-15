@@ -1877,8 +1877,6 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     # render stack
     var curr-row/edx: int <- copy top-row
     curr-row <- add 2  # stack-margin-top
-    var _max-width/eax: int <- value-stack-max-width stack-addr
-    max-width <- copy _max-width
     {
       var top-addr/ecx: (addr int) <- get stack-addr, top
       compare *top-addr, 0
@@ -1889,7 +1887,13 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
       var top/ecx: int <- copy *top-addr
       var dest-offset/ecx: (offset value) <- compute-offset data, top
       var val/eax: (addr value) <- index data, dest-offset
-      render-value-at screen, curr-row, indented-col, val, max-width
+      render-value-at screen, curr-row, indented-col, val, 1  # top-level
+      {
+        var width/eax: int <- value-width val, 1
+        compare width, max-width
+        break-if-<=
+        max-width <- copy width
+      }
       var height/eax: int <- value-height val
       curr-row <- add height
       loop
@@ -1903,10 +1907,10 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
   move-cursor screen, top-row, left-col
   print-word screen, final-word
   {
-    var size/eax: int <- word-length final-word
-    compare size, max-width
+    var width/eax: int <- word-length final-word
+    compare width, max-width
     break-if-<=
-    max-width <- copy size
+    max-width <- copy width
   }
 
   # post-process right-col

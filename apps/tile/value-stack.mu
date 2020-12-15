@@ -122,32 +122,6 @@ fn value-stack-length _self: (addr value-stack) -> _/eax: int {
   return *top-addr
 }
 
-fn value-stack-max-width _self: (addr value-stack) -> _/eax: int {
-  var self/esi: (addr value-stack) <- copy _self
-  var data-ah/edi: (addr handle array value) <- get self, data
-  var _data/eax: (addr array value) <- lookup *data-ah
-  var data/edi: (addr array value) <- copy _data
-  var top-addr/ecx: (addr int) <- get self, top
-  var i/ebx: int <- copy 0
-  var result: int
-  {
-    compare i, *top-addr
-    break-if->=
-    var o/edx: (offset value) <- compute-offset data, i
-    var v/edx: (addr value) <- index data, o
-    var w/eax: int <- value-width v, 1  # top-level=true
-    # if (w > result) w = result
-    {
-      compare w, result
-      break-if-<=
-      copy-to result, w
-    }
-    i <- increment
-    loop
-  }
-  return result
-}
-
 fn save-lines in-h: (handle array (handle array byte)), _out-ah: (addr handle array value) {
   var _in/eax: (addr array (handle array byte)) <- lookup in-h
   var in/esi: (addr array (handle array byte)) <- copy _in
