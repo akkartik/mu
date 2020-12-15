@@ -1934,11 +1934,7 @@ fn render-function-menu _env: (addr environment) {
   start-reverse-video screen
   print-string screen, " ctrl-q "
   reset-formatting screen
-  print-string screen, " quit "
-  var sep-col/ecx: (addr int) <- get env, code-separator-col
-  var menu-start/ebx: int <- copy *sep-col
-  menu-start <- subtract 0x30  # 48 = half the size of the menu
-  move-cursor screen, *nrows, menu-start
+  print-string screen, " quit     "
   start-reverse-video screen
   print-string screen, " ctrl-a "
   reset-formatting screen
@@ -1954,7 +1950,7 @@ fn render-function-menu _env: (addr environment) {
   start-reverse-video screen
   print-string screen, " ctrl-e "
   reset-formatting screen
-  print-string screen, " ⏭         "
+  print-string screen, " ⏭       "
   start-reverse-video screen
   print-string screen, " ctrl-g "
   reset-formatting screen
@@ -1962,7 +1958,7 @@ fn render-function-menu _env: (addr environment) {
   start-reverse-video screen
   print-string screen, " tab "
   reset-formatting screen
-  print-string screen, " go to sandbox  "
+  print-string screen, " go to sandbox"
 }
 
 fn render-sandbox-menu _env: (addr environment) {
@@ -1975,11 +1971,7 @@ fn render-sandbox-menu _env: (addr environment) {
   start-reverse-video screen
   print-string screen, " ctrl-q "
   reset-formatting screen
-  print-string screen, " quit "
-  var sep-col/ecx: (addr int) <- get env, code-separator-col
-  var menu-start/ebx: int <- copy *sep-col
-  menu-start <- subtract 0x48  # 72 = half the size of the menu
-  move-cursor screen, *nrows, menu-start
+  print-string screen, " quit     "
   start-reverse-video screen
   print-string screen, " ctrl-a "
   reset-formatting screen
@@ -1995,11 +1987,11 @@ fn render-sandbox-menu _env: (addr environment) {
   start-reverse-video screen
   print-string screen, " ctrl-e "
   reset-formatting screen
-  print-string screen, " ⏭         "
+  print-string screen, " ⏭       "
   start-reverse-video screen
   print-string screen, " ctrl-g "
   reset-formatting screen
-  print-string screen, " go  "
+  print-string screen, " go to function     "
   start-reverse-video screen
   print-string screen, " ctrl-l "
   reset-formatting screen
@@ -2015,7 +2007,7 @@ fn render-sandbox-menu _env: (addr environment) {
   start-reverse-video screen
   print-string screen, " ctrl-d "
   reset-formatting screen
-  print-string screen, " define function  "
+  print-string screen, " define function"
 }
 
 fn clear-canvas _env: (addr environment) {
