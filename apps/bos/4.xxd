@@ -1,0 +1,87 @@
+## 16-bit code
+
+# Entry:
+00:
+  bd 00 90  # bp <- 0x9000
+  89 ec  # sp <- bp
+
+  bb 8f 7c  # bx <- MSG_REAL_MODE
+  e8 38 00  # call print_string
+
+  e8 02 00  # call switch_to_pm
+  eb fe  # jump $  (should never get here)
+
+# switch_to_pm:
+10:
+  fa  # cli
+  0f 01 16 3d 7c  # lgdt [gdt_descriptor]
+  0f 20 c0  # eax <- cr0
+  66 83 c8 01  # eax <- or 0x1
+  0f 22 c0  # cr0 <- eax
+20:
+  ea 53 7c 08 00  # jmp CODE_SEG:init_pm
+
+# gdt_start:
+# gdt_null:  mandatory null descriptor
+  00 00 00 00 00 00 00 00
+# gdt_code:
+  ff ff 00
+30:
+  00 00 9a cf 00
+# gdt_data:
+  ff ff 00 00 00 92 cf 00
+# gdt_end:
+
+# gdt_descriptor:
+3d:
+  17 00  # limit
+  25 7c 00 00  # start
+
+# print_string:
+43:
+  60  # pusha
+  b4 0e  # ah <- 0x0e
+# loop:
+  8a 07  # al <- *bx
+  cd 10  # int 10h
+  83 c3 01  # add bx, 1
+  3c 00  # cmp al, 0
+  75 f5  # jne loop
+  61  # popa
+  c3  # ret
+
+## 32-bit code
+
+# init_pm:
+53:
+  66 b8 10 00  # ax <- DATA_SEG
+  8e d8  # ds <- ax
+  8e d0  # ss <- ax
+  8e c0  # es <- ax
+  8e e0  # fs <- ax
+  8e e8  # gs <- ax
+61:
+  bd 00 00 09 00  # ebp <- 0x90000
+  89 ec  # esp <- ebp
+  bb ab 7c 00 00  # ebx <- MSG_PROT_MODE
+  e8 02 00 00 00  # call print_string_pm
+  eb fe  # hang
+
+# print_string_pm:
+74:
+  60  # pusha
+  ba 00 80 0b 00 8a 03 b4 0f 3c 00
+80:
+  74 0b 66 89 02 83 c3 01 83 c2 02 eb ed 61 c3 53
+90:
+  74 61 72 74 65 64 20 69 6e 20 31 36 2d 62 69 74
+a0:
+  20 52 65 61 6c 20 4d 6f 64 65 00 53 75 63 63 65
+b0:
+  73 73 66 75 6c 6c 79 20 6c 61 6e 64 65 64 20 69
+c0:
+  6e 20 33 32 2d 62 69 74 20 50 72 6f 74 65 63 74
+d0:
+  65 64 20 4d 6f 64 65
+
+# vim:ft=conf

@@ -1,0 +1,121 @@
+# Bootable image demonstrating printing to screen in 32-bit mode.
+# Must have exactly 512 bytes.
+#
+# To convert to a disk image:
+#   ./bootstrap run apps/hex < apps/bos/32bit.hex > boot.bin
+# To run:
+#   qemu-system-i386 boot.bin
+# Or:
+#   bochs -f apps/bos/bochsrc  # bochsrc loads boot.bin
+#
+# Expected output inside emulator:
+#   H
+
+## 16-bit entry point
+
+# Boot image starts executing at address 0x7c00,
+# and so occupies [0x7c00, 0x7e00).
+# We don't read or write the stack before we get to 32-bit mode.
+
+# 00:
+  fa
+  0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
+    2c 7c  # *gdt_descriptor
+  0f 20 c0  # eax <- cr0
+  66 83 c8 01  # eax <- or 0x1
+  0f 22 c0  # cr0 <- eax
+  ea 32 7c 08 00  # far jump to CODE_SEG:initialize_32bit_mode (TODO: why the 08? something to do with segment selector; only first 16 bits are used in the jump address)
+
+## GDT: 3 records of 8 bytes each
+
+# 14:
+# gdt_start:
+# gdt_null:  mandatory null descriptor
+  00 00 00 00 00 00 00 00
+# gdt_code:  (offset 8 from gdt_start)
+  ff ff  # limit[0:16]
+  00 00 00  # base[0:24]
+  9a  # 1/present 00/privilege 1/descriptor type = 1001b
+      # 1/code 0/conforming 1/readable 0/accessed = 1010b
+  cf  # 1/granularity 1/32-bit 0/64-bit-segment 0/AVL = 1100b
+      # limit[16:20] = 1111b
+  00  # base[24:32]
+# gdt_data:  (offset 16 from gdt_start)
+  ff ff  # limit[0:16]
+  00 00 00  # base[0:24]
+  92  # 1/present 00/privilege 1/descriptor type = 1001b
+      # 0/data 0/conforming 1/readable 0/accessed = 0010b
+  cf  # same as gdt_code
+  00  # base[24:32]
+# gdt_end:
+
+# 2c:
+# gdt_descriptor:
+  17 00  # final index of gdt = gdt_end - gdt_start - 1
+  14 7c 00 00  # start = gdt_start
+
+## 32-bit code from this point (still some instructions not in SubX)
+
+# 32:
+# initialize_32bit_mode:
+  66 b8 10 00  # ax <- offset 16 from gdt_start
+  8e d8  # ds <- ax
+  8e d0  # ss <- ax
+  8e c0  # es <- ax
+  8e e0  # fs <- ax
+  8e e8  # gs <- ax
+# 40:
+  e9 0a 00 00 00  # jump to 0x7c50, leaving some extra padding
+
+# padding
+# 45:
+                  00 00 00 00 00 00 00 00 00 00
+
+## 'application' SubX code: print one character to top-left of screen
+
+# 50:
+# *0xb8000 <- 0x0f48
+c7  # opcode
+  # modrm
+  05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+  # disp32
+  00 80 0b 00
+  # imm32
+  48  # 'H'
+  0f  # white on black
+  00 00
+
+e9 fd ff  # loop forever
+
+# more padding to 512 bytes
+                                       00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+55 aa  # final 2 bytes: boot sector marker
+
+# vim:ft=subx
