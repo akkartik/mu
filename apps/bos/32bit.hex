@@ -20,15 +20,15 @@
 # 00:
   fa
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
-    2c 7c  # *gdt_descriptor
+    2d 7c  # *gdt_descriptor
   0f 20 c0  # eax <- cr0
   66 83 c8 01  # eax <- or 0x1
   0f 22 c0  # cr0 <- eax
-  ea 32 7c 08 00  # far jump to CODE_SEG:initialize_32bit_mode (TODO: why the 08? something to do with segment selector; only first 16 bits are used in the jump address)
+  ea 33 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
 
 ## GDT: 3 records of 8 bytes each
 
-# 14:
+# 15:
 # gdt_start:
 # gdt_null:  mandatory null descriptor
   00 00 00 00 00 00 00 00
@@ -49,14 +49,14 @@
   00  # base[24:32]
 # gdt_end:
 
-# 2c:
+# 2d:
 # gdt_descriptor:
   17 00  # final index of gdt = gdt_end - gdt_start - 1
-  14 7c 00 00  # start = gdt_start
+  15 7c 00 00  # start = gdt_start
 
 ## 32-bit code from this point (still some instructions not in SubX)
 
-# 32:
+# 33:
 # initialize_32bit_mode:
   66 b8 10 00  # ax <- offset 16 from gdt_start
   8e d8  # ds <- ax
