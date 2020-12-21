@@ -6,12 +6,15 @@
 # If the initial load fails, it prints 'D' to the top-left of the screen and
 # halts.
 #
-# To convert to a disk image:
+# To convert to a disk image, first prepare a realistically sized disk image:
+#   dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
+# Now fill in sectors:
 #   ./bootstrap run apps/hex < apps/boot.hex > boot.bin
+#   dd if=boot.bin of=disk.img conv=notrunc
 # To run:
-#   qemu-system-i386 boot.bin
+#   qemu-system-i386 disk.img
 # Or:
-#   bochs -f apps/boot.bochsrc  # boot.bochsrc loads boot.bin
+#   bochs -f apps/boot.bochsrc  # boot.bochsrc loads disk.img
 #
 # Since we start out in 16-bit mode, we need instructions SubX doesn't
 # support.
@@ -37,7 +40,7 @@
   b2 80  # dl <- 80  # hdd 0
   b5 00  # ch <- 0  # cylinder 0
   b6 00  # dh <- 0  # track 0
-  b1 01  # cl <- 1  # sector 0 (first sector, 1-based)
+  b1 02  # cl <- 2  # second sector, 1-based
   b0 01  # al <- 1  # number of sectors to read
   # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
   bb 00 00  # bx <- 0
