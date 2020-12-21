@@ -20,19 +20,23 @@
 # 00:
   fa  # cli  # TODO: don't forget to reenable interrupts at some point
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
-    38 7c  # *gdt_descriptor
+    80 7c  # *gdt_descriptor
   0f 20 c0  # eax <- cr0
   66 83 c8 01  # eax <- or 0x1
   0f 22 c0  # cr0 <- eax
-  ea 50 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
+  ea c0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
 
 # padding
 # 15:
                00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## GDT: 3 records of 8 bytes each
 
-# 20:
+# 60:
 # gdt_start:
 # gdt_null:  mandatory null descriptor
   00 00 00 00 00 00 00 00
@@ -53,20 +57,25 @@
   00  # base[24:32]
 # gdt_end:
 
-# 38:
+# padding
+# 78:
+                        00 00 00 00 00 00 00 00
+
+# 80:
 # gdt_descriptor:
   17 00  # final index of gdt = gdt_end - gdt_start - 1
-  20 7c 00 00  # start = gdt_start
+  60 7c 00 00  # start = gdt_start
 
 # padding
-# 3e:
-                                          00 00
-# 40:
+# 85:
+                  00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## 32-bit code from this point (still some instructions not in SubX)
 
-# 50:
+# c0:
 # initialize_32bit_mode:
   66 b8 10 00  # ax <- offset 16 from gdt_start
   8e d8  # ds <- ax
@@ -74,15 +83,16 @@
   8e c0  # es <- ax
   8e e0  # fs <- ax
   8e e8  # gs <- ax
-  e9 0d 00 00 00  # jump to 0x7c70, leaving some extra padding
+  e9 1d 00 00 00  # jump to 0x7cf0
 
 # padding
-# 63:
+# d3:
          00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## 'application' SubX code: print one character to top-left of screen
 
-# 70:
+# f0:
 # Entry:
   # *0xb8000 <- 0x0f48
   c7  # opcode
@@ -97,17 +107,9 @@
 
 e9 fb ff ff ff  # loop forever
 
-# more padding to 512 bytes
+# padding to 512 bytes
                                              00
-# 80:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 100:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
