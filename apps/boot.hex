@@ -1,7 +1,7 @@
 # Bootable image that:
 #   - loads more sectors past the first boot sector (using BIOS primitives)
 #   - switches to 32-bit mode (giving up access to BIOS primitives)
-#   - as an example program, prints 'H' to the top-left of the screen (by writing to memory-mapped VGA memory)
+#   - as an example program, prints a letter from the second sector to the top-left of the screen (by writing to memory-mapped VGA memory)
 #
 # If the initial load fails, it prints 'D' to the top-left of the screen and
 # halts.
@@ -147,24 +147,22 @@ e9 fb ff  # loop forever
 
 # f0:
 # Entry:
-  # *0xb8000 <- 0x0f48
-  c7  # operate on rm32 with imm32
-    # modrm
-    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+  # eax <- *0x7e04  # random address in second segment containing 'H'
+  8b  # copy rm32 to r32
+    05  # 00/mod/indirect 000/r32/eax 101/rm32/use-disp32
+    # disp32
+    04 7e 00 00
+  # *0xb8000 <- eax
+  89  # copy r32 to rm32
+    05  # 00/mod/indirect 000/r32/eax 101/rm32/use-disp32
     # disp32
     00 80 0b 00
-    # imm32
-    48  # 'H'
-    0f  # white on black
-    00 00
 
 e9 fb ff ff ff  # loop forever
 
 # padding to 512 bytes
-# ff:
-                                             00
-# 100:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 101:
+   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -182,5 +180,42 @@ e9 fb ff ff ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 55 aa  # final 2 bytes: boot sector marker
+
+## sector 2
+# not loaded on boot; loaded by load_disk
+
+# 200:
+00 00 00 00 48 0f 00 00 00 00 00 00 00 00 00 00  # spot the 'H' with attributes
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 # vim:ft=subx
