@@ -1,0 +1,183 @@
+# Bootable image that:
+#   - loads more sectors past the first boot sector (using BIOS primitives)
+#   - switches to 32-bit mode (giving up access to BIOS primitives)
+#   - as an example program, prints 'H' to the top-left of the screen (by writing to memory-mapped VGA memory)
+#
+# If the initial load fails, it prints 'D' to the top-left of the screen and
+# halts.
+#
+# To convert to a disk image:
+#   ./bootstrap run apps/hex < apps/boot.hex > boot.bin
+# To run:
+#   qemu-system-i386 boot.bin
+# Or:
+#   bochs -f apps/boot.bochsrc  # boot.bochsrc loads boot.bin
+#
+# Since we start out in 16-bit mode, we need instructions SubX doesn't
+# support.
+# This file contains just hex bytes and comments. Zero error-checking. Make
+# liberal use of:
+#   - comments documenting expected offsets
+#   - size checks on the emitted file (currently: 512 bytes)
+#   - xxd to eyeball that offsets contain expected bytes
+
+## 16-bit entry point
+
+# Upon reset, the IBM PC
+#   loads the first sector (512 bytes)
+#   from some bootable image (see the boot sector marker at the end of this file)
+#   to the address range [0x7c00, 0x7e00)
+#
+# We don't read or write the stack before we get to 32-bit mode. No function
+# calls.
+
+# 00:
+# load_disk:
+  b4 02  # ah <- 2  # read sectors from disk
+  b2 00  # dl <- 0  # drive 0
+  b5 00  # ch <- 0  # cylinder 0
+  b6 00  # dh <- 0  # track 0
+  b1 02  # cl <- 2  # sector 1 (second sector, 1-based)
+  b0 01  # al <- 1  # number of sectors to read
+  # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
+  bb 00 00  # bx <- 0
+  8e c3  # es <- bx
+  bb 00 7e  # bx <- 0x7e00
+  cd 13  # int 13h, BIOS disk service
+  0f 82 76 00  # jump-if-carry disk-error
+
+# 1a:
+  fa  # cli  # TODO: don't forget to reenable interrupts in a real program
+  0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
+    80 7c  # *gdt_descriptor
+# 20:
+  0f 20 c0  # eax <- cr0
+  66 83 c8 01  # eax <- or 0x1
+  0f 22 c0  # cr0 <- eax
+  ea c0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
+
+# padding
+# 2f:
+                                             00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+## GDT: 3 records of 8 bytes each
+
+# 60:
+# gdt_start:
+# gdt_null:  mandatory null descriptor
+  00 00 00 00 00 00 00 00
+# gdt_code:  (offset 8 from gdt_start)
+  ff ff  # limit[0:16]
+  00 00 00  # base[0:24]
+  9a  # 1/present 00/privilege 1/descriptor type = 1001b
+      # 1/code 0/conforming 1/readable 0/accessed = 1010b
+  cf  # 1/granularity 1/32-bit 0/64-bit-segment 0/AVL = 1100b
+      # limit[16:20] = 1111b
+  00  # base[24:32]
+# gdt_data:  (offset 16 from gdt_start)
+  ff ff  # limit[0:16]
+  00 00 00  # base[0:24]
+  92  # 1/present 00/privilege 1/descriptor type = 1001b
+      # 0/data 0/conforming 1/readable 0/accessed = 0010b
+  cf  # same as gdt_code
+  00  # base[24:32]
+# gdt_end:
+
+# padding
+# 78:
+                        00 00 00 00 00 00 00 00
+
+# 80:
+# gdt_descriptor:
+  17 00  # final index of gdt = gdt_end - gdt_start - 1
+  60 7c 00 00  # start = gdt_start
+
+# padding
+# 85:
+                  00 00 00 00 00 00 00 00 00 00
+
+# 90:
+# disk_error:
+  # print 'D' to top-left of screen to indicate disk error
+  # *0xb8000 <- 0x0f44
+  # bx <- 0xb800
+  bb 00 b8
+  # ds <- bx
+  8e db  # 11b/mod 011b/reg/ds 011b/rm/bx
+  # al <- 'D'
+  b0 44
+  # ah <- 0x0f  # white on black
+  b4 0f
+  # bx <- 0
+  bb 00 00
+  # *ds:bx <- ax
+  89 07  # 00b/mod/indirect 000b/reg/ax 111b/rm/bx
+
+e9 fb ff  # loop forever
+
+# padding
+# a1:
+   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+## 32-bit code from this point (still some instructions not in SubX)
+
+# c0:
+# initialize_32bit_mode:
+  66 b8 10 00  # ax <- offset 16 from gdt_start
+  8e d8  # ds <- ax
+  8e d0  # ss <- ax
+  8e c0  # es <- ax
+  8e e0  # fs <- ax
+  8e e8  # gs <- ax
+  e9 1d 00 00 00  # jump to 0x7cf0
+
+# padding
+# d3:
+         00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+## 'application' SubX code: print one character to top-left of screen
+
+# f0:
+# Entry:
+  # *0xb8000 <- 0x0f48
+  c7  # opcode
+    # modrm
+    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+    # disp32
+    00 80 0b 00
+    # imm32
+    48  # 'H'
+    0f  # white on black
+    00 00
+
+e9 fb ff ff ff  # loop forever
+
+# padding to 512 bytes
+# ff:
+                                             00
+# 100:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+55 aa  # final 2 bytes: boot sector marker
+
+# vim:ft=subx
