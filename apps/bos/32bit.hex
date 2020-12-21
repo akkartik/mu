@@ -18,7 +18,7 @@
 # We don't read or write the stack before we get to 32-bit mode.
 
 # 00:
-  fa
+  fa  # cli  # TODO: don't forget to reenable interrupts at some point
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
     38 7c  # *gdt_descriptor
   0f 20 c0  # eax <- cr0
@@ -83,16 +83,17 @@
 ## 'application' SubX code: print one character to top-left of screen
 
 # 70:
-# *0xb8000 <- 0x0f48
-c7  # opcode
-  # modrm
-  05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-  # disp32
-  00 80 0b 00
-  # imm32
-  48  # 'H'
-  0f  # white on black
-  00 00
+# Entry:
+  # *0xb8000 <- 0x0f48
+  c7  # opcode
+    # modrm
+    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+    # disp32
+    00 80 0b 00
+    # imm32
+    48  # 'H'
+    0f  # white on black
+    00 00
 
 e9 fb ff ff ff  # loop forever
 
