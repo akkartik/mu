@@ -50,7 +50,7 @@
 # 0d:
   # load more sectors from disk
   b4 02  # ah <- 2  # read sectors from disk
-  b2 80  # dl <- 80  # hdd 0
+  # dl comes conveniently initialized at boot time with the index of the device being booted
   b5 00  # ch <- 0  # cylinder 0
   b6 00  # dh <- 0  # track 0
   b1 02  # cl <- 2  # second sector, 1-based
@@ -62,19 +62,19 @@
   cd 13  # int 13h, BIOS disk service
   0f 82 76 00  # jump-if-carry disk-error
 
-# 28:
+# 26:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
     80 7c  # *gdt_descriptor
-# 20:
+# 2b:
   0f 20 c0  # eax <- cr0
   66 83 c8 01  # eax <- or 0x1
   0f 22 c0  # cr0 <- eax
   ea c0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
 
 # padding
-# 3c:
-                                    00 00 00 00
+# 3a:
+                              00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
