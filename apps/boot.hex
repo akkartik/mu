@@ -1,8 +1,7 @@
 # Bootable image that:
 #   - loads more sectors past the first boot sector (using BIOS primitives)
 #   - switches to 32-bit mode (giving up access to BIOS primitives)
-#   - sets up a handler for keyboard events
-#   - as an example program, prints alphabets to the top-left position on screen (by writing to memory-mapped VGA memory) as they're typed
+#   - as an example program, prints a letter from the second sector to the top-left of the screen (by writing to memory-mapped VGA memory)
 #
 # If the initial load fails, it prints 'D' to the top-left of the screen and
 # halts.
@@ -32,9 +31,8 @@
 #   from some bootable image (see the boot sector marker at the end of this file)
 #   to the address range [0x7c00, 0x7e00)
 
-# offset 00 (address 0x7c00):
-  # disable interrupts for this initialization
-  fa  # cli
+# 00:
+  fa  # cli  # TODO: don't forget to reenable interrupts in a real program
 
   # initialize segment registers
   # this isn't always needed, but is considered safe not to assume
@@ -64,38 +62,19 @@
   0f 82 76 00  # jump-if-carry disk-error
 
 # 26:
-  # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
-  # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
-  # seta20.1:
-  e4 64  # al <- port 0x64
-  a8 02  # set zf if bit 1 (second-least) is not set
-  75 fa  # if zf not set, goto seta20.1 (-6)
-
-  b0 d1  # al <- 0xd1
-  e6 64  # port 0x64 <- al
-
-# 30:
-  # seta20.2:
-  e4 64  # al <- port 0x64
-  a8 02  # set zf if bit 1 (second-least) is not set
-  75 fa  # if zf not set, goto seta20.2 (-6)
-
-  b0 df  # al <- 0xdf
-  e6 64  # port 0x64 <- al
-
-# 3a:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
     80 7c  # *gdt_descriptor
-# 3f:
+# 2b:
   0f 20 c0  # eax <- cr0
   66 83 c8 01  # eax <- or 0x1
   0f 22 c0  # cr0 <- eax
   ea c0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
 
 # padding
-# 4e:
-                                          00 00
+# 3a:
+                              00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## GDT: 3 records of 8 bytes each
@@ -168,30 +147,22 @@ e9 fb ff  # loop forever
   8e c0  # es <- ax
   8e e0  # fs <- ax
   8e e8  # gs <- ax
-
-  # load interrupt handlers
-  0f 01 1e  # lidt 00/mod/indirect 011/subop 110/rm32/TODO
-    00 7f  # *idt_descriptor
-
-  # initialization is done; enable interrupts
-  fb
-  e9 2d 00 00 00  # jump to 0x7d00
+  e9 1d 00 00 00  # jump to 0x7cf0
 
 # padding
-# d9:
-                           00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# d3:
+         00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## 'application' SubX code: print one character to top-left of screen
 
-# offset 100 (address 0x7d00):
+# f0:
 # Entry:
-  # eax <- *0x7ef4  # random address in second segment containing 'H'
+  # eax <- *0x7e04  # random address in second segment containing 'H'
   8b  # copy rm32 to r32
     05  # 00/mod/indirect 000/r32/eax 101/rm32/use-disp32
     # disp32
-    f4 7e 00 00
+    04 7e 00 00
   # *0xb8000 <- eax
   89  # copy r32 to rm32
     05  # 00/mod/indirect 000/r32/eax 101/rm32/use-disp32
@@ -200,12 +171,10 @@ e9 fb ff  # loop forever
 
 e9 fb ff ff ff  # loop forever
 
-# padding
-# 111:
+# padding to 512 bytes
+# 101:
    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-# 120:
-
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -221,77 +190,43 @@ e9 fb ff ff ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# final 2 bytes of boot sector
-55 aa
+55 aa  # final 2 bytes: boot sector marker
 
 ## sector 2
 # not loaded on boot; loaded by load_disk
 
-# offset 200 (address 0x7e00): interrupt descriptor table
-# 32 entries * 8 bytes each = 256 bytes (0x100)
-# idt_start:
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-
-# offset 9: keyboard, following https://alex.dzyoba.com/blog/os-interrupts
-  20 7d  # offset[0:16]
-  08 00  # segment selector (gdt_code)
-  00  # unused
-  8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
-  00 00  # offset[16:32]
-
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-# idt_end:
-
-# offset 300 (address 0x7f00):
-# idt_descriptor:
-  ff 00  # idt_end - idt_start - 1
-  00 7e 00 00  # start = idt_start
-
-# padding
-                  00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 200:
 00 00 00 00 48 0f 00 00 00 00 00 00 00 00 00 00  # spot the 'H' with attributes
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 # vim:ft=conf
