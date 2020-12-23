@@ -30,12 +30,24 @@
 #   loads the first sector (512 bytes)
 #   from some bootable image (see the boot sector marker at the end of this file)
 #   to the address range [0x7c00, 0x7e00)
-#
-# We don't read or write the stack before we get to 32-bit mode. No function
-# calls.
 
 # 00:
-# load_disk:
+  fa  # cli  # TODO: don't forget to reenable interrupts in a real program
+
+  # initialize segment registers
+  # this isn't always needed, but is considered safe not to assume
+  b8 00 00  # ax <- 0
+  8e d8  # ds <- ax
+  8e d0  # ss <- ax
+  8e c0  # es <- ax
+  8e e0  # fs <- ax
+  8e e8  # gs <- ax
+
+  # We don't read or write the stack before we get to 32-bit mode. No function
+  # calls, so we don't need to initialize the stack.
+
+# 0d:
+  # load more sectors from disk
   b4 02  # ah <- 2  # read sectors from disk
   b2 80  # dl <- 80  # hdd 0
   b5 00  # ch <- 0  # cylinder 0
@@ -49,8 +61,8 @@
   cd 13  # int 13h, BIOS disk service
   0f 82 76 00  # jump-if-carry disk-error
 
-# 1a:
-  fa  # cli  # TODO: don't forget to reenable interrupts in a real program
+# 28:
+  # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
     80 7c  # *gdt_descriptor
 # 20:
@@ -60,9 +72,8 @@
   ea c0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
 
 # padding
-# 2f:
-                                             00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 3c:
+                                    00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
