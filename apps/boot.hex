@@ -85,7 +85,7 @@
 
 # 3a:
   # switch to 32-bit mode
-  0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
+  0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
     80 7c  # *gdt_descriptor
 # 3f:
   0f 20 c0  # eax <- cr0
@@ -170,16 +170,16 @@ e9 fb ff  # loop forever
   8e e8  # gs <- ax
 
   # load interrupt handlers
-  0f 01 1e  # lidt 00/mod/indirect 011/subop 110/rm32/TODO
-    00 7f  # *idt_descriptor
+  0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
+    00 7f 00 00  # *idt_descriptor
 
   # initialization is done; enable interrupts
   fb
-  e9 27 00 00 00  # jump to 0x7d00
+  e9 25 00 00 00  # jump to 0x7d00
 
 # padding
-# d9:
-                           00 00 00 00 00 00 00
+# db:
+                                 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
