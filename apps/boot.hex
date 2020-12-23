@@ -32,7 +32,8 @@
 #   to the address range [0x7c00, 0x7e00)
 
 # 00:
-  fa  # cli  # TODO: don't forget to reenable interrupts in a real program
+  # disable interrupts for this initialization
+  fa  # cli
 
   # initialize segment registers
   # this isn't always needed, but is considered safe not to assume
@@ -147,11 +148,14 @@ e9 fb ff  # loop forever
   8e c0  # es <- ax
   8e e0  # fs <- ax
   8e e8  # gs <- ax
+
+  # initialization is done; enable interrupts
+  fb
   e9 1d 00 00 00  # jump to 0x7cf0
 
 # padding
-# d3:
-         00 00 00 00 00 00 00 00 00 00 00 00 00
+# d4:
+            00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## 'application' SubX code: print one character to top-left of screen
