@@ -1,7 +1,8 @@
 # Bootable image that:
 #   - loads more sectors past the first boot sector (using BIOS primitives)
 #   - switches to 32-bit mode (giving up access to BIOS primitives)
-#   - as an example program, prints a letter from the second sector to the top-left of the screen (by writing to memory-mapped VGA memory)
+#   - sets up a handler for keyboard events
+#   - as an example program, prints alphabets to the top-left position on screen (by writing to memory-mapped VGA memory) as they're typed
 #
 # If the initial load fails, it prints 'D' to the top-left of the screen and
 # halts.
@@ -32,7 +33,8 @@
 #   to the address range [0x7c00, 0x7e00)
 
 # offset 00 (address 0x7c00):
-  fa  # cli  # TODO: don't forget to reenable interrupts in a real program
+  # disable interrupts for this initialization
+  fa  # cli
 
   # initialize segment registers
   # this isn't always needed, but is considered safe not to assume
@@ -46,7 +48,7 @@
   # We don't read or write the stack before we get to 32-bit mode. No function
   # calls, so we don't need to initialize the stack.
 
-# 0d:
+# 0e:
   # load more sectors from disk
   b4 02  # ah <- 2  # read sectors from disk
   # dl comes conveniently initialized at boot time with the index of the device being booted
@@ -166,11 +168,18 @@ e9 fb ff  # loop forever
   8e c0  # es <- ax
   8e e0  # fs <- ax
   8e e8  # gs <- ax
-  e9 2d 00 00 00  # jump to 0x7d00
+
+  # load interrupt handlers
+  0f 01 1e  # lidt 00/mod/indirect 011/subop 110/rm32/TODO
+    00 7f  # *idt_descriptor
+
+  # initialization is done; enable interrupts
+  fb
+  e9 27 00 00 00  # jump to 0x7d00
 
 # padding
-# d3:
-         00 00 00 00 00 00 00 00 00 00 00 00 00
+# d9:
+                           00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
@@ -194,6 +203,9 @@ e9 fb ff ff ff  # loop forever
 # padding
 # 111:
    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# 120:
+
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -215,24 +227,57 @@ e9 fb ff ff ff  # loop forever
 ## sector 2
 # not loaded on boot; loaded by load_disk
 
-# offset 200 (address 0x7e00):
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# offset 200 (address 0x7e00): interrupt descriptor table
+# 32 entries * 8 bytes each = 256 bytes (0x100)
+# idt_start:
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+
+# offset 9: keyboard, following https://alex.dzyoba.com/blog/os-interrupts
+  20 7d  # offset[0:16]
+  08 00  # segment selector (gdt_code)
+  00  # unused
+  8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
+  00 00  # offset[16:32]
+
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+# idt_end:
+
+# offset 300 (address 0x7f00):
+# idt_descriptor:
+  ff 00  # idt_end - idt_start - 1
+  00 7e 00 00  # start = idt_start
+
+# padding
+                  00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
