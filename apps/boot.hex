@@ -31,7 +31,7 @@
 #   from some bootable image (see the boot sector marker at the end of this file)
 #   to the address range [0x7c00, 0x7e00)
 
-# 00:
+# offset 00 (address 0x7c00):
   # disable interrupts for this initialization
   fa  # cli
 
@@ -170,16 +170,17 @@ e9 fb ff  # loop forever
 
   # initialization is done; enable interrupts
   fb
-  e9 1d 00 00 00  # jump to 0x7cf0
+  e9 2d 00 00 00  # jump to 0x7d00
 
 # padding
 # d4:
             00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## 'application' SubX code: print one character to top-left of screen
 
-# f0:
+# offset 100 (address 0x7d00):
 # Entry:
   # eax <- *0x7e04  # random address in second segment containing 'H'
   8b  # copy rm32 to r32
@@ -195,9 +196,8 @@ e9 fb ff  # loop forever
 e9 fb ff ff ff  # loop forever
 
 # padding to 512 bytes
-# 101:
+# 111:
    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -218,7 +218,7 @@ e9 fb ff ff ff  # loop forever
 ## sector 2
 # not loaded on boot; loaded by load_disk
 
-# 200:
+# offset 200 (address 0x7e00):
 00 00 00 00 48 0f 00 00 00 00 00 00 00 00 00 00  # spot the 'H' with attributes
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
