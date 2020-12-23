@@ -63,19 +63,38 @@
   0f 82 76 00  # jump-if-carry disk-error
 
 # 26:
+  # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
+  # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
+  # seta20.1:
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least) is not set
+  75 fa  # if zf not set, goto seta20.1 (-6)
+
+  b0 d1  # al <- 0xd1
+  e6 64  # port 0x64 <- al
+
+# 30:
+  # seta20.2:
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least) is not set
+  75 fa  # if zf not set, goto seta20.2 (-6)
+
+  b0 df  # al <- 0xdf
+  e6 64  # port 0x64 <- al
+
+# 3a:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm32/TODO
     80 7c  # *gdt_descriptor
-# 2b:
+# 3f:
   0f 20 c0  # eax <- cr0
   66 83 c8 01  # eax <- or 0x1
   0f 22 c0  # cr0 <- eax
   ea c0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
 
 # padding
-# 3a:
-                              00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 4e:
+                                          00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## GDT: 3 records of 8 bytes each
