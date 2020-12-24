@@ -220,3 +220,6 @@ claims of completeness:
 - Wikipedia on BIOS interfaces: [Int 10h](https://en.wikipedia.org/wiki/INT_10H), [Int 13h](https://en.wikipedia.org/wiki/INT_13H).
 - [Some tips on programming bootloaders](https://stackoverflow.com/questions/43786251/int-13h-42h-doesnt-load-anything-in-bochs/43787939#43787939)
   by Michael Petch.
+- [xv6, the port of Unix Version 6 to x86 processors](https://github.com/mit-pdos/xv6-public)
+- Some tips on handling keyboard interrupts by [Alex Dzyoba](https://alex.dzyoba.com/blog/os-interrupts)
+  and [Michael Petch](https://stackoverflow.com/questions/37618111/keyboard-irq-within-an-x86-kernel).

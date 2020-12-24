@@ -68,7 +68,7 @@
   # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
   # seta20.1:
   e4 64  # al <- port 0x64
-  a8 02  # set zf if bit 1 (second-least) is not set
+  a8 02  # set zf if bit 1 (second-least significant) is not set
   75 fa  # if zf not set, goto seta20.1 (-6)
 
   b0 d1  # al <- 0xd1
@@ -77,7 +77,7 @@
 # 30:
   # seta20.2:
   e4 64  # al <- port 0x64
-  a8 02  # set zf if bit 1 (second-least) is not set
+  a8 02  # set zf if bit 1 (second-least significant) is not set
   75 fa  # if zf not set, goto seta20.2 (-6)
 
   b0 df  # al <- 0xdf
@@ -173,13 +173,17 @@ e9 fb ff  # loop forever
   0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
     00 7f 00 00  # *idt_descriptor
 
+  # enable keyboard IRQ
+  b0 fd  # al <- 0xfd  # enable just IRQ1
+  e6 21  # port 0x21 <- al
+
   # initialization is done; enable interrupts
   fb
-  e9 25 00 00 00  # jump to 0x7d00
+  e9 21 00 00 00  # jump to 0x7d00
 
 # padding
-# db:
-                                 00 00 00 00 00
+# df:
+                                             00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
@@ -211,8 +215,35 @@ e9 fb ff ff ff  # loop forever
 # padding
 # 121:
    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# 130:
+# keyboard interrupt handler:
+  # prologue
+  fa  # disable interrupts
+  60  # push all registers to stack
+  # acknowledge interrupt
+  b0 20  # al <- 0x20
+  e6 20  # port 0x20 <- al
+  # read keyboard status (IBF from https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)
+  e4 64  # al <- port 0x64
+  a8 01  # set zf if bit 0 (least significant) is not set
+  74 00  # if bit 0 is not set, skip to epilogue  HERE
+  # read keycode into eax
+  31 c0  # eax <- xor eax;  11/direct 000/r32/eax 000/rm32/eax
+  e4 60  # al <- port 0x60
+  # print eax to top-left of screen (*0xb8000)
+  89  # copy r32 to rm32
+    05  # 00/mod/indirect 000/r32/eax 101/rm32/use-disp32
+    # disp32
+    00 80 0b 00
+  # epilogue
+  61  # pop all registers
+  fb  # enable interrupts
+  cf  # iret
+
+# padding
+# 149
+                           00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -244,14 +275,20 @@ e9 fb ff ff ff  # loop forever
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 
-# offset 8
+# entry 8: clock?
   20 7d  # target[0:16] = null interrupt handler
   08 00  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
   00 00  # target[16:32]
 
-00 00 00 00 00 00 00 00
+# entry 9: keyboard?
+  30 7d  # target[0:16] = keyboard interrupt handler
+  08 00  # segment selector (gdt_code)
+  00  # unused
+  8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
+  00 00  # target[16:32]
+
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
