@@ -1,20 +1,8 @@
 #!/bin/sh
-# Translate SubX by running the self-hosted translator in emulated mode on
-# Linux or BSD or Mac.
+# Translate given SubX files by running the self-hosted translator in emulated
+# mode on Linux or BSD or Mac.
 #
-# Possible knobs:
-#   Whether to run a phase natively or in emulated mode.
-#     Just always emulate for now since we debug on non-Linux.
-#   Whether to stop after a phase.
-#     Just always run all phases, but print out phases so it's clear where an
-#     error happens.
-#   Whether to trace a phase. Whether to always trace or rerun with tracing
-#   enabled after an error.
-#     Leave tracing to other scripts. We save intermediate files so it's easy
-#     to rerun a single phase afterwards.
-#   Whether to run a phase with debug information. (Need to juggle multiple
-#   sets of debug files.)
-#     Again, that's for subsequent scripts.
+# We _could_ generate traces here, but that's often extremely slow.
 
 set -e
 
@@ -24,9 +12,10 @@ cat $*          |./bootstrap_bin run apps/braces   > a.braces
 cat a.braces    |./bootstrap_bin run apps/calls    > a.calls
 cat a.calls     |./bootstrap_bin run apps/sigils   > a.sigils
 cat a.sigils    |./bootstrap_bin run apps/tests    > a.tests
-cat a.tests     |./bootstrap_bin run apps/dquotes  > a.dquotes
-cat a.dquotes   |./bootstrap_bin run apps/assort   > a.assort
-cat a.assort    |./bootstrap_bin run apps/pack     > a.pack
+cat a.tests     |./bootstrap_bin run apps/assort   > a.assort
+cat a.assort    |./bootstrap_bin run apps/dquotes  > a.dquotes
+cat a.dquotes   |./bootstrap_bin run apps/assort   > a.assort2
+cat a.assort2   |./bootstrap_bin run apps/pack     > a.pack
 cat a.pack      |./bootstrap_bin run apps/survey   > a.survey
 cat a.survey    |./bootstrap_bin run apps/hex      > a.elf
 

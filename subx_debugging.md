@@ -27,28 +27,16 @@ rudimentary but hopefully still workable toolkit:
   mode (`bootstrap run`):
 
   ```
-  $ ./bootstrap translate input.subx -o binary
-  $ ./bootstrap --trace run binary arg1 arg2  2>trace
+  $ ./translate_subx_debug file1.subx file2.subx ...  # generating a.elf
+  $ ./bootstrap --trace run a.elf arg1 arg2
+  saving trace to 'last_run'
   ```
 
   The ability to generate a trace is the essential reason for the existence of
   `bootstrap run` mode. It gives far better visibility into program internals than
   running natively.
 
-- As a further refinement, it is possible to render label names in the trace
-  by adding a second flag to the `bootstrap translate` command:
-
-  ```
-  $ ./bootstrap --debug translate input.subx -o binary
-  $ ./bootstrap --trace run binary arg1 arg2  2>trace
-  ```
-
-  `bootstrap --debug translate` emits a mapping from label to address in a file
-  called `labels`. `bootstrap --trace run` reads in the `labels` file if
-  it exists and prints out any matching label name as it traces each instruction
-  executed.
-
-  Here's a sample of what a trace looks like, with a few boxes highlighted:
+  Here's a sample of the contents of `last_run`, with a few boxes highlighted:
 
   <img alt='trace example' src='html/trace.png'>
 
@@ -60,10 +48,10 @@ rudimentary but hopefully still workable toolkit:
   address `0x0900005e` maps to label `$loop` and presumably marks the start of
   some loop. Function names get similar `run: == label` lines.
 
-- One trick when emitting traces with labels:
+- One quick trick when scanning a trace for the first time:
 
   ```
-  $ grep label trace
+  $ grep label last_run
   ```
 
   This is useful for quickly showing you the control flow for the run, and the
@@ -115,10 +103,20 @@ rudimentary but hopefully still workable toolkit:
   `./translate_subx_debug`, and then running:
 
   ```
-  ./bootstrap --trace --dump run a.elf test 2>&1 |grep 'label test'
+  grep 'label test-' |tail
   ```
 
   Just read out the last test printed out before the segfault.
+
+  Even outside of tests, I can often quickly debug an error just by scanning
+  the end of a trace for labels:
+
+  ```
+  $ grep label last_run |tail
+  ```
+
+  Knowing _where_ the error occurred is often enough to put me on the right
+  track to debugging an error.
 
 Hopefully these hints are enough to get you started. The main thing to
 remember is to not be afraid of modifying the sources. A good debugging

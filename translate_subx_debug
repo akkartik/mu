@@ -1,28 +1,32 @@
 #!/bin/sh
-# Translate SubX files with debug information on Linux.
+# Translate given SubX files with debug information on Linux.
 #
-# Mu's core tooling has a gap:
-#   0. The C++ translator 'subx translate' can generate debug information on
-#   Linux or BSD or Mac, but doesn't support any syntax sugar.
-#   1. The self-hosted translator 'translate' runs in emulated mode and can
-#   run on Linux or BSD or Mac. However, syntax sugar passes (sigils and
-#   calls) can be very slow to run emulated.
-#   2. The self-hosted translator 'translate_subx' runs natively on Linux. It is
-#   fast, but you get no trace for runs and zero error-checking on the code
-#   emitted by sigils and calls. Which could still be buggy.
+# Mu provides 3 canonical ways to translate unsafe SubX programs:
+#   0. The C++ translator 'bootstrap translate' can generate traces for
+#   debugging on Linux or BSD or Mac, but doesn't support any syntax sugar.
+#   1. The self-hosted translator can be run natively on Linux using
+#   'translate_subx'. It is fast and supports all syntax sugar, but you get no
+#   trace for debugging.
+#   2. The self-hosted translator can be run emulated on Linux or BSD or Mac
+#   using 'translate_subx_emulated'. It supports all syntax sugar. However, it
+#   can be slow if you generate traces.
 #
-# This script is a hack to get the best of all worlds. We run natively what we
-# must, and leverage as much debug information as possible. This arrangement
-# is snappy but requires Linux just like 'translate_subx'. You also are on your
-# own to mentally map desugared instructions in traces and error messages back
-# to the original sources.
+# This script fills in the gap above by stitching together aspects from
+# multiple approaches. It translates syntax sugar natively, but emulates lower
+# levels using the C++ translator. The result is complete and relatively fast
+# even when generating traces.
+#
+# The cost: it needs Linux. There is no script to generate traces while
+# running emulated on BSD or Mac. That's often impractically slow.
 
 set -e
+
+./build
 
 cat $*          |apps/braces          > a.braces
 cat a.braces    |apps/calls           > a.calls
 cat a.calls     |apps/sigils          > a.sigils
 
-./bootstrap --debug translate a.sigils -o a.elf
+./bootstrap_bin --debug translate a.sigils -o a.elf
 
 chmod +x a.elf

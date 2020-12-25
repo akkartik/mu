@@ -24,7 +24,8 @@ to _some_ safe and clear syntax with as few layers of translation as possible.
 The emphasis is on internal consistency at any point in time rather than
 compatibility with the past. ([More details.](http://akkartik.name/akkartik-convivial-20200607.pdf))
 
-Currently Mu requires a 32-bit x86 processor and Linux kernel.
+Currently Mu requires a 32-bit x86 processor. Generated programs require just
+a Linux kernel and nothing else.
 
 ## Goals
 
@@ -67,12 +68,20 @@ The Mu stack consists of:
 - _bare_ SubX, a more rudimentary form of SubX without certain syntax sugar.
 
 All Mu programs get translated through these layers into tiny zero-dependency
-ELF binaries. The translators for most levels are built out of lower levels.
-The translator from Mu to SubX is written in SubX, and the translator from
-SubX to bare SubX is built in bare SubX.
+ELF binaries that run natively on Linux. The translators for most levels are
+built out of lower levels. The translator from Mu to SubX is written in SubX,
+and the translator from SubX to bare SubX is built in bare SubX.
 
-Mu programs can be run in emulated mode to emit traces, which permit time-travel
-debugging. ([More details.](subx_debugging.md))
+There's an emulator for running Mu binaries (more slowly) on other Unix-like
+systems.
+
+```sh
+$ ./translate_mu_emulated apps/ex2.mu  # emit a.elf using the emulator
+$ ./bootstrap run ./a.elf  # run in the emulator
+$ echo $?
+```
+
+The emulator is also useful for [debugging](subx_debugging.md).
 
 ### incomplete tools
 
