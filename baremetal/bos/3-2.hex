@@ -3,19 +3,32 @@
 # 16-bit real mode.
 #
 # To convert to a disk image:
-#   ./bootstrap run apps/hex < apps/bos/3-1.hex > boot.bin
+#   ./bootstrap run apps/hex < baremetal/bos/3-2.hex > boot.bin
 # To run:
 #   qemu-system-i386 boot.bin
 # Or:
-#   bochs -f apps/bos/bochsrc  # bochsrc loads boot.bin
+#   bochs -f baremetal/bos/bochsrc  # bochsrc loads boot.bin
 #
 # Expected output inside emulator:
-#   Booting from floppy...
+#   Hello
 
-e9 fd ff
+b4 0e  # ah <- 0e (teletype output)
+
+b0 48  # al <- 'H'
+cd 10  # int 10h
+b0 65  # al <- 'e'
+cd 10  # int 10h
+b0 6c  # al <- 'l'
+cd 10  # int 10h
+b0 6c  # al <- 'l'
+cd 10  # int 10h
+b0 6f  # al <- 'o'
+cd 10  # int 10h
+
+e9 fd ff  # loop forever
 
 # padding to 512 bytes
-         00 00 00 00 00 00 00 00 00 00 00 00 00
+                           00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -45,7 +58,8 @@ e9 fd ff
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 55 aa
+00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+55 aa  # final 2 bytes: boot sector marker
 
 # vim:ft=subx
