@@ -39,44 +39,53 @@ convert_html() {
   mv -i $1.html html/`dirname $1`
 }
 
-ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
-for f in *.cc
-do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  process $f
-done
+#? ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
+#? for f in *.cc
+#? do
+#?   test $# -gt 0  &&  test $1 != $f  &&  continue
+#?   process $f
+#? done
+#? 
+#? ctags -x [0-9]*.subx [0-9]*.mu  > /tmp/tags
+#? for f in *.subx *.mu
+#? do
+#?   test $# -gt 0  &&  test $1 != $f  &&  continue
+#?   process $f
+#? done
+#? 
+#? for f in apps/*.subx
+#? do
+#?   test $# -gt 0  &&  test $1 != $f  &&  continue
+#?   ( cd apps
+#?     ctags -x ../[0-9]*.subx ../[0-9]*.mu `basename $f` > /tmp/tags
+#?   )
+#?   process $f
+#? done
+#? 
+#? for f in apps/*.mu
+#? do
+#?   test $# -gt 0  &&  test $1 != $f  &&  continue
+#?   ( cd apps
+#?     ctags -x ../[0-9]*.subx ../[0-9]*.mu `basename $f` > /tmp/tags
+#?   )
+#?   process $f
+#? done
+#? 
+#? for f in apps/*/*.mu
+#? do
+#?   test $# -gt 0  &&  test $1 != $f  &&  continue
+#?   echo $f
+#?   ( cd `dirname $f`
+#?     ctags -x ../../[0-9]*.subx ../../[0-9]*.mu *.mu > /tmp/tags
+#?   )
+#?   process $f
+#? done
 
-ctags -x [0-9]*.subx [0-9]*.mu  > /tmp/tags
-for f in *.subx *.mu
+for f in baremetal/*.hex
 do
   test $# -gt 0  &&  test $1 != $f  &&  continue
-  process $f
-done
-
-for f in apps/*.subx
-do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd apps
-    ctags -x ../[0-9]*.subx ../[0-9]*.mu `basename $f` > /tmp/tags
-  )
-  process $f
-done
-
-for f in apps/*.mu
-do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd apps
-    ctags -x ../[0-9]*.subx ../[0-9]*.mu `basename $f` > /tmp/tags
-  )
-  process $f
-done
-
-for f in apps/*/*.mu
-do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  echo $f
-  ( cd `dirname $f`
-    ctags -x ../../[0-9]*.subx ../../[0-9]*.mu *.mu > /tmp/tags
+  ( cd baremetal
+    ctags -x [0-9]*.subx [0-9]*.mu `basename $f` > /tmp/tags
   )
   process $f
 done

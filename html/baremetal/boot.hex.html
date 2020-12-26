@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - baremetal/boot.hex</title>
+<meta name="Generator" content="Vim/8.1">
+<meta name="plugin-version" content="vim8.1_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal-light">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.subxComment { color: #005faf; }
+.LineNr { }
+.subxH1Comment { color: #005faf; text-decoration: underline; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/baremetal/boot.hex'>https://github.com/akkartik/mu/blob/master/baremetal/boot.hex</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr">  1 </span><span class="subxComment"># Code for the first 2 disk sectors, that all programs in this directory need:</span>
+<span id="L2" class="LineNr">  2 </span><span class="subxComment">#   - load sectors past the first (using BIOS primitives) since only the first is available by default</span>
+<span id="L3" class="LineNr">  3 </span><span class="subxComment">#     - if this fails, print 'D' at top-left of screen and halt</span>
+<span id="L4" class="LineNr">  4 </span><span class="subxComment">#   - initialize a minimal graphics mode</span>
+<span id="L5" class="LineNr">  5 </span><span class="subxComment">#   - switch to 32-bit mode (giving up access to BIOS primitives)</span>
+<span id="L6" class="LineNr">  6 </span><span class="subxComment">#   - set up a handler for keyboard events</span>
+<span id="L7" class="LineNr">  7 </span><span class="subxComment">#   - jump to start of program</span>
+<span id="L8" class="LineNr">  8 </span><span class="subxComment">#</span>
+<span id="L9" class="LineNr">  9 </span><span class="subxComment"># To convert to a disk image, first prepare a realistically sized disk image:</span>
+<span id="L10" class="LineNr"> 10 </span><span class="subxComment">#   dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB</span>
+<span id="L11" class="LineNr"> 11 </span><span class="subxComment"># Create initial sectors from this file:</span>
+<span id="L12" class="LineNr"> 12 </span><span class="subxComment">#   ./bootstrap run apps/hex &lt; baremetal/boot.hex &gt; boot.bin</span>
+<span id="L13" class="LineNr"> 13 </span><span class="subxComment"># Translate other sectors into a file called a.img</span>
+<span id="L14" class="LineNr"> 14 </span><span class="subxComment"># Load all sectors into the disk image:</span>
+<span id="L15" class="LineNr"> 15 </span><span class="subxComment">#   cat boot.bin a.img &gt; disk.bin</span>
+<span id="L16" class="LineNr"> 16 </span><span class="subxComment">#   dd if=disk.bin of=disk.img conv=notrunc</span>
+<span id="L17" class="LineNr"> 17 </span><span class="subxComment"># To run:</span>
+<span id="L18" class="LineNr"> 18 </span><span class="subxComment">#   qemu-system-i386 disk.img</span>
+<span id="L19" class="LineNr"> 19 </span><span class="subxComment"># Or:</span>
+<span id="L20" class="LineNr"> 20 </span><span class="subxComment">#   bochs -f apps/boot.bochsrc  # boot.bochsrc loads disk.img</span>
+<span id="L21" class="LineNr"> 21 </span><span class="subxComment">#</span>
+<span id="L22" class="LineNr"> 22 </span><span class="subxComment"># Since we start out in 16-bit mode, we need instructions SubX doesn't</span>
+<span id="L23" class="LineNr"> 23 </span><span class="subxComment"># support.</span>
+<span id="L24" class="LineNr"> 24 </span><span class="subxComment"># This file contains just lowercase hex bytes and comments. Zero</span>
+<span id="L25" class="LineNr"> 25 </span><span class="subxComment"># error-checking. Make liberal use of:</span>
+<span id="L26" class="LineNr"> 26 </span><span class="subxComment">#   - comments documenting expected offsets</span>
+<span id="L27" class="LineNr"> 27 </span><span class="subxComment">#   - size checks on the emitted file (currently: 512 bytes)</span>
+<span id="L28" class="LineNr"> 28 </span><span class="subxComment">#   - xxd to eyeball that offsets contain expected bytes</span>
+<span id="L29" class="LineNr"> 29 </span><span class="subxComment">#</span>
+<span id="L30" class="LineNr"> 30 </span><span class="subxComment"># Programs using this initialization:</span>
+<span id="L31" class="LineNr"> 31 </span><span class="subxComment">#   - can't use any syscalls</span>
+<span id="L32" class="LineNr"> 32 </span><span class="subxComment">#   - can't print text to video memory (past these boot sectors)</span>
+<span id="L33" class="LineNr"> 33 </span><span class="subxComment">#   - must only print raw pixels (256 colors) to video memory (resolution 1280x1024)</span>
+<span id="L34" class="LineNr"> 34 </span><span class="subxComment">#   - must store their entry-point at address 0x8000</span>
+<span id="L35" class="LineNr"> 35 </span>
+<span id="L36" class="LineNr"> 36 </span><span class="subxComment">## 16-bit entry point</span>
+<span id="L37" class="LineNr"> 37 </span>
+<span id="L38" class="LineNr"> 38 </span><span class="subxComment"># Upon reset, the IBM PC:</span>
+<span id="L39" class="LineNr"> 39 </span><span class="subxH1Comment"># - loads the first sector (512 bytes)</span>
+<span id="L40" class="LineNr"> 40 </span><span class="subxComment">#   from some bootable image (see the boot sector marker at the end of this file)</span>
+<span id="L41" class="LineNr"> 41 </span><span class="subxComment">#   to the address range [0x7c00, 0x7e00)</span>
+<span id="L42" class="LineNr"> 42 </span><span class="subxH1Comment"># - starts executing code at address 0x7c00</span>
+<span id="L43" class="LineNr"> 43 </span>
+<span id="L44" class="LineNr"> 44 </span><span class="subxComment"># offset 00 (address 0x7c00):</span>
+<span id="L45" class="LineNr"> 45 </span>  <span class="subxComment"># disable interrupts for this initialization</span>
+<span id="L46" class="LineNr"> 46 </span>  fa  <span class="subxComment"># cli</span>
+<span id="L47" class="LineNr"> 47 </span>
+<span id="L48" class="LineNr"> 48 </span>  <span class="subxComment"># initialize segment registers</span>
+<span id="L49" class="LineNr"> 49 </span>  <span class="subxComment"># this isn't always needed, but the recommendation is to not make assumptions</span>
+<span id="L50" class="LineNr"> 50 </span>  b8 00 00  <span class="subxComment"># ax &lt;- 0</span>
+<span id="L51" class="LineNr"> 51 </span>  8e d8  <span class="subxComment"># ds &lt;- ax</span>
+<span id="L52" class="LineNr"> 52 </span>  8e d0  <span class="subxComment"># ss &lt;- ax</span>
+<span id="L53" class="LineNr"> 53 </span>  8e c0  <span class="subxComment"># es &lt;- ax</span>
+<span id="L54" class="LineNr"> 54 </span>  8e e0  <span class="subxComment"># fs &lt;- ax</span>
+<span id="L55" class="LineNr"> 55 </span>  8e e8  <span class="subxComment"># gs &lt;- ax</span>
+<span id="L56" class="LineNr"> 56 </span>
+<span id="L57" class="LineNr"> 57 </span>  <span class="subxComment"># We don't read or write the stack before we get to 32-bit mode. No function</span>
+<span id="L58" class="LineNr"> 58 </span>  <span class="subxComment"># calls, so we don't need to initialize the stack.</span>
+<span id="L59" class="LineNr"> 59 </span>
+<span id="L60" class="LineNr"> 60 </span><span class="subxComment"># 0e:</span>
+<span id="L61" class="LineNr"> 61 </span>  <span class="subxComment"># load second sector from disk</span>
+<span id="L62" class="LineNr"> 62 </span>  b4 02  <span class="subxComment"># ah &lt;- 2  # read sectors from disk</span>
+<span id="L63" class="LineNr"> 63 </span>  <span class="subxComment"># dl comes conveniently initialized at boot time with the index of the device being booted</span>
+<span id="L64" class="LineNr"> 64 </span>  b5 00  <span class="subxComment"># ch &lt;- 0  # cylinder 0</span>
+<span id="L65" class="LineNr"> 65 </span>  b6 00  <span class="subxComment"># dh &lt;- 0  # track 0</span>
+<span id="L66" class="LineNr"> 66 </span>  b1 02  <span class="subxComment"># cl &lt;- 2  # second sector, 1-based</span>
+<span id="L67" class="LineNr"> 67 </span>  b0 04  <span class="subxComment"># al &lt;- 4  # number of sectors to read</span>
+<span id="L68" class="LineNr"> 68 </span>  <span class="subxComment"># address to write sectors to = es:bx = 0x7e00, contiguous with boot segment</span>
+<span id="L69" class="LineNr"> 69 </span>  bb 00 00  <span class="subxComment"># bx &lt;- 0</span>
+<span id="L70" class="LineNr"> 70 </span>  8e c3  <span class="subxComment"># es &lt;- bx</span>
+<span id="L71" class="LineNr"> 71 </span>  bb 00 7e  <span class="subxComment"># bx &lt;- 0x7e00</span>
+<span id="L72" class="LineNr"> 72 </span>  cd 13  <span class="subxComment"># int 13h, BIOS disk service</span>
+<span id="L73" class="LineNr"> 73 </span>  0f 82 76 00  <span class="subxComment"># jump-if-carry disk-error</span>
+<span id="L74" class="LineNr"> 74 </span>
+<span id="L75" class="LineNr"> 75 </span><span class="subxComment"># 26:</span>
+<span id="L76" class="LineNr"> 76 </span>  <span class="subxComment"># undo the A20 hack: <a href="https://en.wikipedia.org/wiki/A20_line">https://en.wikipedia.org/wiki/A20_line</a></span>
+<span id="L77" class="LineNr"> 77 </span>  <span class="subxComment"># this is from <a href="https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S">https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S</a></span>
+<span id="L78" class="LineNr"> 78 </span>  <span class="subxComment"># seta20.1:</span>
+<span id="L79" class="LineNr"> 79 </span>  e4 64  <span class="subxComment"># al &lt;- port 0x64</span>
+<span id="L80" class="LineNr"> 80 </span>  a8 02  <span class="subxComment"># set zf if bit 1 (second-least significant) is not set</span>
+<span id="L81" class="LineNr"> 81 </span>  75 fa  <span class="subxComment"># if zf not set, goto seta20.1 (-6)</span>
+<span id="L82" class="LineNr"> 82 </span>
+<span id="L83" class="LineNr"> 83 </span>  b0 d1  <span class="subxComment"># al &lt;- 0xd1</span>
+<span id="L84" class="LineNr"> 84 </span>  e6 64  <span class="subxComment"># port 0x64 &lt;- al</span>
+<span id="L85" class="LineNr"> 85 </span>
+<span id="L86" class="LineNr"> 86 </span><span class="subxComment"># 30:</span>
+<span id="L87" class="LineNr"> 87 </span>  <span class="subxComment"># seta20.2:</span>
+<span id="L88" class="LineNr"> 88 </span>  e4 64  <span class="subxComment"># al &lt;- port 0x64</span>
+<span id="L89" class="LineNr"> 89 </span>  a8 02  <span class="subxComment"># set zf if bit 1 (second-least significant) is not set</span>
+<span id="L90" class="LineNr"> 90 </span>  75 fa  <span class="subxComment"># if zf not set, goto seta20.2 (-6)</span>
+<span id="L91" class="LineNr"> 91 </span>
+<span id="L92" class="LineNr"> 92 </span>  b0 df  <span class="subxComment"># al &lt;- 0xdf</span>
+<span id="L93" class="LineNr"> 93 </span>  e6 64  <span class="subxComment"># port 0x64 &lt;- al</span>
+<span id="L94" class="LineNr"> 94 </span>
+<span id="L95" class="LineNr"> 95 </span><span class="subxComment"># 3a:</span>
+<span id="L96" class="LineNr"> 96 </span>  <span class="subxComment"># adjust video mode</span>
+<span id="L97" class="LineNr"> 97 </span>  b4 4f  <span class="subxComment"># ah &lt;- 4f (VBE)</span>
+<span id="L98" class="LineNr"> 98 </span>  b0 02  <span class="subxComment"># al &lt;- 02 (set video mode)</span>
+<span id="L99" class="LineNr"> 99 </span>  bb 07 01  <span class="subxComment"># bx &lt;- 0x0107 (graphics 1280x1024x256)</span>
+<span id="L100" class="LineNr">100 </span>            <span class="subxComment"># fallback: 0x0101 (640x480x256)</span>
+<span id="L101" class="LineNr">101 </span>            <span class="subxComment"># for other choices see <a href="http://www.ctyme.com/intr/rb-0069.htm">http://www.ctyme.com/intr/rb-0069.htm</a></span>
+<span id="L102" class="LineNr">102 </span>  cd 10  <span class="subxComment"># int 10h, Vesa BIOS extensions</span>
+<span id="L103" class="LineNr">103 </span>
+<span id="L104" class="LineNr">104 </span><span class="subxComment"># 43:</span>
+<span id="L105" class="LineNr">105 </span>  <span class="subxComment"># switch to 32-bit mode</span>
+<span id="L106" class="LineNr">106 </span>  0f 01 16  <span class="subxComment"># lgdt 00/mod/indirect 010/subop 110/rm/use-disp16</span>
+<span id="L107" class="LineNr">107 </span>    80 7c  <span class="subxComment"># *gdt_descriptor</span>
+<span id="L108" class="LineNr">108 </span>  0f 20 c0  <span class="subxComment"># eax &lt;- cr0</span>
+<span id="L109" class="LineNr">109 </span>  66 83 c8 01  <span class="subxComment"># eax &lt;- or 0x1</span>
+<span id="L110" class="LineNr">110 </span>  0f 22 c0  <span class="subxComment"># cr0 &lt;- eax</span>
+<span id="L111" class="LineNr">111 </span>  ea c0 7c 08 00  <span class="subxComment"># far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)</span>
+<span id="L112" class="LineNr">112 </span>
+<span id="L113" class="LineNr">113 </span><span class="subxComment"># padding</span>
+<span id="L114" class="LineNr">114 </span><span class="subxComment"># 57:</span>
+<span id="L115" class="LineNr">115 </span>                     00 00 00 00 00 00 00 00 00
+<span id="L116" class="LineNr">116 </span>
+<span id="L117" class="LineNr">117 </span><span class="subxComment">## GDT: 3 records of 8 bytes each</span>
+<span id="L118" class="LineNr">118 </span>
+<span id="L119" class="LineNr">119 </span><span class="subxComment"># 60:</span>
+<span id="L120" class="LineNr">120 </span><span class="subxComment"># gdt_start:</span>
+<span id="L121" class="LineNr">121 </span><span class="subxComment"># gdt_null:  mandatory null descriptor</span>
+<span id="L122" class="LineNr">122 </span>  00 00 00 00 00 00 00 00
+<span id="L123" class="LineNr">123 </span><span class="subxComment"># gdt_code:  (offset 8 from gdt_start)</span>
+<span id="L124" class="LineNr">124 </span>  ff ff  <span class="subxComment"># limit[0:16]</span>
+<span id="L125" class="LineNr">125 </span>  00 00 00  <span class="subxComment"># base[0:24]</span>
+<span id="L126" class="LineNr">126 </span>  9a  <span class="subxComment"># 1/present 00/privilege 1/descriptor type = 1001b</span>
+<span id="L127" class="LineNr">127 </span>      <span class="subxComment"># 1/code 0/conforming 1/readable 0/accessed = 1010b</span>
+<span id="L128" class="LineNr">128 </span>  cf  <span class="subxComment"># 1/granularity 1/32-bit 0/64-bit-segment 0/AVL = 1100b</span>
+<span id="L129" class="LineNr">129 </span>      <span class="subxComment"># limit[16:20] = 1111b</span>
+<span id="L130" class="LineNr">130 </span>  00  <span class="subxComment"># base[24:32]</span>
+<span id="L131" class="LineNr">131 </span><span class="subxComment"># gdt_data:  (offset 16 from gdt_start)</span>
+<span id="L132" class="LineNr">132 </span>  ff ff  <span class="subxComment"># limit[0:16]</span>
+<span id="L133" class="LineNr">133 </span>  00 00 00  <span class="subxComment"># base[0:24]</span>
+<span id="L134" class="LineNr">134 </span>  92  <span class="subxComment"># 1/present 00/privilege 1/descriptor type = 1001b</span>
+<span id="L135" class="LineNr">135 </span>      <span class="subxComment"># 0/data 0/conforming 1/readable 0/accessed = 0010b</span>
+<span id="L136" class="LineNr">136 </span>  cf  <span class="subxComment"># same as gdt_code</span>
+<span id="L137" class="LineNr">137 </span>  00  <span class="subxComment"># base[24:32]</span>
+<span id="L138" class="LineNr">138 </span><span class="subxComment"># gdt_end:</span>
+<span id="L139" class="LineNr">139 </span>
+<span id="L140" class="LineNr">140 </span><span class="subxComment"># padding</span>
+<span id="L141" class="LineNr">141 </span><span class="subxComment"># 78:</span>
+<span id="L142" class="LineNr">142 </span>                        00 00 00 00 00 00 00 00
+<span id="L143" class="LineNr">143 </span>
+<span id="L144" class="LineNr">144 </span><span class="subxComment"># 80:</span>
+<span id="L145" class="LineNr">145 </span><span class="subxComment"># gdt_descriptor:</span>
+<span id="L146" class="LineNr">146 </span>  17 00  <span class="subxComment"># final index of gdt = gdt_end - gdt_start - 1</span>
+<span id="L147" class="LineNr">147 </span>  60 7c 00 00  <span class="subxComment"># start = gdt_start</span>
+<span id="L148" class="LineNr">148 </span>
+<span id="L149" class="LineNr">149 </span><span class="subxComment"># padding</span>
+<span id="L150" class="LineNr">150 </span><span class="subxComment"># 85:</span>
+<span id="L151" class="LineNr">151 </span>                  00 00 00 00 00 00 00 00 00 00
+<span id="L152" class="LineNr">152 </span>
+<span id="L153" class="LineNr">153 </span><span class="subxComment"># 90:</span>
+<span id="L154" class="LineNr">154 </span><span class="subxComment"># disk_error:</span>
+<span id="L155" class="LineNr">155 </span>  <span class="subxComment"># print 'D' to top-left of screen to indicate disk error</span>
+<span id="L156" class="LineNr">156 </span>  <span class="subxComment"># *0xb8000 &lt;- 0x0f44</span>
+<span id="L157" class="LineNr">157 </span>  <span class="subxComment"># bx &lt;- 0xb800</span>
+<span id="L158" class="LineNr">158 </span>  bb 00 b8
+<span id="L159" class="LineNr">159 </span>  <span class="subxComment"># ds &lt;- bx</span>
+<span id="L160" class="LineNr">160 </span>  8e db  <span class="subxComment"># 11b/mod 011b/reg/ds 011b/rm/bx</span>
+<span id="L161" class="LineNr">161 </span>  <span class="subxComment"># al &lt;- 'D'</span>
+<span id="L162" class="LineNr">162 </span>  b0 44
+<span id="L163" class="LineNr">163 </span>  <span class="subxComment"># ah &lt;- 0x0f  # white on black</span>
+<span id="L164" class="LineNr">164 </span>  b4 0f
+<span id="L165" class="LineNr">165 </span>  <span class="subxComment"># bx &lt;- 0</span>
+<span id="L166" class="LineNr">166 </span>  bb 00 00
+<span id="L167" class="LineNr">167 </span>  <span class="subxComment"># *ds:bx &lt;- ax</span>
+<span id="L168" class="LineNr">168 </span>  89 07  <span class="subxComment"># 00b/mod/indirect 000b/reg/ax 111b/rm/bx</span>
+<span id="L169" class="LineNr">169 </span>
+<span id="L170" class="LineNr">170 </span>e9 fb ff  <span class="subxComment"># loop forever</span>
+<span id="L171" class="LineNr">171 </span>
+<span id="L172" class="LineNr">172 </span><span class="subxComment"># padding</span>
+<span id="L173" class="LineNr">173 </span><span class="subxComment"># a1:</span>
+<span id="L174" class="LineNr">174 </span>   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L175" class="LineNr">175 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L176" class="LineNr">176 </span>
+<span id="L177" class="LineNr">177 </span><span class="subxComment">## 32-bit code from this point (still some instructions not in SubX)</span>
+<span id="L178" class="LineNr">178 </span>
+<span id="L179" class="LineNr">179 </span><span class="subxComment"># c0:</span>
+<span id="L180" class="LineNr">180 </span><span class="subxComment"># initialize_32bit_mode:</span>
+<span id="L181" class="LineNr">181 </span>  66 b8 10 00  <span class="subxComment"># ax &lt;- offset 16 from gdt_start</span>
+<span id="L182" class="LineNr">182 </span>  8e d8  <span class="subxComment"># ds &lt;- ax</span>
+<span id="L183" class="LineNr">183 </span>  8e d0  <span class="subxComment"># ss &lt;- ax</span>
+<span id="L184" class="LineNr">184 </span>  8e c0  <span class="subxComment"># es &lt;- ax</span>
+<span id="L185" class="LineNr">185 </span>  8e e0  <span class="subxComment"># fs &lt;- ax</span>
+<span id="L186" class="LineNr">186 </span>  8e e8  <span class="subxComment"># gs &lt;- ax</span>
+<span id="L187" class="LineNr">187 </span>
+<span id="L188" class="LineNr">188 </span>  <span class="subxComment"># load interrupt handlers</span>
+<span id="L189" class="LineNr">189 </span>  0f 01 1d  <span class="subxComment"># lidt 00/mod/indirect 011/subop 101/rm32/use-disp32</span>
+<span id="L190" class="LineNr">190 </span>    00 7f 00 00  <span class="subxComment"># *idt_descriptor</span>
+<span id="L191" class="LineNr">191 </span>
+<span id="L192" class="LineNr">192 </span>  <span class="subxComment"># enable keyboard IRQ</span>
+<span id="L193" class="LineNr">193 </span>  b0 fd  <span class="subxComment"># al &lt;- 0xfd  # enable just IRQ1</span>
+<span id="L194" class="LineNr">194 </span>  e6 21  <span class="subxComment"># port 0x21 &lt;- al</span>
+<span id="L195" class="LineNr">195 </span>
+<span id="L196" class="LineNr">196 </span>  <span class="subxComment"># initialization is done; enable interrupts</span>
+<span id="L197" class="LineNr">197 </span>  fb
+<span id="L198" class="LineNr">198 </span>  e9 21 03 00 00  <span class="subxComment"># jump to 0x8000</span>
+<span id="L199" class="LineNr">199 </span>
+<span id="L200" class="LineNr">200 </span><span class="subxComment"># padding</span>
+<span id="L201" class="LineNr">201 </span><span class="subxComment"># df:</span>
+<span id="L202" class="LineNr">202 </span>                                             00
+<span id="L203" class="LineNr">203 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L204" class="LineNr">204 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L205" class="LineNr">205 </span>
+<span id="L206" class="LineNr">206 </span><span class="subxComment"># 100:</span>
+<span id="L207" class="LineNr">207 </span><span class="subxComment"># null interrupt handler:</span>
+<span id="L208" class="LineNr">208 </span>  cf  <span class="subxComment"># iret</span>
+<span id="L209" class="LineNr">209 </span>
+<span id="L210" class="LineNr">210 </span><span class="subxComment"># padding</span>
+<span id="L211" class="LineNr">211 </span><span class="subxComment"># 101:</span>
+<span id="L212" class="LineNr">212 </span>   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L213" class="LineNr">213 </span>
+<span id="L214" class="LineNr">214 </span><span class="subxComment"># 110:</span>
+<span id="L215" class="LineNr">215 </span><span class="subxComment"># keyboard interrupt handler:</span>
+<span id="L216" class="LineNr">216 </span>  <span class="subxComment"># prologue</span>
+<span id="L217" class="LineNr">217 </span>  fa  <span class="subxComment"># disable interrupts</span>
+<span id="L218" class="LineNr">218 </span>  60  <span class="subxComment"># push all registers to stack</span>
+<span id="L219" class="LineNr">219 </span>  <span class="subxComment"># acknowledge interrupt</span>
+<span id="L220" class="LineNr">220 </span>  b0 20  <span class="subxComment"># al &lt;- 0x20</span>
+<span id="L221" class="LineNr">221 </span>  e6 20  <span class="subxComment"># port 0x20 &lt;- al</span>
+<span id="L222" class="LineNr">222 </span>  <span class="subxComment"># TODO: perhaps we should check keyboard status</span>
+<span id="L223" class="LineNr">223 </span>  <span class="subxComment"># read keycode into eax</span>
+<span id="L224" class="LineNr">224 </span>  31 c0  <span class="subxComment"># eax &lt;- xor eax;  11/direct 000/r32/eax 000/rm32/eax</span>
+<span id="L225" class="LineNr">225 </span>  e4 60  <span class="subxComment"># al &lt;- port 0x60</span>
+<span id="L226" class="LineNr">226 </span>  <span class="subxComment"># map key '1' to ascii; if eax == 2, eax = 0x31</span>
+<span id="L227" class="LineNr">227 </span>  3d 02 00 00 00  <span class="subxComment"># compare eax with 0x02</span>
+<span id="L228" class="LineNr">228 </span>  75 0b  <span class="subxComment"># if not equal, goto epilogue</span>
+<span id="L229" class="LineNr">229 </span>  b8 31 0f 00 00  <span class="subxComment"># eax &lt;- 0x0f31</span>
+<span id="L230" class="LineNr">230 </span>  <span class="subxComment"># print eax to top-left of screen (*0xb8000)</span>
+<span id="L231" class="LineNr">231 </span>  89  <span class="subxComment"># copy r32 to rm32</span>
+<span id="L232" class="LineNr">232 </span>    05  <span class="subxComment"># 00/mod/indirect 000/r32/eax 101/rm32/use-disp32</span>
+<span id="L233" class="LineNr">233 </span>    <span class="subxComment"># disp32</span>
+<span id="L234" class="LineNr">234 </span>    00 80 0b 00
+<span id="L235" class="LineNr">235 </span>  <span class="subxComment"># epilogue</span>
+<span id="L236" class="LineNr">236 </span>  61  <span class="subxComment"># pop all registers</span>
+<span id="L237" class="LineNr">237 </span>  fb  <span class="subxComment"># enable interrupts</span>
+<span id="L238" class="LineNr">238 </span>  cf  <span class="subxComment"># iret</span>
+<span id="L239" class="LineNr">239 </span>
+<span id="L240" class="LineNr">240 </span><span class="subxComment"># padding</span>
+<span id="L241" class="LineNr">241 </span><span class="subxComment"># 12f</span>
+<span id="L242" class="LineNr">242 </span>                                             00
+<span id="L243" class="LineNr">243 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L244" class="LineNr">244 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L245" class="LineNr">245 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L246" class="LineNr">246 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L247" class="LineNr">247 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L248" class="LineNr">248 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L249" class="LineNr">249 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L250" class="LineNr">250 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L251" class="LineNr">251 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L252" class="LineNr">252 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L253" class="LineNr">253 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L254" class="LineNr">254 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L255" class="LineNr">255 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L256" class="LineNr">256 </span>
+<span id="L257" class="LineNr">257 </span><span class="subxComment"># final 2 bytes of boot sector</span>
+<span id="L258" class="LineNr">258 </span>55 aa
+<span id="L259" class="LineNr">259 </span>
+<span id="L260" class="LineNr">260 </span><span class="subxComment">## sector 2</span>
+<span id="L261" class="LineNr">261 </span><span class="subxComment"># loaded by load_disk, not automatically on boot</span>
+<span id="L262" class="LineNr">262 </span>
+<span id="L263" class="LineNr">263 </span><span class="subxComment"># offset 200 (address 0x7e00): interrupt descriptor table</span>
+<span id="L264" class="LineNr">264 </span><span class="subxComment"># 32 entries * 8 bytes each = 256 bytes (0x100)</span>
+<span id="L265" class="LineNr">265 </span><span class="subxComment"># idt_start:</span>
+<span id="L266" class="LineNr">266 </span>
+<span id="L267" class="LineNr">267 </span>00 00 00 00 00 00 00 00
+<span id="L268" class="LineNr">268 </span>00 00 00 00 00 00 00 00
+<span id="L269" class="LineNr">269 </span>00 00 00 00 00 00 00 00
+<span id="L270" class="LineNr">270 </span>00 00 00 00 00 00 00 00
+<span id="L271" class="LineNr">271 </span>00 00 00 00 00 00 00 00
+<span id="L272" class="LineNr">272 </span>00 00 00 00 00 00 00 00
+<span id="L273" class="LineNr">273 </span>00 00 00 00 00 00 00 00
+<span id="L274" class="LineNr">274 </span>00 00 00 00 00 00 00 00
+<span id="L275" class="LineNr">275 </span>
+<span id="L276" class="LineNr">276 </span><span class="subxComment"># entry 8: clock</span>
+<span id="L277" class="LineNr">277 </span>  00 7d  <span class="subxComment"># target[0:16] = null interrupt handler</span>
+<span id="L278" class="LineNr">278 </span>  08 00  <span class="subxComment"># segment selector (gdt_code)</span>
+<span id="L279" class="LineNr">279 </span>  00  <span class="subxComment"># unused</span>
+<span id="L280" class="LineNr">280 </span>  8e  <span class="subxComment"># 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate</span>
+<span id="L281" class="LineNr">281 </span>  00 00  <span class="subxComment"># target[16:32]</span>
+<span id="L282" class="LineNr">282 </span>
+<span id="L283" class="LineNr">283 </span><span class="subxComment"># entry 9: keyboard</span>
+<span id="L284" class="LineNr">284 </span>  10 7d  <span class="subxComment"># target[0:16] = keyboard interrupt handler</span>
+<span id="L285" class="LineNr">285 </span>  08 00  <span class="subxComment"># segment selector (gdt_code)</span>
+<span id="L286" class="LineNr">286 </span>  00  <span class="subxComment"># unused</span>
+<span id="L287" class="LineNr">287 </span>  8e  <span class="subxComment"># 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate</span>
+<span id="L288" class="LineNr">288 </span>  00 00  <span class="subxComment"># target[16:32]</span>
+<span id="L289" class="LineNr">289 </span>
+<span id="L290" class="LineNr">290 </span>00 00 00 00 00 00 00 00
+<span id="L291" class="LineNr">291 </span>00 00 00 00 00 00 00 00
+<span id="L292" class="LineNr">292 </span>00 00 00 00 00 00 00 00
+<span id="L293" class="LineNr">293 </span>00 00 00 00 00 00 00 00
+<span id="L294" class="LineNr">294 </span>00 00 00 00 00 00 00 00
+<span id="L295" class="LineNr">295 </span>00 00 00 00 00 00 00 00
+<span id="L296" class="LineNr">296 </span>00 00 00 00 00 00 00 00
+<span id="L297" class="LineNr">297 </span>00 00 00 00 00 00 00 00
+<span id="L298" class="LineNr">298 </span>00 00 00 00 00 00 00 00
+<span id="L299" class="LineNr">299 </span>00 00 00 00 00 00 00 00
+<span id="L300" class="LineNr">300 </span>00 00 00 00 00 00 00 00
+<span id="L301" class="LineNr">301 </span>00 00 00 00 00 00 00 00
+<span id="L302" class="LineNr">302 </span>00 00 00 00 00 00 00 00
+<span id="L303" class="LineNr">303 </span>00 00 00 00 00 00 00 00
+<span id="L304" class="LineNr">304 </span>00 00 00 00 00 00 00 00
+<span id="L305" class="LineNr">305 </span>00 00 00 00 00 00 00 00
+<span id="L306" class="LineNr">306 </span>00 00 00 00 00 00 00 00
+<span id="L307" class="LineNr">307 </span>00 00 00 00 00 00 00 00
+<span id="L308" class="LineNr">308 </span>00 00 00 00 00 00 00 00
+<span id="L309" class="LineNr">309 </span>00 00 00 00 00 00 00 00
+<span id="L310" class="LineNr">310 </span>00 00 00 00 00 00 00 00
+<span id="L311" class="LineNr">311 </span>00 00 00 00 00 00 00 00
+<span id="L312" class="LineNr">312 </span><span class="subxComment"># idt_end:</span>
+<span id="L313" class="LineNr">313 </span>
+<span id="L314" class="LineNr">314 </span><span class="subxComment"># offset 300 (address 0x7f00):</span>
+<span id="L315" class="LineNr">315 </span><span class="subxComment"># idt_descriptor:</span>
+<span id="L316" class="LineNr">316 </span>  ff 00  <span class="subxComment"># idt_end - idt_start - 1</span>
+<span id="L317" class="LineNr">317 </span>  00 7e 00 00  <span class="subxComment"># start = idt_start</span>
+<span id="L318" class="LineNr">318 </span>
+<span id="L319" class="LineNr">319 </span><span class="subxComment"># padding</span>
+<span id="L320" class="LineNr">320 </span>                  00 00 00 00 00 00 00 00 00 00
+<span id="L321" class="LineNr">321 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L322" class="LineNr">322 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L323" class="LineNr">323 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L324" class="LineNr">324 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L325" class="LineNr">325 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L326" class="LineNr">326 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L327" class="LineNr">327 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L328" class="LineNr">328 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L329" class="LineNr">329 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L330" class="LineNr">330 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L331" class="LineNr">331 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L332" class="LineNr">332 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L333" class="LineNr">333 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L334" class="LineNr">334 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L335" class="LineNr">335 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L336" class="LineNr">336 </span><span class="subxComment"># offset 400 (address 0x8000)</span>
+<span id="L337" class="LineNr">337 </span>
+<span id="L338" class="LineNr">338 </span><span class="subxComment"># vim&#0058;ft=subx</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
