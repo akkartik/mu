@@ -1,0 +1,338 @@
+# Code for the first 2 disk sectors, that all programs in this directory need:
+#   - load sectors past the first (using BIOS primitives) since only the first is available by default
+#     - if this fails, print 'D' at top-left of screen and halt
+#   - initialize a minimal graphics mode
+#   - switch to 32-bit mode (giving up access to BIOS primitives)
+#   - set up a handler for keyboard events
+#   - jump to start of program
+#
+# To convert to a disk image, first prepare a realistically sized disk image:
+#   dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
+# Create initial sectors from this file:
+#   ./bootstrap run apps/hex < baremetal/boot.hex > boot.bin
+# Translate other sectors into a file called a.img
+# Load all sectors into the disk image:
+#   cat boot.bin a.img > disk.bin
+#   dd if=disk.bin of=disk.img conv=notrunc
+# To run:
+#   qemu-system-i386 disk.img
+# Or:
+#   bochs -f apps/boot.bochsrc  # boot.bochsrc loads disk.img
+#
+# Since we start out in 16-bit mode, we need instructions SubX doesn't
+# support.
+# This file contains just lowercase hex bytes and comments. Zero
+# error-checking. Make liberal use of:
+#   - comments documenting expected offsets
+#   - size checks on the emitted file (currently: 512 bytes)
+#   - xxd to eyeball that offsets contain expected bytes
+#
+# Programs using this initialization:
+#   - can't use any syscalls
+#   - can't print text to video memory (past these boot sectors)
+#   - must only print raw pixels (256 colors) to video memory (resolution 1280x1024)
+#   - must store their entry-point at address 0x8000
+
+## 16-bit entry point
+
+# Upon reset, the IBM PC:
+# - loads the first sector (512 bytes)
+#   from some bootable image (see the boot sector marker at the end of this file)
+#   to the address range [0x7c00, 0x7e00)
+# - starts executing code at address 0x7c00
+
+# offset 00 (address 0x7c00):
+  # disable interrupts for this initialization
+  fa  # cli
+
+  # initialize segment registers
+  # this isn't always needed, but the recommendation is to not make assumptions
+  b8 00 00  # ax <- 0
+  8e d8  # ds <- ax
+  8e d0  # ss <- ax
+  8e c0  # es <- ax
+  8e e0  # fs <- ax
+  8e e8  # gs <- ax
+
+  # We don't read or write the stack before we get to 32-bit mode. No function
+  # calls, so we don't need to initialize the stack.
+
+# 0e:
+  # load second sector from disk
+  b4 02  # ah <- 2  # read sectors from disk
+  # dl comes conveniently initialized at boot time with the index of the device being booted
+  b5 00  # ch <- 0  # cylinder 0
+  b6 00  # dh <- 0  # track 0
+  b1 02  # cl <- 2  # second sector, 1-based
+  b0 04  # al <- 4  # number of sectors to read
+  # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
+  bb 00 00  # bx <- 0
+  8e c3  # es <- bx
+  bb 00 7e  # bx <- 0x7e00
+  cd 13  # int 13h, BIOS disk service
+  0f 82 76 00  # jump-if-carry disk-error
+
+# 26:
+  # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
+  # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
+  # seta20.1:
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # if zf not set, goto seta20.1 (-6)
+
+  b0 d1  # al <- 0xd1
+  e6 64  # port 0x64 <- al
+
+# 30:
+  # seta20.2:
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # if zf not set, goto seta20.2 (-6)
+
+  b0 df  # al <- 0xdf
+  e6 64  # port 0x64 <- al
+
+# 3a:
+  # adjust video mode
+  b4 4f  # ah <- 4f (VBE)
+  b0 02  # al <- 02 (set video mode)
+  bb 07 01  # bx <- 0x0107 (graphics 1280x1024x256)
+            # fallback: 0x0101 (640x480x256)
+            # for other choices see http://www.ctyme.com/intr/rb-0069.htm
+  cd 10  # int 10h, Vesa BIOS extensions
+
+# 43:
+  # switch to 32-bit mode
+  0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
+    80 7c  # *gdt_descriptor
+  0f 20 c0  # eax <- cr0
+  66 83 c8 01  # eax <- or 0x1
+  0f 22 c0  # cr0 <- eax
+  ea c0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
+
+# padding
+# 57:
+                     00 00 00 00 00 00 00 00 00
+
+## GDT: 3 records of 8 bytes each
+
+# 60:
+# gdt_start:
+# gdt_null:  mandatory null descriptor
+  00 00 00 00 00 00 00 00
+# gdt_code:  (offset 8 from gdt_start)
+  ff ff  # limit[0:16]
+  00 00 00  # base[0:24]
+  9a  # 1/present 00/privilege 1/descriptor type = 1001b
+      # 1/code 0/conforming 1/readable 0/accessed = 1010b
+  cf  # 1/granularity 1/32-bit 0/64-bit-segment 0/AVL = 1100b
+      # limit[16:20] = 1111b
+  00  # base[24:32]
+# gdt_data:  (offset 16 from gdt_start)
+  ff ff  # limit[0:16]
+  00 00 00  # base[0:24]
+  92  # 1/present 00/privilege 1/descriptor type = 1001b
+      # 0/data 0/conforming 1/readable 0/accessed = 0010b
+  cf  # same as gdt_code
+  00  # base[24:32]
+# gdt_end:
+
+# padding
+# 78:
+                        00 00 00 00 00 00 00 00
+
+# 80:
+# gdt_descriptor:
+  17 00  # final index of gdt = gdt_end - gdt_start - 1
+  60 7c 00 00  # start = gdt_start
+
+# padding
+# 85:
+                  00 00 00 00 00 00 00 00 00 00
+
+# 90:
+# disk_error:
+  # print 'D' to top-left of screen to indicate disk error
+  # *0xb8000 <- 0x0f44
+  # bx <- 0xb800
+  bb 00 b8
+  # ds <- bx
+  8e db  # 11b/mod 011b/reg/ds 011b/rm/bx
+  # al <- 'D'
+  b0 44
+  # ah <- 0x0f  # white on black
+  b4 0f
+  # bx <- 0
+  bb 00 00
+  # *ds:bx <- ax
+  89 07  # 00b/mod/indirect 000b/reg/ax 111b/rm/bx
+
+e9 fb ff  # loop forever
+
+# padding
+# a1:
+   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+## 32-bit code from this point (still some instructions not in SubX)
+
+# c0:
+# initialize_32bit_mode:
+  66 b8 10 00  # ax <- offset 16 from gdt_start
+  8e d8  # ds <- ax
+  8e d0  # ss <- ax
+  8e c0  # es <- ax
+  8e e0  # fs <- ax
+  8e e8  # gs <- ax
+
+  # load interrupt handlers
+  0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
+    00 7f 00 00  # *idt_descriptor
+
+  # enable keyboard IRQ
+  b0 fd  # al <- 0xfd  # enable just IRQ1
+  e6 21  # port 0x21 <- al
+
+  # initialization is done; enable interrupts
+  fb
+  e9 21 03 00 00  # jump to 0x8000
+
+# padding
+# df:
+                                             00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# 100:
+# null interrupt handler:
+  cf  # iret
+
+# padding
+# 101:
+   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# 110:
+# keyboard interrupt handler:
+  # prologue
+  fa  # disable interrupts
+  60  # push all registers to stack
+  # acknowledge interrupt
+  b0 20  # al <- 0x20
+  e6 20  # port 0x20 <- al
+  # TODO: perhaps we should check keyboard status
+  # read keycode into eax
+  31 c0  # eax <- xor eax;  11/direct 000/r32/eax 000/rm32/eax
+  e4 60  # al <- port 0x60
+  # map key '1' to ascii; if eax == 2, eax = 0x31
+  3d 02 00 00 00  # compare eax with 0x02
+  75 0b  # if not equal, goto epilogue
+  b8 31 0f 00 00  # eax <- 0x0f31
+  # print eax to top-left of screen (*0xb8000)
+  89  # copy r32 to rm32
+    05  # 00/mod/indirect 000/r32/eax 101/rm32/use-disp32
+    # disp32
+    00 80 0b 00
+  # epilogue
+  61  # pop all registers
+  fb  # enable interrupts
+  cf  # iret
+
+# padding
+# 12f
+                                             00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# final 2 bytes of boot sector
+55 aa
+
+## sector 2
+# loaded by load_disk, not automatically on boot
+
+# offset 200 (address 0x7e00): interrupt descriptor table
+# 32 entries * 8 bytes each = 256 bytes (0x100)
+# idt_start:
+
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+
+# entry 8: clock
+  00 7d  # target[0:16] = null interrupt handler
+  08 00  # segment selector (gdt_code)
+  00  # unused
+  8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
+  00 00  # target[16:32]
+
+# entry 9: keyboard
+  10 7d  # target[0:16] = keyboard interrupt handler
+  08 00  # segment selector (gdt_code)
+  00  # unused
+  8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
+  00 00  # target[16:32]
+
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+# idt_end:
+
+# offset 300 (address 0x7f00):
+# idt_descriptor:
+  ff 00  # idt_end - idt_start - 1
+  00 7e 00 00  # start = idt_start
+
+# padding
+                  00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# offset 400 (address 0x8000)
+
+# vim:ft=subx
