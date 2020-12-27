@@ -136,7 +136,7 @@ void test_cannot_copy_byte_to_ESP_EBP_ESI_EDI() {
 //:
 
 :(before "End Initialize Op Names")
-put_new(Name, "c6", "copy imm8 to r8/m8-at-r32 (mov)");
+put_new(Name, "c6", "copy imm8 to r8/m8-at-r32 with subop 0 (mov)");
 
 :(code)
 void test_copy_imm8_to_mem_at_rm32() {

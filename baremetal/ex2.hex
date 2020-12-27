@@ -1,0 +1,29 @@
+# Test out the video mode without running afoul of video memory banking. Fill
+# just the first row with pixels.
+#
+# To run, first prepare a realistically sized disk image:
+#   dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
+# Load the disk image:
+#   cat baremetal/boot.hex baremetal/ex2.hex  |./bootstrap run apps/hex  > a.bin
+#   dd if=a.bin of=disk.img conv=notrunc
+# To run:
+#   qemu-system-i386 disk.img
+# Or:
+#   bochs -f apps/boot.bochsrc  # boot.bochsrc loads disk.img
+
+# main:  (address 0x8000)
+b8 ff 04 0a 00  # eax <- 0xa0000 (start of video RAM) + 0x4ff (1279 = final pixel in first row)
+# $loop:
+3d 00 00 0a 00  # compare eax with 0xa0000
+7c 06  # break if <
+# *eax <- 0xff
+c6  # copy imm8 to m8 at r32
+  00  # 00/mod/indirect 000/subop 000/eax
+  31  # imm32
+48  # decrement eax
+eb f3  # loop = -13 bytes
+
+# $break:
+e9 fb ff ff ff  # hang indefinitely
+
+# vim:ft=subx
