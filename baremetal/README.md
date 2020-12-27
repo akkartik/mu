@@ -6,7 +6,7 @@ I'd like to eventually test these programs on real hardware, and to that end
 they are extremely parsimonious in the hardware they assume:
 
   0. Lots (more than 640KB/1MB[1]) of RAM
-  1. Pure-graphics video mode (1280x1024 pixels) in 256-color mode. At 8x8
+  1. Pure-graphics video mode (1024x768 pixels) in 256-color mode. At 8x8
      pixels per grapheme, this will give us 160x128 graphemes. But it's still
      an open question if it's reasonably widely supported by modern hardware.
      If it isn't, I'll downsize.
