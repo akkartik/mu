@@ -104,19 +104,21 @@
 # 43:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
-    80 7c  # *gdt_descriptor
+    a0 7c  # *gdt_descriptor
   0f 20 c0  # eax <- cr0
   66 83 c8 01  # eax <- or 0x1
   0f 22 c0  # cr0 <- eax
-  ea c0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
+  ea e0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
 
 # padding
 # 57:
                      00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## GDT: 3 records of 8 bytes each
 
-# 60:
+# 80:
 # gdt_start:
 # gdt_null:  mandatory null descriptor
   00 00 00 00 00 00 00 00
@@ -138,19 +140,19 @@
 # gdt_end:
 
 # padding
-# 78:
+# 98:
                         00 00 00 00 00 00 00 00
 
-# 80:
+# a0:
 # gdt_descriptor:
   17 00  # final index of gdt = gdt_end - gdt_start - 1
-  60 7c 00 00  # start = gdt_start
+  80 7c 00 00  # start = gdt_start
 
 # padding
-# 85:
+# a5:
                   00 00 00 00 00 00 00 00 00 00
 
-# 90:
+# b0:
 # disk_error:
   # print 'D' to top-left of screen to indicate disk error
   # *0xb8000 <- 0x0f44
@@ -170,13 +172,13 @@
 e9 fb ff  # loop forever
 
 # padding
-# a1:
+# c1:
    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## 32-bit code from this point (still some instructions not in SubX)
 
-# c0:
+# e0:
 # initialize_32bit_mode:
   66 b8 10 00  # ax <- offset 16 from gdt_start
   8e d8  # ds <- ax
@@ -195,13 +197,11 @@ e9 fb ff  # loop forever
 
   # initialization is done; enable interrupts
   fb
-  e9 21 03 00 00  # jump to 0x8000
+  e9 01 03 00 00  # jump to 0x8000
 
 # padding
-# df:
+# ff:
                                              00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 # 100:
 # null interrupt handler:
