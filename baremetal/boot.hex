@@ -232,24 +232,30 @@ e9 fb ff  # loop forever
   # read keycode into eax
   31 c0  # eax <- xor eax;  11/direct 000/r32/eax 000/rm32/eax
   e4 60  # al <- port 0x60
-  # map key '1' to ascii; if eax == 2, eax = 0x31
-  3d 02 00 00 00  # compare eax with 0x02
-  75 0b  # if not equal, goto epilogue
-  b8 31 0f 00 00  # eax <- 0x0f31
-  # print eax to top-left of screen (*0xb8000)
-  89  # copy r32 to rm32
-    05  # 00/mod/indirect 000/r32/eax 101/rm32/use-disp32
-    # disp32
-    00 80 0b 00
+  # eax <- *(keyboard normal map + eax)
+  8a  # copy m8 at rm32 to r8
+    80  # 10/*+disp32 000/r8/al 000/rm32/eax
+    00 80 00 00  # disp32
+  # store eax in 'keyboard buffer'
+  89  # copy rm32 to r32
+    05  # 00/indirect 000/r32/eax 101/rm32/use-disp32
+    30 70 00 00  # disp32
   # epilogue
   61  # pop all registers
   fb  # enable interrupts
   cf  # iret
 
 # padding
-# 12f:
-                                             00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 129:
+                           00 00 00 00 00 00 00
+
+# 130:
+# keyboard buffer
+00 00 00 00
+
+# padding
+# 134:
+            00 00 00 00 00 00 00 00 00 00 00 00
 
 # 140:
 # video mode info:
@@ -386,10 +392,25 @@ e9 fb ff  # loop forever
 
 # offset 400 (address 0x8000):
 # keyboard normal map:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00
+#  es
+   1b
+#     |<--- digits -------------->| -  =  bs
+      31 32 33 34 35 36 37 38 39 30 2d 3d 08
+# offset 40f
+#  tb q  w  e  r  t  y  u  i  o  p  [  ]
+   09 71 77 65 72 74 79 75 69 6f 70 5b 5d
+# offset 41c
+#                                         enter
+                                          0a 00
+# offset 41e
+#     a  s  d  f  g  h  j  k  l  ;  '  `     \
+      61 73 64 66 67 68 6a 6b 6c 3b 27 60 00 5c
+# offset 42c
+#     z  x  c  v  b  n  m  ,  .  /
+      7a 78 63 76 62 6e 6d 2c 2e 2f
+# offset 436
+                  00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
