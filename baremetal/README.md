@@ -6,20 +6,29 @@ I'd like to eventually test these programs on real hardware, and to that end
 they are extremely parsimonious in the hardware they assume:
 
   0. Lots (more than 640KB/1MB[1]) of RAM
-  1. Pure-graphics video mode (1280x1024 pixels) in 256-color mode.
-  2. Keyboard
+  1. Pure-graphics video mode (1280x1024 pixels) in 256-color mode. At 8x8
+     pixels per grapheme, this will give us 160x128 graphemes. But it's still
+     an open question if it's reasonably widely supported by modern hardware.
+     If it isn't, I'll downsize.
+  2. Keyboard. Just a partial US keyboard for now.
 
 That's it:
   * No wifi, no networking
   * No multitouch, no touchscreen, no mouse
-  * No graphics acceleration, no graphics
+  * No graphics acceleration
   * No virtual memory, no memory reclamation
 
 Just your processor, gigabytes of RAM[1], a moderately-sized monitor and a
-keyboard.
+keyboard. (The mouse should also be easy to provide.)
 
-These programs don't convert to ELF, and there's also currently no code/data
-segment separation. Just labels and bytes.
+We can't yet read from or write to disk, except for the initial load of the
+program. Enabling access to lots of RAM gives up access to BIOS helpers for
+the disk.
+
+These programs don't convert to formats like ELF that can load on other
+operating systems. There's also currently no code/data segment separation,
+just labels and bytes. I promise not to write self-modifying code. Security
+and sandboxing is still an open question.
 
 Most programs here assume `main` starts at address 0x8800 (3KB or 6 disk
 sectors past the BIOS entrypoint). See baremetal/boot.hex for details.
