@@ -1,5 +1,6 @@
 Some apps written in SubX and Mu. Where the rest of this repo relies on a few
 Linux syscalls, the apps in this subdirectory interface directly with hardware.
+We still need the top-level and apps to build them.
 
 I'd like to eventually test these programs on real hardware, and to that end
 they are extremely parsimonious in the hardware they assume:
