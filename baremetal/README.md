@@ -4,7 +4,7 @@ Linux syscalls, the apps in this subdirectory interface directly with hardware.
 I'd like to eventually test these programs on real hardware, and to that end
 they are extremely parsimonious in the hardware they assume:
 
-  0. Lots (more than 640KB/1MB) of RAM
+  0. Lots (more than 640KB/1MB[1]) of RAM
   1. Pure-graphics video mode (1280x1024 pixels) in 256-color mode.
   2. Keyboard
 
