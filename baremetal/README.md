@@ -25,5 +25,5 @@ sectors past the BIOS entrypoint). See baremetal/boot.hex for details.
 
 So far the programs have only been tested in Qemu and Bochs emulators.
 
-[1] Though we might need to start thinking of the PC memory map as our
-programs grow past the first 512KB of memory: https://wiki.osdev.org/Memory\_Map\_(x86)
+[1] Though we might need to start thinking of [the PC memory map](https://wiki.osdev.org/Memory_Map_(x86))
+as our programs grow past the first 512KB of memory.
