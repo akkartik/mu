@@ -17,7 +17,7 @@ That's it:
 Just your processor, gigabytes of RAM[1], a moderately-sized monitor and a
 keyboard.
 
-These programs don't convert to ELF, so there's also currently no code/data
+These programs don't convert to ELF, and there's also currently no code/data
 segment separation. Just labels and bytes.
 
 Most programs here assume `main` starts at address 0x8000 (1KB or 2 disk
