@@ -1,5 +1,4 @@
-# Test out the video mode without running afoul of video memory banking. Fill
-# just the first row with pixels.
+# Test out the video mode by filling in the screen with pixels.
 #
 # To run, first prepare a realistically sized disk image:
 #   dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
@@ -8,20 +7,32 @@
 #   dd if=a.bin of=disk.img conv=notrunc
 # To run:
 #   qemu-system-i386 disk.img
-# Or:
+# Or:  (temporarily doesn't work)
 #   bochs -f apps/boot.bochsrc  # boot.bochsrc loads disk.img
 
 # main:  (address 0x8000)
-b8 ff 04 0a 00  # eax <- 0xa0000 (start of video RAM) + 0x4ff (1279 = final pixel in first row)
+
+# ecx <- LFB
+8b  # copy *rm32 to r32
+  0d  # 00/mod/indirect 001/r32/ecx 101/rm32/use-disp32
+  68 7d 00 00 # disp32
+
+# eax <- LFB + 0x13ffff (1280*1024 - 1)
+8d  # copy-address rm32 to r32
+  81  # 10/mod/*+disp32 000/r32/eax 001/rm32/ecx
+  ff ff 13 00  # disp32
+
 # $loop:
-3d 00 00 0a 00  # compare eax with 0xa0000
+# if (eax < ecx) break
+39  # compare rm32 with r32
+  c8  # 11/mod/direct 001/r32/ecx 000/rm32/eax
 7c 06  # break if <
 # *eax <- 0xff
 c6  # copy imm8 to m8 at r32
   00  # 00/mod/indirect 000/subop 000/eax
   31  # imm32
 48  # decrement eax
-eb f3  # loop = -13 bytes
+eb f6  # loop to -10 bytes
 
 # $break:
 e9 fb ff ff ff  # hang indefinitely
