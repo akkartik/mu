@@ -102,6 +102,15 @@
   cd 10  # int 10h, Vesa BIOS extensions
 
 # 43:
+  # load information for the (hopefully) current video mode
+  # mostly just for the address to the linear frame buffer
+  b4 4f  # ah <- 4f (VBE)
+  b0 01  # al <- 01 (get video mode)
+  b9 07 01 00 00  # ecx <- 0x0107 (mode we requested)
+  bf 40 7d 00 00  # edi <- 0x7d40 (video mode info)
+  cd 10
+
+# 53:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
     a0 7c  # *gdt_descriptor
@@ -111,9 +120,8 @@
   ea e0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
 
 # padding
-# 57:
+# 67:
                      00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## GDT: 3 records of 8 bytes each
@@ -238,13 +246,54 @@ e9 fb ff  # loop forever
   cf  # iret
 
 # padding
-# 12f
+# 12f:
                                              00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# 140:
+# video mode info:
+  00 00  # attributes
+  00  # winA
+  00  # winB
+# 144
+  00 00  # granularity
+  00 00  # winsize
+# 148
+  00 00  # segmentA
+  00 00  # segmentB
+# 14c
+  00 00 00 00  # realFctPtr (who knows)
+# 150
+  00 00  # pitch
+  00 00  # Xres
+# 154
+  00 00  # Yres
+  00 00  # Wchar Ychar
+# 158
+  00  # planes
+  00  # bpp
+  00  # banks
+  00  # memory_model
+# 15c
+  00  # bank_size
+  00  # image_pages
+  00  # reserved
+# 15f
+  00 00  # red_mask red_position
+  00 00  # green_mask green_position
+  00 00  # blue_mask blue_position
+  00 00  # rsv_mask rsv_position
+  00  # directcolor_attributes
+# 168
+  00 00 00 00  # physbase <== linear frame buffer
+
+# reserved
+# 16c:
+                                    00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# padding
+# 180:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
