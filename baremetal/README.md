@@ -14,7 +14,7 @@ That's it:
   * No graphics acceleration, no graphics
   * No virtual memory, no memory reclamation
 
-Just your processor, gigabytes of RAM, a moderately-sized monitor and a
+Just your processor, gigabytes of RAM[1], a moderately-sized monitor and a
 keyboard.
 
 These programs don't convert to ELF, so there's also currently no code/data
@@ -24,3 +24,6 @@ Most programs here assume `main` starts at address 0x8000 (1KB or 2 disk
 sectors past the BIOS entrypoint). See baremetal/boot.hex for details.
 
 So far the programs have only been tested in Qemu and Bochs emulators.
+
+[1] Though we might need to start thinking of the PC memory map as our
+programs grow past the first 512KB of memory: https://wiki.osdev.org/Memory\_Map\_(x86)
