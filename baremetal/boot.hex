@@ -107,7 +107,7 @@
   b4 4f  # ah <- 4f (VBE)
   b0 01  # al <- 01 (get video mode)
   b9 07 01  # cx <- 0x0107 (mode we requested)
-  bf 40 7d  # di <- 0x7d40 (video mode info)
+  bf 00 7f  # di <- 0x7f00 (video mode info)
   cd 10
 
 # 4f:
@@ -197,7 +197,7 @@ e9 fb ff  # loop forever
 
   # load interrupt handlers
   0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
-    00 7f 00 00  # *idt_descriptor
+    f8 7d 00 00  # *idt_descriptor
 
   # enable keyboard IRQ
   b0 fd  # al <- 0xfd  # enable just IRQ1
@@ -255,60 +255,25 @@ e9 fb ff  # loop forever
 # padding
 # 134:
             00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
 
-# 140:
-# video mode info:
-  00 00  # attributes
-  00  # winA
-  00  # winB
-# 144
-  00 00  # granularity
-  00 00  # winsize
-# 148
-  00 00  # segmentA
-  00 00  # segmentB
-# 14c
-  00 00 00 00  # realFctPtr (who knows)
-# 150
-  00 00  # pitch
-  00 00  # Xres
-# 154
-  00 00  # Yres
-  00 00  # Wchar Ychar
-# 158
-  00  # planes
-  00  # bpp
-  00  # banks
-  00  # memory_model
-# 15c
-  00  # bank_size
-  00  # image_pages
-  00  # reserved
-# 15f
-  00 00  # red_mask red_position
-  00 00  # green_mask green_position
-  00 00  # blue_mask blue_position
-  00 00  # rsv_mask rsv_position
-  00  # directcolor_attributes
-# 168
-  00 00 00 00  # physbase <== linear frame buffer
+# 1f8:
+# idt_descriptor:
+  ff 00  # idt_end - idt_start - 1
+  00 7e 00 00  # start = idt_start
 
-# reserved
-# 16c:
-                                    00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-# padding
-# 180:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
+# 1fe:
 # final 2 bytes of boot sector
 55 aa
 
@@ -367,14 +332,45 @@ e9 fb ff  # loop forever
 # idt_end:
 
 # offset 300 (address 0x7f00):
-# idt_descriptor:
-  ff 00  # idt_end - idt_start - 1
-  00 7e 00 00  # start = idt_start
+# video mode info:
+  00 00  # attributes
+  00  # winA
+  00  # winB
+# 304
+  00 00  # granularity
+  00 00  # winsize
+# 308
+  00 00  # segmentA
+  00 00  # segmentB
+# 30c
+  00 00 00 00  # realFctPtr (who knows)
+# 310
+  00 00  # pitch
+  00 00  # Xres
+# 314
+  00 00  # Yres
+  00 00  # Wchar Ychar
+# 318
+  00  # planes
+  00  # bpp
+  00  # banks
+  00  # memory_model
+# 31c
+  00  # bank_size
+  00  # image_pages
+  00  # reserved
+# 31f
+  00 00  # red_mask red_position
+  00 00  # green_mask green_position
+  00 00  # blue_mask blue_position
+  00 00  # rsv_mask rsv_position
+  00  # directcolor_attributes
+# 328
+  00 00 00 00  # physbase <== linear frame buffer
 
-# padding
-                  00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 32c
+# reserved for video mode info
+                                    00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
