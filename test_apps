@@ -234,6 +234,23 @@ do
   }
 done
 
+# One phase variant for translating SubX to baremetal. (Other phases are reused.)
+
+for phase in survey_baremetal
+do
+  echo $phase
+  ./bootstrap_bin translate init.linux [01]*.subx apps/subx-params.subx apps/$phase.subx -o apps/$phase
+  test "$1" = 'record'  ||  git diff --exit-code apps/$phase
+  {
+    ./bootstrap_bin run apps/$phase test
+    echo
+  }
+  {
+    apps/$phase test
+    echo
+  }
+done
+
 # Higher-level syntax.
 
 # Certain phases of translation run native beyond this point. We're starting
