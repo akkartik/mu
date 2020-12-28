@@ -133,15 +133,15 @@ translate itself. For example, running natively on Linux:
 ```sh
 # generate translator phases using the C++ translator
 $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/hex.subx    -o hex
-$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/survey.subx -o survey
+$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/survey_elf.subx -o survey_elf
 $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/pack.subx   -o pack
 $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/assort.subx -o assort
 $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/dquotes.subx -o dquotes
 $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/tests.subx  -o tests
-$ chmod +x hex survey pack assort dquotes tests
+$ chmod +x hex survey_elf pack assort dquotes tests
 
 # use the generated translator phases to translate SubX programs
-$ cat init.linux apps/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
+$ cat init.linux apps/ex1.subx |./tests |./dquotes |./assort |./pack |./survey_elf |./hex > a.elf
 $ chmod +x a.elf
 $ ./a.elf
 $ echo $?

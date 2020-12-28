@@ -15,7 +15,7 @@ Some apps written in SubX and Mu. Check out:
   all the different syntax sugars and what they expand to.
 
 * Code unique to phases of our build toolchain:
-  * Core SubX: `hex`, `survey`, `pack`, `dquotes`, `assort`, `tests`
+  * Core SubX: `hex`, `survey_elf`, `pack`, `dquotes`, `assort`, `tests`
   * Syntax sugar for SubX: `sigils`, `calls`, `braces`
   * More ambitious translator for a memory-safe language (in progress): `mu`
 
