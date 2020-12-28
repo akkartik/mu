@@ -68,9 +68,9 @@
   # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
-  bb 00 7e  # bx <- 0x7e00
+  bb 00 7e  # bx <- 0x7e00 [label]
   cd 13  # int 13h, BIOS disk service
-  0f 82 8a 00  # jump-if-carry disk-error
+  0f 82 8a 00  # jump-if-carry disk-error [label]
 
 # 26:
   # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
@@ -107,17 +107,17 @@
   b4 4f  # ah <- 4f (VBE)
   b0 01  # al <- 01 (get video mode)
   b9 07 01  # cx <- 0x0107 (mode we requested)
-  bf 00 7f  # di <- 0x7f00 (video mode info)
+  bf 00 7f  # di <- 0x7f00 (video mode info) [label]
   cd 10
 
 # 4f:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
-    a0 7c  # *gdt_descriptor
+    a0 7c  # *gdt_descriptor [label]
   0f 20 c0  # eax <- cr0
   66 83 c8 01  # eax <- or 0x1
   0f 22 c0  # cr0 <- eax
-  ea e0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
+  ea e0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
 
 # padding
 # 63:
@@ -154,7 +154,7 @@
 # a0:
 # gdt_descriptor:
   17 00  # final index of gdt = gdt_end - gdt_start - 1
-  80 7c 00 00  # start = gdt_start
+  80 7c 00 00  # start = gdt_start [label]
 
 # padding
 # a5:
@@ -197,7 +197,7 @@ e9 fb ff  # loop forever
 
   # load interrupt handlers
   0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
-    f8 7d 00 00  # *idt_descriptor
+    f8 7d 00 00  # *idt_descriptor [label]
 
   # enable keyboard IRQ
   b0 fd  # al <- 0xfd  # enable just IRQ1
@@ -205,7 +205,7 @@ e9 fb ff  # loop forever
 
   # initialization is done; enable interrupts
   fb
-  e9 01 0b 00 00  # jump to 0x8800
+  e9 01 0b 00 00  # jump to 0x8800 [label]
 
 # padding
 # ff:
@@ -233,41 +233,41 @@ e9 fb ff  # loop forever
   # if (status & 0x1) == 0, return
   24 01  # al <- and 0x1
   3c 00  # compare al, 0
-  74 2d  # jump to epilogue if =
+  74 2d  # jump to epilogue if = [label]
 # 120:
   # if keyboard buffer is full, return
   31 c9  # ecx <- xor ecx;  11/direct 001/r32/ecx 001/rm32/ecx
   # . var index/ecx: byte
   8a  # copy m8 at r32 to r8
     0d  # 00/mod/indirect 001/r8/cl 101/rm32/use-disp32
-    cf 7d 00 00  # disp32
+    cf 7d 00 00  # disp32 [label]
   # . al = *(keyboard buffer + index)
   8a  # copy m8 at r32 to r8
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
-    d0 7d 00 00  # disp32
+    d0 7d 00 00  # disp32 [label]
   # . if (al != 0) return
   3c 00  # compare al, 0
 # 130:
-  75 1b  # jump to epilogue if !=
+  75 1b  # jump to epilogue if != [label]
   # read keycode into al
   e4 60  # al <- port 0x60
   # al <- *(keyboard normal map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
-    00 80 00 00  # disp32
+    00 80 00 00  # disp32 [label]
   # store al in keyboard buffer
   88  # copy r8 to m8 at r32
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
-    d0 7d 00 00  # disp32
+    d0 7d 00 00  # disp32 [label]
 # 140:
   # increment index
   fe  # increment byte
     05  # 00/mod/indirect 000/subop/increment 101/rm32/use-disp32
-    cf 7d 00 00  # disp32
+    cf 7d 00 00  # disp32 [label]
   # clear top nibble of index (keyboard buffer is circular)
   80  # and byte
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
-    cf 7d 00 00  # disp32
+    cf 7d 00 00  # disp32 [label]
     f0  # imm8
 # 14d:
   # epilogue
@@ -300,7 +300,7 @@ e9 fb ff  # loop forever
 # 1f8:
 # idt_descriptor:
   ff 00  # idt_end - idt_start - 1
-  00 7e 00 00  # start = idt_start
+  00 7e 00 00  # start = idt_start [label]
 
 # 1fe:
 # final 2 bytes of boot sector
@@ -323,14 +323,14 @@ e9 fb ff  # loop forever
 00 00 00 00 00 00 00 00
 
 # entry 8: clock
-  00 7d  # target[0:16] = null interrupt handler
+  00 7d  # target[0:16] = null interrupt handler [label]
   08 00  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
   00 00  # target[16:32]
 
 # entry 9: keyboard
-  10 7d  # target[0:16] = keyboard interrupt handler
+  10 7d  # target[0:16] = keyboard interrupt handler [label]
   08 00  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
