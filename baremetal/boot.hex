@@ -227,44 +227,73 @@ e9 fb ff  # loop forever
   # acknowledge interrupt
   b0 20  # al <- 0x20
   e6 20  # port 0x20 <- al
-  # TODO: perhaps we should check keyboard status
-  # read keycode into eax
+  # read status into eax
   31 c0  # eax <- xor eax;  11/direct 000/r32/eax 000/rm32/eax
+  e4 64  # al <- port 0x64
+  # if (status & 0x1) == 0, return
+  24 01  # al <- and 0x1
+  3c 00  # compare al, 0
+  74 2d  # jump to epilogue if =
+# 120:
+  # if keyboard buffer is full, return
+  31 c9  # ecx <- xor ecx;  11/direct 001/r32/ecx 001/rm32/ecx
+  # . var index/ecx: byte
+  8a  # copy m8 at r32 to r8
+    0d  # 00/mod/indirect 001/r8/cl 101/rm32/use-disp32
+    cf 7d 00 00  # disp32
+  # . al = *(keyboard buffer + index)
+  8a  # copy m8 at r32 to r8
+    81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
+    d0 7d 00 00  # disp32
+  # . if (al != 0) return
+  3c 00  # compare al, 0
+# 130:
+  75 1b  # jump to epilogue if !=
+  # read keycode into al
   e4 60  # al <- port 0x60
-  # eax <- *(keyboard normal map + eax)
+  # al <- *(keyboard normal map + eax)
   8a  # copy m8 at rm32 to r8
-    80  # 10/*+disp32 000/r8/al 000/rm32/eax
+    80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
     00 80 00 00  # disp32
-  # store eax in 'keyboard buffer'
-  89  # copy r32 to rm32
-    05  # 00/indirect 000/r32/eax 101/rm32/use-disp32
-    30 7d 00 00  # disp32
+  # store al in keyboard buffer
+  88  # copy r8 to m8 at r32
+    81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
+    d0 7d 00 00  # disp32
+# 140:
+  # increment index
+  fe  # increment byte
+    05  # 00/mod/indirect 000/subop/increment 101/rm32/use-disp32
+    cf 7d 00 00  # disp32
+  # clear top nibble of index (keyboard buffer is circular)
+  80  # and byte
+    25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
+    cf 7d 00 00  # disp32
+    f0  # imm8
+# 14d:
   # epilogue
   61  # pop all registers
   fb  # enable interrupts
   cf  # iret
 
 # padding
-# 129:
-                           00 00 00 00 00 00 00
+# 150:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 130:
-# keyboard buffer
-00 00 00 00
+# 1cf:
+# var keyboard circular buffer index: nibble
+00
+# var keyboard circular buffer: byte[16]
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 # padding
-# 134:
-            00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 1e0:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 
