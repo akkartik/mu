@@ -240,7 +240,7 @@ e9 fb ff  # loop forever
   # . var index/ecx: byte
   8a  # copy m8 at r32 to r8
     0d  # 00/mod/indirect 001/r8/cl 101/rm32/use-disp32
-    cf 7d 00 00  # disp32 [label]
+    ce 7d 00 00  # disp32 [label]
   # . al = *(keyboard buffer + index)
   8a  # copy m8 at r32 to r8
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
@@ -263,12 +263,12 @@ e9 fb ff  # loop forever
   # increment index
   fe  # increment byte
     05  # 00/mod/indirect 000/subop/increment 101/rm32/use-disp32
-    cf 7d 00 00  # disp32 [label]
+    ce 7d 00 00  # disp32 [label]
   # clear top nibble of index (keyboard buffer is circular)
   80  # and byte
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
-    cf 7d 00 00  # disp32 [label]
-    f0  # imm8
+    ce 7d 00 00  # disp32 [label]
+    0f  # imm8
 # 14d:
   # epilogue
   61  # pop all registers
@@ -284,12 +284,16 @@ e9 fb ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 1cf:
-# var keyboard circular buffer index: nibble
+# 1ce:
+# var keyboard circular buffer
+# write index: nibble
 00
-# var keyboard circular buffer: byte[16]
+# 1cf:
+# read index: nibble
+00
+# circular buffer: byte[16]
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 # padding
