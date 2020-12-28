@@ -106,11 +106,11 @@
   # mostly just for the address to the linear frame buffer
   b4 4f  # ah <- 4f (VBE)
   b0 01  # al <- 01 (get video mode)
-  b9 07 01 00 00  # ecx <- 0x0107 (mode we requested)
-  bf 40 7d 00 00  # edi <- 0x7d40 (video mode info)
+  b9 07 01  # cx <- 0x0107 (mode we requested)
+  bf 40 7d  # di <- 0x7d40 (video mode info)
   cd 10
 
-# 53:
+# 4f:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
     a0 7c  # *gdt_descriptor
@@ -120,8 +120,8 @@
   ea e0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code)
 
 # padding
-# 67:
-                     00 00 00 00 00 00 00 00 00
+# 63:
+         00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## GDT: 3 records of 8 bytes each
