@@ -1826,12 +1826,25 @@ emit-segments:  # in: (addr stream byte), out: (addr buffered-file), labels: (ad
     # pseudocode:
     #   var offset-of-next-instruction = 0
     #   var line: (stream byte 512)
+    #   var contains-modrm?: boolean
     #   line-loop:
     #   while true
     #     clear-stream(line)
     #     read-line(in, line)
     #     if (line->write == 0) break               # end of file
+    #     contains-modrm? = false
     #     offset-of-next-instruction += num-bytes(line)
+    #     while true
+    #       var word-slice = next-word(line)
+    #       if slice-empty?(word-slice)             # end of line
+    #         break
+    #       if slice-starts-with?(word-slice, "#")  # comment
+    #         break
+    #       if slice-equal?(word-slice, "==")       # segment header lines
+    #         break
+    #       if has-metadata?(word-slice, "mod")
+    #         contains-modrm? = true
+    #     rewind-stream(line)
     #     while true
     #       var word-slice = next-word(line)
     #       if slice-empty?(word-slice)             # end of line
@@ -1848,23 +1861,21 @@ emit-segments:  # in: (addr stream byte), out: (addr buffered-file), labels: (ad
     #         continue
     #       var datum: (addr slice) = next-token-from-slice(word-slice->start, word-slice->end, "/")
     #       var info: (addr label-info) = get-slice(labels, datum)
-    #       var curr-segment-name: (addr array byte) = lookup(info->segment-name)
-    #       if !string-equal?(info->segment-name, "code")
-    #         if has-metadata?(word-slice, "disp8")
-    #           abort
-    #         if has-metadata?(word-slice, "imm8")
-    #           abort
-    #         emit(out, info->address, 4)  # global variables always translate to absolute addresses
-    #       # code segment cases
-    #       else if has-metadata?(word-slice, "imm8")
-    #         abort  # label should never go to imm8
+    #       if has-metadata?(word-slice, "imm8")
+    #         emit(out, info->address, 1)
     #       else if has-metadata?(word-slice, "imm32")
     #         emit(out, info->address, 4)
     #       else if has-metadata?(word-slice, "disp8")
-    #         value = info->offset - offset-of-next-instruction
+    #         if contains-modrm?
+    #           value = info->offset
+    #         else
+    #           value = info->offset - offset-of-next-instruction
     #         emit(out, value, 1)
     #       else if has-metadata?(word-slice, "disp32")
-    #         value = info->offset - offset-of-next-instruction
+    #         if contains-modrm?
+    #           value = info->offset
+    #         else
+    #           value = info->offset - offset-of-next-instruction
     #         emit(out, value, 4)
     #       else
     #         abort
@@ -1874,6 +1885,7 @@ emit-segments:  # in: (addr stream byte), out: (addr buffered-file), labels: (ad
     #   line: ecx
     #   word-slice: edx
     #   offset-of-next-instruction: ebx
+    #   contains-modrm?: edi
     #   info: esi (inner loop only)
     #   temporaries: eax, esi (outer loop)
     #
@@ -1962,6 +1974,125 @@ $emit-segments:check-for-end-of-input:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . ebx += eax
     01/add                          3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # add eax to ebx
+    # emit-modrm? = false
+    bf/copy-to-edi  0/imm32/false
+$emit-segments:word-loop1-search-line-for-modrm:
+    # next-word(line, word-slice)
+    # . . push args
+    52/push-edx
+    51/push-ecx
+    # . . call
+    e8/call  next-word/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # dump word-slice {{{
+#?     # . write(2/stderr, "w: ")
+#?     # . . push args
+#?     68/push  "w: "/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write-slice-buffered(Stderr, word-slice)
+#?     # . . push args
+#?     52/push-edx
+#?     68/push  Stderr/imm32
+#?     # . . call
+#?     e8/call  write-slice-buffered/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . flush(Stderr)
+#?     # . . push args
+#?     68/push  Stderr/imm32
+#?     # . . call
+#?     e8/call  flush/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # }}}
+$emit-segments:word-loop1-check-for-end-of-line:
+    # if (slice-empty?(word-slice)) break
+    # . eax = slice-empty?(word-slice)
+    # . . push args
+    52/push-edx
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . if (eax != 0) break
+    3d/compare-eax-and  0/imm32/false
+    0f 85/jump-if-!=  $emit-segments:rewind-line/disp32
+$emit-segments:word-loop1-check-for-comment:
+    # if (slice-starts-with?(word-slice, "#")) break
+    # . start/esi = word-slice->start
+    8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           6/r32/esi   .               .                 # copy *edx to esi
+    # . c/eax = *start
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
+    # . if (eax == '#') break
+    3d/compare-eax-and  0x23/imm32/hash
+    0f 84/jump-if-=  $emit-segments:rewind-line/disp32
+$emit-segments:word-loop1-check-for-label:
+    # if is-label?(word-slice) break
+    # . eax = is-label?(word-slice)
+    # . . push args
+    52/push-edx
+    # . . call
+    e8/call  is-label?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
+    0f 85/jump-if-!=  $emit-segments:rewind-line/disp32
+$emit-segments:word-loop1-check-for-segment-header:
+    # if (slice-equal?(word-slice, "==")) break
+    # . eax = slice-equal?(word-slice, "==")
+    # . . push args
+    68/push  "=="/imm32
+    52/push-edx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
+    0f 85/jump-if-!=  $emit-segments:rewind-line/disp32
+$emit-segments:word-loop1-check-for-mod:
+    # if has-metadata?(word-slice, "mod") contains-modrm? = true, break
+    # . eax = has-metadata?(word-slice, "mod")
+    # . . push args
+    68/push  "mod"/imm32
+    52/push-edx
+    # . . call
+    e8/call  has-metadata?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax == false) continue
+    3d/compare-eax-and  0/imm32/false
+    0f 85/jump-if-!=  $emit-segments:word-loop1-search-line-for-modrm/disp32
+    # contains-modrm? = true
+    bf/copy-to-edi 1/imm32/true
+    # break
+    eb/jump $emit-segments:rewind-line/disp8
+$emit-segments:word-loop1-continue:
+    # otherwise scan next word
+    e9/jump  $emit-segments:word-loop1-search-line-for-modrm/disp32
+$emit-segments:rewind-line:
+    # rewind-stream(line)
+    # . . push args
+    51/push-ecx
+    # . . call
+    e8/call  rewind-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 $emit-segments:word-loop:
     # next-word(line, word-slice)
     # . . push args
