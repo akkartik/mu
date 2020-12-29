@@ -224,6 +224,7 @@ void replace_labels_with_displacements(segment& code, const map<string, int32_t>
       const word& curr = inst.words.at(j);
       if (contains_key(byte_index, curr.data)) {
         int32_t displacement = static_cast<int32_t>(get(byte_index, curr.data)) - byte_index_next_instruction_starts_at;
+        int32_t absolute_address = code.start + get(byte_index, curr.data);
         if (has_argument_metadata(curr, "disp8")) {
           if (displacement > 0x7f || displacement < -0x7f)
             raise << "'" << to_string(inst) << "': label too far away for displacement " << std::hex << displacement << " to fit in 8 signed bits\n" << end();
@@ -237,9 +238,12 @@ void replace_labels_with_displacements(segment& code, const map<string, int32_t>
             emit_hex_bytes(new_inst, displacement, 2);
         }
         else if (has_argument_metadata(curr, "disp32")) {
-          emit_hex_bytes(new_inst, displacement, 4);
+          if (is_far_jump_or_call(new_inst))
+            emit_hex_bytes(new_inst, displacement, 4);
+          else
+            emit_hex_bytes(new_inst, absolute_address, 4);
         } else if (has_argument_metadata(curr, "imm32")) {
-          emit_hex_bytes(new_inst, code.start + get(byte_index, curr.data), 4);
+          emit_hex_bytes(new_inst, absolute_address, 4);
         }
       }
       else {
@@ -249,6 +253,15 @@ void replace_labels_with_displacements(segment& code, const map<string, int32_t>
     inst.words.swap(new_inst.words);
     trace(99, "transform") << "instruction after transform: '" << data_to_string(inst) << "'" << end();
   }
+}
+
+bool is_far_jump_or_call(const line& inst) {
+  string first_opcode = inst.words.at(0).data;
+  if (first_opcode == "e8" || first_opcode == "e9") return true;
+  if (SIZE(inst.words) < 2) return false;
+  if (first_opcode != "0f") return false;
+  string second_opcode = inst.words.at(1).data;
+  return starts_with(second_opcode, "8");
 }
 
 string data_to_string(const line& inst) {
