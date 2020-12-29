@@ -1869,7 +1869,7 @@ emit-segments:  # in: (addr stream byte), out: (addr buffered-file), labels: (ad
     #       var datum: (addr slice) = next-token-from-slice(word-slice->start, word-slice->end, "/")
     #       var info: (addr label-info) = get-slice(labels, datum)
     #       if has-metadata?(word-slice, "imm8")
-    #         emit(out, info->address, 1)
+    #         abort
     #       else if has-metadata?(word-slice, "imm32")
     #         emit(out, info->address, 4)
     #       else if has-metadata?(word-slice, "disp8")
@@ -2273,66 +2273,7 @@ $emit-segments:check-metadata:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # . esi = eax
     89/copy                         3/mod/direct    6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to esi
-$emit-segments:check-global-variable:
-    # if string-equal?(info->segment-name, "code") goto code label checks
-    # . eax = lookup(info->segment-name)
-    # . . push args
-    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
-    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
-    # . . call
-    e8/call  lookup/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . eax = string-equal?(eax, "code")
-    # . . push args
-    68/push  "code"/imm32
-    50/push-eax
-    # . . call
-    e8/call  string-equal?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != false) goto code label checks
-    3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $emit-segments:check-code-label-for-imm8/disp32
-$emit-segments:check-global-variable-for-disp8:
-    # if has-metadata?(word-slice, "disp8") abort
-    # . eax = has-metadata?(word-slice, "disp8")
-    # . . push args
-    68/push  "disp8"/imm32
-    52/push-edx
-    # . . call
-    e8/call  has-metadata?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != false) abort
-    3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $emit-segments:global-variable-abort/disp32
-$emit-segments:check-global-variable-for-imm8:
-    # if has-metadata?(word-slice, "imm8") abort
-    # . eax = has-metadata?(word-slice, "imm8")
-    # . . push args
-    68/push  "imm8"/imm32
-    52/push-edx
-    # . . call
-    e8/call  has-metadata?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != false) abort
-    3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $emit-segments:global-variable-abort/disp32
-$emit-segments:emit-global-variable:
-    # emit-hex(out, info->address, 4)
-    # . . push args
-    68/push  4/imm32
-    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           0xc/disp8       .                 # push *(esi+12)
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
-    # . . call
-    e8/call  emit-hex/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # continue
-    e9/jump  $emit-segments:word-loop/disp32
-$emit-segments:check-code-label-for-imm8:
+$emit-segments:check-imm8:
     # if (has-metadata?(word-slice, "imm8")) abort
     # . eax = has-metadata?(edx, "imm8")
     # . . push args
@@ -2345,7 +2286,7 @@ $emit-segments:check-code-label-for-imm8:
     # . if (eax != false) abort
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $emit-segments:imm8-abort/disp32
-$emit-segments:check-code-label-for-imm32:
+$emit-segments:check-imm32:
     # if (!has-metadata?(word-slice, "imm32")) goto next check
     # . eax = has-metadata?(edx, "imm32")
     # . . push args
@@ -2357,7 +2298,7 @@ $emit-segments:check-code-label-for-imm32:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-=  $emit-segments:check-code-label-for-disp8/disp8
+    74/jump-if-=  $emit-segments:check-disp8/disp8
 #?     # dump info->address {{{
 #?     # . write(2/stderr, "info->address: ")
 #?     # . . push args
@@ -2391,7 +2332,7 @@ $emit-segments:check-code-label-for-imm32:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-$emit-segments:emit-code-label-imm32:
+$emit-segments:emit-imm32:
     # emit-hex(out, info->address, 4)
     # . . push args
     68/push  4/imm32
@@ -2403,7 +2344,7 @@ $emit-segments:emit-code-label-imm32:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # continue
     e9/jump  $emit-segments:word-loop/disp32
-$emit-segments:check-code-label-for-disp8:
+$emit-segments:check-disp8:
     # if (!has-metadata?(word-slice, "disp8")) goto next check
     # . eax = has-metadata?(edx, "disp8")
     # . . push args
@@ -2415,13 +2356,17 @@ $emit-segments:check-code-label-for-disp8:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-=  $emit-segments:check-code-label-for-disp32/disp8
-$emit-segments:emit-code-label-disp8:
+    74/jump-if-=  $emit-segments:check-disp32/disp8
+$emit-segments:emit-disp8:
     # emit-hex(out, info->offset - offset-of-next-instruction, 1)
     # . . push args
     68/push  1/imm32
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   8/disp8         .                 # copy *(esi+8) to eax
+    # . . if contains-modrm? == false, eax -= offset-of-next-instruction
+    81          7/subop/compare     3/mod/direct    7/rm32/edi    .           .             .           .           .               0/imm32/false     # compare edi
+    75/jump-if-!=  $emit-segments:emit-disp8-push-offset/disp8
     29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # subtract ebx from eax
+$emit-segments:emit-disp8-push-offset:
     50/push-eax
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
@@ -2430,7 +2375,7 @@ $emit-segments:emit-code-label-disp8:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # continue
     e9/jump  $emit-segments:word-loop/disp32
-$emit-segments:check-code-label-for-disp32:
+$emit-segments:check-disp32:
     # if (!has-metadata?(word-slice, "disp32")) abort
     # . eax = has-metadata?(edx, "disp32")
     # . . push args
@@ -2443,12 +2388,16 @@ $emit-segments:check-code-label-for-disp32:
     # . if (eax == false) abort
     3d/compare-eax-and  0/imm32/false
     0f 84/jump-if-=  $emit-segments:abort/disp32
-$emit-segments:emit-code-label-disp32:
+$emit-segments:emit-disp32:
     # emit-hex(out, info->offset - offset-of-next-instruction, 4)
     # . . push args
     68/push  4/imm32
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   8/disp8         .                 # copy *(esi+8) to eax
+    # . . if contains-modrm? == false, eax -= offset-of-next-instruction
+    81          7/subop/compare     3/mod/direct    7/rm32/edi    .           .             .           .           .               0/imm32/false     # compare edi
+    75/jump-if-!=  $emit-segments:emit-disp32-push-offset/disp8
     29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # subtract ebx from eax
+$emit-segments:emit-disp32-push-offset:
     50/push-eax
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
@@ -2541,14 +2490,14 @@ $emit-segments:abort:
     e8/call  syscall_exit/disp32
     # never gets here
 
-test-emit-segments-global-variable:
-    # global variables always convert to absolute addresses, regardless of metadata
+test-emit-segments-with-mod:
+    # instructions with mod convert labels to absolute addresses
     #
     # input:
     #   in:
     #     == code 0x1000
     #     ab cd ef gh
-    #     ij x/disp32
+    #     ij/mod x/disp32
     #     == data 0x2000
     #     00
     #     x:
@@ -2614,9 +2563,9 @@ test-emit-segments-global-variable:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . write(_test-input-stream, "ij x/disp32\n")
+    # . write(_test-input-stream, "ij/mod x/disp32\n")
     # . . push args
-    68/push  "ij x/disp32\n"/imm32
+    68/push  "ij/mod x/disp32\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
