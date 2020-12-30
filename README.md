@@ -121,6 +121,13 @@ keyboard directly without an OS. You can make things like this with them:
 
 <img alt='screenshot of a Mu program running without any intervening Operating System' src='html/baremetal.png'>
 
+To reproduce it:
+
+```sh
+$ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
+$ qemu-system-i386 disk.img
+```
+
 ## Syntax
 
 The entire stack shares certain properties and conventions. Programs consist
@@ -134,13 +141,6 @@ always written in hex.
 Here's an example program in Mu:
 
 <img alt='ex2.mu' src='html/ex2.mu.png' width='400px'>
-
-To reproduce it:
-
-```sh
-$ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
-$ qemu-system-i386 disk.img
-```
 
 [More details on Mu syntax &rarr;](mu.md)
 
