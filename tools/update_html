@@ -90,4 +90,13 @@ do
   process $f
 done
 
+for f in baremetal/*.subx
+do
+  test $# -gt 0  &&  test $1 != $f  &&  continue
+  ( cd baremetal
+    ctags -x [0-9]*.subx [0-9]*.mu `basename $f` > /tmp/tags
+  )
+  process $f
+done
+
 rm /tmp/tags
