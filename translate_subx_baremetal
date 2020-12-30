@@ -1,0 +1,26 @@
+#!/bin/sh
+# Translate given SubX files to 'baremetal'. The output isn't an ELF binary
+# and won't run directly on Linux or the emulator. It's intended to be
+# combined with some boot sectors into a bootable disk image.
+
+set -e
+
+./build
+
+cat $*          |apps/braces            > a.braces
+
+cat a.braces    |apps/calls             > a.calls
+
+cat a.calls     |apps/sigils            > a.sigils
+
+cat a.sigils    |apps/tests             > a.tests
+
+# no assort since baremetal SubX doesn't have segments yet
+
+cat a.tests     |apps/dquotes           > a.dquotes
+
+cat a.dquotes   |apps/pack              > a.pack
+
+cat a.pack      |apps/survey_baremetal  > a.survey
+
+cat a.survey    |apps/hex               > a.bin
