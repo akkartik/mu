@@ -24,3 +24,9 @@ cat a.dquotes   |apps/pack              > a.pack
 cat a.pack      |apps/survey_baremetal  > a.survey
 
 cat a.survey    |apps/hex               > a.bin
+
+# Create disk.img containing baremetal/boot.hex and a.bin
+dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
+apps/hex < baremetal/boot.hex  > boot.bin
+cat boot.bin a.bin > disk.bin
+dd if=disk.bin of=disk.img conv=notrunc
