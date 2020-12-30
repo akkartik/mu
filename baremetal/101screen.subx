@@ -6,10 +6,10 @@ pixel:  # screen: (addr screen), x: int, y: int, color: int
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    56/push-esi
-    # esi = screen
-    8b/-> *(ebp+8) 6/r32/esi
-    81 7/subop/compare %esi 0/imm32
+    51/push-ecx
+    # ecx = screen
+    8b/-> *(ebp+8) 1/r32/ecx
+    81 7/subop/compare %ecx 0/imm32
     {
       75/jump-if-!= break/disp8
       # bounds checks
@@ -30,15 +30,15 @@ pixel:  # screen: (addr screen), x: int, y: int, color: int
       # eax += location of frame buffer
       03/add-> *0x7f28 0/r32/eax
       # *eax = color
-      8b/-> *(ebp+0x14) 6/r32/esi
-      88/byte<- *eax 6/r32/esi
+      8b/-> *(ebp+0x14) 1/r32/ecx
+      88/byte<- *eax 1/r32/CL
       # return
       eb $pixel:end/disp8
     }
     # TODO: fake screen
 $pixel:end:
     # . restore registers
-    5e/pop-to-esi
+    59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
