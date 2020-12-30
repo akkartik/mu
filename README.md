@@ -115,10 +115,9 @@ $ tools/iso/soso a.elf  # requires sudo
 $ qemu-system-i386 -cdrom mu_soso.iso
 ```
 
-Finally, there's a whole mini-universe inside the `baremetal/` sub-directory.
-It currently contains a few small programs that are also boot images, and that
-take control of a computer without any intervening OS. However `baremetal/`
-programs still require the rest of the repo to be built. Here's an example:
+Finally, there's a whole mini-universe inside the `baremetal/` sub-directory,
+Mu programs that use no Linux services, and can control the screen and
+keyboard directly without an OS. You can make things like this with them:
 
 <img alt='screenshot of a Mu program running without any intervening Operating System' src='html/baremetal.png'>
 
