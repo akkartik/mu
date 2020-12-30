@@ -135,6 +135,13 @@ Here's an example program in Mu:
 
 <img alt='ex2.mu' src='html/ex2.mu.png' width='400px'>
 
+To reproduce it:
+
+```sh
+$ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
+$ qemu-system-i386 disk.img
+```
+
 [More details on Mu syntax &rarr;](mu.md)
 
 Here's an example program in SubX:

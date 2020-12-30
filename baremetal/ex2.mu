@@ -15,12 +15,12 @@ fn main {
   {
     compare y, 0x300  # 768
     break-if->=
-    var color/ecx: int <- copy y
-    color <- and 0xff
     var x/edx: int <- copy 0
     {
       compare x, 0x400  # 1024
       break-if->=
+      var color/ecx: int <- copy x
+      color <- and 0xff
       pixel 0, x, y, color
       x <- increment
       loop
