@@ -1,11 +1,11 @@
 # Test out the video mode by filling in the screen with pixels.
 #
 # To build a disk image:
-#   ./translate_subx_baremetal baremetal/ex2.subx    # emits disk.img
+#   ./translate_mu_baremetal baremetal/ex2.mu     # emits disk.img
 # To run:
 #   qemu-system-i386 disk.img
 # Or:
-#   bochs -f baremetal/boot.bochsrc  # boot.bochsrc loads disk.img
+#   bochs -f baremetal/boot.bochsrc               # boot.bochsrc loads disk.img
 #
 # Expected output:
 #   html/baremetal.png
