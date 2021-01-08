@@ -233,7 +233,7 @@ e9 fb ff  # loop forever
   # if (status & 0x1) == 0, return
   24 01  # al <- and 0x1
   3c 00  # compare al, 0
-  74 2d  # jump to epilogue if = [label]
+  74 35  # jump to epilogue if = [label]
 # 120:
   # if keyboard buffer is full, return
   31 c9  # ecx <- xor ecx;  11/direct 001/r32/ecx 001/rm32/ecx
@@ -248,9 +248,16 @@ e9 fb ff  # loop forever
   # . if (al != 0) return
   3c 00  # compare al, 0
 # 130:
-  75 1b  # jump to epilogue if != [label]
+  75 23  # jump to epilogue if != [label]
   # read keycode into al
   e4 60  # al <- port 0x60
+  # if (al & 0x80) a key is being lifted; return
+  50  # push eax
+  24 80  # al <- and 0x80
+  3c 00  # compare al, 0
+  58  # pop to eax (without touching flags)
+  75 19  # jump to epilogue if != [label]
+# 13c:
   # al <- *(keyboard normal map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
@@ -259,7 +266,7 @@ e9 fb ff  # loop forever
   88  # copy r8 to m8 at r32
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
     d0 7d 00 00  # disp32 [label]
-# 140:
+# 148:
   # increment index
   fe  # increment byte
     05  # 00/mod/indirect 000/subop/increment 101/rm32/use-disp32
@@ -269,15 +276,15 @@ e9 fb ff  # loop forever
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
     ce 7d 00 00  # disp32 [label]
     0f  # imm8
-# 14d:
+# 155:
   # epilogue
   61  # pop all registers
   fb  # enable interrupts
   cf  # iret
 
 # padding
-# 150:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 158:
+                        00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
