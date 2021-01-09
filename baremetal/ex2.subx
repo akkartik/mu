@@ -10,27 +10,24 @@
 # Expected output:
 #   html/baremetal.png
 
-# main:  (address 0x8800)
+main:  # (address 0x8800)
+  # ecx <- start of video memory
+  8b/-> *0x7f28 1/r32/ecx
 
-== code
+  # eax <- final pixel of video memory
+  8d/copy-address *(ecx + 0x0bffff) 0/r32/eax  # 0xbffff = 1024*768 - 1
 
-# ecx <- start of video memory
-8b/-> *0x7f28 1/r32/ecx
+  # for each pixel in video memory
+  {
+    39/compare %eax 1/r32/ecx
+    7c/jump-if-< break/disp8
+    # write its column number to it
+    88/byte<- *eax 0/r32/AL
+    48/decrement-eax
+    eb/jump loop/disp8
+  }
 
-# eax <- final pixel of video memory
-8d/copy-address *(ecx + 0x0bffff) 0/r32/eax  # 0xbffff = 1024*768 - 1
-
-# for each pixel in video memory
-{
-  39/compare %eax 1/r32/ecx
-  7c/jump-if-< break/disp8
-  # write its column number to it
-  88/byte<- *eax 0/r32/AL
-  48/decrement-eax
-  eb/jump loop/disp8
-}
-
-# hang indefinitely
-{
-  eb/jump loop/disp8
-}
+  # hang indefinitely
+  {
+    eb/jump loop/disp8
+  }
