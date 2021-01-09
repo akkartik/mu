@@ -30,7 +30,7 @@ operating systems. There's also currently no code/data segment separation,
 just labels and bytes. I promise not to write self-modifying code. Security
 and sandboxing is still an open question.
 
-Most programs here assume `main` starts at address 0x8800 (3KB or 6 disk
+Most programs here assume `main` starts at address 0x9000 (7KB or 14 disk
 sectors past the BIOS entrypoint). See baremetal/boot.hex for details.
 
 So far the programs have only been tested in Qemu and Bochs emulators.
