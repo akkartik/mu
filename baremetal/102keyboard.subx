@@ -1,0 +1,42 @@
+# check keyboard for a key
+# return 0 on no keypress or unrecognized key
+read-key:  # kbd: (addr keyboard) -> result/eax: byte
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # result = 0
+    b8/copy-to-eax 0/imm32
+    # ecx = keyboard
+    8b/-> *(ebp+8) 1/r32/ecx
+    81 7/subop/compare %ecx 0/imm32
+    {
+      75/jump-if-!= break/disp8
+      # var read/ecx: byte = keyboard buffer's read index
+      8b/-> *0x7dcc 1/r32/CL  # keyboard-buffer-read
+      # var next-key/eax: byte = *(keyboard buffer + ecx)
+      8a/byte-> *(ecx+0x7dd0) 0/r32/AL  # keyboard-buffer-data
+      # if (next-key != 0) lock and remove from keyboard-buffer
+      81 7/subop/compare %eax 0/imm32
+      {
+        74/jump-if-= break/disp8
+        # TODO: add some instructions in this block to SubX if we ever want to
+        # use bootstrap on baremetal programs
+        fa/disable-interrupts
+        c6 0/subop/copy-byte *(ecx+0x7dd0) 0/imm8
+        ff 0/subop/increment *0x7dcc  # keyboard-buffer-read
+        81 4/subop/and *0x7dcc 0xf/imm32  # keyboard-buffer-read
+        fb/enable-interrupts
+      }
+      # return
+      eb $read-key:end/disp8
+    }
+    # TODO: fake keyboard
+$read-key:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
