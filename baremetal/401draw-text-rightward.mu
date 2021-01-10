@@ -1,16 +1,13 @@
-fn draw-text-rightward screen: (addr screen), _text: (addr array byte), x: int, y: int, color: int {
-  var text/esi: (addr array byte) <- copy _text
-  var len/ecx: int <- length text
-  var i/edx: int <- copy 0
+fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, y: int, color: int {
+  var stream-storage: (stream byte 0x100)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  write stream, text
   {
-    compare i, len
-    break-if->=
-    var g/eax: (addr byte) <- index text, i
-    var g2/eax: byte <- copy-byte *g
-    var g3/eax: grapheme <- copy g2
-    draw-grapheme screen, g3, x, y, color
+    var g/eax: grapheme <- read-grapheme stream
+    compare g, 0xffffffff  # end-of-file
+    break-if-=
+    draw-grapheme screen, g, x, y, color
     add-to x, 8  # font-width
-    i <- increment
     loop
   }
 }
