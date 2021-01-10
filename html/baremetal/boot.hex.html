@@ -17,6 +17,7 @@ a { color:inherit; }
 .subxComment { color: #005faf; }
 .LineNr { }
 .subxS1Comment { color: #0000af; }
+.Folded { color: #080808; background-color: #949494; }
 -->
 </style>
 
@@ -52,7 +53,7 @@ if ('onhashchange' in window) {
 <body onload='JumpToLine();'>
 <a href='https://github.com/akkartik/mu/blob/main/baremetal/boot.hex'>https://github.com/akkartik/mu/blob/main/baremetal/boot.hex</a>
 <pre id='vimCodeElement'>
-<span id="L1" class="LineNr">  1 </span><span class="subxComment"># Code for the first 2 disk sectors, that all programs in this directory need:</span>
+<span id="L1" class="LineNr">  1 </span><span class="subxComment"># Code for the first disk sector that all programs in this directory need:</span>
 <span id="L2" class="LineNr">  2 </span><span class="subxComment">#   - load sectors past the first (using BIOS primitives) since only the first is available by default</span>
 <span id="L3" class="LineNr">  3 </span><span class="subxComment">#     - if this fails, print 'D' at top-left of screen and halt</span>
 <span id="L4" class="LineNr">  4 </span><span class="subxComment">#   - initialize a minimal graphics mode</span>
@@ -85,7 +86,7 @@ if ('onhashchange' in window) {
 <span id="L31" class="LineNr"> 31 </span><span class="subxComment">#   - can't use any syscalls</span>
 <span id="L32" class="LineNr"> 32 </span><span class="subxComment">#   - can't print text to video memory (past these boot sectors)</span>
 <span id="L33" class="LineNr"> 33 </span><span class="subxComment">#   - must only print raw pixels (256 colors) to video memory (resolution 1024x768)</span>
-<span id="L34" class="LineNr"> 34 </span><span class="subxComment">#   - must store their entry-point at address 0x8800</span>
+<span id="L34" class="LineNr"> 34 </span><span class="subxComment">#   - must store their entry-point at address 0x9000</span>
 <span id="L35" class="LineNr"> 35 </span>
 <span id="L36" class="LineNr"> 36 </span><span class="subxComment">## 16-bit entry point</span>
 <span id="L37" class="LineNr"> 37 </span>
@@ -118,7 +119,7 @@ if ('onhashchange' in window) {
 <span id="L64" class="LineNr"> 64 </span>  b5 00  <span class="subxComment"># ch &lt;- 0  # cylinder 0</span>
 <span id="L65" class="LineNr"> 65 </span>  b6 00  <span class="subxComment"># dh &lt;- 0  # track 0</span>
 <span id="L66" class="LineNr"> 66 </span>  b1 02  <span class="subxComment"># cl &lt;- 2  # second sector, 1-based</span>
-<span id="L67" class="LineNr"> 67 </span>  b0 10  <span class="subxComment"># al &lt;- 16  # number of sectors to read; all sectors must be in a single track</span>
+<span id="L67" class="LineNr"> 67 </span>  b0 20  <span class="subxComment"># al &lt;- 32  # number of sectors to read; all sectors must be in a single track</span>
 <span id="L68" class="LineNr"> 68 </span>  <span class="subxComment"># address to write sectors to = es:bx = 0x7e00, contiguous with boot segment</span>
 <span id="L69" class="LineNr"> 69 </span>  bb 00 00  <span class="subxComment"># bx &lt;- 0</span>
 <span id="L70" class="LineNr"> 70 </span>  8e c3  <span class="subxComment"># es &lt;- bx</span>
@@ -259,7 +260,7 @@ if ('onhashchange' in window) {
 <span id="L205" class="LineNr">205 </span>
 <span id="L206" class="LineNr">206 </span>  <span class="subxComment"># initialization is done; enable interrupts</span>
 <span id="L207" class="LineNr">207 </span>  fb
-<span id="L208" class="LineNr">208 </span>  e9 01 0b 00 00  <span class="subxComment"># jump to 0x8800 [label]</span>
+<span id="L208" class="LineNr">208 </span>  e9 01 13 00 00  <span class="subxComment"># jump to 0x9000 [label]</span>
 <span id="L209" class="LineNr">209 </span>
 <span id="L210" class="LineNr">210 </span><span class="subxComment"># padding</span>
 <span id="L211" class="LineNr">211 </span><span class="subxComment"># ff:</span>
@@ -294,7 +295,7 @@ if ('onhashchange' in window) {
 <span id="L240" class="LineNr">240 </span>  <span class="subxS1Comment"># . var index/ecx: byte</span>
 <span id="L241" class="LineNr">241 </span>  8a  <span class="subxComment"># copy m8 at r32 to r8</span>
 <span id="L242" class="LineNr">242 </span>    0d  <span class="subxComment"># 00/mod/indirect 001/r8/cl 101/rm32/use-disp32</span>
-<span id="L243" class="LineNr">243 </span>    ce 7d 00 00  <span class="subxComment"># disp32 [label]</span>
+<span id="L243" class="LineNr">243 </span>    c8 7d 00 00  <span class="subxComment"># disp32 [label]</span>
 <span id="L244" class="LineNr">244 </span>  <span class="subxS1Comment"># . al = *(keyboard buffer + index)</span>
 <span id="L245" class="LineNr">245 </span>  8a  <span class="subxComment"># copy m8 at r32 to r8</span>
 <span id="L246" class="LineNr">246 </span>    81  <span class="subxComment"># 10/mod/*+disp32 000/r8/al 001/rm32/ecx</span>
@@ -324,11 +325,11 @@ if ('onhashchange' in window) {
 <span id="L270" class="LineNr">270 </span>  <span class="subxComment"># increment index</span>
 <span id="L271" class="LineNr">271 </span>  fe  <span class="subxComment"># increment byte</span>
 <span id="L272" class="LineNr">272 </span>    05  <span class="subxComment"># 00/mod/indirect 000/subop/increment 101/rm32/use-disp32</span>
-<span id="L273" class="LineNr">273 </span>    ce 7d 00 00  <span class="subxComment"># disp32 [label]</span>
+<span id="L273" class="LineNr">273 </span>    c8 7d 00 00  <span class="subxComment"># disp32 [label]</span>
 <span id="L274" class="LineNr">274 </span>  <span class="subxComment"># clear top nibble of index (keyboard buffer is circular)</span>
 <span id="L275" class="LineNr">275 </span>  80  <span class="subxComment"># and byte</span>
 <span id="L276" class="LineNr">276 </span>    25  <span class="subxComment"># 00/mod/indirect 100/subop/and 101/rm32/use-disp32</span>
-<span id="L277" class="LineNr">277 </span>    ce 7d 00 00  <span class="subxComment"># disp32 [label]</span>
+<span id="L277" class="LineNr">277 </span>    c8 7d 00 00  <span class="subxComment"># disp32 [label]</span>
 <span id="L278" class="LineNr">278 </span>    0f  <span class="subxComment"># imm8</span>
 <span id="L279" class="LineNr">279 </span><span class="subxComment"># 155:</span>
 <span id="L280" class="LineNr">280 </span>  <span class="subxComment"># epilogue</span>
@@ -345,65 +346,65 @@ if ('onhashchange' in window) {
 <span id="L291" class="LineNr">291 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 <span id="L292" class="LineNr">292 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 <span id="L293" class="LineNr">293 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L294" class="LineNr">294 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L294" class="LineNr">294 </span>00 00 00 00 00 00 00 00
 <span id="L295" class="LineNr">295 </span>
-<span id="L296" class="LineNr">296 </span><span class="subxComment"># 1ce:</span>
+<span id="L296" class="LineNr">296 </span><span class="subxComment"># 1c8:</span>
 <span id="L297" class="LineNr">297 </span><span class="subxComment"># var keyboard circular buffer</span>
 <span id="L298" class="LineNr">298 </span><span class="subxComment"># write index: nibble</span>
-<span id="L299" class="LineNr">299 </span>  00
-<span id="L300" class="LineNr">300 </span><span class="subxComment"># 1cf:</span>
-<span id="L301" class="LineNr">301 </span><span class="subxComment"># read index: nibble</span>
-<span id="L302" class="LineNr">302 </span>  00
-<span id="L303" class="LineNr">303 </span><span class="subxComment"># circular buffer: byte[16]</span>
-<span id="L304" class="LineNr">304 </span>  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L305" class="LineNr">305 </span>
-<span id="L306" class="LineNr">306 </span><span class="subxComment"># padding</span>
-<span id="L307" class="LineNr">307 </span><span class="subxComment"># 1e0:</span>
-<span id="L308" class="LineNr">308 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L309" class="LineNr">309 </span>00 00 00 00 00 00 00 00
-<span id="L310" class="LineNr">310 </span>
-<span id="L311" class="LineNr">311 </span><span class="subxComment"># 1f8:</span>
-<span id="L312" class="LineNr">312 </span><span class="subxComment"># idt_descriptor:</span>
-<span id="L313" class="LineNr">313 </span>  ff 00  <span class="subxComment"># idt_end - idt_start - 1</span>
-<span id="L314" class="LineNr">314 </span>  00 7e 00 00  <span class="subxComment"># start = idt_start [label]</span>
-<span id="L315" class="LineNr">315 </span>
-<span id="L316" class="LineNr">316 </span><span class="subxComment"># 1fe:</span>
-<span id="L317" class="LineNr">317 </span><span class="subxComment"># final 2 bytes of boot sector</span>
-<span id="L318" class="LineNr">318 </span>55 aa
-<span id="L319" class="LineNr">319 </span>
-<span id="L320" class="LineNr">320 </span><span class="subxComment">## sector 2</span>
-<span id="L321" class="LineNr">321 </span><span class="subxComment"># loaded by load_disk, not automatically on boot</span>
+<span id="L299" class="LineNr">299 </span><span class="subxComment"># still take up 4 bytes so SubX can handle it</span>
+<span id="L300" class="LineNr">300 </span>  00 00 00 00
+<span id="L301" class="LineNr">301 </span><span class="subxComment"># 1cc:</span>
+<span id="L302" class="LineNr">302 </span><span class="subxComment"># read index: nibble</span>
+<span id="L303" class="LineNr">303 </span><span class="subxComment"># still take up 4 bytes so SubX can handle it</span>
+<span id="L304" class="LineNr">304 </span>  00 00 00 00
+<span id="L305" class="LineNr">305 </span><span class="subxComment"># 1d0:</span>
+<span id="L306" class="LineNr">306 </span><span class="subxComment"># circular buffer: byte[16]</span>
+<span id="L307" class="LineNr">307 </span>  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L308" class="LineNr">308 </span>
+<span id="L309" class="LineNr">309 </span><span class="subxComment"># padding</span>
+<span id="L310" class="LineNr">310 </span><span class="subxComment"># 1e0:</span>
+<span id="L311" class="LineNr">311 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L312" class="LineNr">312 </span>00 00 00 00 00 00 00 00
+<span id="L313" class="LineNr">313 </span>
+<span id="L314" class="LineNr">314 </span><span class="subxComment"># 1f8:</span>
+<span id="L315" class="LineNr">315 </span><span class="subxComment"># idt_descriptor:</span>
+<span id="L316" class="LineNr">316 </span>  ff 00  <span class="subxComment"># idt_end - idt_start - 1</span>
+<span id="L317" class="LineNr">317 </span>  00 7e 00 00  <span class="subxComment"># start = idt_start [label]</span>
+<span id="L318" class="LineNr">318 </span>
+<span id="L319" class="LineNr">319 </span><span class="subxComment"># 1fe:</span>
+<span id="L320" class="LineNr">320 </span><span class="subxComment"># final 2 bytes of boot sector</span>
+<span id="L321" class="LineNr">321 </span>55 aa
 <span id="L322" class="LineNr">322 </span>
-<span id="L323" class="LineNr">323 </span><span class="subxComment"># offset 200 (address 0x7e00): interrupt descriptor table</span>
-<span id="L324" class="LineNr">324 </span><span class="subxComment"># 32 entries * 8 bytes each = 256 bytes (0x100)</span>
-<span id="L325" class="LineNr">325 </span><span class="subxComment"># idt_start:</span>
-<span id="L326" class="LineNr">326 </span>
-<span id="L327" class="LineNr">327 </span>00 00 00 00 00 00 00 00
-<span id="L328" class="LineNr">328 </span>00 00 00 00 00 00 00 00
-<span id="L329" class="LineNr">329 </span>00 00 00 00 00 00 00 00
+<span id="L323" class="LineNr">323 </span><span class="subxComment">## sector 2</span>
+<span id="L324" class="LineNr">324 </span><span class="subxComment"># loaded by load_disk, not automatically on boot</span>
+<span id="L325" class="LineNr">325 </span>
+<span id="L326" class="LineNr">326 </span><span class="subxComment"># offset 200 (address 0x7e00): interrupt descriptor table</span>
+<span id="L327" class="LineNr">327 </span><span class="subxComment"># 32 entries * 8 bytes each = 256 bytes (0x100)</span>
+<span id="L328" class="LineNr">328 </span><span class="subxComment"># idt_start:</span>
+<span id="L329" class="LineNr">329 </span>
 <span id="L330" class="LineNr">330 </span>00 00 00 00 00 00 00 00
 <span id="L331" class="LineNr">331 </span>00 00 00 00 00 00 00 00
 <span id="L332" class="LineNr">332 </span>00 00 00 00 00 00 00 00
 <span id="L333" class="LineNr">333 </span>00 00 00 00 00 00 00 00
 <span id="L334" class="LineNr">334 </span>00 00 00 00 00 00 00 00
-<span id="L335" class="LineNr">335 </span>
-<span id="L336" class="LineNr">336 </span><span class="subxComment"># entry 8: clock</span>
-<span id="L337" class="LineNr">337 </span>  00 7d  <span class="subxComment"># target[0:16] = null interrupt handler [label]</span>
-<span id="L338" class="LineNr">338 </span>  08 00  <span class="subxComment"># segment selector (gdt_code)</span>
-<span id="L339" class="LineNr">339 </span>  00  <span class="subxComment"># unused</span>
-<span id="L340" class="LineNr">340 </span>  8e  <span class="subxComment"># 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate</span>
-<span id="L341" class="LineNr">341 </span>  00 00  <span class="subxComment"># target[16:32]</span>
-<span id="L342" class="LineNr">342 </span>
-<span id="L343" class="LineNr">343 </span><span class="subxComment"># entry 9: keyboard</span>
-<span id="L344" class="LineNr">344 </span>  10 7d  <span class="subxComment"># target[0:16] = keyboard interrupt handler [label]</span>
-<span id="L345" class="LineNr">345 </span>  08 00  <span class="subxComment"># segment selector (gdt_code)</span>
-<span id="L346" class="LineNr">346 </span>  00  <span class="subxComment"># unused</span>
-<span id="L347" class="LineNr">347 </span>  8e  <span class="subxComment"># 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate</span>
-<span id="L348" class="LineNr">348 </span>  00 00  <span class="subxComment"># target[16:32]</span>
-<span id="L349" class="LineNr">349 </span>
-<span id="L350" class="LineNr">350 </span>00 00 00 00 00 00 00 00
-<span id="L351" class="LineNr">351 </span>00 00 00 00 00 00 00 00
-<span id="L352" class="LineNr">352 </span>00 00 00 00 00 00 00 00
+<span id="L335" class="LineNr">335 </span>00 00 00 00 00 00 00 00
+<span id="L336" class="LineNr">336 </span>00 00 00 00 00 00 00 00
+<span id="L337" class="LineNr">337 </span>00 00 00 00 00 00 00 00
+<span id="L338" class="LineNr">338 </span>
+<span id="L339" class="LineNr">339 </span><span class="subxComment"># entry 8: clock</span>
+<span id="L340" class="LineNr">340 </span>  00 7d  <span class="subxComment"># target[0:16] = null interrupt handler [label]</span>
+<span id="L341" class="LineNr">341 </span>  08 00  <span class="subxComment"># segment selector (gdt_code)</span>
+<span id="L342" class="LineNr">342 </span>  00  <span class="subxComment"># unused</span>
+<span id="L343" class="LineNr">343 </span>  8e  <span class="subxComment"># 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate</span>
+<span id="L344" class="LineNr">344 </span>  00 00  <span class="subxComment"># target[16:32]</span>
+<span id="L345" class="LineNr">345 </span>
+<span id="L346" class="LineNr">346 </span><span class="subxComment"># entry 9: keyboard</span>
+<span id="L347" class="LineNr">347 </span>  10 7d  <span class="subxComment"># target[0:16] = keyboard interrupt handler [label]</span>
+<span id="L348" class="LineNr">348 </span>  08 00  <span class="subxComment"># segment selector (gdt_code)</span>
+<span id="L349" class="LineNr">349 </span>  00  <span class="subxComment"># unused</span>
+<span id="L350" class="LineNr">350 </span>  8e  <span class="subxComment"># 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate</span>
+<span id="L351" class="LineNr">351 </span>  00 00  <span class="subxComment"># target[16:32]</span>
+<span id="L352" class="LineNr">352 </span>
 <span id="L353" class="LineNr">353 </span>00 00 00 00 00 00 00 00
 <span id="L354" class="LineNr">354 </span>00 00 00 00 00 00 00 00
 <span id="L355" class="LineNr">355 </span>00 00 00 00 00 00 00 00
@@ -423,51 +424,51 @@ if ('onhashchange' in window) {
 <span id="L369" class="LineNr">369 </span>00 00 00 00 00 00 00 00
 <span id="L370" class="LineNr">370 </span>00 00 00 00 00 00 00 00
 <span id="L371" class="LineNr">371 </span>00 00 00 00 00 00 00 00
-<span id="L372" class="LineNr">372 </span><span class="subxComment"># idt_end:</span>
-<span id="L373" class="LineNr">373 </span>
-<span id="L374" class="LineNr">374 </span><span class="subxComment"># offset 300 (address 0x7f00):</span>
-<span id="L375" class="LineNr">375 </span><span class="subxComment"># video mode info:</span>
-<span id="L376" class="LineNr">376 </span>  00 00  <span class="subxComment"># attributes</span>
-<span id="L377" class="LineNr">377 </span>  00  <span class="subxComment"># winA</span>
-<span id="L378" class="LineNr">378 </span>  00  <span class="subxComment"># winB</span>
-<span id="L379" class="LineNr">379 </span><span class="subxComment"># 304</span>
-<span id="L380" class="LineNr">380 </span>  00 00  <span class="subxComment"># granularity</span>
-<span id="L381" class="LineNr">381 </span>  00 00  <span class="subxComment"># winsize</span>
-<span id="L382" class="LineNr">382 </span><span class="subxComment"># 308</span>
-<span id="L383" class="LineNr">383 </span>  00 00  <span class="subxComment"># segmentA</span>
-<span id="L384" class="LineNr">384 </span>  00 00  <span class="subxComment"># segmentB</span>
-<span id="L385" class="LineNr">385 </span><span class="subxComment"># 30c</span>
-<span id="L386" class="LineNr">386 </span>  00 00 00 00  <span class="subxComment"># realFctPtr (who knows)</span>
-<span id="L387" class="LineNr">387 </span><span class="subxComment"># 310</span>
-<span id="L388" class="LineNr">388 </span>  00 00  <span class="subxComment"># pitch</span>
-<span id="L389" class="LineNr">389 </span>  00 00  <span class="subxComment"># Xres</span>
-<span id="L390" class="LineNr">390 </span><span class="subxComment"># 314</span>
-<span id="L391" class="LineNr">391 </span>  00 00  <span class="subxComment"># Yres</span>
-<span id="L392" class="LineNr">392 </span>  00 00  <span class="subxComment"># Wchar Ychar</span>
-<span id="L393" class="LineNr">393 </span><span class="subxComment"># 318</span>
-<span id="L394" class="LineNr">394 </span>  00  <span class="subxComment"># planes</span>
-<span id="L395" class="LineNr">395 </span>  00  <span class="subxComment"># bpp</span>
-<span id="L396" class="LineNr">396 </span>  00  <span class="subxComment"># banks</span>
-<span id="L397" class="LineNr">397 </span>  00  <span class="subxComment"># memory_model</span>
-<span id="L398" class="LineNr">398 </span><span class="subxComment"># 31c</span>
-<span id="L399" class="LineNr">399 </span>  00  <span class="subxComment"># bank_size</span>
-<span id="L400" class="LineNr">400 </span>  00  <span class="subxComment"># image_pages</span>
-<span id="L401" class="LineNr">401 </span>  00  <span class="subxComment"># reserved</span>
-<span id="L402" class="LineNr">402 </span><span class="subxComment"># 31f</span>
-<span id="L403" class="LineNr">403 </span>  00 00  <span class="subxComment"># red_mask red_position</span>
-<span id="L404" class="LineNr">404 </span>  00 00  <span class="subxComment"># green_mask green_position</span>
-<span id="L405" class="LineNr">405 </span>  00 00  <span class="subxComment"># blue_mask blue_position</span>
-<span id="L406" class="LineNr">406 </span>  00 00  <span class="subxComment"># rsv_mask rsv_position</span>
-<span id="L407" class="LineNr">407 </span>  00  <span class="subxComment"># directcolor_attributes</span>
-<span id="L408" class="LineNr">408 </span><span class="subxComment"># 328</span>
-<span id="L409" class="LineNr">409 </span>  00 00 00 00  <span class="subxComment"># physbase &lt;== linear frame buffer</span>
-<span id="L410" class="LineNr">410 </span>
-<span id="L411" class="LineNr">411 </span><span class="subxComment"># 32c</span>
-<span id="L412" class="LineNr">412 </span><span class="subxComment"># reserved for video mode info</span>
-<span id="L413" class="LineNr">413 </span>                                    00 00 00 00
-<span id="L414" class="LineNr">414 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L415" class="LineNr">415 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L416" class="LineNr">416 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L372" class="LineNr">372 </span>00 00 00 00 00 00 00 00
+<span id="L373" class="LineNr">373 </span>00 00 00 00 00 00 00 00
+<span id="L374" class="LineNr">374 </span>00 00 00 00 00 00 00 00
+<span id="L375" class="LineNr">375 </span><span class="subxComment"># idt_end:</span>
+<span id="L376" class="LineNr">376 </span>
+<span id="L377" class="LineNr">377 </span><span class="subxComment"># offset 300 (address 0x7f00):</span>
+<span id="L378" class="LineNr">378 </span><span class="subxComment"># video mode info:</span>
+<span id="L379" class="LineNr">379 </span>  00 00  <span class="subxComment"># attributes</span>
+<span id="L380" class="LineNr">380 </span>  00  <span class="subxComment"># winA</span>
+<span id="L381" class="LineNr">381 </span>  00  <span class="subxComment"># winB</span>
+<span id="L382" class="LineNr">382 </span><span class="subxComment"># 304</span>
+<span id="L383" class="LineNr">383 </span>  00 00  <span class="subxComment"># granularity</span>
+<span id="L384" class="LineNr">384 </span>  00 00  <span class="subxComment"># winsize</span>
+<span id="L385" class="LineNr">385 </span><span class="subxComment"># 308</span>
+<span id="L386" class="LineNr">386 </span>  00 00  <span class="subxComment"># segmentA</span>
+<span id="L387" class="LineNr">387 </span>  00 00  <span class="subxComment"># segmentB</span>
+<span id="L388" class="LineNr">388 </span><span class="subxComment"># 30c</span>
+<span id="L389" class="LineNr">389 </span>  00 00 00 00  <span class="subxComment"># realFctPtr (who knows)</span>
+<span id="L390" class="LineNr">390 </span><span class="subxComment"># 310</span>
+<span id="L391" class="LineNr">391 </span>  00 00  <span class="subxComment"># pitch</span>
+<span id="L392" class="LineNr">392 </span>  00 00  <span class="subxComment"># Xres</span>
+<span id="L393" class="LineNr">393 </span><span class="subxComment"># 314</span>
+<span id="L394" class="LineNr">394 </span>  00 00  <span class="subxComment"># Yres</span>
+<span id="L395" class="LineNr">395 </span>  00 00  <span class="subxComment"># Wchar Ychar</span>
+<span id="L396" class="LineNr">396 </span><span class="subxComment"># 318</span>
+<span id="L397" class="LineNr">397 </span>  00  <span class="subxComment"># planes</span>
+<span id="L398" class="LineNr">398 </span>  00  <span class="subxComment"># bpp</span>
+<span id="L399" class="LineNr">399 </span>  00  <span class="subxComment"># banks</span>
+<span id="L400" class="LineNr">400 </span>  00  <span class="subxComment"># memory_model</span>
+<span id="L401" class="LineNr">401 </span><span class="subxComment"># 31c</span>
+<span id="L402" class="LineNr">402 </span>  00  <span class="subxComment"># bank_size</span>
+<span id="L403" class="LineNr">403 </span>  00  <span class="subxComment"># image_pages</span>
+<span id="L404" class="LineNr">404 </span>  00  <span class="subxComment"># reserved</span>
+<span id="L405" class="LineNr">405 </span><span class="subxComment"># 31f</span>
+<span id="L406" class="LineNr">406 </span>  00 00  <span class="subxComment"># red_mask red_position</span>
+<span id="L407" class="LineNr">407 </span>  00 00  <span class="subxComment"># green_mask green_position</span>
+<span id="L408" class="LineNr">408 </span>  00 00  <span class="subxComment"># blue_mask blue_position</span>
+<span id="L409" class="LineNr">409 </span>  00 00  <span class="subxComment"># rsv_mask rsv_position</span>
+<span id="L410" class="LineNr">410 </span>  00  <span class="subxComment"># directcolor_attributes</span>
+<span id="L411" class="LineNr">411 </span><span class="subxComment"># 328</span>
+<span id="L412" class="LineNr">412 </span>  00 00 00 00  <span class="subxComment"># physbase &lt;== linear frame buffer</span>
+<span id="L413" class="LineNr">413 </span>
+<span id="L414" class="LineNr">414 </span><span class="subxComment"># 32c</span>
+<span id="L415" class="LineNr">415 </span><span class="subxComment"># reserved for video mode info</span>
+<span id="L416" class="LineNr">416 </span>                                    00 00 00 00
 <span id="L417" class="LineNr">417 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 <span id="L418" class="LineNr">418 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 <span id="L419" class="LineNr">419 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -478,167 +479,21 @@ if ('onhashchange' in window) {
 <span id="L424" class="LineNr">424 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 <span id="L425" class="LineNr">425 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 <span id="L426" class="LineNr">426 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L427" class="LineNr">427 </span>
-<span id="L428" class="LineNr">428 </span><span class="subxComment"># offset 400 (address 0x8000):</span>
-<span id="L429" class="LineNr">429 </span><span class="subxComment"># keyboard normal map:</span>
-<span id="L430" class="LineNr">430 </span>00
-<span id="L431" class="LineNr">431 </span><span class="subxComment">#  es</span>
-<span id="L432" class="LineNr">432 </span>   1b
-<span id="L433" class="LineNr">433 </span><span class="subxComment">#     |&lt;--- digits --------------&gt;| -  =  bs</span>
-<span id="L434" class="LineNr">434 </span>      31 32 33 34 35 36 37 38 39 30 2d 3d 08
-<span id="L435" class="LineNr">435 </span><span class="subxComment"># offset 40f</span>
-<span id="L436" class="LineNr">436 </span><span class="subxComment">#  tb q  w  e  r  t  y  u  i  o  p  [  ]</span>
-<span id="L437" class="LineNr">437 </span>   09 71 77 65 72 74 79 75 69 6f 70 5b 5d
-<span id="L438" class="LineNr">438 </span><span class="subxComment"># offset 41c</span>
-<span id="L439" class="LineNr">439 </span><span class="subxComment">#                                         enter</span>
-<span id="L440" class="LineNr">440 </span>                                          0a 00
-<span id="L441" class="LineNr">441 </span><span class="subxComment"># offset 41e</span>
-<span id="L442" class="LineNr">442 </span><span class="subxComment">#     a  s  d  f  g  h  j  k  l  ;  '  `     \</span>
-<span id="L443" class="LineNr">443 </span>      61 73 64 66 67 68 6a 6b 6c 3b 27 60 00 5c
-<span id="L444" class="LineNr">444 </span><span class="subxComment"># offset 42c</span>
-<span id="L445" class="LineNr">445 </span><span class="subxComment">#     z  x  c  v  b  n  m  ,  .  /</span>
-<span id="L446" class="LineNr">446 </span>      7a 78 63 76 62 6e 6d 2c 2e 2f
-<span id="L447" class="LineNr">447 </span><span class="subxComment"># offset 436</span>
-<span id="L448" class="LineNr">448 </span>                  00 00 00 00 00 00 00 00 00 00
-<span id="L449" class="LineNr">449 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L450" class="LineNr">450 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L451" class="LineNr">451 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L452" class="LineNr">452 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L453" class="LineNr">453 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L454" class="LineNr">454 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L455" class="LineNr">455 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L456" class="LineNr">456 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L457" class="LineNr">457 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L458" class="LineNr">458 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L459" class="LineNr">459 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L460" class="LineNr">460 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L461" class="LineNr">461 </span>
-<span id="L462" class="LineNr">462 </span><span class="subxComment"># 500:</span>
-<span id="L463" class="LineNr">463 </span><span class="subxComment"># keyboard shift map:</span>
-<span id="L464" class="LineNr">464 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L465" class="LineNr">465 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L466" class="LineNr">466 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L467" class="LineNr">467 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L468" class="LineNr">468 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L469" class="LineNr">469 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L470" class="LineNr">470 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L471" class="LineNr">471 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L472" class="LineNr">472 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L473" class="LineNr">473 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L474" class="LineNr">474 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L475" class="LineNr">475 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L476" class="LineNr">476 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L477" class="LineNr">477 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L478" class="LineNr">478 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L479" class="LineNr">479 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L480" class="LineNr">480 </span>
-<span id="L481" class="LineNr">481 </span><span class="subxComment"># 600:</span>
-<span id="L482" class="LineNr">482 </span><span class="subxComment"># keyboard ctrl map:</span>
-<span id="L483" class="LineNr">483 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L484" class="LineNr">484 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L485" class="LineNr">485 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L486" class="LineNr">486 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L487" class="LineNr">487 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L488" class="LineNr">488 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L489" class="LineNr">489 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L490" class="LineNr">490 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L491" class="LineNr">491 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L492" class="LineNr">492 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L493" class="LineNr">493 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L494" class="LineNr">494 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L495" class="LineNr">495 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L496" class="LineNr">496 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L497" class="LineNr">497 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L498" class="LineNr">498 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L499" class="LineNr">499 </span>
-<span id="L500" class="LineNr">500 </span><span class="subxComment"># padding (there might be more keyboard tables)</span>
-<span id="L501" class="LineNr">501 </span><span class="subxComment"># 700:</span>
-<span id="L502" class="LineNr">502 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L503" class="LineNr">503 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L504" class="LineNr">504 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L505" class="LineNr">505 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L506" class="LineNr">506 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L507" class="LineNr">507 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L508" class="LineNr">508 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L509" class="LineNr">509 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L510" class="LineNr">510 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L511" class="LineNr">511 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L512" class="LineNr">512 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L513" class="LineNr">513 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L514" class="LineNr">514 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L515" class="LineNr">515 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L516" class="LineNr">516 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L517" class="LineNr">517 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L518" class="LineNr">518 </span>
-<span id="L519" class="LineNr">519 </span><span class="subxComment"># 800:</span>
-<span id="L520" class="LineNr">520 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L521" class="LineNr">521 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L522" class="LineNr">522 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L523" class="LineNr">523 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L524" class="LineNr">524 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L525" class="LineNr">525 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L526" class="LineNr">526 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L527" class="LineNr">527 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L528" class="LineNr">528 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L529" class="LineNr">529 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L530" class="LineNr">530 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L531" class="LineNr">531 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L532" class="LineNr">532 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L533" class="LineNr">533 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L534" class="LineNr">534 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L535" class="LineNr">535 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L536" class="LineNr">536 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L537" class="LineNr">537 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L538" class="LineNr">538 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L539" class="LineNr">539 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L540" class="LineNr">540 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L541" class="LineNr">541 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L542" class="LineNr">542 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L543" class="LineNr">543 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L544" class="LineNr">544 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L545" class="LineNr">545 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L546" class="LineNr">546 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L547" class="LineNr">547 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L548" class="LineNr">548 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L549" class="LineNr">549 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L550" class="LineNr">550 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L551" class="LineNr">551 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L552" class="LineNr">552 </span><span class="subxComment"># a00:</span>
-<span id="L553" class="LineNr">553 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L554" class="LineNr">554 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L555" class="LineNr">555 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L556" class="LineNr">556 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L557" class="LineNr">557 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L558" class="LineNr">558 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L559" class="LineNr">559 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L560" class="LineNr">560 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L561" class="LineNr">561 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L562" class="LineNr">562 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L563" class="LineNr">563 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L564" class="LineNr">564 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L565" class="LineNr">565 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L566" class="LineNr">566 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L567" class="LineNr">567 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L568" class="LineNr">568 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L569" class="LineNr">569 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L570" class="LineNr">570 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L571" class="LineNr">571 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L572" class="LineNr">572 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L573" class="LineNr">573 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L574" class="LineNr">574 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L575" class="LineNr">575 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L576" class="LineNr">576 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L577" class="LineNr">577 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L578" class="LineNr">578 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L579" class="LineNr">579 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L580" class="LineNr">580 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L581" class="LineNr">581 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L582" class="LineNr">582 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L583" class="LineNr">583 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L584" class="LineNr">584 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-<span id="L585" class="LineNr">585 </span><span class="subxComment"># offset c00 (address 0x8800)</span>
-<span id="L586" class="LineNr">586 </span>
-<span id="L587" class="LineNr">587 </span><span class="subxComment"># vim&#0058;ft=subx</span>
+<span id="L427" class="LineNr">427 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L428" class="LineNr">428 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L429" class="LineNr">429 </span>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+<span id="L430" class="LineNr">430 </span>
+<span id="L431" class="LineNr">431 </span><span class="subxComment">## the rest of this file has data</span>
+<span id="L432" class="LineNr">432 </span>
+<span id="L433" class="LineNr">433 </span><span class="subxComment"># offset 400 (address 0x8000):</span>
+<span id="L434" class="Folded">434 </span><span class="Folded">+--158 lines: # translating keys to ASCII -----------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L592" class="LineNr">592 </span>
+<span id="L593" class="LineNr">593 </span><span class="subxComment"># offset c00 (address 0x8800)</span>
+<span id="L594" class="Folded">594 </span><span class="Folded">+--236 lines: # Bitmaps for some ASCII characters (soon Unicode) ------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L830" class="LineNr">830 </span>
+<span id="L831" class="LineNr">831 </span><span class="subxComment"># offset 1400 (address 0x9000)</span>
+<span id="L832" class="LineNr">832 </span>
+<span id="L833" class="LineNr">833 </span><span class="subxComment"># vim&#0058;ft=subx</span>
 </pre>
 </body>
 </html>

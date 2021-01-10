@@ -16,6 +16,7 @@ a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .subxComment { color: #005faf; }
 .LineNr { }
+.subxFunction { color: #af5f00; text-decoration: underline; }
 .Constant { color: #008787; }
 -->
 </style>
@@ -64,30 +65,27 @@ if ('onhashchange' in window) {
 <span id="L10" class="LineNr">10 </span><span class="subxComment"># Expected output:</span>
 <span id="L11" class="LineNr">11 </span><span class="subxComment">#   html/baremetal.png</span>
 <span id="L12" class="LineNr">12 </span>
-<span id="L13" class="LineNr">13 </span><span class="subxComment"># main:  (address 0x8800)</span>
-<span id="L14" class="LineNr">14 </span>
-<span id="L15" class="LineNr">15 </span>== code
+<span id="L13" class="LineNr">13 </span><span class="subxFunction">main</span>:
+<span id="L14" class="LineNr">14 </span>  <span class="subxComment"># ecx &lt;- start of video memory</span>
+<span id="L15" class="LineNr">15 </span>  8b/-&gt; *0x7f28 1/r32/ecx
 <span id="L16" class="LineNr">16 </span>
-<span id="L17" class="LineNr">17 </span><span class="subxComment"># ecx &lt;- start of video memory</span>
-<span id="L18" class="LineNr">18 </span>8b/-&gt; *0x7f28 1/r32/ecx
+<span id="L17" class="LineNr">17 </span>  <span class="subxComment"># eax &lt;- final pixel of video memory</span>
+<span id="L18" class="LineNr">18 </span>  8d/copy-address *(ecx + 0x0bffff) 0/r32/eax  <span class="subxComment"># 0xbffff = 1024*768 - 1</span>
 <span id="L19" class="LineNr">19 </span>
-<span id="L20" class="LineNr">20 </span><span class="subxComment"># eax &lt;- final pixel of video memory</span>
-<span id="L21" class="LineNr">21 </span>8d/copy-address *(ecx + 0x0bffff) 0/r32/eax  <span class="subxComment"># 0xbffff = 1024*768 - 1</span>
-<span id="L22" class="LineNr">22 </span>
-<span id="L23" class="LineNr">23 </span><span class="subxComment"># for each pixel in video memory</span>
-<span id="L24" class="LineNr">24 </span>{
-<span id="L25" class="LineNr">25 </span>  39/compare %eax 1/r32/ecx
-<span id="L26" class="LineNr">26 </span>  7c/jump-if-&lt; <span class="Constant">break</span>/disp8
-<span id="L27" class="LineNr">27 </span>  <span class="subxComment"># write its column number to it</span>
-<span id="L28" class="LineNr">28 </span>  88/byte&lt;- *eax 0/r32/AL
-<span id="L29" class="LineNr">29 </span>  48/decrement-eax
-<span id="L30" class="LineNr">30 </span>  eb/jump <span class="Constant">loop</span>/disp8
-<span id="L31" class="LineNr">31 </span>}
-<span id="L32" class="LineNr">32 </span>
-<span id="L33" class="LineNr">33 </span><span class="subxComment"># hang indefinitely</span>
-<span id="L34" class="LineNr">34 </span>{
-<span id="L35" class="LineNr">35 </span>  eb/jump <span class="Constant">loop</span>/disp8
-<span id="L36" class="LineNr">36 </span>}
+<span id="L20" class="LineNr">20 </span>  <span class="subxComment"># for each pixel in video memory</span>
+<span id="L21" class="LineNr">21 </span>  {
+<span id="L22" class="LineNr">22 </span>    39/compare %eax 1/r32/ecx
+<span id="L23" class="LineNr">23 </span>    7c/jump-if-&lt; <span class="Constant">break</span>/disp8
+<span id="L24" class="LineNr">24 </span>    <span class="subxComment"># write its column number to it</span>
+<span id="L25" class="LineNr">25 </span>    88/byte&lt;- *eax 0/r32/AL
+<span id="L26" class="LineNr">26 </span>    48/decrement-eax
+<span id="L27" class="LineNr">27 </span>    eb/jump <span class="Constant">loop</span>/disp8
+<span id="L28" class="LineNr">28 </span>  }
+<span id="L29" class="LineNr">29 </span>
+<span id="L30" class="LineNr">30 </span>  <span class="subxComment"># hang indefinitely</span>
+<span id="L31" class="LineNr">31 </span>  {
+<span id="L32" class="LineNr">32 </span>    eb/jump <span class="Constant">loop</span>/disp8
+<span id="L33" class="LineNr">33 </span>  }
 </pre>
 </body>
 </html>

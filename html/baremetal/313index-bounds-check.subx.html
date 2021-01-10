@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - baremetal/400.mu</title>
+<title>Mu - baremetal/313index-bounds-check.subx</title>
 <meta name="Generator" content="Vim/8.1">
 <meta name="plugin-version" content="vim8.1_v1">
 <meta name="syntax" content="none">
@@ -14,9 +14,11 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
+.subxComment { color: #005faf; }
 .LineNr { }
+.subxS1Comment { color: #0000af; }
+.subxMinorFunction { color: #875f5f; }
 .Constant { color: #008787; }
-.PreProc { color: #c000c0; }
 -->
 </style>
 
@@ -50,16 +52,19 @@ if ('onhashchange' in window) {
 </script>
 </head>
 <body onload='JumpToLine();'>
-<a href='https://github.com/akkartik/mu/blob/main/baremetal/400.mu'>https://github.com/akkartik/mu/blob/main/baremetal/400.mu</a>
+<a href='https://github.com/akkartik/mu/blob/main/baremetal/313index-bounds-check.subx'>https://github.com/akkartik/mu/blob/main/baremetal/313index-bounds-check.subx</a>
 <pre id='vimCodeElement'>
-<span id="L1" class="LineNr">1 </span><span class="PreProc">sig</span> <a href='101screen.subx.html#L3'>pixel</a> screen: (addr screen), x: int, y: int, color: int
-<span id="L2" class="LineNr">2 </span><span class="PreProc">sig</span> <a href='102keyboard.subx.html#L3'>read-key</a> kbd: (addr keyboard)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: byte
-<span id="L3" class="LineNr">3 </span><span class="PreProc">sig</span> <a href='103grapheme.subx.html#L1'>draw-grapheme</a> screen: (addr screen), g: grapheme, x: int, y: int, color: int
-<span id="L4" class="LineNr">4 </span>
-<span id="L5" class="LineNr">5 </span><span class="PreProc">sig</span> <a href='108write.subx.html#L5'>write</a> f: (addr stream byte), s: (addr array byte)
-<span id="L6" class="LineNr">6 </span><span class="PreProc">sig</span> <a href='115write-byte.subx.html#L6'>append-byte</a> f: (addr stream byte), n: int
-<span id="L7" class="LineNr">7 </span><span class="PreProc">sig</span> <a href='112read-byte.subx.html#L5'>read-byte</a> s: (addr stream byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: byte
-<span id="L8" class="LineNr">8 </span><span class="PreProc">sig</span> <a href='309stream.subx.html#L6'>stream-empty?</a> s: (addr stream _)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
+<span id="L1" class="LineNr"> 1 </span><span class="subxComment"># TODO: bring this back</span>
+<span id="L2" class="LineNr"> 2 </span>
+<span id="L3" class="LineNr"> 3 </span><span class="subxMinorFunction">__check-mu-array-bounds</span>:  <span class="subxComment"># index: int, elem-size: int, arr-size: int, function-name: (addr array byte), array-name: (addr array byte)</span>
+<span id="L4" class="LineNr"> 4 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L5" class="LineNr"> 5 </span>    55/push-ebp
+<span id="L6" class="LineNr"> 6 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L7" class="LineNr"> 7 </span><span class="Constant">$__check-mu-array-bounds:end</span>:
+<span id="L8" class="LineNr"> 8 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L9" class="LineNr"> 9 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L10" class="LineNr">10 </span>    5d/pop-to-ebp
+<span id="L11" class="LineNr">11 </span>    c3/return
 </pre>
 </body>
 </html>
