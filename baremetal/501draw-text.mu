@@ -35,10 +35,11 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
   return xcurr
 }
 
-# draw text from (x, y) to (xmax, ymax), wrapping as necessary
+# draw text in the rectangle from (xmin, ymin) to (xmax, ymax), starting from (x, y), wrapping as necessary
 # return the next (x, y) coordinate in raster order where drawing stopped
+# that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, return 0 without modifying the screen
-fn draw-text-rightward-wrapped screen: (addr screen), text: (addr array byte), x: int, y: int, xmax: int, ymax: int, color: int -> _/eax: int, _/ecx: int {
+fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
@@ -55,7 +56,7 @@ fn draw-text-rightward-wrapped screen: (addr screen), text: (addr array byte), x
     compare xcurr, xmax
     {
       break-if-<
-      xcurr <- copy x
+      xcurr <- copy xmin
       ycurr <- add 0x10  # font-height
     }
     loop
@@ -78,7 +79,7 @@ fn draw-text-rightward-wrapped screen: (addr screen), text: (addr array byte), x
     compare xcurr, xmax
     {
       break-if-<
-      xcurr <- copy x
+      xcurr <- copy xmin
       ycurr <- add 0x10  # font-height
     }
     loop

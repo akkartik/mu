@@ -1,4 +1,4 @@
-# Draw ASCII text within a bounding box, while wrapping.
+# Drawing ASCII text incrementally within a bounding box.
 #
 # To build a disk image:
 #   ./translate_mu_baremetal baremetal/ex6.mu     # emits disk.img
@@ -10,8 +10,11 @@
 # Expected output: a box and text that doesn't overflow it
 
 fn main {
-  draw-box 0, 0xf, 0xf, 0x61, 0x41, 0x4
-  var x/eax: int <- copy 0
-  var y/ecx: int <- copy 0
-  x, y <- draw-text-rightward-wrapped 0, "hello from baremetal Mu!", 0x10, 0x10, 0x60, 0x40, 0xa  # xmax = 0x60, ymax = 0x40
+  draw-box 0, 0xf, 0x1f, 0x79, 0x51, 0x4
+  var x/eax: int <- copy 0x20
+  var y/ecx: int <- copy 0x20
+  x, y <- draw-text-wrapping-right-then-down 0, "hello ",     0x10, 0x20, 0x78, 0x50, x, y, 0xa  # (0x10, 0x20) -> (0x78, 0x50)
+  x, y <- draw-text-wrapping-right-then-down 0, "from ",      0x10, 0x20, 0x78, 0x50, x, y, 0xa
+  x, y <- draw-text-wrapping-right-then-down 0, "baremetal ", 0x10, 0x20, 0x78, 0x50, x, y, 0xa
+  x, y <- draw-text-wrapping-right-then-down 0, "Mu!",        0x10, 0x20, 0x78, 0x50, x, y, 0xa
 }
