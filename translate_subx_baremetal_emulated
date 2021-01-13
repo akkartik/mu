@@ -1,0 +1,34 @@
+#!/bin/sh
+# Translate given SubX files to 'baremetal', a raw disk image that can boot and
+# run without any OS.
+#
+# This script uses emulation, so it does not require x86 or Linux. However it
+# is slow.
+
+set -e
+
+./build
+
+cat $*          |./bootstrap run apps/braces            > a.braces
+
+cat a.braces    |./bootstrap run apps/calls             > a.calls
+
+cat a.calls     |./bootstrap run apps/sigils            > a.sigils
+
+cat a.sigils    |./bootstrap run apps/tests             > a.tests
+
+# no assort since baremetal SubX doesn't have segments yet
+
+cat a.tests     |./bootstrap run apps/dquotes           > a.dquotes
+
+cat a.dquotes   |./bootstrap run apps/pack              > a.pack
+
+cat a.pack      |./bootstrap run apps/survey_baremetal  > a.survey
+
+cat a.survey    |./bootstrap run apps/hex               > a.bin
+
+# Create disk.img containing baremetal/boot.hex and a.bin
+dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
+./bootstrap run apps/hex < baremetal/boot.hex  > boot.bin
+cat boot.bin a.bin > disk.bin
+dd if=disk.bin of=disk.img conv=notrunc
