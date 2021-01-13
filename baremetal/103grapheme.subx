@@ -58,12 +58,6 @@ draw-grapheme:  # screen: (addr screen), g: grapheme, x: int, y: int, color: int
       #
       eb/jump loop/disp8
     }
-    # Save default coordinates for a future call to draw-grapheme
-    8b/-> *(ebp+0x10) 0/r32/eax
-    81 0/subop/add %eax 8/imm32
-    89/<- *Default-next-x 0/r32/eax
-    8b/-> *(ebp+0x14) 0/r32/eax
-    89/<- *Default-next-y 0/r32/eax
 $draw-grapheme:end:
     # . restore registers
     5e/pop-to-esi
@@ -84,6 +78,25 @@ cursor-position:  # screen: (addr screen) -> _/eax: int, _/ecx: int
     8b/-> *Default-next-x 0/r32/eax
     8b/-> *Default-next-y 1/r32/ecx
 $cursor-position:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+set-cursor-position:  # screen: (addr screen), x: int, y: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # TODO: support fake screen; we currently assume 'screen' is always 0 (real)
+    8b/-> *(ebp+0xc) 0/r32/eax
+    89/<- *Default-next-x 0/r32/eax
+    8b/-> *(ebp+0x10) 0/r32/eax
+    89/<- *Default-next-y 0/r32/eax
+$set-cursor-position:end:
+    # . restore registers
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp

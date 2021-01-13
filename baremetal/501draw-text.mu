@@ -32,6 +32,7 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
     xcurr <- add 8  # font-width
     loop
   }
+  set-cursor-position screen, xcurr, y
   return xcurr
 }
 
@@ -92,6 +93,7 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array b
     }
     loop
   }
+  set-cursor-position screen, xcurr, ycurr
   return xcurr, ycurr
 }
 
@@ -106,16 +108,14 @@ fn draw-text-wrapping-right-then-down-from-cursor screen: (addr screen), text: (
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  # we could wrap around if we're too far to the right, but that feels like it
-  # makes assumptions about text direction
-#?   var end-x/edx: int <- copy cursor-x
-#?   end-x <- add 8  # font-width
-#?   compare end-x, xmax
-#?   {
-#?     break-if-<
-#?     cursor-x <- copy xmin
-#?     cursor-y <- add 0x10  # font-height
-#?   }
+  var end-x/edx: int <- copy cursor-x
+  end-x <- add 8  # font-width
+  compare end-x, xmax
+  {
+    break-if-<
+    cursor-x <- copy xmin
+    cursor-y <- add 0x10  # font-height
+  }
   cursor-x, cursor-y <- draw-text-wrapping-right-then-down screen, text, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
   return cursor-x, cursor-y
 }
@@ -163,6 +163,7 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
     ycurr <- add 0x10  # font-height
     loop
   }
+  set-cursor-position screen, x, ycurr
   return ycurr
 }
 
@@ -223,6 +224,7 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
     }
     loop
   }
+  set-cursor-position screen, xcurr, ycurr
   return xcurr, ycurr
 }
 
@@ -237,14 +239,14 @@ fn draw-text-wrapping-down-then-right-from-cursor screen: (addr screen), text: (
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-#?   var end-y/edx: int <- copy cursor-y
-#?   end-y <- add 0x10  # font-height
-#?   compare end-y, ymax
-#?   {
-#?     break-if-<
-#?     cursor-x <- add 8  # font-width
-#?     cursor-y <- copy ymin
-#?   }
+  var end-y/edx: int <- copy cursor-y
+  end-y <- add 0x10  # font-height
+  compare end-y, ymax
+  {
+    break-if-<
+    cursor-x <- add 8  # font-width
+    cursor-y <- copy ymin
+  }
   cursor-x, cursor-y <- draw-text-wrapping-down-then-right screen, text, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
   return cursor-x, cursor-y
 }
