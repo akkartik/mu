@@ -7,20 +7,31 @@
 #include <assert.h>
 
 char* bar(int n) {
-  char* result = calloc(65, 1);
+  char* result = calloc(1024, 32);
   int i;
+  strcat(result, "<div style='float:left; width:40em'>");
   for (i = 0; i < n; ++i)
-    result[i] = '.';
-  for (; i < 64; ++i)
-    result[i] = ' ';
-  result[64] = '\0';
+//?     result[i] = '.';
+    strcat(result, "&#9632;");  /* black square */
+//?   for (; i < 64; ++i)
+//?     result[i] = ' ';
+//?   result[64] = '\0';
+  strcat(result, "&nbsp;</div>");  /* make sure the div occupies space */
   return result;
+}
+
+/* convert 6-bit color to 8-bit color */
+int levelUp(int n) {
+  assert(n < 64);
+  /* duplicate two most significant bits in two least significant bits */
+  return (n<<2) | (n>>4);
 }
 
 void addColor(int r, int g, int b) {
   static int i = 0;
 //?   printf("%02x %02x %02x\n", r, g, b);
-  printf("%3d: %2d %2d %2d %s %s %s\n", i, r, g, b, bar(r), bar(g), bar(b));
+//?   printf("%3d: %2d %2d %2d %s %s %s\n", i, r, g, b, bar(r), bar(g), bar(b));
+  printf("<div style='clear:both; white-space:pre; color:#%02x%02x%02x'><div style='float:left; margin-right:1em'>%03d: %02d %02d %02d</div> %s %s %s</div>\n", levelUp(r), levelUp(g), levelUp(b), i, r, g, b, bar(r), bar(g), bar(b));
   ++i;
 }
 
