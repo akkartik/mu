@@ -1,3 +1,64 @@
+# some primitives for moving the cursor without making assumptions about
+# raster order
+fn cursor-left screen: (addr screen) {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  compare cursor-x, 0
+  {
+    break-if->
+    return
+  }
+  cursor-x <- subtract 8  # font-width
+  set-cursor-position screen, cursor-x, cursor-y
+}
+
+fn cursor-right screen: (addr screen) {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  compare cursor-x, 0x400  # screen-width
+  {
+    break-if-<
+    return
+  }
+  cursor-x <- add 8  # font-width
+  set-cursor-position screen, cursor-x, cursor-y
+}
+
+fn cursor-up screen: (addr screen) {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  compare cursor-y, 0
+  {
+    break-if->
+    return
+  }
+  cursor-y <- subtract 0x10  # screen-height
+  set-cursor-position screen, cursor-x, cursor-y
+}
+
+fn cursor-down screen: (addr screen) {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  compare cursor-y, 0x300  # screen-height
+  {
+    break-if-<
+    return
+  }
+  cursor-y <- add 0x10  # screen-height
+  set-cursor-position screen, cursor-x, cursor-y
+}
+
+fn draw-grapheme-at-cursor screen: (addr screen), g: grapheme, color: int {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  draw-grapheme screen, g, cursor-x, cursor-y, color
+}
+
 # draw a single line of text from x, y to xmax
 # return the next 'x' coordinate
 # if there isn't enough space, return 0 without modifying the screen
