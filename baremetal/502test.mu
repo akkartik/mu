@@ -6,6 +6,7 @@ fn check-ints-equal _a: int, b: int, msg: (addr array byte) {
     break-if-=
     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
     count-test-failure
+    return
   }
   {
     break-if-!=
