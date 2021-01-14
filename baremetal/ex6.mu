@@ -20,13 +20,13 @@ fn main {
   x, y <- draw-text-wrapping-right-then-down 0, "Mu!",        0x10, 0x20, 0x78, 0x50, x, y, 0xa
 
   # drawing at the cursor in multiple directions
-  x, y <- draw-text-wrapping-down-then-right-from-cursor-over-full-screen 0, "abc", 0xa
-  x, y <- draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "def", 0xa
+  draw-text-wrapping-down-then-right-from-cursor-over-full-screen 0, "abc", 0xa
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "def", 0xa
 
   # test drawing near the edge
   x <- draw-text-rightward 0, "R", 0x3f8, 0x400, 0x100, 0xa
-  x, y <- draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "wrapped from R", 0xa
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "wrapped from R", 0xa
 
   x <- draw-text-downward 0, "D", 0x100, 0x2f0, 0x300, 0xa
-  x, y <- draw-text-wrapping-down-then-right-from-cursor-over-full-screen 0, "wrapped from D", 0xa
+  draw-text-wrapping-down-then-right-from-cursor-over-full-screen 0, "wrapped from D", 0xa
 }
