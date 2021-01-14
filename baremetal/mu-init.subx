@@ -9,7 +9,17 @@
 # initialize stack
 bd/copy-to-ebp 0/imm32
 # no heap yet
-(main)
+#
+# always first run tests
+(run-tests)
+(num-test-failures)  # => eax
+# call main if tests all passed
+{
+  3d/compare-eax-and 0/imm32
+  75/jump-if-!= break/disp8
+  (clear-screen)
+  (main)
+}
 
 # hang indefinitely
 {

@@ -7,6 +7,10 @@ sig set-cursor-position screen: (addr screen), x: int, y: int
 # keyboard
 sig read-key kbd: (addr keyboard) -> _/eax: byte
 
+# tests
+sig count-test-failure
+sig num-test-failures -> _/eax: int
+
 # streams
 sig clear-stream f: (addr stream _)
 sig rewind-stream f: (addr stream _)

@@ -30,8 +30,11 @@ operating systems. There's also currently no code/data segment separation,
 just labels and bytes. I promise not to write self-modifying code. Security
 and sandboxing is still an open question.
 
-Most programs here assume `main` starts at address 0x9000 (7KB or 14 disk
-sectors past the BIOS entrypoint). See baremetal/boot.hex for details.
+Programs start executing at address 0x9000. See baremetal/boot.hex for
+details.
+
+Mu programs always run all their automated tests first. `main` only runs if
+there are no failing tests. See baremetal/mu-init.subx for details.
 
 So far the programs have only been tested in Qemu and Bochs emulators.
 
