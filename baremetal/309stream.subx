@@ -65,11 +65,11 @@ write-to-stream:  # s: (addr stream _), in: (addr byte), n: int
     8b/-> *(ebp+8) 7/r32/edi
     # var swrite/edx: int = s->write
     8b/-> *edi 2/r32/edx
-    # if (swrite + n > s->size) return
+    # if (swrite + n > s->size) abort
     8b/-> *(ebp+0x10) 1/r32/ecx
     01/add-to %ecx 2/r32/edx
     3b/compare 1/r32/ecx *(edi+8)
-    0f 8f/jump-if-> $write-to-stream:end/disp32  # TODO: abort
+    0f 8f/jump-if-> $write-to-stream:abort/disp32
     # var out/edx: (addr byte) = s->data + s->write
     8d/copy-address *(edi+edx+0xc) 2/r32/edx
     # var outend/ebx: (addr byte) = out + n
@@ -97,6 +97,13 @@ $write-to-stream:end:
     5d/pop-to-ebp
     c3/return
 
+$write-to-stream:abort:
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "write-to-stream: stream full" 3)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
+    # never gets here
+
 read-from-stream:  # s: (addr stream _), out: (addr byte), n: int
     # . prologue
     55/push-ebp
@@ -111,11 +118,11 @@ read-from-stream:  # s: (addr stream _), out: (addr byte), n: int
     8b/-> *(ebp+8) 6/r32/esi
     # var sread/edx: int = s->read
     8b/-> *(esi+4) 2/r32/edx
-    # if (sread + n > s->write) return
+    # if (sread + n > s->write) abort
     8b/-> *(ebp+0x10) 1/r32/ecx
     01/add-to %ecx 2/r32/edx
     3b/compare 1/r32/ecx *esi
-    0f 8f/jump-if-> $read-from-stream:end/disp32  # TODO: abort
+    0f 8f/jump-if-> $read-from-stream:abort/disp32
     # var in/edx: (addr byte) = s->data + s->read
     8d/copy-address *(esi+edx+0xc) 2/r32/edx
     # var inend/ebx: (addr byte) = in + n
@@ -142,6 +149,12 @@ $read-from-stream:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$read-from-stream:abort:
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "read-from-stream: stream empty" 3)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
 
 stream-first:  # s: (addr stream byte) -> result/eax: byte
     # . prologue

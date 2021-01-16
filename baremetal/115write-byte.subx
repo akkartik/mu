@@ -22,7 +22,7 @@ append-byte:  # f: (addr stream byte), n: int
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
     # if (f->write >= f->size) abort
     3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(edi+8)
-    7d/jump-if->=  $append-byte:end/disp8  # TODO: abort
+    7d/jump-if->=  $append-byte:abort/disp8
 $append-byte:to-stream:
     # write to stream
     # f->data[f->write] = LSB(n)
@@ -39,6 +39,13 @@ $append-byte:end:
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
+
+$append-byte:abort:
+    (draw-text-wrapping-down-then-right-from-cursor-over-full-screen 0 "append-byte: out of space\n" 3)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
+    # never gets here
 
 test-append-byte-single:
     # - check that append-byte writes to first byte of 'file'

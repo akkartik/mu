@@ -23,7 +23,7 @@ read-byte:  # s: (addr stream byte) -> result/eax: byte
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
     # if (f->read >= f->write) abort
     3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare ecx with *esi
-    0f 8d/jump-if->=  $read-byte:end/disp32  # TODO: abort
+    0f 8d/jump-if->=  $read-byte:abort/disp32
     # result = f->data[f->read]
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
@@ -37,5 +37,12 @@ $read-byte:end:
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
+
+$read-byte:abort:
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "read-byte: empty stream" 3)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
+    # never gets here
 
 # . . vim:nowrap:textwidth=0
