@@ -39,5 +39,6 @@ there are no failing tests. See baremetal/mu-init.subx for details.
 So far the programs have only been tested in Qemu and Bochs emulators.
 
 [1] Though we might need to start thinking of [the PC memory map](https://wiki.osdev.org/Memory_Map_(x86))
-as our programs grow past the first 512KB of memory. Writing to random
-locations can damage hardware or corrupt storage devices.
+as our programs grow past the first 32MB of memory. Mu doesn't yet make any
+attempt to understand how much RAM the underlying computer has. Also, writing
+to random locations can damage hardware or corrupt storage devices.
