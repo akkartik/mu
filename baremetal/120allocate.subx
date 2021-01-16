@@ -50,4 +50,34 @@ $zero-out:end:
     5d/pop-to-ebp
     c3/return
 
+test-zero-out:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # region/ecx = 34, 35, 36, 37
+    68/push  0x37363534/imm32
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # zero-out(ecx, 3)
+    # . . push args
+    68/push  3/imm32/size
+    51/push-ecx
+    # . . call
+    e8/call  zero-out/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # first 3 bytes cleared, fourth left alone
+    # . check-ints-equal(*ecx, 0x37000000, msg)
+    # . . push args
+    68/push  "F - test-zero-out"/imm32
+    68/push  0x37000000/imm32
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
 # . . vim:nowrap:textwidth=0
