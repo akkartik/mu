@@ -21,7 +21,7 @@ fn main {
       break-if->=
       var color/ecx: int <- copy x
       color <- and 0xff
-      pixel 0, x, y, color
+      pixel-on-real-screen x, y, color
       x <- increment
       loop
     }

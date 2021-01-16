@@ -1,8 +1,8 @@
 # screen
-sig pixel screen: (addr screen), x: int, y: int, color: int
-sig draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int
-sig cursor-position screen: (addr screen) -> _/eax: int, _/ecx: int
-sig set-cursor-position screen: (addr screen), x: int, y: int
+sig pixel-on-real-screen x: int, y: int, color: int
+sig draw-grapheme-on-real-screen g: grapheme, x: int, y: int, color: int
+sig cursor-position-on-real-screen -> _/eax: int, _/ecx: int
+sig set-cursor-position-on-real-screen x: int, y: int
 
 # keyboard
 sig read-key kbd: (addr keyboard) -> _/eax: byte

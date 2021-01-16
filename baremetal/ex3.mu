@@ -18,7 +18,7 @@ fn main {
     var key/eax: byte <- read-key 0  # real keyboard
     compare key, 0
     loop-if-=  # busy wait
-    pixel 0, x, y, 0x31  # green
+    pixel-on-real-screen x, y, 0x31  # green
     x <- increment
     compare x, 0x400
     {
