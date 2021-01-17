@@ -21,7 +21,7 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int
     8d/copy-address *(esi+0x8800) 6/r32/esi  # font-start
     # if (letter-bitmap >= 0x9000) return  # characters beyond ASCII currently not supported
     81 7/subop/compare %esi 0x9000/imm32
-    7d/jump-if->= $draw-grapheme:end/disp8
+    7d/jump-if->= $draw-grapheme-on-real-screen:end/disp8
     # edx = y
     8b/-> *(ebp+0x10) 2/r32/edx
     # var ymax/ebx: int = y + 16
@@ -32,7 +32,7 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int
       39/compare %edx 3/r32/ebx
       7d/jump-if->= break/disp8
       # eax = x + 7
-      8b/-> *(ebp+0xc) 0/r32/eax
+      8b/-> *(ebp+0xc) 0/r32/eax  # font-width - 1
       81 0/subop/add %eax 7/imm32
       # var xmin/ecx: int = x
       8b/-> *(ebp+0xc) 1/r32/ecx
@@ -49,11 +49,11 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int
         {
           73/jump-if-not-CF break/disp8
           (pixel-on-real-screen %eax %edx *(ebp+0x14))
-          eb/jump $draw-grapheme:continue/disp8
+          eb/jump $draw-grapheme-on-real-screen:continue/disp8
         }
         # otherwise draw a black pixel
         (pixel-on-real-screen %eax %edx 0)
-$draw-grapheme:continue:
+$draw-grapheme-on-real-screen:continue:
         # --x
         48/decrement-eax
         #
@@ -68,7 +68,7 @@ $draw-grapheme:continue:
       #
       eb/jump loop/disp8
     }
-$draw-grapheme:end:
+$draw-grapheme-on-real-screen:end:
     # . restore registers
     5e/pop-to-esi
     5b/pop-to-ebx
@@ -87,7 +87,7 @@ cursor-position-on-real-screen:  # -> _/eax: int, _/ecx: int
     # TODO: support fake screen; we currently assume 'screen' is always 0 (real)
     8b/-> *Default-next-x 0/r32/eax
     8b/-> *Default-next-y 1/r32/ecx
-$cursor-position:end:
+$cursor-position-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -104,7 +104,7 @@ set-cursor-position-on-real-screen:  # x: int, y: int
     89/<- *Default-next-x 0/r32/eax
     8b/-> *(ebp+0xc) 0/r32/eax
     89/<- *Default-next-y 0/r32/eax
-$set-cursor-position:end:
+$set-cursor-position-on-real-screen:end:
     # . restore registers
     58/pop-to-eax
     # . epilogue
