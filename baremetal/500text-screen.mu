@@ -50,9 +50,7 @@ fn screen-size screen: (addr screen) -> _/eax: int, _/ecx: int {
   compare screen, 0
   {
     break-if-!=
-    width <- copy 0x30  # 768/16
-    height <- copy 0x80  # 1024/8
-    return width, height
+    return 0x400, 0x300  # 1024x768
   }
   # fake screen
   var screen-addr/esi: (addr screen) <- copy screen

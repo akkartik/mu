@@ -14,10 +14,14 @@ fn cursor-left screen: (addr screen) {
 }
 
 fn cursor-right screen: (addr screen) {
+  var _width/eax: int <- copy 0
+  var dummy/ecx: int <- copy 0
+  _width, dummy <- screen-size screen
+  var width/edx: int <- copy _width
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  compare cursor-x, 0x400  # screen-width
+  compare cursor-x, width
   {
     break-if-<
     return
@@ -40,10 +44,14 @@ fn cursor-up screen: (addr screen) {
 }
 
 fn cursor-down screen: (addr screen) {
+  var dummy/eax: int <- copy 0
+  var _height/ecx: int <- copy 0
+  dummy, _height <- screen-size screen
+  var height/edx: int <- copy _height
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  compare cursor-y, 0x300  # screen-height
+  compare cursor-y, height
   {
     break-if-<
     return
@@ -173,10 +181,11 @@ fn move-cursor-rightward-and-downward screen: (addr screen), xmin: int, xmax: in
 }
 
 fn draw-text-wrapping-right-then-down-over-full-screen screen: (addr screen), text: (addr array byte), x: int, y: int, color: int -> _/eax: int, _/ecx: int {
-  var cursor-x/eax: int <- copy 0
-  var cursor-y/ecx: int <- copy 0
-  cursor-x, cursor-y <- draw-text-wrapping-right-then-down screen, text, 0, 0, 0x400, 0x300, x, y, color  # 1024, 768
-  return cursor-x, cursor-y
+  var x2/eax: int <- copy 0
+  var y2/ecx: int <- copy 0
+  x2, y2 <- screen-size screen  # width, height
+  x2, y2 <- draw-text-wrapping-right-then-down screen, text, 0, 0, x2, y2, x, y, color
+  return x2, y2  # cursor-x, cursor-y
 }
 
 fn draw-text-wrapping-right-then-down-from-cursor screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, color: int {
@@ -195,7 +204,10 @@ fn draw-text-wrapping-right-then-down-from-cursor screen: (addr screen), text: (
 }
 
 fn draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), text: (addr array byte), color: int {
-  draw-text-wrapping-right-then-down-from-cursor screen, text, 0, 0, 0x400, 0x300, color  # 1024, 768
+  var width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  width, height <- screen-size screen
+  draw-text-wrapping-right-then-down-from-cursor screen, text, 0, 0, width, height, color
 }
 
 fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
@@ -248,10 +260,11 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
 }
 
 fn draw-int32-hex-wrapping-right-then-down-over-full-screen screen: (addr screen), n: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
-  var cursor-x/eax: int <- copy 0
-  var cursor-y/ecx: int <- copy 0
-  cursor-x, cursor-y <- draw-int32-hex-wrapping-right-then-down screen, n, 0, 0, 0x400, 0x300, x, y, color  # 1024, 768
-  return cursor-x, cursor-y
+  var x2/eax: int <- copy 0
+  var y2/ecx: int <- copy 0
+  x2, y2 <- screen-size screen  # width, height
+  x2, y2 <- draw-int32-hex-wrapping-right-then-down screen, n, 0, 0, x2, y2, x, y, color
+  return x2, y2  # cursor-x, cursor-y
 }
 
 fn draw-int32-hex-wrapping-right-then-down-from-cursor screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, color: int {
@@ -270,7 +283,10 @@ fn draw-int32-hex-wrapping-right-then-down-from-cursor screen: (addr screen), n:
 }
 
 fn draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), n: int, color: int {
-  draw-int32-hex-wrapping-right-then-down-from-cursor screen, n, 0, 0, 0x400, 0x300, color  # 1024, 768
+  var width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  width, height <- screen-size screen
+  draw-int32-hex-wrapping-right-then-down-from-cursor screen, n, 0, 0, width, height, color
 }
 
 fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
@@ -323,10 +339,11 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
 }
 
 fn draw-int32-decimal-wrapping-right-then-down-over-full-screen screen: (addr screen), n: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
-  var cursor-x/eax: int <- copy 0
-  var cursor-y/ecx: int <- copy 0
-  cursor-x, cursor-y <- draw-int32-decimal-wrapping-right-then-down screen, n, 0, 0, 0x400, 0x300, x, y, color  # 1024, 768
-  return cursor-x, cursor-y
+  var x2/eax: int <- copy 0
+  var y2/ecx: int <- copy 0
+  x2, y2 <- screen-size screen  # width, height
+  x2, y2 <- draw-int32-decimal-wrapping-right-then-down screen, n, 0, 0, x2, y2, x, y, color
+  return x2, y2  # cursor-x, cursor-y
 }
 
 fn draw-int32-decimal-wrapping-right-then-down-from-cursor screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, color: int {
@@ -345,7 +362,10 @@ fn draw-int32-decimal-wrapping-right-then-down-from-cursor screen: (addr screen)
 }
 
 fn draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), n: int, color: int {
-  draw-int32-decimal-wrapping-right-then-down-from-cursor screen, n, 0, 0, 0x400, 0x300, color  # 1024, 768
+  var width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  width, height <- screen-size screen
+  draw-int32-decimal-wrapping-right-then-down-from-cursor screen, n, 0, 0, width, height, color
 }
 
 ## Text direction: down then right
@@ -449,10 +469,11 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
 }
 
 fn draw-text-wrapping-down-then-right-over-full-screen screen: (addr screen), text: (addr array byte), x: int, y: int, color: int -> _/eax: int, _/ecx: int {
-  var cursor-x/eax: int <- copy 0
-  var cursor-y/ecx: int <- copy 0
-  cursor-x, cursor-y <- draw-text-wrapping-down-then-right screen, text, 0, 0, 0x400, 0x300, x, y, color  # 1024, 768
-  return cursor-x, cursor-y
+  var x2/eax: int <- copy 0
+  var y2/ecx: int <- copy 0
+  x2, y2 <- screen-size screen  # width, height
+  x2, y2 <- draw-text-wrapping-down-then-right screen, text, 0, 0, x2, y2, x, y, color
+  return x2, y2  # cursor-x, cursor-y
 }
 
 fn draw-text-wrapping-down-then-right-from-cursor screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, color: int {
@@ -471,5 +492,8 @@ fn draw-text-wrapping-down-then-right-from-cursor screen: (addr screen), text: (
 }
 
 fn draw-text-wrapping-down-then-right-from-cursor-over-full-screen screen: (addr screen), text: (addr array byte), color: int {
-  draw-text-wrapping-down-then-right-from-cursor screen, text, 0, 0, 0x400, 0x300, color  # 1024, 768
+  var width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  width, height <- screen-size screen
+  draw-text-wrapping-down-then-right-from-cursor screen, text, 0, 0, width, height, color
 }
