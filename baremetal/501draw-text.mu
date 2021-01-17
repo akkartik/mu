@@ -184,6 +184,156 @@ fn draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr
   draw-text-wrapping-right-then-down-from-cursor screen, text, 0, 0, 0x400, 0x300, color  # 1024, 768
 }
 
+fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+  var stream-storage: (stream byte 0x100)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  write-int32-hex stream, n
+  # check if we have enough space
+  var xcurr/edx: int <- copy x
+  var ycurr/ecx: int <- copy y
+  {
+    compare ycurr, ymax
+    break-if->=
+    var g/eax: grapheme <- read-grapheme stream
+    compare g, 0xffffffff  # end-of-file
+    break-if-=
+    xcurr <- add 8  # font-width
+    compare xcurr, xmax
+    {
+      break-if-<
+      xcurr <- copy xmin
+      ycurr <- add 0x10  # font-height
+    }
+    loop
+  }
+  compare ycurr, ymax
+  {
+    break-if-<
+    return 0, 0
+  }
+  # we do; actually draw
+  rewind-stream stream
+  xcurr <- copy x
+  ycurr <- copy y
+  {
+    var g/eax: grapheme <- read-grapheme stream
+    compare g, 0xffffffff  # end-of-file
+    break-if-=
+    draw-grapheme screen, g, xcurr, ycurr, color
+    xcurr <- add 8  # font-width
+    compare xcurr, xmax
+    {
+      break-if-<
+      xcurr <- copy xmin
+      ycurr <- add 0x10  # font-height
+    }
+    loop
+  }
+  set-cursor-position screen, xcurr, ycurr
+  return xcurr, ycurr
+}
+
+fn draw-int32-hex-wrapping-right-then-down-over-full-screen screen: (addr screen), n: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- draw-int32-hex-wrapping-right-then-down screen, n, 0, 0, 0x400, 0x300, x, y, color  # 1024, 768
+  return cursor-x, cursor-y
+}
+
+fn draw-int32-hex-wrapping-right-then-down-from-cursor screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, color: int {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  var end-x/edx: int <- copy cursor-x
+  end-x <- add 8  # font-width
+  compare end-x, xmax
+  {
+    break-if-<
+    cursor-x <- copy xmin
+    cursor-y <- add 0x10  # font-height
+  }
+  cursor-x, cursor-y <- draw-int32-hex-wrapping-right-then-down screen, n, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
+}
+
+fn draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), n: int, color: int {
+  draw-int32-hex-wrapping-right-then-down-from-cursor screen, n, 0, 0, 0x400, 0x300, color  # 1024, 768
+}
+
+fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+  var stream-storage: (stream byte 0x100)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  write-int32-decimal stream, n
+  # check if we have enough space
+  var xcurr/edx: int <- copy x
+  var ycurr/ecx: int <- copy y
+  {
+    compare ycurr, ymax
+    break-if->=
+    var g/eax: grapheme <- read-grapheme stream
+    compare g, 0xffffffff  # end-of-file
+    break-if-=
+    xcurr <- add 8  # font-width
+    compare xcurr, xmax
+    {
+      break-if-<
+      xcurr <- copy xmin
+      ycurr <- add 0x10  # font-height
+    }
+    loop
+  }
+  compare ycurr, ymax
+  {
+    break-if-<
+    return 0, 0
+  }
+  # we do; actually draw
+  rewind-stream stream
+  xcurr <- copy x
+  ycurr <- copy y
+  {
+    var g/eax: grapheme <- read-grapheme stream
+    compare g, 0xffffffff  # end-of-file
+    break-if-=
+    draw-grapheme screen, g, xcurr, ycurr, color
+    xcurr <- add 8  # font-width
+    compare xcurr, xmax
+    {
+      break-if-<
+      xcurr <- copy xmin
+      ycurr <- add 0x10  # font-height
+    }
+    loop
+  }
+  set-cursor-position screen, xcurr, ycurr
+  return xcurr, ycurr
+}
+
+fn draw-int32-decimal-wrapping-right-then-down-over-full-screen screen: (addr screen), n: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- draw-int32-decimal-wrapping-right-then-down screen, n, 0, 0, 0x400, 0x300, x, y, color  # 1024, 768
+  return cursor-x, cursor-y
+}
+
+fn draw-int32-decimal-wrapping-right-then-down-from-cursor screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, color: int {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  var end-x/edx: int <- copy cursor-x
+  end-x <- add 8  # font-width
+  compare end-x, xmax
+  {
+    break-if-<
+    cursor-x <- copy xmin
+    cursor-y <- add 0x10  # font-height
+  }
+  cursor-x, cursor-y <- draw-int32-decimal-wrapping-right-then-down screen, n, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
+}
+
+fn draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), n: int, color: int {
+  draw-int32-decimal-wrapping-right-then-down-from-cursor screen, n, 0, 0, 0x400, 0x300, color  # 1024, 768
+}
+
 ## Text direction: down then right
 
 # draw a single line of text vertically from x, y to ymax
