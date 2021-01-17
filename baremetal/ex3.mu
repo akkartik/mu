@@ -20,7 +20,7 @@ fn main {
     loop-if-=  # busy wait
     pixel-on-real-screen x, y, 0x31  # green
     x <- increment
-    compare x, 0x400
+    compare x, 0x400  # screen-width
     {
       break-if-<
       y <- increment

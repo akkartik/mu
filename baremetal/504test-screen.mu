@@ -42,14 +42,14 @@ fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expecte
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ": expected '", 3
       draw-grapheme-at-cursor 0, expected-grapheme, 3
-      move-cursor-rightward-and-downward 0, 0, 0x400
+      move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "' at (", 3
       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, x, 3
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ", ", 3
       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, y, 3
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ") but observed '", 3
       draw-grapheme-at-cursor 0, g, 3
-      move-cursor-rightward-and-downward 0, 0, 0x400
+      move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "'", 3
     }
     idx <- increment
@@ -108,14 +108,14 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: in
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ": expected '", 3
         draw-grapheme-at-cursor 0, expected-grapheme, 3
-        move-cursor-rightward-and-downward 0, 0, 0x400
+        move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "' at (", 3
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, x, 3
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ", ", 3
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, y, 3
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ") but observed '", 3
         draw-grapheme-at-cursor 0, g, 3
-        move-cursor-rightward-and-downward 0, 0, 0x400
+        move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "'", 3
       }
       $check-screen-row-in-color-from:compare-colors: {
@@ -130,7 +130,7 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: in
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ": expected '", 3
         draw-grapheme-at-cursor 0, expected-grapheme, 3
-        move-cursor-rightward-and-downward 0, 0, 0x400
+        move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "' at (", 3
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, x, 3
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ", ", 3

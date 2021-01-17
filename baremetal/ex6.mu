@@ -24,9 +24,9 @@ fn main {
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "def", 0xa
 
   # test drawing near the edge
-  x <- draw-text-rightward 0, "R", 0x3f8, 0x400, 0x100, 0xa
+  x <- draw-text-rightward 0, "R", 0x3f8, 0x400, 0x100, 0xa  # 0x400 = screen-width
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "wrapped from R", 0xa
 
-  x <- draw-text-downward 0, "D", 0x100, 0x2f0, 0x300, 0xa
+  x <- draw-text-downward 0, "D", 0x100, 0x2f0, 0x300, 0xa  # 0x300 = screen-height
   draw-text-wrapping-down-then-right-from-cursor-over-full-screen 0, "wrapped from D", 0xa
 }
