@@ -158,6 +158,20 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array b
   return xcurr, ycurr
 }
 
+fn move-cursor-rightward-and-downward screen: (addr screen), xmin: int, xmax: int {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  cursor-x <- add 8  # font-width
+  compare cursor-x, xmax
+  {
+    break-if-<
+    cursor-x <- copy xmin
+    cursor-y <- add 0x10  # font-height
+  }
+  set-cursor-position screen, cursor-x, cursor-y
+}
+
 fn draw-text-wrapping-right-then-down-over-full-screen screen: (addr screen), text: (addr array byte), x: int, y: int, color: int -> _/eax: int, _/ecx: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
