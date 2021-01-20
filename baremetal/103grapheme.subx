@@ -5,7 +5,7 @@
 
 == code
 
-draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int
+draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int, background-color: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -45,14 +45,14 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int
         7c/jump-if-< break/disp8
         # shift LSB from row-bitmap into carry flag (CF)
         c1 5/subop/shift-right-logical %ebx 1/imm8
-        # if LSB, draw a pixel
+        # if LSB, draw a pixel in the given color
         {
           73/jump-if-not-CF break/disp8
           (pixel-on-real-screen %eax %edx *(ebp+0x14))
           eb/jump $draw-grapheme-on-real-screen:continue/disp8
         }
-        # otherwise draw a black pixel
-        (pixel-on-real-screen %eax %edx 0)
+        # otherwise use the background color
+        (pixel-on-real-screen %eax %edx *(ebp+0x18))
 $draw-grapheme-on-real-screen:continue:
         # --x
         48/decrement-eax

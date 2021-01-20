@@ -1,4 +1,5 @@
-# Screen primitives for character-oriented output.
+# Testable primitives for writing text to screen.
+# (Mu doesn't yet have testable primitives for graphics.)
 #
 # Unlike the top-level, this text mode has no scrolling.
 
@@ -61,11 +62,13 @@ fn screen-size screen: (addr screen) -> _/eax: int, _/ecx: int {
   return width, height
 }
 
+# testable screen primitive
+# background color isn't configurable yet
 fn draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int {
   {
     compare screen, 0
     break-if-!=
-    draw-grapheme-on-real-screen g, x, y, color
+    draw-grapheme-on-real-screen g, x, y, color, 0
     return
   }
   # fake screen
