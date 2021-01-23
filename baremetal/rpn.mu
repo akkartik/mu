@@ -1,7 +1,8 @@
 # Integer arithmetic using postfix notation
 #
 # Limitations:
-#   No division yet.
+#   '+' and '*' temporarily not available until the keyboard driver supports the shift key
+#   Division not implemented yet.
 #
 # To build:
 #   $ ./translate_mu_baremetal baremetal/rpn.mu
@@ -12,8 +13,6 @@
 #   4
 #   > 5 3 -
 #   2
-#
-# '+' and '*' not supported yet because they require the shift key.
 #
 # Error handling is non-existent. This is just a prototype.
 
