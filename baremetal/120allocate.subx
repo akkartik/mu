@@ -143,8 +143,8 @@ test-allocate-raw-success:
     # var ad/ecx: allocation-descriptor containing 16 bytes
     # . var end/ecx: (addr byte)
     89/<- %ecx 4/r32/esp
+    # . var start/edx: (addr byte) = end - 16
     81 5/subop/subtract %esp 0x10/imm32
-    # . var start/edx: (addr byte) = end - 0x16
     89/<- %edx 4/r32/esp
     # . ad = {start, end}
     51/push-ecx
@@ -354,8 +354,8 @@ _pending-test-lookup-failure:
     # var ad/ecx: allocation-descriptor containing 16 bytes
     # . var end/ecx: (addr byte)
     89/<- %ecx 4/r32/esp
-    81 5/subop/subtract %esp 0xc00/imm32
-    # . var start/edx: (addr byte) = end - 0x16
+    # . var start/edx: (addr byte) = end - 16
+    81 5/subop/subtract %esp 0x10/imm32
     89/<- %edx 4/r32/esp
     # . ad = {start, end}
     51/push-ecx
@@ -414,7 +414,7 @@ _pending-test-lookup-failure:
     # clean up
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x100/imm32 # copy to *Next-alloc-id
     # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # add to esp
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
@@ -577,8 +577,8 @@ test-allocate-array:
     # var ad/ecx: allocation-descriptor containing 16 bytes
     # . var end/ecx: (addr byte)
     89/<- %ecx 4/r32/esp
-    81 5/subop/subtract %esp 0xc00/imm32
-    # . var start/edx: (addr byte) = end - 0x16
+    # . var start/edx: (addr byte) = end - 16
+    81 5/subop/subtract %esp 0x10/imm32
     89/<- %edx 4/r32/esp
     # . ad = {start, end}
     51/push-ecx
@@ -660,7 +660,7 @@ test-allocate-array:
     # clean up
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  1/imm32     # copy to *Next-alloc-id
     # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # add to esp
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
@@ -732,11 +732,11 @@ test-copy-array:
     68/push  3/imm32
     68/push  0xc/imm32/size
     89/copy                         3/mod/direct    6/rm32/esi    .           .             .           4/r32/esp   .               .                 # copy esp to esi
-    # var ad/ecx: allocation-descriptor containing 16 bytes
+    # var ad/ecx: allocation-descriptor containing 32 bytes
     # . var end/ecx: (addr byte)
     89/<- %ecx 4/r32/esp
-    81 5/subop/subtract %esp 0xc00/imm32
-    # . var start/edx: (addr byte) = end - 0x16
+    # . var start/edx: (addr byte) = end - 32
+    81 5/subop/subtract %esp 0x20/imm32
     89/<- %edx 4/r32/esp
     # . ad = {start, end}
     51/push-ecx
@@ -826,7 +826,7 @@ test-copy-array:
     # clean up
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  1/imm32     # copy to *Next-alloc-id
     # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x40/imm32        # add to esp
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
