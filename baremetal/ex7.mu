@@ -11,34 +11,38 @@
 # k, l.
 
 fn main {
-  var key/eax: byte <- read-key 0
+  var space/eax: grapheme <- copy 0x20
+  set-cursor-position 0, 0, 0, space
   {
-    compare key, 0x68  # 'h'
-    break-if-!=
-    var g/eax: grapheme <- copy 0x2d  # '-'
-    draw-grapheme-at-cursor 0, g, 0x31
-    cursor-left 0
+    var key/eax: byte <- read-key 0
+    {
+      compare key, 0x68  # 'h'
+      break-if-!=
+      var g/eax: grapheme <- copy 0x2d  # '-'
+      draw-grapheme-at-cursor 0, g, 0x31
+      cursor-left 0
+    }
+    {
+      compare key, 0x6a  # 'j'
+      break-if-!=
+      var g/eax: grapheme <- copy 0x7c  # '|'
+      draw-grapheme-at-cursor 0, g, 0x31
+      cursor-down 0
+    }
+    {
+      compare key, 0x6b  # 'k'
+      break-if-!=
+      var g/eax: grapheme <- copy 0x7c  # '|'
+      draw-grapheme-at-cursor 0, g, 0x31
+      cursor-up 0
+    }
+    {
+      compare key, 0x6c  # 'l'
+      break-if-!=
+      var g/eax: grapheme <- copy 0x2d  # '-'
+      draw-grapheme-at-cursor 0, g, 0x31
+      cursor-right 0
+    }
+    loop
   }
-  {
-    compare key, 0x6a  # 'j'
-    break-if-!=
-    var g/eax: grapheme <- copy 0x7c  # '|'
-    draw-grapheme-at-cursor 0, g, 0x31
-    cursor-down 0
-  }
-  {
-    compare key, 0x6b  # 'k'
-    break-if-!=
-    var g/eax: grapheme <- copy 0x7c  # '|'
-    draw-grapheme-at-cursor 0, g, 0x31
-    cursor-up 0
-  }
-  {
-    compare key, 0x6c  # 'l'
-    break-if-!=
-    var g/eax: grapheme <- copy 0x2d  # '-'
-    draw-grapheme-at-cursor 0, g, 0x31
-    cursor-right 0
-  }
-  loop
 }
