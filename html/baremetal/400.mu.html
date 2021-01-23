@@ -54,25 +54,64 @@ if ('onhashchange' in window) {
 <a href='https://github.com/akkartik/mu/blob/main/baremetal/400.mu'>https://github.com/akkartik/mu/blob/main/baremetal/400.mu</a>
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr"> 1 </span><span class="muComment"># screen</span>
-<span id="L2" class="LineNr"> 2 </span><span class="PreProc">sig</span> <a href='101screen.subx.html#L5'>pixel</a> screen: (addr screen), x: int, y: int, color: int
-<span id="L3" class="LineNr"> 3 </span><span class="PreProc">sig</span> <a href='103grapheme.subx.html#L5'>draw-grapheme</a> screen: (addr screen), g: grapheme, x: int, y: int, color: int
-<span id="L4" class="LineNr"> 4 </span><span class="PreProc">sig</span> <a href='103grapheme.subx.html#L77'>cursor-position</a> screen: (addr screen)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int, _/<span class="Constant">ecx</span>: int
-<span id="L5" class="LineNr"> 5 </span><span class="PreProc">sig</span> <a href='103grapheme.subx.html#L90'>set-cursor-position</a> screen: (addr screen), x: int, y: int
-<span id="L6" class="LineNr"> 6 </span>
-<span id="L7" class="LineNr"> 7 </span><span class="muComment"># keyboard</span>
-<span id="L8" class="LineNr"> 8 </span><span class="PreProc">sig</span> <a href='102keyboard.subx.html#L6'>read-key</a> kbd: (addr keyboard)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: byte
-<span id="L9" class="LineNr"> 9 </span>
-<span id="L10" class="LineNr">10 </span><span class="muComment"># tests</span>
-<span id="L11" class="LineNr">11 </span><span class="PreProc">sig</span> <a href='104test.subx.html#L5'>count-test-failure</a>
-<span id="L12" class="LineNr">12 </span><span class="PreProc">sig</span> <a href='104test.subx.html#L17'>num-test-failures</a><span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int
-<span id="L13" class="LineNr">13 </span>
-<span id="L14" class="LineNr">14 </span><span class="muComment"># streams</span>
-<span id="L15" class="LineNr">15 </span><span class="PreProc">sig</span> <a href='106stream.subx.html#L17'>clear-stream</a> f: (addr stream _)
-<span id="L16" class="LineNr">16 </span><span class="PreProc">sig</span> <a href='106stream.subx.html#L56'>rewind-stream</a> f: (addr stream _)
-<span id="L17" class="LineNr">17 </span><span class="PreProc">sig</span> <a href='108write.subx.html#L6'>write</a> f: (addr stream byte), s: (addr array byte)
-<span id="L18" class="LineNr">18 </span><span class="PreProc">sig</span> <a href='115write-byte.subx.html#L7'>append-byte</a> f: (addr stream byte), n: int
-<span id="L19" class="LineNr">19 </span><span class="PreProc">sig</span> <a href='112read-byte.subx.html#L10'>read-byte</a> s: (addr stream byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: byte
-<span id="L20" class="LineNr">20 </span><span class="PreProc">sig</span> <a href='309stream.subx.html#L6'>stream-empty?</a> s: (addr stream _)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
+<span id="L2" class="LineNr"> 2 </span><span class="PreProc">sig</span> <a href='101screen.subx.html#L8'>pixel-on-real-screen</a> x: int, y: int, color: int
+<span id="L3" class="LineNr"> 3 </span><span class="PreProc">sig</span> <a href='103grapheme.subx.html#L15'>draw-grapheme-on-real-screen</a> g: grapheme, x: int, y: int, color: int, background-color: int
+<span id="L4" class="LineNr"> 4 </span><span class="PreProc">sig</span> <a href='103grapheme.subx.html#L94'>cursor-position-on-real-screen</a><span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int, _/<span class="Constant">ecx</span>: int
+<span id="L5" class="LineNr"> 5 </span><span class="PreProc">sig</span> <a href='103grapheme.subx.html#L107'>set-cursor-position-on-real-screen</a> x: int, y: int
+<span id="L6" class="LineNr"> 6 </span><span class="PreProc">sig</span> <a href='103grapheme.subx.html#L131'>show-cursor-on-real-screen</a> g: grapheme
+<span id="L7" class="LineNr"> 7 </span>
+<span id="L8" class="LineNr"> 8 </span><span class="muComment"># keyboard</span>
+<span id="L9" class="LineNr"> 9 </span><span class="PreProc">sig</span> <a href='102keyboard.subx.html#L9'>read-key</a> kbd: (addr keyboard)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: byte
+<span id="L10" class="LineNr">10 </span>
+<span id="L11" class="LineNr">11 </span><span class="muComment"># tests</span>
+<span id="L12" class="LineNr">12 </span><span class="PreProc">sig</span> <a href='104test.subx.html#L5'>count-test-failure</a>
+<span id="L13" class="LineNr">13 </span><span class="PreProc">sig</span> <a href='104test.subx.html#L17'>num-test-failures</a><span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int
+<span id="L14" class="LineNr">14 </span>
+<span id="L15" class="LineNr">15 </span><span class="muComment"># streams</span>
+<span id="L16" class="LineNr">16 </span><span class="PreProc">sig</span> <a href='106stream.subx.html#L20'>clear-stream</a> f: (addr stream _)
+<span id="L17" class="LineNr">17 </span><span class="PreProc">sig</span> <a href='106stream.subx.html#L59'>rewind-stream</a> f: (addr stream _)
+<span id="L18" class="LineNr">18 </span><span class="PreProc">sig</span> <a href='108write.subx.html#L11'>write</a> f: (addr stream byte), s: (addr array byte)
+<span id="L19" class="LineNr">19 </span><span class="PreProc">sig</span> <a href='112read-byte.subx.html#L13'>read-byte</a> s: (addr stream byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: byte
+<span id="L20" class="LineNr">20 </span><span class="PreProc">sig</span> <a href='115write-byte.subx.html#L12'>append-byte</a> f: (addr stream byte), n: int
+<span id="L21" class="LineNr">21 </span><span class="muComment">#sig to-hex-char in/eax: int -&gt; out/eax: int</span>
+<span id="L22" class="LineNr">22 </span><span class="PreProc">sig</span> <a href='117write-int-hex.subx.html#L21'>append-byte-hex</a> f: (addr stream byte), n: int
+<span id="L23" class="LineNr">23 </span><span class="PreProc">sig</span> <a href='117write-int-hex.subx.html#L92'>write-int32-hex</a> f: (addr stream byte), n: int
+<span id="L24" class="LineNr">24 </span><span class="PreProc">sig</span> <a href='117write-int-hex.subx.html#L123'>write-int32-hex-bits</a> f: (addr stream byte), n: int, bits: int
+<span id="L25" class="LineNr">25 </span><span class="PreProc">sig</span> is-hex-int? in: (addr slice)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
+<span id="L26" class="LineNr">26 </span><span class="PreProc">sig</span> parse-hex-int in: (addr array byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int
+<span id="L27" class="LineNr">27 </span><span class="PreProc">sig</span> parse-hex-int-from-slice in: (addr slice)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int
+<span id="L28" class="LineNr">28 </span><span class="muComment">#sig parse-hex-int-helper start: (addr byte), end: (addr byte) -&gt; _/eax: int</span>
+<span id="L29" class="LineNr">29 </span><span class="PreProc">sig</span> is-hex-digit? c: byte<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
+<span id="L30" class="LineNr">30 </span><span class="muComment">#sig from-hex-char in/eax: byte -&gt; out/eax: nibble</span>
+<span id="L31" class="LineNr">31 </span><span class="PreProc">sig</span> <a href='311decimal-int.subx.html#L23'>parse-decimal-int</a> in: (addr array byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int
+<span id="L32" class="LineNr">32 </span><span class="PreProc">sig</span> <a href='311decimal-int.subx.html#L4'>parse-decimal-int-from-slice</a> in: (addr slice)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int
+<span id="L33" class="LineNr">33 </span><span class="PreProc">sig</span> <a href='311decimal-int.subx.html#L48'>parse-decimal-int-from-stream</a> in: (addr stream byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int
+<span id="L34" class="LineNr">34 </span><span class="muComment">#sig parse-decimal-int-helper start: (addr byte), end: (addr byte) -&gt; _/eax: int</span>
+<span id="L35" class="LineNr">35 </span><span class="PreProc">sig</span> <a href='311decimal-int.subx.html#L312'>decimal-size</a> n: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int
+<span id="L36" class="LineNr">36 </span><span class="muComment">#sig allocate ad: (addr allocation-descriptor), n: int, out: (addr handle _)</span>
+<span id="L37" class="LineNr">37 </span><span class="muComment">#sig allocate-raw ad: (addr allocation-descriptor), n: int, out: (addr handle _)</span>
+<span id="L38" class="LineNr">38 </span><span class="PreProc">sig</span> <a href='120allocate.subx.html#L226'>lookup</a> h: (handle _T)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: (addr _T)
+<span id="L39" class="LineNr">39 </span><span class="PreProc">sig</span> <a href='120allocate.subx.html#L424'>handle-equal?</a> a: (handle _T), b: (handle _T)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
+<span id="L40" class="LineNr">40 </span><span class="PreProc">sig</span> <a href='120allocate.subx.html#L455'>copy-handle</a> src: (handle _T), dest: (addr handle _T)
+<span id="L41" class="LineNr">41 </span><span class="muComment">#sig allocate-region ad: (addr allocation-descriptor), n: int, out: (addr handle allocation-descriptor)</span>
+<span id="L42" class="LineNr">42 </span><span class="muComment">#sig allocate-array ad: (addr allocation-descriptor), n: int, out: (addr handle _)</span>
+<span id="L43" class="LineNr">43 </span><span class="PreProc">sig</span> <a href='120allocate.subx.html#L669'>copy-array</a> ad: (addr allocation-descriptor), src: (addr array _T), out: (addr handle array _T)
+<span id="L44" class="LineNr">44 </span><span class="muComment">#sig zero-out start: (addr byte), size: int</span>
+<span id="L45" class="LineNr">45 </span><span class="PreProc">sig</span> <a href='123slice.subx.html#L9'>slice-empty?</a> s: (addr slice)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
+<span id="L46" class="LineNr">46 </span><span class="PreProc">sig</span> <a href='123slice.subx.html#L120'>slice-equal?</a> s: (addr slice), p: (addr array byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
+<span id="L47" class="LineNr">47 </span><span class="PreProc">sig</span> <a href='123slice.subx.html#L487'>slice-starts-with?</a> s: (addr slice), head: (addr array byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
+<span id="L48" class="LineNr">48 </span><span class="PreProc">sig</span> <a href='123slice.subx.html#L793'>write-slice</a> out: (addr stream byte), s: (addr slice)
+<span id="L49" class="LineNr">49 </span><span class="muComment"># bad name alert</span>
+<span id="L50" class="LineNr">50 </span><span class="PreProc">sig</span> <a href='123slice.subx.html#L901'>slice-to-string</a> ad: (addr allocation-descriptor), in: (addr slice), out: (addr handle array byte)
+<span id="L51" class="LineNr">51 </span><span class="PreProc">sig</span> <a href='126write-int-decimal.subx.html#L8'>write-int32-decimal</a> out: (addr stream byte), n: int
+<span id="L52" class="LineNr">52 </span><span class="PreProc">sig</span> <a href='126write-int-decimal.subx.html#L299'>is-decimal-digit?</a> c: grapheme<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
+<span id="L53" class="LineNr">53 </span><span class="PreProc">sig</span> <a href='126write-int-decimal.subx.html#L398'>to-decimal-digit</a> in: grapheme<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int
+<span id="L54" class="LineNr">54 </span><span class="muComment"># bad name alert</span>
+<span id="L55" class="LineNr">55 </span><span class="muComment"># next-word really tokenizes</span>
+<span id="L56" class="LineNr">56 </span><span class="muComment"># next-raw-word really reads whitespace-separated words</span>
+<span id="L57" class="LineNr">57 </span><span class="PreProc">sig</span> <a href='127next-word.subx.html#L11'>next-word</a> line: (addr stream byte), out: (addr slice)  <span class="muComment"># skips '#' comments</span>
+<span id="L58" class="LineNr">58 </span><span class="PreProc">sig</span> <a href='127next-word.subx.html#L306'>next-raw-word</a> line: (addr stream byte), out: (addr slice)  <span class="muComment"># does not skip '#' comments</span>
+<span id="L59" class="LineNr">59 </span><span class="PreProc">sig</span> <a href='309stream.subx.html#L6'>stream-empty?</a> s: (addr stream _)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean
 </pre>
 </body>
 </html>
