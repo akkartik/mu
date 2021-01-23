@@ -5,7 +5,7 @@
 # Tab characters (that translate into multiple screen cells) not supported.
 
 fn check-screen-row screen: (addr screen), y: int, expected: (addr array byte), msg: (addr array byte) {
-  check-screen-row-from screen, y, 1, expected, msg
+  check-screen-row-from screen, y, 0, expected, msg
 }
 
 fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expected: (addr array byte), msg: (addr array byte) {
@@ -39,17 +39,18 @@ fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expecte
         break $check-screen-row-from:compare-graphemes
       }
       # otherwise print an error
+      count-test-failure
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ": expected '", 3
       draw-grapheme-at-cursor 0, expected-grapheme, 3
-      move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
+      move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "' at (", 3
       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, x, 3
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ", ", 3
       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, y, 3
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ") but observed '", 3
       draw-grapheme-at-cursor 0, g, 3
-      move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
+      move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "'", 3
     }
     idx <- increment
@@ -61,7 +62,7 @@ fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expecte
 # various variants by screen-cell attribute; spaces in the 'expected' data should not match the attribute
 
 fn check-screen-row-in-color screen: (addr screen), fg: int, y: int, expected: (addr array byte), msg: (addr array byte) {
-  check-screen-row-in-color-from screen, fg, y, 1, expected, msg
+  check-screen-row-in-color-from screen, fg, y, 0, expected, msg
 }
 
 fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: int, x: int, expected: (addr array byte), msg: (addr array byte) {
@@ -105,17 +106,18 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: in
           break $check-screen-row-in-color-from:compare-graphemes
         }
         # otherwise print an error
+        count-test-failure
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ": expected '", 3
         draw-grapheme-at-cursor 0, expected-grapheme, 3
-        move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
+        move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "' at (", 3
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, x, 3
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ", ", 3
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, y, 3
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ") but observed '", 3
         draw-grapheme-at-cursor 0, g, 3
-        move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
+        move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "'", 3
       }
       $check-screen-row-in-color-from:compare-colors: {
@@ -127,10 +129,11 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: in
           break $check-screen-row-in-color-from:compare-colors
         }
         # otherwise print an error
+        count-test-failure
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ": expected '", 3
         draw-grapheme-at-cursor 0, expected-grapheme, 3
-        move-cursor-rightward-and-downward 0, 0, 0x400  # screen-width
+        move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "' at (", 3
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, x, 3
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ", ", 3
@@ -147,4 +150,19 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: in
   }
 }
 
+fn test-draw-single-grapheme {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  var c/eax: grapheme <- copy 0x61  # 'a'
+  draw-grapheme screen, c, 0, 0, 1  # color=1
+  check-screen-row screen, 0, "a", "F - test-draw-single-grapheme"  # top-left corner of the screen
+}
 
+fn test-draw-multiple-graphemes {
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x10, 4
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "Hello, 世界", 1  # color=1
+  check-screen-row screen, 0, "Hello, 世界", "F - test-draw-multiple-graphemes"
+}
