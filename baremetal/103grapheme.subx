@@ -96,8 +96,8 @@ cursor-position-on-real-screen:  # -> _/eax: int, _/ecx: int
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # TODO: support fake screen; we currently assume 'screen' is always 0 (real)
-    8b/-> *Default-next-x 0/r32/eax
-    8b/-> *Default-next-y 1/r32/ecx
+    8b/-> *Real-screen-cursor-x 0/r32/eax
+    8b/-> *Real-screen-cursor-y 1/r32/ecx
 $cursor-position-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -110,11 +110,13 @@ set-cursor-position-on-real-screen:  # x: int, y: int
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
+    #
+    (draw-grapheme-on-real-screen 0x20 *(ebp+8) *(ebp+0xc) 0 7)
     # TODO: support fake screen; we currently assume 'screen' is always 0 (real)
     8b/-> *(ebp+8) 0/r32/eax
-    89/<- *Default-next-x 0/r32/eax
+    89/<- *Real-screen-cursor-x 0/r32/eax
     8b/-> *(ebp+0xc) 0/r32/eax
-    89/<- *Default-next-y 0/r32/eax
+    89/<- *Real-screen-cursor-y 0/r32/eax
 $set-cursor-position-on-real-screen:end:
     # . restore registers
     58/pop-to-eax
@@ -125,8 +127,16 @@ $set-cursor-position-on-real-screen:end:
 
 == data
 
-Default-next-x:
+# The cursor is where certain Mu functions (usually of the form
+# 'draw*cursor*') print to by default. It becomes visible on
+# set-cursor-position, but further drawing might overwrite it.
+# We don't bother displaying the cursor when drawing text. It's up to
+# applications to display the cursor before waiting for a key, and to ensure
+# its location appropriately suggests the effect keystrokes will have.
+#
+# There's no low-level support for blinking, etc. We aren't using any
+# hardware-supported text mode here.
+Real-screen-cursor-x:
   0/imm32
-
-Default-next-y:
+Real-screen-cursor-y:
   0/imm32
