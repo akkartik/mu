@@ -104,14 +104,16 @@ $cursor-position-on-real-screen:end:
     5d/pop-to-ebp
     c3/return
 
-set-cursor-position-on-real-screen:  # x: int, y: int
+# Caller is responsible for tracking what was on the screen at this position
+# before, and making sure the cursor continues to show the same grapheme.
+set-cursor-position-on-real-screen:  # x: int, y: int, g: grapheme
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
     #
-    (draw-grapheme-on-real-screen 0x20 *(ebp+8) *(ebp+0xc) 0 7)
+    (draw-grapheme-on-real-screen *(ebp+0x10) *(ebp+8) *(ebp+0xc) 0 7)
     # TODO: support fake screen; we currently assume 'screen' is always 0 (real)
     8b/-> *(ebp+8) 0/r32/eax
     89/<- *Real-screen-cursor-x 0/r32/eax

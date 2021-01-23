@@ -112,11 +112,11 @@ fn cursor-position screen: (addr screen) -> _/eax: int, _/ecx: int {
   return *cursor-x-addr, *cursor-y-addr
 }
 
-fn set-cursor-position screen: (addr screen), x: int, y: int {
+fn set-cursor-position screen: (addr screen), x: int, y: int, g: grapheme {
   {
     compare screen, 0
     break-if-!=
-    set-cursor-position-on-real-screen x, y
+    set-cursor-position-on-real-screen x, y, g
     return
   }
   # fake screen
@@ -157,6 +157,11 @@ fn set-cursor-position screen: (addr screen), x: int, y: int {
   dest <- get screen-addr, cursor-y
   src <- copy y
   copy-to *dest, src
+  #
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen-addr
+  draw-grapheme screen-addr, g, cursor-x, cursor-y, 0  # cursor color not tracked for fake screen
 }
 
 fn clear-screen screen: (addr screen) {
@@ -168,7 +173,7 @@ fn clear-screen screen: (addr screen) {
   }
   # fake screen
   var space/edi: grapheme <- copy 0x20
-  set-cursor-position screen, 0, 0
+  set-cursor-position screen, 0, 0, space
   var screen-addr/esi: (addr screen) <- copy screen
   var y/eax: int <- copy 1
   var height/ecx: (addr int) <- get screen-addr, height
@@ -187,7 +192,7 @@ fn clear-screen screen: (addr screen) {
     y <- increment
     loop
   }
-  set-cursor-position screen, 0, 0
+  set-cursor-position screen, 0, 0, space
 }
 
 # there's no grapheme that guarantees to cover every pixel, so we'll bump down
