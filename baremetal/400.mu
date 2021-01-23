@@ -26,6 +26,12 @@ sig parse-hex-int in: (addr array byte) -> _/eax: int
 sig parse-hex-int-from-slice in: (addr slice) -> _/eax: int
 #sig parse-hex-int-helper start: (addr byte), end: (addr byte) -> _/eax: int
 sig is-hex-digit? c: byte -> _/eax: boolean
+#sig from-hex-char in/eax: byte -> out/eax: nibble
+sig parse-decimal-int in: (addr array byte) -> _/eax: int
+sig parse-decimal-int-from-slice in: (addr slice) -> _/eax: int
+sig parse-decimal-int-from-stream in: (addr stream byte) -> _/eax: int
+#sig parse-decimal-int-helper start: (addr byte), end: (addr byte) -> _/eax: int
+sig decimal-size n: int -> _/eax: int
 #sig allocate ad: (addr allocation-descriptor), n: int, out: (addr handle _)
 #sig allocate-raw ad: (addr allocation-descriptor), n: int, out: (addr handle _)
 sig lookup h: (handle _T) -> _/eax: (addr _T)
@@ -35,7 +41,18 @@ sig copy-handle src: (handle _T), dest: (addr handle _T)
 #sig allocate-array ad: (addr allocation-descriptor), n: int, out: (addr handle _)
 sig copy-array ad: (addr allocation-descriptor), src: (addr array _T), out: (addr handle array _T)
 #sig zero-out start: (addr byte), size: int
+sig slice-empty? s: (addr slice) -> _/eax: boolean
+sig slice-equal? s: (addr slice), p: (addr array byte) -> _/eax: boolean
+sig slice-starts-with? s: (addr slice), head: (addr array byte) -> _/eax: boolean
+sig write-slice out: (addr stream byte), s: (addr slice)
+# bad name alert
+sig slice-to-string ad: (addr allocation-descriptor), in: (addr slice), out: (addr handle array byte)
 sig write-int32-decimal out: (addr stream byte), n: int
 sig is-decimal-digit? c: grapheme -> _/eax: boolean
 sig to-decimal-digit in: grapheme -> _/eax: int
+# bad name alert
+# next-word really tokenizes
+# next-raw-word really reads whitespace-separated words
+sig next-word line: (addr stream byte), out: (addr slice)  # skips '#' comments
+sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not skip '#' comments
 sig stream-empty? s: (addr stream _) -> _/eax: boolean

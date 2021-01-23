@@ -1,0 +1,1925 @@
+# Some tokenization primitives.
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+# extract the next run of characters that are different from a given 'delimiter' (skipping multiple delimiters if necessary)
+# on reaching end of file, return an empty interval
+next-token:  # in: (addr stream byte), delimiter: byte, out: (addr slice)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    57/push-edi
+    # esi = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # edi = out
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0x10/disp8      .                 # copy *(ebp+16) to edi
+    # skip-chars-matching(in, delimiter)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    56/push-esi
+    # . . call
+    e8/call  skip-chars-matching/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # out->start = &in->data[in->read]
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/eax   0xc/disp8       .                 # copy esi+ecx+12 to eax
+    89/copy                         0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to *edi
+    # skip-chars-not-matching(in, delimiter)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    56/push-esi
+    # . . call
+    e8/call  skip-chars-not-matching/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # out->end = &in->data[in->read]
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/eax   0xc/disp8       .                 # copy esi+ecx+12 to eax
+    89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(edi+4)
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-next-token:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # var slice/ecx: slice
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # write(_test-stream, "  ab")
+    # . . push args
+    68/push  "  ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # next-token(_test-stream, 0x20/space, slice)
+    # . . push args
+    51/push-ecx
+    68/push  0x20/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  next-token/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(slice->start - _test-stream->data, 2, msg)
+    # . check-ints-equal(slice->start - _test-stream, 14, msg)
+    # . . push args
+    68/push  "F - test-next-token: start"/imm32
+    68/push  0xe/imm32
+    # . . push slice->start - _test-stream
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
+    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-stream/imm32 # subtract from eax
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(slice->end - _test-stream->data, 4, msg)
+    # . check-ints-equal(slice->end - _test-stream, 16, msg)
+    # . . push args
+    68/push  "F - test-next-token: end"/imm32
+    68/push  0x10/imm32
+    # . . push slice->end - _test-stream
+    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to eax
+    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-stream/imm32 # subtract from eax
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-next-token-Eof:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # var slice/ecx: slice
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # write nothing to _test-stream
+    # next-token(_test-stream, 0x20/space, slice)
+    # . . push args
+    51/push-ecx
+    68/push  0x20/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  next-token/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(slice->end, slice->start, msg)
+    # . . push args
+    68/push  "F - test-next-token-Eof"/imm32
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# extract the next run of characters that are different from a given 'delimiter' (skipping multiple delimiters if necessary)
+# on reaching end of file, return an empty interval
+next-token-from-slice:  # start: (addr byte), end: (addr byte), delimiter: byte, out: (addr slice)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    57/push-edi
+    # ecx = end
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
+    # edx = delimiter
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0x10/disp8      .                 # copy *(ebp+16) to edx
+    # edi = out
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0x14/disp8      .                 # copy *(ebp+20) to edi
+    # eax = skip-chars-matching-in-slice(start, end, delimiter)
+    # . . push args
+    52/push-edx
+    51/push-ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  skip-chars-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # out->start = eax
+    89/copy                         0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to *edi
+    # eax = skip-chars-not-matching-in-slice(eax, end, delimiter)
+    # . . push args
+    52/push-edx
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-chars-not-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # out->end = eax
+    89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(edi+4)
+    # . restore registers
+    5f/pop-to-edi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-next-token-from-slice:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "  ab"
+    b8/copy-to-eax  "  ab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var out/edi: slice
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    7/rm32/edi    .           .             .           4/r32/esp   .               .                 # copy esp to edi
+    # next-token-from-slice(eax, ecx, 0x20/space, out)
+    # . . push args
+    57/push-edi
+    68/push  0x20/imm32
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  next-token-from-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # out->start should be at the 'a'
+    # . check-ints-equal(out->start - in->start, 2, msg)
+    # . . push args
+    68/push  "F - test-next-token-from-slice: start"/imm32
+    68/push  2/imm32
+    # . . push out->start - in->start
+    8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
+    2b/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # out->end should be after the 'b'
+    # check-ints-equal(out->end - in->start, 4, msg)
+    # . . push args
+    68/push  "F - test-next-token-from-slice: end"/imm32
+    68/push  4/imm32
+    # . . push out->end - in->start
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(edi+4) to ecx
+    2b/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-next-token-from-slice-Eof:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var out/edi: slice
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    7/rm32/edi    .           .             .           4/r32/esp   .               .                 # copy esp to edi
+    # next-token-from-slice(0, 0, 0x20/space, out)
+    # . . push args
+    57/push-edi
+    68/push  0x20/imm32
+    68/push  0/imm32
+    68/push  0/imm32
+    # . . call
+    e8/call  next-token-from-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # out should be empty
+    # . check-ints-equal(out->end - out->start, 0, msg)
+    # . . push args
+    68/push  "F - test-next-token-from-slice-Eof"/imm32
+    68/push  0/imm32
+    # . . push out->start - in->start
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(edi+4) to ecx
+    2b/subtract                     0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # subtract *edi from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-next-token-from-slice-nothing:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "    "
+    b8/copy-to-eax  "    "/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var out/edi: slice
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    7/rm32/edi    .           .             .           4/r32/esp   .               .                 # copy esp to edi
+    # next-token-from-slice(in, 0x20/space, out)
+    # . . push args
+    57/push-edi
+    68/push  0x20/imm32
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  next-token-from-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # out should be empty
+    # . check-ints-equal(out->end - out->start, 0, msg)
+    # . . push args
+    68/push  "F - test-next-token-from-slice-Eof"/imm32
+    68/push  0/imm32
+    # . . push out->start - in->start
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(edi+4) to ecx
+    2b/subtract                     0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # subtract *edi from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+skip-chars-matching:  # in: (addr stream byte), delimiter: byte
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # ecx = in->read
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    # ebx = in->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           3/r32/ebx   .               .                 # copy *esi to ebx
+    # edx = delimiter
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
+$skip-chars-matching:loop:
+    # if (in->read >= in->write) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # compare ecx with ebx
+    7d/jump-if->=  $skip-chars-matching:end/disp8
+    # eax = in->data[in->read]
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
+    # if (eax != delimiter) break
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # compare eax and edx
+    75/jump-if-!=  $skip-chars-matching:end/disp8
+    # ++in->read
+    41/increment-ecx
+    eb/jump  $skip-chars-matching:loop/disp8
+$skip-chars-matching:end:
+    # persist in->read
+    89/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy ecx to *(esi+4)
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-chars-matching:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write(_test-stream, "  ab")
+    # . . push args
+    68/push  "  ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # skip-chars-matching(_test-stream, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-chars-matching/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(_test-stream->read, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-matching"/imm32
+    68/push  2/imm32
+    # . . push *_test-stream->read
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+test-skip-chars-matching-none:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write(_test-stream, "ab")
+    # . . push args
+    68/push  "ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # skip-chars-matching(_test-stream, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-chars-matching/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(_test-stream->read, 0, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-matching-none"/imm32
+    68/push  0/imm32
+    # . . push *_test-stream->read
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+skip-chars-matching-whitespace:  # in: (addr stream byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    53/push-ebx
+    56/push-esi
+    # esi = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # ecx = in->read
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    # ebx = in->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           3/r32/ebx   .               .                 # copy *esi to ebx
+$skip-chars-matching-whitespace:loop:
+    # if (in->read >= in->write) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # compare ecx with ebx
+    7d/jump-if->=  $skip-chars-matching-whitespace:end/disp8
+    # eax = in->data[in->read]
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
+    # if (eax == ' ') goto body
+    3d/compare-eax-and  0x20/imm32/space
+    74/jump-if-=  $skip-chars-matching-whitespace:body/disp8
+    # if (eax == '\n') goto body
+    3d/compare-eax-and  0x0a/imm32/newline
+    74/jump-if-=  $skip-chars-matching-whitespace:body/disp8
+    # if (eax == '\t') goto body
+    3d/compare-eax-and  0x09/imm32/tab
+    74/jump-if-=  $skip-chars-matching-whitespace:body/disp8
+    # if (eax != '\r') break
+    3d/compare-eax-and  0x0d/imm32/cr
+    75/jump-if-!=  $skip-chars-matching-whitespace:end/disp8
+$skip-chars-matching-whitespace:body:
+    # ++in->read
+    41/increment-ecx
+    eb/jump  $skip-chars-matching-whitespace:loop/disp8
+$skip-chars-matching-whitespace:end:
+    # persist in->read
+    89/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy ecx to *(esi+4)
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-chars-matching-whitespace:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write(_test-stream, " \nab")
+    # . . push args
+    68/push  " \nab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # skip-chars-matching-whitespace(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-chars-matching-whitespace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(_test-stream->read, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-matching-whitespace"/imm32
+    68/push  2/imm32
+    # . . push *_test-stream->read
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+# minor fork of 'skip-chars-matching'
+skip-chars-not-matching:  # in: (addr stream byte), delimiter: byte
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # ecx = in->read
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    # ebx = in->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           3/r32/ebx   .               .                 # copy *esi to ebx
+    # edx = delimiter
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
+$skip-chars-not-matching:loop:
+    # if (in->read >= in->write) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # compare ecx with ebx
+    7d/jump-if->=  $skip-chars-not-matching:end/disp8
+    # eax = in->data[in->read]
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
+    # if (eax == delimiter) break
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # compare eax and edx
+    74/jump-if-=  $skip-chars-not-matching:end/disp8
+    # ++in->read
+    41/increment-ecx
+    eb/jump  $skip-chars-not-matching:loop/disp8
+$skip-chars-not-matching:end:
+    # persist in->read
+    89/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy ecx to *(esi+4)
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-chars-not-matching:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write(_test-stream, "ab ")
+    # . . push args
+    68/push  "ab "/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # skip-chars-not-matching(_test-stream, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-chars-not-matching/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(_test-stream->read, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching"/imm32
+    68/push  2/imm32
+    # . . push *_test-stream->read
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+test-skip-chars-not-matching-none:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write(_test-stream, " ab")
+    # . . push args
+    68/push  " ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # skip-chars-not-matching(_test-stream, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-chars-not-matching/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(_test-stream->read, 0, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching-none"/imm32
+    68/push  0/imm32
+    # . . push *_test-stream->read
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+test-skip-chars-not-matching-all:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write(_test-stream, "ab")
+    # . . push args
+    68/push  "ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # skip-chars-not-matching(_test-stream, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-chars-not-matching/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(_test-stream->read, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching-all"/imm32
+    68/push  2/imm32
+    # . . push *_test-stream->read
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+skip-chars-not-matching-whitespace:  # in: (addr stream byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    53/push-ebx
+    56/push-esi
+    # esi = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # ecx = in->read
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    # ebx = in->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           3/r32/ebx   .               .                 # copy *esi to ebx
+$skip-chars-not-matching-whitespace:loop:
+    # if (in->read >= in->write) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # compare ecx with ebx
+    7d/jump-if->=  $skip-chars-not-matching-whitespace:end/disp8
+    # eax = in->data[in->read]
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
+    # if (eax == ' ') break
+    3d/compare-eax-and  0x20/imm32/space
+    74/jump-if-=  $skip-chars-not-matching-whitespace:end/disp8
+    # if (eax == '\n') break
+    3d/compare-eax-and  0x0a/imm32/newline
+    74/jump-if-=  $skip-chars-not-matching-whitespace:end/disp8
+    # if (eax == '\t') break
+    3d/compare-eax-and  0x09/imm32/tab
+    74/jump-if-=  $skip-chars-not-matching-whitespace:end/disp8
+    # if (eax == '\r') break
+    3d/compare-eax-and  0x0d/imm32/cr
+    74/jump-if-=  $skip-chars-not-matching-whitespace:end/disp8
+    # ++in->read
+    41/increment-ecx
+    eb/jump  $skip-chars-not-matching-whitespace:loop/disp8
+$skip-chars-not-matching-whitespace:end:
+    # persist in->read
+    89/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy ecx to *(esi+4)
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-chars-not-matching-whitespace:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write(_test-stream, "ab\n")
+    # . . push args
+    68/push  "ab\n"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # skip-chars-not-matching-whitespace(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-chars-not-matching-whitespace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(_test-stream->read, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching-whitespace"/imm32
+    68/push  2/imm32
+    # . . push *_test-stream->read
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+skip-chars-matching-in-slice:  # curr: (addr byte), end: (addr byte), delimiter: byte -> curr/eax: (addr byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    # eax = curr
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    # ecx = end
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
+    # edx = delimiter
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0x10/disp8       .                 # copy *(ebp+16) to edx
+    # var c/ebx: byte = 0
+    31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
+$skip-chars-matching-in-slice:loop:
+    # if (curr >= end) break
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
+    73/jump-if-addr>=  $skip-chars-matching-in-slice:end/disp8
+    # c = *curr
+    8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           3/r32/BL    .               .                 # copy byte at *eax to BL
+    # if (c != delimiter) break
+    39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx and edx
+    75/jump-if-!=  $skip-chars-matching-in-slice:end/disp8
+    # ++curr
+    40/increment-eax
+    eb/jump  $skip-chars-matching-in-slice:loop/disp8
+$skip-chars-matching-in-slice:end:
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-chars-matching-in-slice:
+    # (eax..ecx) = "  ab"
+    b8/copy-to-eax  "  ab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-chars-matching-in-slice(eax, ecx, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32/space
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-chars-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(ecx-eax, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-matching-in-slice"/imm32
+    68/push  2/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+test-skip-chars-matching-in-slice-none:
+    # (eax..ecx) = "ab"
+    b8/copy-to-eax  "ab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-chars-matching-in-slice(eax, ecx, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32/space
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-chars-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(ecx-eax, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-matching-in-slice-none"/imm32
+    68/push  2/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+skip-chars-matching-whitespace-in-slice:  # curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    53/push-ebx
+    # eax = curr
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    # ecx = end
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
+    # var c/ebx: byte = 0
+    31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
+$skip-chars-matching-whitespace-in-slice:loop:
+    # if (curr >= end) break
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
+    0f 83/jump-if-addr>=  $skip-chars-matching-in-slice:end/disp32
+    # c = *curr
+    8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           3/r32/BL    .               .                 # copy byte at *eax to BL
+    # if (c == ' ') goto body
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x20/imm32/space  # compare ebx
+    74/jump-if-=  $skip-chars-matching-whitespace-in-slice:body/disp8
+    # if (c == '\n') goto body
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x0a/imm32/newline  # compare ebx
+    74/jump-if-=  $skip-chars-matching-whitespace-in-slice:body/disp8
+    # if (c == '\t') goto body
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x09/imm32/tab    # compare ebx
+    74/jump-if-=  $skip-chars-matching-whitespace-in-slice:body/disp8
+    # if (c != '\r') break
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x0d/imm32/cr     # compare ebx
+    75/jump-if-!=  $skip-chars-matching-whitespace-in-slice:end/disp8
+$skip-chars-matching-whitespace-in-slice:body:
+    # ++curr
+    40/increment-eax
+    eb/jump  $skip-chars-matching-whitespace-in-slice:loop/disp8
+$skip-chars-matching-whitespace-in-slice:end:
+    # . restore registers
+    5b/pop-to-ebx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-chars-matching-whitespace-in-slice:
+    # (eax..ecx) = " \nab"
+    b8/copy-to-eax  " \nab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-chars-matching-whitespace-in-slice(eax, ecx)
+    # . . push args
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-chars-matching-whitespace-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(ecx-eax, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-matching-whitespace-in-slice"/imm32
+    68/push  2/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+# minor fork of 'skip-chars-matching-in-slice'
+skip-chars-not-matching-in-slice:  # curr: (addr byte), end: (addr byte), delimiter: byte -> curr/eax: (addr byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    # eax = curr
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    # ecx = end
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
+    # edx = delimiter
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0x10/disp8       .                 # copy *(ebp+16) to edx
+    # var c/ebx: byte = 0
+    31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
+$skip-chars-not-matching-in-slice:loop:
+    # if (curr >= end) break
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
+    73/jump-if-addr>=  $skip-chars-not-matching-in-slice:end/disp8
+    # c = *curr
+    8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           3/r32/BL    .               .                 # copy byte at *eax to BL
+    # if (c == delimiter) break
+    39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx and edx
+    74/jump-if-=  $skip-chars-not-matching-in-slice:end/disp8
+    # ++curr
+    40/increment-eax
+    eb/jump  $skip-chars-not-matching-in-slice:loop/disp8
+$skip-chars-not-matching-in-slice:end:
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-chars-not-matching-in-slice:
+    # (eax..ecx) = "ab "
+    b8/copy-to-eax  "ab "/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-chars-not-matching-in-slice(eax, ecx, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32/space
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-chars-not-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(ecx-eax, 1, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching-in-slice"/imm32
+    68/push  1/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+test-skip-chars-not-matching-in-slice-none:
+    # (eax..ecx) = " ab"
+    b8/copy-to-eax  " ab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-chars-not-matching-in-slice(eax, ecx, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32/space
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-chars-not-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(ecx-eax, 3, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching-in-slice-none"/imm32
+    68/push  3/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+test-skip-chars-not-matching-in-slice-all:
+    # (eax..ecx) = "ab"
+    b8/copy-to-eax  "ab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-chars-not-matching-in-slice(eax, ecx, 0x20/space)
+    # . . push args
+    68/push  0x20/imm32/space
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-chars-not-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(ecx-eax, 0, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching-in-slice-all"/imm32
+    68/push  0/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+skip-chars-not-matching-whitespace-in-slice:  # curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    53/push-ebx
+    # eax = curr
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    # ecx = end
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
+    # var c/ebx: byte = 0
+    31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
+$skip-chars-not-matching-whitespace-in-slice:loop:
+    # if (curr >= end) break
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
+    0f 83/jump-if-addr>=  $skip-chars-not-matching-in-slice:end/disp32
+    # c = *curr
+    8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           3/r32/BL    .               .                 # copy byte at *eax to BL
+    # if (c == ' ') break
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x20/imm32/space  # compare ebx
+    74/jump-if-=  $skip-chars-not-matching-whitespace-in-slice:end/disp8
+    # if (c == '\n') break
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x0a/imm32/newline  # compare ebx
+    74/jump-if-=  $skip-chars-not-matching-whitespace-in-slice:end/disp8
+    # if (c == '\t') break
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x09/imm32/tab    # compare ebx
+    74/jump-if-=  $skip-chars-not-matching-whitespace-in-slice:end/disp8
+    # if (c == '\r') break
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x0d/imm32/cr     # compare ebx
+    74/jump-if-=  $skip-chars-not-matching-whitespace-in-slice:end/disp8
+    # ++curr
+    40/increment-eax
+    eb/jump  $skip-chars-not-matching-whitespace-in-slice:loop/disp8
+$skip-chars-not-matching-whitespace-in-slice:end:
+    # . restore registers
+    5b/pop-to-ebx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-chars-not-matching-whitespace-in-slice:
+    # (eax..ecx) = "ab\n"
+    b8/copy-to-eax  "ab\n"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-chars-not-matching-whitespace-in-slice(eax, ecx)
+    # . . push args
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-chars-not-matching-whitespace-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(ecx-eax, 1, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching-whitespace-in-slice"/imm32
+    68/push  1/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+# update line->read to end of string literal surrounded by double quotes
+# line->read must start out at a double-quote
+skip-string:  # line: (addr stream byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    # ecx = line
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # eax = skip-string-in-slice(&line->data[line->read], &line->data[line->write])
+    # . . push &line->data[line->write]
+    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .                         2/r32/edx   8/disp8         .                 # copy *(ecx+8) to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   0xc/disp8       .                 # copy ecx+edx+12 to edx
+    52/push-edx
+    # . . push &line->data[line->read]
+    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .                         2/r32/edx   4/disp8         .                 # copy *(ecx+4) to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   0xc/disp8       .                 # copy ecx+edx+12 to edx
+    52/push-edx
+    # . . call
+    e8/call  skip-string-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # line->read = eax - line->data
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    2d/subtract-from-eax  0xc/imm32
+    89/copy                         1/mod/*+disp8   1/rm32/ecx    .           .                         0/r32/eax   4/disp8         .                 # copy eax to *(ecx+4)
+$skip-string:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-string:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "\"abc\" def")
+    # .                   indices:  0123 45
+    # . . push args
+    68/push  "\"abc\" def"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # precondition: line->read == 0
+    # . . push args
+    68/push  "F - test-skip-string/precondition"/imm32
+    68/push  0/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # skip-string(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-string/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(line->read, 5, msg)
+    # . . push args
+    68/push  "F - test-skip-string"/imm32
+    68/push  5/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-string-ignores-spaces:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "\"a b\"/yz")
+    # .                   indices:  0123 45
+    # . . push args
+    68/push  "\"a b\"/yz"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # precondition: line->read == 0
+    # . . push args
+    68/push  "F - test-skip-string-ignores-spaces/precondition"/imm32
+    68/push  0/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # skip-string(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-string/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(line->read, 5, msg)
+    # . . push args
+    68/push  "F - test-skip-string-ignores-spaces"/imm32
+    68/push  5/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-string-ignores-escapes:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "\"a\\\"b\"/yz")
+    # .                   indices:  01 2 34 56
+    # . . push args
+    68/push  "\"a\\\"b\"/yz"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # precondition: line->read == 0
+    # . . push args
+    68/push  "F - test-skip-string-ignores-escapes/precondition"/imm32
+    68/push  0/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # skip-string(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-string/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(line->read, 6, msg)
+    # . . push args
+    68/push  "F - test-skip-string-ignores-escapes"/imm32
+    68/push  6/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-string-works-from-mid-stream:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "0 \"a\\\"b\"/yz")
+    # .                   indices:  01 2 34 56
+    # . . push args
+    68/push  "0 \"a\\\"b\"/yz"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # precondition: line->read == 2
+    b8/copy-to-eax  _test-stream/imm32
+    c7          0/subop/copy        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         2/imm32           # copy to *(eax+4)
+    # skip-string(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-string/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(line->read, 8, msg)
+    # . . push args
+    68/push  "F - test-skip-string-works-from-mid-stream"/imm32
+    68/push  8/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+skip-string-in-slice:  # curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    # ecx = curr
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # edx = end
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         2/r32/edx   0xc/disp8         .               # copy *(ebp+12) to edx
+    # var c/eax: byte = 0
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    # skip initial dquote
+    41/increment-ecx
+$skip-string-in-slice:loop:
+    # if (curr >= end) return curr
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+    73/jump-if-addr>=  $skip-string-in-slice:return-curr/disp8
+    # c = *curr
+    8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
+$skip-string-in-slice:dquote:
+    # if (c == '"') break
+    3d/compare-eax-and  0x22/imm32/double-quote
+    74/jump-if-=  $skip-string-in-slice:break/disp8
+$skip-string-in-slice:check-for-escape:
+    # if (c == '\') escape next char
+    3d/compare-eax-and  0x5c/imm32/backslash
+    75/jump-if-!=  $skip-string-in-slice:continue/disp8
+$skip-string-in-slice:escape:
+    41/increment-ecx
+$skip-string-in-slice:continue:
+    # ++curr
+    41/increment-ecx
+    eb/jump  $skip-string-in-slice:loop/disp8
+$skip-string-in-slice:break:
+    # skip final dquote
+    41/increment-ecx
+$skip-string-in-slice:return-curr:
+    # return curr
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to eax
+$skip-string-in-slice:end:
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-string-in-slice:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup: (eax..ecx) = "\"abc\" def"
+    b8/copy-to-eax  "\"abc\" def"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-string-in-slice(eax, ecx)
+    # . . push args
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-string-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(ecx-eax, 4, msg)  # number of chars remaining after the string literal
+    # . . push args
+    68/push  "F - test-skip-string-in-slice"/imm32
+    68/push  4/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-string-in-slice-ignores-spaces:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup: (eax..ecx) = "\"a b\"/yz"
+    b8/copy-to-eax  "\"a b\"/yz"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-string-in-slice(eax, ecx)
+    # . . push args
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-string-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(ecx-eax, 3, msg)  # number of chars remaining after the string literal
+    # . . push args
+    68/push  "F - test-skip-string-in-slice-ignores-spaces"/imm32
+    68/push  3/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-string-in-slice-ignores-escapes:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup: (eax..ecx) = "\"a\\\"b\"/yz"
+    b8/copy-to-eax  "\"a\\\"b\"/yz"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-string-in-slice(eax, ecx)
+    # . . push args
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-string-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(ecx-eax, 3, msg)  # number of chars remaining after the string literal
+    # . . push args
+    68/push  "F - test-skip-string-in-slice-ignores-escapes"/imm32
+    68/push  3/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-string-in-slice-stops-at-end:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup: (eax..ecx) = "\"abc"  # unbalanced dquote
+    b8/copy-to-eax  "\"abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-string-in-slice(eax, ecx)
+    # . . push args
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-string-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(ecx-eax, 0, msg)  # skipped to end of slice
+    # . . push args
+    68/push  "F - test-skip-string-in-slice-stops-at-end"/imm32
+    68/push  0/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# update line->read to ')'
+# line->read ends at ')'
+skip-until-close-paren:  # line: (addr stream byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    # ecx = line
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # eax = skip-until-close-paren-in-slice(&line->data[line->read], &line->data[line->write])
+    # . . push &line->data[line->write]
+    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .                         2/r32/edx   8/disp8         .                 # copy *(ecx+8) to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   0xc/disp8       .                 # copy ecx+edx+12 to edx
+    52/push-edx
+    # . . push &line->data[line->read]
+    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .                         2/r32/edx   4/disp8         .                 # copy *(ecx+4) to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   0xc/disp8       .                 # copy ecx+edx+12 to edx
+    52/push-edx
+    # . . call
+    e8/call  skip-until-close-paren-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # line->read = eax - line->data
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    2d/subtract-from-eax  0xc/imm32
+    89/copy                         1/mod/*+disp8   1/rm32/ecx    .           .                         0/r32/eax   4/disp8         .                 # copy eax to *(ecx+4)
+$skip-until-close-paren:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-until-close-paren:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "*(abc) def")
+    # .                   indices:  0123 45
+    # . . push args
+    68/push  "*(abc) def"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # precondition: line->read == 0
+    # . . push args
+    68/push  "F - test-skip-until-close-paren/precondition"/imm32
+    68/push  0/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # skip-until-close-paren(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-until-close-paren/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(line->read, 5, msg)
+    # . . push args
+    68/push  "F - test-skip-until-close-paren"/imm32
+    68/push  5/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-until-close-paren-ignores-spaces:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "*(a b)/yz")
+    # . . push args
+    68/push  "*(a b)/yz"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # precondition: line->read == 0
+    # . . push args
+    68/push  "F - test-skip-until-close-paren-ignores-spaces/precondition"/imm32
+    68/push  0/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # skip-until-close-paren(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-until-close-paren/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(line->read, 5, msg)
+    # . . push args
+    68/push  "F - test-skip-until-close-paren-ignores-spaces"/imm32
+    68/push  5/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-until-close-paren-works-from-mid-stream:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "0 *(a b)/yz")
+    # . . push args
+    68/push  "0 *(a b)/yz"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # precondition: _test-stream->read == 2
+    b8/copy-to-eax  _test-stream/imm32
+    c7          0/subop/copy        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         2/imm32           # copy to *(eax+4)
+    # skip-until-close-paren(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-until-close-paren/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(_test-stream->read, 7, msg)
+    # . . push args
+    68/push  "F - test-skip-until-close-paren-works-from-mid-stream"/imm32
+    68/push  7/imm32
+    b8/copy-to-eax  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+skip-until-close-paren-in-slice:  # curr: (addr byte), end: (addr byte) -> curr/eax: (addr byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # ecx = curr
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # edx = end
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         2/r32/edx   0xc/disp8         .               # copy *(ebp+12) to edx
+    # var c/eax: byte = 0
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    # skip initial dquote
+    41/increment-ecx
+$skip-until-close-paren-in-slice:loop:
+    # if (curr >= end) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+    73/jump-if-addr>=  $skip-until-close-paren-in-slice:break/disp8
+    # c = *curr
+    8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
+$skip-until-close-paren-in-slice:check-close:
+    # if (c == ')') break
+    3d/compare-eax-and  0x29/imm32/close-paren
+    74/jump-if-=  $skip-until-close-paren-in-slice:break/disp8
+    # ++curr
+    41/increment-ecx
+    eb/jump  $skip-until-close-paren-in-slice:loop/disp8
+$skip-until-close-paren-in-slice:break:
+    # return curr
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to eax
+$skip-until-close-paren-in-slice:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-until-close-paren-in-slice:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup: (eax..ecx) = "*(abc) def"
+    b8/copy-to-eax  "*(abc) def"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-until-close-paren-in-slice(eax, ecx)
+    # . . push args
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-until-close-paren-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(ecx-eax, 5, msg)  # eax is at the ')'
+    # . . push args
+    68/push  "F - test-skip-until-close-paren-in-slice"/imm32
+    68/push  5/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-until-close-paren-in-slice-ignores-spaces:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup: (eax..ecx) = "*(a b)/yz"
+    b8/copy-to-eax  "*(a b)/yz"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-until-close-paren-in-slice(eax, ecx)
+    # . . push args
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-until-close-paren-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(ecx-eax, 4, msg)  # eax is at the ')'
+    # . . push args
+    68/push  "F - test-skip-until-close-paren-in-slice-ignores-spaces"/imm32
+    68/push  4/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-skip-until-close-paren-in-slice-stops-at-end:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup: (eax..ecx) = "*(abc"  # unbalanced dquote
+    b8/copy-to-eax  "*(abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # eax = skip-until-close-paren-in-slice(eax, ecx)
+    # . . push args
+    51/push-ecx
+    50/push-eax
+    # . . call
+    e8/call  skip-until-close-paren-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(ecx-eax, 0, msg)  # skipped to end of slice
+    # . . push args
+    68/push  "F - test-skip-until-close-paren-in-slice-stops-at-end"/imm32
+    68/push  0/imm32
+    # . . push ecx-eax
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract eax from ecx
+    51/push-ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# . . vim:nowrap:textwidth=0

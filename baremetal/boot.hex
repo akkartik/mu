@@ -64,7 +64,7 @@
   b5 00  # ch <- 0  # cylinder 0
   b6 00  # dh <- 0  # track 0
   b1 02  # cl <- 2  # second sector, 1-based
-  b0 3e  # al <- 62  # number of sectors to read; all sectors must be in a single track
+  b0 80  # al <- 128  # number of sectors to read; TODO - all sectors might need to be in a single track on real hardware (so 63 sectors at most including the boot sector)
   # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
@@ -452,10 +452,13 @@ e9 fb ff  # loop forever
 #     a  s  d  f  g  h  j  k  l  ;  '  `     \
       61 73 64 66 67 68 6a 6b 6c 3b 27 60 00 5c
 # offset 42c
-#     z  x  c  v  b  n  m  ,  .  /
-      7a 78 63 76 62 6e 6d 2c 2e 2f
-# offset 436
-                  00 00 00 00 00 00 00 00 00 00
+#     z  x  c  v  b  n  m  ,  .  /     *
+      7a 78 63 76 62 6e 6d 2c 2e 2f 00 2a
+# offset 438
+#                          space
+                        00 20
+# offset 43a
+                              00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

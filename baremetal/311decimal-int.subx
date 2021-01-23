@@ -1,0 +1,427 @@
+# Helpers for decimal ints.
+
+# if slice doesn't contain a decimal number, return 0
+parse-decimal-int-from-slice:  # in: (addr slice) -> out/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # ecx = in
+    8b/-> *(ebp+8) 1/r32/ecx
+    #
+    (parse-decimal-int-helper *ecx *(ecx+4))  # => eax
+$parse-decimal-int-from-slice:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# if slice doesn't contain a decimal number, return 0
+parse-decimal-int:  # in: (addr array byte) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # eax = in
+    8b/-> *(ebp+8) 0/r32/eax
+    # var start/ecx: (addr byte) = &in->data
+    8d/copy-address *(eax+4) 1/r32/ecx
+    # var end/edx: (addr byte) = &in->data[in->size]
+    8b/-> *eax 2/r32/edx
+    8d/copy-address *(eax+edx+4) 2/r32/edx
+    #
+    (parse-decimal-int-helper %ecx %edx)  # => eax
+$parse-decimal-int:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+parse-decimal-int-from-stream:  # in: (addr stream byte) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # eax = in
+    8b/-> *(ebp+8) 0/r32/eax
+    # var start/ecx: (addr byte) = &in->data[in->read]
+    8b/-> *(eax+4) 1/r32/ecx
+    8d/copy-address *(eax+ecx+0xc) 1/r32/ecx
+    # var end/edx: (addr byte) = &in->data[in->write]
+    8b/-> *eax 2/r32/edx
+    8d/copy-address *(eax+edx+0xc) 2/r32/edx
+    # trim a trailing newline
+    {
+      # speculatively trim
+      4a/decrement-edx
+      # if it's a newline, break
+      8a/byte-> *edx 0/r32/eax
+      81 4/subop/and %eax 0xff/imm32
+      3d/compare-eax-and 0xa/imm32/newline
+      74/jump-if-= break/disp8
+      # not a newline, so restore it
+      42/increment-edx
+    }
+    #
+    (parse-decimal-int-helper %ecx %edx)  # => eax
+$parse-decimal-int-from-stream:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+parse-decimal-int-helper:  # start: (addr byte), end: (addr byte) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # var curr/esi: (addr byte) = start
+    8b/-> *(ebp+8) 6/r32/esi
+    # edi = end
+    8b/-> *(ebp+0xc) 7/r32/edi
+    # var negate?/edx: boolean = false
+    ba/copy-to-edx 0/imm32/false
+    # if (*curr == '-') ++curr, negate = true
+    {
+$parse-decimal-int-helper:negative:
+      b8/copy-to-eax 0/imm32
+      8a/copy-byte *esi 0/r32/AL
+      3d/compare-eax-and 0x2d/imm32/-
+      75/jump-if-!= break/disp8
+      # . ++curr
+      46/increment-esi
+      # . negate = true
+      ba/copy-to-edx  1/imm32/true
+    }
+    # spill negate?
+    52/push-edx
+    # var result/eax: int = 0
+    b8/copy-to-eax 0/imm32
+    # var digit/ecx: int = 0
+    b9/copy-to-ecx 0/imm32
+    # const TEN/ebx: int = 10
+    bb/copy-to-ebx 0xa/imm32
+    {
+$parse-decimal-int-helper:loop:
+      # if (curr >= in->end) break
+      39/compare %esi 7/r32/edi
+      73/jump-if-addr>= break/disp8
+      # if !is-decimal-digit?(*curr) return 0
+      8a/copy-byte *esi 1/r32/CL
+      50/push-eax
+      (is-decimal-digit? %ecx)  # => eax
+      {
+        3d/compare-eax-and 0/imm32/false
+        75/jump-if-!= break/disp8
+        58/pop-to-eax
+        b8/copy-to-eax 0/imm32
+        eb/jump $parse-decimal-int-helper:negate/disp8
+      }
+      58/pop-to-eax
+      # digit = from-decimal-char(*curr)
+      81 5/subop/subtract %ecx 0x30/imm32/zero
+      # TODO: error checking
+      # result = result * 10 + digit
+      ba/copy-to-edx 0/imm32
+      f7 4/subop/multiply-into-edx-eax %ebx
+      # TODO: check edx for overflow
+      01/add %eax 1/r32/ecx
+      # ++curr
+      46/increment-esi
+      #
+      eb/jump loop/disp8
+    }
+$parse-decimal-int-helper:negate:
+    # if (negate?) result = -result
+    5a/pop-to-edx
+    {
+      81 7/subop/compare %edx 0/imm32/false
+      74/jump-if-= break/disp8
+      f7 3/subop/negate %eax
+    }
+$parse-decimal-int-helper:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-decimal-int-from-slice-single-digit:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # (eax..ecx) = "3"
+    b8/copy-to-eax "3"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (parse-decimal-int-from-slice %ecx)  # => eax
+    (check-ints-equal %eax 3 "F - test-parse-decimal-int-from-slice-single-digit")
+$test-parse-decimal-int-helper-single-digit:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-decimal-int-from-slice-multi-digit:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # (eax..ecx) = "34"
+    b8/copy-to-eax "34"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (parse-decimal-int-from-slice %ecx)  # => eax
+    (check-ints-equal %eax 0x22 "F - test-parse-decimal-int-from-slice-multi-digit")  # 34 in hex
+$test-parse-decimal-int-helper-multi-digit:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-decimal-int-from-slice-zero:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # (eax..ecx) = "00"
+    b8/copy-to-eax "00"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (parse-decimal-int-from-slice %ecx)  # => eax
+    (check-ints-equal %eax 0 "F - test-parse-decimal-int-from-slice-zero")
+$test-parse-decimal-int-helper-zero:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-decimal-int-from-slice-negative:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # (eax..ecx) = "-3"
+    b8/copy-to-eax "-3"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (parse-decimal-int-from-slice %ecx)  # => eax
+    (check-ints-equal %eax -3 "F - test-parse-decimal-int-from-slice-negative")
+$test-parse-decimal-int-helper-negative:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-decimal-int-from-slice-multi-digit-negative:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # (eax..ecx) = "-32"
+    b8/copy-to-eax "-32"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (parse-decimal-int-from-slice %ecx)  # => eax
+    (check-ints-equal %eax -0x20 "F - test-parse-decimal-int-from-slice-multi-digit-negative")  # -32 in hex
+$test-parse-decimal-int-helper-multi-digit-negative:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+decimal-size:  # n: int -> result/eax: int
+    # pseudocode:
+    #   edi = 0
+    #   eax = n
+    #   if eax < 0
+    #     ++edi  # for '-'
+    #     negate eax
+    #   while true
+    #     edx = 0
+    #     eax, edx = eax/10, eax%10
+    #     ++edi
+    #     if (eax == 0) break
+    #   eax = edi
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    57/push-edi
+    # edi = 0
+    bf/copy-to-edi 0/imm32
+    # eax = n
+    8b/-> *(ebp+8) 0/r32/eax
+    # if (n < 0) negate n, increment edi
+    {
+      3d/compare-eax-with 0/imm32
+      7d/jump-if->= break/disp8
+      f7 3/subop/negate %eax
+      47/increment-edi
+    }
+    # const ten/ecx = 10
+    b9/copy-to-ecx  0xa/imm32
+    {
+      ba/copy-to-edx 0/imm32
+      f7 7/subop/idiv-edx-eax-by %ecx  # eax = edx:eax/10; edx = edx:eax%10
+      47/increment-edi
+      3d/compare-eax-and 0/imm32
+      75/jump-if-!= loop/disp8
+    }
+$decimal-size:end:
+    89/<- %eax 7/r32/edi
+    # . restore registers
+    5f/pop-to-edi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-of-zero:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size 0)  # => eax
+    (check-ints-equal %eax 1 "F - test-decimal-size-of-zero")
+$test-decimal-size-of-zero:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-single-digit:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size 4)  # => eax
+    (check-ints-equal %eax 1 "F - test-decimal-size-single-digit")
+$test-decimal-size-single-digit:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-multi-digit:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size 0xa)  # => eax
+    (check-ints-equal %eax 2 "F - test-decimal-size-multi-digit")
+$test-decimal-size-multi-digit:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-single-digit-negative:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size -4)  # => eax
+    (check-ints-equal %eax 2 "F - test-decimal-size-single-digit-negative")
+$test-decimal-size-single-digit-negative:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-decimal-size-multi-digit-negative:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (decimal-size -0xa)  # => eax
+    (check-ints-equal %eax 3 "F - test-decimal-size-multi-digit-negative")
+$test-decimal-size-multi-digit-negative:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
