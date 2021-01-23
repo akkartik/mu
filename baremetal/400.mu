@@ -2,7 +2,8 @@
 sig pixel-on-real-screen x: int, y: int, color: int
 sig draw-grapheme-on-real-screen g: grapheme, x: int, y: int, color: int, background-color: int
 sig cursor-position-on-real-screen -> _/eax: int, _/ecx: int
-sig set-cursor-position-on-real-screen x: int, y: int, g: grapheme
+sig set-cursor-position-on-real-screen x: int, y: int
+sig show-cursor-on-real-screen g: grapheme
 
 # keyboard
 sig read-key kbd: (addr keyboard) -> _/eax: byte

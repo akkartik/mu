@@ -10,8 +10,7 @@ fn cursor-left screen: (addr screen) {
     return
   }
   cursor-x <- decrement
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, cursor-x, cursor-y, space
+  set-cursor-position screen, cursor-x, cursor-y
 }
 
 fn cursor-right screen: (addr screen) {
@@ -28,8 +27,7 @@ fn cursor-right screen: (addr screen) {
     return
   }
   cursor-x <- increment
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, cursor-x, cursor-y, space
+  set-cursor-position screen, cursor-x, cursor-y
 }
 
 fn cursor-up screen: (addr screen) {
@@ -42,8 +40,7 @@ fn cursor-up screen: (addr screen) {
     return
   }
   cursor-y <- decrement
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, cursor-x, cursor-y, space
+  set-cursor-position screen, cursor-x, cursor-y
 }
 
 fn cursor-down screen: (addr screen) {
@@ -60,8 +57,7 @@ fn cursor-down screen: (addr screen) {
     return
   }
   cursor-y <- increment
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, cursor-x, cursor-y, space
+  set-cursor-position screen, cursor-x, cursor-y
 }
 
 fn draw-grapheme-at-cursor screen: (addr screen), g: grapheme, color: int {
@@ -105,8 +101,7 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
     xcurr <- increment
     loop
   }
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, xcurr, y, space  # we'll assume it's ok to clear the next grapheme
+  set-cursor-position screen, xcurr, y
   return xcurr
 }
 
@@ -167,8 +162,7 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array b
     }
     loop
   }
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, xcurr, ycurr, space  # we'll assume it's ok to clear the next grapheme
+  set-cursor-position screen, xcurr, ycurr
   return xcurr, ycurr
 }
 
@@ -183,8 +177,7 @@ fn move-cursor-rightward-and-downward screen: (addr screen), xmin: int, xmax: in
     cursor-x <- copy xmin
     cursor-y <- increment
   }
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, cursor-x, cursor-y, space  # we'll assume it's ok to clear the grapheme at the cursor
+  set-cursor-position screen, cursor-x, cursor-y
 }
 
 fn draw-text-wrapping-right-then-down-over-full-screen screen: (addr screen), text: (addr array byte), x: int, y: int, color: int -> _/eax: int, _/ecx: int {
@@ -262,8 +255,7 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
     }
     loop
   }
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, xcurr, ycurr, space  # we'll assume it's ok to clear the next grapheme
+  set-cursor-position screen, xcurr, ycurr
   return xcurr, ycurr
 }
 
@@ -342,8 +334,7 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
     }
     loop
   }
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, xcurr, ycurr, space  # we'll assume it's ok to clear the next grapheme
+  set-cursor-position screen, xcurr, ycurr
   return xcurr, ycurr
 }
 
@@ -413,8 +404,7 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
     ycurr <- increment
     loop
   }
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, x, ycurr, space  # we'll assume it's ok to clear the next grapheme
+  set-cursor-position screen, x, ycurr
   return ycurr
 }
 
@@ -474,8 +464,7 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
     }
     loop
   }
-  var space/esi: grapheme <- copy 0x20
-  set-cursor-position screen, xcurr, ycurr, space  # we'll assume it's ok to clear the next grapheme
+  set-cursor-position screen, xcurr, ycurr
   return xcurr, ycurr
 }
 

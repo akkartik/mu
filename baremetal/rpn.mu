@@ -26,10 +26,11 @@ fn main -> _/ebx: int {
   {
     # print prompt
     var x/eax: int <- draw-text-rightward 0, "> ", 0, 0x80, y, 3
-    set-cursor-position 0, x, y, space
+    set-cursor-position 0, x, y
     # read line from keyboard
     clear-stream in
     {
+      show-cursor 0, space
       var key/eax: byte <- read-key 0
       compare key, 0xa  # newline
       break-if-=
@@ -42,6 +43,8 @@ fn main -> _/ebx: int {
       cursor-right 0
       loop
     }
+    # clear cursor
+    draw-grapheme-at-cursor 0, space, 3  # 3=foreground color, which is never used
     # parse and eval
     var out/eax: int <- simplify in
     # print

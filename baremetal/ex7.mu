@@ -12,8 +12,9 @@
 
 fn main {
   var space/eax: grapheme <- copy 0x20
-  set-cursor-position 0, 0, 0, space
+  set-cursor-position 0, 0, 0
   {
+    show-cursor 0, space
     var key/eax: byte <- read-key 0
     {
       compare key, 0x68  # 'h'

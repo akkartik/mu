@@ -104,17 +104,13 @@ $cursor-position-on-real-screen:end:
     5d/pop-to-ebp
     c3/return
 
-# Caller is responsible for tracking what was on the screen at this position
-# before, and making sure the cursor continues to show the same grapheme.
-set-cursor-position-on-real-screen:  # x: int, y: int, g: grapheme
+set-cursor-position-on-real-screen:  # x: int, y: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
     #
-    (draw-grapheme-on-real-screen *(ebp+0x10) *(ebp+8) *(ebp+0xc) 0 7)
-    # TODO: support fake screen; we currently assume 'screen' is always 0 (real)
     8b/-> *(ebp+8) 0/r32/eax
     89/<- *Real-screen-cursor-x 0/r32/eax
     8b/-> *(ebp+0xc) 0/r32/eax
@@ -127,17 +123,47 @@ $set-cursor-position-on-real-screen:end:
     5d/pop-to-ebp
     c3/return
 
+# Draw cursor at current location. But this is rickety:
+#   - does not clear previous location cursor was shown at.
+#   - does not preserve what was at the cursor. Caller is responsible for
+#     tracking what was on the screen at this position before and passing it
+#     in again.
+show-cursor-on-real-screen:  # g: grapheme
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    #
+    (cursor-position-on-real-screen)  # => eax, ecx
+    (draw-grapheme-on-real-screen *(ebp+8) %eax %ecx 0 7)
+$show-cursor-on-real-screen:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 == data
 
 # The cursor is where certain Mu functions (usually of the form
-# 'draw*cursor*') print to by default. It becomes visible on
-# set-cursor-position, but further drawing might overwrite it.
-# We don't bother displaying the cursor when drawing text. It's up to
-# applications to display the cursor before waiting for a key, and to ensure
-# its location appropriately suggests the effect keystrokes will have.
+# 'draw*cursor*') print to by default.
 #
-# There's no low-level support for blinking, etc. We aren't using any
-# hardware-supported text mode here.
+# We don't bother displaying the cursor when drawing. It only becomes visible
+# on show-cursor, which is quite rickety (see above)
+#
+# It's up to applications to manage cursor display:
+#   - clean up where it used to be
+#   - display the cursor before waiting for a key
+#   - ensure its location appropriately suggests the effect keystrokes will have
+#   - ensure its contents (and colors) appropriately reflect the state of the
+#     screen
+#
+# There's no blinking, etc. We aren't using any hardware-supported text mode
+# here.
 Real-screen-cursor-x:
   0/imm32
 Real-screen-cursor-y:
