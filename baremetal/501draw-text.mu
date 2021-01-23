@@ -9,7 +9,7 @@ fn cursor-left screen: (addr screen) {
     break-if->
     return
   }
-  cursor-x <- subtract 8  # font-width
+  cursor-x <- decrement
   set-cursor-position screen, cursor-x, cursor-y
 }
 
@@ -26,7 +26,7 @@ fn cursor-right screen: (addr screen) {
     break-if-<
     return
   }
-  cursor-x <- add 8  # font-width
+  cursor-x <- increment
   set-cursor-position screen, cursor-x, cursor-y
 }
 
@@ -39,7 +39,7 @@ fn cursor-up screen: (addr screen) {
     break-if->
     return
   }
-  cursor-y <- subtract 0x10  # screen-height
+  cursor-y <- decrement
   set-cursor-position screen, cursor-x, cursor-y
 }
 
@@ -56,7 +56,7 @@ fn cursor-down screen: (addr screen) {
     break-if-<
     return
   }
-  cursor-y <- add 0x10  # screen-height
+  cursor-y <- increment
   set-cursor-position screen, cursor-x, cursor-y
 }
 
@@ -82,7 +82,7 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff  # end-of-file
     break-if-=
-    xcurr <- add 8  # font-width
+    xcurr <- increment
     loop
   }
   compare xcurr, xmax
@@ -98,7 +98,7 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
     compare g, 0xffffffff  # end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, y, color
-    xcurr <- add 8  # font-width
+    xcurr <- increment
     loop
   }
   set-cursor-position screen, xcurr, y
@@ -130,12 +130,12 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array b
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff  # end-of-file
     break-if-=
-    xcurr <- add 8  # font-width
+    xcurr <- increment
     compare xcurr, xmax
     {
       break-if-<
       xcurr <- copy xmin
-      ycurr <- add 0x10  # font-height
+      ycurr <- increment
     }
     loop
   }
@@ -153,12 +153,12 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array b
     compare g, 0xffffffff  # end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, ycurr, color
-    xcurr <- add 8  # font-width
+    xcurr <- increment
     compare xcurr, xmax
     {
       break-if-<
       xcurr <- copy xmin
-      ycurr <- add 0x10  # font-height
+      ycurr <- increment
     }
     loop
   }
@@ -170,12 +170,12 @@ fn move-cursor-rightward-and-downward screen: (addr screen), xmin: int, xmax: in
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  cursor-x <- add 8  # font-width
+  cursor-x <- increment
   compare cursor-x, xmax
   {
     break-if-<
     cursor-x <- copy xmin
-    cursor-y <- add 0x10  # font-height
+    cursor-y <- increment
   }
   set-cursor-position screen, cursor-x, cursor-y
 }
@@ -193,12 +193,12 @@ fn draw-text-wrapping-right-then-down-from-cursor screen: (addr screen), text: (
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
   var end-x/edx: int <- copy cursor-x
-  end-x <- add 8  # font-width
+  end-x <- increment
   compare end-x, xmax
   {
     break-if-<
     cursor-x <- copy xmin
-    cursor-y <- add 0x10  # font-height
+    cursor-y <- increment
   }
   cursor-x, cursor-y <- draw-text-wrapping-right-then-down screen, text, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
 }
@@ -223,12 +223,12 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff  # end-of-file
     break-if-=
-    xcurr <- add 8  # font-width
+    xcurr <- increment
     compare xcurr, xmax
     {
       break-if-<
       xcurr <- copy xmin
-      ycurr <- add 0x10  # font-height
+      ycurr <- increment
     }
     loop
   }
@@ -246,12 +246,12 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
     compare g, 0xffffffff  # end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, ycurr, color
-    xcurr <- add 8  # font-width
+    xcurr <- increment
     compare xcurr, xmax
     {
       break-if-<
       xcurr <- copy xmin
-      ycurr <- add 0x10  # font-height
+      ycurr <- increment
     }
     loop
   }
@@ -272,12 +272,12 @@ fn draw-int32-hex-wrapping-right-then-down-from-cursor screen: (addr screen), n:
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
   var end-x/edx: int <- copy cursor-x
-  end-x <- add 8  # font-width
+  end-x <- increment
   compare end-x, xmax
   {
     break-if-<
     cursor-x <- copy xmin
-    cursor-y <- add 0x10  # font-height
+    cursor-y <- increment
   }
   cursor-x, cursor-y <- draw-int32-hex-wrapping-right-then-down screen, n, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
 }
@@ -302,12 +302,12 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff  # end-of-file
     break-if-=
-    xcurr <- add 8  # font-width
+    xcurr <- increment
     compare xcurr, xmax
     {
       break-if-<
       xcurr <- copy xmin
-      ycurr <- add 0x10  # font-height
+      ycurr <- increment
     }
     loop
   }
@@ -325,12 +325,12 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
     compare g, 0xffffffff  # end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, ycurr, color
-    xcurr <- add 8  # font-width
+    xcurr <- increment
     compare xcurr, xmax
     {
       break-if-<
       xcurr <- copy xmin
-      ycurr <- add 0x10  # font-height
+      ycurr <- increment
     }
     loop
   }
@@ -351,12 +351,12 @@ fn draw-int32-decimal-wrapping-right-then-down-from-cursor screen: (addr screen)
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
   var end-x/edx: int <- copy cursor-x
-  end-x <- add 8  # font-width
+  end-x <- increment
   compare end-x, xmax
   {
     break-if-<
     cursor-x <- copy xmin
-    cursor-y <- add 0x10  # font-height
+    cursor-y <- increment
   }
   cursor-x, cursor-y <- draw-int32-decimal-wrapping-right-then-down screen, n, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
 }
@@ -385,7 +385,7 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff  # end-of-file
     break-if-=
-    ycurr <- add 0x10  # font-height
+    ycurr <- increment
     loop
   }
   compare ycurr, ymax
@@ -401,7 +401,7 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
     compare g, 0xffffffff  # end-of-file
     break-if-=
     draw-grapheme screen, g, x, ycurr, color
-    ycurr <- add 0x10  # font-height
+    ycurr <- increment
     loop
   }
   set-cursor-position screen, x, ycurr
@@ -432,11 +432,11 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff  # end-of-file
     break-if-=
-    ycurr <- add 0x10  # font-height
+    ycurr <- increment
     compare ycurr, ymax
     {
       break-if-<
-      xcurr <- add 8  # font-width
+      xcurr <- increment
       ycurr <- copy ymin
     }
     loop
@@ -455,11 +455,11 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
     compare g, 0xffffffff  # end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, ycurr, color
-    ycurr <- add 0x10  # font-height
+    ycurr <- increment
     compare ycurr, ymax
     {
       break-if-<
-      xcurr <- add 8  # font-width
+      xcurr <- increment
       ycurr <- copy ymin
     }
     loop
@@ -481,11 +481,11 @@ fn draw-text-wrapping-down-then-right-from-cursor screen: (addr screen), text: (
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
   var end-y/edx: int <- copy cursor-y
-  end-y <- add 0x10  # font-height
+  end-y <- increment
   compare end-y, ymax
   {
     break-if-<
-    cursor-x <- add 8  # font-width
+    cursor-x <- increment
     cursor-y <- copy ymin
   }
   cursor-x, cursor-y <- draw-text-wrapping-down-then-right screen, text, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color

@@ -11,5 +11,5 @@
 
 fn main {
   var g/eax: grapheme <- copy 0x41  # 'A'
-  draw-grapheme 0, g, 0x10, 0x10, 0xa
+  draw-grapheme 0, g, 2, 1, 0xa  # x of 2 graphemes = 16px from top-left; y of 1 grapheme = 16px down from top-left
 }

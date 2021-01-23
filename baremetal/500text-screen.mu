@@ -45,13 +45,14 @@ fn initialize-screen screen: (addr screen), width: int, height: int {
   copy-to *dest, 0
 }
 
+# in graphemes
 fn screen-size screen: (addr screen) -> _/eax: int, _/ecx: int {
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   compare screen, 0
   {
     break-if-!=
-    return 0x400, 0x300  # 1024x768
+    return 0x80, 0x30  # 128x48
   }
   # fake screen
   var screen-addr/esi: (addr screen) <- copy screen
