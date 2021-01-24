@@ -74,21 +74,43 @@
   # calls, so we don't need to initialize the stack.
 
 # 0e:
-  # load some sectors from disk
+  # load 62 sectors from disk into addresses [0x7e00, 0xfa00)
   b4 02  # ah <- 2  # read sectors from disk
+# 10:
   # dl comes conveniently initialized at boot time with the index of the device being booted
   b5 00  # ch <- 0  # cylinder 0
   b6 00  # dh <- 0  # track 0
   b1 02  # cl <- 2  # second sector, 1-based
-  b0 80  # al <- 128  # number of sectors to read; TODO - all sectors might need to be in a single track on real hardware (so 63 sectors at most including the boot sector)
+  b0 3e  # al <- 62  # number of sectors to read
   # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
   bb 00 7e  # bx <- 0x7e00 [label]
+# 20:
   cd 13  # int 13h, BIOS disk service
-  0f 82 8a 00  # jump-if-carry disk-error [label]
-
+  0f 82 8a 00  # jump-if-carry disk_error [label]
 # 26:
+  # load 63 sectors from disk into addresses [0xfa00, 0x17800)
+  b4 02  # ah <- 2  # read sectors from disk
+  b5 00  # ch <- 0  # cylinder 0
+  b6 01  # dh <- 1  # track 1
+  b1 01  # cl <- 1  # first sector, 1-based
+  b0 3f  # al <- 63  # number of sectors to read
+# 30:
+  # "Addressing of Buffer should guarantee that the complete buffer is inside
+  # the given segment, i.e. ( BX + size_of_buffer ) <= 10000h."
+  #   https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH=02h:_Read_Sectors_From_Drive
+  bb 00 fa  # bx <- 0xfa00 [label]
+  8e c3  # es <- bx
+  bb 00 00  # bx <- 0
+  cd 13  # int 13h, BIOS disk service
+  0f 82 72 00  # jump-if-carry disk_error [label]
+# 3e:
+  # reset es
+  bb 00 00  # bx <- 0
+  8e c3  # es <- bx
+
+# 43:
   # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
   # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
   # seta20.1:
@@ -99,7 +121,7 @@
   b0 d1  # al <- 0xd1
   e6 64  # port 0x64 <- al
 
-# 30:
+# 4d:
   # seta20.2:
   e4 64  # al <- port 0x64
   a8 02  # set zf if bit 1 (second-least significant) is not set
@@ -108,7 +130,7 @@
   b0 df  # al <- 0xdf
   e6 64  # port 0x64 <- al
 
-# 3a:
+# 57:
   # adjust video mode
   b4 4f  # ah <- 4f (VBE)
   b0 02  # al <- 02 (set video mode)
@@ -117,7 +139,7 @@
             # fallback mode: 0x0101 (640x480x256)
   cd 10  # int 10h, Vesa BIOS extensions
 
-# 43:
+# 60:
   # load information for the (hopefully) current video mode
   # mostly just for the address to the linear frame buffer
   b4 4f  # ah <- 4f (VBE)
@@ -126,7 +148,7 @@
   bf 00 7f  # di <- 0x7f00 (video mode info) [label]
   cd 10
 
-# 4f:
+# 6c:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
     a0 7c  # *gdt_descriptor [label]
@@ -134,11 +156,6 @@
   66 83 c8 01  # eax <- or 0x1
   0f 22 c0  # cr0 <- eax
   ea e0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
-
-# padding
-# 63:
-         00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## GDT: 3 records of 8 bytes each
 
