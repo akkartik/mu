@@ -42,9 +42,9 @@
 #           1c8 (address 7dc8) <== keyboard buffer
 #           1f8 (address 7df8) <== idt_descriptor
 #           1fe (address 7dfe) boot sector marker (2 bytes)
-#   offset  200 (address 7e00): interrupt descriptor table (256 bytes)
-#   offset  300 (address 7f00): video mode data (256 bytes)
-#           328 (address 7f28) <== start of video RAM stored here
+#   offset  200 (address 7e00): video mode data (256 bytes)
+#           228 (address 7e28) <== start of video RAM stored here
+#   offset  300 (address 7f00): interrupt descriptor table (256 bytes)
 #   offset  400 (address 8000): keyboard mappings (2KB)
 #   offset  c00 (address 8800): bitmap font (2KB)
 #   offset 1400 (address 9000): entrypoint for applications (don't forget to adjust survey_baremetal if this changes)
@@ -145,7 +145,7 @@
   b4 4f  # ah <- 4f (VBE)
   b0 01  # al <- 01 (get video mode)
   b9 07 01  # cx <- 0x0107 (mode we requested)
-  bf 00 7f  # di <- 0x7f00 (video mode info) [label]
+  bf 00 7e  # di <- 0x7e00 (video mode info) [label]
   cd 10
 
 # 6c:
@@ -360,7 +360,7 @@ e9 fd ff  # loop forever
 # 1f8:
 # idt_descriptor:
   ff 00  # idt_end - idt_start - 1
-  00 7e 00 00  # start = idt_start [label]
+  00 7f 00 00  # start = idt_start [label]
 
 # 1fe:
 # final 2 bytes of boot sector
@@ -369,7 +369,61 @@ e9 fd ff  # loop forever
 ## sector 2
 # loaded by load_disk, not automatically on boot
 
-# offset 200 (address 0x7e00): interrupt descriptor table
+# offset 200 (address 0x7e00):
+# video mode info:
+  00 00  # attributes
+  00  # winA
+  00  # winB
+# 204
+  00 00  # granularity
+  00 00  # winsize
+# 208
+  00 00  # segmentA
+  00 00  # segmentB
+# 20c
+  00 00 00 00  # realFctPtr (who knows)
+# 210
+  00 00  # pitch
+  00 00  # Xres
+# 214
+  00 00  # Yres
+  00 00  # Wchar Ychar
+# 218
+  00  # planes
+  00  # bpp
+  00  # banks
+  00  # memory_model
+# 21c
+  00  # bank_size
+  00  # image_pages
+  00  # reserved
+# 21f
+  00 00  # red_mask red_position
+  00 00  # green_mask green_position
+  00 00  # blue_mask blue_position
+  00 00  # rsv_mask rsv_position
+  00  # directcolor_attributes
+# 228
+  00 00 00 00  # physbase <== linear frame buffer
+
+# 22c
+# reserved for video mode info
+                                    00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# offset 300 (address 0x7f00): interrupt descriptor table
 # 32 entries * 8 bytes each = 256 bytes (0x100)
 # idt_start:
 
@@ -422,60 +476,6 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 # idt_end:
-
-# offset 300 (address 0x7f00):
-# video mode info:
-  00 00  # attributes
-  00  # winA
-  00  # winB
-# 304
-  00 00  # granularity
-  00 00  # winsize
-# 308
-  00 00  # segmentA
-  00 00  # segmentB
-# 30c
-  00 00 00 00  # realFctPtr (who knows)
-# 310
-  00 00  # pitch
-  00 00  # Xres
-# 314
-  00 00  # Yres
-  00 00  # Wchar Ychar
-# 318
-  00  # planes
-  00  # bpp
-  00  # banks
-  00  # memory_model
-# 31c
-  00  # bank_size
-  00  # image_pages
-  00  # reserved
-# 31f
-  00 00  # red_mask red_position
-  00 00  # green_mask green_position
-  00 00  # blue_mask blue_position
-  00 00  # rsv_mask rsv_position
-  00  # directcolor_attributes
-# 328
-  00 00 00 00  # physbase <== linear frame buffer
-
-# 32c
-# reserved for video mode info
-                                    00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 ## the rest of this file has data
 
