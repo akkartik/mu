@@ -31,7 +31,23 @@
 #   - can't use any syscalls
 #   - can't print text to video memory (past these boot sectors)
 #   - must only print raw pixels (256 colors) to video memory (resolution 1024x768)
-#   - must store their entry-point at address 0x9000
+#   - must start executing immediately after this file (see outline below)
+
+# Outline of this file with offsets and the addresses they map to at run-time:
+#   offset    0 (address 7c00): boot code, 16-bit mode
+#            80 (address 7c80) global descriptor table
+#            a0 (address 7ca0) <== gdt_descriptor
+#   offset   e0 (address 7ce0): boot code
+#   offset  100 (address 7d00): interrupt handler code
+#           1c8 (address 7dc8) <== keyboard buffer
+#           1f8 (address 7df8) <== idt_descriptor
+#           1fe (address 7dfe) boot sector marker (2 bytes)
+#   offset  200 (address 7e00): interrupt descriptor table (256 bytes)
+#   offset  300 (address 7f00): video mode data (256 bytes)
+#           328 (address 7f28) <== start of video RAM stored here
+#   offset  400 (address 8000): keyboard mappings (2KB)
+#   offset  c00 (address 8800): bitmap font (2KB)
+#   offset 1400 (address 9000): entrypoint for applications (don't forget to adjust survey_baremetal if this changes)
 
 ## 16-bit entry point
 
