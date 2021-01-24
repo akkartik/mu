@@ -199,8 +199,17 @@ e9 fb ff  # loop forever
   0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
     f8 7d 00 00  # *idt_descriptor [label]
 
-  # enable keyboard IRQ
-  b0 fd  # al <- 0xfd  # enable just IRQ1
+  # For now, not bothering reprogramming the IRQ to not conflict with software
+  # exceptions.
+  #   https://wiki.osdev.org/index.php?title=8259_PIC&oldid=24650#Protected_Mode
+  #
+  # Interrupt 1 (keyboard) conflicts with debugger faults. We don't use a
+  # debugger.
+  # Reference:
+  #   https://wiki.osdev.org/Exceptions
+
+  # enable keyboard IRQ (1)
+  b0 fd  # al <- 0xfd  # disable mask for IRQ1
   e6 21  # port 0x21 <- al
 
   # initialization is done; enable interrupts
@@ -339,6 +348,9 @@ e9 fb ff  # loop forever
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
+
+# By default, BIOS maps IRQ0-7 to interrupt vectors 8-15.
+# https://wiki.osdev.org/index.php?title=Interrupts&oldid=25102#Default_PC_Interrupt_Vector_Assignment
 
 # entry 8: clock
   00 7d  # target[0:16] = null interrupt handler [label]
