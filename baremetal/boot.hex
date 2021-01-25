@@ -92,58 +92,22 @@
   # Not bothering initializing sp register. Que sera sera.
 
 # 11:
-  # disk read #1: load remaining 62 sectors from first track of disk into addresses [0x7e00, 0xfa00)
+  # disk read #1: load remaining sectors from first two tracks of disk into addresses [0x7e00, 0x17800)
   b4 02  # ah <- 2  # read sectors from disk
   # dl comes conveniently initialized at boot time with the index of the device being booted
   b5 00  # ch <- 0  # cylinder 0
   b6 00  # dh <- 0  # track 0
   b1 02  # cl <- 2  # second sector, 1-based
-  b0 3e  # al <- 62  # number of sectors to read
+  b0 7d  # al <- 125  # number of sectors to read
   # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
 # 20:
   bb 00 7e  # bx <- 0x7e00 [label]
   cd 13  # int 13h, BIOS disk service
-  0f 82 8a 00  # jump-if-carry disk_error [label]
-# 29:
-  # disk read #2: 3 sectors from (0, 1, 0) to [0xfa00, 0x10000)
-  # It looks like some BIOSs can't handle sector reads that cross segment
-  # alignment boundaries.
-  b4 02  # ah <- 2  # read sectors from disk
-  b5 00  # ch <- 0  # cylinder 0
-  b6 01  # dh <- 1  # track 1
-  b1 01  # cl <- 1  # first sector, 1-based
-  b0 03  # al <- 3  # number of sectors to read
-  # "Addressing of Buffer should guarantee that the complete buffer is inside
-  # the given segment, i.e. ( BX + size_of_buffer ) <= 10000h."
-  #   https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH=02h:_Read_Sectors_From_Drive
-  bb a0 0f  # bx <- 0xfa0
-  8e c3  # es <- bx
-  bb 00 00  # bx <- 0
-  cd 13  # int 13h, BIOS disk service
-  0f 82 72 00  # jump-if-carry disk_error [label]
-  # reset es
-  bb 00 00  # bx <- 0
-  8e c3  # es <- bx
-# 46:
-  # disk read #3: remaining 60 sectors from (0, 1, 3) to [0x10000, 0x17800)
-  b4 02  # ah <- 2  # read sectors from disk
-  b5 00  # ch <- 0  # cylinder 0
-  b6 01  # dh <- 1  # track 1
-  b1 04  # cl <- 4  # sector 3, 1-based
-  b0 3c  # al <- 60  # number of sectors to read
-# 50:
-  bb 00 10  # bx <- 0x1000
-  8e c3  # es <- bx
-  bb 00 00  # bx <- 0
-  cd 13  # int 13h, BIOS disk service
-  0f 82 72 00  # jump-if-carry disk_error [label]
-  # reset es
-  bb 00 00  # bx <- 0
-  8e c3  # es <- bx
+  0f 82 a6 00  # jump-if-carry disk_error [label]
 
-# 63:
+# 29:
   # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
   # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
   # seta20.1:
@@ -154,7 +118,7 @@
   b0 d1  # al <- 0xd1
   e6 64  # port 0x64 <- al
 
-# 6d:
+# 33:
   # seta20.2:
   e4 64  # al <- port 0x64
   a8 02  # set zf if bit 1 (second-least significant) is not set
@@ -163,7 +127,7 @@
   b0 df  # al <- 0xdf
   e6 64  # port 0x64 <- al
 
-# 77:
+# 3d:
   # adjust video mode
   b4 4f  # ah <- 4f (VBE)
   b0 02  # al <- 02 (set video mode)
@@ -172,7 +136,7 @@
             # fallback mode: 0x0101 (640x480x256)
   cd 10  # int 10h, Vesa BIOS extensions
 
-# 90:
+# 46:
   # load information for the (hopefully) current video mode
   # mostly just for the address to the linear frame buffer
   b4 4f  # ah <- 4f (VBE)
@@ -181,7 +145,7 @@
   bf 00 7f  # di <- 0x7f00 (video mode info) [label]
   cd 10
 
-# 9c:
+# 52:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
     f8 7c  # *gdt_descriptor [label]
@@ -191,7 +155,11 @@
   ea 00 7d 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
 
 # padding
-# b0:
+# 66:
+                  00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
