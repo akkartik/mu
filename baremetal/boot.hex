@@ -58,7 +58,7 @@
 #   heap: [0x01000000, 0x02000000)
 #     see baremetal/120allocate.subx
 #   stack grows down from 0x00070000
-#     see baremetal/mu-init.subx
+#     see below
 
 ## 16-bit entry point
 
@@ -77,18 +77,23 @@
   # this isn't always needed, but the recommendation is to not make assumptions
   b8 00 00  # ax <- 0
   8e d8  # ds <- ax
-  8e d0  # ss <- ax
   8e c0  # es <- ax
   8e e0  # fs <- ax
   8e e8  # gs <- ax
 
-  # We don't read or write the stack before we get to 32-bit mode. No function
-  # calls, so we don't need to initialize the stack.
+  # We don't read or write the stack before we get to 32-bit mode, but we
+  # still need to move the stack in case BIOS initializes it in some low
+  # address that we want to write code into.
+  #
+  # We'll grow the stack downward from somewhere in 0x0007xxxx;
+  # consult https://wiki.osdev.org/Memory_Map_(x86) when modifying this
+  b8 00 70  # ax <- 0x7000
+  8e d0  # ss <- ax
+  # Not bothering initializing sp register. Que sera sera.
 
-# 0e:
+# 11:
   # disk read #1: load remaining 62 sectors from first track of disk into addresses [0x7e00, 0xfa00)
   b4 02  # ah <- 2  # read sectors from disk
-# 10:
   # dl comes conveniently initialized at boot time with the index of the device being booted
   b5 00  # ch <- 0  # cylinder 0
   b6 00  # dh <- 0  # track 0
@@ -97,11 +102,11 @@
   # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
-  bb 00 7e  # bx <- 0x7e00 [label]
 # 20:
+  bb 00 7e  # bx <- 0x7e00 [label]
   cd 13  # int 13h, BIOS disk service
   0f 82 8a 00  # jump-if-carry disk_error [label]
-# 26:
+# 29:
   # disk read #2: 3 sectors from (0, 1, 0) to [0xfa00, 0x10000)
   # It looks like some BIOSs can't handle sector reads that cross segment
   # alignment boundaries.
@@ -110,7 +115,6 @@
   b6 01  # dh <- 1  # track 1
   b1 01  # cl <- 1  # first sector, 1-based
   b0 03  # al <- 3  # number of sectors to read
-# 30:
   # "Addressing of Buffer should guarantee that the complete buffer is inside
   # the given segment, i.e. ( BX + size_of_buffer ) <= 10000h."
   #   https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH=02h:_Read_Sectors_From_Drive
@@ -119,17 +123,17 @@
   bb 00 00  # bx <- 0
   cd 13  # int 13h, BIOS disk service
   0f 82 72 00  # jump-if-carry disk_error [label]
-# 3e:
   # reset es
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
-# 43:
+# 46:
   # disk read #3: remaining 60 sectors from (0, 1, 3) to [0x10000, 0x17800)
   b4 02  # ah <- 2  # read sectors from disk
   b5 00  # ch <- 0  # cylinder 0
   b6 01  # dh <- 1  # track 1
   b1 04  # cl <- 4  # sector 3, 1-based
   b0 3c  # al <- 60  # number of sectors to read
+# 50:
   bb 00 10  # bx <- 0x1000
   8e c3  # es <- bx
   bb 00 00  # bx <- 0
@@ -139,7 +143,7 @@
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
 
-# 60:
+# 63:
   # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
   # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
   # seta20.1:
@@ -150,7 +154,7 @@
   b0 d1  # al <- 0xd1
   e6 64  # port 0x64 <- al
 
-# 6a:
+# 6d:
   # seta20.2:
   e4 64  # al <- port 0x64
   a8 02  # set zf if bit 1 (second-least significant) is not set
@@ -159,7 +163,7 @@
   b0 df  # al <- 0xdf
   e6 64  # port 0x64 <- al
 
-# 74:
+# 77:
   # adjust video mode
   b4 4f  # ah <- 4f (VBE)
   b0 02  # al <- 02 (set video mode)
@@ -168,7 +172,7 @@
             # fallback mode: 0x0101 (640x480x256)
   cd 10  # int 10h, Vesa BIOS extensions
 
-# 8d:
+# 90:
   # load information for the (hopefully) current video mode
   # mostly just for the address to the linear frame buffer
   b4 4f  # ah <- 4f (VBE)
@@ -177,7 +181,7 @@
   bf 00 7f  # di <- 0x7f00 (video mode info) [label]
   cd 10
 
-# 99:
+# 9c:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
     f8 7c  # *gdt_descriptor [label]
@@ -187,8 +191,7 @@
   ea 00 7d 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
 
 # padding
-# ad:
-                                       00 00 00
+# b0:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -256,6 +259,9 @@ e9 fd ff  # loop forever
   8e e8  # gs <- ax
 
 # 10e:
+  bc 00 00 07 00  # esp <- 0x00070000 (wasting earlier stack above)
+
+# 113:
   # load interrupt handlers
   0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
     f8 7e 00 00  # *idt_descriptor [label]
@@ -269,20 +275,19 @@ e9 fd ff  # loop forever
   # Reference:
   #   https://wiki.osdev.org/Exceptions
 
-# 115:
+# 11a:
   # enable keyboard IRQ (1)
   b0 fd  # al <- 0xfd  # disable mask for IRQ1
   e6 21  # port 0x21 <- al
 
-# 119:
+# 11e:
   # initialization is done; enable interrupts
   fb
   e9 e1 16 00 00  # jump to 0x9400 [label]
 
 # padding
-# 11f:
-                                             00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 124:
+            00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
