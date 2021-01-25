@@ -30,7 +30,7 @@ operating systems. There's also currently no code/data segment separation,
 just labels and bytes. I promise not to write self-modifying code. Security
 and sandboxing is still an open question.
 
-Programs start executing at address 0x9000. See baremetal/boot.hex for
+Programs start executing at address 0x9400. See baremetal/boot.hex for
 details.
 
 Mu programs always run all their automated tests first. `main` only runs if

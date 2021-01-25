@@ -24,7 +24,7 @@
 # This file contains just lowercase hex bytes and comments. Zero
 # error-checking. Make liberal use of:
 #   - comments documenting expected offsets
-#   - size checks on the emitted file (currently: 5120 bytes)
+#   - size checks on the emitted file (currently: 6144 bytes)
 #   - xxd to eyeball that offsets contain expected bytes
 #
 # Programs using this initialization:
@@ -34,20 +34,24 @@
 #   - must start executing immediately after this file (see outline below)
 
 # Outline of this file with offsets and the addresses they map to at run-time:
-#   offset    0 (address 7c00): boot code, 16-bit mode
-#            80 (address 7c80) global descriptor table
-#            a0 (address 7ca0) <== gdt_descriptor
-#   offset   e0 (address 7ce0): boot code
-#   offset  100 (address 7d00): interrupt handler code
-#           1c8 (address 7dc8) <== keyboard buffer
-#           1f8 (address 7df8) <== idt_descriptor
+# -- 16-bit mode code
+#   offset    0 (address 7c00): boot code
+# -- 16-bit mode data
+#            e0 (address 7c80) global descriptor table
+#            f8 (address 7ca0) <== gdt_descriptor
+# -- 32-bit mode code
+#   offset  100 (address 7d00): boot code
 #           1fe (address 7dfe) boot sector marker (2 bytes)
-#   offset  200 (address 7e00): video mode data (256 bytes)
-#           228 (address 7e28) <== start of video RAM stored here
-#   offset  300 (address 7f00): interrupt descriptor table (256 bytes)
-#   offset  400 (address 8000): keyboard mappings (2KB)
-#   offset  c00 (address 8800): bitmap font (2KB)
-#   offset 1400 (address 9000): entrypoint for applications (don't forget to adjust survey_baremetal if this changes)
+#   offset  200 (address 7e00): interrupt handler code
+# -- 32-bit mode data
+#           2e0 (address 7ee0) <== keyboard buffer
+#           2f8 (address 7ef8) <== idt_descriptor
+#   offset  300 (address 7f00): video mode data (256 bytes)
+#           328 (address 7f28) <== start of video RAM stored here
+#   offset  400 (address 8000): interrupt descriptor table (1KB)
+#   offset  800 (address 8400): keyboard mappings (2KB)
+#   offset 1000 (address 8c00): bitmap font (2KB)
+#   offset 1800 (address 9400): entrypoint for applications (don't forget to adjust survey_baremetal if this changes)
 
 ## 16-bit entry point
 
@@ -90,7 +94,7 @@
   cd 13  # int 13h, BIOS disk service
   0f 82 8a 00  # jump-if-carry disk_error [label]
 # 26:
-  # load 63 sectors from disk into addresses [0xfa00, 0x17800)
+  # load second track from disk into addresses [0xfa00, 0x17800)
   b4 02  # ah <- 2  # read sectors from disk
   b5 00  # ch <- 0  # cylinder 0
   b6 01  # dh <- 1  # track 1
@@ -145,21 +149,48 @@
   b4 4f  # ah <- 4f (VBE)
   b0 01  # al <- 01 (get video mode)
   b9 07 01  # cx <- 0x0107 (mode we requested)
-  bf 00 7e  # di <- 0x7e00 (video mode info) [label]
+  bf 00 7f  # di <- 0x7f00 (video mode info) [label]
   cd 10
 
 # 6c:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
-    a0 7c  # *gdt_descriptor [label]
+    f8 7c  # *gdt_descriptor [label]
   0f 20 c0  # eax <- cr0
   66 83 c8 01  # eax <- or 0x1
   0f 22 c0  # cr0 <- eax
-  ea e0 7c 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
+  ea 00 7d 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
+
+# padding
+# 80:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# cf:
+# disk_error:
+  # print 'D' to top-left of screen to indicate disk error
+  # *0xb8000 <- 0x0f44
+  # bx <- 0xb800
+  bb 00 b8
+  # ds <- bx
+  8e db  # 11b/mod 011b/reg/ds 011b/rm/bx
+  # al <- 'D'
+  b0 44
+  # ah <- 0x0f  # white on black
+  b4 0f
+  # bx <- 0
+  bb 00 00
+  # *ds:bx <- ax
+  89 07  # 00b/mod/indirect 000b/reg/ax 111b/rm/bx
+
+e9 fd ff  # loop forever
 
 ## GDT: 3 records of 8 bytes each
 
-# 80:
+# e0:
 # gdt_start:
 # gdt_null:  mandatory null descriptor
   00 00 00 00 00 00 00 00
@@ -180,46 +211,18 @@
   00  # base[24:32]
 # gdt_end:
 
-# padding
-# 98:
-                        00 00 00 00 00 00 00 00
-
-# a0:
+# f8:
 # gdt_descriptor:
   17 00  # final index of gdt = gdt_end - gdt_start - 1
-  80 7c 00 00  # start = gdt_start [label]
+  e0 7c 00 00  # start = gdt_start [label]
 
 # padding
-# a5:
-                  00 00 00 00 00 00 00 00 00 00
-
-# b0:
-# disk_error:
-  # print 'D' to top-left of screen to indicate disk error
-  # *0xb8000 <- 0x0f44
-  # bx <- 0xb800
-  bb 00 b8
-  # ds <- bx
-  8e db  # 11b/mod 011b/reg/ds 011b/rm/bx
-  # al <- 'D'
-  b0 44
-  # ah <- 0x0f  # white on black
-  b4 0f
-  # bx <- 0
-  bb 00 00
-  # *ds:bx <- ax
-  89 07  # 00b/mod/indirect 000b/reg/ax 111b/rm/bx
-
-e9 fd ff  # loop forever
-
-# padding
-# c1:
-   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# fe:
+                                          00 00
 
 ## 32-bit code from this point (still some instructions not in SubX)
 
-# e0:
+# offset 100 (address 0x7d00):
 # initialize_32bit_mode:
   66 b8 10 00  # ax <- offset 16 from gdt_start
   8e d8  # ds <- ax
@@ -228,9 +231,10 @@ e9 fd ff  # loop forever
   8e e0  # fs <- ax
   8e e8  # gs <- ax
 
+# 10e:
   # load interrupt handlers
   0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
-    f8 7d 00 00  # *idt_descriptor [label]
+    f8 7e 00 00  # *idt_descriptor [label]
 
   # For now, not bothering reprogramming the IRQ to not conflict with software
   # exceptions.
@@ -241,27 +245,49 @@ e9 fd ff  # loop forever
   # Reference:
   #   https://wiki.osdev.org/Exceptions
 
+# 115:
   # enable keyboard IRQ (1)
   b0 fd  # al <- 0xfd  # disable mask for IRQ1
   e6 21  # port 0x21 <- al
 
+# 119:
   # initialization is done; enable interrupts
   fb
-  e9 01 13 00 00  # jump to 0x9000 [label]
+  e9 e1 16 00 00  # jump to 0x9400 [label]
 
 # padding
-# ff:
+# 11f:
                                              00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 100:
+# 1fe:
+# final 2 bytes of boot sector
+55 aa
+
+## sector 2 onwards loaded by load_disk, not automatically on boot
+
+# offset 200 (address 0x7e00):
 # null interrupt handler:
   cf  # iret
 
 # padding
-# 101:
+# 201:
    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 110:
+# 210:
 # keyboard interrupt handler:
   # prologue
   fa  # disable interrupts
@@ -276,20 +302,20 @@ e9 fd ff  # loop forever
   24 01  # al <- and 0x1
   3c 00  # compare al, 0
   74 39  # jump to epilogue if = [label]
-# 120:
+# 220:
   # if keyboard buffer is full, return
   31 c9  # ecx <- xor ecx;  11/direct 001/r32/ecx 001/rm32/ecx
   # . var index/ecx: byte
   8a  # copy m8 at r32 to r8
     0d  # 00/mod/indirect 001/r8/cl 101/rm32/use-disp32
-    c8 7d 00 00  # disp32 [label]
+    e0 7e 00 00  # disp32 [label]
   # . al = *(keyboard buffer + index)
   8a  # copy m8 at r32 to r8
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
-    d0 7d 00 00  # disp32 [label]
+    e8 7e 00 00  # disp32 [label]
   # . if (al != 0) return
   3c 00  # compare al, 0
-# 130:
+# 230:
   75 27  # jump to epilogue if != [label]
   # read keycode into al
   e4 60  # al <- port 0x60
@@ -299,37 +325,37 @@ e9 fd ff  # loop forever
   3c 00  # compare al, 0
   58  # pop to eax (without touching flags)
   75 1d  # jump to epilogue if != [label]
-# 13c:
+# 23c:
   # al <- *(keyboard normal map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
-    00 80 00 00  # disp32 [label]
+    00 84 00 00  # disp32 [label]
   # if there's no character mapping, return
   3c 00  # compare al, 0
   74 13  # jump to epilogue if = [label]
-# 146:
+# 246:
   # store al in keyboard buffer
   88  # copy r8 to m8 at r32
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
-    d0 7d 00 00  # disp32 [label]
-# 14c:
+    e8 7e 00 00  # disp32 [label]
+# 24c:
   # increment index
   fe  # increment byte
     05  # 00/mod/indirect 000/subop/increment 101/rm32/use-disp32
-    c8 7d 00 00  # disp32 [label]
+    e0 7e 00 00  # disp32 [label]
   # clear top nibble of index (keyboard buffer is circular)
   80  # and byte
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
-    c8 7d 00 00  # disp32 [label]
+    e0 7e 00 00  # disp32 [label]
     0f  # imm8
-# 159:
+# 259:
   # epilogue
   61  # pop all registers
   fb  # enable interrupts
   cf  # iret
 
 # padding
-# 15c:
+# 25c:
                                     00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -337,76 +363,69 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 1c8:
+# 2e0:
 # var keyboard circular buffer
 # write index: nibble
 # still take up 4 bytes so SubX can handle it
   00 00 00 00
-# 1cc:
+# 2e4:
 # read index: nibble
 # still take up 4 bytes so SubX can handle it
   00 00 00 00
-# 1d0:
+# 2e8:
 # circular buffer: byte[16]
   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# padding
-# 1e0:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-
-# 1f8:
+# 2f8:
 # idt_descriptor:
   ff 00  # idt_end - idt_start - 1
-  00 7f 00 00  # start = idt_start [label]
+  00 80 00 00  # start = idt_start [label]
 
-# 1fe:
-# final 2 bytes of boot sector
-55 aa
+# padding
+# 2fe:
+                                          00 00
 
-## sector 2
-# loaded by load_disk, not automatically on boot
-
-# offset 200 (address 0x7e00):
+# offset 300 (address 0x7f00):
 # video mode info:
   00 00  # attributes
   00  # winA
   00  # winB
-# 204
+# 304
   00 00  # granularity
   00 00  # winsize
-# 208
+# 308
   00 00  # segmentA
   00 00  # segmentB
-# 20c
+# 30c
   00 00 00 00  # realFctPtr (who knows)
-# 210
+# 310
   00 00  # pitch
   00 00  # Xres
-# 214
+# 314
   00 00  # Yres
   00 00  # Wchar Ychar
-# 218
+# 318
   00  # planes
   00  # bpp
   00  # banks
   00  # memory_model
-# 21c
+# 31c
   00  # bank_size
   00  # image_pages
   00  # reserved
-# 21f
+# 31f
   00 00  # red_mask red_position
   00 00  # green_mask green_position
   00 00  # blue_mask blue_position
   00 00  # rsv_mask rsv_position
   00  # directcolor_attributes
-# 228
+# 328
   00 00 00 00  # physbase <== linear frame buffer
 
-# 22c
+# 32c
 # reserved for video mode info
                                     00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -423,8 +442,9 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# offset 300 (address 0x7f00): interrupt descriptor table
-# 32 entries * 8 bytes each = 256 bytes (0x100)
+# offset 400 (address 0x8000):
+# interrupt descriptor table {{{
+# 128 entries * 8 bytes each = 1024 bytes (0x400)
 # idt_start:
 
 00 00 00 00 00 00 00 00
@@ -440,19 +460,121 @@ e9 fd ff  # loop forever
 # https://wiki.osdev.org/index.php?title=Interrupts&oldid=25102#Default_PC_Interrupt_Vector_Assignment
 
 # entry 8: clock
-  00 7d  # target[0:16] = null interrupt handler [label]
+  00 7e  # target[0:16] = null interrupt handler [label]
   08 00  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
   00 00  # target[16:32]
 
 # entry 9: keyboard
-  10 7d  # target[0:16] = keyboard interrupt handler [label]
+  10 7e  # target[0:16] = keyboard interrupt handler [label]
   08 00  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
   00 00  # target[16:32]
 
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+
+# 500:
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+
+# 600:
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+
+# 700:
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
@@ -476,10 +598,11 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 # idt_end:
+# }}}
 
 ## the rest of this file has data
 
-# offset 400 (address 0x8000):
+# offset 800 (address 0x8400):
 # translating keys to ASCII {{{
 # keyboard normal map:
 00
@@ -487,22 +610,22 @@ e9 fd ff  # loop forever
    1b
 #     |<--- digits -------------->| -  =  bs
       31 32 33 34 35 36 37 38 39 30 2d 3d 08
-# offset 40f
+# offset 80f
 #  tb q  w  e  r  t  y  u  i  o  p  [  ]
    09 71 77 65 72 74 79 75 69 6f 70 5b 5d
-# offset 41c
+# offset 81c
 #                                         enter
                                           0a 00
-# offset 41e
+# offset 81e
 #     a  s  d  f  g  h  j  k  l  ;  '  `     \
       61 73 64 66 67 68 6a 6b 6c 3b 27 60 00 5c
-# offset 42c
+# offset 82c
 #     z  x  c  v  b  n  m  ,  .  /     *
       7a 78 63 76 62 6e 6d 2c 2e 2f 00 2a
-# offset 438
+# offset 838
 #                          space
                         00 20
-# offset 43a
+# offset 83a
                               00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -517,7 +640,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 500:
+# 900:
 # keyboard shift map:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -536,7 +659,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 600:
+# a00:
 # keyboard ctrl map:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -556,7 +679,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 # padding (there might be more keyboard tables)
-# 700:
+# b00:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -573,8 +696,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-# 800:
+# c00:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -591,6 +713,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# d00:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -607,7 +730,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-# a00:
+# e00:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -624,6 +747,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# f00:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -642,7 +766,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 # }}}
 
-# offset c00 (address 0x8800)
+# offset 1000 (address 0x8c00)
 # Bitmaps for some ASCII characters (soon Unicode) {{{
 # Part of GNU Unifont
 # 8px wide, 16px tall
@@ -880,6 +1004,6 @@ e9 fd ff  # loop forever
   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 # }}}
 
-# offset 1400 (address 0x9000)
+# offset 1800 (address 0x9400)
 
 # vim:ft=subx

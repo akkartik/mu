@@ -7,7 +7,7 @@
 #
 # The expected input is a stream of bytes and some interspersed labels.
 # Comments and '==' segment headers are allowed, but ignored. The emitted code
-# will all lie in a single header, and start at address 0x9000.
+# will all lie in a single header, and start at address 0x9400.
 #   $ cat x
 #   == code
 #   l1:
@@ -197,7 +197,7 @@ test-subx-survey-computes-addresses:
     #     01
     #
     # trace contains (in any order):
-    #   label x is at address 0x9005
+    #   label x is at address 0x9405
     #
     # . prologue
     55/push-ebp
@@ -315,10 +315,10 @@ test-subx-survey-computes-addresses:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # . check-trace-contains("label 'x' is at address 0x00009005.", msg)
+    # . check-trace-contains("label 'x' is at address 0x00009405.", msg)
     # . . push args
     68/push  "F - test-subx-survey-computes-addresses/0"/imm32
-    68/push  "label 'x' is at address 0x00009005."/imm32
+    68/push  "label 'x' is at address 0x00009405."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
@@ -330,7 +330,7 @@ test-subx-survey-computes-addresses:
 
 compute-offsets:  # in: (addr stream byte), labels: (addr stream {(handle array byte), address})
     # pseudocode:
-    #   var current-address = 0x9000
+    #   var current-address = 0x9400
     #   var line: (stream byte 512)
     #   while true                                  # line loop
     #     clear-stream(line)
@@ -362,8 +362,8 @@ compute-offsets:  # in: (addr stream byte), labels: (addr stream {(handle array 
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var current-address/esi: int = 0x9000
-    be/copy-to-esi  0x9000/imm32
+    # var current-address/esi: int = 0x9400
+    be/copy-to-esi  0x9400/imm32
     # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/size
@@ -595,7 +595,7 @@ test-compute-offsets:
     #     34
     #
     # trace contains (in any order):
-    #   label 'x' is at address 0x9006.
+    #   label 'x' is at address 0x9406.
     #
     # . prologue
     55/push-ebp
@@ -697,10 +697,10 @@ test-compute-offsets:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # . check-trace-contains("label 'x' is at address 0x00009006.", msg)
+    # . check-trace-contains("label 'x' is at address 0x00009406.", msg)
     # . . push args
     68/push  "F - test-compute-offsets"/imm32
-    68/push  "label 'x' is at address 0x00009006."/imm32
+    68/push  "label 'x' is at address 0x00009406."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
@@ -732,7 +732,7 @@ emit-output:datum:  # slice
 
 emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr stream {(handle array byte), address})
     # pseudocode:
-    #   var address-of-next-instruction = 0x9000
+    #   var address-of-next-instruction = 0x9400
     #   var line: (stream byte 512)
     #   line-loop:
     #   while true
@@ -803,8 +803,8 @@ emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-    # var address-of-next-instruction/ebx = 0x9000
-    bb/copy-to-ebx  0x9000/imm32
+    # var address-of-next-instruction/ebx = 0x9400
+    bb/copy-to-ebx  0x9400/imm32
 $emit-output:line-loop:
     # clear-stream(line)
     # . . push args
@@ -1491,12 +1491,12 @@ test-emit-output-code-label:
     #     ef gh
     #     e8 l1/disp32
     #   labels:
-    #     - 'l1': 0x9010
+    #     - 'l1': 0x9410
     #
     # output:
     #   ab cd
     #   ef gh
-    #   e8 07 00 00 00  # 0x9010 - 0x9009 = 7
+    #   e8 07 00 00 00  # 0x9410 - 0x9409 = 7
     #
     # . prologue
     55/push-ebp
@@ -1566,8 +1566,8 @@ test-emit-output-code-label:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . stream-add2(labels, "l1", 0x9010)
-    68/push  0x9010/imm32/label-address
+    # . stream-add2(labels, "l1", 0x9410)
+    68/push  0x9410/imm32/label-address
     # . . push handle for "l1"
     53/push-ebx
     68/push  "l1"/imm32
