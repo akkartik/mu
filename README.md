@@ -16,8 +16,6 @@ $ echo $?
 7
 ```
 
-[![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
-
 Rather than start from some syntax and introduce layers of translation to
 implement it, Mu starts from the processor's instruction set and tries to get
 to _some_ safe and clear syntax with as few layers of translation as possible.
