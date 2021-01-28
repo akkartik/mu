@@ -38,7 +38,7 @@
 # padding), and then we jump into a better notation. The rest of the stack
 # (really only in a couple of slightly higher-level places) only needs to know
 # a few magic constants:
-#   Video memory: start is stored at 0x7f28
+#   Video memory: start is stored at 0x8128
 #   Keyboard buffer: starts at 0x7ee0
 
 # Outline of this file with offsets and the addresses they map to at run-time:
@@ -54,10 +54,10 @@
 # -- 32-bit mode data
 #           2e0 (address 7ee0) <== keyboard buffer
 #           2f8 (address 7ef8) <== idt_descriptor
-#   offset  300 (address 7f00): video mode data (256 bytes)
-#           328 (address 7f28) <== start of video RAM stored here
-#   offset  400 (address 8000): interrupt descriptor table (1KB)
-#   offset  800 (address 8400): keyboard mappings (2KB)
+#   offset  500 (address 8100): video mode data (256 bytes)
+#           528 (address 8128) <== start of video RAM stored here
+#   offset  600 (address 8200): interrupt descriptor table (1KB)
+#   offset  a00 (address 8600): keyboard mappings (1.5KB)
 #   offset 1000 (address 8c00): bitmap font (2KB)
 #   offset 1800 (address 9400): entrypoint for applications (don't forget to adjust survey_baremetal if this changes)
 
@@ -148,7 +148,7 @@
   b4 4f  # ah <- 4f (VBE)
   b0 01  # al <- 01 (get video mode)
   b9 07 01  # cx <- 0x0107 (mode we requested)
-  bf 00 7f  # di <- 0x7f00 (video mode info) [label]
+  bf 00 81  # di <- 0x7f00 (video mode info) [label]
   cd 10
 
 # 55:
@@ -377,24 +377,25 @@ e9 fd ff  # loop forever
 # $4:
 # 278:
   # - convert key to character
-  # if (shift) keyboard normal map += 0x100
+  # if (shift) use keyboard normal map
   81  # operate on rm32 and imm32
     3d  # 00/mod/indirect 111/subop/compare 101/rm32/use-disp32
     dc 7e 00 00  # disp32 = shift [label]
     00 00 00 00  # imm32
   74 08  # jump to $5 if = [label]
 # 284:
+  # otherwise use keyboard shift map
   # al <- *(keyboard shift map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
-    00 85 00 00  # disp32 [label]
+    00 87 00 00  # disp32 [label]
   eb 06  # jump to $6 [label]
 # $5:
 # 28c:
   # al <- *(keyboard normal map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
-    00 84 00 00  # disp32 [label]
+    00 86 00 00  # disp32 [label]
 # $6:
 # 292:
   # - if there's no character mapping, return
@@ -449,13 +450,49 @@ e9 fd ff  # loop forever
 # 2f8:
 # idt_descriptor:
   ff 03  # idt_end - idt_start - 1
-  00 80 00 00  # start = idt_start [label]
+  00 82 00 00  # start = idt_start [label]
 
 # padding
 # 2fe:
                                           00 00
 
-# offset 300 (address 0x7f00):
+# offset 300
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# offset 400
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# offset 500 (address 0x8100):
 # video mode info {{{
   00 00  # attributes
   00  # winA
@@ -510,7 +547,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 # }}}
 
-# offset 400 (address 0x8000):
+# offset 600 (address 0x8200):
 # interrupt descriptor table {{{
 # 128 entries * 8 bytes each = 1024 bytes (0x400)
 # idt_start:
@@ -675,7 +712,7 @@ e9 fd ff  # loop forever
 
 ## the rest of this file has data
 
-# offset 800 (address 0x8400):
+# offset a00 (address 0x8600):
 # translating keys to ASCII {{{
 # keyboard normal map:
 00
@@ -717,7 +754,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 900:
+# offset b00:
 # keyboard shift map:
 00
 #  es
@@ -756,7 +793,7 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# a00:
+# c00:
 # keyboard ctrl map:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -776,40 +813,6 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 # padding (there might be more keyboard tables)
-# b00:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-# c00:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 # d00:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
