@@ -21,8 +21,8 @@
 #
 # Since we start out in 16-bit mode, we need instructions SubX doesn't
 # support.
-# This file contains just lowercase hex bytes and comments. Zero
-# error-checking. Make liberal use of:
+# This file contains just lowercase hex bytes and comments. It makes liberal
+# use of:
 #   - comments documenting expected offsets
 #   - size checks on the emitted file (currently: 6144 bytes)
 #   - xxd to eyeball that offsets contain expected bytes
@@ -32,6 +32,14 @@
 #   - can't print text to video memory (past these boot sectors)
 #   - must only print raw pixels (256 colors) to video memory (resolution 1024x768)
 #   - must start executing immediately after this file (see outline below)
+#
+# Don't panic! This file doesn't contain any loops or function calls. 80% of
+# it is data. One pass through less than 1KB of code (there's lots of
+# padding), and then we jump into a better notation. The rest of the stack
+# (really only in a couple of slightly higher-level places) only needs to know
+# a few magic constants:
+#   Video memory: start is stored at 0x7f28
+#   Keyboard buffer: starts at 0x7ee0
 
 # Outline of this file with offsets and the addresses they map to at run-time:
 # -- 16-bit mode code
