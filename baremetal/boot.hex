@@ -39,7 +39,7 @@
 # (really only in a couple of slightly higher-level places) only needs to know
 # a few magic constants:
 #   Video memory: start is stored at 0x8128
-#   Keyboard buffer: starts at 0x7ee0
+#   Keyboard buffer: starts at 0x8028
 
 # Outline of this file with offsets and the addresses they map to at run-time:
 # -- 16-bit mode code
@@ -52,8 +52,9 @@
 #           1fe (address 7dfe) boot sector marker (2 bytes)
 #   offset  200 (address 7e00): interrupt handler code
 # -- 32-bit mode data
-#           2e0 (address 7ee0) <== keyboard buffer
-#           2f8 (address 7ef8) <== idt_descriptor
+#   offset  400 (address 8000): handler data
+#           410 (address 8010): keyboard handler data
+#           428 (address 8028) <== keyboard buffer
 #   offset  500 (address 8100): video mode data (256 bytes)
 #           528 (address 8128) <== start of video RAM stored here
 #   offset  600 (address 8200): interrupt descriptor table (1KB)
@@ -238,7 +239,7 @@ e9 fd ff  # loop forever
 # 113:
   # load interrupt handlers
   0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
-    f8 7e 00 00  # *idt_descriptor [label]
+    00 80 00 00  # *idt_descriptor [label]
 
   # For now, not bothering reprogramming the IRQ to not conflict with software
   # exceptions.
@@ -311,11 +312,11 @@ e9 fd ff  # loop forever
   # var index/ecx: byte
   8a  # copy m8 at r32 to r8
     0d  # 00/mod/indirect 001/r8/cl 101/rm32/use-disp32
-    e0 7e 00 00  # disp32 [label]
+    28 80 00 00  # disp32 [label]
   # al = *(keyboard buffer + index)
   8a  # copy m8 at r32 to r8
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
-    e8 7e 00 00  # disp32 [label]
+    30 80 00 00  # disp32 [label]
   # if (al != 0) return
   3c 00  # compare al, 0
 # 230:
@@ -331,7 +332,7 @@ e9 fd ff  # loop forever
   # *shift = 0
   c7  # copy imm32 to rm32
     05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    dc 7e 00 00  # disp32 [label]
+    10 80 00 00  # disp32 [label]
     00 00 00 00  # imm32
 # 242:
 # $1:
@@ -342,7 +343,7 @@ e9 fd ff  # loop forever
   # *shift = 0
   c7  # copy imm32 to rm32
     05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    dc 7e 00 00  # disp32 [label]
+    10 80 00 00  # disp32 [label]
     00 00 00 00  # imm32
 # 250:
 # $2:
@@ -360,7 +361,7 @@ e9 fd ff  # loop forever
   # *shift = 1
   c7  # copy imm32 to rm32
     05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    dc 7e 00 00  # disp32 [label]
+    10 80 00 00  # disp32 [label]
     01 00 00 00  # imm32
   eb 41 # jump to epilogue [label]
 # 268:
@@ -371,7 +372,7 @@ e9 fd ff  # loop forever
   # *shift = 1
   c7  # copy imm32 to rm32
     05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    dc 7e 00 00  # disp32 [label]
+    10 80 00 00  # disp32 [label]
     01 00 00 00  # imm32
   eb 31 # jump to epilogue [label]
 # $4:
@@ -380,7 +381,7 @@ e9 fd ff  # loop forever
   # if (shift) use keyboard normal map
   81  # operate on rm32 and imm32
     3d  # 00/mod/indirect 111/subop/compare 101/rm32/use-disp32
-    dc 7e 00 00  # disp32 = shift [label]
+    10 80 00 00  # disp32 = shift [label]
     00 00 00 00  # imm32
   74 08  # jump to $5 if = [label]
 # 284:
@@ -405,17 +406,17 @@ e9 fd ff  # loop forever
   # - store al in keyboard buffer
   88  # copy r8 to m8 at r32
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
-    e8 7e 00 00  # disp32 [label]
+    30 80 00 00  # disp32 [label]
 # 29c:
   # increment index
   fe  # increment byte
     05  # 00/mod/indirect 000/subop/increment 101/rm32/use-disp32
-    e0 7e 00 00  # disp32 [label]
+    28 80 00 00  # disp32 [label]
 # 2a2:
   # clear top nibble of index (keyboard buffer is circular)
   80  # and byte
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
-    e0 7e 00 00  # disp32 [label]
+    28 80 00 00  # disp32 [label]
     0f  # imm8
 # 2a9:
   # epilogue
@@ -428,57 +429,60 @@ e9 fd ff  # loop forever
                                     00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 300:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 2dc:
-# var shift: boolean
-  00 00 00 00
-
-# 2e0:
-# var keyboard circular buffer
-# write index: nibble
-# still take up 4 bytes so SubX can handle it
-  00 00 00 00
-# 2e4:
-# read index: nibble
-# still take up 4 bytes so SubX can handle it
-  00 00 00 00
-# 2e8:
-# circular buffer: byte[16]
-  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-# 2f8:
+# offset 400 (address 0x8000): interrupt handler data
 # idt_descriptor:
   ff 03  # idt_end - idt_start - 1
   00 82 00 00  # start = idt_start [label]
 
 # padding
-# 2fe:
-                                          00 00
+# 406:
+                  00 00 00 00 00 00 00 00 00 00
 
-# offset 300
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 410:
+# var shift: boolean
+  00 00 00 00
 
-# offset 400
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# padding
+# 414:
+            00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+
+# 428:
+# var keyboard circular buffer
+# write index: nibble
+# still take up 4 bytes so SubX can handle it
+  00 00 00 00
+# 42c:
+# read index: nibble
+# still take up 4 bytes so SubX can handle it
+  00 00 00 00
+# 430:
+# circular buffer: byte[16]
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# padding
+# 440:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

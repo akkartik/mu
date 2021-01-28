@@ -20,9 +20,9 @@ read-key:  # kbd: (addr keyboard) -> result/eax: byte
     {
       75/jump-if-!= break/disp8
       # var read/ecx: byte = keyboard buffer's read index
-      8b/-> *0x7ee4 1/r32/CL  # keyboard-buffer-read
+      8b/-> *0x802c 1/r32/CL  # keyboard-buffer-read
       # var next-key/eax: byte = *(keyboard buffer + ecx)
-      8a/byte-> *(ecx+0x7ee8) 0/r32/AL  # keyboard-buffer-data
+      8a/byte-> *(ecx+0x8030) 0/r32/AL  # keyboard-buffer-data
       # if (next-key != 0) lock and remove from keyboard buffer
       81 7/subop/compare %eax 0/imm32
       {
@@ -30,9 +30,9 @@ read-key:  # kbd: (addr keyboard) -> result/eax: byte
         # TODO: add some instructions in this block to SubX if we ever want to
         # use bootstrap on baremetal programs
         fa/disable-interrupts
-        c6 0/subop/copy-byte *(ecx+0x7ee8) 0/imm8  # keyboard-buffer-data
-        ff 0/subop/increment *0x7ee4  # keyboard-buffer-read
-        81 4/subop/and *0x7ee4 0xf/imm32  # keyboard-buffer-read
+        c6 0/subop/copy-byte *(ecx+0x8030) 0/imm8  # keyboard-buffer-data
+        ff 0/subop/increment *0x802c  # keyboard-buffer-read
+        81 4/subop/and *0x802c 0xf/imm32  # keyboard-buffer-read
         fb/enable-interrupts
       }
       # return
