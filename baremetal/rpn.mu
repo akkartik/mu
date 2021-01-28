@@ -1,7 +1,6 @@
 # Integer arithmetic using postfix notation
 #
 # Limitations:
-#   '+' and '*' temporarily not available until the keyboard driver supports the shift key
 #   Division not implemented yet.
 #
 # To build:

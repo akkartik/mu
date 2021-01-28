@@ -296,70 +296,134 @@ e9 fd ff  # loop forever
   # if (status & 0x1) == 0, return
   24 01  # al <- and 0x1
   3c 00  # compare al, 0
-  74 39  # jump to epilogue if = [label]
+  74 89  # jump to epilogue if = [label]
 # 220:
-  # if keyboard buffer is full, return
+  # - if keyboard buffer is full, return
   31 c9  # ecx <- xor ecx;  11/direct 001/r32/ecx 001/rm32/ecx
-  # . var index/ecx: byte
+  # var index/ecx: byte
   8a  # copy m8 at r32 to r8
     0d  # 00/mod/indirect 001/r8/cl 101/rm32/use-disp32
     e0 7e 00 00  # disp32 [label]
-  # . al = *(keyboard buffer + index)
+  # al = *(keyboard buffer + index)
   8a  # copy m8 at r32 to r8
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
     e8 7e 00 00  # disp32 [label]
-  # . if (al != 0) return
+  # if (al != 0) return
   3c 00  # compare al, 0
 # 230:
-  75 27  # jump to epilogue if != [label]
-  # read keycode into al
+  75 77  # jump to epilogue if != [label]
+  # - read keycode
   e4 60  # al <- port 0x60
+# 234:
+  # - key released
+  # if (al == 0xaa) shift = false  # left shift is being lifted
+  3c aa  # compare al, 0xaa
+  75 0a  # jump to $1 if != [label]
+# 238:
+  # *shift = 0
+  c7  # copy imm32 to rm32
+    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+    dc 7e 00 00  # disp32 [label]
+    00 00 00 00  # imm32
+# 242:
+# $1:
+  # if (al == 0xb6) shift = false  # right shift is being lifted
+  3c b6  # compare al, 0xb6
+# 244:
+  75 0a  # jump to $1 if != [label]
+  # *shift = 0
+  c7  # copy imm32 to rm32
+    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+    dc 7e 00 00  # disp32 [label]
+    00 00 00 00  # imm32
+# 250:
+# $2:
   # if (al & 0x80) a key is being lifted; return
   50  # push eax
   24 80  # al <- and 0x80
   3c 00  # compare al, 0
   58  # pop to eax (without touching flags)
-  75 1d  # jump to epilogue if != [label]
-# 23c:
+  75 51  # jump to epilogue if != [label]
+# 258:
+  # - key pressed
+  # if (al == 0x2a) shift = true, return  # left shift pressed
+  3c 2a  # compare al, 0x2a
+  75 0c  # jump to $3 if != [label]
+  # *shift = 1
+  c7  # copy imm32 to rm32
+    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+    dc 7e 00 00  # disp32 [label]
+    01 00 00 00  # imm32
+  eb 41 # jump to epilogue [label]
+# 268:
+# $3:
+  # if (al == 0x36) shift = true, return  # right shift pressed
+  3c 36  # compare al, 0x36
+  75 0c  # jump to $4 if != [label]
+  # *shift = 1
+  c7  # copy imm32 to rm32
+    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+    dc 7e 00 00  # disp32 [label]
+    01 00 00 00  # imm32
+  eb 31 # jump to epilogue [label]
+# $4:
+# 278:
+  # - convert key to character
+  # if (shift) keyboard normal map += 0x100
+  81  # operate on rm32 and imm32
+    3d  # 00/mod/indirect 111/subop/compare 101/rm32/use-disp32
+    dc 7e 00 00  # disp32 = shift [label]
+    00 00 00 00  # imm32
+  74 08  # jump to $5 if = [label]
+# 284:
+  # al <- *(keyboard shift map + eax)
+  8a  # copy m8 at rm32 to r8
+    80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
+    00 85 00 00  # disp32 [label]
+  eb 06  # jump to $6 [label]
+# $5:
+# 28c:
   # al <- *(keyboard normal map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
     00 84 00 00  # disp32 [label]
-  # if there's no character mapping, return
+# $6:
+# 292:
+  # - if there's no character mapping, return
   3c 00  # compare al, 0
   74 13  # jump to epilogue if = [label]
-# 246:
-  # store al in keyboard buffer
+# 296:
+  # - store al in keyboard buffer
   88  # copy r8 to m8 at r32
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
     e8 7e 00 00  # disp32 [label]
-# 24c:
+# 29c:
   # increment index
   fe  # increment byte
     05  # 00/mod/indirect 000/subop/increment 101/rm32/use-disp32
     e0 7e 00 00  # disp32 [label]
+# 2a2:
   # clear top nibble of index (keyboard buffer is circular)
   80  # and byte
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
     e0 7e 00 00  # disp32 [label]
     0f  # imm8
-# 259:
+# 2a9:
   # epilogue
   61  # pop all registers
   fb  # enable interrupts
   cf  # iret
 
 # padding
-# 25c:
+# 2ac:
                                     00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00
+
+# 2dc:
+# var shift: boolean
+  00 00 00 00
 
 # 2e0:
 # var keyboard circular buffer
@@ -603,10 +667,10 @@ e9 fd ff  # loop forever
 00
 #  es
    1b
-#     |<--- digits -------------->| -  =  bs
+#     |<--- digits -------------->| -  =  backspace
       31 32 33 34 35 36 37 38 39 30 2d 3d 08
 # offset 80f
-#  tb q  w  e  r  t  y  u  i  o  p  [  ]
+# tab q  w  e  r  t  y  u  i  o  p  [  ]
    09 71 77 65 72 74 79 75 69 6f 70 5b 5d
 # offset 81c
 #                                         enter
@@ -614,15 +678,19 @@ e9 fd ff  # loop forever
 # offset 81e
 #     a  s  d  f  g  h  j  k  l  ;  '  `     \
       61 73 64 66 67 68 6a 6b 6c 3b 27 60 00 5c
+                                        # ^ left shift
 # offset 82c
 #     z  x  c  v  b  n  m  ,  .  /     *
       7a 78 63 76 62 6e 6d 2c 2e 2f 00 2a
+                                  # ^ right shift
 # offset 838
 #                          space
                         00 20
 # offset 83a
                               00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# numeric keypad would start here, but isn't implemented
+                                             00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -637,11 +705,31 @@ e9 fd ff  # loop forever
 
 # 900:
 # keyboard shift map:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00
+#  es
+   1b
+#     !  @  #  $  %  ^  &  *  (  )  _  +  backspace
+      21 40 23 24 25 53 26 2a 28 29 5f 2b 08
+# offset 90f
+# tab Q  W  E  R  T  Y  U  I  O  P  {  }
+   09 51 57 55 52 54 59 55 59 5f 50 7b 7d
+# offset 91c
+#                                         enter
+                                          0a 00
+# offset 91e
+#     A  S  D  F  G  H  J  K  L  :  "  ~     |
+      41 53 44 46 47 48 4a 4b 4c 3a 22 7e 00 7c
+# offset 92c
+#     Z  X  C  V  B  N  M  <  >  ?     *
+      5a 58 43 56 42 4e 4d 3c 3e 3f 00 2a
+# offset 938
+#                          space
+                        00 20
+# offset 93a
+                              00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# numeric keypad would start here, but isn't implemented
+                                             00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

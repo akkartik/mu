@@ -10,7 +10,8 @@ they are extremely parsimonious in the hardware they assume:
      pixels per grapheme, this will give us 160x128 graphemes. But it's still
      an open question if it's reasonably widely supported by modern hardware.
      If it isn't, I'll downsize.
-  2. Keyboard. Just a partial US keyboard for now.
+  2. Keyboard. Just a partial US keyboard for now. Main qwerty zone only. No
+     number pad, no function keys, no ctrl/alt/meta/fn/super/capslck/numlck.
 
 That's it:
   * No wifi, no networking
