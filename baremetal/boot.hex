@@ -51,10 +51,12 @@
 #   offset  100 (address 7d00): boot code
 #           1fe (address 7dfe) boot sector marker (2 bytes)
 #   offset  200 (address 7e00): interrupt handler code
+#   offset  300 (address 7f00): mouse handler code
 # -- 32-bit mode data
 #   offset  400 (address 8000): handler data
 #           410 (address 8010): keyboard handler data
 #           428 (address 8028) <== keyboard buffer
+#           480 (address 8080) <== mouse buffer
 #   offset  500 (address 8100): video mode data (256 bytes)
 #           528 (address 8128) <== start of video RAM stored here
 #   offset  600 (address 8200): interrupt descriptor table (1KB)
@@ -247,6 +249,8 @@ e9 fd ff  # loop forever
   #
   # Interrupt 1 (keyboard) conflicts with debugger faults. We don't use a
   # debugger.
+  # Interrupt 12 (mouse) conflicts with stack segment faults. We don't use a
+  # separate stack segment.
   # Reference:
   #   https://wiki.osdev.org/Exceptions
 
@@ -256,20 +260,153 @@ e9 fd ff  # loop forever
   e6 21  # port 0x21 <- al
 
 # 11e:
+# initialize PS/2 mouse {{{
+  # https://forum.osdev.org/viewtopic.php?t=10247
+  # A
+  # wait for signal {
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # loop (-6) if bit 1 is set
+  # }
+  # port 0x64 <- 0xa8
+  b0 a8
+  e6 64
+
+# 128:
+  # B
+  # wait for signal {
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # loop (-6) if bit 1 is set
+  # }
+  # port 0x64 <- 0x20
+  b0 20
+  e6 64
+
+# 132:
+  # C
+  # wait for data {
+  e4 64  # al <- port 0x64
+  a8 01  # set zf if bit 0 (least significant) is not set
+  74 fa  # loop (-6) if bit 0 is not set
+  # }
+  # cl <- port 0x60
+  e4 60  # al <- port 0x60
+  88  # copy r8 to rm8
+    c1  # 11/mod/direct 000/r8/al 001/rm8/cl
+
+# 13c:
+  # cl |= 2
+  80
+    c9  # 11/mod/direct 001/subop/or 001/rm8/cl
+    02  # imm8
+
+# 13f:
+  # D
+  # wait for signal {
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # loop (-6) if bit 1 is set
+  # }
+  # port 0x64 <- 0x60
+  b0 60
+  e6 64
+
+# 149:
+  # E
+  # wait for signal {
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # loop (-6) if bit 1 is set
+  # }
+  # port 0x60 <- cl
+  8a  # copy rm8 to r8
+    c1  # 11/mod/direct 000/r8/al 001/rm8/cl
+  e6 60
+
+# 153:
+  # F
+  # wait for signal {
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # loop (-6) if bit 1 is set
+  # }
+  # port 0x64 <- 0xd4
+  b0 d4
+  e6 64
+
+# 15d:
+  # G
+  # wait for signal {
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # loop (-6) if bit 1 is set
+  # }
+  # port 0x64 <- 0xf6
+  b0 f6
+  e6 64
+
+# 167:
+  # H: acknowledge
+  # wait for data {
+  e4 64  # al <- port 0x64
+  # sometimes you should check the result, sometimes you shouldn't
+  00 00
+  00 00
+#?   a8 01  # set zf if bit 0 (least significant) is not set
+#?   74 fa  # loop (-6) if bit 0 is not set
+  # }
+  e4 60  # al <- port 0x60
+
+# 16f:
+  # I
+  # wait for signal {
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # loop (-6) if bit 1 is set
+  # }
+  # port 0x64 <- 0xd4
+  b0 d4
+  e6 64
+
+# 179:
+  # J
+  # wait for signal {
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # loop (-6) if bit 1 is set
+  # }
+  # port 0x64 <- 0xf4
+  b0 f4
+  e6 64
+
+# 183:
+  # K: acknowledge
+  # wait for data {
+  e4 64  # al <- port 0x64
+  # sometimes you should check the result, sometimes you shouldn't
+  00 00
+  00 00
+#?   a8 01  # set zf if bit 0 (least significant) is not set
+#?   74 fa  # loop (-6) if bit 0 is not set
+  # }
+  e4 60  # al <- port 0x60
+
+# }}}
+
+# 18b:
+  # enable mouse IRQ (12, which is 4 in PIC2)
+  b0 ef  # al <- 0xef  # disable mask for IRQ4
+  e6 a1  # port 0xa1 <- al
+
+# 18f:
   # initialization is done; enable interrupts
   fb
-  e9 dc 16 00 00  # jump to 0x9400 [label]
+  e9 6b 16 00 00  # jump to 0x9400 [label]
 
 # padding
-# 124:
-            00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 195:
+               00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -293,6 +430,8 @@ e9 fd ff  # loop forever
 
 # 210:
 # keyboard interrupt handler:
+  # Needs to be here because we don't have a way yet to stitch addresses of
+  # arbitrary SubX functions.
   # prologue
   fa  # disable interrupts
   60  # push all registers to stack
@@ -432,8 +571,30 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
 # 300:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# mouse interrupt handler:
+  # Needs to be here because we don't have a way yet to stitch addresses of
+  # arbitrary SubX functions.
+  # https://wiki.osdev.org/Mouse_Input
+  # https://forum.osdev.org/viewtopic.php?t=10247
+#?   # prologue
+#?   fa  # disable interrupts
+#? #?   60  # push all registers to stack
+#? #?   # light up top-left of screen
+#? #?   # . eax = top-left
+#? #?   8b  # copy rm32 to r32
+#? #?     05  # 00/mod/indirect 000/r32/eax 101/rm32/use-disp32
+#? #?     28 7f 00 00  # disp32 [label]
+#? #?   # . color top-left red
+#? #?   c7  # copy imm32 to rm32
+#? #?     38  # 00/mod/indirect 111/subop/copy 000/rm32/eax
+#? #?     04 00 00 00  # imm32 (color)
+#? #?   # epilogue
+#? #?   61  # pop all registers
+#?   fb  # enable interrupts
+  cf  # iret
+   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -487,8 +648,26 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# 480:
+# var mouse-x: int (in pixels)
+00 00 00 00
+# var mouse-y: int
+00 00 00 00
+
+# 488:
+# var stashed-pixels: (array byte 4)
+00 00 00
+00    00
+00 00 00
+
+# 490:
+# type click-event = struct { int32 x;  int32 y; } (single mouse button for now)
+# var mouse-buffer: (array click-event 2)
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# padding
+# 4a0:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -699,7 +878,15 @@ e9 fd ff  # loop forever
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
+
 00 00 00 00 00 00 00 00
+#? # entry 0x74: mouse
+#?   00 7f  # target[0:16] = mouse interrupt handler [label]
+#?   08 00  # segment selector (gdt_code)
+#?   00  # unused
+#?   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
+#?   00 00  # target[16:32]
+
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
