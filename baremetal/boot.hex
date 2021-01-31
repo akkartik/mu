@@ -36,10 +36,11 @@
 # Don't panic! This file doesn't contain any loops or function calls. 80% of
 # it is data. One pass through less than 1KB of code (there's lots of
 # padding), and then we jump into a better notation. The rest of the stack
-# (really only in a couple of slightly higher-level places) only needs to know
+# (really only in a couple of slightly higher-level places) needs to know just
 # a few magic constants:
 #   Video memory: start is stored at 0x8128
 #   Keyboard buffer: starts at 0x8028
+#   Buffer of mouse events: starts at 0x8090
 
 # Outline of this file with offsets and the addresses they map to at run-time:
 # -- 16-bit mode code
@@ -49,14 +50,15 @@
 #            f8 (address 7ca0) <== gdt_descriptor
 # -- 32-bit mode code
 #   offset  100 (address 7d00): boot code
-#           1fe (address 7dfe) boot sector marker (2 bytes)
+# --        1fe (address 7dfe) boot sector marker (2 bytes)
 #   offset  200 (address 7e00): interrupt handler code
 #   offset  300 (address 7f00): mouse handler code
 # -- 32-bit mode data
 #   offset  400 (address 8000): handler data
 #           410 (address 8010): keyboard handler data
 #           428 (address 8028) <== keyboard buffer
-#           480 (address 8080) <== mouse buffer
+#           480 (address 8080): mouse handler data
+#           490 (address 8090) <== mouse buffer
 #   offset  500 (address 8100): video mode data (256 bytes)
 #           528 (address 8128) <== start of video RAM stored here
 #   offset  600 (address 8200): interrupt descriptor table (1KB)
