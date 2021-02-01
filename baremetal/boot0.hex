@@ -1,8 +1,7 @@
 # A minimal bootable image that:
 #   - loads more sectors past the first boot sector (using BIOS primitives)
 #   - switches to 32-bit mode (giving up access to BIOS primitives)
-#   - sets up a handler for keyboard events
-#   - as an example program, prints '1' to the top-left position on screen (by writing to memory-mapped VGA memory) when the '1' key is typed
+#   - sets up a keyboard handler to print '1' at the top-left of screen when '1' is typed
 #
 # When it's ready to accept keys, it prints 'H' to the top-left of the screen.
 #
@@ -226,10 +225,10 @@ e9 fb ff ff ff  # loop forever
   # acknowledge interrupt
   b0 20  # al <- 0x20
   e6 20  # port 0x20 <- al
-  # read keyboard status (TODO: why bit 0? Doesn't line up with https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)
-#?   e4 64  # al <- port 0x64
-#?   a8 01  # set zf if bit 0 (least significant) is not set
-#?   74 11  # if bit 0 is not set, skip to epilogue
+  # check output buffer of 8042 keyboard controller (https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)
+  e4 64  # al <- port 0x64
+  a8 01  # set zf if bit 0 (least significant) is not set
+  74 11  # if bit 0 is not set, skip to epilogue
   # read keycode into eax
   31 c0  # eax <- xor eax;  11/direct 000/r32/eax 000/rm32/eax
   e4 60  # al <- port 0x60
@@ -248,9 +247,8 @@ e9 fb ff ff ff  # loop forever
   cf  # iret
 
 # padding
-# 14f
-                                             00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 155
+               00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

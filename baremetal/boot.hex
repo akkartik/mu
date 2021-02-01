@@ -299,14 +299,12 @@ e9 fd ff  # loop forever
   # acknowledge interrupt
   b0 20  # al <- 0x20
   e6 20  # port 0x20 <- al
-  # read status into eax
   31 c0  # eax <- xor eax;  11/direct 000/r32/eax 000/rm32/eax
+  # check output buffer of 8042 keyboard controller (https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)
   e4 64  # al <- port 0x64
-  # if (status & 0x1) == 0, return
-  24 01  # al <- and 0x1
-  3c 00  # compare al, 0
-  74 89  # jump to epilogue if = [label]
-# 220:
+  a8 01  # set zf if bit 0 (least significant) is not set
+  74 89  # jump to epilogue if 0 bit is not set [label]
+# 21e:
   # - if keyboard buffer is full, return
   31 c9  # ecx <- xor ecx;  11/direct 001/r32/ecx 001/rm32/ecx
   # var index/ecx: byte
@@ -319,33 +317,29 @@ e9 fd ff  # loop forever
     30 80 00 00  # disp32 [label]
   # if (al != 0) return
   3c 00  # compare al, 0
-# 230:
   75 77  # jump to epilogue if != [label]
+# 230:
   # - read keycode
   e4 60  # al <- port 0x60
-# 234:
   # - key released
   # if (al == 0xaa) shift = false  # left shift is being lifted
   3c aa  # compare al, 0xaa
   75 0a  # jump to $1 if != [label]
-# 238:
   # *shift = 0
   c7  # copy imm32 to rm32
     05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
     10 80 00 00  # disp32 [label]
     00 00 00 00  # imm32
-# 242:
+# 240:
 # $1:
   # if (al == 0xb6) shift = false  # right shift is being lifted
   3c b6  # compare al, 0xb6
-# 244:
   75 0a  # jump to $1 if != [label]
   # *shift = 0
   c7  # copy imm32 to rm32
     05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
     10 80 00 00  # disp32 [label]
     00 00 00 00  # imm32
-# 250:
 # $2:
   # if (al & 0x80) a key is being lifted; return
   50  # push eax
@@ -353,7 +347,7 @@ e9 fd ff  # loop forever
   3c 00  # compare al, 0
   58  # pop to eax (without touching flags)
   75 51  # jump to epilogue if != [label]
-# 258:
+# 256:
   # - key pressed
   # if (al == 0x2a) shift = true, return  # left shift pressed
   3c 2a  # compare al, 0x2a
@@ -364,7 +358,7 @@ e9 fd ff  # loop forever
     10 80 00 00  # disp32 [label]
     01 00 00 00  # imm32
   eb 41 # jump to epilogue [label]
-# 268:
+# 266:
 # $3:
   # if (al == 0x36) shift = true, return  # right shift pressed
   3c 36  # compare al, 0x36
@@ -375,8 +369,8 @@ e9 fd ff  # loop forever
     10 80 00 00  # disp32 [label]
     01 00 00 00  # imm32
   eb 31 # jump to epilogue [label]
+# 276:
 # $4:
-# 278:
   # - convert key to character
   # if (shift) use keyboard normal map
   81  # operate on rm32 and imm32
@@ -384,35 +378,31 @@ e9 fd ff  # loop forever
     10 80 00 00  # disp32 = shift [label]
     00 00 00 00  # imm32
   74 08  # jump to $5 if = [label]
-# 284:
   # otherwise use keyboard shift map
   # al <- *(keyboard shift map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
     00 87 00 00  # disp32 [label]
   eb 06  # jump to $6 [label]
+# 28a:
 # $5:
-# 28c:
   # al <- *(keyboard normal map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
     00 86 00 00  # disp32 [label]
 # $6:
-# 292:
   # - if there's no character mapping, return
   3c 00  # compare al, 0
   74 13  # jump to epilogue if = [label]
-# 296:
+# 294:
   # - store al in keyboard buffer
   88  # copy r8 to m8 at r32
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
     30 80 00 00  # disp32 [label]
-# 29c:
   # increment index
   fe  # increment byte
     05  # 00/mod/indirect 000/subop/increment 101/rm32/use-disp32
     28 80 00 00  # disp32 [label]
-# 2a2:
   # clear top nibble of index (keyboard buffer is circular)
   80  # and byte
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
@@ -425,8 +415,8 @@ e9 fd ff  # loop forever
   cf  # iret
 
 # padding
-# 2ac:
-                                    00 00 00 00
+# 2aa:
+                              00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
