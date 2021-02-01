@@ -233,10 +233,9 @@ claims of completeness:
 - [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
   by Daniel Plohmann ([cached local copy](https://github.com/akkartik/mu/blob/master/cheatsheet.pdf))
 - [Minimal Linux Live](http://minimal.linux-bg.org) for teaching how to create
-  a bootable disk image.
-- [&ldquo;Writing a simple operating system from scratch&rdquo;](https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf)
-  by Nick Blundell. An incomplete draft more helpful to me than all the tomes
-  of the internet on the subject.
+  a bootable disk image using the syslinux bootloader.
+- [&ldquo;Writing a bootloader from scratch&rdquo;](https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf)
+  by Nick Blundell.
 - Wikipedia on BIOS interfaces: [Int 10h](https://en.wikipedia.org/wiki/INT_10H), [Int 13h](https://en.wikipedia.org/wiki/INT_13H).
 - [Some tips on programming bootloaders](https://stackoverflow.com/questions/43786251/int-13h-42h-doesnt-load-anything-in-bochs/43787939#43787939)
   by Michael Petch.
