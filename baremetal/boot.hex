@@ -21,11 +21,11 @@
 #
 # Since we start out in 16-bit mode, we need instructions SubX doesn't
 # support.
-# This file contains just lowercase hex bytes and comments. It makes liberal
-# use of:
+# This file contains just lowercase hex bytes and comments. Programming it
+# requires liberal use of:
 #   - comments documenting expected offsets
 #   - size checks on the emitted file (currently: 6144 bytes)
-#   - xxd to eyeball that offsets contain expected bytes
+#   - xxd to spot-check contents of specific offsets in the generated output
 #
 # Programs using this initialization:
 #   - can't use any syscalls
@@ -40,6 +40,8 @@
 # a few magic constants:
 #   Video memory: start is stored at 0x8128
 #   Keyboard buffer: starts at 0x8028
+#
+# No mouse support. _That_ would require panicking.
 
 # Outline of this file with offsets and the addresses they map to at run-time:
 # -- 16-bit mode code
@@ -63,7 +65,7 @@
 #   offset 1800 (address 9400): entrypoint for applications (don't forget to adjust survey_baremetal if this changes)
 
 # Other details of the current memory map:
-#   code: first two default-sized disk tracks into [0x00007c00, 0x00017800)
+#   code: first two default-sized disk tracks get loaded to [0x00007c00, 0x00017800)
 #   stack grows down from 0x00070000
 #     see below
 #   heap: [0x01000000, 0x02000000)
@@ -76,7 +78,6 @@
 #   - loads the first sector (512 bytes)
 #     from some bootable image (see the boot sector marker at the end of this file)
 #     to the address range [0x7c00, 0x7e00)
-#     call this disk read #0
 #   - starts executing code at address 0x7c00
 
 # offset 00 (address 0x7c00):
@@ -100,7 +101,7 @@
   bc 00 00  # sp <- 0x0000
 
 # 14:
-  # disk read #1: load remaining sectors from first two tracks of disk into addresses [0x7e00, 0x17800)
+  # load remaining sectors from first two tracks of disk into addresses [0x7e00, 0x17800)
   b4 02  # ah <- 2  # read sectors from disk
   # dl comes conveniently initialized at boot time with the index of the device being booted
   b5 00  # ch <- 0  # cylinder 0
