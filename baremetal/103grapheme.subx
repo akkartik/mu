@@ -12,6 +12,8 @@
 # The Mu computer's screen is 1024px wide and 768px tall.
 # The Mu computer's font is 8px wide and 16px tall.
 # Therefore 'x' here is in [0, 128), and 'y' is in [0, 48)
+# Doesn't update the cursor; where the cursor should go after printing the
+# current grapheme is a higher-level concern.
 draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int, background-color: int
     # . prologue
     55/push-ebp
@@ -128,6 +130,7 @@ $set-cursor-position-on-real-screen:end:
 #   - does not preserve what was at the cursor. Caller is responsible for
 #     tracking what was on the screen at this position before and passing it
 #     in again.
+#   - does not stop showing the cursor at this location when the cursor moves
 show-cursor-on-real-screen:  # g: grapheme
     # . prologue
     55/push-ebp
