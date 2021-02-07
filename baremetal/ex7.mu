@@ -20,28 +20,28 @@ fn main {
       compare key, 0x68/h
       break-if-!=
       var g/eax: grapheme <- copy 0x2d/dash
-      draw-grapheme-at-cursor 0/screen, g, 0x31
+      draw-grapheme-at-cursor 0/screen, g, 0x31/fg, 0/bg
       cursor-left 0
     }
     {
       compare key, 0x6a/j
       break-if-!=
       var g/eax: grapheme <- copy 0x7c/vertical-bar
-      draw-grapheme-at-cursor 0/screen, g, 0x31
+      draw-grapheme-at-cursor 0/screen, g, 0x31/fg, 0/bg
       cursor-down 0
     }
     {
       compare key, 0x6b/k
       break-if-!=
       var g/eax: grapheme <- copy 0x7c/vertical-bar
-      draw-grapheme-at-cursor 0/screen, g, 0x31
+      draw-grapheme-at-cursor 0/screen, g, 0x31/fg, 0/bg
       cursor-up 0
     }
     {
       compare key, 0x6c/l
       break-if-!=
       var g/eax: grapheme <- copy 0x2d/dash
-      draw-grapheme-at-cursor 0/screen, g, 0x31
+      draw-grapheme-at-cursor 0/screen, g, 0x31/fg, 0/bg
       cursor-right 0
     }
     loop

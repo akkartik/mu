@@ -4,13 +4,13 @@ fn check-ints-equal _a: int, b: int, msg: (addr array byte) {
   compare a, b
   {
     break-if-=
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/cyan
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
     count-test-failure
     return
   }
   {
     break-if-!=
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/cyan
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
   }
 }
 

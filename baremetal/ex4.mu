@@ -11,5 +11,5 @@
 
 fn main {
   var g/eax: grapheme <- copy 0x41/A
-  draw-grapheme 0/screen, g, 2/row, 1/col, 0xa/fg
+  draw-grapheme 0/screen, g, 2/row, 1/col, 0xa/fg, 0/bg
 }

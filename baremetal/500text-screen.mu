@@ -17,6 +17,7 @@ type screen {
 type screen-cell {
   data: grapheme
   color: int
+  background-color: int
 }
 
 fn initialize-screen screen: (addr screen), width: int, height: int {
@@ -65,11 +66,11 @@ fn screen-size screen: (addr screen) -> _/eax: int, _/ecx: int {
 
 # testable screen primitive
 # background color isn't configurable yet
-fn draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int {
+fn draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int, background-color: int {
   {
     compare screen, 0
     break-if-!=
-    draw-grapheme-on-real-screen g, x, y, color, 0
+    draw-grapheme-on-real-screen g, x, y, color, background-color
     return
   }
   # fake screen
@@ -170,7 +171,7 @@ fn show-cursor screen: (addr screen), g: grapheme {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  draw-grapheme screen, g, cursor-x, cursor-y, 0  # cursor color not tracked for fake screen
+  draw-grapheme screen, g, cursor-x, cursor-y, 0/fg, 7/bg
 }
 
 fn clear-screen screen: (addr screen) {
@@ -194,7 +195,7 @@ fn clear-screen screen: (addr screen) {
     {
       compare x, *width
       break-if->
-      draw-grapheme screen, space, x, y, 0/fg=black
+      draw-grapheme screen, space, x, y, 0/fg=black, 0/bg=black
       x <- increment
       loop
     }
@@ -257,6 +258,25 @@ fn screen-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/ea
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
   var src/eax: (addr int) <- get cell, color
+  var result/eax: int <- copy *src
+  return result
+}
+
+fn screen-background-color-at screen-on-stack: (addr screen), x: int, y: int -> _/eax: int {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var idx/ecx: int <- screen-cell-index screen-addr, x, y
+  var result/eax: int <- screen-background-color-at-idx screen-addr, idx
+  return result
+}
+
+fn screen-background-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: int {
+  var screen-addr/esi: (addr screen) <- copy screen-on-stack
+  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var idx/ecx: int <- copy idx-on-stack
+  var offset/ecx: (offset screen-cell) <- compute-offset data, idx
+  var cell/eax: (addr screen-cell) <- index data, offset
+  var src/eax: (addr int) <- get cell, background-color
   var result/eax: int <- copy *src
   return result
 }

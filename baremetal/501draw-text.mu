@@ -60,17 +60,17 @@ fn cursor-down screen: (addr screen) {
   set-cursor-position screen, cursor-x, cursor-y
 }
 
-fn draw-grapheme-at-cursor screen: (addr screen), g: grapheme, color: int {
+fn draw-grapheme-at-cursor screen: (addr screen), g: grapheme, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  draw-grapheme screen, g, cursor-x, cursor-y, color
+  draw-grapheme screen, g, cursor-x, cursor-y, color, background-color
 }
 
 # draw a single line of text from x, y to xmax
 # return the next 'x' coordinate
 # if there isn't enough space, return 0 without modifying the screen
-fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, xmax: int, y: int, color: int -> _/eax: int {
+fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, xmax: int, y: int, color: int, background-color: int -> _/eax: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
@@ -97,7 +97,7 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, xcurr, y, color
+    draw-grapheme screen, g, xcurr, y, color, background-color
     xcurr <- increment
     loop
   }
@@ -105,11 +105,11 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
   return xcurr
 }
 
-fn draw-text-rightward-from-cursor screen: (addr screen), text: (addr array byte), xmax: int, color: int -> _/eax: int {
+fn draw-text-rightward-from-cursor screen: (addr screen), text: (addr array byte), xmax: int, color: int, background-color: int -> _/eax: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  var result/eax: int <- draw-text-rightward screen, text, cursor-x, xmax, cursor-y, color
+  var result/eax: int <- draw-text-rightward screen, text, cursor-x, xmax, cursor-y, color, background-color
   return result
 }
 
@@ -117,7 +117,7 @@ fn draw-text-rightward-from-cursor screen: (addr screen), text: (addr array byte
 # return the next (x, y) coordinate in raster order where drawing stopped
 # that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, return 0 without modifying the screen
-fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
@@ -152,7 +152,7 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array b
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, xcurr, ycurr, color
+    draw-grapheme screen, g, xcurr, ycurr, color, background-color
     xcurr <- increment
     compare xcurr, xmax
     {
@@ -180,15 +180,15 @@ fn move-cursor-rightward-and-downward screen: (addr screen), xmin: int, xmax: in
   set-cursor-position screen, cursor-x, cursor-y
 }
 
-fn draw-text-wrapping-right-then-down-over-full-screen screen: (addr screen), text: (addr array byte), x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+fn draw-text-wrapping-right-then-down-over-full-screen screen: (addr screen), text: (addr array byte), x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
   x2, y2 <- screen-size screen  # width, height
-  x2, y2 <- draw-text-wrapping-right-then-down screen, text, 0/xmin, 0/ymin, x2, y2, x, y, color
+  x2, y2 <- draw-text-wrapping-right-then-down screen, text, 0/xmin, 0/ymin, x2, y2, x, y, color, background-color
   return x2, y2  # cursor-x, cursor-y
 }
 
-fn draw-text-wrapping-right-then-down-from-cursor screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, color: int {
+fn draw-text-wrapping-right-then-down-from-cursor screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
@@ -200,17 +200,17 @@ fn draw-text-wrapping-right-then-down-from-cursor screen: (addr screen), text: (
     cursor-x <- copy xmin
     cursor-y <- increment
   }
-  cursor-x, cursor-y <- draw-text-wrapping-right-then-down screen, text, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
+  cursor-x, cursor-y <- draw-text-wrapping-right-then-down screen, text, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color, background-color
 }
 
-fn draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), text: (addr array byte), color: int {
+fn draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), text: (addr array byte), color: int, background-color: int {
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
-  draw-text-wrapping-right-then-down-from-cursor screen, text, 0/xmin, 0/ymin, width, height, color
+  draw-text-wrapping-right-then-down-from-cursor screen, text, 0/xmin, 0/ymin, width, height, color, background-color
 }
 
-fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write-int32-hex stream, n
@@ -245,7 +245,7 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, xcurr, ycurr, color
+    draw-grapheme screen, g, xcurr, ycurr, color, background-color
     xcurr <- increment
     compare xcurr, xmax
     {
@@ -259,15 +259,15 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
   return xcurr, ycurr
 }
 
-fn draw-int32-hex-wrapping-right-then-down-over-full-screen screen: (addr screen), n: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+fn draw-int32-hex-wrapping-right-then-down-over-full-screen screen: (addr screen), n: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
   x2, y2 <- screen-size screen  # width, height
-  x2, y2 <- draw-int32-hex-wrapping-right-then-down screen, n, 0/xmin, 0/ymin, x2, y2, x, y, color
+  x2, y2 <- draw-int32-hex-wrapping-right-then-down screen, n, 0/xmin, 0/ymin, x2, y2, x, y, color, background-color
   return x2, y2  # cursor-x, cursor-y
 }
 
-fn draw-int32-hex-wrapping-right-then-down-from-cursor screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, color: int {
+fn draw-int32-hex-wrapping-right-then-down-from-cursor screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
@@ -279,17 +279,17 @@ fn draw-int32-hex-wrapping-right-then-down-from-cursor screen: (addr screen), n:
     cursor-x <- copy xmin
     cursor-y <- increment
   }
-  cursor-x, cursor-y <- draw-int32-hex-wrapping-right-then-down screen, n, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
+  cursor-x, cursor-y <- draw-int32-hex-wrapping-right-then-down screen, n, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color, background-color
 }
 
-fn draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), n: int, color: int {
+fn draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), n: int, color: int, background-color: int {
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
-  draw-int32-hex-wrapping-right-then-down-from-cursor screen, n, 0/xmin, 0/ymin, width, height, color
+  draw-int32-hex-wrapping-right-then-down-from-cursor screen, n, 0/xmin, 0/ymin, width, height, color, background-color
 }
 
-fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write-int32-decimal stream, n
@@ -324,7 +324,7 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, xcurr, ycurr, color
+    draw-grapheme screen, g, xcurr, ycurr, color, background-color
     xcurr <- increment
     compare xcurr, xmax
     {
@@ -338,15 +338,15 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
   return xcurr, ycurr
 }
 
-fn draw-int32-decimal-wrapping-right-then-down-over-full-screen screen: (addr screen), n: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+fn draw-int32-decimal-wrapping-right-then-down-over-full-screen screen: (addr screen), n: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
   x2, y2 <- screen-size screen  # width, height
-  x2, y2 <- draw-int32-decimal-wrapping-right-then-down screen, n, 0/xmin, 0/ymin, x2, y2, x, y, color
+  x2, y2 <- draw-int32-decimal-wrapping-right-then-down screen, n, 0/xmin, 0/ymin, x2, y2, x, y, color, background-color
   return x2, y2  # cursor-x, cursor-y
 }
 
-fn draw-int32-decimal-wrapping-right-then-down-from-cursor screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, color: int {
+fn draw-int32-decimal-wrapping-right-then-down-from-cursor screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
@@ -358,14 +358,14 @@ fn draw-int32-decimal-wrapping-right-then-down-from-cursor screen: (addr screen)
     cursor-x <- copy xmin
     cursor-y <- increment
   }
-  cursor-x, cursor-y <- draw-int32-decimal-wrapping-right-then-down screen, n, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
+  cursor-x, cursor-y <- draw-int32-decimal-wrapping-right-then-down screen, n, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color, background-color
 }
 
-fn draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), n: int, color: int {
+fn draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), n: int, color: int, background-color: int {
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
-  draw-int32-decimal-wrapping-right-then-down-from-cursor screen, n, 0/xmin, 0/ymin, width, height, color
+  draw-int32-decimal-wrapping-right-then-down-from-cursor screen, n, 0/xmin, 0/ymin, width, height, color, background-color
 }
 
 ## Text direction: down then right
@@ -373,7 +373,7 @@ fn draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen scre
 # draw a single line of text vertically from x, y to ymax
 # return the next 'y' coordinate
 # if there isn't enough space, return 0 without modifying the screen
-fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y: int, ymax: int, color: int -> _/eax: int {
+fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y: int, ymax: int, color: int, background-color: int -> _/eax: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
@@ -400,7 +400,7 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, x, ycurr, color
+    draw-grapheme screen, g, x, ycurr, color, background-color
     ycurr <- increment
     loop
   }
@@ -408,18 +408,18 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
   return ycurr
 }
 
-fn draw-text-downward-from-cursor screen: (addr screen), text: (addr array byte), ymax: int, color: int {
+fn draw-text-downward-from-cursor screen: (addr screen), text: (addr array byte), ymax: int, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  var result/eax: int <- draw-text-downward screen, text, cursor-x, cursor-y, ymax, color
+  var result/eax: int <- draw-text-downward screen, text, cursor-x, cursor-y, ymax, color, background-color
 }
 
 # draw text down and right in the rectangle from (xmin, ymin) to (xmax, ymax), starting from (x, y), wrapping as necessary
 # return the next (x, y) coordinate in raster order where drawing stopped
 # that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, return 0 without modifying the screen
-fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
@@ -454,7 +454,7 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, xcurr, ycurr, color
+    draw-grapheme screen, g, xcurr, ycurr, color, background-color
     ycurr <- increment
     compare ycurr, ymax
     {
@@ -468,15 +468,15 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
   return xcurr, ycurr
 }
 
-fn draw-text-wrapping-down-then-right-over-full-screen screen: (addr screen), text: (addr array byte), x: int, y: int, color: int -> _/eax: int, _/ecx: int {
+fn draw-text-wrapping-down-then-right-over-full-screen screen: (addr screen), text: (addr array byte), x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
   x2, y2 <- screen-size screen  # width, height
-  x2, y2 <- draw-text-wrapping-down-then-right screen, text, 0/xmin, 0/ymin, x2, y2, x, y, color
+  x2, y2 <- draw-text-wrapping-down-then-right screen, text, 0/xmin, 0/ymin, x2, y2, x, y, color, background-color
   return x2, y2  # cursor-x, cursor-y
 }
 
-fn draw-text-wrapping-down-then-right-from-cursor screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, color: int {
+fn draw-text-wrapping-down-then-right-from-cursor screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
@@ -488,12 +488,12 @@ fn draw-text-wrapping-down-then-right-from-cursor screen: (addr screen), text: (
     cursor-x <- increment
     cursor-y <- copy ymin
   }
-  cursor-x, cursor-y <- draw-text-wrapping-down-then-right screen, text, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color
+  cursor-x, cursor-y <- draw-text-wrapping-down-then-right screen, text, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color, background-color
 }
 
-fn draw-text-wrapping-down-then-right-from-cursor-over-full-screen screen: (addr screen), text: (addr array byte), color: int {
+fn draw-text-wrapping-down-then-right-from-cursor-over-full-screen screen: (addr screen), text: (addr array byte), color: int, background-color: int {
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
-  draw-text-wrapping-down-then-right-from-cursor screen, text, 0/xmin, 0/ymin, width, height, color
+  draw-text-wrapping-down-then-right-from-cursor screen, text, 0/xmin, 0/ymin, width, height, color, background-color
 }

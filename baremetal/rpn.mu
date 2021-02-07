@@ -23,7 +23,7 @@ fn main -> _/ebx: int {
   # read-eval-print loop
   {
     # print prompt
-    var x/eax: int <- draw-text-rightward 0/screen, "> ", 0/x, 0x80/xmax, y, 3/cyan
+    var x/eax: int <- draw-text-rightward 0/screen, "> ", 0/x, 0x80/xmax, y, 3/fg/cyan, 0/bg
     set-cursor-position 0/screen, x, y
     # read line from keyboard
     clear-stream in
@@ -37,17 +37,17 @@ fn main -> _/ebx: int {
       var key2/eax: int <- copy key
       append-byte in, key2
       var g/eax: grapheme <- copy key2
-      draw-grapheme-at-cursor 0/screen, g, 0xf
+      draw-grapheme-at-cursor 0/screen, g, 0xf/fg, 0/bg
       cursor-right 0
       loop
     }
     # clear cursor
-    draw-grapheme-at-cursor 0/screen, space, 3/fg/never-used
+    draw-grapheme-at-cursor 0/screen, space, 3/fg/never-used, 0/bg
     # parse and eval
     var out/eax: int <- simplify in
     # print
     y <- increment
-    out, y <- draw-int32-decimal-wrapping-right-then-down 0/screen, out, 0/xmin, y, 0x80/xmax, 0x30/ymax, 0/x, y, 7/fg
+    out, y <- draw-int32-decimal-wrapping-right-then-down 0/screen, out, 0/xmin, y, 0x80/xmax, 0x30/ymax, 0/x, y, 7/fg, 0/bg
     # newline
     y <- increment
     #
