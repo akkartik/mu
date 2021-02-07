@@ -2420,6 +2420,34 @@ test-convert-invalid-literal:
     5d/pop-to-ebp
     c3/return
 
+test-convert-valid-literal-with-metadata:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: int <- copy 1/abc\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # no errors
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-local-var-in-mem-has-no-initializer:
     # . prologue
     55/push-ebp
@@ -16865,6 +16893,7 @@ $test-function-header-with-multiple-args-and-outputs:out1:
 #   x/eax: int
 #   x/eax: int,
 # ignores at most one trailing comma
+# does not support other, non-register metadata
 # WARNING: modifies name
 parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte), out: (addr handle var), fn-name: (addr array byte), err: (addr buffered-file), ed: (addr exit-descriptor)
     # pseudocode:
@@ -19680,6 +19709,7 @@ $new-var:end:
     5d/pop-to-ebp
     c3/return
 
+# WARNING: modifies name
 new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr handle var), fn: (addr function), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
@@ -19687,6 +19717,9 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice), ou
     # . save registers
     50/push-eax
     51/push-ecx
+    # first strip out metadata
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    (next-token-from-slice *ecx *(ecx+4) 0x2f *(ebp+0xc))
     # if (!is-hex-int?(name)) abort
     (is-hex-int? *(ebp+0xc))  # => eax
     3d/compare-eax-and 0/imm32/false
