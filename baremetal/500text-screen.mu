@@ -52,7 +52,7 @@ fn screen-size screen: (addr screen) -> _/eax: int, _/ecx: int {
   compare screen, 0
   {
     break-if-!=
-    return 0x80, 0x30  # 128x48
+    return 0x80/128, 0x30/48
   }
   # fake screen
   var screen-addr/esi: (addr screen) <- copy screen
@@ -194,7 +194,7 @@ fn clear-screen screen: (addr screen) {
     {
       compare x, *width
       break-if->
-      draw-grapheme screen, space, x, y, 0  # color=black
+      draw-grapheme screen, space, x, y, 0/fg=black
       x <- increment
       loop
     }
@@ -209,13 +209,13 @@ fn clear-screen screen: (addr screen) {
 fn clear-real-screen {
   var y/eax: int <- copy 0
   {
-    compare y, 0x300  # screen-height = 768
+    compare y, 0x300/screen-height=768
     break-if->=
     var x/edx: int <- copy 0
     {
-      compare x, 0x400  # screen-width = 1024
+      compare x, 0x400/screen-width=1024
       break-if->=
-      pixel-on-real-screen x, y, 0  # black
+      pixel-on-real-screen x, y, 0/color=black
       x <- increment
       loop
     }

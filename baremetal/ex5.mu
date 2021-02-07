@@ -11,6 +11,6 @@
 # Expected output: text in green near the top-left corner of screen
 
 fn main {
-  var dummy/eax: int <- draw-text-rightward 0, "hello from baremetal Mu!", 0x10, 0x400, 0x10, 0xa  # xmax = end of screen, plenty of space
-  dummy <- draw-text-rightward 0, "you shouldn't see this", 0x10, 0xa0, 0x30, 0x3  # xmax = 0xa0, which is too narrow
+  var dummy/eax: int <- draw-text-rightward 0/screen, "hello from baremetal Mu!", 0x10/x, 0x400/xmax, 0x10/y, 0xa/color
+  dummy <- draw-text-rightward 0/screen, "you shouldn't see this", 0x10/x, 0xa0/xmax, 0x30/y, 0x3/color  # xmax is too narrow
 }

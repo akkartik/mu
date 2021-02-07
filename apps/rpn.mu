@@ -29,11 +29,11 @@
 fn main -> _/ebx: int {
   var in-storage: (stream byte 0x100)
   var in/esi: (addr stream byte) <- address in-storage
-  print-string 0, "press ctrl-c or ctrl-d to exit\n"
+  print-string 0/screen, "press ctrl-c or ctrl-d to exit\n"
   # read-eval-print loop
   {
     # print prompt
-    print-string 0, "> "
+    print-string 0/screen, "> "
     # read line
     clear-stream in
     read-line-from-real-keyboard in
@@ -43,8 +43,8 @@ fn main -> _/ebx: int {
     # parse and eval
     var out/eax: int <- simplify in
     # print
-    print-int32-decimal 0, out
-    print-string 0, "\n"
+    print-int32-decimal 0/screen, out
+    print-string 0/screen, "\n"
     #
     loop
   }

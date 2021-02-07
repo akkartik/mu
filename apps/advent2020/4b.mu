@@ -23,14 +23,14 @@ fn main -> _/ebx: int {
     read-line-from-real-keyboard line
     # if line is empty (not even a newline), quit
     var done?/eax: boolean <- stream-empty? line
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     print-stream-to-real-screen line
     # if line has just a newline, process passport
     skip-chars-matching-whitespace line
     var new-passport?/eax: boolean <- stream-empty? line
     {
-      compare new-passport?, 0  # false
+      compare new-passport?, 0/false
       break-if-=
       compare curr-passport-field-count, 7
       {
@@ -46,7 +46,7 @@ fn main -> _/ebx: int {
     $main:word-loop: {
       skip-chars-matching-whitespace line
       var done?/eax: boolean <- stream-empty? line
-      compare done?, 0  # false
+      compare done?, 0/false
       break-if-!=
       next-token line, 0x3a, key-slice  # ':'
       var dummy/eax: byte <- read-byte line  # skip ':'
@@ -57,7 +57,7 @@ fn main -> _/ebx: int {
       print-string 0, "\n"
       # treat cid as optional
       var cid?/eax: boolean <- slice-equal? key-slice, "cid"
-      compare cid?, 0  # false
+      compare cid?, 0/false
       loop-if-!=
       # increment field count
       curr-passport-field-count <- increment
@@ -65,7 +65,7 @@ fn main -> _/ebx: int {
       # byr
       {
         var byr?/eax: boolean <- slice-equal? key-slice, "byr"
-        compare byr?, 0  # false
+        compare byr?, 0/false
         break-if-=
         # 1920 <= byr <= 2002
         var byr/eax: int <- parse-decimal-int-from-slice val-slice
@@ -85,7 +85,7 @@ fn main -> _/ebx: int {
       # iyr
       {
         var iyr?/eax: boolean <- slice-equal? key-slice, "iyr"
-        compare iyr?, 0  # false
+        compare iyr?, 0/false
         break-if-=
         # 2010 <= iyr <= 2020
         var iyr/eax: int <- parse-decimal-int-from-slice val-slice
@@ -105,7 +105,7 @@ fn main -> _/ebx: int {
       # eyr
       {
         var eyr?/eax: boolean <- slice-equal? key-slice, "eyr"
-        compare eyr?, 0  # false
+        compare eyr?, 0/false
         break-if-=
         # 2020 <= eyr <= 2030
         var eyr/eax: int <- parse-decimal-int-from-slice val-slice
@@ -125,7 +125,7 @@ fn main -> _/ebx: int {
       # hgt
       {
         var hgt?/eax: boolean <- slice-equal? key-slice, "hgt"
-        compare hgt?, 0  # false
+        compare hgt?, 0/false
         break-if-=
         # convert val
         var s: (handle array byte)
@@ -143,7 +143,7 @@ fn main -> _/ebx: int {
           var suffix/eax: (addr array byte) <- lookup *suffix-ah
           {
             var match?/eax: boolean <- string-equal? suffix, "in"
-            compare match?, 0  # false
+            compare match?, 0/false
             break-if-=
             # if suffix is "in", 59 <= val <= 96
             var num-h: (handle array byte)
@@ -167,7 +167,7 @@ fn main -> _/ebx: int {
           }
           {
             var match?/eax: boolean <- string-equal? suffix, "cm"
-            compare match?, 0  # false
+            compare match?, 0/false
             break-if-=
             # if suffix is "cm", 150 <= val <= 193
             var num-h: (handle array byte)
@@ -197,7 +197,7 @@ fn main -> _/ebx: int {
       # hcl
       {
         var hcl?/eax: boolean <- slice-equal? key-slice, "hcl"
-        compare hcl?, 0  # false
+        compare hcl?, 0/false
         break-if-=
         # convert val
         var s: (handle array byte)
@@ -217,7 +217,7 @@ fn main -> _/ebx: int {
         {
           var c/eax: (addr byte) <- index s3, 0
           var c2/eax: byte <- copy-byte *c
-          compare c2, 0x23  # '#'
+          compare c2, 0x23/hash
           break-if-=
           print-string 0, "invalid2\n"
           curr-passport-field-count <- copy 8
@@ -242,28 +242,28 @@ fn main -> _/ebx: int {
       # ecl
       {
         var ecl?/eax: boolean <- slice-equal? key-slice, "ecl"
-        compare ecl?, 0  # false
+        compare ecl?, 0/false
         break-if-=
         var amb?/eax: boolean <- slice-equal? val-slice, "amb"
-        compare amb?, 0  # false
+        compare amb?, 0/false
         loop-if-!= $main:word-loop
         var blu?/eax: boolean <- slice-equal? val-slice, "blu"
-        compare blu?, 0  # false
+        compare blu?, 0/false
         loop-if-!= $main:word-loop
         var brn?/eax: boolean <- slice-equal? val-slice, "brn"
-        compare brn?, 0  # false
+        compare brn?, 0/false
         loop-if-!= $main:word-loop
         var gry?/eax: boolean <- slice-equal? val-slice, "gry"
-        compare gry?, 0  # false
+        compare gry?, 0/false
         loop-if-!= $main:word-loop
         var grn?/eax: boolean <- slice-equal? val-slice, "grn"
-        compare grn?, 0  # false
+        compare grn?, 0/false
         loop-if-!= $main:word-loop
         var hzl?/eax: boolean <- slice-equal? val-slice, "hzl"
-        compare hzl?, 0  # false
+        compare hzl?, 0/false
         loop-if-!= $main:word-loop
         var oth?/eax: boolean <- slice-equal? val-slice, "oth"
-        compare oth?, 0  # false
+        compare oth?, 0/false
         loop-if-!= $main:word-loop
         print-string 0, "invalid\n"
         curr-passport-field-count <- copy 8
@@ -271,7 +271,7 @@ fn main -> _/ebx: int {
       # pid
       {
         var pid?/eax: boolean <- slice-equal? key-slice, "pid"
-        compare pid?, 0  # false
+        compare pid?, 0/false
         break-if-=
         # convert val
         var s: (handle array byte)

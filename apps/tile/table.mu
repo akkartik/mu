@@ -123,7 +123,7 @@ fn lookup-binding _self: (addr table), key: (addr array byte), out: (addr handle
       compare target3, 0
       break-if-= $lookup-binding:loop
       var is-match?/eax: boolean <- string-equal? target3, key
-      compare is-match?, 0  # false
+      compare is-match?, 0/false
       break-if-=
       # found
       var target/eax: (addr handle value) <- get target-bind, value

@@ -262,10 +262,10 @@ fn num-lines in: (addr array byte) -> _/ecx: int {
   var result/ecx: int <- copy 1
   {
     var done?/eax: boolean <- stream-empty? s-addr
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     var g/eax: grapheme <- read-grapheme s-addr
-    compare g, 0xa  # newline
+    compare g, 0xa/newline
     loop-if-!=
     result <- increment
     loop
@@ -280,10 +280,10 @@ fn first-line-length in: (addr array byte) -> _/edx: int {
   var result/edx: int <- copy 0
   {
     var done?/eax: boolean <- stream-empty? s-addr
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     var g/eax: grapheme <- read-grapheme s-addr
-    compare g, 0xa  # newline
+    compare g, 0xa/newline
     break-if-=
     result <- increment
     loop
@@ -299,10 +299,10 @@ fn fill-in _out: (addr array screen-cell), in: (addr array byte) {
   var idx/ecx: int <- copy 0
   {
     var done?/eax: boolean <- stream-empty? s-addr
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     var g/eax: grapheme <- read-grapheme s-addr
-    compare g, 0xa  # newline
+    compare g, 0xa/newline
     loop-if-=
     var offset/edx: (offset screen-cell) <- compute-offset out, idx
     var dest/edx: (addr screen-cell) <- index out, offset

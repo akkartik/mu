@@ -5,7 +5,7 @@
 # Tab characters (that translate into multiple screen cells) not supported.
 
 fn check-screen-row screen: (addr screen), y: int, expected: (addr array byte), msg: (addr array byte) {
-  check-screen-row-from screen, y, 0, expected, msg
+  check-screen-row-from screen, y, 0/row, expected, msg
 }
 
 fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expected: (addr array byte), msg: (addr array byte) {
@@ -35,23 +35,23 @@ fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expecte
       compare g, expected-grapheme
       {
         break-if-!=
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ".", 3  # 3=cyan
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/cyan
         break $check-screen-row-from:compare-graphemes
       }
       # otherwise print an error
       count-test-failure
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ": expected '", 3
-      draw-grapheme-at-cursor 0, expected-grapheme, 3
-      move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "' at (", 3
-      draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, x, 3
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ", ", 3
-      draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, y, 3
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ") but observed '", 3
-      draw-grapheme-at-cursor 0, g, 3
-      move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "'", 3
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/cyan
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3
+      draw-grapheme-at-cursor 0/screen, expected-grapheme, 3/cyan
+      move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3
+      draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3
+      draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3
+      draw-grapheme-at-cursor 0/screen, g, 3/cyan
+      move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3
     }
     idx <- increment
     increment x
@@ -62,7 +62,7 @@ fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expecte
 # various variants by screen-cell attribute; spaces in the 'expected' data should not match the attribute
 
 fn check-screen-row-in-color screen: (addr screen), fg: int, y: int, expected: (addr array byte), msg: (addr array byte) {
-  check-screen-row-in-color-from screen, fg, y, 0, expected, msg
+  check-screen-row-in-color-from screen, fg, y, 0/x, expected, msg
 }
 
 fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: int, x: int, expected: (addr array byte), msg: (addr array byte) {
@@ -102,46 +102,46 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: in
         compare g, expected-grapheme
         {
           break-if-!=
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ".", 3  # 3=cyan
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/cyan
           break $check-screen-row-in-color-from:compare-graphemes
         }
         # otherwise print an error
         count-test-failure
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ": expected '", 3
-        draw-grapheme-at-cursor 0, expected-grapheme, 3
-        move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "' at (", 3
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, x, 3
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ", ", 3
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, y, 3
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ") but observed '", 3
-        draw-grapheme-at-cursor 0, g, 3
-        move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "'", 3
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/cyan
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3
+        draw-grapheme-at-cursor 0/screen, expected-grapheme, 3/cyan
+        move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3
+        draw-grapheme-at-cursor 0/screen, g, 3/cyan
+        move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3
       }
       $check-screen-row-in-color-from:compare-colors: {
         var color/eax: int <- screen-color-at-idx screen, idx
         compare fg, color
         {
           break-if-!=
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ".", 3  # 3=cyan
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/cyan
           break $check-screen-row-in-color-from:compare-colors
         }
         # otherwise print an error
         count-test-failure
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, msg, 3  # 3=cyan
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ": expected '", 3
-        draw-grapheme-at-cursor 0, expected-grapheme, 3
-        move-cursor-rightward-and-downward 0, 0, 0x80  # screen-width
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "' at (", 3
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, x, 3
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ", ", 3
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, y, 3
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, ") in color ", 3
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, fg, 3
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, " but observed color ", 3
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0, color, 3
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/cyan
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3
+        draw-grapheme-at-cursor 0/screen, expected-grapheme, 3/cyan
+        move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") in color ", 3
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, fg, 3
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed color ", 3
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, color, 3
       }
     }
     idx <- increment
@@ -154,15 +154,15 @@ fn test-draw-single-grapheme {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4
-  var c/eax: grapheme <- copy 0x61  # 'a'
-  draw-grapheme screen, c, 0, 0, 1  # color=1
-  check-screen-row screen, 0, "a", "F - test-draw-single-grapheme"  # top-left corner of the screen
+  var c/eax: grapheme <- copy 0x61/a
+  draw-grapheme screen, c, 0/x, 0/y, 1/color
+  check-screen-row screen, 0/row, "a", "F - test-draw-single-grapheme"  # top-left corner of the screen
 }
 
 fn test-draw-multiple-graphemes {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10, 4
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "Hello, 世界", 1  # color=1
-  check-screen-row screen, 0, "Hello, 世界", "F - test-draw-multiple-graphemes"
+  initialize-screen screen, 0x10/rows, 4/cols
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "Hello, 世界", 1/color
+  check-screen-row screen, 0/screen, "Hello, 世界", "F - test-draw-multiple-graphemes"
 }

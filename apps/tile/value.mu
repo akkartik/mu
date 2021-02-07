@@ -3,7 +3,7 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
   var val/esi: (addr value) <- copy _val
   var val-type/ecx: (addr int) <- get val, type
   # per-type rendering logic goes here
-  compare *val-type, 1  # string
+  compare *val-type, 1/string
   {
     break-if-!=
     var val-ah/eax: (addr handle array byte) <- get val, text-data
@@ -17,18 +17,18 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
     var truncated-string/eax: (addr array byte) <- lookup *truncated-ah
     var len/edx: int <- length truncated-string
     start-color screen, 0xf2, 7
-    print-code-point screen, 0x275d  # open-quote
+    print-code-point screen, 0x275d/open-quote
     print-string screen, truncated-string
     compare len, orig-len
     {
       break-if-=
-      print-code-point screen, 0x2026  # ellipses
+      print-code-point screen, 0x2026/ellipses
     }
-    print-code-point screen, 0x275e  # close-quote
+    print-code-point screen, 0x275e/close-quote
     reset-formatting screen
     return
   }
-  compare *val-type, 2  # array
+  compare *val-type, 2/array
   {
     break-if-!=
     var val-ah/eax: (addr handle array value) <- get val, array-data
@@ -36,7 +36,7 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
     render-array-at screen, row, col, val-array
     return
   }
-  compare *val-type, 3  # file
+  compare *val-type, 3/file
   {
     break-if-!=
     var val-ah/eax: (addr handle buffered-file) <- get val, file-data
@@ -46,7 +46,7 @@ fn render-value-at screen: (addr screen), row: int, col: int, _val: (addr value)
     print-string screen, " FILE "
     return
   }
-  compare *val-type, 4  # screen
+  compare *val-type, 4/screen
   {
     break-if-!=
 #?     print-string 0, "render-screen"
@@ -90,15 +90,15 @@ fn render-number screen: (addr screen), val: float, top-level?: boolean {
     fg <- copy 0
   }
   start-color screen, fg, bg
-  print-grapheme screen, 0x20  # space
+  print-grapheme screen, 0x20/space
   print-float-decimal-approximate screen, val, 3
-  print-grapheme screen, 0x20  # space
+  print-grapheme screen, 0x20/space
 }
 
 fn render-array-at screen: (addr screen), row: int, col: int, _a: (addr array value) {
   start-color screen, 0xf2, 7
   # don't surround in spaces
-  print-grapheme screen, 0x5b  # '['
+  print-grapheme screen, 0x5b/[
   increment col
   var a/esi: (addr array value) <- copy _a
   var max/ecx: int <- length a
@@ -122,7 +122,7 @@ fn render-array-at screen: (addr screen), row: int, col: int, _a: (addr array va
     i <- increment
     loop
   }
-  print-grapheme screen, 0x5d  # ']'
+  print-grapheme screen, 0x5d/]
 }
 
 fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (addr screen) {
@@ -183,57 +183,57 @@ fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen
   {
     compare g, 0
     break-if-!=
-    g <- copy 0x20  # space
+    g <- copy 0x20/space
   }
   print-grapheme screen, g
   reset-formatting screen
 }
 
 fn print-upper-border screen: (addr screen), width: int {
-  print-code-point screen, 0x250c  # top-left corner
+  print-code-point screen, 0x250c/top-left-corner
   var i/eax: int <- copy 0
   {
     compare i, width
     break-if->=
-    print-code-point screen, 0x2500  # horizontal line
+    print-code-point screen, 0x2500/horizontal-line
     i <- increment
     loop
   }
-  print-code-point screen, 0x2510  # top-right corner
+  print-code-point screen, 0x2510/top-right-corner
 }
 
 fn print-lower-border screen: (addr screen), width: int {
-  print-code-point screen, 0x2514  # bottom-left corner
+  print-code-point screen, 0x2514/bottom-left-corner
   var i/eax: int <- copy 0
   {
     compare i, width
     break-if->=
-    print-code-point screen, 0x2500  # horizontal line
+    print-code-point screen, 0x2500/horizontal-line
     i <- increment
     loop
   }
-  print-code-point screen, 0x2518  # bottom-right corner
+  print-code-point screen, 0x2518/bottom-right-corner
 }
 
 fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
   var v/esi: (addr value) <- copy _v
   var type/eax: (addr int) <- get v, type
   {
-    compare *type, 0  # int
+    compare *type, 0/int
     break-if-!=
     var v-num/edx: (addr float) <- get v, number-data
     var result/eax: int <- float-size *v-num, 3
     return result
   }
   {
-    compare *type, 1  # string
+    compare *type, 1/string
     break-if-!=
     var s-ah/eax: (addr handle array byte) <- get v, text-data
     var s/eax: (addr array byte) <- lookup *s-ah
     compare s, 0
     break-if-=
     var result/eax: int <- length s
-    compare result, 0xd  # max string size
+    compare result, 0xd/max-string-size
     {
       break-if-<=
       result <- copy 0xd
@@ -241,7 +241,7 @@ fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
     # if it's a nested string, include space for quotes
     # we don't do this for the top-level, where the quotes will overflow
     # into surrounding padding.
-    compare top-level, 0  # false
+    compare top-level, 0/false
     {
       break-if-!=
       result <- add 2
@@ -249,7 +249,7 @@ fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
     return result
   }
   {
-    compare *type, 2  # array
+    compare *type, 2/array
     break-if-!=
     var a-ah/eax: (addr handle array value) <- get v, array-data
     var a/eax: (addr array value) <- lookup *a-ah
@@ -259,7 +259,7 @@ fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
     return result
   }
   {
-    compare *type, 3  # file handle
+    compare *type, 3/file
     break-if-!=
     var f-ah/eax: (addr handle buffered-file) <- get v, file-data
     var f/eax: (addr buffered-file) <- lookup *f-ah
@@ -269,7 +269,7 @@ fn value-width _v: (addr value), top-level: boolean -> _/eax: int {
     return 4
   }
   {
-    compare *type, 4  # screen
+    compare *type, 4/screen
     break-if-!=
     var screen-ah/eax: (addr handle screen) <- get v, screen-data
     var screen/eax: (addr screen) <- lookup *screen-ah
@@ -315,13 +315,13 @@ fn value-height _v: (addr value) -> _/eax: int {
   var v/esi: (addr value) <- copy _v
   var type/eax: (addr int) <- get v, type
   {
-    compare *type, 3  # file handle
+    compare *type, 3/file
     break-if-!=
     # TODO: visualizing file handles
     return 1
   }
   {
-    compare *type, 4  # screen
+    compare *type, 4/screen
     break-if-!=
     var screen-ah/eax: (addr handle screen) <- get v, screen-data
     var screen/eax: (addr screen) <- lookup *screen-ah
@@ -351,7 +351,7 @@ fn deep-copy-value _src: (addr value), _dest: (addr value) {
     copy-object src-n, dest-n
     return
   }
-  compare *type, 1  # string
+  compare *type, 1/string
   {
     break-if-!=
 #?     print-string 0, "string value\n"
@@ -361,7 +361,7 @@ fn deep-copy-value _src: (addr value), _dest: (addr value) {
     copy-array-object src, dest-ah
     return
   }
-  compare *type, 2  # array
+  compare *type, 2/array
   {
     break-if-!=
 #?     print-string 0, "array value\n"
@@ -389,7 +389,7 @@ fn deep-copy-value _src: (addr value), _dest: (addr value) {
     copy-array-object src, dest-ah
     return
   }
-  compare *type, 3  # file
+  compare *type, 3/file
   {
     break-if-!=
 #?     print-string 0, "file value\n"
@@ -404,7 +404,7 @@ fn deep-copy-value _src: (addr value), _dest: (addr value) {
     copy-file src-file, dest-file-ah, src-filename
     return
   }
-  compare *type, 4  # screen
+  compare *type, 4/screen
   {
     break-if-!=
 #?     print-string 0, "screen value\n"

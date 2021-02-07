@@ -5,6 +5,6 @@
 #   $ ./a.elf
 
 fn main -> _/ebx: int {
-  print-string 0, "Hello world!\n"
+  print-string 0/screen, "Hello world!\n"
   return 0
 }

@@ -20,7 +20,7 @@ fn main -> _/ebx: int {
     read-line-from-real-keyboard line
     # if line is empty (not even a newline), quit
     var done?/eax: boolean <- stream-empty? line
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     print-stream-to-real-screen line
     # slice = next-token(line, '-')
@@ -47,7 +47,7 @@ fn main -> _/ebx: int {
     skip-chars-matching-whitespace line
     # now check the rest of the line
     var is-valid?/eax: boolean <- is-valid? start, end, letter, line
-    compare is-valid?, 0  # false
+    compare is-valid?, 0/false
     {
       break-if-=
       print-string 0, "valid!\n"
@@ -67,7 +67,7 @@ fn is-valid? start: int, end: int, letter: byte, password: (addr stream byte) ->
   #     ++letter-count
   {
     var done?/eax: boolean <- stream-empty? password
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     var c/eax: byte <- read-byte password
     compare c, letter
@@ -81,12 +81,12 @@ fn is-valid? start: int, end: int, letter: byte, password: (addr stream byte) ->
   compare letter-count, start
   {
     break-if->=
-    return 0  # false
+    return 0/false
   }
   compare letter-count, end
   {
     break-if-<=
-    return 0  # false
+    return 0/false
   }
-  return 1  # true
+  return 1/true
 }

@@ -21,14 +21,14 @@ fn main -> _/ebx: int {
     read-line-from-real-keyboard line
     # if line is empty (not even a newline), quit
     var done?/eax: boolean <- stream-empty? line
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     print-stream-to-real-screen line
     # if line has just a newline, process passport
     skip-chars-matching-whitespace line
     var new-passport?/eax: boolean <- stream-empty? line
     {
-      compare new-passport?, 0  # false
+      compare new-passport?, 0/false
       break-if-=
       compare curr-passport-field-count, 7
       {
@@ -44,13 +44,13 @@ fn main -> _/ebx: int {
     $main:word-loop: {
       next-word line, slice
       var done?/eax: boolean <- slice-empty? slice
-      compare done?, 0  # false
+      compare done?, 0/false
       break-if-!=
       print-string 0, "  "
       print-slice-to-real-screen slice
       # treat cid as optional
       var optional?/eax: boolean <- slice-starts-with? slice, "cid:"
-      compare optional?, 0  # false
+      compare optional?, 0/false
       {
         break-if-!=
         # otherwise assume there are no invalid fields and no duplicate fields

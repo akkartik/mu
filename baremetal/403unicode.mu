@@ -93,7 +93,7 @@ fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
   # if at eof, return EOF
   {
     var eof?/eax: boolean <- stream-empty? in
-    compare eof?, 0  # false
+    compare eof?, 0/false
     break-if-=
     return 0xffffffff
   }

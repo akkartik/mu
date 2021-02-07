@@ -27,7 +27,7 @@ fn main -> _/ebx: int {
       read-line-from-real-keyboard line
       # if line is empty (not even a newline), quit
       var done?/eax: boolean <- stream-empty? line
-      compare done?, 0  # false
+      compare done?, 0/false
       break-if-!=
 #?       print-stream-to-real-screen line
       # convert line to int and append it to numbers
@@ -65,7 +65,7 @@ fn main -> _/ebx: int {
         target <- subtract *src2
         {
           var found?/eax: boolean <- find-after numbers, j, target
-          compare found?, 0  # false
+          compare found?, 0/false
           break-if-=
           print-string 0, "found\n"
           print-int32-decimal 0, *src
@@ -78,7 +78,7 @@ fn main -> _/ebx: int {
           target <- multiply *src2
           print-int32-decimal 0, target
           print-string 0, "\n"
-          return 0  # success
+          return 0/success
         }
       }
       j <- increment
@@ -87,7 +87,7 @@ fn main -> _/ebx: int {
     i <- increment
     loop
   }
-  return 1  # not found
+  return 1/not-found
 }
 
 fn find-after _numbers: (addr array int), start: int, _target: int -> _/eax: boolean {
@@ -104,10 +104,10 @@ fn find-after _numbers: (addr array int), start: int, _target: int -> _/eax: boo
     compare *src, target
     {
       break-if-!=
-      return 1  # true
+      return 1/true
     }
     i <- increment
     loop
   }
-  return 0  # false
+  return 0/false
 }

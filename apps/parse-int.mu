@@ -13,7 +13,7 @@ fn main _args: (addr array addr array byte) -> _/ebx: int {
   compare n, 1
   {
     break-if->
-    print-string 0, "usage: parse-int <integer>\n"
+    print-string 0/screen, "usage: parse-int <integer>\n"
     return 1
   }
   # otherwise parse the first arg as an integer

@@ -248,7 +248,7 @@ fn function-body functions: (addr handle function), _word: (addr handle word), o
     var curr-name-ah/eax: (addr handle array byte) <- get curr, name
     var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
     var found?/eax: boolean <- string-equal? curr-name, function-name
-    compare found?, 0  # false
+    compare found?, 0/false
     {
       break-if-=
       var src/eax: (addr handle line) <- get curr, body
@@ -333,16 +333,16 @@ fn find-in-call-paths call-paths: (addr handle call-path), needle: (addr handle 
     {
       var curr-data/eax: (addr handle call-path-element) <- get curr, data
       var match?/eax: boolean <- call-path-element-match? curr-data, needle
-      compare match?, 0  # false
+      compare match?, 0/false
       {
         break-if-=
-        return 1  # true
+        return 1/true
       }
     }
     curr-ah <- get curr, next
     loop
   }
-  return 0  # false
+  return 0/false
 }
 
 fn call-path-element-match? _x: (addr handle call-path-element), _y: (addr handle call-path-element) -> _/eax: boolean {
@@ -355,17 +355,17 @@ fn call-path-element-match? _x: (addr handle call-path-element), _y: (addr handl
   compare x, y
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
   compare x, 0
   {
     break-if-!=
-    return 0  # false
+    return 0/false
   }
   compare y, 0
   {
     break-if-!=
-    return 0  # false
+    return 0/false
   }
   # compare word addresses, not contents
   var x-data-ah/ecx: (addr handle word) <- get x, word
@@ -382,7 +382,7 @@ fn call-path-element-match? _x: (addr handle call-path-element), _y: (addr handl
   compare x-data, y-data
   {
     break-if-=
-    return 0  # false
+    return 0/false
   }
   var x-next/ecx: (addr handle call-path-element) <- get x, next
   var y-next/eax: (addr handle call-path-element) <- get y, next
@@ -437,7 +437,7 @@ fn delete-in-call-path list: (addr handle call-path), needle: (addr handle call-
     {
       var curr-data/eax: (addr handle call-path-element) <- get curr, data
       var match?/eax: boolean <- call-path-element-match? curr-data, needle
-      compare match?, 0  # false
+      compare match?, 0/false
       {
         break-if-=
         var next-ah/ecx: (addr handle call-path) <- get curr, next

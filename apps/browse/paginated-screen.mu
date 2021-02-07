@@ -132,7 +132,7 @@ fn done-drawing? _self: (addr paginated-screen) -> _/eax: boolean {
   $done-drawing:first-page?: {
     compare first-col, *tmp
     break-if-!=
-    return 0  # false
+    return 0/false
   }
   # return self->rightcol > self->ncols + 1
   tmp <- get self, ncols
@@ -147,9 +147,9 @@ fn done-drawing? _self: (addr paginated-screen) -> _/eax: boolean {
   compare *tmp, max
   {
     break-if->
-    return 0  # false
+    return 0/false
   }
-  return 1  # true
+  return 1/true
 }
 
 fn add-grapheme _self: (addr paginated-screen), c: grapheme {
@@ -159,7 +159,7 @@ fn add-grapheme _self: (addr paginated-screen), c: grapheme {
 $add-grapheme:body: {
   var self/esi: (addr paginated-screen) <- copy _self
   {
-    compare c, 0xa  # newline
+    compare c, 0xa/newline
     break-if-!=
     next-line self
     reposition-cursor self
@@ -189,10 +189,10 @@ $add-grapheme:body: {
 fn test-print-grapheme-on-paginated-screen {
   var pg-on-stack: paginated-screen
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
-  initialize-fake-paginated-screen pg, 3, 0xa, 0xa, 0, 0
+  initialize-fake-paginated-screen pg, 3/rows, 0xa/cols, 0xa/page-width, 0, 0
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61   # 'a'
+    var c/ecx: grapheme <- copy 0x61/a
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
@@ -206,32 +206,32 @@ fn test-print-grapheme-on-paginated-screen {
 fn test-print-single-page {
   var pg-on-stack: paginated-screen
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
-  initialize-fake-paginated-screen pg, 2, 4, 2, 0, 0  # 2 rows, 4 columns, 2 pages * 2 columns each
+  initialize-fake-paginated-screen pg, 2/rows, 4/cols, 2/page-width, 0, 0
   start-drawing pg
   # pages at columns [1, 3), [3, 5)
   {
-    var c/ecx: grapheme <- copy 0x61   # 'a'
+    var c/ecx: grapheme <- copy 0x61/a
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62   # 'b'
+    var c/ecx: grapheme <- copy 0x62/b
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63   # 'c'
+    var c/ecx: grapheme <- copy 0x63/c
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64   # 'd'
+    var c/ecx: grapheme <- copy 0x64/d
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
@@ -247,38 +247,38 @@ fn test-print-single-page {
 fn test-print-single-page-narrower-than-page-width {
   var pg-on-stack: paginated-screen
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
-  initialize-fake-paginated-screen pg, 2, 4, 5, 0, 0  # 2 rows, 4 columns, 5-column pages
+  initialize-fake-paginated-screen pg, 2/rows, 4/cols, 5/page-width, 0, 0
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61   # 'a'
+    var c/ecx: grapheme <- copy 0x61/a
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62   # 'b'
+    var c/ecx: grapheme <- copy 0x62/b
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63   # 'c'
+    var c/ecx: grapheme <- copy 0x63/c
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64   # 'd'
+    var c/ecx: grapheme <- copy 0x64/d
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-4"
   }
   {
-    var c/ecx: grapheme <- copy 0x65   # 'e'
+    var c/ecx: grapheme <- copy 0x65/e
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
@@ -294,38 +294,38 @@ fn test-print-single-page-narrower-than-page-width {
 fn test-print-single-page-narrower-than-page-width-with-margin {
   var pg-on-stack: paginated-screen
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
-  initialize-fake-paginated-screen pg, 2, 4, 5, 0, 1  # 2 rows, 4 columns, 5-column pages, left margin
+  initialize-fake-paginated-screen pg, 2/rows, 4/cols, 5/page-width, 0/top-margin, 1/left-margin
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61   # 'a'
+    var c/ecx: grapheme <- copy 0x61/a
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62   # 'b'
+    var c/ecx: grapheme <- copy 0x62/b
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63   # 'c'
+    var c/ecx: grapheme <- copy 0x63/c
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64   # 'd'
+    var c/ecx: grapheme <- copy 0x64/d
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-4"
   }
   {
-    var c/ecx: grapheme <- copy 0x65   # 'e'
+    var c/ecx: grapheme <- copy 0x65/e
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
@@ -341,31 +341,31 @@ fn test-print-single-page-narrower-than-page-width-with-margin {
 fn test-print-multiple-pages {
   var pg-on-stack: paginated-screen
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
-  initialize-fake-paginated-screen pg, 2, 2, 1, 0, 0  # 2 rows, 2 columns, 2 pages * 1 column each
+  initialize-fake-paginated-screen pg, 2/rows, 2/cols, 1/page-width, 0, 0
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61   # 'a'
+    var c/ecx: grapheme <- copy 0x61/a
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62   # 'b'
+    var c/ecx: grapheme <- copy 0x62/b
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63   # 'c'
+    var c/ecx: grapheme <- copy 0x63/c
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64   # 'd'
+    var c/ecx: grapheme <- copy 0x64/d
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
@@ -381,59 +381,59 @@ fn test-print-multiple-pages {
 fn test-print-multiple-pages-2 {
   var pg-on-stack: paginated-screen
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
-  initialize-fake-paginated-screen pg, 2, 4, 2, 0, 0  # 2 rows, 4 columns, 2 pages * 2 columns each
+  initialize-fake-paginated-screen pg, 2/rows, 4/cols, 2/page-width, 0, 0
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61   # 'a'
+    var c/ecx: grapheme <- copy 0x61/a
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62   # 'b'
+    var c/ecx: grapheme <- copy 0x62/b
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63   # 'c'
+    var c/ecx: grapheme <- copy 0x63/c
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64   # 'd'
+    var c/ecx: grapheme <- copy 0x64/d
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-4"
   }
   {
-    var c/ecx: grapheme <- copy 0x65   # 'e'
+    var c/ecx: grapheme <- copy 0x65/e
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-5"
   }
   {
-    var c/ecx: grapheme <- copy 0x66   # 'f'
+    var c/ecx: grapheme <- copy 0x66/f
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-6"
   }
   {
-    var c/ecx: grapheme <- copy 0x67   # 'g'
+    var c/ecx: grapheme <- copy 0x67/g
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-7"
   }
   {
-    var c/ecx: grapheme <- copy 0x68   # 'h'
+    var c/ecx: grapheme <- copy 0x68/h
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
@@ -449,59 +449,59 @@ fn test-print-multiple-pages-2 {
 fn test-print-multiple-pages-with-margins {
   var pg-on-stack: paginated-screen
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
-  initialize-fake-paginated-screen pg, 3, 6, 2, 1, 1  # 3 rows, 5 columns, 2 pages * 2 columns each
+  initialize-fake-paginated-screen pg, 3/rows, 6/cols, 2/page-width, 1/top-margin, 1/left-margin
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61   # 'a'
+    var c/ecx: grapheme <- copy 0x61/a
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62   # 'b'
+    var c/ecx: grapheme <- copy 0x62/b
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63   # 'c'
+    var c/ecx: grapheme <- copy 0x63/c
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64   # 'd'
+    var c/ecx: grapheme <- copy 0x64/d
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-4"
   }
   {
-    var c/ecx: grapheme <- copy 0x65   # 'e'
+    var c/ecx: grapheme <- copy 0x65/e
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-5"
   }
   {
-    var c/ecx: grapheme <- copy 0x66   # 'f'
+    var c/ecx: grapheme <- copy 0x66/f
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-6"
   }
   {
-    var c/ecx: grapheme <- copy 0x67   # 'g'
+    var c/ecx: grapheme <- copy 0x67/g
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-7"
   }
   {
-    var c/ecx: grapheme <- copy 0x68   # 'h'
+    var c/ecx: grapheme <- copy 0x68/h
     add-grapheme pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?

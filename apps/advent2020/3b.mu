@@ -26,7 +26,7 @@ fn main -> _/ebx: int {
       read-line-from-real-keyboard line
       # if line is empty (not even a newline), quit
       var done?/eax: boolean <- stream-empty? line
-      compare done?, 0  # false
+      compare done?, 0/false
       break-if-!=
       # wastefully recompute width on every line
       # zero error-checking; we assume input lines are all equally long
@@ -34,7 +34,7 @@ fn main -> _/ebx: int {
       # turn each byte into a tree and append it
       $main:line-loop: {
         var done?/eax: boolean <- stream-empty? line
-        compare done?, 0  # false
+        compare done?, 0/false
         break-if-!=
 #?         print-int32-decimal 0, num-rows
 #?         print-string 0, " "
@@ -43,10 +43,10 @@ fn main -> _/ebx: int {
         var dest/ebx: (addr int) <- index trees, trees-length
         var c/eax: byte <- read-byte line
         # newline comes only at end of line
-        compare c, 0xa  # newline
+        compare c, 0xa/newline
         break-if-=
         # '#' = tree
-        compare c, 0x23  # '#'
+        compare c, 0x23/hash
         {
           break-if-!=
           copy-to *dest, 1

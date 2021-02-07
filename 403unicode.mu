@@ -159,7 +159,7 @@ fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
   # if at eof, return EOF
   {
     var eof?/eax: boolean <- stream-empty? in
-    compare eof?, 0  # false
+    compare eof?, 0/false
     break-if-=
     return 0xffffffff
   }
@@ -237,7 +237,7 @@ fn test-read-grapheme {
   check-ints-equal n, 0x61, "F - test grapheme/0"
   var c/eax: grapheme <- read-grapheme s2
   var n/eax: int <- copy c
-  check-ints-equal n, 0x92ce, "F - test grapheme/1"  # greek capital letter beta
+  check-ints-equal n, 0x92ce/greek-capital-letter-beta, "F - test grapheme/1"
   var c/eax: grapheme <- read-grapheme s2
   var n/eax: int <- copy c
   check-ints-equal n, 0x63, "F - test grapheme/2"

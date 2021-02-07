@@ -13,7 +13,7 @@ fn main _args: (addr array addr array byte) -> _/ebx: int {
   compare n, 1
   {
     break-if->
-    print-string 0, "usage: cat <filename>\n"
+    print-string 0/screen, "usage: cat <filename>\n"
     return 0
   }
   {
@@ -22,16 +22,16 @@ fn main _args: (addr array addr array byte) -> _/ebx: int {
     var in: (handle buffered-file)
     {
       var addr-in/eax: (addr handle buffered-file) <- address in
-      open *filename, 0, addr-in
+      open *filename, 0/read-only, addr-in
     }
     var _in-addr/eax: (addr buffered-file) <- lookup in
     var in-addr/ecx: (addr buffered-file) <- copy _in-addr
     {
       var c/eax: byte <- read-byte-buffered in-addr
-      compare c, 0xffffffff  # EOF marker
+      compare c, 0xffffffff/end-of-file
       break-if-=
       var g/eax: grapheme <- copy c
-      print-grapheme 0, g
+      print-grapheme 0/screen, g
       loop
     }
   }

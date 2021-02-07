@@ -33,7 +33,7 @@ fn push-number-to-value-stack _self: (addr value-stack), _val: float {
   copy-to *dest-addr2, val
   increment *top-addr
   var type-addr/eax: (addr int) <- get dest-addr, type
-  copy-to *type-addr, 0  # number
+  copy-to *type-addr, 0/number
 }
 
 fn push-string-to-value-stack _self: (addr value-stack), val: (handle array byte) {
@@ -53,7 +53,7 @@ fn push-string-to-value-stack _self: (addr value-stack), val: (handle array byte
 #?     print-int32-hex 0, foo
 #?   }
 #?   print-string 0, "\n"
-  copy-to *dest-addr3, 1  # type string
+  copy-to *dest-addr3, 1/string
   increment *top-addr
 }
 
@@ -69,7 +69,7 @@ fn push-array-to-value-stack _self: (addr value-stack), val: (handle array value
   copy-handle val, dest-addr2
   # update type
   var dest-addr3/eax: (addr int) <- get dest-addr, type
-  copy-to *dest-addr3, 2  # type array
+  copy-to *dest-addr3, 2/array
   increment *top-addr
 }
 
@@ -111,9 +111,9 @@ fn value-stack-empty? _self: (addr value-stack) -> _/eax: boolean {
   compare *top, 0
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
-  return 0  # false
+  return 0/false
 }
 
 fn value-stack-length _self: (addr value-stack) -> _/eax: int {
@@ -142,7 +142,7 @@ fn save-lines in-h: (handle array (handle array byte)), _out-ah: (addr handle ar
     var dest/eax: (addr handle array byte) <- get dest-val, text-data
     copy-object src, dest
     var type/edx: (addr int) <- get dest-val, type
-    copy-to *type, 1  # string
+    copy-to *type, 1/string
     i <- increment
     loop
   }

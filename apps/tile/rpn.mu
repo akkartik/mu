@@ -90,7 +90,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-val/edx: (addr value) <- index data, dest-offset
         # check target-val is a string or array
         var target-type-addr/eax: (addr int) <- get target-val, type
-        compare *target-type-addr, 1  # string
+        compare *target-type-addr, 1/string
         {
           break-if-!=
           # compute length
@@ -100,14 +100,14 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           var result-f/xmm0: float <- convert result
           # save result into target-val
           var type-addr/eax: (addr int) <- get target-val, type
-          copy-to *type-addr, 0  # int
+          copy-to *type-addr, 0/int
           var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
           clear-object target-string-ah
           var target/eax: (addr float) <- get target-val, number-data
           copy-to *target, result-f
           break $evaluate:process-word
         }
-        compare *target-type-addr, 2  # array of ints
+        compare *target-type-addr, 2/array
         {
           break-if-!=
           # compute length
@@ -117,7 +117,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
           var result-f/xmm0: float <- convert result
           # save result into target-val
           var type-addr/eax: (addr int) <- get target-val, type
-          copy-to *type-addr, 0  # int
+          copy-to *type-addr, 0/int
           var target-array-ah/eax: (addr handle array value) <- get target-val, array-data
           clear-object target-array-ah
           var target/eax: (addr float) <- get target-val, number-data
@@ -143,7 +143,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-val/edx: (addr value) <- index data, dest-offset
         # check target-val is a string
         var target-type-addr/eax: (addr int) <- get target-val, type
-        compare *target-type-addr, 1  # string
+        compare *target-type-addr, 1/string
         break-if-!=
         # open target-val as a filename and save the handle in target-val
         var src-ah/eax: (addr handle array byte) <- get target-val, text-data
@@ -152,7 +152,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         open src, 0, result-ah  # write? = false
         # save result into target-val
         var type-addr/eax: (addr int) <- get target-val, type
-        copy-to *type-addr, 3  # file
+        copy-to *type-addr, 3/file
         var target-string-ah/eax: (addr handle array byte) <- get target-val, text-data
         var filename-ah/ecx: (addr handle array byte) <- get target-val, filename
         copy-object target-string-ah, filename-ah
@@ -176,7 +176,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-val/edx: (addr value) <- index data, dest-offset
         # check target-val is a file
         var target-type-addr/eax: (addr int) <- get target-val, type
-        compare *target-type-addr, 3  # file
+        compare *target-type-addr, 3/file
         break-if-!=
         # read a line from the file and save in target-val
         # read target-val as a filename and save the handle in target-val
@@ -189,7 +189,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         stream-to-array s-addr, target
         # save result into target-val
         var type-addr/eax: (addr int) <- get target-val, type
-        copy-to *type-addr, 1  # string
+        copy-to *type-addr, 1/string
         var target-file-ah/eax: (addr handle buffered-file) <- get target-val, file-data
         clear-object target-file-ah
         break $evaluate:process-word
@@ -211,7 +211,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-val/edx: (addr value) <- index data, dest-offset
         # check target-val is a file
         var target-type-addr/eax: (addr int) <- get target-val, type
-        compare *target-type-addr, 3  # file
+        compare *target-type-addr, 3/file
         break-if-!=
         # slurp all contents from file and save in target-val
         # read target-val as a filename and save the handle in target-val
@@ -224,7 +224,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         stream-to-array s-addr, target
         # save result into target-val
         var type-addr/eax: (addr int) <- get target-val, type
-        copy-to *type-addr, 1  # string
+        copy-to *type-addr, 1/string
         var target-file-ah/eax: (addr handle buffered-file) <- get target-val, file-data
         clear-object target-file-ah
         break $evaluate:process-word
@@ -246,7 +246,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-val/edx: (addr value) <- index data, dest-offset
         # check target-val is a file
         var target-type-addr/eax: (addr int) <- get target-val, type
-        compare *target-type-addr, 3  # file
+        compare *target-type-addr, 3/file
         break-if-!=
         # read all lines from file and save as an array of strings in target-val
         # read target-val as a filename and save the handle in target-val
@@ -269,7 +269,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         save-lines h, target
         # save result into target-val
         var type-addr/eax: (addr int) <- get target-val, type
-        copy-to *type-addr, 2  # array
+        copy-to *type-addr, 2/array
         var target-file-ah/eax: (addr handle buffered-file) <- get target-val, file-data
         var empty-file: (handle buffered-file)
         copy-handle empty-file, target-file-ah
@@ -306,7 +306,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var dest-offset/edx: (offset value) <- compute-offset data, top
         var target-val/edx: (addr value) <- index data, dest-offset
         var type/eax: (addr int) <- get target-val, type
-        copy-to *type, 4  # screen
+        copy-to *type, 4/screen
         var dest/eax: (addr handle screen) <- get target-val, screen-data
         copy-handle screen-h, dest
         break $evaluate:process-word
@@ -338,7 +338,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var dest-offset/edx: (offset value) <- compute-offset data, top
         var target-val/edx: (addr value) <- index data, dest-offset
         var type/eax: (addr int) <- get target-val, type
-        compare *type, 4  # screen
+        compare *type, 4/screen
         break-if-!=
         # print string to target screen
         var dest-ah/eax: (addr handle screen) <- get target-val, screen-data
@@ -370,7 +370,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-offset/eax: (offset value) <- compute-offset data, top
         var target-val/ebx: (addr value) <- index data, target-offset
         var type/eax: (addr int) <- get target-val, type
-        compare *type, 4  # screen
+        compare *type, 4/screen
         break-if-!=
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var target/eax: (addr screen) <- lookup *target-ah
@@ -399,7 +399,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-offset/eax: (offset value) <- compute-offset data, top
         var target-val/ebx: (addr value) <- index data, target-offset
         var type/eax: (addr int) <- get target-val, type
-        compare *type, 4  # screen
+        compare *type, 4/screen
         break-if-!=
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
@@ -442,7 +442,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-offset/eax: (offset value) <- compute-offset data, top
         var target-val/ebx: (addr value) <- index data, target-offset
         var type/eax: (addr int) <- get target-val, type
-        compare *type, 4  # screen
+        compare *type, 4/screen
         break-if-!=
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
@@ -487,7 +487,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-offset/eax: (offset value) <- compute-offset data, top
         var target-val/ebx: (addr value) <- index data, target-offset
         var type/eax: (addr int) <- get target-val, type
-        compare *type, 4  # screen
+        compare *type, 4/screen
         break-if-!=
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
@@ -531,7 +531,7 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         var target-offset/eax: (offset value) <- compute-offset data, top
         var target-val/ebx: (addr value) <- index data, target-offset
         var type/eax: (addr int) <- get target-val, type
-        compare *type, 4  # screen
+        compare *type, 4/screen
         break-if-!=
         var target-ah/eax: (addr handle screen) <- get target-val, screen-data
         var _target/eax: (addr screen) <- lookup *target-ah
@@ -610,10 +610,10 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       ### if curr-stream defines a binding, save top of stack to bindings
       {
         var done?/eax: boolean <- stream-empty? curr-stream
-        compare done?, 0  # false
+        compare done?, 0/false
         break-if-!=
         var new-byte/eax: byte <- read-byte curr-stream
-        compare new-byte, 0x3d  # '='
+        compare new-byte, 0x3d/=
         break-if-!=
         # pop target-val from out
         var out2/esi: (addr value-stack) <- copy out
@@ -665,10 +665,10 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       ### if the word starts with a quote and ends with a quote, turn it into a string
       {
         var start/eax: byte <- stream-first curr-stream
-        compare start, 0x22  # double-quote
+        compare start, 0x22/double-quote
         break-if-!=
         var end/eax: byte <- stream-final curr-stream
-        compare end, 0x22  # double-quote
+        compare end, 0x22/double-quote
         break-if-!=
         var h: (handle array byte)
         var s/eax: (addr handle array byte) <- address h
@@ -679,10 +679,10 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       ### if the word starts with a '[' and ends with a ']', turn it into an array
       {
         var start/eax: byte <- stream-first curr-stream
-        compare start, 0x5b  # '['
+        compare start, 0x5b/[
         break-if-!=
         var end/eax: byte <- stream-final curr-stream
-        compare end, 0x5d  # ']'
+        compare end, 0x5d/]
         break-if-!=
         # wastefully create a new input string to strip quotes
         var h: (handle array value)
@@ -781,7 +781,7 @@ fn find-function first: (addr handle function), name: (addr stream byte), out: (
     var curr-name-ah/eax: (addr handle array byte) <- get f, name
     var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
     var done?/eax: boolean <- stream-data-equal? name, curr-name
-    compare done?, 0  # false
+    compare done?, 0/false
     {
       break-if-=
       copy-handle *curr, out

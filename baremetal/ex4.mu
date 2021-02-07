@@ -10,6 +10,6 @@
 # Expected output: letter 'A' in green near the top-left corner of screen
 
 fn main {
-  var g/eax: grapheme <- copy 0x41  # 'A'
-  draw-grapheme 0, g, 2, 1, 0xa  # x of 2 graphemes = 16px from top-left; y of 1 grapheme = 16px down from top-left
+  var g/eax: grapheme <- copy 0x41/A
+  draw-grapheme 0/screen, g, 2/row, 1/col, 0xa/fg
 }

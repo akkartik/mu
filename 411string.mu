@@ -13,7 +13,7 @@ fn substring in: (addr array byte), start: int, len: int, out-ah: (addr handle a
       break-if->=
       {
         var dummy/eax: grapheme <- read-grapheme in-stream-addr
-        compare dummy, 0xffffffff  # end-of-file
+        compare dummy, 0xffffffff/end-of-file
         break-if-= $substring:core
       }
       i <- increment
@@ -26,7 +26,7 @@ fn substring in: (addr array byte), start: int, len: int, out-ah: (addr handle a
       break-if->=
       {
         var g/eax: grapheme <- read-grapheme in-stream-addr
-        compare g, 0xffffffff  # end-of-file
+        compare g, 0xffffffff/end-of-file
         break-if-= $substring:core
         write-grapheme out-stream-addr, g
       }

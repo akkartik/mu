@@ -61,7 +61,7 @@ fn move-word-contents _src-ah: (addr handle word), _dest-ah: (addr handle word) 
   var src-stack/ecx: (addr grapheme-stack) <- get src-data, right
   {
     var done?/eax: boolean <- grapheme-stack-empty? src-stack
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     var g/eax: grapheme <- pop-grapheme-stack src-stack
 #?     print-grapheme 0, g
@@ -520,7 +520,7 @@ fn word-exists? _haystack-ah: (addr handle word), _needle: (addr word) -> _/ebx:
   compare curr, 0
   {
     break-if-!=
-    return 0  # false
+    return 0/false
   }
   # check curr
   var curr-name-storage: (handle array byte)
@@ -531,7 +531,7 @@ fn word-exists? _haystack-ah: (addr handle word), _needle: (addr word) -> _/ebx:
   compare found?, 0
   {
     break-if-=
-    return 1  # true
+    return 1/true
   }
   # recurse
   var curr/eax: (addr word) <- lookup *haystack-ah
@@ -550,7 +550,7 @@ fn word-list-length words: (addr handle word) -> _/eax: int {
     {
       var word-len/eax: int <- word-length curr
       result <- add word-len
-      result <- add 1  # inter-word-margin
+      result <- add 1/inter-word-margin
     }
     curr-ah <- get curr, next
     loop
@@ -566,12 +566,12 @@ fn parse-words in: (addr array byte), out-ah: (addr handle word) {
   var cursor-word-ah/ebx: (addr handle word) <- copy out-ah
   $parse-words:loop: {
     var done?/eax: boolean <- stream-empty? in-stream-a
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     var _g/eax: grapheme <- read-grapheme in-stream-a
     var g/ecx: grapheme <- copy _g
     # if not space, insert
-    compare g, 0x20  # space
+    compare g, 0x20/space
     {
       break-if-=
       var cursor-word/eax: (addr word) <- lookup *cursor-word-ah

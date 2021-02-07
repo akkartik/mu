@@ -6,7 +6,7 @@ fn print-int32-decimal-right-justified screen: (addr screen), n: int, _width: in
   {
     compare n-width, width
     break-if->=
-    print-grapheme screen, 0x20  # space
+    print-grapheme screen, 0x20/space
     width <- decrement
     loop
   }

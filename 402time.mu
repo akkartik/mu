@@ -7,7 +7,7 @@ type timespec {
 # TODO: y2038
 fn time -> _/eax: int {
   var t: timespec
-  var clock/ebx: int <- copy 0  # CLOCK_MONOTONIC
+  var clock/ebx: int <- copy 0/CLOCK_MONOTONIC
   var t-addr/ecx: (addr timespec) <- address t
   syscall_clock_gettime
   var t-secs-addr/ecx: (addr int) <- get t-addr, tv_sec
@@ -18,7 +18,7 @@ fn time -> _/eax: int {
 # return time in nanoseconds since epoch
 fn ntime -> _/eax: int {
   var t: timespec
-  var clock/ebx: int <- copy 0  # CLOCK_MONOTONIC
+  var clock/ebx: int <- copy 0/CLOCK_MONOTONIC
   var t-addr/ecx: (addr timespec) <- address t
   syscall_clock_gettime
   var t-nsecs-addr/ecx: (addr int) <- get t-addr, tv_nsec

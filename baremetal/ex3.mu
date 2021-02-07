@@ -15,12 +15,12 @@ fn main {
   var x/ecx: int <- copy 0
   var y/edx: int <- copy 0
   {
-    var key/eax: byte <- read-key 0  # real keyboard
+    var key/eax: byte <- read-key 0/keyboard
     compare key, 0
     loop-if-=  # busy wait
-    pixel-on-real-screen x, y, 0x31  # green
+    pixel-on-real-screen x, y, 0x31/green
     x <- increment
-    compare x, 0x400  # screen-width
+    compare x, 0x400/screen-width=1024
     {
       break-if-<
       y <- increment

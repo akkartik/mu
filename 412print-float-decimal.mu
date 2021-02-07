@@ -471,7 +471,7 @@ fn print-float-buffer screen: (addr screen), _buf: (addr array byte), n: int, dp
     }
     var curr-a/ecx: (addr byte) <- index buf, i
     var curr/ecx: byte <- copy-byte *curr-a
-    curr <- add 0x30  # '0'
+    curr <- add 0x30/0
     var curr-grapheme/ecx: grapheme <- copy curr
     print-grapheme screen, curr-grapheme
     i <- increment
@@ -494,7 +494,7 @@ fn print-float-buffer-in-scientific-notation screen: (addr screen), _buf: (addr 
     }
     var curr-a/ecx: (addr byte) <- index buf, i
     var curr/ecx: byte <- copy-byte *curr-a
-    curr <- add 0x30  # '0'
+    curr <- add 0x30/0
     var curr-grapheme/ecx: grapheme <- copy curr
     print-grapheme screen, curr-grapheme
     #
@@ -514,22 +514,22 @@ fn float-size in: float, precision: int -> _/eax: int {
   compare bits, 0
   {
     break-if-!=
-    return 1  # "0"
+    return 1  # for "0"
   }
   compare bits, 0x80000000
   {
     break-if-!=
-    return 2  # "-0"
+    return 2  # for "-0"
   }
   compare bits, 0x7f800000
   {
     break-if-!=
-    return 3  # "Inf"
+    return 3  # for "Inf"
   }
   compare bits, 0xff800000
   {
     break-if-!=
-    return 4  # "-Inf"
+    return 4  # for "-Inf"
   }
   var exponent/ecx: int <- copy bits
   exponent <- shift-right 0x17  # 23 bits of mantissa
@@ -538,7 +538,7 @@ fn float-size in: float, precision: int -> _/eax: int {
   compare exponent, 0x80
   {
     break-if-!=
-    return 3  # "NaN"
+    return 3  # for "NaN"
   }
   # - regular numbers
   # v = 1.mantissa (in base 2) << 0x17
@@ -636,7 +636,7 @@ fn test-check-buffer-contains {
   var arr: (array byte 4)
   var a/esi: (addr array byte) <- address arr
   var b/eax: (addr byte) <- index a, 0
-  var c/ecx: byte <- copy 0x61  # 'a'
+  var c/ecx: byte <- copy 0x61/a
   copy-byte-to *b, c
   check-buffer-contains a, "a", "F - test-check-buffer-contains"
   check-buffer-contains "a", "a", "F - test-check-buffer-contains/null"  # no null check when arrays have same length

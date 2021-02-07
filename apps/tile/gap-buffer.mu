@@ -6,9 +6,9 @@ type gap-buffer {
 fn initialize-gap-buffer _self: (addr gap-buffer) {
   var self/esi: (addr gap-buffer) <- copy _self
   var left/eax: (addr grapheme-stack) <- get self, left
-  initialize-grapheme-stack left, 0x10  # max-word-size
+  initialize-grapheme-stack left, 0x10/max-word-size
   var right/eax: (addr grapheme-stack) <- get self, right
-  initialize-grapheme-stack right, 0x10  # max-word-size
+  initialize-grapheme-stack right, 0x10/max-word-size
 }
 
 # just for tests
@@ -19,7 +19,7 @@ fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
   write stream, s
   {
     var done?/eax: boolean <- stream-empty? stream
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     var g/eax: grapheme <- read-grapheme stream
     add-grapheme-at-gap self, g
@@ -244,7 +244,7 @@ fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> _/eax: bo
   # compare left
   var left/edx: (addr grapheme-stack) <- get self, left
   var result/eax: boolean <- prefix-match? left, expected-stream
-  compare result, 0  # false
+  compare result, 0/false
   {
     break-if-!=
     return result
@@ -252,7 +252,7 @@ fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> _/eax: bo
   # compare right
   var right/edx: (addr grapheme-stack) <- get self, right
   result <- suffix-match? right, expected-stream
-  compare result, 0  # false
+  compare result, 0/false
   {
     break-if-!=
     return result
@@ -267,7 +267,7 @@ fn test-gap-buffer-equal-from-end? {
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g
   #
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   add-grapheme-at-gap g, c
   add-grapheme-at-gap g, c
   add-grapheme-at-gap g, c
@@ -282,7 +282,7 @@ fn test-gap-buffer-equal-from-middle? {
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g
   #
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   add-grapheme-at-gap g, c
   add-grapheme-at-gap g, c
   add-grapheme-at-gap g, c
@@ -298,7 +298,7 @@ fn test-gap-buffer-equal-from-start? {
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g
   #
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   add-grapheme-at-gap g, c
   add-grapheme-at-gap g, c
   add-grapheme-at-gap g, c
@@ -334,7 +334,7 @@ fn gap-buffer-is-decimal-integer? _self: (addr gap-buffer) -> _/eax: boolean {
   var curr/ecx: (addr grapheme-stack) <- get self, left
   var result/eax: boolean <- grapheme-stack-is-decimal-integer? curr
   {
-    compare result, 0  # false
+    compare result, 0/false
     break-if-=
     curr <- get self, right
     result <- grapheme-stack-is-decimal-integer? curr

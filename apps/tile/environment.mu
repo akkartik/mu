@@ -106,14 +106,14 @@ fn process-goto-dialog _self: (addr environment), key: grapheme {
   var self/esi: (addr environment) <- copy _self
   var fn-name-ah/edi: (addr handle word) <- get self, partial-function-name
   # if 'esc' pressed, cancel goto
-  compare key, 0x1b  # esc
+  compare key, 0x1b/esc
   $process-goto-dialog:cancel: {
     break-if-!=
     clear-object fn-name-ah
     return
   }
   # if 'enter' pressed, location function and set cursor to it
-  compare key, 0xa  # enter
+  compare key, 0xa/enter
   $process-goto-dialog:commit: {
     break-if-!=
 #?     print-string 0, "jump\n"
@@ -127,13 +127,13 @@ fn process-goto-dialog _self: (addr environment), key: grapheme {
     return
   }
   #
-  compare key, 0x7f  # del (backspace on Macs)
+  compare key, 0x7f/del  # backspace on Macs
   $process-goto-dialog:backspace: {
     break-if-!=
     # if not at start, delete grapheme before cursor
     var fn-name/eax: (addr word) <- lookup *fn-name-ah
     var at-start?/eax: boolean <- cursor-at-start? fn-name
-    compare at-start?, 0  # false
+    compare at-start?, 0/false
     {
       break-if-!=
       var fn-name/eax: (addr word) <- lookup *fn-name-ah
@@ -144,7 +144,7 @@ fn process-goto-dialog _self: (addr environment), key: grapheme {
   # otherwise insert key within current word
   var print?/eax: boolean <- real-grapheme? key
   $process-goto-dialog:real-grapheme: {
-    compare print?, 0  # false
+    compare print?, 0/false
     break-if-=
     var fn-name/eax: (addr word) <- lookup *fn-name-ah
     add-grapheme-to-word fn-name, key
@@ -165,13 +165,13 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
   var cursor-word-ah/ebx: (addr handle word) <- get function, cursor-word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ecx: (addr word) <- copy _cursor-word
-  compare key, 0x445b1b  # left-arrow
+  compare key, 0x445b1b/left-arrow
   $process-function-edit:key-left-arrow: {
     break-if-!=
 #?     print-string 0, "left-arrow\n"
     # if not at start, move left within current word
     var at-start?/eax: boolean <- cursor-at-start? cursor-word
-    compare at-start?, 0  # false
+    compare at-start?, 0/false
     {
       break-if-!=
 #?       print-string 0, "cursor left within word\n"
@@ -190,12 +190,12 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     }
     return
   }
-  compare key, 0x435b1b  # right-arrow
+  compare key, 0x435b1b/right-arrow
   $process-function-edit:key-right-arrow: {
     break-if-!=
     # if not at end, move right within current word
     var at-end?/eax: boolean <- cursor-at-end? cursor-word
-    compare at-end?, 0  # false
+    compare at-end?, 0/false
     {
       break-if-!=
       cursor-right cursor-word
@@ -213,7 +213,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     return
   }
   # word-based motions
-  compare key, 2  # ctrl-b
+  compare key, 2/ctrl-b
   $process-function-edit:prev-word: {
     break-if-!=
     # jump to previous word if possible
@@ -227,7 +227,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     }
     return
   }
-  compare key, 6  # ctrl-f
+  compare key, 6/ctrl-f
   $process-function-edit:next-word: {
     break-if-!=
     # jump to previous word if possible
@@ -242,7 +242,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     return
   }
   # line-based motions
-  compare key, 1  # ctrl-a
+  compare key, 1/ctrl-a
   $process-function-edit:start-of-line: {
     break-if-!=
     # move cursor to start of first word
@@ -254,7 +254,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     cursor-to-start body-contents
     return
   }
-  compare key, 5  # ctrl-e
+  compare key, 5/ctrl-e
   $process-function-edit:end-of-line: {
     break-if-!=
     # move cursor to end of final word
@@ -268,7 +268,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     return
   }
   # bounce to another function
-  compare key, 7  # ctrl-g
+  compare key, 7/ctrl-g
   $process-function-edit:goto-function: {
     break-if-!=
     # initialize dialog to name function to jump to
@@ -279,7 +279,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     return
   }
   # bounce to sandbox
-  compare key, 9  # tab
+  compare key, 9/tab
   $process-function-edit:goto-sandbox: {
     break-if-!=
     var function-ah/eax: (addr handle function) <- get self, cursor-function
@@ -287,12 +287,12 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     return
   }
   # editing the current function
-  compare key, 0x7f  # del (backspace on Macs)
+  compare key, 0x7f/del  # backspace on Macs
   $process-function-edit:backspace: {
     break-if-!=
     # if not at start of some word, delete grapheme before cursor within current word
     var at-start?/eax: boolean <- cursor-at-start? cursor-word
-    compare at-start?, 0  # false
+    compare at-start?, 0/false
     {
       break-if-!=
       delete-before-cursor cursor-word
@@ -310,14 +310,14 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     }
     return
   }
-  compare key, 0x20  # space
+  compare key, 0x20/space
   $process-function-edit:space: {
     break-if-!=
 #?     print-string 0, "space\n"
     # if cursor is at start of word, insert word before
     {
       var at-start?/eax: boolean <- cursor-at-start? cursor-word
-      compare at-start?, 0  # false
+      compare at-start?, 0/false
       break-if-=
       var prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
       append-word prev-word-ah
@@ -329,10 +329,10 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     # TODO: support string escaping
     {
       var first-grapheme/eax: grapheme <- first-grapheme cursor-word
-      compare first-grapheme, 0x22  # double quote
+      compare first-grapheme, 0x22/double-quote
       break-if-!=
       var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
-      compare final-grapheme, 0x22  # double quote
+      compare final-grapheme, 0x22/double-quote
       break-if-=
       break $process-function-edit:space
     }
@@ -340,10 +340,10 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     # TODO: support nested arrays
     {
       var first-grapheme/eax: grapheme <- first-grapheme cursor-word
-      compare first-grapheme, 0x5b  # '['
+      compare first-grapheme, 0x5b/[
       break-if-!=
       var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
-      compare final-grapheme, 0x5d  # ']'
+      compare final-grapheme, 0x5d/]
       break-if-=
       break $process-function-edit:space
     }
@@ -354,7 +354,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     copy-object next-word-ah, cursor-word-ah
     # if cursor is at end of word, that's all
     var at-end?/eax: boolean <- cursor-at-end? cursor-word
-    compare at-end?, 0  # false
+    compare at-end?, 0/false
     {
       break-if-=
       return
@@ -366,7 +366,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
     var next-word/ebx: (addr word) <- copy _next-word
     {
       var at-end?/eax: boolean <- cursor-at-end? cursor-word
-      compare at-end?, 0  # false
+      compare at-end?, 0/false
       break-if-!=
       var g/eax: grapheme <- pop-after-cursor cursor-word
       add-grapheme-to-word next-word, g
@@ -379,7 +379,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
   var g/edx: grapheme <- copy key
   var print?/eax: boolean <- real-grapheme? key
   $process-function-edit:real-grapheme: {
-    compare print?, 0  # false
+    compare print?, 0/false
     break-if-=
     add-grapheme-to-word cursor-word, g
     return
@@ -421,13 +421,13 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
   var cursor-word-ah/ebx: (addr handle word) <- get cursor-call-path, word
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ecx: (addr word) <- copy _cursor-word
-  compare key, 0x445b1b  # left-arrow
+  compare key, 0x445b1b/left-arrow
   $process-sandbox-edit:key-left-arrow: {
     break-if-!=
 #?     print-string 0, "left-arrow\n"
     # if not at start, move left within current word
     var at-start?/eax: boolean <- cursor-at-start? cursor-word
-    compare at-start?, 0  # false
+    compare at-start?, 0/false
     {
       break-if-!=
 #?       print-string 0, "cursor left within word\n"
@@ -439,7 +439,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
       var cursor-call-path/esi: (addr handle call-path-element) <- get sandbox, cursor-call-path
       var expanded-words/edx: (addr handle call-path) <- get sandbox, expanded-words
       var curr-word-is-expanded?/eax: boolean <- find-in-call-paths expanded-words, cursor-call-path
-      compare curr-word-is-expanded?, 0  # false
+      compare curr-word-is-expanded?, 0/false
       break-if-=
       # update cursor-call-path
 #?       print-string 0, "curr word is expanded\n"
@@ -519,12 +519,12 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     }
     return
   }
-  compare key, 0x435b1b  # right-arrow
+  compare key, 0x435b1b/right-arrow
   $process-sandbox-edit:key-right-arrow: {
     break-if-!=
     # if not at end, move right within current word
     var at-end?/eax: boolean <- cursor-at-end? cursor-word
-    compare at-end?, 0  # false
+    compare at-end?, 0/false
     {
       break-if-!=
 #?       print-string 0, "a\n"
@@ -564,7 +564,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
         {
           var expanded-words/eax: (addr handle call-path) <- get sandbox, expanded-words
           var curr-word-is-expanded?/eax: boolean <- find-in-call-paths expanded-words, cursor-call-path
-          compare curr-word-is-expanded?, 0  # false
+          compare curr-word-is-expanded?, 0/false
           break-if-= $process-sandbox-edit:key-right-arrow-next-word-is-call-expanded
         }
         var callee-h: (handle function)
@@ -588,14 +588,14 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     }
     return
   }
-  compare key, 0xa  # enter
+  compare key, 0xa/enter
   {
     break-if-!=
     # toggle display of subsidiary stack
     toggle-cursor-word sandbox
     return
   }
-  compare key, 0xc  # ctrl-l
+  compare key, 0xc/ctrl-l
   $process-sandbox-edit:new-line: {
     break-if-!=
     # new line in sandbox
@@ -603,7 +603,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     return
   }
   # word-based motions
-  compare key, 2  # ctrl-b
+  compare key, 2/ctrl-b
   $process-sandbox-edit:prev-word: {
     break-if-!=
     # jump to previous word at same level
@@ -638,7 +638,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
       return
     }
   }
-  compare key, 6  # ctrl-f
+  compare key, 6/ctrl-f
   $process-sandbox-edit:next-word: {
     break-if-!=
 #?     print-string 0, "AA\n"
@@ -666,7 +666,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     copy-object caller-cursor-element-ah, cursor-call-path-ah
     return
   }
-  compare key, 7  # ctrl-g
+  compare key, 7/ctrl-g
   $process-sandbox-edit:goto-function: {
     break-if-!=
     # initialize dialog to name function to jump to
@@ -677,7 +677,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     return
   }
   # line-based motions
-  compare key, 1  # ctrl-a
+  compare key, 1/ctrl-a
   $process-sandbox-edit:start-of-line: {
     break-if-!=
     # move cursor up past all calls and to start of line
@@ -693,7 +693,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     # but we don't expect to see zero-arg functions first-up
     return
   }
-  compare key, 5  # ctrl-e
+  compare key, 5/ctrl-e
   $process-sandbox-edit:end-of-line: {
     break-if-!=
     # move cursor up past all calls and to start of line
@@ -709,7 +709,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     # so the final word is always guaranteed to be at the top-level
     return
   }
-  compare key, 0x15  # ctrl-u
+  compare key, 0x15/ctrl-u
   $process-sandbox-edit:clear-line: {
     break-if-!=
     # clear line in sandbox
@@ -727,12 +727,12 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     return
   }
   # - remaining keys only work at the top row outside any function calls
-  compare key, 0x7f  # del (backspace on Macs)
+  compare key, 0x7f/del  # backspace on Macs
   $process-sandbox-edit:backspace: {
     break-if-!=
     # if not at start of some word, delete grapheme before cursor within current word
     var at-start?/eax: boolean <- cursor-at-start? cursor-word
-    compare at-start?, 0  # false
+    compare at-start?, 0/false
     {
       break-if-!=
       delete-before-cursor cursor-word
@@ -751,14 +751,14 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     }
     return
   }
-  compare key, 0x20  # space
+  compare key, 0x20/space
   $process-sandbox-edit:space: {
     break-if-!=
 #?     print-string 0, "space\n"
     # if cursor is at start of word, insert word before
     {
       var at-start?/eax: boolean <- cursor-at-start? cursor-word
-      compare at-start?, 0  # false
+      compare at-start?, 0/false
       break-if-=
       var prev-word-ah/eax: (addr handle word) <- get cursor-word, prev
       append-word prev-word-ah
@@ -770,10 +770,10 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     # TODO: support string escaping
     {
       var first-grapheme/eax: grapheme <- first-grapheme cursor-word
-      compare first-grapheme, 0x22  # double quote
+      compare first-grapheme, 0x22/double-quote
       break-if-!=
       var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
-      compare final-grapheme, 0x22  # double quote
+      compare final-grapheme, 0x22/double-quote
       break-if-=
       break $process-sandbox-edit:space
     }
@@ -781,10 +781,10 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     # TODO: support nested arrays
     {
       var first-grapheme/eax: grapheme <- first-grapheme cursor-word
-      compare first-grapheme, 0x5b  # '['
+      compare first-grapheme, 0x5b/[
       break-if-!=
       var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
-      compare final-grapheme, 0x5d  # ']'
+      compare final-grapheme, 0x5d/]
       break-if-=
       break $process-sandbox-edit:space
     }
@@ -795,7 +795,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     increment-final-element cursor-call-path
     # if cursor is at end of word, that's all
     var at-end?/eax: boolean <- cursor-at-end? cursor-word
-    compare at-end?, 0  # false
+    compare at-end?, 0/false
     {
       break-if-=
       return
@@ -807,7 +807,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     var next-word/ebx: (addr word) <- copy _next-word
     {
       var at-end?/eax: boolean <- cursor-at-end? cursor-word
-      compare at-end?, 0  # false
+      compare at-end?, 0/false
       break-if-!=
       var g/eax: grapheme <- pop-after-cursor cursor-word
       add-grapheme-to-word next-word, g
@@ -816,7 +816,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     cursor-to-start next-word
     return
   }
-  compare key, 0xe  # ctrl-n
+  compare key, 0xe/ctrl-n
   $process:rename-word: {
     break-if-!=
     # TODO: ensure current word is not a function
@@ -827,7 +827,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     initialize-word new-name
     return
   }
-  compare key, 4  # ctrl-d
+  compare key, 4/ctrl-d
   $process:define-function: {
     break-if-!=
     # define function out of line at cursor
@@ -841,7 +841,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
   var g/edx: grapheme <- copy key
   var print?/eax: boolean <- real-grapheme? key
   $process-sandbox-edit:real-grapheme: {
-    compare print?, 0  # false
+    compare print?, 0/false
     break-if-=
     add-grapheme-to-word cursor-word, g
     return
@@ -856,14 +856,14 @@ fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var new-name-ah/edi: (addr handle word) <- get sandbox, partial-name-for-cursor-word
   # if 'esc' pressed, cancel rename
-  compare key, 0x1b  # esc
+  compare key, 0x1b/esc
   $process-sandbox-rename:cancel: {
     break-if-!=
     clear-object new-name-ah
     return
   }
   # if 'enter' pressed, perform rename
-  compare key, 0xa  # enter
+  compare key, 0xa/enter
   $process-sandbox-rename:commit: {
     break-if-!=
 #?     print-string 0, "rename\n"
@@ -911,7 +911,7 @@ fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
     {
       var new-name/eax: (addr word) <- lookup *new-name-ah
       cursor-to-start new-name
-      add-grapheme-to-word new-name, 0x3d  # '='
+      add-grapheme-to-word new-name, 0x3d/=
     }
     # append name to new line
     chain-words new-line-word-ah, new-name-ah
@@ -938,13 +938,13 @@ fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
     return
   }
   #
-  compare key, 0x7f  # del (backspace on Macs)
+  compare key, 0x7f/del  # backspace on Macs
   $process-sandbox-rename:backspace: {
     break-if-!=
     # if not at start, delete grapheme before cursor
     var new-name/eax: (addr word) <- lookup *new-name-ah
     var at-start?/eax: boolean <- cursor-at-start? new-name
-    compare at-start?, 0  # false
+    compare at-start?, 0/false
     {
       break-if-!=
       var new-name/eax: (addr word) <- lookup *new-name-ah
@@ -955,7 +955,7 @@ fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
   # otherwise insert key within current word
   var print?/eax: boolean <- real-grapheme? key
   $process-sandbox-rename:real-grapheme: {
-    compare print?, 0  # false
+    compare print?, 0/false
     break-if-=
     var new-name/eax: (addr word) <- lookup *new-name-ah
     add-grapheme-to-word new-name, key
@@ -972,14 +972,14 @@ fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle func
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var new-name-ah/edi: (addr handle word) <- get sandbox, partial-name-for-function
   # if 'esc' pressed, cancel define
-  compare key, 0x1b  # esc
+  compare key, 0x1b/esc
   $process-sandbox-define:cancel: {
     break-if-!=
     clear-object new-name-ah
     return
   }
   # if 'enter' pressed, perform define
-  compare key, 0xa  # enter
+  compare key, 0xa/enter
   $process-sandbox-define:commit: {
     break-if-!=
 #?     print-string 0, "define\n"
@@ -1030,13 +1030,13 @@ fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle func
     return
   }
   #
-  compare key, 0x7f  # del (backspace on Macs)
+  compare key, 0x7f/del  # backspace on Macs
   $process-sandbox-define:backspace: {
     break-if-!=
     # if not at start, delete grapheme before cursor
     var new-name/eax: (addr word) <- lookup *new-name-ah
     var at-start?/eax: boolean <- cursor-at-start? new-name
-    compare at-start?, 0  # false
+    compare at-start?, 0/false
     {
       break-if-!=
       var new-name/eax: (addr word) <- lookup *new-name-ah
@@ -1047,7 +1047,7 @@ fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle func
   # otherwise insert key within current word
   var print?/eax: boolean <- real-grapheme? key
   $process-sandbox-define:real-grapheme: {
-    compare print?, 0  # false
+    compare print?, 0/false
     break-if-=
     var new-name/eax: (addr word) <- lookup *new-name-ah
     add-grapheme-to-word new-name, key
@@ -1079,16 +1079,16 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
       # is it a number?
       {
         var is-int?/eax: boolean <- word-is-decimal-integer? curr
-        compare is-int?, 0  # false
+        compare is-int?, 0/false
         break-if-!= $copy-unbound-words-to-args:loop-iter
       }
       # is it a pre-existing function?
       var bound?/ebx: boolean <- bound-function? curr, functions-ah
-      compare bound?, 0  # false
+      compare bound?, 0/false
       break-if-!=
       # is it already bound as an arg?
       var dup?/ebx: boolean <- arg-exists? _functions, curr  # _functions = target-ah
-      compare dup?, 0  # false
+      compare dup?, 0/false
       break-if-!= $copy-unbound-words-to-args:loop-iter
       # push copy of curr before dest-ah
       var rest-h: (handle word)
@@ -1104,88 +1104,88 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
 }
 
 fn bound-function? w: (addr word), functions-ah: (addr handle function) -> _/ebx: boolean {
-  var result/ebx: boolean <- copy 1  # true
+  var result/ebx: boolean <- copy 1/true
   {
     ## numbers
     # if w == "+" return true
     var subresult/eax: boolean <- word-equal? w, "+"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "-" return true
     subresult <- word-equal? w, "-"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "*" return true
     subresult <- word-equal? w, "*"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "/" return true
     subresult <- word-equal? w, "/"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "sqrt" return true
     subresult <- word-equal? w, "sqrt"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     ## strings/arrays
     # if w == "len" return true
     subresult <- word-equal? w, "len"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     ## files
     # if w == "open" return true
     subresult <- word-equal? w, "open"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "read" return true
     subresult <- word-equal? w, "read"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "slurp" return true
     subresult <- word-equal? w, "slurp"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "lines" return true
     subresult <- word-equal? w, "lines"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     ## screens
     # if w == "fake-screen" return true
     subresult <- word-equal? w, "fake-screen"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "print" return true
     subresult <- word-equal? w, "print"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "move" return true
     subresult <- word-equal? w, "move"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "up" return true
     subresult <- word-equal? w, "up"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "down" return true
     subresult <- word-equal? w, "down"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "left" return true
     subresult <- word-equal? w, "left"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "right" return true
     subresult <- word-equal? w, "right"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     ## hacks
     # if w == "dup" return true
     subresult <- word-equal? w, "dup"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # if w == "swap" return true
     subresult <- word-equal? w, "swap"
-    compare subresult, 0  # false
+    compare subresult, 0/false
     break-if-!=
     # return w in functions
     var out-h: (handle function)
@@ -1244,7 +1244,7 @@ fn toggle-cursor-word _sandbox: (addr sandbox) {
 #?   print-string 0, "expanded words:\n"
 #?   dump-call-paths 0, expanded-words
   var already-expanded?/eax: boolean <- find-in-call-paths expanded-words, cursor-call-path
-  compare already-expanded?, 0  # false
+  compare already-expanded?, 0/false
   {
     break-if-!=
 #?     print-string 0, "expand\n"
@@ -1322,7 +1322,7 @@ fn render _env: (addr environment) {
   render-functions screen, *sep-col, env
   # sandbox
   var repl-col/ecx: int <- copy *sep-col
-  repl-col <- add 2  # repl-margin-left
+  repl-col <- add 2/repl-margin-left
   var cursor-sandbox-ah/eax: (addr handle sandbox) <- get env, cursor-sandbox
   var cursor-sandbox/eax: (addr sandbox) <- lookup *cursor-sandbox-ah
   # bindings
@@ -1410,7 +1410,7 @@ fn render-goto-dialog screen: (addr screen), _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
   var goto-function-mode-ah?/eax: (addr handle word) <- get env, partial-function-name
   var goto-function-mode?/eax: (addr word) <- lookup *goto-function-mode-ah?
-  compare goto-function-mode?, 0  # false
+  compare goto-function-mode?, 0/false
   break-if-=
   # clear a space for the dialog
   var top-row/ebx: int <- copy 3
@@ -1542,7 +1542,7 @@ fn render-rename-dialog screen: (addr screen), _sandbox: (addr sandbox) {
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var rename-word-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
   var rename-word-mode?/eax: (addr word) <- lookup *rename-word-mode-ah?
-  compare rename-word-mode?, 0  # false
+  compare rename-word-mode?, 0/false
   break-if-=
   # clear a space for the dialog
   var cursor-row/ebx: (addr int) <- get sandbox, cursor-row
@@ -1588,7 +1588,7 @@ fn render-define-dialog screen: (addr screen), _sandbox: (addr sandbox) {
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var define-function-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-function
   var define-function-mode?/eax: (addr word) <- lookup *define-function-mode-ah?
-  compare define-function-mode?, 0  # false
+  compare define-function-mode?, 0/false
   break-if-=
   # clear a space for the dialog
   var cursor-row/ebx: (addr int) <- get sandbox, cursor-row
@@ -1656,7 +1656,7 @@ fn render-line-without-stack screen: (addr screen), _line: (addr line), curr-row
     {
       var max-width/eax: int <- word-length curr-word
       curr-col <- add max-width
-      curr-col <- add 1  # margin-right
+      curr-col <- add 1/margin-right
     }
     # cache cursor column if necessary
     {
@@ -1739,7 +1739,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       {
 #?         print-string 0, "check sub\n"
         var display-subsidiary-stack?/eax: boolean <- find-in-call-paths expanded-words, curr-path
-        compare display-subsidiary-stack?, 0  # false
+        compare display-subsidiary-stack?, 0/false
         break-if-= $render-line:subsidiary
       }
 #?       print-string 0, "render subsidiary stack\n"
@@ -1796,7 +1796,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
       drop-from-call-path-element curr-path
       #
       move-cursor screen, top-row, curr-col
-      print-code-point screen, 0x21d7  # ⇗
+      print-code-point screen, 0x21d7/⇗
       #
       curr-col <- add 2
       decrement top-row
@@ -1815,7 +1815,7 @@ fn render-line screen: (addr screen), functions: (addr handle function), binding
     $render-line:cache-cursor-column: {
       {
         var found?/eax: boolean <- call-path-element-match? curr-path, cursor-call-path
-        compare found?, 0  # false
+        compare found?, 0/false
         break-if-= $render-line:cache-cursor-column
       }
       var dest/edi: (addr int) <- copy cursor-row-addr
@@ -1863,7 +1863,7 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     # compute stack
     var stack: value-stack
     var stack-addr/edi: (addr value-stack) <- address stack
-    initialize-value-stack stack-addr, 0x10  # max-words
+    initialize-value-stack stack-addr, 0x10/max-words
     # copy bindings
     var bindings2-storage: table
     var bindings2/ebx: (addr table) <- address bindings2-storage
@@ -1873,10 +1873,10 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
     evaluate functions, bindings2, first-line, final-word, stack-addr
     # indent stack
     var indented-col/ebx: int <- copy left-col
-    indented-col <- add 1  # margin-right
+    indented-col <- add 1/margin-right
     # render stack
     var curr-row/edx: int <- copy top-row
-    curr-row <- add 2  # stack-margin-top
+    curr-row <- add 2/stack-margin-top
     {
       var top-addr/ecx: (addr int) <- get stack-addr, top
       compare *top-addr, 0
@@ -1887,7 +1887,7 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
       var top/ecx: int <- copy *top-addr
       var dest-offset/ecx: (offset value) <- compute-offset data, top
       var val/eax: (addr value) <- index data, dest-offset
-      render-value-at screen, curr-row, indented-col, val, 1  # top-level
+      render-value-at screen, curr-row, indented-col, val, 1/top-level=true
       {
         var width/eax: int <- value-width val, 1
         compare width, max-width
@@ -1916,7 +1916,7 @@ fn render-column screen: (addr screen), functions: (addr handle function), bindi
   # post-process right-col
   var right-col/ecx: int <- copy left-col
   right-col <- add max-width
-  right-col <- add 1  # margin-right
+  right-col <- add 1/margin-right
 #?   print-int32-decimal 0, left-col
 #?   print-string 0, " => "
 #?   print-int32-decimal 0, right-col
@@ -2086,7 +2086,7 @@ fn render-functions screen: (addr screen), right-col: int, _env: (addr environme
     break-if-=
     row, dummy-col <- render-function-right-aligned screen, row, right-col, curr
     functions <- get curr, next
-    row <- add 1  # inter-function-margin
+    row <- add 1/inter-function-margin
     loop
   }
 }
@@ -2095,7 +2095,7 @@ fn render-functions screen: (addr screen), right-col: int, _env: (addr environme
 # return row, col printed until
 fn render-function-right-aligned screen: (addr screen), row: int, right-col: int, f: (addr function) -> _/ecx: int, _/edx: int {
   var col/edx: int <- copy right-col
-  col <- subtract 1  # function-right-margin
+  col <- subtract 1/function-right-margin
   var col2/ebx: int <- copy col
   var width/eax: int <- function-width f
   col <- subtract width
@@ -2103,15 +2103,15 @@ fn render-function-right-aligned screen: (addr screen), row: int, right-col: int
   var height/eax: int <- function-height f
   new-row <- add height
   new-row <- decrement
-  col <- subtract 1  # function-left-padding
+  col <- subtract 1/function-left-padding
   start-color screen, 0, 0xf7
   clear-rect screen, row, col, new-row, col2
   col <- add 1
 #?   var dummy/eax: grapheme <- read-key-from-real-keyboard
   render-function screen, row, col, f
-  new-row <- add 1  # function-bottom-margin
-  col <- subtract 1  # function-left-padding
-  col <- subtract 1  # function-left-margin
+  new-row <- add 1/function-bottom-margin
+  col <- subtract 1/function-left-padding
+  col <- subtract 1/function-left-margin
   reset-formatting screen
   return new-row, col
 }
@@ -2149,33 +2149,33 @@ fn real-grapheme? g: grapheme -> _/eax: boolean {
   compare g, 0xa
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
   # if g == tab return true
   compare g, 9
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
   # if g < 32 return false
   compare g, 0x20
   {
     break-if->=
-    return 0  # false
+    return 0/false
   }
   # if g <= 255 return true
   compare g, 0xff
   {
     break-if->
-    return 1  # true
+    return 1/true
   }
   # if (g&0xff == Esc) it's an escape sequence
   and-with g, 0xff
-  compare g, 0x1b  # Esc
+  compare g, 0x1b/esc
   {
     break-if-!=
-    return 0  # false
+    return 0/false
   }
   # otherwise return true
-  return 1  # true
+  return 1/true
 }

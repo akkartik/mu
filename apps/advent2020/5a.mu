@@ -19,7 +19,7 @@ fn main -> _/ebx: int {
     print-stream-to-real-screen line
     # if line is empty (not even a newline), quit
     var done?/eax: boolean <- stream-empty? line
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     # process line
     var seat-id/eax: int <- convert-from-binary line
@@ -50,12 +50,12 @@ fn convert-from-binary in: (addr stream byte) -> _/eax: int {
 #?     print-string 0, "\n"
     var bit/edx: int <- copy 0
     {
-      compare c, 0x42  # 'B'
+      compare c, 0x42/B
       break-if-!=
       bit <- copy 1
     }
     {
-      compare c, 0x52  # 'R'
+      compare c, 0x52/R
       break-if-!=
       bit <- copy 1
     }

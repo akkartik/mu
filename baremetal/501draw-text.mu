@@ -80,7 +80,7 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
     compare xcurr, xmax
     break-if->
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     xcurr <- increment
     loop
@@ -95,7 +95,7 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
   xcurr <- copy x
   {
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, y, color
     xcurr <- increment
@@ -128,7 +128,7 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array b
     compare ycurr, ymax
     break-if->=
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     xcurr <- increment
     compare xcurr, xmax
@@ -150,7 +150,7 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array b
   ycurr <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, ycurr, color
     xcurr <- increment
@@ -184,7 +184,7 @@ fn draw-text-wrapping-right-then-down-over-full-screen screen: (addr screen), te
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
   x2, y2 <- screen-size screen  # width, height
-  x2, y2 <- draw-text-wrapping-right-then-down screen, text, 0, 0, x2, y2, x, y, color
+  x2, y2 <- draw-text-wrapping-right-then-down screen, text, 0/xmin, 0/ymin, x2, y2, x, y, color
   return x2, y2  # cursor-x, cursor-y
 }
 
@@ -207,7 +207,7 @@ fn draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
-  draw-text-wrapping-right-then-down-from-cursor screen, text, 0, 0, width, height, color
+  draw-text-wrapping-right-then-down-from-cursor screen, text, 0/xmin, 0/ymin, width, height, color
 }
 
 fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
@@ -221,7 +221,7 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
     compare ycurr, ymax
     break-if->=
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     xcurr <- increment
     compare xcurr, xmax
@@ -243,7 +243,7 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
   ycurr <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, ycurr, color
     xcurr <- increment
@@ -263,7 +263,7 @@ fn draw-int32-hex-wrapping-right-then-down-over-full-screen screen: (addr screen
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
   x2, y2 <- screen-size screen  # width, height
-  x2, y2 <- draw-int32-hex-wrapping-right-then-down screen, n, 0, 0, x2, y2, x, y, color
+  x2, y2 <- draw-int32-hex-wrapping-right-then-down screen, n, 0/xmin, 0/ymin, x2, y2, x, y, color
   return x2, y2  # cursor-x, cursor-y
 }
 
@@ -286,7 +286,7 @@ fn draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen screen: 
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
-  draw-int32-hex-wrapping-right-then-down-from-cursor screen, n, 0, 0, width, height, color
+  draw-int32-hex-wrapping-right-then-down-from-cursor screen, n, 0/xmin, 0/ymin, width, height, color
 }
 
 fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int -> _/eax: int, _/ecx: int {
@@ -300,7 +300,7 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
     compare ycurr, ymax
     break-if->=
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     xcurr <- increment
     compare xcurr, xmax
@@ -322,7 +322,7 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
   ycurr <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, ycurr, color
     xcurr <- increment
@@ -342,7 +342,7 @@ fn draw-int32-decimal-wrapping-right-then-down-over-full-screen screen: (addr sc
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
   x2, y2 <- screen-size screen  # width, height
-  x2, y2 <- draw-int32-decimal-wrapping-right-then-down screen, n, 0, 0, x2, y2, x, y, color
+  x2, y2 <- draw-int32-decimal-wrapping-right-then-down screen, n, 0/xmin, 0/ymin, x2, y2, x, y, color
   return x2, y2  # cursor-x, cursor-y
 }
 
@@ -365,7 +365,7 @@ fn draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen scre
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
-  draw-int32-decimal-wrapping-right-then-down-from-cursor screen, n, 0, 0, width, height, color
+  draw-int32-decimal-wrapping-right-then-down-from-cursor screen, n, 0/xmin, 0/ymin, width, height, color
 }
 
 ## Text direction: down then right
@@ -383,7 +383,7 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
     compare ycurr, ymax
     break-if->
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     ycurr <- increment
     loop
@@ -398,7 +398,7 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
   ycurr <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     draw-grapheme screen, g, x, ycurr, color
     ycurr <- increment
@@ -430,7 +430,7 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
     compare xcurr, xmax
     break-if->=
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     ycurr <- increment
     compare ycurr, ymax
@@ -452,7 +452,7 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
   ycurr <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff  # end-of-file
+    compare g, 0xffffffff/end-of-file
     break-if-=
     draw-grapheme screen, g, xcurr, ycurr, color
     ycurr <- increment
@@ -472,7 +472,7 @@ fn draw-text-wrapping-down-then-right-over-full-screen screen: (addr screen), te
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
   x2, y2 <- screen-size screen  # width, height
-  x2, y2 <- draw-text-wrapping-down-then-right screen, text, 0, 0, x2, y2, x, y, color
+  x2, y2 <- draw-text-wrapping-down-then-right screen, text, 0/xmin, 0/ymin, x2, y2, x, y, color
   return x2, y2  # cursor-x, cursor-y
 }
 
@@ -495,5 +495,5 @@ fn draw-text-wrapping-down-then-right-from-cursor-over-full-screen screen: (addr
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
-  draw-text-wrapping-down-then-right-from-cursor screen, text, 0, 0, width, height, color
+  draw-text-wrapping-down-then-right-from-cursor screen, text, 0/xmin, 0/ymin, width, height, color
 }

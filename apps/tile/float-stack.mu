@@ -52,9 +52,9 @@ fn float-stack-empty? _self: (addr float-stack) -> _/eax: boolean {
   compare *top-addr, 0
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
-  return 0  # false
+  return 0/false
 }
 
 fn float-stack-length _self: (addr float-stack) -> _/eax: int {

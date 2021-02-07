@@ -7,7 +7,7 @@ fn main args-on-stack: (addr array addr array byte) -> _/ebx: int {
     # if single arg is 'test', run tests
     var tmp/ecx: (addr addr array byte) <- index args, 1
     var tmp2/eax: boolean <- string-equal? *tmp, "test"
-    compare tmp2, 0  # false
+    compare tmp2, 0/false
     {
       break-if-=
       run-tests
@@ -15,7 +15,7 @@ fn main args-on-stack: (addr array addr array byte) -> _/ebx: int {
     }
     # if single arg is 'screen', run in full-screen mode
     tmp2 <- string-equal? *tmp, "screen"
-    compare tmp2, 0  # false
+    compare tmp2, 0/false
     {
       break-if-=
       interactive
@@ -23,7 +23,7 @@ fn main args-on-stack: (addr array addr array byte) -> _/ebx: int {
     }
     # if single arg is 'type', run in typewriter mode
     tmp2 <- string-equal? *tmp, "type"
-    compare tmp2, 0  # false
+    compare tmp2, 0/false
     {
       break-if-=
       repl
@@ -31,7 +31,7 @@ fn main args-on-stack: (addr array addr array byte) -> _/ebx: int {
     }
     # if single arg is 'test' ...
     tmp2 <- string-equal? *tmp, "test2"
-    compare tmp2, 0  # false
+    compare tmp2, 0/false
     {
       break-if-=
       test
@@ -55,7 +55,7 @@ fn interactive {
   {
     render env
     var key/eax: grapheme <- read-key-from-real-keyboard
-    compare key, 0x11  # 'ctrl-q'
+    compare key, 0x11/ctrl-q
     break-if-=
     process env, key
     loop
@@ -77,7 +77,7 @@ fn process-all env: (addr environment), cmds: (addr array byte) {
   write cmds-stream-a, cmds
   {
     var done?/eax: boolean <- stream-empty? cmds-stream-a
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     var g/eax: grapheme <- read-grapheme cmds-stream-a
     process env, g
@@ -95,7 +95,7 @@ fn repl {
     clear-stream line
     read-line-from-real-keyboard line
     var done?/eax: boolean <- stream-empty? line
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     # parse
     var env-storage: environment
@@ -103,7 +103,7 @@ fn repl {
     initialize-environment env
     {
       var done?/eax: boolean <- stream-empty? line
-      compare done?, 0  # false
+      compare done?, 0/false
       break-if-!=
       var g/eax: grapheme <- read-grapheme line
       process env, g
@@ -117,7 +117,7 @@ fn repl {
     # print
     var empty?/eax: boolean <- value-stack-empty? stack
     {
-      compare empty?, 0  # false
+      compare empty?, 0/false
       break-if-!=
       var result/xmm0: float <- pop-number-from-value-stack stack
       print-float-decimal-approximate 0, result, 3

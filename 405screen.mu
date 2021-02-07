@@ -1174,264 +1174,264 @@ fn check-screen-row-in-blinking-from screen-on-stack: (addr screen), row-idx: in
 fn test-print-single-grapheme {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  initialize-screen screen, 5/rows, 4/cols
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
-  check-screen-row screen, 1, "a", "F - test-print-single-grapheme"  # top-left corner of the screen
+  check-screen-row screen, 1/row, "a", "F - test-print-single-grapheme"  # top-left corner of the screen
 }
 
 fn test-print-multiple-graphemes {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   print-string screen, "Hello, 世界"
-  check-screen-row screen, 1, "Hello, 世界", "F - test-print-multiple-graphemes"
+  check-screen-row screen, 1/row, "Hello, 世界", "F - test-print-multiple-graphemes"
 }
 
 fn test-move-cursor {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 1, 4
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
-  check-screen-row screen, 1, "   a", "F - test-move-cursor"  # top row
+  check-screen-row screen, 1/row, "   a", "F - test-move-cursor"  # top row
 }
 
 fn test-move-cursor-zeroes {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 0, 0
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
-  check-screen-row screen, 1, "a", "F - test-move-cursor-zeroes"  # top-left corner of the screen
+  check-screen-row screen, 1/row, "a", "F - test-move-cursor-zeroes"  # top-left corner of the screen
 }
 
 fn test-move-cursor-zero-row {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 0, 2
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
-  check-screen-row screen, 1, " a", "F - test-move-cursor-zero-row"  # top row
+  check-screen-row screen, 1/row, " a", "F - test-move-cursor-zero-row"  # top row
 }
 
 fn test-move-cursor-zero-column {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 4, 0
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
-  check-screen-row screen, 4, "a", "F - test-move-cursor-zero-column"
+  check-screen-row screen, 4/row, "a", "F - test-move-cursor-zero-column"
 }
 
 fn test-move-cursor-negative-row {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 3
-  move-cursor screen, -1, 2  # row -1
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  move-cursor screen, -1/row, 2/col
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   # no move
-  check-screen-row screen, 1, "a", "F - test-move-cursor-negative-row"
+  check-screen-row screen, 1/row, "a", "F - test-move-cursor-negative-row"
 }
 
 fn test-move-cursor-negative-column {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 3
-  move-cursor screen, 2, -1  # column -1
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  move-cursor screen, 2/row, -1/col
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   # no move
-  check-screen-row screen, 1, "a", "F - test-move-cursor-negative-column"
+  check-screen-row screen, 1/row, "a", "F - test-move-cursor-negative-column"
 }
 
 fn test-move-cursor-column-too-large {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 3  # 5 rows, 3 columns
-  move-cursor screen, 1, 4  # row 1, column 4 (overflow)
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  initialize-screen screen, 5/rows, 3/cols
+  move-cursor screen, 1/row, 4/col
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   # top row is empty
-  check-screen-row screen, 1, "   ", "F - test-move-cursor-column-too-large"
+  check-screen-row screen, 1/row, "   ", "F - test-move-cursor-column-too-large"
   # character shows up on next row
-  check-screen-row screen, 2, "a", "F - test-move-cursor-column-too-large"
+  check-screen-row screen, 2/row, "a", "F - test-move-cursor-column-too-large"
 }
 
 fn test-move-cursor-column-too-large-saturates {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 3  # 5 rows, 3 columns
-  move-cursor screen, 1, 6  # row 1, column 6 (overflow)
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  initialize-screen screen, 5/rows, 3/cols
+  move-cursor screen, 1/row, 6/col
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   # top row is empty
-  check-screen-row screen, 1, "   ", "F - test-move-cursor-column-too-large-saturates"  # top-left corner of the screen
+  check-screen-row screen, 1/row, "   ", "F - test-move-cursor-column-too-large-saturates"  # top-left corner of the screen
   # character shows up at the start of next row
-  check-screen-row screen, 2, "a", "F - test-move-cursor-column-too-large-saturates"  # top-left corner of the screen
+  check-screen-row screen, 2/row, "a", "F - test-move-cursor-column-too-large-saturates"  # top-left corner of the screen
 }
 
 fn test-move-cursor-row-too-large {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 3  # 5 rows
-  move-cursor screen, 6, 2  # row 6 (overflow)
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  initialize-screen screen, 5/rows, 3/cols
+  move-cursor screen, 6/row, 2/col
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   # bottom row shows the character
-  check-screen-row screen, 5, " a", "F - test-move-cursor-row-too-large"
+  check-screen-row screen, 5/row, " a", "F - test-move-cursor-row-too-large"
 }
 
 fn test-move-cursor-row-too-large-saturates {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 3  # 5 rows
-  move-cursor screen, 9, 2  # row 9 (overflow)
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  initialize-screen screen, 5/rows, 3/cols
+  move-cursor screen, 9/row, 2/col
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   # bottom row shows the character
-  check-screen-row screen, 5, " a", "F - test-move-cursor-row-too-large-saturates"
+  check-screen-row screen, 5/row, " a", "F - test-move-cursor-row-too-large-saturates"
 }
 
 fn test-check-screen-row-from {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 1, 4
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
-  check-screen-row screen, 1, "   a", "F - test-check-screen-row-from/baseline"
-  check-screen-row-from screen, 1, 4, "a", "F - test-check-screen-row-from"
+  check-screen-row screen, 1/row, "   a", "F - test-check-screen-row-from/baseline"
+  check-screen-row-from screen, 1/row, 4/col, "a", "F - test-check-screen-row-from"
 }
 
 fn test-print-string-overflows-to-next-row {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4  # 5 rows, 4 columns
+  initialize-screen screen, 5/rows, 4/cols
   print-string screen, "abcdefg"
-  check-screen-row screen, 1, "abcd", "F - test-print-string-overflows-to-next-row"
-  check-screen-row screen, 2, "efg", "F - test-print-string-overflows-to-next-row"
+  check-screen-row screen, 1/row, "abcd", "F - test-print-string-overflows-to-next-row"
+  check-screen-row screen, 2/row, "efg", "F - test-print-string-overflows-to-next-row"
 }
 
 fn test-check-screen-scrolls-on-overflow {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   # single character starting at bottom right
-  move-cursor screen, 5, 4
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  move-cursor screen, 5/rows, 4/cols
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
-  check-screen-row-from screen, 5, 4, "a", "F - test-check-screen-scrolls-on-overflow/baseline"  # bottom-right corner of the screen
+  check-screen-row-from screen, 5/row, 4/col, "a", "F - test-check-screen-scrolls-on-overflow/baseline"  # bottom-right corner of the screen
   # multiple characters starting at bottom right
   move-cursor screen, 5, 4
   print-string screen, "ab"
   # screen scrolled up one row
-#?   check-screen-row screen, 1, "    ", "F - test-check-screen-scrolls-on-overflow/x1"
-#?   check-screen-row screen, 2, "    ", "F - test-check-screen-scrolls-on-overflow/x2"
-#?   check-screen-row screen, 3, "    ", "F - test-check-screen-scrolls-on-overflow/x3"
-#?   check-screen-row screen, 4, "   a", "F - test-check-screen-scrolls-on-overflow/x4"
-#?   check-screen-row screen, 5, "b   ", "F - test-check-screen-scrolls-on-overflow/x5"
-  check-screen-row-from screen, 4, 4, "a", "F - test-check-screen-scrolls-on-overflow/1"
-  check-screen-row-from screen, 5, 1, "b", "F - test-check-screen-scrolls-on-overflow/2"
+#?   check-screen-row screen, 1/row, "    ", "F - test-check-screen-scrolls-on-overflow/x1"
+#?   check-screen-row screen, 2/row, "    ", "F - test-check-screen-scrolls-on-overflow/x2"
+#?   check-screen-row screen, 3/row, "    ", "F - test-check-screen-scrolls-on-overflow/x3"
+#?   check-screen-row screen, 4/row, "   a", "F - test-check-screen-scrolls-on-overflow/x4"
+#?   check-screen-row screen, 5/row, "b   ", "F - test-check-screen-scrolls-on-overflow/x5"
+  check-screen-row-from screen, 4/row, 4/col, "a", "F - test-check-screen-scrolls-on-overflow/1"
+  check-screen-row-from screen, 5/row, 1/col, "b", "F - test-check-screen-scrolls-on-overflow/2"
 }
 
 fn test-check-screen-color {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  initialize-screen screen, 5/rows, 4/cols
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
-  start-color screen, 1, 0  # foreground=1
-  c <- copy 0x62  # 'b'
+  start-color screen, 1/fg, 0/bg
+  c <- copy 0x62/b
   print-grapheme screen, c
-  start-color screen, 0, 0  # back to default
-  c <- copy 0x63  # 'c'
+  start-color screen, 0/fg, 7/bg
+  c <- copy 0x63/c
   print-grapheme screen, c
-  check-screen-row-in-color screen, 0, 1, "a c", "F - test-check-screen-color"
+  check-screen-row-in-color screen, 0/fg, 1/row, "a c", "F - test-check-screen-color"
 }
 
 fn test-check-screen-background-color {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  initialize-screen screen, 5/rows, 4/cols
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
-  start-color screen, 0, 1  # background=1
-  c <- copy 0x62  # 'b'
+  start-color screen, 0/fg, 1/bg
+  c <- copy 0x62/b
   print-grapheme screen, c
-  start-color screen, 0, 7  # back to default
-  c <- copy 0x63  # 'c'
+  start-color screen, 0/fg, 7/bg
+  c <- copy 0x63/c
   print-grapheme screen, c
-  check-screen-row-in-background-color screen, 7, 1, "a c", "F - test-check-screen-background-color"
+  check-screen-row-in-background-color screen, 7/bg, 1/row, "a c", "F - test-check-screen-background-color"
 }
 
 fn test-check-screen-bold {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   start-bold screen
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   reset-formatting screen
-  c <- copy 0x62  # 'b'
+  c <- copy 0x62/b
   print-grapheme screen, c
   start-bold screen
-  c <- copy 0x63  # 'c'
+  c <- copy 0x63/c
   print-grapheme screen, c
-  check-screen-row-in-bold screen, 1, "a c", "F - test-check-screen-bold"
+  check-screen-row-in-bold screen, 1/row, "a c", "F - test-check-screen-bold"
 }
 
 fn test-check-screen-underline {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   start-underline screen
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   reset-formatting screen
-  c <- copy 0x62  # 'b'
+  c <- copy 0x62/b
   print-grapheme screen, c
   start-underline screen
-  c <- copy 0x63  # 'c'
+  c <- copy 0x63/c
   print-grapheme screen, c
-  check-screen-row-in-underline screen, 1, "a c", "F - test-check-screen-underline"
+  check-screen-row-in-underline screen, 1/row, "a c", "F - test-check-screen-underline"
 }
 
 fn test-check-screen-reverse {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   start-reverse-video screen
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   reset-formatting screen
-  c <- copy 0x62  # 'b'
+  c <- copy 0x62/b
   print-grapheme screen, c
   start-reverse-video screen
-  c <- copy 0x63  # 'c'
+  c <- copy 0x63/c
   print-grapheme screen, c
-  check-screen-row-in-reverse screen, 1, "a c", "F - test-check-screen-reverse"
+  check-screen-row-in-reverse screen, 1/row, "a c", "F - test-check-screen-reverse"
 }
 
 fn test-check-screen-blinking {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/rows, 4/cols
   start-blinking screen
-  var c/eax: grapheme <- copy 0x61  # 'a'
+  var c/eax: grapheme <- copy 0x61/a
   print-grapheme screen, c
   reset-formatting screen
-  c <- copy 0x62  # 'b'
+  c <- copy 0x62/b
   print-grapheme screen, c
   start-blinking screen
-  c <- copy 0x63  # 'c'
+  c <- copy 0x63/c
   print-grapheme screen, c
-  check-screen-row-in-blinking screen, 1, "a c", "F - test-check-screen-blinking"
+  check-screen-row-in-blinking screen, 1/row, "a c", "F - test-check-screen-blinking"
 }
 
 #? fn main -> _/ebx: int {

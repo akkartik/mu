@@ -7,7 +7,7 @@ fn read-lines in: (addr buffered-file), out: (addr handle array (handle array by
     clear-stream line-a
     read-line-buffered in, line-a
     var done?/eax: boolean <- stream-empty? line-a
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
 #?     print-string 0, "AAA\n"
     var h: (handle array byte)

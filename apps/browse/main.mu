@@ -50,7 +50,7 @@ fn interactive fs: (addr buffered-file) {
   {
     render paginated-screen, fs
     var key/eax: grapheme <- read-key-from-real-keyboard
-    compare key, 0x71  # 'q'
+    compare key, 0x71/'q'
     loop-if-!=
   }
   enable-keyboard-type-mode
@@ -71,7 +71,7 @@ fn test-render-multicolumn-text {
   # output screen
   var pg: paginated-screen
   var pg-addr/ecx: (addr paginated-screen) <- address pg
-  initialize-fake-paginated-screen pg-addr, 3, 6, 2, 1, 1  # 3 rows, 6 columns, 2 pages * 2 columns each
+  initialize-fake-paginated-screen pg-addr, 3/rows, 6/cols, 2/page-width, 1/top-margin, 1/left-margin
   #
   render pg-addr, in
   var screen-ah/eax: (addr handle screen) <- get pg, screen
@@ -90,7 +90,7 @@ fn test-render-heading-text {
   # output screen
   var pg: paginated-screen
   var pg-addr/ecx: (addr paginated-screen) <- address pg
-  initialize-fake-paginated-screen pg-addr, 8, 6, 5, 1, 1  # 6 columns, single page
+  initialize-fake-paginated-screen pg-addr, 8/rows, 6/cols, 5/page-width, 1/top-margin, 1/left-margin
   #
   render pg-addr, in
   var screen-ah/eax: (addr handle screen) <- get pg, screen
@@ -110,7 +110,7 @@ fn test-render-bold-text {
   # output screen
   var pg: paginated-screen
   var pg-addr/ecx: (addr paginated-screen) <- address pg
-  initialize-fake-paginated-screen pg-addr, 8, 6, 5, 1, 1  # 6 columns, single page
+  initialize-fake-paginated-screen pg-addr, 8/rows, 6/cols, 5/page-width, 1/top-margin, 1/left-margin
   #
   render pg-addr, in
   var screen-ah/eax: (addr handle screen) <- get pg, screen
@@ -130,7 +130,7 @@ fn test-render-pseudoitalic-text {
   # output screen
   var pg: paginated-screen
   var pg-addr/ecx: (addr paginated-screen) <- address pg
-  initialize-fake-paginated-screen pg-addr, 8, 6, 5, 1, 1  # 6 columns, single page
+  initialize-fake-paginated-screen pg-addr, 8/rows, 6/cols, 5/page-width, 1/top-margin, 1/left-margin
   #
   render pg-addr, in
   var screen-ah/eax: (addr handle screen) <- get pg, screen
@@ -148,7 +148,7 @@ fn test-render-asterisk-in-text {
   # output screen
   var pg: paginated-screen
   var pg-addr/ecx: (addr paginated-screen) <- address pg
-  initialize-fake-paginated-screen pg-addr, 8, 6, 5, 1, 1  # 6 columns, single page
+  initialize-fake-paginated-screen pg-addr, 8/nrows, 6/cols, 5/page-width, 1/top-margin, 1/left-margin
   #
   render pg-addr, in
   var screen-ah/eax: (addr handle screen) <- get pg, screen
@@ -158,38 +158,38 @@ fn test-render-asterisk-in-text {
 }
 
 fn render-normal screen: (addr paginated-screen), fs: (addr buffered-file) {
-  var newline-seen?/esi: boolean <- copy 0  # false
-  var start-of-paragraph?/edi: boolean <- copy 1  # true
+  var newline-seen?/esi: boolean <- copy 0/false
+  var start-of-paragraph?/edi: boolean <- copy 1/true
   var previous-grapheme/ebx: grapheme <- copy 0
 $render-normal:loop: {
     # if done-drawing?(screen) break
     var done?/eax: boolean <- done-drawing? screen
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     var c/eax: grapheme <- read-grapheme-buffered fs
 $render-normal:loop-body: {
       # if (c == EOF) break
-      compare c, 0xffffffff  # EOF marker
+      compare c, 0xffffffff/end-of-file
       break-if-= $render-normal:loop
 
       ## if (c == newline) perform some fairly sophisticated parsing for soft newlines
-      compare c, 0xa  # newline
+      compare c, 0xa/newline
       {
         break-if-!=
         # if it's the first newline, buffer it
         compare newline-seen?, 0
         {
           break-if-!=
-          newline-seen? <- copy 1  # true
+          newline-seen? <- copy 1/true
           break $render-normal:loop-body
         }
         # otherwise render two newlines
         {
           break-if-=
-          add-grapheme screen, 0xa  # newline
-          add-grapheme screen, 0xa  # newline
-          newline-seen? <- copy 0  # false
-          start-of-paragraph? <- copy 1  # true
+          add-grapheme screen, 0xa/newline
+          add-grapheme screen, 0xa/newline
+          newline-seen? <- copy 0/false
+          start-of-paragraph? <- copy 1/true
           break $render-normal:loop-body
         }
       }
@@ -197,16 +197,16 @@ $render-normal:loop-body: {
       compare start-of-paragraph?, 0
       {
         break-if-=
-        compare c, 0x23  # '#'
+        compare c, 0x23/'#'
         {
           break-if-!=
           render-header-line screen, fs
-          newline-seen? <- copy 1  # true
+          newline-seen? <- copy 1/true
           break $render-normal:loop-body
         }
       }
       # c is not a newline
-      start-of-paragraph? <- copy 0  # false
+      start-of-paragraph? <- copy 0/false
       # if c is unprintable (particularly a '\r' CR), skip it
       compare c, 0x20
       loop-if-< $render-normal:loop
@@ -214,17 +214,17 @@ $render-normal:loop-body: {
       # newline (hard newline).
       # If there's a newline buffered and c is not a newline or space, print a
       # space (soft newline).
-      compare newline-seen?, 0  # false
+      compare newline-seen?, 0/false
 $render-normal:flush-buffered-newline: {
         break-if-=
-        newline-seen? <- copy 0  # false
+        newline-seen? <- copy 0/false
         {
           compare c, 0x20
           break-if-!=
-          add-grapheme screen, 0xa  # newline
+          add-grapheme screen, 0xa/newline
           break $render-normal:flush-buffered-newline
         }
-        add-grapheme screen, 0x20  # space
+        add-grapheme screen, 0x20/space
         # fall through to print c
       }
       ## end soft newline support
@@ -232,27 +232,27 @@ $render-normal:flush-buffered-newline: {
 $render-normal:whitespace-separated-regions: {
         # if previous-grapheme wasn't whitespace, skip this block
         {
-          compare previous-grapheme, 0x20  # space
+          compare previous-grapheme, 0x20/space
           break-if-=
-          compare previous-grapheme, 0xa  # newline
+          compare previous-grapheme, 0xa/newline
           break-if-=
           break $render-normal:whitespace-separated-regions
         }
         # if (c == '*') switch to bold
-        compare c, 0x2a  # '*'
+        compare c, 0x2a/*
         {
           break-if-!=
-          start-color-on-paginated-screen screen, 0xec, 7  # 236 = darkish gray
+          start-color-on-paginated-screen screen, 0xec/fg=darkish-grey, 7/bg=white
           start-bold-on-paginated-screen screen
             render-until-asterisk screen, fs
           normal-text screen
           break $render-normal:loop-body
         }
         # if (c == '_') switch to bold
-        compare c, 0x5f  # '_'
+        compare c, 0x5f/_
         {
           break-if-!=
-          start-color-on-paginated-screen screen, 0xec, 7  # 236 = darkish gray
+          start-color-on-paginated-screen screen, 0xec/fg=darkish-grey, 7/bg=white
           start-bold-on-paginated-screen screen
             render-until-underscore screen, fs
           normal-text screen
@@ -276,13 +276,13 @@ $render-header-line:body: {
     # if done-drawing?(screen) return
     {
       var done?/eax: boolean <- done-drawing? screen
-      compare done?, 0  # false
+      compare done?, 0/false
       break-if-!= $render-header-line:body
     }
     #
     c <- read-grapheme-buffered fs
     # if (c != '#') break
-    compare c, 0x23  # '#'
+    compare c, 0x23/'#'
     break-if-!=
     #
     header-level <- increment
@@ -294,16 +294,16 @@ $render-header-line:body: {
     # if done-drawing?(screen) break
     {
       var done?/eax: boolean <- done-drawing? screen
-      compare done?, 0  # false
+      compare done?, 0/false
       break-if-!=
     }
     #
     c <- read-grapheme-buffered fs
     # if (c == EOF) break
-    compare c, 0xffffffff  # EOF marker
+    compare c, 0xffffffff/end-of-file
     break-if-=
     # if (c == newline) break
-    compare c, 0xa  # newline
+    compare c, 0xa/newline
     break-if-=
     #
     add-grapheme screen, c
@@ -350,15 +350,15 @@ fn render-until-asterisk screen: (addr paginated-screen), fs: (addr buffered-fil
   {
     # if done-drawing?(screen) break
     var done?/eax: boolean <- done-drawing? screen
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     #
     var c/eax: grapheme <- read-grapheme-buffered fs
     # if (c == EOF) break
-    compare c, 0xffffffff  # EOF marker
+    compare c, 0xffffffff/end-of-file
     break-if-=
     # if (c == '*') break
-    compare c, 0x2a  # '*'
+    compare c, 0x2a/'*'
     break-if-=
     #
     add-grapheme screen, c
@@ -371,15 +371,15 @@ fn render-until-underscore screen: (addr paginated-screen), fs: (addr buffered-f
   {
     # if done-drawing?(screen) break
     var done?/eax: boolean <- done-drawing? screen
-    compare done?, 0  # false
+    compare done?, 0/false
     break-if-!=
     #
     var c/eax: grapheme <- read-grapheme-buffered fs
     # if (c == EOF) break
-    compare c, 0xffffffff  # EOF marker
+    compare c, 0xffffffff/end-of-file
     break-if-=
     # if (c == '_') break
-    compare c, 0x5f  # '_'
+    compare c, 0x5f/'_'
     break-if-=
     #
     add-grapheme screen, c
@@ -390,5 +390,5 @@ fn render-until-underscore screen: (addr paginated-screen), fs: (addr buffered-f
 
 fn normal-text screen: (addr paginated-screen) {
   reset-formatting-on-paginated-screen screen
-  start-color-on-paginated-screen screen, 0xec, 7  # 236 = darkish gray
+  start-color-on-paginated-screen screen, 0xec/fg=darkish-grey, 7/bg=white
 }

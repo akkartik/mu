@@ -23,9 +23,9 @@ fn grapheme-stack-empty? _self: (addr grapheme-stack) -> _/eax: boolean {
   compare *top, 0
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
-  return 0  # false
+  return 0/false
 }
 
 fn push-grapheme-stack _self: (addr grapheme-stack), _val: grapheme {
@@ -131,7 +131,7 @@ fn prefix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> _/eax: b
       {
         compare expected, *curr-a
         break-if-=
-        return 0  # false
+        return 0/false
       }
     }
     i <- increment
@@ -160,7 +160,7 @@ fn suffix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> _/eax: b
       {
         compare expected, *curr-a
         break-if-=
-        return 0  # false
+        return 0/false
       }
     }
     i <- decrement
@@ -176,13 +176,13 @@ fn grapheme-stack-is-decimal-integer? _self: (addr grapheme-stack) -> _/eax: boo
   var data/edx: (addr array grapheme) <- copy _data
   var top-addr/ecx: (addr int) <- get self, top
   var i/ebx: int <- copy 0
-  var result/eax: boolean <- copy 1  # true
+  var result/eax: boolean <- copy 1/true
   $grapheme-stack-is-integer?:loop: {
     compare i, *top-addr
     break-if->=
     var g/edx: (addr grapheme) <- index data, i
     result <- is-decimal-digit? *g
-    compare result, 0  # false
+    compare result, 0/false
     break-if-=
     i <- increment
     loop

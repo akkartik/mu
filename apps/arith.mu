@@ -35,19 +35,19 @@ fn main -> _/ebx: int {
   enable-keyboard-immediate-mode
   var look/esi: grapheme <- copy 0  # lookahead
   var n/eax: int <- copy 0  # result of each expression
-  print-string 0, "press ctrl-c or ctrl-d to exit\n"
+  print-string 0/screen, "press ctrl-c or ctrl-d to exit\n"
   # read-eval-print loop
   {
     # print prompt
-    print-string 0, "> "
+    print-string 0/screen, "> "
     # read and eval
     n, look <- simplify  # we explicitly thread 'look' everywhere
     # if (look == 0) break
     compare look, 0
     break-if-=
     # print
-    print-int32-decimal 0, n
-    print-string 0, "\n"
+    print-int32-decimal 0/screen, n
+    print-string 0/screen, "\n"
     #
     loop
   }
@@ -74,7 +74,7 @@ fn expression _look: grapheme -> _/eax: int, _/esi: grapheme {
     look <- skip-spaces look
     {
       var continue?/eax: boolean <- is-add-or-sub? look
-      compare continue?, 0  # false
+      compare continue?, 0/false
       break-if-= $expression:loop
     }
     # read operator
@@ -91,13 +91,13 @@ fn expression _look: grapheme -> _/eax: int, _/esi: grapheme {
     # reduce
     $expression:perform-op: {
       {
-        compare op, 0x2b  # '+'
+        compare op, 0x2b/+
         break-if-!=
         result <- add second
         break $expression:perform-op
       }
       {
-        compare op, 0x2d  # '-'
+        compare op, 0x2d/minus
         break-if-!=
         result <- subtract second
         break $expression:perform-op
@@ -120,7 +120,7 @@ fn term _look: grapheme -> _/eax: int, _/esi: grapheme {
     look <- skip-spaces look
     {
       var continue?/eax: boolean <- is-mul-or-div? look
-      compare continue?, 0  # false
+      compare continue?, 0/false
       break-if-= $term:loop
     }
     # read operator
@@ -137,13 +137,13 @@ fn term _look: grapheme -> _/eax: int, _/esi: grapheme {
     # reduce
     $term:perform-op: {
       {
-        compare op, 0x2a  # '*'
+        compare op, 0x2a/*
         break-if-!=
         result <- multiply second
         break $term:perform-op
       }
 #?       {
-#?         compare op, 0x2f  # '/'
+#?         compare op, 0x2f/slash
 #?         break-if-!=
 #?         result <- divide second  # not in Mu yet
 #?         break $term:perform-op
@@ -158,7 +158,7 @@ fn factor _look: grapheme -> _/eax: int, _/esi: grapheme {
   var look/esi: grapheme <- copy _look  # should be a no-op
   look <- skip-spaces look
   # if next char is not '(', parse a number
-  compare look, 0x28  # '('
+  compare look, 0x28/open-paren
   {
     break-if-=
     var result/eax: int <- copy 0
@@ -175,31 +175,31 @@ fn factor _look: grapheme -> _/eax: int, _/esi: grapheme {
 }
 
 fn is-mul-or-div? c: grapheme -> _/eax: boolean {
-  compare c, 0x2a  # '*'
+  compare c, 0x2a/*
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
-  compare c, 0x2f  # '/'
+  compare c, 0x2f/slash
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
-  return 0  # false
+  return 0/false
 }
 
 fn is-add-or-sub? c: grapheme -> _/eax: boolean {
-  compare c, 0x2b  # '+'
+  compare c, 0x2b/+
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
-  compare c, 0x2d  # '-'
+  compare c, 0x2d/minus
   {
     break-if-!=
-    return 1  # true
+    return 1/true
   }
-  return 0  # false
+  return 0/false
 }
 
 fn operator _look: grapheme -> _/ecx: grapheme, _/esi: grapheme {
@@ -219,7 +219,7 @@ fn num _look: grapheme -> _/eax: int, _/esi: grapheme {
     look <- get-char
     # done?
     var digit?/eax: boolean <- is-decimal-digit? look
-    compare digit?, 0  # false
+    compare digit?, 0/false
     break-if-=
     # result *= 10
     {
@@ -251,7 +251,7 @@ fn get-char -> _/esi: grapheme {
   compare look, 4
   {
     break-if-!=
-    print-string 0, "^D\n"
+    print-string 0/screen, "^D\n"
     syscall_exit
   }
   return look
