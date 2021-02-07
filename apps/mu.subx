@@ -5648,6 +5648,34 @@ test-array-size-in-hex:
     5d/pop-to-ebp
     c3/return
 
+test-array-size-with-metadata:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: (array int 3/bar)\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # no errors
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-populate:
     # . prologue
     55/push-ebp
@@ -17132,11 +17160,10 @@ $parse-type:check-for-int:
         (is-decimal-digit? %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
-        #
-        (is-hex-int? %ecx)  # => eax
-        3d/compare-eax-and 0/imm32/false
-        74/jump-if-= break/disp8
 $parse-type:int:
+        # strip out metadata
+        (next-token-from-slice *ecx *(ecx+4) 0x2f %ecx)
+        #
         (check-mu-hex-int %ecx *(ebp+0x14) *(ebp+0x18))
         (parse-hex-int-from-slice %ecx)  # => eax
         c7 0/subop/copy *(edx+4) 9/imm32/type-id-array-capacity  # Type-tree-value

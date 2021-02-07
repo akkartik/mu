@@ -14,7 +14,7 @@ fn initialize-gap-buffer _self: (addr gap-buffer) {
 # just for tests
 fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
   initialize-gap-buffer self
-  var stream-storage: (stream byte 0x10)  # max-word-size
+  var stream-storage: (stream byte 0x10/max-word-size)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, s
   {
@@ -238,7 +238,7 @@ fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> _/eax: bo
   # complication: graphemes may be multiple bytes
   # so don't rely on length
   # instead turn the expected result into a stream and arrange to read from it in order
-  var stream-storage: (stream byte 0x10)  # max-word-size
+  var stream-storage: (stream byte 0x10/max-word-size)
   var expected-stream/ecx: (addr stream byte) <- address stream-storage
   write expected-stream, s
   # compare left
