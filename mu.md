@@ -59,7 +59,8 @@ fn _name_ _inout_ ... -> _output_ ... {
 
 Each function has a header line, and some number of statements, each on a
 separate line. Headers describe inouts and outputs. Inouts can't be registers,
-and outputs _must_ be registers. Outputs can't take names.
+and outputs _must_ be registers (specified using metadata after a `/`).
+Outputs can't take names.
 
 The above program also demonstrates a function call (to the function `do-add`).
 Function calls look the same as primitive statements: they can return (multiple)
@@ -97,6 +98,20 @@ For example, you read `main`'s inout type as "an address to an array of
 addresses to arrays of bytes." Since addresses to arrays of bytes are almost
 always strings in Mu, you'll quickly learn to mentally shorten this type to
 "an address to an array of strings".
+
+Mu currently has no way to name magic constants. Instead, document integer
+literals using metadata after a `/`. For example:
+
+```
+var x/eax: int <- copy 3/margin-left
+```
+
+Here we use metadata in two ways: to specify a register for the variable `x`
+(checked), and to give a name to the constant `3` (unchecked; purely for
+documentation).
+
+Variables can't currently accept unchecked metadata for documentation.
+(Perhaps this should change.)
 
 ## Blocks
 

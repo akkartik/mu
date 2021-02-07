@@ -131,10 +131,11 @@ $ qemu-system-i386 disk.img
 The entire stack shares certain properties and conventions. Programs consist
 of functions and functions consist of statements, each performing a single
 operation. Operands to statements are always variables or constants. You can't
-say `a + b*c`, you have to break it up into two operations. Variables can live
-in memory or in registers. Registers must be explicitly specified. There are
-some shared lexical rules; comments always start with '#', and numbers are
-always written in hex.
+perform `a + b*c` in a single statement; you have to break it up into two.
+Variables can live in memory or in registers. Registers must be explicitly
+specified. There are some shared lexical rules. Comments always start with
+'#'. Numbers are always written in hex. Many terms can have context-dependent
+_metadata_ attached after '/'.
 
 Here's an example program in Mu:
 
