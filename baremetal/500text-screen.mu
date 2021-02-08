@@ -84,8 +84,11 @@ fn draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int,
   var g2/edx: grapheme <- copy g
   copy-to *dest-grapheme, g2
   var dest-color/eax: (addr int) <- get dest-cell, color
-  var color2/edx: grapheme <- copy color
-  copy-to *dest-color, color2
+  var src-color/edx: int <- copy color
+  copy-to *dest-color, src-color
+  dest-color <- get dest-cell, background-color
+  src-color <- copy background-color
+  copy-to *dest-color, src-color
 }
 
 fn screen-cell-index screen-on-stack: (addr screen), x: int, y: int -> _/ecx: int {
