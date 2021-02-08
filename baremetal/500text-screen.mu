@@ -65,7 +65,6 @@ fn screen-size screen: (addr screen) -> _/eax: int, _/ecx: int {
 }
 
 # testable screen primitive
-# background color isn't configurable yet
 fn draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int, background-color: int {
   {
     compare screen, 0
