@@ -5,12 +5,12 @@
 # Tab characters (that translate into multiple screen cells) not supported.
 
 fn check-screen-row screen: (addr screen), y: int, expected: (addr array byte), msg: (addr array byte) {
-  check-screen-row-from screen, y, 0/y, expected, msg
+  check-screen-row-from screen, 0/x, y, expected, msg
 }
 
 fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
-  var idx/ecx: int <- screen-cell-index screen, y, x
+  var idx/ecx: int <- screen-cell-index screen, x, y
   # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
@@ -67,7 +67,7 @@ fn check-screen-row-in-color screen: (addr screen), fg: int, y: int, expected: (
 
 fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: int, x: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
-  var idx/ecx: int <- screen-cell-index screen, y, x
+  var idx/ecx: int <- screen-cell-index screen, x, y
   # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
@@ -156,7 +156,7 @@ fn check-screen-row-in-background-color screen: (addr screen), bg: int, y: int, 
 
 fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), bg: int, y: int, x: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
-  var idx/ecx: int <- screen-cell-index screen, y, x
+  var idx/ecx: int <- screen-cell-index screen, x, y
   # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
@@ -248,7 +248,7 @@ fn check-background-color-in-screen-row screen: (addr screen), bg: int, y: int, 
 
 fn check-background-color-in-screen-row-from screen-on-stack: (addr screen), bg: int, y: int, x: int, expected-bitmap: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
-  var idx/ecx: int <- screen-cell-index screen, y, x
+  var idx/ecx: int <- screen-cell-index screen, x, y
   # compare background color where 'expected-bitmap' is a non-space
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e

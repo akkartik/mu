@@ -90,8 +90,17 @@ fn draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int,
   copy-to *dest-color, src-color
 }
 
+# not really needed for a real screen, though it shouldn't do any harm
 fn screen-cell-index screen-on-stack: (addr screen), x: int, y: int -> _/ecx: int {
   var screen/esi: (addr screen) <- copy screen-on-stack
+  # only one bounds check isn't automatically handled
+  {
+    var xmax/eax: (addr int) <- get screen, width
+    var xcurr/ecx: int <- copy x
+    compare xcurr, *xmax
+    break-if-<
+    abort "tried to print out of screen bounds"
+  }
   var height-addr/eax: (addr int) <- get screen, height
   var result/ecx: int <- copy y
   result <- multiply *height-addr
