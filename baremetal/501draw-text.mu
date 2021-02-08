@@ -17,11 +17,12 @@ fn cursor-right screen: (addr screen) {
   var _width/eax: int <- copy 0
   var dummy/ecx: int <- copy 0
   _width, dummy <- screen-size screen
-  var width/edx: int <- copy _width
+  var limit/edx: int <- copy _width
+  limit <- decrement
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  compare cursor-x, width
+  compare cursor-x, limit
   {
     break-if-<
     return
@@ -47,11 +48,12 @@ fn cursor-down screen: (addr screen) {
   var dummy/eax: int <- copy 0
   var _height/ecx: int <- copy 0
   dummy, _height <- screen-size screen
-  var height/edx: int <- copy _height
+  var limit/edx: int <- copy _height
+  limit <- decrement
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  compare cursor-y, height
+  compare cursor-y, limit
   {
     break-if-<
     return
