@@ -273,7 +273,7 @@ fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> _/eax: bo
   return result
 }
 
-fn test-gap-buffer-equal-from-end? {
+fn test-gap-buffer-equal-from-end {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g
@@ -285,10 +285,10 @@ fn test-gap-buffer-equal-from-end? {
   # gap is at end (right is empty)
   var _result/eax: boolean <- gap-buffer-equal? g, "aaa"
   var result/eax: int <- copy _result
-  check-ints-equal result, 1, "F - test-gap-buffer-equal-from-end?"
+  check-ints-equal result, 1, "F - test-gap-buffer-equal-from-end"
 }
 
-fn test-gap-buffer-equal-from-middle? {
+fn test-gap-buffer-equal-from-middle {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g
@@ -301,10 +301,10 @@ fn test-gap-buffer-equal-from-middle? {
   # gap is in the middle
   var _result/eax: boolean <- gap-buffer-equal? g, "aaa"
   var result/eax: int <- copy _result
-  check-ints-equal result, 1, "F - test-gap-buffer-equal-from-middle?"
+  check-ints-equal result, 1, "F - test-gap-buffer-equal-from-middle"
 }
 
-fn test-gap-buffer-equal-from-start? {
+fn test-gap-buffer-equal-from-start {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g
@@ -319,7 +319,7 @@ fn test-gap-buffer-equal-from-start? {
   # gap is at the start
   var _result/eax: boolean <- gap-buffer-equal? g, "aaa"
   var result/eax: int <- copy _result
-  check-ints-equal result, 1, "F - test-gap-buffer-equal-from-start?"
+  check-ints-equal result, 1, "F - test-gap-buffer-equal-from-start"
 }
 
 fn copy-gap-buffer _src-ah: (addr handle gap-buffer), _dest-ah: (addr handle gap-buffer) {
