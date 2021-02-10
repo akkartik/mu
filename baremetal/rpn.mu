@@ -38,7 +38,7 @@ fn main -> _/ebx: int {
       append-byte in, key2
       var g/eax: grapheme <- copy key2
       draw-grapheme-at-cursor 0/screen, g, 0xf/fg, 0/bg
-      cursor-right 0
+      move-cursor-right 0
       loop
     }
     # clear cursor

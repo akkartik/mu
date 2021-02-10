@@ -1,6 +1,6 @@
 # some primitives for moving the cursor without making assumptions about
 # raster order
-fn cursor-left screen: (addr screen) {
+fn move-cursor-left screen: (addr screen) {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
@@ -13,7 +13,7 @@ fn cursor-left screen: (addr screen) {
   set-cursor-position screen, cursor-x, cursor-y
 }
 
-fn cursor-right screen: (addr screen) {
+fn move-cursor-right screen: (addr screen) {
   var _width/eax: int <- copy 0
   var dummy/ecx: int <- copy 0
   _width, dummy <- screen-size screen
@@ -31,7 +31,7 @@ fn cursor-right screen: (addr screen) {
   set-cursor-position screen, cursor-x, cursor-y
 }
 
-fn cursor-up screen: (addr screen) {
+fn move-cursor-up screen: (addr screen) {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
@@ -44,7 +44,7 @@ fn cursor-up screen: (addr screen) {
   set-cursor-position screen, cursor-x, cursor-y
 }
 
-fn cursor-down screen: (addr screen) {
+fn move-cursor-down screen: (addr screen) {
   var dummy/eax: int <- copy 0
   var _height/ecx: int <- copy 0
   dummy, _height <- screen-size screen
