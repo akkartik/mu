@@ -283,9 +283,8 @@ fn test-gap-buffer-equal-from-end {
   add-grapheme-at-gap g, c
   add-grapheme-at-gap g, c
   # gap is at end (right is empty)
-  var _result/eax: boolean <- gap-buffer-equal? g, "aaa"
-  var result/eax: int <- copy _result
-  check-ints-equal result, 1, "F - test-gap-buffer-equal-from-end"
+  var result/eax: boolean <- gap-buffer-equal? g, "aaa"
+  check result, "F - test-gap-buffer-equal-from-end"
 }
 
 fn test-gap-buffer-equal-from-middle {
@@ -299,9 +298,8 @@ fn test-gap-buffer-equal-from-middle {
   add-grapheme-at-gap g, c
   var dummy/eax: grapheme <- gap-left g
   # gap is in the middle
-  var _result/eax: boolean <- gap-buffer-equal? g, "aaa"
-  var result/eax: int <- copy _result
-  check-ints-equal result, 1, "F - test-gap-buffer-equal-from-middle"
+  var result/eax: boolean <- gap-buffer-equal? g, "aaa"
+  check result, "F - test-gap-buffer-equal-from-middle"
 }
 
 fn test-gap-buffer-equal-from-start {
@@ -317,9 +315,8 @@ fn test-gap-buffer-equal-from-start {
   dummy <- gap-left g
   dummy <- gap-left g
   # gap is at the start
-  var _result/eax: boolean <- gap-buffer-equal? g, "aaa"
-  var result/eax: int <- copy _result
-  check-ints-equal result, 1, "F - test-gap-buffer-equal-from-start"
+  var result/eax: boolean <- gap-buffer-equal? g, "aaa"
+  check result, "F - test-gap-buffer-equal-from-start"
 }
 
 fn copy-gap-buffer _src-ah: (addr handle gap-buffer), _dest-ah: (addr handle gap-buffer) {
