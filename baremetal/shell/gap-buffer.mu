@@ -85,17 +85,21 @@ fn render-gap-buffer screen: (addr screen), _gap: (addr gap-buffer), x: int, y: 
   var right/ecx: (addr grapheme-stack) <- get gap, right
   x2 <- render-stack-from-top screen, right, x2, y, render-cursor?
   var x3/ebx: int <- copy x2
-  # if we must render cursor and the right side is empty, print a grapheme anyway
+  # decide whether we still need to print a cursor
+  var bg/edx: int <- copy 0
+  compare render-cursor?, 0/false
   {
-    compare render-cursor?, 0/false
     break-if-=
+    # if the right side is empty, grapheme stack didn't print the cursor
     var empty?/eax: boolean <- grapheme-stack-empty? right
     compare empty?, 0/false
     break-if-=
-    var space/eax: grapheme <- copy 0x20
-    draw-grapheme screen, space, x3, y, 3/fg=cyan, 7/bg
-    x3 <- increment
+    bg <- copy 7/cursor
   }
+  # print a grapheme either way so that cursor position doesn't affect printed width
+  var space/eax: grapheme <- copy 0x20
+  draw-grapheme screen, space, x3, y, 3/fg=cyan, bg
+  x3 <- increment
   return x3
 }
 
@@ -463,7 +467,7 @@ fn test-render-gap-buffer-without-cursor {
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 0/no-cursor
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-without-cursor"
-  check-ints-equal x, 3, "F - test-render-gap-buffer-without-cursor: result"
+  check-ints-equal x, 4, "F - test-render-gap-buffer-without-cursor: result"
                                                                 # abc
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "    ", "F - test-render-gap-buffer-without-cursor: bg"
 }
@@ -501,7 +505,7 @@ fn test-render-gap-buffer-with-cursor-in-middle {
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-in-middle"
-  check-ints-equal x, 3, "F - test-render-gap-buffer-with-cursor-in-middle: result"
+  check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-in-middle: result"
                                                                 # abc
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "  | ", "F - test-render-gap-buffer-with-cursor-in-middle: bg"
 }
@@ -518,7 +522,7 @@ fn test-render-gap-buffer-with-cursor-at-start {
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-at-start"
-  check-ints-equal x, 3, "F - test-render-gap-buffer-with-cursor-at-start: result"
+  check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-at-start: result"
                                                                 # abc
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|   ", "F - test-render-gap-buffer-with-cursor-at-start: bg"
 }

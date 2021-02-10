@@ -320,47 +320,47 @@ fn test-render-words-in-reverse {
   #
   var cursor-word/eax: int <- copy w
   var new-x/eax: int <- render-words-in-reverse screen, w-ah, 0/x, 0/y, cursor-word
-  check-screen-row screen, 0/y,                                   "ddd ccc bbb aaa  ", "F - test-render-words-in-reverse/0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "               | ", "F - test-render-words-in-reverse/0 cursor"
+  check-screen-row screen, 0/y,                                   "ddd  ccc  bbb  aaa  ", "F - test-render-words-in-reverse/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "                  | ", "F - test-render-words-in-reverse/0 cursor"
   # - start moving cursor left through final word
   cursor-left w
   var cursor-word/eax: int <- copy w
   var new-x/eax: int <- render-words-in-reverse screen, w-ah, 0/x, 0/y, cursor-word
-  check-screen-row screen, 0/y,                                   "ddd ccc bbb aaa  ", "F - test-render-words-in-reverse/1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "              |  ", "F - test-render-words-in-reverse/1 cursor"
+  check-screen-row screen, 0/y,                                   "ddd  ccc  bbb  aaa  ", "F - test-render-words-in-reverse/1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "                 |  ", "F - test-render-words-in-reverse/1 cursor"
   #
   cursor-left w
   var cursor-word/eax: int <- copy w
   var new-x/eax: int <- render-words-in-reverse screen, w-ah, 0/x, 0/y, cursor-word
-  check-screen-row screen, 0/y,                                   "ddd ccc bbb aaa  ", "F - test-render-words-in-reverse/2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "             |   ", "F - test-render-words-in-reverse/2 cursor"
+  check-screen-row screen, 0/y,                                   "ddd  ccc  bbb  aaa  ", "F - test-render-words-in-reverse/2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "                |   ", "F - test-render-words-in-reverse/2 cursor"
   #
   cursor-left w
   var cursor-word/eax: int <- copy w
   var new-x/eax: int <- render-words-in-reverse screen, w-ah, 0/x, 0/y, cursor-word
-  check-screen-row screen, 0/y,                                   "ddd ccc bbb aaa  ", "F - test-render-words-in-reverse/3"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "            |    ", "F - test-render-words-in-reverse/3 cursor"
+  check-screen-row screen, 0/y,                                   "ddd  ccc  bbb  aaa  ", "F - test-render-words-in-reverse/3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "               |    ", "F - test-render-words-in-reverse/3 cursor"
   # further moves left within the word change nothing
   cursor-left w
   var cursor-word/eax: int <- copy w
   var new-x/eax: int <- render-words-in-reverse screen, w-ah, 0/x, 0/y, cursor-word
-  check-screen-row screen, 0/y,                                   "ddd ccc bbb aaa  ", "F - test-render-words-in-reverse/3"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "            |    ", "F - test-render-words-in-reverse/3 cursor"
+  check-screen-row screen, 0/y,                                   "ddd  ccc  bbb  aaa  ", "F - test-render-words-in-reverse/4"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "               |    ", "F - test-render-words-in-reverse/4 cursor"
   # - switch to next word
   var w2-ah/eax: (addr handle word) <- get w, next
   var _w/eax: (addr word) <- lookup *w2-ah
   var w/ecx: (addr word) <- copy _w
   var cursor-word/eax: int <- copy w
   var new-x/eax: int <- render-words-in-reverse screen, w-ah, 0/x, 0/y, cursor-word
-  check-screen-row screen, 0/y,                                   "ddd ccc bbb  aaa  ", "F - test-render-words-in-reverse/4"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "           |      ", "F - test-render-words-in-reverse/4 cursor"
+  check-screen-row screen, 0/y,                                   "ddd  ccc  bbb  aaa  ", "F - test-render-words-in-reverse/5"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "             |      ", "F - test-render-words-in-reverse/5 cursor"
   # now speed up a little
   cursor-left w
   cursor-left w
   var cursor-word/eax: int <- copy w
   var new-x/eax: int <- render-words-in-reverse screen, w-ah, 0/x, 0/y, cursor-word
-  check-screen-row screen, 0/y,                                   "ddd ccc bbb aaa  ", "F - test-render-words-in-reverse/5"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "         |       ", "F - test-render-words-in-reverse/5 cursor"
+  check-screen-row screen, 0/y,                                   "ddd  ccc  bbb  aaa  ", "F - test-render-words-in-reverse/6"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "           |        ", "F - test-render-words-in-reverse/6 cursor"
   #
   var w2-ah/eax: (addr handle word) <- get w, next
   var _w/eax: (addr word) <- lookup *w2-ah
@@ -368,8 +368,8 @@ fn test-render-words-in-reverse {
   cursor-left w
   var cursor-word/eax: int <- copy w
   var new-x/eax: int <- render-words-in-reverse screen, w-ah, 0/x, 0/y, cursor-word
-  check-screen-row screen, 0/y,                                   "ddd ccc bbb aaa  ", "F - test-render-words-in-reverse/6"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "      |          ", "F - test-render-words-in-reverse/6 cursor"
+  check-screen-row screen, 0/y,                                   "ddd  ccc  bbb  aaa  ", "F - test-render-words-in-reverse/7"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "       |            ", "F - test-render-words-in-reverse/7 cursor"
 }
 
 # Gotcha with some word operations: ensure dest-ah isn't in the middle of some
