@@ -319,6 +319,20 @@ fn test-gap-buffer-equal-from-start {
   check result, "F - test-gap-buffer-equal-from-start"
 }
 
+fn test-gap-buffer-equal-fails {
+  # g = "aaa"
+  var _g: gap-buffer
+  var g/esi: (addr gap-buffer) <- address _g
+  initialize-gap-buffer g
+  var c/eax: grapheme <- copy 0x61/a
+  add-grapheme-at-gap g, c
+  add-grapheme-at-gap g, c
+  add-grapheme-at-gap g, c
+  #
+  var result/eax: boolean <- gap-buffer-equal? g, "aa"
+  check-not result, "F - test-gap-buffer-equal-fails"
+}
+
 fn copy-gap-buffer _src-ah: (addr handle gap-buffer), _dest-ah: (addr handle gap-buffer) {
   # obtain src-a, dest-a
   var src-ah/eax: (addr handle gap-buffer) <- copy _src-ah
