@@ -177,7 +177,7 @@ fn gap-left _self: (addr gap-buffer) -> _/eax: grapheme {
   return g
 }
 
-fn gap-index _self: (addr gap-buffer) -> _/eax: int {
+fn index-of-gap _self: (addr gap-buffer) -> _/eax: int {
   var self/eax: (addr gap-buffer) <- copy _self
   var left/eax: (addr grapheme-stack) <- get self, left
   var top-addr/eax: (addr int) <- get left, top
@@ -331,6 +331,93 @@ fn test-gap-buffer-equal-fails {
   #
   var result/eax: boolean <- gap-buffer-equal? g, "aa"
   check-not result, "F - test-gap-buffer-equal-fails"
+}
+
+fn gap-buffers-equal? self: (addr gap-buffer), g: (addr gap-buffer) -> _/eax: boolean {
+  var tmp/eax: int <- gap-buffer-length self
+  var len/ecx: int <- copy tmp
+  var leng/eax: int <- gap-buffer-length g
+  compare len, leng
+  {
+    break-if-=
+    return 0/false
+  }
+  var i/edx: int <- copy 0
+  {
+    compare i, len
+    break-if->=
+    {
+      var tmp/eax: grapheme <- gap-index self, i
+      var curr/ecx: grapheme <- copy tmp
+      var currg/eax: grapheme <- gap-index g, i
+      compare curr, currg
+      break-if-=
+      return 0/false
+    }
+    i <- increment
+    loop
+  }
+  return 1/true
+}
+
+fn gap-index _self: (addr gap-buffer), _n: int -> _/eax: grapheme {
+  var self/esi: (addr gap-buffer) <- copy _self
+  var n/ebx: int <- copy _n
+  # if n < left->length, index into left
+  var left/edi: (addr grapheme-stack) <- get self, left
+  var left-len-a/edx: (addr int) <- get left, top
+  compare n, *left-len-a
+  {
+    break-if->=
+    var data-ah/eax: (addr handle array grapheme) <- get left, data
+    var data/eax: (addr array grapheme) <- lookup *data-ah
+    var result/eax: (addr grapheme) <- index data, n
+    return *result
+  }
+  # shrink n
+  n <- subtract *left-len-a
+  # if n < right->length, index into right
+  var right/edi: (addr grapheme-stack) <- get self, right
+  var right-len-a/edx: (addr int) <- get right, top
+  compare n, *right-len-a
+  {
+    break-if->=
+    var data-ah/eax: (addr handle array grapheme) <- get right, data
+    var data/eax: (addr array grapheme) <- lookup *data-ah
+    var result/eax: (addr grapheme) <- index data, n
+    return *result
+  }
+  # error
+  abort "gap-index: out of bounds"
+  return 0
+}
+
+fn test-gap-buffers-equal? {
+  var _a: gap-buffer
+  var a/esi: (addr gap-buffer) <- address _a
+  initialize-gap-buffer-with a, "abc"
+  var _b: gap-buffer
+  var b/edi: (addr gap-buffer) <- address _b
+  initialize-gap-buffer-with b, "abc"
+  var _c: gap-buffer
+  var c/ebx: (addr gap-buffer) <- address _c
+  initialize-gap-buffer-with c, "ab"
+  var _d: gap-buffer
+  var d/edx: (addr gap-buffer) <- address _d
+  initialize-gap-buffer-with d, "abd"
+  #
+  var result/eax: boolean <- gap-buffers-equal? a, a
+  check result, "F - test-gap-buffers-equal? - reflexive"
+  result <- gap-buffers-equal? a, b
+  check result, "F - test-gap-buffers-equal? - equal"
+  # length not equal
+  result <- gap-buffers-equal? a, c
+  check-not result, "F - test-gap-buffers-equal? - not equal"
+  # contents not equal
+  result <- gap-buffers-equal? a, d
+  check-not result, "F - test-gap-buffers-equal? - not equal 2"
+  result <- gap-buffers-equal? d, a
+  check-not result, "F - test-gap-buffers-equal? - not equal 3"
 }
 
 fn copy-gap-buffer _src-ah: (addr handle gap-buffer), _dest-ah: (addr handle gap-buffer) {
