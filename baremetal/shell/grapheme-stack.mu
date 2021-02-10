@@ -78,7 +78,7 @@ fn copy-grapheme-stack _src: (addr grapheme-stack), dest: (addr grapheme-stack) 
 
 # dump stack to screen from bottom to top
 # colors hardcoded
-fn render-stack-from-bottom _self: (addr grapheme-stack), screen: (addr screen), x: int, y: int -> _/eax: int {
+fn render-stack-from-bottom screen: (addr screen), _self: (addr grapheme-stack), x: int, y: int -> _/eax: int {
   var self/esi: (addr grapheme-stack) <- copy _self
   var data-ah/edi: (addr handle array grapheme) <- get self, data
   var _data/eax: (addr array grapheme) <- lookup *data-ah
@@ -99,7 +99,7 @@ fn render-stack-from-bottom _self: (addr grapheme-stack), screen: (addr screen),
 
 # dump stack to screen from top to bottom
 # optionally render a 'cursor' with the top grapheme
-fn render-stack-from-top _self: (addr grapheme-stack), screen: (addr screen), x: int, y: int, render-cursor?: boolean -> _/eax: int {
+fn render-stack-from-top screen: (addr screen), _self: (addr grapheme-stack), x: int, y: int, render-cursor?: boolean -> _/eax: int {
   var self/esi: (addr grapheme-stack) <- copy _self
   var data-ah/edi: (addr handle array grapheme) <- get self, data
   var _data/eax: (addr array grapheme) <- lookup *data-ah
@@ -147,17 +147,17 @@ fn test-render-grapheme-stack {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4
   #
-  var x/eax: int <- render-stack-from-bottom gs, screen, 0/x, 0/y
+  var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 0/y
   check-screen-row screen, 0/y, "abc ", "F - test-render-grapheme-stack from bottom"
   check-ints-equal x, 3, "F - test-render-grapheme-stack from bottom: result"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "   ", "F - test-render-grapheme-stack from bottom: bg"
   #
-  var x/eax: int <- render-stack-from-top gs, screen, 0/x, 1/y, 0/cursor=false
+  var x/eax: int <- render-stack-from-top screen, gs, 0/x, 1/y, 0/cursor=false
   check-screen-row screen, 1/y, "cba ", "F - test-render-grapheme-stack from top without cursor"
   check-ints-equal x, 3, "F - test-render-grapheme-stack from top without cursor: result"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   ", "F - test-render-grapheme-stack from top without cursor: bg"
   #
-  var x/eax: int <- render-stack-from-top gs, screen, 0/x, 2/y, 1/cursor=true
+  var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
   check-screen-row screen, 2/y, "cba ", "F - test-render-grapheme-stack from top with cursor"
   check-ints-equal x, 3, "F - test-render-grapheme-stack from top without cursor: result"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|   ", "F - test-render-grapheme-stack from top with cursor: bg"

@@ -78,9 +78,9 @@ fn emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte) {
 fn render-gap-buffer screen: (addr screen), _gap: (addr gap-buffer), x: int, y: int, render-cursor?: boolean -> _/eax: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
   var left/eax: (addr grapheme-stack) <- get gap, left
-  var x2/eax: int <- render-stack-from-bottom left, screen, x, y
+  var x2/eax: int <- render-stack-from-bottom screen, left, x, y
   var right/ecx: (addr grapheme-stack) <- get gap, right
-  x2 <- render-stack-from-top right, screen, x2, y, render-cursor?
+  x2 <- render-stack-from-top screen, right, x2, y, render-cursor?
   var x3/ebx: int <- copy x2
   # if we must render cursor and the right side is empty, print a grapheme anyway
   {
