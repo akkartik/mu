@@ -90,6 +90,12 @@ fn draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int,
   copy-to *dest-color, src-color
 }
 
+# we can't really render non-ASCII yet, but when we do we'll be ready
+fn draw-code-point screen: (addr screen), c: code-point, x: int, y: int, color: int, background-color: int {
+  var g/eax: grapheme <- copy c
+  draw-grapheme screen, g, x, y, color, background-color
+}
+
 # not really needed for a real screen, though it shouldn't do any harm
 fn screen-cell-index screen-on-stack: (addr screen), x: int, y: int -> _/ecx: int {
   var screen/esi: (addr screen) <- copy screen-on-stack
@@ -193,7 +199,6 @@ fn clear-screen screen: (addr screen) {
     return
   }
   # fake screen
-  var space/edi: grapheme <- copy 0x20
   set-cursor-position screen, 0, 0
   var screen-addr/esi: (addr screen) <- copy screen
   var y/eax: int <- copy 1
@@ -206,7 +211,7 @@ fn clear-screen screen: (addr screen) {
     {
       compare x, *width
       break-if->
-      draw-grapheme screen, space, x, y, 0/fg=black, 0/bg=black
+      draw-code-point screen, 0x20/space, x, y, 0/fg=black, 0/bg=black
       x <- increment
       loop
     }

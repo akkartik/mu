@@ -301,8 +301,7 @@ fn test-draw-single-grapheme {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4
-  var c/eax: grapheme <- copy 0x61/a
-  draw-grapheme screen, c, 0/x, 0/y, 1/fg, 2/bg
+  draw-code-point screen, 0x61/a, 0/x, 0/y, 1/fg, 2/bg
   check-screen-row screen, 0/y, "a", "F - test-draw-single-grapheme"  # top-left corner of the screen
   check-screen-row-in-color screen, 1/fg, 0/y, "a", "F - test-draw-single-grapheme-fg"
   check-screen-row-in-background-color screen, 2/bg, 0/y, "a", "F - test-draw-single-grapheme-bg"

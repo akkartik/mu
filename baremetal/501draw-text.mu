@@ -69,6 +69,12 @@ fn draw-grapheme-at-cursor screen: (addr screen), g: grapheme, color: int, backg
   draw-grapheme screen, g, cursor-x, cursor-y, color, background-color
 }
 
+# we can't really render non-ASCII yet, but when we do we'll be ready
+fn draw-code-point-at-cursor screen: (addr screen), c: code-point, color: int, background-color: int {
+  var g/eax: grapheme <- copy c
+  draw-grapheme-at-cursor screen, g, color, background-color
+}
+
 # draw a single line of text from x, y to xmax
 # return the next 'x' coordinate
 # if there isn't enough space, return 0 without modifying the screen
