@@ -113,6 +113,14 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
   return xcurr
 }
 
+fn draw-text-rightward-over-full-screen screen: (addr screen), text: (addr array byte), x: int, y: int, color: int, background-color: int -> _/eax: int {
+  var width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  width, height <- screen-size screen
+  var result/eax: int <- draw-text-rightward screen, text, x, width, y, color, background-color
+  return result
+}
+
 fn draw-text-rightward-from-cursor screen: (addr screen), text: (addr array byte), xmax: int, color: int, background-color: int -> _/eax: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
