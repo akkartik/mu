@@ -1,0 +1,17 @@
+== code
+
+integer-divide:  # a: int, b: int -> quotient/eax: int, remainder/edx: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax = a
+    8b/-> *(ebp+8) 0/r32/eax
+    # edx = all 0s or all 1s
+    99/sign-extend-eax-into-edx
+    # quotient, remainder = divide eax by b
+    f7 7/subop/divide-eax-edx-by *(ebp+0xc)
+$integer-divide:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return

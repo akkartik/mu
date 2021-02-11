@@ -57,3 +57,5 @@ sig to-decimal-digit in: grapheme -> _/eax: int
 sig next-word line: (addr stream byte), out: (addr slice)  # skips '#' comments
 sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not skip '#' comments
 sig stream-empty? s: (addr stream _) -> _/eax: boolean
+
+sig integer-divide a: int, b: int -> _/eax: int, _/edx: int
