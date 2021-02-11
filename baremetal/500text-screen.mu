@@ -201,16 +201,16 @@ fn clear-screen screen: (addr screen) {
   # fake screen
   set-cursor-position screen, 0, 0
   var screen-addr/esi: (addr screen) <- copy screen
-  var y/eax: int <- copy 1
+  var y/eax: int <- copy 0
   var height/ecx: (addr int) <- get screen-addr, height
   {
     compare y, *height
-    break-if->
-    var x/edx: int <- copy 1
+    break-if->=
+    var x/edx: int <- copy 0
     var width/ebx: (addr int) <- get screen-addr, width
     {
       compare x, *width
-      break-if->
+      break-if->=
       draw-code-point screen, 0x20/space, x, y, 0/fg=black, 0/bg=black
       x <- increment
       loop
