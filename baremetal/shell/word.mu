@@ -70,8 +70,6 @@ fn move-word-contents _src-ah: (addr handle word), _dest-ah: (addr handle word) 
     compare done?, 0/false
     break-if-!=
     var g/eax: grapheme <- pop-grapheme-stack src-stack
-#?     print-grapheme 0, g
-#?     print-string 0, "\n"
     add-grapheme-to-word dest, g
     loop
   }
@@ -568,43 +566,17 @@ fn append-word _self-ah: (addr handle word) {
   var saved-self-storage: (handle word)
   var saved-self/eax: (addr handle word) <- address saved-self-storage
   copy-object _self-ah, saved-self
-#?   {
-#?     print-string 0, "self-ah is "
-#?     var foo/eax: int <- copy _self-ah
-#?     print-int32-hex 0, foo
-#?     print-string 0, "\n"
-#?   }
   var self-ah/esi: (addr handle word) <- copy _self-ah
   var _self/eax: (addr word) <- lookup *self-ah
   var self/ebx: (addr word) <- copy _self
-#?   {
-#?     print-string 0, "0: self is "
-#?     var self-ah/eax: (addr handle word) <- copy _self-ah
-#?     var self/eax: (addr word) <- lookup *self-ah
-#?     var foo/eax: int <- copy self
-#?     print-int32-hex 0, foo
-#?     print-string 0, "\n"
-#?   }
   # allocate new handle
   var new: (handle word)
   var new-ah/ecx: (addr handle word) <- address new
   allocate new-ah
   var new-addr/eax: (addr word) <- lookup new
   initialize-word new-addr
-#?   {
-#?     print-string 0, "new is "
-#?     var foo/eax: int <- copy new-addr
-#?     print-int32-hex 0, foo
-#?     print-string 0, "\n"
-#?   }
   # new->next = self->next
   var src/esi: (addr handle word) <- get self, next
-#?   {
-#?     print-string 0, "src is "
-#?     var foo/eax: int <- copy src
-#?     print-int32-hex 0, foo
-#?     print-string 0, "\n"
-#?   }
   var dest/edi: (addr handle word) <- get new-addr, next
   copy-object src, dest
   # new->next->prev = new
@@ -612,54 +584,11 @@ fn append-word _self-ah: (addr handle word) {
     var next-addr/eax: (addr word) <- lookup *src
     compare next-addr, 0
     break-if-=
-#?     {
-#?       print-string 0, "next-addr is "
-#?       var foo/eax: int <- copy next-addr
-#?       print-int32-hex 0, foo
-#?       print-string 0, "\n"
-#?     }
     dest <- get next-addr, prev
-#? #?     {
-#? #?       print-string 0, "self-ah is "
-#? #?       var foo/eax: int <- copy _self-ah
-#? #?       print-int32-hex 0, foo
-#? #?       print-string 0, "\n"
-#? #?       print-string 0, "2: self is "
-#? #?       var self-ah/eax: (addr handle word) <- copy _self-ah
-#? #?       var self/eax: (addr word) <- lookup *self-ah
-#? #?       var foo/eax: int <- copy self
-#? #?       print-int32-hex 0, foo
-#? #?       print-string 0, "\n"
-#? #?     }
-#?     {
-#?       print-string 0, "copying new to "
-#?       var foo/eax: int <- copy dest
-#?       print-int32-hex 0, foo
-#?       print-string 0, "\n"
-#?     }
     copy-object new-ah, dest
-#?     {
-#?       print-string 0, "4: self is "
-#?       var self-ah/eax: (addr handle word) <- copy _self-ah
-#?       var self/eax: (addr word) <- lookup *self-ah
-#?       var foo/eax: int <- copy self
-#?       print-int32-hex 0, foo
-#?       print-string 0, "\n"
-#?     }
   }
   # new->prev = saved-self
   dest <- get new-addr, prev
-#?   {
-#?     print-string 0, "copying "
-#?     var self-ah/esi: (addr handle word) <- copy _self-ah
-#?     var self/eax: (addr word) <- lookup *self-ah
-#?     var foo/eax: int <- copy self
-#?     print-int32-hex 0, foo
-#?     print-string 0, " to "
-#?     foo <- copy dest
-#?     print-int32-hex 0, foo
-#?     print-string 0, "\n"
-#?   }
   var saved-self-ah/eax: (addr handle word) <- address saved-self-storage
   copy-object saved-self-ah, dest
   # self->next = new
