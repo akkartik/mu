@@ -65,7 +65,7 @@
 #   offset 1800 (address 9400): entrypoint for applications (don't forget to adjust survey_baremetal if this changes)
 
 # Other details of the current memory map:
-#   code: first two default-sized disk tracks get loaded to [0x00007c00, 0x00017800)
+#   code: 4 tracks of disk to [0x00007c00, 0x00027400)
 #   stack grows down from 0x00070000
 #     see below
 #   heap: [0x01000000, 0x02000000)
@@ -107,7 +107,7 @@
   b5 00  # ch <- 0  # cylinder 0
   b6 00  # dh <- 0  # track 0
   b1 02  # cl <- 2  # second sector, 1-based
-  b0 7d  # al <- 125  # number of sectors to read
+  b0 7d  # al <- 125  # number of sectors to read = 2*63 - 1
   # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
@@ -116,6 +116,24 @@
   0f 82 a3 00  # jump-if-carry disk_error [label]
 
 # 2c:
+  # load two more tracks of disk into addresses [0x17800, 0x27400)
+  b4 02  # ah <- 2  # read sectors from disk
+  # dl comes conveniently initialized at boot time with the index of the device being booted
+  b5 00  # ch <- 0  # cylinder 0
+  b6 02  # dh <- 2  # track 0
+  b1 01  # cl <- 1  # first sector, 1-based
+  b0 7e  # al <- 126  # number of sectors to read = 2*63
+  # address to write sectors to = es:bx = 0x17800
+  bb 80 17  # bx <- 0x1780 [label]
+  8e c3  # es <- bx
+  bb 00 00  # bx <- 0
+  cd 13  # int 13h, BIOS disk service
+  0f 82 9b 00  # jump-if-carry disk_error [label]
+  # reset es
+  bb 00 00  # bx <- 0
+  8e c3  # es <- bx
+
+# 39:
   # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
   # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
   # seta20.1:
@@ -126,7 +144,7 @@
   b0 d1  # al <- 0xd1
   e6 64  # port 0x64 <- al
 
-# 36:
+# 43:
   # seta20.2:
   e4 64  # al <- port 0x64
   a8 02  # set zf if bit 1 (second-least significant) is not set
@@ -135,7 +153,7 @@
   b0 df  # al <- 0xdf
   e6 64  # port 0x64 <- al
 
-# 40:
+# 4d:
   # adjust video mode
   b4 4f  # ah <- 4f (VBE)
   b0 02  # al <- 02 (set video mode)
@@ -144,7 +162,7 @@
             # fallback mode: 0x0101 (640x480x256)
   cd 10  # int 10h, Vesa BIOS extensions
 
-# 49:
+# 56:
   # load information for the (hopefully) current video mode
   # mostly just for the address to the linear frame buffer
   b4 4f  # ah <- 4f (VBE)
@@ -153,7 +171,7 @@
   bf 00 81  # di <- 0x8100 (video mode info) [label]
   cd 10
 
-# 55:
+# 62:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
     f8 7c  # *gdt_descriptor [label]
@@ -163,10 +181,8 @@
   ea 00 7d 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
 
 # padding
-# 69:
-                           00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 76:
+                  00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
