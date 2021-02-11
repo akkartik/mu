@@ -15,7 +15,7 @@
 #
 # Error handling is non-existent. This is just a prototype.
 
-fn main -> _/ebx: int {
+fn main {
   var in-storage: (stream byte 0x80)
   var in/esi: (addr stream byte) <- address in-storage
   var y/ecx: int <- copy 0
@@ -53,7 +53,6 @@ fn main -> _/ebx: int {
     #
     loop
   }
-  return 0
 }
 
 type int-stack {
