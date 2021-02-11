@@ -257,13 +257,22 @@ e9 fd ff  # loop forever
   e6 21  # port 0x21 <- al
 
 # 11e:
-  # initialization is done; enable interrupts
-  fb
-  e9 dc 16 00 00  # jump to 0x9400 [label]
+  fb  # enable interrupts
+  db e3  # initialize FPU
+  # eax <- cr4
+  0f 20  # copy cr4 to rm32
+    e0  # 11/mod/direct 100/r32/CR4 000/rm32/eax
+  # eax <- or bit 9
+  0f ba
+    e8  # 11/mod/direct 101/subop/bit-test-and-set 000/rm32/eax
+    09  # imm8
+  # cr4 <- eax
+  0f 22  # copy rm32 to cr4
+    e0  # 11/mod/direct 100/r32/CR4 000/rm32/eax
+  e9 d0 16 00 00  # jump to 0x9400 [label]
 
 # padding
-# 124:
-            00 00 00 00 00 00 00 00 00 00 00 00
+# 130:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
