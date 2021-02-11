@@ -276,6 +276,101 @@ fn render-word screen: (addr screen), _self: (addr word), x: int, y: int, render
   return result
 }
 
+fn render-words screen: (addr screen), _words-ah: (addr handle word), x: int, y: int, cursor-word-addr: int -> _/eax: int {
+  var words-ah/eax: (addr handle word) <- copy _words-ah
+  var _words-a/eax: (addr word) <- lookup *words-ah
+  var words-a/ecx: (addr word) <- copy _words-a
+  compare words-a, 0
+  {
+    break-if-!=
+    return x
+  }
+  # print
+  var render-cursor?/edx: boolean <- copy 0/false
+  {
+    compare cursor-word-addr, words-a
+    break-if-!=
+    render-cursor? <- copy 1/true
+  }
+  var next-x/eax: int <- render-word screen, words-a, x, y, render-cursor?
+  var space/edx: grapheme <- copy 0x20/space
+  draw-grapheme screen, space, next-x, y, 3/fg=cyan, 0/bg
+  next-x <- increment
+  # recurse
+  var next-ah/ecx: (addr handle word) <- get words-a, next
+  next-x <- render-words screen, next-ah, next-x, y, cursor-word-addr
+  return next-x
+}
+
+fn test-render-words {
+  # words = [aaa, bbb, ccc, ddd]
+  var w-storage: (handle word)
+  var w-ah/esi: (addr handle word) <- address w-storage
+  allocate-word-with w-ah, "aaa"
+  append-word-at-end-with w-ah, "bbb"
+  append-word-at-end-with w-ah, "ccc"
+  append-word-at-end-with w-ah, "ddd"
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x20, 4
+  #
+  var _w/eax: (addr word) <- lookup *w-ah
+  var w/ecx: (addr word) <- copy _w
+  var cursor-word/eax: int <- copy w
+  var new-x/eax: int <- render-words screen, w-ah, 0/x, 0/y, cursor-word
+  check-screen-row screen, 0/y,                                   "aaa  bbb  ccc  ddd  ", "F - test-render-words/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "   |                ", "F - test-render-words/0 cursor"
+  # - start moving cursor left through final word
+  cursor-left w
+  var cursor-word/eax: int <- copy w
+  var new-x/eax: int <- render-words screen, w-ah, 0/x, 0/y, cursor-word
+  check-screen-row screen, 0/y,                                   "aaa  bbb  ccc  ddd  ", "F - test-render-words/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "  |                 ", "F - test-render-words/1 cursor"
+  #
+  cursor-left w
+  var cursor-word/eax: int <- copy w
+  var new-x/eax: int <- render-words screen, w-ah, 0/x, 0/y, cursor-word
+  check-screen-row screen, 0/y,                                   "aaa  bbb  ccc  ddd  ", "F - test-render-words/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  " |                  ", "F - test-render-words/2 cursor"
+  #
+  cursor-left w
+  var cursor-word/eax: int <- copy w
+  var new-x/eax: int <- render-words screen, w-ah, 0/x, 0/y, cursor-word
+  check-screen-row screen, 0/y,                                   "aaa  bbb  ccc  ddd  ", "F - test-render-words/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "|                   ", "F - test-render-words/3 cursor"
+  # further moves left within the word change nothing
+  cursor-left w
+  var cursor-word/eax: int <- copy w
+  var new-x/eax: int <- render-words screen, w-ah, 0/x, 0/y, cursor-word
+  check-screen-row screen, 0/y,                                   "aaa  bbb  ccc  ddd  ", "F - test-render-words/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "|                   ", "F - test-render-words/4 cursor"
+  # - switch to next word
+  var w2-ah/eax: (addr handle word) <- get w, next
+  var _w/eax: (addr word) <- lookup *w2-ah
+  var w/ecx: (addr word) <- copy _w
+  var cursor-word/eax: int <- copy w
+  var new-x/eax: int <- render-words screen, w-ah, 0/x, 0/y, cursor-word
+  check-screen-row screen, 0/y,                                   "aaa  bbb  ccc  ddd  ", "F - test-render-words/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "        |           ", "F - test-render-words/5 cursor"
+  # now speed up a little
+  cursor-left w
+  cursor-left w
+  var cursor-word/eax: int <- copy w
+  var new-x/eax: int <- render-words screen, w-ah, 0/x, 0/y, cursor-word
+  check-screen-row screen, 0/y,                                   "aaa  bbb  ccc  ddd  ", "F - test-render-words/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "      |             ", "F - test-render-words/6 cursor"
+  #
+  var w2-ah/eax: (addr handle word) <- get w, next
+  var _w/eax: (addr word) <- lookup *w2-ah
+  var w/ecx: (addr word) <- copy _w
+  cursor-left w
+  var cursor-word/eax: int <- copy w
+  var new-x/eax: int <- render-words screen, w-ah, 0/x, 0/y, cursor-word
+  check-screen-row screen, 0/y,                                   "aaa  bbb  ccc  ddd  ", "F - test-render-words/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y,  "            |       ", "F - test-render-words/7 cursor"
+}
+
 fn render-words-in-reverse screen: (addr screen), _words-ah: (addr handle word), x: int, y: int, cursor-word-addr: int -> _/eax: int {
   var words-ah/eax: (addr handle word) <- copy _words-ah
   var _words-a/eax: (addr word) <- lookup *words-ah
@@ -306,10 +401,7 @@ fn test-render-words-in-reverse {
   # words = [aaa, bbb, ccc, ddd]
   var w-storage: (handle word)
   var w-ah/esi: (addr handle word) <- address w-storage
-  allocate w-ah
-  var _w/eax: (addr word) <- lookup *w-ah
-  var w/ecx: (addr word) <- copy _w
-  initialize-word-with w, "aaa"
+  allocate-word-with w-ah, "aaa"
   append-word-at-end-with w-ah, "bbb"
   append-word-at-end-with w-ah, "ccc"
   append-word-at-end-with w-ah, "ddd"
@@ -318,6 +410,8 @@ fn test-render-words-in-reverse {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x20, 4
   #
+  var _w/eax: (addr word) <- lookup *w-ah
+  var w/ecx: (addr word) <- copy _w
   var cursor-word/eax: int <- copy w
   var new-x/eax: int <- render-words-in-reverse screen, w-ah, 0/x, 0/y, cursor-word
   check-screen-row screen, 0/y,                                   "ddd  ccc  bbb  aaa  ", "F - test-render-words-in-reverse/0"
