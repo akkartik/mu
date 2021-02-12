@@ -236,3 +236,28 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
     loop
   }
 }
+
+fn test-eval-arithmetic {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 1 +", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-arithmetic stack size"
+  var n/xmm0: float <- pop-number-from-value-stack out
+  var n2/eax: int <- convert n
+  check-ints-equal n2, 2, "F - test-eval-arithmetic result"
+}

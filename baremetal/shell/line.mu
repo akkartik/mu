@@ -61,6 +61,13 @@ fn render-line screen: (addr screen), _line: (addr line), x: int, y: int, render
   return result
 }
 
+fn parse-line in: (addr array byte), _out: (addr line) {
+  var out/edi: (addr line) <- copy _out
+  initialize-line out
+  var dest/eax: (addr handle word) <- get out, data
+  parse-words in, dest
+}
+
 #? fn main {
 #?   # line = [aaa, bbb, ccc, ddd]
 #?   var line-storage: line

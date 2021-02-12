@@ -1,3 +1,6 @@
+# value stacks encode the result of a program at a single point in time
+# they are typically rendered vertically
+
 type value-stack {
   data: (handle array value)
   top: int
