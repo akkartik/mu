@@ -17,6 +17,10 @@ sig check-strings-equal s: (addr array byte), expected: (addr array byte), msg: 
 # streams
 sig clear-stream f: (addr stream _)
 sig rewind-stream f: (addr stream _)
+sig stream-data-equal? f: (addr stream byte), s: (addr array byte) -> _/eax: boolean
+sig check-stream-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
+sig next-stream-line-equal? f: (addr stream byte), s: (addr array byte) -> _/eax: boolean
+sig check-next-stream-line-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
 sig write f: (addr stream byte), s: (addr array byte)
 sig read-byte s: (addr stream byte) -> _/eax: byte
 sig append-byte f: (addr stream byte), n: int
