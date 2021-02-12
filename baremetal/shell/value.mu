@@ -4,9 +4,6 @@ type value {
   number-data: float  # if type = 0
   text-data: (handle array byte)  # if type = 1
   array-data: (handle array value)  # if type = 2
-  file-data: (handle buffered-file)  # if type = 3
-  filename: (handle array byte)  # if type = 3
-  screen-data: (handle screen)  # if type = 4
 }
 
 fn initialize-value-with-integer _self: (addr value), n: int {
@@ -81,4 +78,52 @@ fn test-render-number {
   check-screen-row screen, 0/y, " 0 ", "F - test-render-number"
   check-ints-equal new-x, 3, "F - test-render-number: result"
   # we won't bother testing the background colors; lots of flexibility there
+}
+
+fn initialize-value-with-string _self: (addr value), s: (addr array byte) {
+  var self/esi: (addr value) <- copy _self
+  var type/eax: (addr int) <- get self, type
+  copy-to *type, 1/string
+  var dest/eax: (addr handle array byte) <- get self, text-data
+  copy-array-object s, dest
+}
+
+fn render-string screen: (addr screen), _val: (addr array byte), x: int, y: int -> _/eax: int {
+  var val/esi: (addr array byte) <- copy _val
+  compare val, 0
+  {
+    break-if-!=
+    return x
+  }
+  var orig-len/ecx: int <- length val
+  # truncate to 12 graphemes
+  # TODO: more sophisticated interactive rendering
+  var truncated: (handle array byte)
+  var truncated-ah/eax: (addr handle array byte) <- address truncated
+  substring val, 0, 0xc, truncated-ah
+  var _truncated-string/eax: (addr array byte) <- lookup *truncated-ah
+  var truncated-string/edx: (addr array byte) <- copy _truncated-string
+  var len/ebx: int <- length truncated-string
+  draw-code-point screen, 0x22/double-quote, x, y, 7/fg, 0/bg
+  increment x
+  var new-x/eax: int <- draw-text-rightward-over-full-screen screen, truncated-string, x, y, 7/fg, 0/bg
+  compare len, orig-len
+  {
+    break-if-=
+    new-x <- draw-text-rightward-over-full-screen screen, "...", new-x, y, 7/fg, 0/bg
+  }
+  draw-code-point screen, 0x22/double-quote, new-x, y, 7/fg, 0/bg
+  new-x <- increment
+  return new-x
+}
+
+fn test-render-string {
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x20, 4
+  # strings render with quotes
+  var new-x/eax: int <- render-string screen, "abc", 0/x, 0/y
+  check-screen-row screen, 0/y, "\"abc\"", "F - test-render-string"
+  check-ints-equal new-x, 5, "F - test-render-string: result"
 }

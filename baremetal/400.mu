@@ -12,6 +12,8 @@ sig read-key kbd: (addr keyboard) -> _/eax: byte
 sig count-test-failure
 sig num-test-failures -> _/eax: int
 
+sig check-strings-equal s: (addr array byte), expected: (addr array byte), msg: (addr array byte)
+
 # streams
 sig clear-stream f: (addr stream _)
 sig rewind-stream f: (addr stream _)
@@ -57,5 +59,13 @@ sig to-decimal-digit in: grapheme -> _/eax: int
 sig next-word line: (addr stream byte), out: (addr slice)  # skips '#' comments
 sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not skip '#' comments
 sig stream-empty? s: (addr stream _) -> _/eax: boolean
+sig stream-full? s: (addr stream _) -> _/eax: boolean
+sig stream-to-array in: (addr stream _), out: (addr handle array _)
+sig unquote-stream-to-array in: (addr stream _), out: (addr handle array _)
+sig stream-first s: (addr stream byte) -> _/eax: byte
+sig stream-final s: (addr stream byte) -> _/eax: byte
+
+#sig copy-bytes src: (addr byte), dest: (addr byte), n: int
+sig copy-array-object src: (addr array _), dest-ah: (addr handle array _)
 
 sig integer-divide a: int, b: int -> _/eax: int, _/edx: int
