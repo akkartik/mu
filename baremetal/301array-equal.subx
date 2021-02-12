@@ -1,0 +1,432 @@
+# Comparing arrays of numbers.
+
+== code
+
+array-equal?:  # a: (addr array int), b: (addr array int) -> result/eax: boolean
+    # pseudocode:
+    #   asize = a->size
+    #   if (asize != b->size) return false
+    #   i = 0
+    #   curra = a->data
+    #   currb = b->data
+    #   while i < asize
+    #     i1 = *curra
+    #     i2 = *currb
+    #     if (c1 != c2) return false
+    #     i+=4, curra+=4, currb+=4
+    #   return true
+    #
+    # registers:
+    #   i: ecx
+    #   asize: edx
+    #   curra: esi
+    #   currb: edi
+    #   i1: eax
+    #   i2: ebx
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = a
+    8b/-> *(ebp+8) 6/r32/esi
+    # edi = b
+    8b/-> *(ebp+0xc) 7/r32/edi
+    # var asize/edx: int = a->size
+    8b/-> *esi 2/r32/edx
+$array-equal?:sizes:
+    # if (asize != b->size) return false
+    39/compare *edi 2/r32/edx
+    75/jump-if-!= $array-equal?:false/disp8
+    # var curra/esi: (addr byte) = a->data
+    81 0/subop/add %esi 4/imm32
+    # var currb/edi: (addr byte) = b->data
+    81 0/subop/add %edi 4/imm32
+    # var i/ecx: int = 0
+    31/xor-with %ecx 1/r32/ecx
+    # var vala/eax: int
+    # var valb/ebx: int
+$array-equal?:loop:
+    # if (i >= asize) return true
+    39/compare %ecx 2/r32/edx
+    7d/jump-if->= $array-equal?:true/disp8
+    # var vala/eax: int = *curra
+    8b/-> *esi 0/r32/eax
+    # var valb/ebx: int = *currb
+    8b/-> *edi 3/r32/ebx
+    # if (vala != valb) return false
+    39/compare %eax 3/r32/ebx
+    75/jump-if-!= $array-equal?:false/disp8
+    # i += 4
+    81 0/subop/add %ecx 4/imm32
+    # currs += 4
+    81 0/subop/add %esi 4/imm32
+    # currb += 4
+    81 0/subop/add %edi 4/imm32
+    eb/jump $array-equal?:loop/disp8
+$array-equal?:true:
+    b8/copy-to-eax 1/imm32
+    eb/jump $array-equal?:end/disp8
+$array-equal?:false:
+    b8/copy-to-eax 0/imm32
+$array-equal?:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-empty-with-empty-array:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var ecx: (array _) = []
+    68/push 0/imm32/size
+    89/<- %ecx 4/r32/esp
+    # var edx: (array _) = []
+    68/push 0/imm32/size
+    89/<- %edx 4/r32/esp
+    #
+    (array-equal? %ecx %edx)  # => eax
+    (check-ints-equal %eax 1 "F - test-compare-empty-with-empty-array")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-empty-with-non-empty-array:  # also checks size-mismatch code path
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var ecx: (array int) = [1]
+    68/push 1/imm32
+    68/push 4/imm32/size
+    89/<- %ecx 4/r32/esp
+    # var edx: (array int) = []
+    68/push 0/imm32/size
+    89/<- %edx 4/r32/esp
+    #
+    (array-equal? %ecx %edx)  # => eax
+    (check-ints-equal %eax 0 "F - test-compare-empty-with-non-empty-array")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-equal-arrays:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var ecx: (array int) = [1, 2, 3]
+    68/push 3/imm32
+    68/push 2/imm32
+    68/push 1/imm32
+    68/push 0xc/imm32/size
+    89/<- %ecx 4/r32/esp
+    # var edx: (array int) = [1, 2, 3]
+    68/push 3/imm32
+    68/push 2/imm32
+    68/push 1/imm32
+    68/push 0xc/imm32/size
+    89/<- %edx 4/r32/esp
+    #
+    (array-equal? %ecx %edx)  # => eax
+    (check-ints-equal %eax 1 "F - test-compare-equal-arrays")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-compare-inequal-arrays-equal-sizes:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var ecx: (array int) = [1, 4, 3]
+    68/push 3/imm32
+    68/push 4/imm32
+    68/push 1/imm32
+    68/push 0xc/imm32/size
+    89/<- %ecx 4/r32/esp
+    # var edx: (array int) = [1, 2, 3]
+    68/push 3/imm32
+    68/push 2/imm32
+    68/push 1/imm32
+    68/push 0xc/imm32/size
+    89/<- %edx 4/r32/esp
+    #
+    (array-equal? %ecx %edx)  # => eax
+    (check-ints-equal %eax 0 "F - test-compare-inequal-arrays-equal-sizes")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+_parse-array-of-ints:  # ad: (addr allocation-descriptor), s: (addr array byte), out: (addr handle array int)
+    # pseudocode
+    #   end = &s->data[s->size]
+    #   curr = s->data
+    #   size = 0
+    #   while true
+    #     if (curr >= end) break
+    #     curr = skip-chars-matching-in-slice(curr, end, ' ')
+    #     if (curr >= end) break
+    #     curr = skip-chars-not-matching-in-slice(curr, end, ' ')
+    #     ++size
+    #   allocate-array(ad, size*4, out)
+    #   var slice: slice = {s->data, 0}
+    #   curr = lookup(out)->data
+    #   while true
+    #     if (slice->start >= end) break
+    #     slice->start = skip-chars-matching-in-slice(slice->start, end, ' ')
+    #     if (slice->start >= end) break
+    #     slice->end = skip-chars-not-matching-in-slice(slice->start, end, ' ')
+    #     *curr = parse-hex-int-from-slice(slice)
+    #     curr += 4
+    #     slice->start = slice->end
+    #   return result
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = s
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var curr/ecx: (addr byte) = s->data
+    8d/copy-address *(esi+4) 1/r32/ecx
+    # var end/edx: (addr byte) = &s->data[s->size]
+    # . edx = s->size
+    8b/-> *esi 2/r32/edx
+    # . edx += curr
+    01/add-to %edx 1/r32/ecx
+    # var size/ebx: int = 0
+    31/xor-with %ebx 3/r32/ebx
+$_parse-array-of-ints:loop1:
+    # if (curr >= end) break
+    39/compare %ecx 2/r32/edx
+    73/jump-if-addr>= $_parse-array-of-ints:break1/disp8
+    # curr = skip-chars-matching-in-slice(curr, end, ' ')
+    (skip-chars-matching-in-slice %ecx %edx 0x20)  # => eax
+    89/<- %ecx 0/r32/eax
+    # if (curr >= end) break
+    39/compare %ecx 2/r32/edx
+    73/jump-if-addr>= $_parse-array-of-ints:break1/disp8
+    # curr = skip-chars-not-matching-in-slice(curr, end, ' ')
+    (skip-chars-not-matching-in-slice %ecx %edx 0x20)  # => eax
+    89/<- %ecx 0/r32/eax
+    # size += 4
+    81 0/subop/add %ebx 4/imm32
+    eb/jump $_parse-array-of-ints:loop1/disp8
+$_parse-array-of-ints:break1:
+    (allocate-array *(ebp+8) %ebx *(ebp+0x10))
+$_parse-array-of-ints:pass2:
+    # var slice/edi: slice = {s->data, 0}
+    68/push 0/imm32/end
+    8d/copy-address *(esi+4) 7/r32/edi
+    57/push-edi
+    89/<- %edi 4/r32/esp
+    # curr = lookup(out)->data
+    8b/-> *(ebp+0x10) 0/r32/eax
+    (lookup *eax *(eax+4))  # => eax
+    8d/copy-address *(eax+4) 1/r32/ecx
+$_parse-array-of-ints:loop2:
+    # if (slice->start >= end) break
+    39/compare *edi 2/r32/edx
+    73/jump-if-addr>= $_parse-array-of-ints:end/disp8
+    # slice->start = skip-chars-matching-in-slice(slice->start, end, ' ')
+    (skip-chars-matching-in-slice *edi %edx 0x20)  # => eax
+    89/<- *edi 0/r32/eax
+    # if (slice->start >= end) break
+    39/compare *edi 2/r32/edx
+    73/jump-if-addr>= $_parse-array-of-ints:end/disp8
+    # slice->end = skip-chars-not-matching-in-slice(slice->start, end, ' ')
+    (skip-chars-not-matching-in-slice *edi %edx 0x20)  # => eax
+    89/<- *(edi+4) 0/r32/eax
+    # *curr = parse-hex-int-from-slice(slice)
+    (parse-hex-int-from-slice %edi)
+    89/<- *ecx 0/r32/eax
+    # curr += 4
+    81 0/subop/add %ecx 4/imm32
+    # slice->start = slice->end
+    8b/-> *(edi+4) 0/r32/eax
+    89/<- *edi 0/r32/eax
+    eb/jump $_parse-array-of-ints:loop2/disp8
+$_parse-array-of-ints:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-array-of-ints:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var h/esi: (handle array int)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %esi 4/r32/esp
+    # var ecx: (array int) = [1, 2, 3]
+    68/push 3/imm32
+    68/push 2/imm32
+    68/push 1/imm32
+    68/push 0xc/imm32/size
+    89/<- %ecx 4/r32/esp
+    #
+    (_parse-array-of-ints Heap "1 2 3" %esi)
+    (lookup *esi *(esi+4))  # => eax
+    (array-equal? %ecx %eax)  # => eax
+    (check-ints-equal %eax 1 "F - test-parse-array-of-ints")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-array-of-ints-empty:
+    # - empty string = empty array
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var h/esi: handle
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %esi 4/r32/esp
+    #
+    (_parse-array-of-ints Heap "" %esi)
+    (lookup *esi *(esi+4))  # => eax
+    (check-ints-equal *eax 0 "F - test-parse-array-of-ints-empty")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-array-of-ints-just-whitespace:
+    # - just whitespace = empty array
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var h/esi: handle
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %esi 4/r32/esp
+    #
+    (_parse-array-of-ints Heap Space %esi)
+    (lookup *esi *(esi+4))  # => eax
+    (check-ints-equal *eax 0 "F - test-parse-array-of-ints-just-whitespace")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-array-of-ints-extra-whitespace:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var h/esi: handle
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %esi 4/r32/esp
+    # var ecx: (array int) = [1, 2, 3]
+    68/push 3/imm32
+    68/push 2/imm32
+    68/push 1/imm32
+    68/push 0xc/imm32/size
+    89/<- %ecx 4/r32/esp
+    #
+    (_parse-array-of-ints Heap " 1 2  3  " %esi)
+    (lookup *esi *(esi+4))  # => eax
+    (array-equal? %ecx %eax)  # => eax
+    (check-ints-equal %eax 1 "F - test-parse-array-of-ints-extra-whitespace")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+parse-array-of-ints:  # s: (addr array byte), out: (addr handle array int)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (_parse-array-of-ints Heap *(ebp+8) *(ebp+0xc))
+$parse-array-of-ints:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# helper for later tests
+# compare an array with a string representation of an array literal
+check-array-equal:  # a: (addr array int), expected: (addr string), msg: (addr string)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    56/push-esi
+    # var h/esi: handle
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %esi 4/r32/esp
+    # var b/eax: (addr array int) = parse-array-of-ints(Heap, expected)
+    (parse-array-of-ints *(ebp+0xc) %esi)
+    (lookup *esi *(esi+4))  # => eax
+    #
+    (array-equal? *(ebp+8) %eax)
+    (check-ints-equal %eax 1 *(ebp+0x10))
+$check-array-equal:end:
+    # . restore registers
+    5e/pop-to-esi
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-check-array-equal:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var ecx: (array int) = [1, 2, 3]
+    68/push 3/imm32
+    68/push 2/imm32
+    68/push 1/imm32
+    68/push 0xc/imm32/size
+    89/<- %ecx 4/r32/esp
+    #
+    (check-array-equal %ecx "1 2 3" "F - test-check-array-equal")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+== data
+
+# length-prefixed string containing just a single space
+Space:  # (array byte)
+    # size: int
+    1/imm32
+    # data
+    20/space

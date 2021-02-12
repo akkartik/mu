@@ -67,5 +67,9 @@ sig stream-final s: (addr stream byte) -> _/eax: byte
 
 #sig copy-bytes src: (addr byte), dest: (addr byte), n: int
 sig copy-array-object src: (addr array _), dest-ah: (addr handle array _)
+sig array-equal? a: (addr array int), b: (addr array int) -> _/eax: boolean
+sig parse-array-of-ints s: (addr array byte), out: (addr handle array int)
+sig parse-array-of-decimal-ints s: (addr array byte), out: (addr handle array int)
+sig check-array-equal a: (addr array int), expected: (addr string), msg: (addr string)
 
 sig integer-divide a: int, b: int -> _/eax: int, _/edx: int
