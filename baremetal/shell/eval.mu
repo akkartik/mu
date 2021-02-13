@@ -177,10 +177,10 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
       {
         rewind-stream curr-stream
         var start/eax: byte <- stream-first curr-stream
-        compare start, 0x5b/[
+        compare start, 0x5b/open-bracket
         break-if-!=
         var end/eax: byte <- stream-final curr-stream
-        compare end, 0x5d/]
+        compare end, 0x5d/close-bracket
         break-if-!=
         # wastefully create a new input string to strip quotes
         var h: (handle array value)
@@ -266,7 +266,7 @@ fn test-eval-string {
   # in
   var in-storage: line
   var in/esi: (addr line) <- address in-storage
-  parse-line "\"abc\"", in
+  parse-line "\"abc\"", in  # TODO support spaces within strings
   # end
   var w-ah/eax: (addr handle word) <- get in, data
   var end-h: (handle word)
