@@ -54,7 +54,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
       ### if curr-stream is an operator, perform it
       {
         var is-add?/eax: boolean <- stream-data-equal? curr-stream, "+"
-        compare is-add?, 0
+        compare is-add?, 0/false
         break-if-=
         var _b/xmm0: float <- pop-number-from-value-stack out
         var b/xmm1: float <- copy _b
@@ -65,7 +65,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
       }
       {
         var is-sub?/eax: boolean <- stream-data-equal? curr-stream, "-"
-        compare is-sub?, 0
+        compare is-sub?, 0/false
         break-if-=
         var _b/xmm0: float <- pop-number-from-value-stack out
         var b/xmm1: float <- copy _b
@@ -76,7 +76,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
       }
       {
         var is-mul?/eax: boolean <- stream-data-equal? curr-stream, "*"
-        compare is-mul?, 0
+        compare is-mul?, 0/false
         break-if-=
         var _b/xmm0: float <- pop-number-from-value-stack out
         var b/xmm1: float <- copy _b
@@ -87,7 +87,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
       }
       {
         var is-div?/eax: boolean <- stream-data-equal? curr-stream, "/"
-        compare is-div?, 0
+        compare is-div?, 0/false
         break-if-=
         var _b/xmm0: float <- pop-number-from-value-stack out
         var b/xmm1: float <- copy _b
@@ -98,17 +98,65 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
       }
       {
         var is-sqrt?/eax: boolean <- stream-data-equal? curr-stream, "sqrt"
-        compare is-sqrt?, 0
+        compare is-sqrt?, 0/false
         break-if-=
         var a/xmm0: float <- pop-number-from-value-stack out
         a <- square-root a
         push-number-to-value-stack out, a
         break $evaluate:process-word
       }
+      {
+        var is-lesser?/eax: boolean <- stream-data-equal? curr-stream, "<"
+        compare is-lesser?, 0/false
+        break-if-=
+        var _b/xmm0: float <- pop-number-from-value-stack out
+        var b/xmm1: float <- copy _b
+        var a/xmm0: float <- pop-number-from-value-stack out
+        compare a, b
+        {
+          break-if-float<
+          push-boolean-to-value-stack out, 0/false
+          break $evaluate:process-word
+        }
+        push-boolean-to-value-stack out, 1/true
+        break $evaluate:process-word
+      }
+      {
+        var is-greater?/eax: boolean <- stream-data-equal? curr-stream, ">"
+        compare is-greater?, 0/false
+        break-if-=
+        var _b/xmm0: float <- pop-number-from-value-stack out
+        var b/xmm1: float <- copy _b
+        var a/xmm0: float <- pop-number-from-value-stack out
+        compare a, b
+        {
+          break-if-float>
+          push-boolean-to-value-stack out, 0/false
+          break $evaluate:process-word
+        }
+        push-boolean-to-value-stack out, 1/true
+        break $evaluate:process-word
+      }
+      {
+        var is-equal?/eax: boolean <- stream-data-equal? curr-stream, "=="  # TODO support non-numbers
+        compare is-equal?, 0/false
+        break-if-=
+        var _b/xmm0: float <- pop-number-from-value-stack out
+        var b/xmm1: float <- copy _b
+        var a/xmm0: float <- pop-number-from-value-stack out
+        compare a, b
+        {
+          break-if-=
+          push-boolean-to-value-stack out, 0/false
+          break $evaluate:process-word
+        }
+        push-boolean-to-value-stack out, 1/true
+        break $evaluate:process-word
+      }
       ## HACKS: we're trying to avoid turning this into Forth
       {
         var is-dup?/eax: boolean <- stream-data-equal? curr-stream, "dup"
-        compare is-dup?, 0
+        compare is-dup?, 0/false
         break-if-=
         # read src-val from out
         var out2/esi: (addr value-stack) <- copy out
@@ -133,7 +181,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
       }
       {
         var is-swap?/eax: boolean <- stream-data-equal? curr-stream, "swap"
-        compare is-swap?, 0
+        compare is-swap?, 0/false
         break-if-=
         # read top-val from out
         var out2/esi: (addr value-stack) <- copy out
@@ -290,4 +338,100 @@ fn test-eval-string {
   var text-ah/eax: (addr handle array byte) <- get v, text-data
   var text/eax: (addr array byte) <- lookup *text-ah
   check-strings-equal text, "abc", "F - test-eval-string result"
+}
+
+fn test-eval-compare-lesser {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 <", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-compare-lesser stack size"
+  var result/eax: boolean <- pop-boolean-from-value-stack out
+  check result, "F - test-eval-compare-lesser result"
+}
+
+fn test-eval-compare-greater {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "2 1 >", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-compare-greater stack size"
+  var result/eax: boolean <- pop-boolean-from-value-stack out
+  check result, "F - test-eval-compare-greater result"
+}
+
+fn test-eval-compare-equal-fails {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 ==", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-compare-equal-fails stack size"
+  var result/eax: boolean <- pop-boolean-from-value-stack out
+  check-not result, "F - test-eval-compare-equal-fails result"
+}
+
+fn test-eval-compare-equal {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "2 2 ==", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-compare-equal stack size"
+  var result/eax: boolean <- pop-boolean-from-value-stack out
+  check result, "F - test-eval-compare-equal result"
 }

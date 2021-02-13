@@ -67,6 +67,22 @@ fn push-array-to-value-stack _self: (addr value-stack), val: (handle array value
   increment *top-addr
 }
 
+fn push-boolean-to-value-stack _self: (addr value-stack), _val: boolean {
+  var self/esi: (addr value-stack) <- copy _self
+  var top-addr/ecx: (addr int) <- get self, top
+  var data-ah/edx: (addr handle array value) <- get self, data
+  var data/eax: (addr array value) <- lookup *data-ah
+  var top/edx: int <- copy *top-addr
+  var dest-offset/edx: (offset value) <- compute-offset data, top
+  var dest-addr/edx: (addr value) <- index data, dest-offset
+  var dest-addr2/eax: (addr boolean) <- get dest-addr, boolean-data
+  var val/esi: boolean <- copy _val
+  copy-to *dest-addr2, val
+  increment *top-addr
+  var type-addr/eax: (addr int) <- get dest-addr, type
+  copy-to *type-addr, 3/boolean
+}
+
 fn push-value-stack _self: (addr value-stack), val: (addr value) {
   var self/esi: (addr value-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
@@ -85,9 +101,7 @@ fn pop-number-from-value-stack _self: (addr value-stack) -> _/xmm0: float {
   {
     compare *top-addr, 0
     break-if->
-    var minus-one/eax: int <- copy -1
-    var minus-one-f/xmm0: float <- convert minus-one
-    return minus-one-f
+    abort "pop number: empty stack"
   }
   decrement *top-addr
   var data-ah/edx: (addr handle array value) <- get self, data
@@ -96,6 +110,24 @@ fn pop-number-from-value-stack _self: (addr value-stack) -> _/xmm0: float {
   var dest-offset/edx: (offset value) <- compute-offset data, top
   var result-addr/eax: (addr value) <- index data, dest-offset
   var result-addr2/eax: (addr float) <- get result-addr, number-data
+  return *result-addr2
+}
+
+fn pop-boolean-from-value-stack _self: (addr value-stack) -> _/eax: boolean {
+  var self/esi: (addr value-stack) <- copy _self
+  var top-addr/ecx: (addr int) <- get self, top
+  {
+    compare *top-addr, 0
+    break-if->
+    abort "pop boolean: empty stack"
+  }
+  decrement *top-addr
+  var data-ah/edx: (addr handle array value) <- get self, data
+  var data/eax: (addr array value) <- lookup *data-ah
+  var top/edx: int <- copy *top-addr
+  var dest-offset/edx: (offset value) <- compute-offset data, top
+  var result-addr/eax: (addr value) <- index data, dest-offset
+  var result-addr2/eax: (addr boolean) <- get result-addr, boolean-data
   return *result-addr2
 }
 
@@ -138,4 +170,15 @@ fn save-lines in-h: (handle array (handle array byte)), _out-ah: (addr handle ar
     i <- increment
     loop
   }
+}
+
+fn test-boolean {
+  var stack-storage: value-stack
+  var stack/esi: (addr value-stack) <- address stack-storage
+  push-boolean-to-value-stack stack, 0/false
+  var result/eax: boolean <- pop-boolean-from-value-stack stack
+  check-not result, "F - test-boolean/false"
+  push-boolean-to-value-stack stack, 1/true
+  var result/eax: boolean <- pop-boolean-from-value-stack stack
+  check result, "F - test-boolean/true"
 }

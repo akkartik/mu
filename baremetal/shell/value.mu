@@ -4,6 +4,7 @@ type value {
   number-data: float  # if type = 0
   text-data: (handle array byte)  # if type = 1
   array-data: (handle array value)  # if type = 2
+  boolean-data: boolean  # if type = 3
 }
 
 # top-level? is a hack just for numbers
@@ -27,6 +28,13 @@ fn render-value screen: (addr screen), _val: (addr value), x: int, y: int, top-l
     var _val-array/eax: (addr array value) <- lookup *val-ah
     var val-array/edx: (addr array value) <- copy _val-array
     var new-x/eax: int <- render-array screen, val-array, x, y
+    return new-x
+  }
+  compare *val-type, 3/boolean
+  {
+    break-if-!=
+    var val/eax: (addr boolean) <- get val, boolean-data
+    var new-x/eax: int <- render-boolean screen, *val, x, y
     return new-x
   }
   # render ints by default for now
@@ -231,4 +239,25 @@ fn test-render-array {
   var new-x/eax: int <- render-array screen, val-array, 0/x, 0/y
   check-screen-row screen, 0/y, "[0 1 2]", "F - test-render-array"
   check-ints-equal new-x, 7, "F - test-render-array: result"
+}
+
+fn initialize-value-with-boolean _self: (addr value), _b: boolean {
+  var self/esi: (addr value) <- copy _self
+  var type/eax: (addr int) <- get self, type
+  copy-to *type, 3/boolean
+  var dest/edi: (addr boolean) <- get self, boolean-data
+  var b/esi: boolean <- copy _b
+  copy-to *dest, b
+}
+
+fn render-boolean screen: (addr screen), val: boolean, x: int, y: int -> _/eax: int {
+  var new-x/eax: int <- copy 0
+  compare val, 0/false
+  {
+    break-if-=
+    new-x <- draw-text-rightward-over-full-screen screen, "true", new-x, y, 7/fg, 0/bg
+    return new-x
+  }
+  new-x <- draw-text-rightward-over-full-screen screen, "false", new-x, y, 7/fg, 0/bg
+  return new-x
 }
