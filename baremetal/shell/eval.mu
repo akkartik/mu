@@ -27,7 +27,7 @@
 #   If the final word is `break`, pop top of stack
 #
 #   `{` and `}` don't affect evaluation
-#   If the final word is `{` or `}`, clear stack
+#   If the final word is `{` or `}`, clear stack (to suppress rendering it)
 #
 #   If `->` in middle and top of stack is falsy, skip next word or group
 #
@@ -167,6 +167,30 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
           var next-word-ah/edx: (addr handle word) <- get curr, next
           var _curr/eax: (addr word) <- lookup *next-word-ah
           curr <- copy _curr
+        }
+        break $evaluate:process-word
+      }
+      {
+        var is-group-start?/eax: boolean <- stream-data-equal? curr-stream, "{"
+        compare is-group-start?, 0/false
+        break-if-=
+        # if this is the final word, clear the stack
+        compare curr, end
+        {
+          break-if-!=
+          clear-value-stack out
+        }
+        break $evaluate:process-word
+      }
+      {
+        var is-group-start?/eax: boolean <- stream-data-equal? curr-stream, "}"
+        compare is-group-start?, 0/false
+        break-if-=
+        # if this is the final word, clear the stack
+        compare curr, end
+        {
+          break-if-!=
+          clear-value-stack out
         }
         break $evaluate:process-word
       }
@@ -500,4 +524,74 @@ fn test-eval-conditional-skipped {
   #
   var len/eax: int <- value-stack-length out
   check-ints-equal len, 0, "F - test-eval-conditional-skipped stack size"
+}
+
+# curlies have no effect in isolation
+fn test-eval-group {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "{ 1 } 1 +", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-group stack size"
+  var n/xmm0: float <- pop-number-from-value-stack out
+  var n2/eax: int <- convert n
+  check-ints-equal n2, 2, "F - test-eval-group result"
+}
+
+fn test-eval-group-open-at-end {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 1 + {", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 0, "F - test-eval-group-open-at-end stack size"
+}
+
+fn test-eval-group-close-at-end {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "{ 1 1 + }", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 0, "F - test-eval-group-close-at-end stack size"
 }
