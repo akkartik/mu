@@ -40,7 +40,8 @@
 fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
   var line/eax: (addr line) <- copy _in
   var curr-ah/eax: (addr handle word) <- get line, data
-  var curr/eax: (addr word) <- lookup *curr-ah
+  var _curr/eax: (addr word) <- lookup *curr-ah
+  var curr/ecx: (addr word) <- copy _curr
   var curr-stream-storage: (stream byte 0x10)
   var curr-stream/edi: (addr stream byte) <- address curr-stream-storage
   clear-value-stack out
@@ -153,7 +154,23 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         push-boolean-to-value-stack out, 1/true
         break $evaluate:process-word
       }
-      ## HACKS: we're trying to avoid turning this into Forth
+      ## control flow
+      {
+        var is-conditional?/eax: boolean <- stream-data-equal? curr-stream, "->"
+        compare is-conditional?, 0/false
+        break-if-=
+        var a/eax: boolean <- pop-boolean-from-value-stack out
+        compare a, 0/false
+        {
+          break-if-!=
+          # if a is false, skip one word
+          var next-word-ah/edx: (addr handle word) <- get curr, next
+          var _curr/eax: (addr word) <- lookup *next-word-ah
+          curr <- copy _curr
+        }
+        break $evaluate:process-word
+      }
+      ## TEMPORARY HACKS; we're trying to avoid turning this into Forth
       {
         var is-dup?/eax: boolean <- stream-data-equal? curr-stream, "dup"
         compare is-dup?, 0/false
@@ -279,7 +296,8 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
     break-if-=
     # update
     var next-word-ah/edx: (addr handle word) <- get curr, next
-    curr <- lookup *next-word-ah
+    var _curr/eax: (addr word) <- lookup *next-word-ah
+    curr <- copy _curr
     #
     loop
   }
@@ -434,4 +452,52 @@ fn test-eval-compare-equal {
   check-ints-equal len, 1, "F - test-eval-compare-equal stack size"
   var result/eax: boolean <- pop-boolean-from-value-stack out
   check result, "F - test-eval-compare-equal result"
+}
+
+fn test-eval-conditional {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 < -> 3", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-conditional stack size"
+  var n/xmm0: float <- pop-number-from-value-stack out
+  var n2/eax: int <- convert n
+  check-ints-equal n2, 3, "F - test-eval-conditional result"
+}
+
+# if top of stack is false, `->` skips one word
+fn test-eval-conditional-skipped {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 > -> 3", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 0, "F - test-eval-conditional-skipped stack size"
 }
