@@ -261,3 +261,33 @@ fn test-eval-arithmetic {
   var n2/eax: int <- convert n
   check-ints-equal n2, 2, "F - test-eval-arithmetic result"
 }
+
+fn test-eval-string {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "\"abc\"", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  #
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-string stack size"
+  var out-data-ah/eax: (addr handle array value) <- get out, data
+  var out-data/eax: (addr array value) <- lookup *out-data-ah
+  var v/eax: (addr value) <- index out-data, 0
+  var type/ecx: (addr int) <- get v, type
+  check-ints-equal *type, 1/text, "F - test-eval-string type"
+  var text-ah/eax: (addr handle array byte) <- get v, text-data
+  var text/eax: (addr array byte) <- lookup *text-ah
+  check-strings-equal text, "abc", "F - test-eval-string result"
+}
