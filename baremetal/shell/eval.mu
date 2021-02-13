@@ -196,6 +196,18 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         }
         break $evaluate:process-word
       }
+      {
+        var is-group-start?/eax: boolean <- stream-data-equal? curr-stream, "break"
+        compare is-group-start?, 0/false
+        break-if-=
+        # scan ahead to containing '}'
+        var next-word: (handle word)
+        var next-word-ah/eax: (addr handle word) <- address next-word
+        skip-rest-of-group curr, end, next-word-ah
+        var _curr/eax: (addr word) <- lookup *next-word-ah
+        curr <- copy _curr
+        loop $evaluate:loop
+      }
       ## TEMPORARY HACKS; we're trying to avoid turning this into Forth
       {
         var is-dup?/eax: boolean <- stream-data-equal? curr-stream, "dup"
@@ -333,7 +345,7 @@ fn skip-word _curr: (addr word), end: (addr word), out: (addr handle word) {
   var curr/eax: (addr word) <- copy _curr
   var bracket-count/ecx: int <- copy 0
   var result-ah/esi: (addr handle word) <- get curr, next
-  $skip-word:loop: {
+  {
     var result-val/eax: (addr word) <- lookup *result-ah
     compare result-val, end
     break-if-=
@@ -355,7 +367,35 @@ fn skip-word _curr: (addr word), end: (addr word), out: (addr handle word) {
       }
     }
     compare bracket-count, 0
-    break-if-= $skip-word:loop
+    break-if-=
+    result-ah <- get result-val, next
+    loop
+  }
+  copy-object result-ah, out
+}
+
+fn skip-rest-of-group _curr: (addr word), end: (addr word), out: (addr handle word) {
+  var curr/eax: (addr word) <- copy _curr
+  var bracket-count/ecx: int <- copy 0
+  var result-ah/esi: (addr handle word) <- get curr, next
+  $skip-rest-of-group:loop: {
+    var result-val/eax: (addr word) <- lookup *result-ah
+    compare result-val, end
+    break-if-=
+    {
+      var open?/eax: boolean <- word-equal? result-val, "{"
+      compare open?, 0/false
+      break-if-=
+      bracket-count <- increment
+    }
+    {
+      var close?/eax: boolean <- word-equal? result-val, "}"
+      compare close?, 0/false
+      break-if-=
+      compare bracket-count, 0
+      break-if-= $skip-rest-of-group:loop
+      bracket-count <- decrement
+    }
     result-ah <- get result-val, next
     loop
   }
@@ -677,3 +717,54 @@ fn test-eval-conditional-skips-nested-group {
 
 # TODO: test error-handling on:
 #   1 2 > -> }
+
+# break skips to next `}`
+fn test-eval-break {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "3 { 4 break 5 } +", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # result is 3+4, not 4+5
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-break stack size"
+  var n/xmm0: float <- pop-number-from-value-stack out
+  var n2/eax: int <- convert n
+  check-ints-equal n2, 7, "F - test-eval-break result"
+}
+
+fn test-eval-break-nested {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "3 { 4 break { 5 } 6 } +", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # result is 3+4, skipping remaining numbers
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-break-nested stack size"
+  var n/xmm0: float <- pop-number-from-value-stack out
+  var n2/eax: int <- convert n
+  check-ints-equal n2, 7, "F - test-eval-break-nested result"
+}
