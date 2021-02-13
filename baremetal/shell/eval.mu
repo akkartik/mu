@@ -164,7 +164,9 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         {
           break-if-!=
           # if a is false, skip one word
-          var next-word-ah/edx: (addr handle word) <- get curr, next
+          var next-word: (handle word)
+          var next-word-ah/eax: (addr handle word) <- address next-word
+          skip-word curr, end, next-word-ah
           var _curr/eax: (addr word) <- lookup *next-word-ah
           curr <- copy _curr
         }
@@ -325,6 +327,39 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
     #
     loop
   }
+}
+
+fn skip-word _curr: (addr word), end: (addr word), out: (addr handle word) {
+  var curr/eax: (addr word) <- copy _curr
+  var bracket-count/ecx: int <- copy 0
+  var result-ah/esi: (addr handle word) <- get curr, next
+  $skip-word:loop: {
+    var result-val/eax: (addr word) <- lookup *result-ah
+    compare result-val, end
+    break-if-=
+    {
+      var open?/eax: boolean <- word-equal? result-val, "{"
+      compare open?, 0/false
+      break-if-=
+      bracket-count <- increment
+    }
+    {
+      var close?/eax: boolean <- word-equal? result-val, "}"
+      compare close?, 0/false
+      break-if-=
+      bracket-count <- decrement
+      compare bracket-count, 0
+      {
+        break-if->=
+        abort "'->' cannot be final word in a {} group"  # TODO: error-handling
+      }
+    }
+    compare bracket-count, 0
+    break-if-= $skip-word:loop
+    result-ah <- get result-val, next
+    loop
+  }
+  copy-object result-ah, out
 }
 
 fn test-eval-arithmetic {
@@ -595,3 +630,50 @@ fn test-eval-group-close-at-end {
   var len/eax: int <- value-stack-length out
   check-ints-equal len, 0, "F - test-eval-group-close-at-end stack size"
 }
+
+fn test-eval-conditional-skips-group {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 > -> { 3 } 9", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # out contains just the final sentinel '9'
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-conditional-skips-group stack size"
+}
+
+fn test-eval-conditional-skips-nested-group {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 > -> { { 3 } 4 } 9", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # out contains just the final sentinel '9'
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-conditional-skips-nested-group stack size"
+}
+
+# TODO: test error-handling on:
+#   1 2 > -> }
