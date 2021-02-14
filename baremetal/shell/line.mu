@@ -134,7 +134,7 @@ fn render-word-with-stack-and-cursor screen: (addr screen), line: (addr line), c
   }
   var new-x/eax: int <- render-word screen, curr-word, x, y, render-cursor?
   var new-x-saved/edx: int <- copy new-x
-  add-to y, 1/word-stack-spacing
+  add-to y, 2/word-stack-spacing
   # compute stack until word
   var stack-storage: value-stack
   var stack/edi: (addr value-stack) <- address stack-storage
@@ -167,7 +167,8 @@ fn test-render-line-with-stack-singleton {
   var new-y/ecx: int <- copy 0
   new-x, new-y <- render-line-with-stack screen, line, 0/x, 0/y, 0/no-cursor
   check-screen-row screen, 0/y, "1  ", "F - test-render-line-with-stack-singleton/0"
-  check-screen-row screen, 1/y, " 1 ", "F - test-render-line-with-stack-singleton/1"
+  check-screen-row screen, 1/y, "   ", "F - test-render-line-with-stack-singleton/1"
+  check-screen-row screen, 2/y, " 1 ", "F - test-render-line-with-stack-singleton/2"
   # not bothering to test hash colors for numbers
 }
 
@@ -185,9 +186,10 @@ fn test-render-line-with-stack {
   var new-y/ecx: int <- copy 0
   new-x, new-y <- render-line-with-stack screen, line, 0/x, 0/y, 0/no-cursor
   check-screen-row screen, 0/y, "1   2 ", "F - test-render-line-with-stack/0"
+  check-screen-row screen, 1/y, "       ", "F - test-render-line-with-stack/1"
                                 #___ ___
-  check-screen-row screen, 1/y, " 1   2 ", "F - test-render-line-with-stack/1"
-  check-screen-row screen, 2/y, "     1 ", "F - test-render-line-with-stack/2"
+  check-screen-row screen, 2/y, " 1   2 ", "F - test-render-line-with-stack/2"
+  check-screen-row screen, 3/y, "     1 ", "F - test-render-line-with-stack/3"
   # not bothering to test hash colors for numbers
 }
 
