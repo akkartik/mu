@@ -14,9 +14,12 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
+.SpecialChar { color: #d70000; }
 .subxComment { color: #005faf; }
 .subxS1Comment { color: #0000af; }
 .LineNr { }
+.subxH1Comment { color: #005faf; text-decoration: underline; }
+.subxMinorFunction { color: #875f5f; }
 .subxTest { color: #5f8700; }
 .subxFunction { color: #af5f00; text-decoration: underline; }
 .Constant { color: #008787; }
@@ -482,6 +485,212 @@ if ('onhashchange' in window) {
 <span id="L425" class="LineNr">425 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L426" class="LineNr">426 </span>    5d/pop-to-ebp
 <span id="L427" class="LineNr">427 </span>    c3/return
+<span id="L428" class="LineNr">428 </span>
+<span id="L429" class="LineNr">429 </span><span class="subxMinorFunction">_parse-array-of-decimal-ints</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), s: (addr array byte), out: (addr handle array int)</span>
+<span id="L430" class="LineNr">430 </span>    <span class="subxComment"># pseudocode</span>
+<span id="L431" class="LineNr">431 </span>    <span class="subxComment">#   end = &amp;s-&gt;data[s-&gt;size]</span>
+<span id="L432" class="LineNr">432 </span>    <span class="subxComment">#   curr = s-&gt;data</span>
+<span id="L433" class="LineNr">433 </span>    <span class="subxComment">#   size = 0</span>
+<span id="L434" class="LineNr">434 </span>    <span class="subxComment">#   while true</span>
+<span id="L435" class="LineNr">435 </span>    <span class="subxComment">#     if (curr &gt;= end) break</span>
+<span id="L436" class="LineNr">436 </span>    <span class="subxComment">#     curr = skip-chars-matching-in-slice(curr, end, ' ')</span>
+<span id="L437" class="LineNr">437 </span>    <span class="subxComment">#     if (curr &gt;= end) break</span>
+<span id="L438" class="LineNr">438 </span>    <span class="subxComment">#     curr = skip-chars-not-matching-in-slice(curr, end, ' ')</span>
+<span id="L439" class="LineNr">439 </span>    <span class="subxComment">#     ++size</span>
+<span id="L440" class="LineNr">440 </span>    <span class="subxComment">#   allocate-array(ad, size*4, out)</span>
+<span id="L441" class="LineNr">441 </span>    <span class="subxComment">#   var slice: slice = {s-&gt;data, 0}</span>
+<span id="L442" class="LineNr">442 </span>    <span class="subxComment">#   curr = lookup(out)-&gt;data</span>
+<span id="L443" class="LineNr">443 </span>    <span class="subxComment">#   while true</span>
+<span id="L444" class="LineNr">444 </span>    <span class="subxComment">#     if (slice-&gt;start &gt;= end) break</span>
+<span id="L445" class="LineNr">445 </span>    <span class="subxComment">#     slice-&gt;start = skip-chars-matching-in-slice(slice-&gt;start, end, ' ')</span>
+<span id="L446" class="LineNr">446 </span>    <span class="subxComment">#     if (slice-&gt;start &gt;= end) break</span>
+<span id="L447" class="LineNr">447 </span>    <span class="subxComment">#     slice-&gt;end = skip-chars-not-matching-in-slice(slice-&gt;start, end, ' ')</span>
+<span id="L448" class="LineNr">448 </span>    <span class="subxComment">#     *curr = parse-hex-int-from-slice(slice)</span>
+<span id="L449" class="LineNr">449 </span>    <span class="subxComment">#     curr += 4</span>
+<span id="L450" class="LineNr">450 </span>    <span class="subxComment">#     slice-&gt;start = slice-&gt;end</span>
+<span id="L451" class="LineNr">451 </span>    <span class="subxComment">#   return result</span>
+<span id="L452" class="LineNr">452 </span>    <span class="subxComment">#</span>
+<span id="L453" class="LineNr">453 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L454" class="LineNr">454 </span>    55/push-ebp
+<span id="L455" class="LineNr">455 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L456" class="LineNr">456 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L457" class="LineNr">457 </span>    50/push-eax
+<span id="L458" class="LineNr">458 </span>    51/push-ecx
+<span id="L459" class="LineNr">459 </span>    52/push-edx
+<span id="L460" class="LineNr">460 </span>    53/push-ebx
+<span id="L461" class="LineNr">461 </span>    56/push-esi
+<span id="L462" class="LineNr">462 </span>    57/push-edi
+<span id="L463" class="LineNr">463 </span>    <span class="subxComment"># esi = s</span>
+<span id="L464" class="LineNr">464 </span>    8b/-&gt; *(ebp+0xc) 6/r32/esi
+<span id="L465" class="LineNr">465 </span>    <span class="subxComment"># var curr/ecx: (addr byte) = s-&gt;data</span>
+<span id="L466" class="LineNr">466 </span>    8d/copy-address *(esi+4) 1/r32/ecx
+<span id="L467" class="LineNr">467 </span>    <span class="subxComment"># var end/edx: (addr byte) = &amp;s-&gt;data[s-&gt;size]</span>
+<span id="L468" class="LineNr">468 </span>    <span class="subxS1Comment"># . edx = s-&gt;size</span>
+<span id="L469" class="LineNr">469 </span>    8b/-&gt; *esi 2/r32/edx
+<span id="L470" class="LineNr">470 </span>    <span class="subxS1Comment"># . edx += curr</span>
+<span id="L471" class="LineNr">471 </span>    01/add-to %edx 1/r32/ecx
+<span id="L472" class="LineNr">472 </span>    <span class="subxComment"># var size/ebx: int = 0</span>
+<span id="L473" class="LineNr">473 </span>    31/xor-with %ebx 3/r32/ebx
+<span id="L474" class="LineNr">474 </span><span class="Constant">$_parse-array-of-decimal-ints:loop1</span>:
+<span id="L475" class="LineNr">475 </span>    <span class="subxComment"># if (curr &gt;= end) break</span>
+<span id="L476" class="LineNr">476 </span>    39/compare %ecx 2/r32/edx
+<span id="L477" class="LineNr">477 </span>    73/jump-if-addr&gt;= $_parse-array-of-decimal-ints:break1/disp8
+<span id="L478" class="LineNr">478 </span>    <span class="subxComment"># curr = skip-chars-matching-in-slice(curr, end, ' ')</span>
+<span id="L479" class="LineNr">479 </span>    (<a href='124next-token.subx.html#L804'>skip-chars-matching-in-slice</a> %ecx %edx 0x20)  <span class="subxComment"># =&gt; eax</span>
+<span id="L480" class="LineNr">480 </span>    89/&lt;- %ecx 0/r32/eax
+<span id="L481" class="LineNr">481 </span>    <span class="subxComment"># if (curr &gt;= end) break</span>
+<span id="L482" class="LineNr">482 </span>    39/compare %ecx 2/r32/edx
+<span id="L483" class="LineNr">483 </span>    73/jump-if-addr&gt;= $_parse-array-of-decimal-ints:break1/disp8
+<span id="L484" class="LineNr">484 </span>    <span class="subxComment"># curr = skip-chars-not-matching-in-slice(curr, end, ' ')</span>
+<span id="L485" class="LineNr">485 </span>    (<a href='124next-token.subx.html#L973'>skip-chars-not-matching-in-slice</a> %ecx %edx 0x20)  <span class="subxComment"># =&gt; eax</span>
+<span id="L486" class="LineNr">486 </span>    89/&lt;- %ecx 0/r32/eax
+<span id="L487" class="LineNr">487 </span>    <span class="subxComment"># size += 4</span>
+<span id="L488" class="LineNr">488 </span>    81 0/subop/add %ebx 4/imm32
+<span id="L489" class="LineNr">489 </span>    eb/jump $_parse-array-of-decimal-ints:loop1/disp8
+<span id="L490" class="LineNr">490 </span><span class="Constant">$_parse-array-of-decimal-ints:break1</span>:
+<span id="L491" class="LineNr">491 </span>    (<a href='120allocate.subx.html#L535'>allocate-array</a> *(ebp+8) %ebx *(ebp+0x10))
+<span id="L492" class="LineNr">492 </span><span class="Constant">$_parse-array-of-decimal-ints:pass2</span>:
+<span id="L493" class="LineNr">493 </span>    <span class="subxComment"># var slice/edi: slice = {s-&gt;data, 0}</span>
+<span id="L494" class="LineNr">494 </span>    68/push 0/imm32/end
+<span id="L495" class="LineNr">495 </span>    8d/copy-address *(esi+4) 7/r32/edi
+<span id="L496" class="LineNr">496 </span>    57/push-edi
+<span id="L497" class="LineNr">497 </span>    89/&lt;- %edi 4/r32/esp
+<span id="L498" class="LineNr">498 </span>    <span class="subxComment"># curr = lookup(out)-&gt;data</span>
+<span id="L499" class="LineNr">499 </span>    8b/-&gt; *(ebp+0x10) 0/r32/eax
+<span id="L500" class="LineNr">500 </span>    (<a href='120allocate.subx.html#L226'>lookup</a> *eax *(eax+4))  <span class="subxComment"># =&gt; eax</span>
+<span id="L501" class="LineNr">501 </span>    8d/copy-address *(eax+4) 1/r32/ecx
+<span id="L502" class="LineNr">502 </span><span class="Constant">$_parse-array-of-decimal-ints:loop2</span>:
+<span id="L503" class="LineNr">503 </span>    <span class="subxComment"># if (slice-&gt;start &gt;= end) break</span>
+<span id="L504" class="LineNr">504 </span>    39/compare *edi 2/r32/edx
+<span id="L505" class="LineNr">505 </span>    73/jump-if-addr&gt;= $_parse-array-of-decimal-ints:end/disp8
+<span id="L506" class="LineNr">506 </span>    <span class="subxComment"># slice-&gt;start = skip-chars-matching-in-slice(slice-&gt;start, end, ' ')</span>
+<span id="L507" class="LineNr">507 </span>    (<a href='124next-token.subx.html#L804'>skip-chars-matching-in-slice</a> *edi %edx 0x20)  <span class="subxComment"># =&gt; eax</span>
+<span id="L508" class="LineNr">508 </span>    89/&lt;- *edi 0/r32/eax
+<span id="L509" class="LineNr">509 </span>    <span class="subxComment"># if (slice-&gt;start &gt;= end) break</span>
+<span id="L510" class="LineNr">510 </span>    39/compare *edi 2/r32/edx
+<span id="L511" class="LineNr">511 </span>    73/jump-if-addr&gt;= $_parse-array-of-decimal-ints:end/disp8
+<span id="L512" class="LineNr">512 </span>    <span class="subxComment"># slice-&gt;end = skip-chars-not-matching-in-slice(slice-&gt;start, end, ' ')</span>
+<span id="L513" class="LineNr">513 </span>    (<a href='124next-token.subx.html#L973'>skip-chars-not-matching-in-slice</a> *edi %edx 0x20)  <span class="subxComment"># =&gt; eax</span>
+<span id="L514" class="LineNr">514 </span>    89/&lt;- *(edi+4) 0/r32/eax
+<span id="L515" class="LineNr">515 </span>    <span class="subxComment"># *curr = parse-hex-int-from-slice(slice)</span>
+<span id="L516" class="LineNr">516 </span>    (<a href='311decimal-int.subx.html#L4'>parse-decimal-int-from-slice</a> %edi)
+<span id="L517" class="LineNr">517 </span>    89/&lt;- *ecx 0/r32/eax
+<span id="L518" class="LineNr">518 </span>    <span class="subxComment"># curr += 4</span>
+<span id="L519" class="LineNr">519 </span>    81 0/subop/add %ecx 4/imm32
+<span id="L520" class="LineNr">520 </span>    <span class="subxComment"># slice-&gt;start = slice-&gt;end</span>
+<span id="L521" class="LineNr">521 </span>    8b/-&gt; *(edi+4) 0/r32/eax
+<span id="L522" class="LineNr">522 </span>    89/&lt;- *edi 0/r32/eax
+<span id="L523" class="LineNr">523 </span>    eb/jump $_parse-array-of-decimal-ints:loop2/disp8
+<span id="L524" class="LineNr">524 </span><span class="Constant">$_parse-array-of-decimal-ints:end</span>:
+<span id="L525" class="LineNr">525 </span>    <span class="subxS1Comment"># . reclaim locals</span>
+<span id="L526" class="LineNr">526 </span>    81 0/subop/add %esp 8/imm32
+<span id="L527" class="LineNr">527 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L528" class="LineNr">528 </span>    5f/pop-to-edi
+<span id="L529" class="LineNr">529 </span>    5e/pop-to-esi
+<span id="L530" class="LineNr">530 </span>    5b/pop-to-ebx
+<span id="L531" class="LineNr">531 </span>    5a/pop-to-edx
+<span id="L532" class="LineNr">532 </span>    59/pop-to-ecx
+<span id="L533" class="LineNr">533 </span>    58/pop-to-eax
+<span id="L534" class="LineNr">534 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L535" class="LineNr">535 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L536" class="LineNr">536 </span>    5d/pop-to-ebp
+<span id="L537" class="LineNr">537 </span>    c3/return
+<span id="L538" class="LineNr">538 </span>
+<span id="L539" class="LineNr">539 </span><span class="subxTest">test-parse-array-of-decimal-ints</span>:
+<span id="L540" class="LineNr">540 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L541" class="LineNr">541 </span>    55/push-ebp
+<span id="L542" class="LineNr">542 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L543" class="LineNr">543 </span>    <span class="subxComment"># var h/esi: (handle array int)</span>
+<span id="L544" class="LineNr">544 </span>    68/push 0/imm32
+<span id="L545" class="LineNr">545 </span>    68/push 0/imm32
+<span id="L546" class="LineNr">546 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L547" class="LineNr">547 </span>    <span class="subxComment"># var ecx: (array int) = [1, 2, 3]</span>
+<span id="L548" class="LineNr">548 </span>    68/push 3/imm32
+<span id="L549" class="LineNr">549 </span>    68/push 2/imm32
+<span id="L550" class="LineNr">550 </span>    68/push 1/imm32
+<span id="L551" class="LineNr">551 </span>    68/push 0xc/imm32/size
+<span id="L552" class="LineNr">552 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L553" class="LineNr">553 </span>    <span class="subxComment">#</span>
+<span id="L554" class="LineNr">554 </span>    (<a href='311decimal-int.subx.html#L429'>_parse-array-of-decimal-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="Constant">&quot;1 2 3&quot;</span> %esi)
+<span id="L555" class="LineNr">555 </span>    (<a href='120allocate.subx.html#L226'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
+<span id="L556" class="LineNr">556 </span>    (<a href='301array-equal.subx.html#L5'>array-equal?</a> %ecx %eax)  <span class="subxComment"># =&gt; eax</span>
+<span id="L557" class="LineNr">557 </span>    (<a href='502test.mu.html#L2'>check-ints-equal</a> %eax 1 <span class="Constant">&quot;F - test-parse-array-of-decimal-ints&quot;</span>)
+<span id="L558" class="LineNr">558 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L559" class="LineNr">559 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L560" class="LineNr">560 </span>    5d/pop-to-ebp
+<span id="L561" class="LineNr">561 </span>    c3/return
+<span id="L562" class="LineNr">562 </span>
+<span id="L563" class="LineNr">563 </span><span class="subxTest">test-parse-array-of-decimal-ints-empty</span>:
+<span id="L564" class="LineNr">564 </span>    <span class="subxH1Comment"># - empty string = empty array</span>
+<span id="L565" class="LineNr">565 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L566" class="LineNr">566 </span>    55/push-ebp
+<span id="L567" class="LineNr">567 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L568" class="LineNr">568 </span>    <span class="subxComment"># var h/esi: handle</span>
+<span id="L569" class="LineNr">569 </span>    68/push 0/imm32
+<span id="L570" class="LineNr">570 </span>    68/push 0/imm32
+<span id="L571" class="LineNr">571 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L572" class="LineNr">572 </span>    <span class="subxComment">#</span>
+<span id="L573" class="LineNr">573 </span>    (<a href='311decimal-int.subx.html#L429'>_parse-array-of-decimal-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="Constant">&quot;&quot;</span> %esi)
+<span id="L574" class="LineNr">574 </span>    (<a href='120allocate.subx.html#L226'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
+<span id="L575" class="LineNr">575 </span>    (<a href='502test.mu.html#L2'>check-ints-equal</a> *eax 0 <span class="Constant">&quot;F - test-parse-array-of-decimal-ints-empty&quot;</span>)
+<span id="L576" class="LineNr">576 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L577" class="LineNr">577 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L578" class="LineNr">578 </span>    5d/pop-to-ebp
+<span id="L579" class="LineNr">579 </span>    c3/return
+<span id="L580" class="LineNr">580 </span>
+<span id="L581" class="LineNr">581 </span><span class="subxTest">test-parse-array-of-decimal-ints-just-whitespace</span>:
+<span id="L582" class="LineNr">582 </span>    <span class="subxH1Comment"># - just whitespace = empty array</span>
+<span id="L583" class="LineNr">583 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L584" class="LineNr">584 </span>    55/push-ebp
+<span id="L585" class="LineNr">585 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L586" class="LineNr">586 </span>    <span class="subxComment"># var h/esi: handle</span>
+<span id="L587" class="LineNr">587 </span>    68/push 0/imm32
+<span id="L588" class="LineNr">588 </span>    68/push 0/imm32
+<span id="L589" class="LineNr">589 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L590" class="LineNr">590 </span>    <span class="subxComment">#</span>
+<span id="L591" class="LineNr">591 </span>    (<a href='311decimal-int.subx.html#L429'>_parse-array-of-decimal-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="SpecialChar"><a href='301array-equal.subx.html#L428'>Space</a></span> %esi)
+<span id="L592" class="LineNr">592 </span>    (<a href='120allocate.subx.html#L226'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
+<span id="L593" class="LineNr">593 </span>    (<a href='502test.mu.html#L2'>check-ints-equal</a> *eax 0 <span class="Constant">&quot;F - test-parse-array-of-decimal-ints-just-whitespace&quot;</span>)
+<span id="L594" class="LineNr">594 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L595" class="LineNr">595 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L596" class="LineNr">596 </span>    5d/pop-to-ebp
+<span id="L597" class="LineNr">597 </span>    c3/return
+<span id="L598" class="LineNr">598 </span>
+<span id="L599" class="LineNr">599 </span><span class="subxTest">test-parse-array-of-decimal-ints-extra-whitespace</span>:
+<span id="L600" class="LineNr">600 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L601" class="LineNr">601 </span>    55/push-ebp
+<span id="L602" class="LineNr">602 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L603" class="LineNr">603 </span>    <span class="subxComment"># var h/esi: handle</span>
+<span id="L604" class="LineNr">604 </span>    68/push 0/imm32
+<span id="L605" class="LineNr">605 </span>    68/push 0/imm32
+<span id="L606" class="LineNr">606 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L607" class="LineNr">607 </span>    <span class="subxComment"># var ecx: (array int) = [1, 2, 3]</span>
+<span id="L608" class="LineNr">608 </span>    68/push 3/imm32
+<span id="L609" class="LineNr">609 </span>    68/push 2/imm32
+<span id="L610" class="LineNr">610 </span>    68/push 1/imm32
+<span id="L611" class="LineNr">611 </span>    68/push 0xc/imm32/size
+<span id="L612" class="LineNr">612 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L613" class="LineNr">613 </span>    <span class="subxComment">#</span>
+<span id="L614" class="LineNr">614 </span>    (<a href='311decimal-int.subx.html#L429'>_parse-array-of-decimal-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> <span class="Constant">&quot; 1 2  3  &quot;</span> %esi)
+<span id="L615" class="LineNr">615 </span>    (<a href='120allocate.subx.html#L226'>lookup</a> *esi *(esi+4))  <span class="subxComment"># =&gt; eax</span>
+<span id="L616" class="LineNr">616 </span>    (<a href='301array-equal.subx.html#L5'>array-equal?</a> %ecx %eax)  <span class="subxComment"># =&gt; eax</span>
+<span id="L617" class="LineNr">617 </span>    (<a href='502test.mu.html#L2'>check-ints-equal</a> %eax 1 <span class="Constant">&quot;F - test-parse-array-of-decimal-ints-extra-whitespace&quot;</span>)
+<span id="L618" class="LineNr">618 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L619" class="LineNr">619 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L620" class="LineNr">620 </span>    5d/pop-to-ebp
+<span id="L621" class="LineNr">621 </span>    c3/return
+<span id="L622" class="LineNr">622 </span>
+<span id="L623" class="LineNr">623 </span><span class="subxFunction">parse-array-of-decimal-ints</span>:  <span class="subxComment"># s: (addr array byte), out: (addr handle array int)</span>
+<span id="L624" class="LineNr">624 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L625" class="LineNr">625 </span>    55/push-ebp
+<span id="L626" class="LineNr">626 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L627" class="LineNr">627 </span>    <span class="subxComment">#</span>
+<span id="L628" class="LineNr">628 </span>    (<a href='311decimal-int.subx.html#L429'>_parse-array-of-decimal-ints</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> *(ebp+8) *(ebp+0xc))
+<span id="L629" class="LineNr">629 </span><span class="Constant">$parse-array-of-decimal-ints:end</span>:
+<span id="L630" class="LineNr">630 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L631" class="LineNr">631 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L632" class="LineNr">632 </span>    5d/pop-to-ebp
+<span id="L633" class="LineNr">633 </span>    c3/return
 </pre>
 </body>
 </html>

@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - baremetal/314divide.subx</title>
+<meta name="Generator" content="Vim/8.1">
+<meta name="plugin-version" content="vim8.1_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal-light">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.subxComment { color: #005faf; }
+.subxS1Comment { color: #0000af; }
+.LineNr { }
+.subxFunction { color: #af5f00; text-decoration: underline; }
+.Constant { color: #008787; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/main/baremetal/314divide.subx'>https://github.com/akkartik/mu/blob/main/baremetal/314divide.subx</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span>== code
+<span id="L2" class="LineNr"> 2 </span>
+<span id="L3" class="LineNr"> 3 </span><span class="subxFunction">integer-divide</span>:  <span class="subxComment"># a: int, b: int -&gt; quotient/eax: int, remainder/edx: int</span>
+<span id="L4" class="LineNr"> 4 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L5" class="LineNr"> 5 </span>    55/push-ebp
+<span id="L6" class="LineNr"> 6 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L7" class="LineNr"> 7 </span>    <span class="subxComment"># eax = a</span>
+<span id="L8" class="LineNr"> 8 </span>    8b/-&gt; *(ebp+8) 0/r32/eax
+<span id="L9" class="LineNr"> 9 </span>    <span class="subxComment"># edx = all 0s or all 1s</span>
+<span id="L10" class="LineNr">10 </span>    99/sign-extend-eax-into-edx
+<span id="L11" class="LineNr">11 </span>    <span class="subxComment"># quotient, remainder = divide eax by b</span>
+<span id="L12" class="LineNr">12 </span>    f7 7/subop/divide-eax-edx-by *(ebp+0xc)
+<span id="L13" class="LineNr">13 </span><span class="Constant">$integer-divide:end</span>:
+<span id="L14" class="LineNr">14 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L15" class="LineNr">15 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L16" class="LineNr">16 </span>    5d/pop-to-ebp
+<span id="L17" class="LineNr">17 </span>    c3/return
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
