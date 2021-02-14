@@ -11,6 +11,8 @@ fn initialize-line _line: (addr line) {
   var line/esi: (addr line) <- copy _line
   var word-ah/eax: (addr handle word) <- get line, data
   allocate word-ah
+  var cursor-ah/ecx: (addr handle word) <- get line, cursor
+  copy-object word-ah, cursor-ah
   var word/eax: (addr word) <- lookup *word-ah
   initialize-word word
 }
@@ -163,4 +165,36 @@ fn test-render-line-with-stack-singleton {
   check-screen-row screen, 0/y, "1  ", "F - test-render-line-with-stack-singleton/0"
   check-screen-row screen, 1/y, " 1 ", "F - test-render-line-with-stack-singleton/1"
   # not bothering to test hash colors for numbers
+}
+
+fn edit-line _self: (addr line), key: byte {
+  var self/esi: (addr line) <- copy _self
+  var cursor-word-ah/eax: (addr handle word) <- get self, cursor
+  var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
+  var cursor-word/ecx: (addr word) <- copy _cursor-word
+  # otherwise insert key within current word
+  var g/edx: grapheme <- copy key
+  add-grapheme-to-word cursor-word, g
+  # silently ignore other hotkeys
+}
+
+fn main {
+  var line-storage: line
+  var line/esi: (addr line) <- address line-storage
+  initialize-line line
+  $main:loop: {
+    clear-screen 0/screen
+    var dummy1/eax: int <- copy 0
+    var dummy2/ecx: int <- copy 0
+    dummy1, dummy2 <- render-line-with-stack 0/screen, line, 2/x, 2/y, 1/show-cursor
+    {
+      var key/eax: byte <- read-key 0/keyboard
+      compare key, 0
+      loop-if-=
+      compare key, 0x71/q
+      break-if-= $main:loop
+      edit-line line, key
+    }
+    loop
+  }
 }
