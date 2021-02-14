@@ -238,12 +238,9 @@ fn main {
   render grid1
   {
     var key/eax: byte <- read-key 0/keyboard
-#?     # press key to step
-#?     compare key, 0
-#?     loop-if-=
-    # press key to quit
     compare key, 0
-    break-if-!=
+#?     loop-if-=  # press key to step
+    break-if-!=  # press key to quit
     # iter: grid1 -> grid2
     step grid1, grid2
     render grid2
