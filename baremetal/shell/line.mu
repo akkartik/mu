@@ -113,6 +113,7 @@ fn render-line-with-stack screen: (addr screen), _line: (addr line), x: int, y: 
       break-if-<=
       new-y <- copy curr-y
     }
+    new-x <- add 1/inter-word-spacing
     # update
     var next-word-ah/eax: (addr handle word) <- get curr-word, next
     var next-word/eax: (addr word) <- lookup *next-word-ah
@@ -169,9 +170,17 @@ fn test-render-line-with-stack-singleton {
 
 fn edit-line _self: (addr line), key: byte {
   var self/esi: (addr line) <- copy _self
-  var cursor-word-ah/eax: (addr handle word) <- get self, cursor
+  var cursor-word-ah/edx: (addr handle word) <- get self, cursor
   var _cursor-word/eax: (addr word) <- lookup *cursor-word-ah
   var cursor-word/ecx: (addr word) <- copy _cursor-word
+  compare key, 0x20/space
+  $edit-line:space: {
+    break-if-!=
+    append-word cursor-word-ah
+    var next-word-ah/eax: (addr handle word) <- get cursor-word, next
+    copy-object next-word-ah, cursor-word-ah
+    return
+  }
   # otherwise insert key within current word
   var g/edx: grapheme <- copy key
   add-grapheme-to-word cursor-word, g
