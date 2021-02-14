@@ -180,3 +180,30 @@ fn dump-stack _self: (addr value-stack) {
     loop
   }
 }
+
+fn render-value-stack screen: (addr screen), _self: (addr value-stack), x: int, y: int -> _/eax: int, _/ecx: int {
+  var self/ecx: (addr value-stack) <- copy _self
+  var data-ah/eax: (addr handle array value) <- get self, data
+  var _data/eax: (addr array value) <- lookup *data-ah
+  var data/edi: (addr array value) <- copy _data
+  var top-addr/eax: (addr int) <- get self, top
+  var curr-idx/ecx: int <- copy *top-addr
+  curr-idx <- decrement
+  var new-x/edx: int <- copy 0
+  {
+    compare curr-idx, 0
+    break-if-<
+    var dest-offset/eax: (offset value) <- compute-offset data, curr-idx
+    var curr/eax: (addr value) <- index data, dest-offset
+    var curr-x/eax: int <- render-value screen, curr, x, y, 1/top-level
+    {
+      compare curr-x, new-x
+      break-if-<=
+      new-x <- copy curr-x
+    }
+    curr-idx <- decrement
+    increment y
+    loop
+  }
+  return new-x, y
+}
