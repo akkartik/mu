@@ -36,6 +36,22 @@ fn push-number-to-value-stack _self: (addr value-stack), _val: float {
   copy-to *type-addr, 0/number
 }
 
+fn push-int-to-value-stack _self: (addr value-stack), _val: int {
+  var self/esi: (addr value-stack) <- copy _self
+  var top-addr/ecx: (addr int) <- get self, top
+  var data-ah/edx: (addr handle array value) <- get self, data
+  var data/eax: (addr array value) <- lookup *data-ah
+  var top/edx: int <- copy *top-addr
+  var dest-offset/edx: (offset value) <- compute-offset data, top
+  var dest-addr/edx: (addr value) <- index data, dest-offset
+  var dest-addr2/eax: (addr float) <- get dest-addr, number-data
+  var val/xmm0: float <- convert _val
+  copy-to *dest-addr2, val
+  increment *top-addr
+  var type-addr/eax: (addr int) <- get dest-addr, type
+  copy-to *type-addr, 0/number
+}
+
 fn push-string-to-value-stack _self: (addr value-stack), val: (handle array byte) {
   var self/esi: (addr value-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
@@ -206,4 +222,20 @@ fn render-value-stack screen: (addr screen), _self: (addr value-stack), x: int, 
     loop
   }
   return new-x, y
+}
+
+fn test-render-value-stack {
+  var stack-storage: value-stack
+  var stack/esi: (addr value-stack) <- address stack-storage
+  push-int-to-value-stack stack, 3
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x20, 4
+  #
+  var final-x/eax: int <- copy 0
+  var final-y/ecx: int <- copy 0
+  final-x, final-y <- render-value-stack screen, stack, 0/x, 0/y
+  check-ints-equal final-y, 1, "F - test-render-value-stack y"
+  check-ints-equal final-x, 3, "F - test-render-value-stack x"
 }

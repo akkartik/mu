@@ -107,9 +107,9 @@ fn screen-cell-index screen-on-stack: (addr screen), x: int, y: int -> _/ecx: in
     break-if-<
     abort "tried to print out of screen bounds"
   }
-  var height-addr/eax: (addr int) <- get screen, height
+  var width-addr/eax: (addr int) <- get screen, width
   var result/ecx: int <- copy y
-  result <- multiply *height-addr
+  result <- multiply *width-addr
   result <- add x
   return result
 }

@@ -142,11 +142,14 @@ fn render-word-with-stack-and-cursor screen: (addr screen), line: (addr line), c
   # render stack
   var new-y/ecx: int <- copy 0
   new-x, new-y <- render-value-stack screen, stack, x, y
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, new-x, 0xc/fg, 0/bg
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, new-y, 3/fg, 0/bg
   compare new-x, new-x-saved
   {
-    break-if-<=
+    break-if->=
     new-x <- copy new-x-saved
   }
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, new-x, 7/fg, 0/bg
   return new-x, new-y
 }
 
@@ -165,6 +168,26 @@ fn test-render-line-with-stack-singleton {
   new-x, new-y <- render-line-with-stack screen, line, 0/x, 0/y, 0/no-cursor
   check-screen-row screen, 0/y, "1  ", "F - test-render-line-with-stack-singleton/0"
   check-screen-row screen, 1/y, " 1 ", "F - test-render-line-with-stack-singleton/1"
+  # not bothering to test hash colors for numbers
+}
+
+fn test-render-line-with-stack {
+  # line = [1 2]
+  var line-storage: line
+  var line/esi: (addr line) <- address line-storage
+  parse-line "1 2", line
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x20, 4
+  #
+  var new-x/eax: int <- copy 0
+  var new-y/ecx: int <- copy 0
+  new-x, new-y <- render-line-with-stack screen, line, 0/x, 0/y, 0/no-cursor
+  check-screen-row screen, 0/y, "1   2 ", "F - test-render-line-with-stack/0"
+                                #___ ___
+  check-screen-row screen, 1/y, " 1   2 ", "F - test-render-line-with-stack/1"
+  check-screen-row screen, 2/y, "     1 ", "F - test-render-line-with-stack/2"
   # not bothering to test hash colors for numbers
 }
 
