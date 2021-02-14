@@ -38,20 +38,34 @@
 #     If no containing `}`, clear stack (error)
 
 fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
+  clear-value-stack out
   var line/eax: (addr line) <- copy _in
   var curr-ah/eax: (addr handle word) <- get line, data
-  var _curr/eax: (addr word) <- lookup *curr-ah
+  var curr/eax: (addr word) <- lookup *curr-ah
+  evaluate-sub curr, end, out, 1/top-level
+}
+
+fn evaluate-sub _curr: (addr word), end: (addr word), out: (addr value-stack), top-level?: boolean {
   var curr/ecx: (addr word) <- copy _curr
   var curr-stream-storage: (stream byte 0x10)
   var curr-stream/edi: (addr stream byte) <- address curr-stream-storage
-  clear-value-stack out
-  $evaluate:loop: {
+  $evaluate-sub:loop: {
     # safety net (should never hit)
     compare curr, 0
     break-if-=
     # pull next word in for parsing
     emit-word curr, curr-stream
-    $evaluate:process-word: {
+#?     {
+#?       clear-screen 0/screen
+#?       dump-stack out
+#?       var foo/eax: int <- render-word 0/screen, curr, 0/x, 0/y, 0/no-cursor
+#?       {
+#?         var key/eax: byte <- read-key 0/keyboard
+#?         compare key, 0
+#?         loop-if-=
+#?       }
+#?     }
+    $evaluate-sub:process-word: {
       ### if curr-stream is an operator, perform it
       {
         var is-add?/eax: boolean <- stream-data-equal? curr-stream, "+"
@@ -62,7 +76,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         var a/xmm0: float <- pop-number-from-value-stack out
         a <- add b
         push-number-to-value-stack out, a
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       {
         var is-sub?/eax: boolean <- stream-data-equal? curr-stream, "-"
@@ -73,7 +87,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         var a/xmm0: float <- pop-number-from-value-stack out
         a <- subtract b
         push-number-to-value-stack out, a
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       {
         var is-mul?/eax: boolean <- stream-data-equal? curr-stream, "*"
@@ -84,7 +98,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         var a/xmm0: float <- pop-number-from-value-stack out
         a <- multiply b
         push-number-to-value-stack out, a
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       {
         var is-div?/eax: boolean <- stream-data-equal? curr-stream, "/"
@@ -95,7 +109,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         var a/xmm0: float <- pop-number-from-value-stack out
         a <- divide b
         push-number-to-value-stack out, a
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       {
         var is-sqrt?/eax: boolean <- stream-data-equal? curr-stream, "sqrt"
@@ -104,7 +118,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         var a/xmm0: float <- pop-number-from-value-stack out
         a <- square-root a
         push-number-to-value-stack out, a
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       {
         var is-lesser?/eax: boolean <- stream-data-equal? curr-stream, "<"
@@ -117,10 +131,10 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         {
           break-if-float<
           push-boolean-to-value-stack out, 0/false
-          break $evaluate:process-word
+          break $evaluate-sub:process-word
         }
         push-boolean-to-value-stack out, 1/true
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       {
         var is-greater?/eax: boolean <- stream-data-equal? curr-stream, ">"
@@ -133,10 +147,10 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         {
           break-if-float>
           push-boolean-to-value-stack out, 0/false
-          break $evaluate:process-word
+          break $evaluate-sub:process-word
         }
         push-boolean-to-value-stack out, 1/true
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       {
         var is-equal?/eax: boolean <- stream-data-equal? curr-stream, "=="  # TODO support non-numbers
@@ -149,10 +163,10 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         {
           break-if-=
           push-boolean-to-value-stack out, 0/false
-          break $evaluate:process-word
+          break $evaluate-sub:process-word
         }
         push-boolean-to-value-stack out, 1/true
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       ## control flow
       {
@@ -170,35 +184,35 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
           var _curr/eax: (addr word) <- lookup *next-word-ah
           curr <- copy _curr
         }
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       {
         var is-group-start?/eax: boolean <- stream-data-equal? curr-stream, "{"
         compare is-group-start?, 0/false
         break-if-=
-        # if this is the final word, clear the stack
+        # if top-level? and this is the final word, clear the stack
+        compare top-level?, 0/false
+        break-if-= $evaluate-sub:process-word
         compare curr, end
-        {
-          break-if-!=
-          clear-value-stack out
-        }
-        break $evaluate:process-word
+        break-if-!= $evaluate-sub:process-word
+        clear-value-stack out
+        break $evaluate-sub:process-word
       }
       {
-        var is-group-start?/eax: boolean <- stream-data-equal? curr-stream, "}"
-        compare is-group-start?, 0/false
+        var is-group-end?/eax: boolean <- stream-data-equal? curr-stream, "}"
+        compare is-group-end?, 0/false
         break-if-=
-        # if this is the final word, clear the stack
+        # if top-level? and this is the final word, clear the stack
+        compare top-level?, 0/false
+        break-if-= $evaluate-sub:process-word
         compare curr, end
-        {
-          break-if-!=
-          clear-value-stack out
-        }
-        break $evaluate:process-word
+        break-if-!= $evaluate-sub:process-word
+        clear-value-stack out
+        break $evaluate-sub:process-word
       }
       {
-        var is-group-start?/eax: boolean <- stream-data-equal? curr-stream, "break"
-        compare is-group-start?, 0/false
+        var is-break?/eax: boolean <- stream-data-equal? curr-stream, "break"
+        compare is-break?, 0/false
         break-if-=
         # scan ahead to containing '}'
         var next-word: (handle word)
@@ -206,7 +220,27 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         skip-rest-of-group curr, end, next-word-ah
         var _curr/eax: (addr word) <- lookup *next-word-ah
         curr <- copy _curr
-        loop $evaluate:loop
+        loop $evaluate-sub:loop
+      }
+      {
+        var is-loop?/eax: boolean <- stream-data-equal? curr-stream, "loop"
+        compare is-loop?, 0/false
+        break-if-=
+        # scan back to containing '{'
+        var open-word: (handle word)
+        var open-word-ah/edx: (addr handle word) <- address open-word
+        scan-to-start-of-group curr, end, open-word-ah
+        # scan ahead to the containing '}'; record that as next word to eval at
+        var close-word: (handle word)
+        var close-word-ah/ebx: (addr handle word) <- address close-word
+        skip-rest-of-group curr, end, close-word-ah
+        var _curr/eax: (addr word) <- lookup *close-word-ah
+        curr <- copy _curr
+        # now eval until getting there
+        # TODO: can 'curr' be after 'end' at this point?
+        var open/eax: (addr word) <- lookup *open-word-ah
+        evaluate-sub open, curr, out, 0/nested
+        loop $evaluate-sub:loop
       }
       ## TEMPORARY HACKS; we're trying to avoid turning this into Forth
       {
@@ -232,7 +266,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         # commit
         var top-addr/ecx: (addr int) <- get out2, top
         increment *top-addr
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       {
         var is-swap?/eax: boolean <- stream-data-equal? curr-stream, "swap"
@@ -259,7 +293,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         copy-object top-val, tmp-a
         copy-object pen-top-val, top-val
         copy-object tmp-a, pen-top-val
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       ### if the word starts with a quote and ends with a quote, turn it into a string
       {
@@ -274,7 +308,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
         var s/eax: (addr handle array byte) <- address h
         unquote-stream-to-array curr-stream, s  # leak
         push-string-to-value-stack out, *s
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       ### if the word starts with a '[' and ends with a ']', turn it into an array
       {
@@ -320,7 +354,7 @@ fn evaluate _in: (addr line), end: (addr word), out: (addr value-stack) {
           i <- increment
           loop
         }
-        break $evaluate:process-word
+        break $evaluate-sub:process-word
       }
       ### otherwise assume it's a literal number and push it (can't parse floats yet)
       {
@@ -397,6 +431,34 @@ fn skip-rest-of-group _curr: (addr word), end: (addr word), out: (addr handle wo
       bracket-count <- decrement
     }
     result-ah <- get result-val, next
+    loop
+  }
+  copy-object result-ah, out
+}
+
+fn scan-to-start-of-group _curr: (addr word), end: (addr word), out: (addr handle word) {
+  var curr/eax: (addr word) <- copy _curr
+  var bracket-count/ecx: int <- copy 0
+  var result-ah/esi: (addr handle word) <- get curr, prev
+  $scan-to-start-of-group:loop: {
+    var result-val/eax: (addr word) <- lookup *result-ah
+    compare result-val, end
+    break-if-=
+    {
+      var open?/eax: boolean <- word-equal? result-val, "{"
+      compare open?, 0/false
+      break-if-=
+      compare bracket-count, 0
+      break-if-= $scan-to-start-of-group:loop
+      bracket-count <- increment
+    }
+    {
+      var close?/eax: boolean <- word-equal? result-val, "}"
+      compare close?, 0/false
+      break-if-=
+      bracket-count <- decrement
+    }
+    result-ah <- get result-val, prev
     loop
   }
   copy-object result-ah, out
@@ -718,7 +780,7 @@ fn test-eval-conditional-skips-nested-group {
 # TODO: test error-handling on:
 #   1 2 > -> }
 
-# break skips to next `}`
+# break skips to next containing `}`
 fn test-eval-break {
   # in
   var in-storage: line
@@ -767,4 +829,119 @@ fn test-eval-break-nested {
   var n/xmm0: float <- pop-number-from-value-stack out
   var n2/eax: int <- convert n
   check-ints-equal n2, 7, "F - test-eval-break-nested result"
+}
+
+#? 1 2 3 4 6 5 { <       -> break loop }
+#?  1 2 3 4 6 5   false            2
+#?    1 2 3 4 6   4                1
+#?      1 2 3 4   3
+#?        1 2 3   2
+#?          1 2   1
+#?            1
+
+#? 1 2 3 4 { 3 ==     -> return loop }
+#?  1 2 3 4   3 false            2      => 3
+#?    1 2 3   4 3                1
+#?      1 2   3 2
+#?        1   2 1
+#?            1
+
+# loop skips to previous containing `{` and continues evaluating until control
+# leaves the group
+fn test-eval-loop {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 4 3 { < -> break loop } 9", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # evaluation order: 1 2 4 3 { < -> loop { < -> break 9
+  # stack contents: 9
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 1, "F - test-eval-loop stack size"
+}
+
+fn test-eval-loop-2 {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 4 3 { 4 == -> break loop } 9", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # evaluation order: 1 2 4 3 { 4 == -> loop { 4 == -> break 9
+  # stack contents: 1 2 9
+#?   dump-stack out
+  var len/eax: int <- value-stack-length out
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, len, 0xc/red, 0/black
+  check-ints-equal len, 3, "F - test-eval-loop-2 stack size"
+}
+
+fn test-eval-loop-conditional {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 3 { 3 == -> loop } 9", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # evaluation order: 1 2 3 { 3 == -> loop { 3 == -> 9
+  # stack contents: 1 9
+#?   dump-stack out
+  var len/eax: int <- value-stack-length out
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, len, 0xc/red, 0/black
+  check-ints-equal len, 2, "F - test-eval-loop-2-conditional stack size"
+}
+
+fn test-eval-loop-with-words-after-in-group {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "1 2 3 { 3 == -> loop 37 } 9", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # evaluation order: 1 2 3 { 3 == -> loop { 3 == -> 37 } 9
+  # stack contents: 1 37 9
+#?   dump-stack out
+  var len/eax: int <- value-stack-length out
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, len, 0xc/red, 0/black
+  check-ints-equal len, 3, "F - test-eval-loop-with-words-after-in-group stack size"
 }

@@ -148,30 +148,6 @@ fn value-stack-length _self: (addr value-stack) -> _/eax: int {
   return *top-addr
 }
 
-fn save-lines in-h: (handle array (handle array byte)), _out-ah: (addr handle array value) {
-  var _in/eax: (addr array (handle array byte)) <- lookup in-h
-  var in/esi: (addr array (handle array byte)) <- copy _in
-  var len/ecx: int <- length in
-  var out-ah/edi: (addr handle array value) <- copy _out-ah
-  populate out-ah, len
-  var out/eax: (addr array value) <- lookup *out-ah
-  # copy in into out
-  var i/ebx: int <- copy 0
-  {
-    compare i, len
-    break-if->=
-    var src/ecx: (addr handle array byte) <- index in, i
-    var dest-offset/edx: (offset value) <- compute-offset out, i
-    var dest-val/edx: (addr value) <- index out, dest-offset
-    var dest/eax: (addr handle array byte) <- get dest-val, text-data
-    copy-object src, dest
-    var type/edx: (addr int) <- get dest-val, type
-    copy-to *type, 1/string
-    i <- increment
-    loop
-  }
-}
-
 fn test-boolean {
   var stack-storage: value-stack
   var stack/esi: (addr value-stack) <- address stack-storage
@@ -181,4 +157,26 @@ fn test-boolean {
   push-boolean-to-value-stack stack, 1/true
   var result/eax: boolean <- pop-boolean-from-value-stack stack
   check result, "F - test-boolean/true"
+}
+
+fn dump-stack _self: (addr value-stack) {
+  var self/esi: (addr value-stack) <- copy _self
+  var data-ah/eax: (addr handle array value) <- get self, data
+  var _data/eax: (addr array value) <- lookup *data-ah
+  var data/edi: (addr array value) <- copy _data
+  var top-addr/ecx: (addr int) <- get self, top
+  var top/ecx: int <- copy *top-addr
+  top <- decrement
+  var y/edx: int <- copy 0xa
+  var dummy/eax: int <- draw-text-rightward-over-full-screen 0/screen, "==", 0/x, 9/y, 0xc/red, 0/bg
+  {
+    compare top, 0
+    break-if-<
+    var dest-offset/eax: (offset value) <- compute-offset data, top
+    var curr/eax: (addr value) <- index data, dest-offset
+    var dummy/eax: int <- render-value 0/screen, curr, 0/x, y, 0/no-color
+    top <- decrement
+    y <- increment
+    loop
+  }
 }
