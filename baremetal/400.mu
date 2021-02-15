@@ -12,6 +12,8 @@ sig read-key kbd: (addr keyboard) -> _/eax: byte
 sig count-test-failure
 sig num-test-failures -> _/eax: int
 
+sig string-equal? s: (addr array byte), benchmark: (addr array byte) -> _/eax: boolean
+sig string-starts-with? s: (addr array byte), benchmark: (addr array byte) -> _/eax: boolean
 sig check-strings-equal s: (addr array byte), expected: (addr array byte), msg: (addr array byte)
 
 # streams
