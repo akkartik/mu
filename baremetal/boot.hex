@@ -100,7 +100,21 @@
   8e d0  # ss <- ax
   bc 00 00  # sp <- 0x0000
 
-# 14:
+  # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
+  # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
+  # seta20.1:
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # if zf not set, goto seta20.1 (-6)
+  b0 d1  # al <- 0xd1
+  e6 64  # port 0x64 <- al
+  # seta20.2:
+  e4 64  # al <- port 0x64
+  a8 02  # set zf if bit 1 (second-least significant) is not set
+  75 fa  # if zf not set, goto seta20.2 (-6)
+  b0 df  # al <- 0xdf
+  e6 64  # port 0x64 <- al
+
   # load remaining sectors from first two tracks of disk into addresses [0x7e00, 0x17800)
   b4 02  # ah <- 2  # read sectors from disk
   # dl comes conveniently initialized at boot time with the index of the device being booted
@@ -115,7 +129,6 @@
   cd 13  # int 13h, BIOS disk service
   0f 82 a3 00  # jump-if-carry disk_error [label]
 
-# 2c:
   # load two more tracks of disk into addresses [0x17800, 0x27400)
   b4 02  # ah <- 2  # read sectors from disk
   # dl comes conveniently initialized at boot time with the index of the device being booted
@@ -129,31 +142,11 @@
   bb 00 00  # bx <- 0
   cd 13  # int 13h, BIOS disk service
   0f 82 9b 00  # jump-if-carry disk_error [label]
+
   # reset es
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
 
-# 39:
-  # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
-  # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
-  # seta20.1:
-  e4 64  # al <- port 0x64
-  a8 02  # set zf if bit 1 (second-least significant) is not set
-  75 fa  # if zf not set, goto seta20.1 (-6)
-
-  b0 d1  # al <- 0xd1
-  e6 64  # port 0x64 <- al
-
-# 43:
-  # seta20.2:
-  e4 64  # al <- port 0x64
-  a8 02  # set zf if bit 1 (second-least significant) is not set
-  75 fa  # if zf not set, goto seta20.2 (-6)
-
-  b0 df  # al <- 0xdf
-  e6 64  # port 0x64 <- al
-
-# 4d:
   # adjust video mode
   b4 4f  # ah <- 4f (VBE)
   b0 02  # al <- 02 (set video mode)
@@ -162,7 +155,6 @@
             # fallback mode: 0x0101 (640x480x256)
   cd 10  # int 10h, Vesa BIOS extensions
 
-# 56:
   # load information for the (hopefully) current video mode
   # mostly just for the address to the linear frame buffer
   b4 4f  # ah <- 4f (VBE)
@@ -171,7 +163,6 @@
   bf 00 81  # di <- 0x8100 (video mode info) [label]
   cd 10
 
-# 62:
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
     f8 7c  # *gdt_descriptor [label]
