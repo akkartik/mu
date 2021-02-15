@@ -216,7 +216,7 @@ fn main {
   var line-storage: line
   var line/esi: (addr line) <- address line-storage
   initialize-line line
-  $main:loop: {
+  {
     clear-screen 0/screen
     var dummy1/eax: int <- copy 0
     var dummy2/ecx: int <- copy 0
@@ -225,8 +225,6 @@ fn main {
       var key/eax: byte <- read-key 0/keyboard
       compare key, 0
       loop-if-=
-      compare key, 0x71/q
-      break-if-= $main:loop
       edit-line line, key
     }
     loop
