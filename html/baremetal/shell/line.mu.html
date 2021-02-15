@@ -58,76 +58,76 @@ if ('onhashchange' in window) {
 <body onload='JumpToLine();'>
 <a href='https://github.com/akkartik/mu/blob/main/baremetal/shell/line.mu'>https://github.com/akkartik/mu/blob/main/baremetal/shell/line.mu</a>
 <pre id='vimCodeElement'>
-<span id="L1" class="LineNr">  1 </span><span class="PreProc">type</span> <a href='shell/line.mu.html#L1'>line</a> <span class="Delimiter">{</span>
+<span id="L1" class="LineNr">  1 </span><span class="PreProc">type</span> <a href='line.mu.html#L1'>line</a> <span class="Delimiter">{</span>
 <span id="L2" class="LineNr">  2 </span>  name: (handle array byte)
-<span id="L3" class="LineNr">  3 </span>  data: (handle <a href='shell/word.mu.html#L1'>word</a>)
-<span id="L4" class="LineNr">  4 </span>  cursor: (handle <a href='shell/word.mu.html#L1'>word</a>)
-<span id="L5" class="LineNr">  5 </span>  next: (handle <a href='shell/line.mu.html#L1'>line</a>)
-<span id="L6" class="LineNr">  6 </span>  prev: (handle <a href='shell/line.mu.html#L1'>line</a>)
+<span id="L3" class="LineNr">  3 </span>  data: (handle <a href='word.mu.html#L1'>word</a>)
+<span id="L4" class="LineNr">  4 </span>  cursor: (handle <a href='word.mu.html#L1'>word</a>)
+<span id="L5" class="LineNr">  5 </span>  next: (handle <a href='line.mu.html#L1'>line</a>)
+<span id="L6" class="LineNr">  6 </span>  prev: (handle <a href='line.mu.html#L1'>line</a>)
 <span id="L7" class="LineNr">  7 </span><span class="Delimiter">}</span>
 <span id="L8" class="LineNr">  8 </span>
 <span id="L9" class="LineNr">  9 </span><span class="muComment"># initialize line with a single empty word</span>
-<span id="L10" class="LineNr"> 10 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='shell/line.mu.html#L10'>initialize-line</a></span> _line: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="Delimiter">{</span>
-<span id="L11" class="LineNr"> 11 </span>  <span class="PreProc">var</span> <a href='shell/line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _line
-<span id="L12" class="LineNr"> 12 </span>  <span class="PreProc">var</span> word-ah/<span class="Constant">eax</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get <a href='shell/line.mu.html#L1'>line</a>, data
-<span id="L13" class="LineNr"> 13 </span>  <a href='120allocate.subx.html#L43'>allocate</a> word-ah
-<span id="L14" class="LineNr"> 14 </span>  <span class="PreProc">var</span> cursor-ah/<span class="Constant">ecx</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get <a href='shell/line.mu.html#L1'>line</a>, cursor
+<span id="L10" class="LineNr"> 10 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='line.mu.html#L10'>initialize-line</a></span> _line: (addr <a href='line.mu.html#L1'>line</a>) <span class="Delimiter">{</span>
+<span id="L11" class="LineNr"> 11 </span>  <span class="PreProc">var</span> <a href='line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _line
+<span id="L12" class="LineNr"> 12 </span>  <span class="PreProc">var</span> word-ah/<span class="Constant">eax</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> <a href='line.mu.html#L1'>line</a>, data
+<span id="L13" class="LineNr"> 13 </span>  <a href='../../120allocate.subx.html#L66'>allocate</a> word-ah
+<span id="L14" class="LineNr"> 14 </span>  <span class="PreProc">var</span> cursor-ah/<span class="Constant">ecx</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> <a href='line.mu.html#L1'>line</a>, cursor
 <span id="L15" class="LineNr"> 15 </span>  copy-object word-ah, cursor-ah
-<span id="L16" class="LineNr"> 16 </span>  <span class="PreProc">var</span> <a href='shell/word.mu.html#L1'>word</a>/<span class="Constant">eax</span>: (addr <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='120allocate.subx.html#L226'>lookup</a> *word-ah
-<span id="L17" class="LineNr"> 17 </span>  <a href='shell/word.mu.html#L7'>initialize-word</a> <a href='shell/word.mu.html#L1'>word</a>
+<span id="L16" class="LineNr"> 16 </span>  <span class="PreProc">var</span> <a href='word.mu.html#L1'>word</a>/<span class="Constant">eax</span>: (addr <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L258'>lookup</a> *word-ah
+<span id="L17" class="LineNr"> 17 </span>  <a href='word.mu.html#L7'>initialize-word</a> <a href='word.mu.html#L1'>word</a>
 <span id="L18" class="LineNr"> 18 </span><span class="Delimiter">}</span>
 <span id="L19" class="LineNr"> 19 </span>
-<span id="L20" class="LineNr"> 20 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='shell/line.mu.html#L20'>num-words-in-line</a></span> _in: (addr <a href='shell/line.mu.html#L1'>line</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
-<span id="L21" class="LineNr"> 21 </span>  <span class="PreProc">var</span> in/<span class="Constant">esi</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _in
-<span id="L22" class="LineNr"> 22 </span>  <span class="PreProc">var</span> curr-ah/<span class="Constant">ecx</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get in, data
+<span id="L20" class="LineNr"> 20 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='line.mu.html#L20'>num-words-in-line</a></span> _in: (addr <a href='line.mu.html#L1'>line</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L21" class="LineNr"> 21 </span>  <span class="PreProc">var</span> in/<span class="Constant">esi</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _in
+<span id="L22" class="LineNr"> 22 </span>  <span class="PreProc">var</span> curr-ah/<span class="Constant">ecx</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> in, data
 <span id="L23" class="LineNr"> 23 </span>  <span class="PreProc">var</span> result/<span class="Constant">edi</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L24" class="LineNr"> 24 </span>  <span class="Delimiter">{</span>
-<span id="L25" class="LineNr"> 25 </span>    <span class="PreProc">var</span> curr/<span class="Constant">eax</span>: (addr <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='120allocate.subx.html#L226'>lookup</a> *curr-ah
+<span id="L25" class="LineNr"> 25 </span>    <span class="PreProc">var</span> curr/<span class="Constant">eax</span>: (addr <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L258'>lookup</a> *curr-ah
 <span id="L26" class="LineNr"> 26 </span>    compare curr, <span class="Constant">0</span>
 <span id="L27" class="LineNr"> 27 </span>    <span class="PreProc">break-if-=</span>
-<span id="L28" class="LineNr"> 28 </span>    curr-ah <span class="SpecialChar">&lt;-</span> get curr, next
+<span id="L28" class="LineNr"> 28 </span>    curr-ah <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> curr, next
 <span id="L29" class="LineNr"> 29 </span>    result <span class="SpecialChar">&lt;-</span> increment
 <span id="L30" class="LineNr"> 30 </span>    <span class="PreProc">loop</span>
 <span id="L31" class="LineNr"> 31 </span>  <span class="Delimiter">}</span>
 <span id="L32" class="LineNr"> 32 </span>  <span class="PreProc">return</span> result
 <span id="L33" class="LineNr"> 33 </span><span class="Delimiter">}</span>
 <span id="L34" class="LineNr"> 34 </span>
-<span id="L35" class="LineNr"> 35 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='shell/line.mu.html#L35'>line-list-length</a></span> lines: (addr handle <a href='shell/line.mu.html#L1'>line</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
-<span id="L36" class="LineNr"> 36 </span>  <span class="PreProc">var</span> curr-ah/<span class="Constant">esi</span>: (addr handle <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy lines
+<span id="L35" class="LineNr"> 35 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='line.mu.html#L35'>line-list-length</a></span> lines: (addr handle <a href='line.mu.html#L1'>line</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L36" class="LineNr"> 36 </span>  <span class="PreProc">var</span> curr-ah/<span class="Constant">esi</span>: (addr handle <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy lines
 <span id="L37" class="LineNr"> 37 </span>  <span class="PreProc">var</span> result/<span class="Constant">edi</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L38" class="LineNr"> 38 </span>  <span class="Delimiter">{</span>
-<span id="L39" class="LineNr"> 39 </span>    <span class="PreProc">var</span> curr/<span class="Constant">eax</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> <a href='120allocate.subx.html#L226'>lookup</a> *curr-ah
+<span id="L39" class="LineNr"> 39 </span>    <span class="PreProc">var</span> curr/<span class="Constant">eax</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L258'>lookup</a> *curr-ah
 <span id="L40" class="LineNr"> 40 </span>    compare curr, <span class="Constant">0</span>
 <span id="L41" class="LineNr"> 41 </span>    <span class="PreProc">break-if-=</span>
-<span id="L42" class="LineNr"> 42 </span>    curr-ah <span class="SpecialChar">&lt;-</span> get curr, next
+<span id="L42" class="LineNr"> 42 </span>    curr-ah <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> curr, next
 <span id="L43" class="LineNr"> 43 </span>    result <span class="SpecialChar">&lt;-</span> increment
 <span id="L44" class="LineNr"> 44 </span>    <span class="PreProc">loop</span>
 <span id="L45" class="LineNr"> 45 </span>  <span class="Delimiter">}</span>
 <span id="L46" class="LineNr"> 46 </span>  <span class="PreProc">return</span> result
 <span id="L47" class="LineNr"> 47 </span><span class="Delimiter">}</span>
 <span id="L48" class="LineNr"> 48 </span>
-<span id="L49" class="LineNr"> 49 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='shell/line.mu.html#L49'>render-line</a></span> <a href='500text-screen.mu.html#L9'>screen</a>: (addr <a href='500text-screen.mu.html#L9'>screen</a>), _line: (addr <a href='shell/line.mu.html#L1'>line</a>), x: int, y: int, render-cursor?: boolean<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
-<span id="L50" class="LineNr"> 50 </span>  <span class="PreProc">var</span> <a href='shell/line.mu.html#L1'>line</a>/<span class="Constant">eax</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _line
-<span id="L51" class="LineNr"> 51 </span>  <span class="PreProc">var</span> first-word-ah/<span class="Constant">esi</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get <a href='shell/line.mu.html#L1'>line</a>, data
+<span id="L49" class="LineNr"> 49 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='line.mu.html#L49'>render-line</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), _line: (addr <a href='line.mu.html#L1'>line</a>), x: int, y: int, render-cursor?: boolean<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L50" class="LineNr"> 50 </span>  <span class="PreProc">var</span> <a href='line.mu.html#L1'>line</a>/<span class="Constant">eax</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _line
+<span id="L51" class="LineNr"> 51 </span>  <span class="PreProc">var</span> first-word-ah/<span class="Constant">esi</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> <a href='line.mu.html#L1'>line</a>, data
 <span id="L52" class="LineNr"> 52 </span>  <span class="muComment"># cursor-word</span>
 <span id="L53" class="LineNr"> 53 </span>  <span class="PreProc">var</span> cursor-word/<span class="Constant">edi</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L54" class="LineNr"> 54 </span>  compare render-cursor?, <span class="Constant">0</span>/false
 <span id="L55" class="LineNr"> 55 </span>  <span class="Delimiter">{</span>
 <span id="L56" class="LineNr"> 56 </span>    <span class="PreProc">break-if-=</span>
-<span id="L57" class="LineNr"> 57 </span>    <span class="PreProc">var</span> cursor-word-ah/<span class="Constant">eax</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get <a href='shell/line.mu.html#L1'>line</a>, cursor
-<span id="L58" class="LineNr"> 58 </span>    <span class="PreProc">var</span> _cursor-word/<span class="Constant">eax</span>: (addr <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='120allocate.subx.html#L226'>lookup</a> *cursor-word-ah
+<span id="L57" class="LineNr"> 57 </span>    <span class="PreProc">var</span> cursor-word-ah/<span class="Constant">eax</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> <a href='line.mu.html#L1'>line</a>, cursor
+<span id="L58" class="LineNr"> 58 </span>    <span class="PreProc">var</span> _cursor-word/<span class="Constant">eax</span>: (addr <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L258'>lookup</a> *cursor-word-ah
 <span id="L59" class="LineNr"> 59 </span>    cursor-word <span class="SpecialChar">&lt;-</span> copy _cursor-word
 <span id="L60" class="LineNr"> 60 </span>  <span class="Delimiter">}</span>
 <span id="L61" class="LineNr"> 61 </span>  <span class="muComment">#</span>
-<span id="L62" class="LineNr"> 62 </span>  <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='shell/word.mu.html#L277'>render-words</a> <a href='500text-screen.mu.html#L9'>screen</a>, first-word-ah, x, y, cursor-word
+<span id="L62" class="LineNr"> 62 </span>  <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='word.mu.html#L277'>render-words</a> <a href='../../405screen.mu.html#L9'>screen</a>, first-word-ah, x, y, cursor-word
 <span id="L63" class="LineNr"> 63 </span>  <span class="PreProc">return</span> result
 <span id="L64" class="LineNr"> 64 </span><span class="Delimiter">}</span>
 <span id="L65" class="LineNr"> 65 </span>
-<span id="L66" class="LineNr"> 66 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='shell/line.mu.html#L66'>parse-line</a></span> in: (addr array byte), _out: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="Delimiter">{</span>
-<span id="L67" class="LineNr"> 67 </span>  <span class="PreProc">var</span> out/<span class="Constant">edi</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _out
-<span id="L68" class="LineNr"> 68 </span>  <a href='shell/line.mu.html#L10'>initialize-line</a> out
-<span id="L69" class="LineNr"> 69 </span>  <span class="PreProc">var</span> dest/<span class="Constant">eax</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get out, data
-<span id="L70" class="LineNr"> 70 </span>  <a href='shell/word.mu.html#L695'>parse-words</a> in, dest
+<span id="L66" class="LineNr"> 66 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='line.mu.html#L66'>parse-line</a></span> in: (addr array byte), _out: (addr <a href='line.mu.html#L1'>line</a>) <span class="Delimiter">{</span>
+<span id="L67" class="LineNr"> 67 </span>  <span class="PreProc">var</span> out/<span class="Constant">edi</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _out
+<span id="L68" class="LineNr"> 68 </span>  <a href='line.mu.html#L10'>initialize-line</a> out
+<span id="L69" class="LineNr"> 69 </span>  <span class="PreProc">var</span> dest/<span class="Constant">eax</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> out, data
+<span id="L70" class="LineNr"> 70 </span>  <a href='word.mu.html#L695'>parse-words</a> in, dest
 <span id="L71" class="LineNr"> 71 </span><span class="Delimiter">}</span>
 <span id="L72" class="LineNr"> 72 </span>
 <span id="L73" class="LineNr"> 73 </span><span class="CommentedCode">#? fn main {</span>
@@ -146,28 +146,28 @@ if ('onhashchange' in window) {
 <span id="L86" class="LineNr"> 86 </span><span class="CommentedCode">#?   var dummy/eax: int &lt;- render-line 0/screen, line-addr, 0/x, 0/y, 1/render-cursor</span>
 <span id="L87" class="LineNr"> 87 </span><span class="CommentedCode">#? }</span>
 <span id="L88" class="LineNr"> 88 </span>
-<span id="L89" class="LineNr"> 89 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='shell/line.mu.html#L89'>render-line-with-stack</a></span> <a href='500text-screen.mu.html#L9'>screen</a>: (addr <a href='500text-screen.mu.html#L9'>screen</a>), _line: (addr <a href='shell/line.mu.html#L1'>line</a>), x: int, y: int, render-cursor?: boolean<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int, _/<span class="Constant">ecx</span>: int <span class="Delimiter">{</span>
-<span id="L90" class="LineNr"> 90 </span>  <span class="PreProc">var</span> <a href='shell/line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _line
+<span id="L89" class="LineNr"> 89 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='line.mu.html#L89'>render-line-with-stack</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), _line: (addr <a href='line.mu.html#L1'>line</a>), x: int, y: int, render-cursor?: boolean<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int, _/<span class="Constant">ecx</span>: int <span class="Delimiter">{</span>
+<span id="L90" class="LineNr"> 90 </span>  <span class="PreProc">var</span> <a href='line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _line
 <span id="L91" class="LineNr"> 91 </span>  <span class="muComment"># cursor-word</span>
 <span id="L92" class="LineNr"> 92 </span>  <span class="PreProc">var</span> cursor-word/<span class="Constant">edi</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L93" class="LineNr"> 93 </span>  compare render-cursor?, <span class="Constant">0</span>/false
 <span id="L94" class="LineNr"> 94 </span>  <span class="Delimiter">{</span>
 <span id="L95" class="LineNr"> 95 </span>    <span class="PreProc">break-if-=</span>
-<span id="L96" class="LineNr"> 96 </span>    <span class="PreProc">var</span> cursor-word-ah/<span class="Constant">eax</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get <a href='shell/line.mu.html#L1'>line</a>, cursor
-<span id="L97" class="LineNr"> 97 </span>    <span class="PreProc">var</span> _cursor-word/<span class="Constant">eax</span>: (addr <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='120allocate.subx.html#L226'>lookup</a> *cursor-word-ah
+<span id="L96" class="LineNr"> 96 </span>    <span class="PreProc">var</span> cursor-word-ah/<span class="Constant">eax</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> <a href='line.mu.html#L1'>line</a>, cursor
+<span id="L97" class="LineNr"> 97 </span>    <span class="PreProc">var</span> _cursor-word/<span class="Constant">eax</span>: (addr <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L258'>lookup</a> *cursor-word-ah
 <span id="L98" class="LineNr"> 98 </span>    cursor-word <span class="SpecialChar">&lt;-</span> copy _cursor-word
 <span id="L99" class="LineNr"> 99 </span>  <span class="Delimiter">}</span>
 <span id="L100" class="LineNr">100 </span>  <span class="muComment">#</span>
-<span id="L101" class="LineNr">101 </span>  <span class="PreProc">var</span> curr-word-ah/<span class="Constant">eax</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get <a href='shell/line.mu.html#L1'>line</a>, data
-<span id="L102" class="LineNr">102 </span>  <span class="PreProc">var</span> _curr-word/<span class="Constant">eax</span>: (addr <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='120allocate.subx.html#L226'>lookup</a> *curr-word-ah
-<span id="L103" class="LineNr">103 </span>  <span class="PreProc">var</span> curr-word/<span class="Constant">edx</span>: (addr <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> copy _curr-word
+<span id="L101" class="LineNr">101 </span>  <span class="PreProc">var</span> curr-word-ah/<span class="Constant">eax</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> <a href='line.mu.html#L1'>line</a>, data
+<span id="L102" class="LineNr">102 </span>  <span class="PreProc">var</span> _curr-word/<span class="Constant">eax</span>: (addr <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L258'>lookup</a> *curr-word-ah
+<span id="L103" class="LineNr">103 </span>  <span class="PreProc">var</span> curr-word/<span class="Constant">edx</span>: (addr <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> copy _curr-word
 <span id="L104" class="LineNr">104 </span>  <span class="PreProc">var</span> new-x/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy x  <span class="muComment"># increases each iteration</span>
 <span id="L105" class="LineNr">105 </span>  <span class="PreProc">var</span> new-y/<span class="Constant">ebx</span>: int <span class="SpecialChar">&lt;-</span> copy y  <span class="muComment"># compute max across all iterations</span>
 <span id="L106" class="LineNr">106 </span>  <span class="Delimiter">{</span>
 <span id="L107" class="LineNr">107 </span>    compare curr-word, <span class="Constant">0</span>
 <span id="L108" class="LineNr">108 </span>    <span class="PreProc">break-if-=</span>
 <span id="L109" class="LineNr">109 </span>    <span class="PreProc">var</span> curr-y/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L110" class="LineNr">110 </span>    new-x, curr-y <span class="SpecialChar">&lt;-</span> <a href='shell/line.mu.html#L126'>render-word-with-stack-and-cursor</a> <a href='500text-screen.mu.html#L9'>screen</a>, <a href='shell/line.mu.html#L1'>line</a>, curr-word, new-x, y, cursor-word
+<span id="L110" class="LineNr">110 </span>    new-x, curr-y <span class="SpecialChar">&lt;-</span> <a href='line.mu.html#L126'>render-word-with-stack-and-cursor</a> <a href='../../405screen.mu.html#L9'>screen</a>, <a href='line.mu.html#L1'>line</a>, curr-word, new-x, y, cursor-word
 <span id="L111" class="LineNr">111 </span>    compare curr-y, new-y
 <span id="L112" class="LineNr">112 </span>    <span class="Delimiter">{</span>
 <span id="L113" class="LineNr">113 </span>      <span class="PreProc">break-if-&lt;=</span>
@@ -175,15 +175,15 @@ if ('onhashchange' in window) {
 <span id="L115" class="LineNr">115 </span>    <span class="Delimiter">}</span>
 <span id="L116" class="LineNr">116 </span>    new-x <span class="SpecialChar">&lt;-</span> add <span class="Constant">1</span>/inter-word-spacing
 <span id="L117" class="LineNr">117 </span>    <span class="muComment"># update</span>
-<span id="L118" class="LineNr">118 </span>    <span class="PreProc">var</span> next-word-ah/<span class="Constant">eax</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get curr-word, next
-<span id="L119" class="LineNr">119 </span>    <span class="PreProc">var</span> <a href='127next-word.subx.html#L11'>next-word</a>/<span class="Constant">eax</span>: (addr <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='120allocate.subx.html#L226'>lookup</a> *next-word-ah
-<span id="L120" class="LineNr">120 </span>    curr-word <span class="SpecialChar">&lt;-</span> copy <a href='127next-word.subx.html#L11'>next-word</a>
+<span id="L118" class="LineNr">118 </span>    <span class="PreProc">var</span> next-word-ah/<span class="Constant">eax</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> curr-word, next
+<span id="L119" class="LineNr">119 </span>    <span class="PreProc">var</span> <a href='../../127next-word.subx.html#L11'>next-word</a>/<span class="Constant">eax</span>: (addr <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L258'>lookup</a> *next-word-ah
+<span id="L120" class="LineNr">120 </span>    curr-word <span class="SpecialChar">&lt;-</span> copy <a href='../../127next-word.subx.html#L11'>next-word</a>
 <span id="L121" class="LineNr">121 </span>    <span class="PreProc">loop</span>
 <span id="L122" class="LineNr">122 </span>  <span class="Delimiter">}</span>
 <span id="L123" class="LineNr">123 </span>  <span class="PreProc">return</span> new-x, new-y
 <span id="L124" class="LineNr">124 </span><span class="Delimiter">}</span>
 <span id="L125" class="LineNr">125 </span>
-<span id="L126" class="LineNr">126 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='shell/line.mu.html#L126'>render-word-with-stack-and-cursor</a></span> <a href='500text-screen.mu.html#L9'>screen</a>: (addr <a href='500text-screen.mu.html#L9'>screen</a>), <a href='shell/line.mu.html#L1'>line</a>: (addr <a href='shell/line.mu.html#L1'>line</a>), curr-word: (addr <a href='shell/word.mu.html#L1'>word</a>), x: int, y: int, _cursor-word-addr: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int, _/<span class="Constant">ecx</span>: int <span class="Delimiter">{</span>
+<span id="L126" class="LineNr">126 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='line.mu.html#L126'>render-word-with-stack-and-cursor</a></span> <a href='../../405screen.mu.html#L9'>screen</a>: (addr <a href='../../405screen.mu.html#L9'>screen</a>), <a href='line.mu.html#L1'>line</a>: (addr <a href='line.mu.html#L1'>line</a>), curr-word: (addr <a href='word.mu.html#L1'>word</a>), x: int, y: int, _cursor-word-addr: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int, _/<span class="Constant">ecx</span>: int <span class="Delimiter">{</span>
 <span id="L127" class="LineNr">127 </span>  <span class="muComment"># print curr-word, with cursor if necessary</span>
 <span id="L128" class="LineNr">128 </span>  <span class="PreProc">var</span> render-cursor?/<span class="Constant">eax</span>: boolean <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>/false
 <span id="L129" class="LineNr">129 </span>  <span class="PreProc">var</span> cursor-word-addr/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy _cursor-word-addr
@@ -192,16 +192,16 @@ if ('onhashchange' in window) {
 <span id="L132" class="LineNr">132 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L133" class="LineNr">133 </span>    render-cursor? <span class="SpecialChar">&lt;-</span> copy <span class="Constant">1</span>/true
 <span id="L134" class="LineNr">134 </span>  <span class="Delimiter">}</span>
-<span id="L135" class="LineNr">135 </span>  <span class="PreProc">var</span> new-x/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='shell/word.mu.html#L269'>render-word</a> <a href='500text-screen.mu.html#L9'>screen</a>, curr-word, x, y, render-cursor?
+<span id="L135" class="LineNr">135 </span>  <span class="PreProc">var</span> new-x/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> <a href='word.mu.html#L269'>render-word</a> <a href='../../405screen.mu.html#L9'>screen</a>, curr-word, x, y, render-cursor?
 <span id="L136" class="LineNr">136 </span>  <span class="PreProc">var</span> new-x-saved/<span class="Constant">edx</span>: int <span class="SpecialChar">&lt;-</span> copy new-x
 <span id="L137" class="LineNr">137 </span>  add-to y, <span class="Constant">2</span>/word-stack-spacing
 <span id="L138" class="LineNr">138 </span>  <span class="muComment"># compute stack until word</span>
-<span id="L139" class="LineNr">139 </span>  <span class="PreProc">var</span> stack-storage: <a href='shell/value-stack.mu.html#L4'>value-stack</a>
-<span id="L140" class="LineNr">140 </span>  <span class="PreProc">var</span> stack/<span class="Constant">edi</span>: (addr <a href='shell/value-stack.mu.html#L4'>value-stack</a>) <span class="SpecialChar">&lt;-</span> address stack-storage
-<span id="L141" class="LineNr">141 </span>  <a href='shell/eval.mu.html#L40'>evaluate</a> <a href='shell/line.mu.html#L1'>line</a>, curr-word, stack
+<span id="L139" class="LineNr">139 </span>  <span class="PreProc">var</span> stack-storage: <a href='value-stack.mu.html#L4'>value-stack</a>
+<span id="L140" class="LineNr">140 </span>  <span class="PreProc">var</span> stack/<span class="Constant">edi</span>: (addr <a href='value-stack.mu.html#L4'>value-stack</a>) <span class="SpecialChar">&lt;-</span> address stack-storage
+<span id="L141" class="LineNr">141 </span>  <a href='eval.mu.html#L40'>evaluate</a> <a href='line.mu.html#L1'>line</a>, curr-word, stack
 <span id="L142" class="LineNr">142 </span>  <span class="muComment"># render stack</span>
 <span id="L143" class="LineNr">143 </span>  <span class="PreProc">var</span> new-y/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L144" class="LineNr">144 </span>  new-x, new-y <span class="SpecialChar">&lt;-</span> <a href='shell/value-stack.mu.html#L200'>render-value-stack</a> <a href='500text-screen.mu.html#L9'>screen</a>, stack, x, y
+<span id="L144" class="LineNr">144 </span>  new-x, new-y <span class="SpecialChar">&lt;-</span> <a href='value-stack.mu.html#L200'>render-value-stack</a> <a href='../../405screen.mu.html#L9'>screen</a>, stack, x, y
 <span id="L145" class="LineNr">145 </span><span class="CommentedCode">#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, new-x, 0xc/fg, 0/bg</span>
 <span id="L146" class="LineNr">146 </span><span class="CommentedCode">#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, new-y, 3/fg, 0/bg</span>
 <span id="L147" class="LineNr">147 </span>  compare new-x, new-x-saved
@@ -213,81 +213,81 @@ if ('onhashchange' in window) {
 <span id="L153" class="LineNr">153 </span>  <span class="PreProc">return</span> new-x, new-y
 <span id="L154" class="LineNr">154 </span><span class="Delimiter">}</span>
 <span id="L155" class="LineNr">155 </span>
-<span id="L156" class="LineNr">156 </span><span class="PreProc">fn</span> <span class="muTest"><a href='shell/line.mu.html#L156'>test-render-line-with-stack-singleton</a></span> <span class="Delimiter">{</span>
+<span id="L156" class="LineNr">156 </span><span class="PreProc">fn</span> <span class="muTest"><a href='line.mu.html#L156'>test-render-line-with-stack-singleton</a></span> <span class="Delimiter">{</span>
 <span id="L157" class="LineNr">157 </span>  <span class="muComment"># line = [1]</span>
-<span id="L158" class="LineNr">158 </span>  <span class="PreProc">var</span> line-storage: <a href='shell/line.mu.html#L1'>line</a>
-<span id="L159" class="LineNr">159 </span>  <span class="PreProc">var</span> <a href='shell/line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> address line-storage
-<span id="L160" class="LineNr">160 </span>  <a href='shell/line.mu.html#L66'>parse-line</a> <span class="Constant">&quot;1&quot;</span>, <a href='shell/line.mu.html#L1'>line</a>
+<span id="L158" class="LineNr">158 </span>  <span class="PreProc">var</span> line-storage: <a href='line.mu.html#L1'>line</a>
+<span id="L159" class="LineNr">159 </span>  <span class="PreProc">var</span> <a href='line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> address line-storage
+<span id="L160" class="LineNr">160 </span>  <a href='line.mu.html#L66'>parse-line</a> <span class="Constant">&quot;1&quot;</span>, <a href='line.mu.html#L1'>line</a>
 <span id="L161" class="LineNr">161 </span>  <span class="muComment"># setup: screen</span>
-<span id="L162" class="LineNr">162 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='500text-screen.mu.html#L9'>screen</a>
-<span id="L163" class="LineNr">163 </span>  <span class="PreProc">var</span> <a href='500text-screen.mu.html#L9'>screen</a>/<span class="Constant">edi</span>: (addr <a href='500text-screen.mu.html#L9'>screen</a>) <span class="SpecialChar">&lt;-</span> address screen-on-stack
-<span id="L164" class="LineNr">164 </span>  <a href='500text-screen.mu.html#L23'>initialize-screen</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">0x20</span>, <span class="Constant">4</span>
+<span id="L162" class="LineNr">162 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L163" class="LineNr">163 </span>  <span class="PreProc">var</span> <a href='../../405screen.mu.html#L9'>screen</a>/<span class="Constant">edi</span>: (addr <a href='../../405screen.mu.html#L9'>screen</a>) <span class="SpecialChar">&lt;-</span> address screen-on-stack
+<span id="L164" class="LineNr">164 </span>  <a href='../../405screen.mu.html#L30'>initialize-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x20</span>, <span class="Constant">4</span>
 <span id="L165" class="LineNr">165 </span>  <span class="muComment">#</span>
 <span id="L166" class="LineNr">166 </span>  <span class="PreProc">var</span> new-x/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L167" class="LineNr">167 </span>  <span class="PreProc">var</span> new-y/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L168" class="LineNr">168 </span>  new-x, new-y <span class="SpecialChar">&lt;-</span> <a href='shell/line.mu.html#L89'>render-line-with-stack</a> <a href='500text-screen.mu.html#L9'>screen</a>, <a href='shell/line.mu.html#L1'>line</a>, <span class="Constant">0</span>/x, <span class="Constant">0</span>/y, <span class="Constant">0</span>/no-cursor
-<span id="L169" class="LineNr">169 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/y, <span class="Constant">&quot;1  &quot;</span>, <span class="Constant">&quot;F - <a href='shell/line.mu.html#L156'>test-render-line-with-stack-singleton</a>/0&quot;</span>
-<span id="L170" class="LineNr">170 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/y, <span class="Constant">&quot;   &quot;</span>, <span class="Constant">&quot;F - <a href='shell/line.mu.html#L156'>test-render-line-with-stack-singleton</a>/1&quot;</span>
-<span id="L171" class="LineNr">171 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">2</span>/y, <span class="Constant">&quot; 1 &quot;</span>, <span class="Constant">&quot;F - <a href='shell/line.mu.html#L156'>test-render-line-with-stack-singleton</a>/2&quot;</span>
+<span id="L168" class="LineNr">168 </span>  new-x, new-y <span class="SpecialChar">&lt;-</span> <a href='line.mu.html#L89'>render-line-with-stack</a> <a href='../../405screen.mu.html#L9'>screen</a>, <a href='line.mu.html#L1'>line</a>, <span class="Constant">0</span>/x, <span class="Constant">0</span>/y, <span class="Constant">0</span>/no-cursor
+<span id="L169" class="LineNr">169 </span>  <a href='../../405screen.mu.html#L623'>check-screen-row</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/y, <span class="Constant">&quot;1  &quot;</span>, <span class="Constant">&quot;F - <a href='line.mu.html#L156'>test-render-line-with-stack-singleton</a>/0&quot;</span>
+<span id="L170" class="LineNr">170 </span>  <a href='../../405screen.mu.html#L623'>check-screen-row</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/y, <span class="Constant">&quot;   &quot;</span>, <span class="Constant">&quot;F - <a href='line.mu.html#L156'>test-render-line-with-stack-singleton</a>/1&quot;</span>
+<span id="L171" class="LineNr">171 </span>  <a href='../../405screen.mu.html#L623'>check-screen-row</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">2</span>/y, <span class="Constant">&quot; 1 &quot;</span>, <span class="Constant">&quot;F - <a href='line.mu.html#L156'>test-render-line-with-stack-singleton</a>/2&quot;</span>
 <span id="L172" class="LineNr">172 </span>  <span class="muComment"># not bothering to test hash colors for numbers</span>
 <span id="L173" class="LineNr">173 </span><span class="Delimiter">}</span>
 <span id="L174" class="LineNr">174 </span>
-<span id="L175" class="LineNr">175 </span><span class="PreProc">fn</span> <span class="muTest"><a href='shell/line.mu.html#L175'>test-render-line-with-stack</a></span> <span class="Delimiter">{</span>
+<span id="L175" class="LineNr">175 </span><span class="PreProc">fn</span> <span class="muTest"><a href='line.mu.html#L175'>test-render-line-with-stack</a></span> <span class="Delimiter">{</span>
 <span id="L176" class="LineNr">176 </span>  <span class="muComment"># line = [1 2]</span>
-<span id="L177" class="LineNr">177 </span>  <span class="PreProc">var</span> line-storage: <a href='shell/line.mu.html#L1'>line</a>
-<span id="L178" class="LineNr">178 </span>  <span class="PreProc">var</span> <a href='shell/line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> address line-storage
-<span id="L179" class="LineNr">179 </span>  <a href='shell/line.mu.html#L66'>parse-line</a> <span class="Constant">&quot;1 2&quot;</span>, <a href='shell/line.mu.html#L1'>line</a>
+<span id="L177" class="LineNr">177 </span>  <span class="PreProc">var</span> line-storage: <a href='line.mu.html#L1'>line</a>
+<span id="L178" class="LineNr">178 </span>  <span class="PreProc">var</span> <a href='line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> address line-storage
+<span id="L179" class="LineNr">179 </span>  <a href='line.mu.html#L66'>parse-line</a> <span class="Constant">&quot;1 2&quot;</span>, <a href='line.mu.html#L1'>line</a>
 <span id="L180" class="LineNr">180 </span>  <span class="muComment"># setup: screen</span>
-<span id="L181" class="LineNr">181 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='500text-screen.mu.html#L9'>screen</a>
-<span id="L182" class="LineNr">182 </span>  <span class="PreProc">var</span> <a href='500text-screen.mu.html#L9'>screen</a>/<span class="Constant">edi</span>: (addr <a href='500text-screen.mu.html#L9'>screen</a>) <span class="SpecialChar">&lt;-</span> address screen-on-stack
-<span id="L183" class="LineNr">183 </span>  <a href='500text-screen.mu.html#L23'>initialize-screen</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">0x20</span>, <span class="Constant">4</span>
+<span id="L181" class="LineNr">181 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='../../405screen.mu.html#L9'>screen</a>
+<span id="L182" class="LineNr">182 </span>  <span class="PreProc">var</span> <a href='../../405screen.mu.html#L9'>screen</a>/<span class="Constant">edi</span>: (addr <a href='../../405screen.mu.html#L9'>screen</a>) <span class="SpecialChar">&lt;-</span> address screen-on-stack
+<span id="L183" class="LineNr">183 </span>  <a href='../../405screen.mu.html#L30'>initialize-screen</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x20</span>, <span class="Constant">4</span>
 <span id="L184" class="LineNr">184 </span>  <span class="muComment">#</span>
 <span id="L185" class="LineNr">185 </span>  <span class="PreProc">var</span> new-x/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L186" class="LineNr">186 </span>  <span class="PreProc">var</span> new-y/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L187" class="LineNr">187 </span>  new-x, new-y <span class="SpecialChar">&lt;-</span> <a href='shell/line.mu.html#L89'>render-line-with-stack</a> <a href='500text-screen.mu.html#L9'>screen</a>, <a href='shell/line.mu.html#L1'>line</a>, <span class="Constant">0</span>/x, <span class="Constant">0</span>/y, <span class="Constant">0</span>/no-cursor
-<span id="L188" class="LineNr">188 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/y, <span class="Constant">&quot;1   2 &quot;</span>, <span class="Constant">&quot;F - <a href='shell/line.mu.html#L175'>test-render-line-with-stack</a>/0&quot;</span>
-<span id="L189" class="LineNr">189 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/y, <span class="Constant">&quot;       &quot;</span>, <span class="Constant">&quot;F - <a href='shell/line.mu.html#L175'>test-render-line-with-stack</a>/1&quot;</span>
+<span id="L187" class="LineNr">187 </span>  new-x, new-y <span class="SpecialChar">&lt;-</span> <a href='line.mu.html#L89'>render-line-with-stack</a> <a href='../../405screen.mu.html#L9'>screen</a>, <a href='line.mu.html#L1'>line</a>, <span class="Constant">0</span>/x, <span class="Constant">0</span>/y, <span class="Constant">0</span>/no-cursor
+<span id="L188" class="LineNr">188 </span>  <a href='../../405screen.mu.html#L623'>check-screen-row</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/y, <span class="Constant">&quot;1   2 &quot;</span>, <span class="Constant">&quot;F - <a href='line.mu.html#L175'>test-render-line-with-stack</a>/0&quot;</span>
+<span id="L189" class="LineNr">189 </span>  <a href='../../405screen.mu.html#L623'>check-screen-row</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/y, <span class="Constant">&quot;       &quot;</span>, <span class="Constant">&quot;F - <a href='line.mu.html#L175'>test-render-line-with-stack</a>/1&quot;</span>
 <span id="L190" class="LineNr">190 </span>                                <span class="muComment">#___ ___</span>
-<span id="L191" class="LineNr">191 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">2</span>/y, <span class="Constant">&quot; 1   2 &quot;</span>, <span class="Constant">&quot;F - <a href='shell/line.mu.html#L175'>test-render-line-with-stack</a>/2&quot;</span>
-<span id="L192" class="LineNr">192 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">3</span>/y, <span class="Constant">&quot;     1 &quot;</span>, <span class="Constant">&quot;F - <a href='shell/line.mu.html#L175'>test-render-line-with-stack</a>/3&quot;</span>
+<span id="L191" class="LineNr">191 </span>  <a href='../../405screen.mu.html#L623'>check-screen-row</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">2</span>/y, <span class="Constant">&quot; 1   2 &quot;</span>, <span class="Constant">&quot;F - <a href='line.mu.html#L175'>test-render-line-with-stack</a>/2&quot;</span>
+<span id="L192" class="LineNr">192 </span>  <a href='../../405screen.mu.html#L623'>check-screen-row</a> <a href='../../405screen.mu.html#L9'>screen</a>, <span class="Constant">3</span>/y, <span class="Constant">&quot;     1 &quot;</span>, <span class="Constant">&quot;F - <a href='line.mu.html#L175'>test-render-line-with-stack</a>/3&quot;</span>
 <span id="L193" class="LineNr">193 </span>  <span class="muComment"># not bothering to test hash colors for numbers</span>
 <span id="L194" class="LineNr">194 </span><span class="Delimiter">}</span>
 <span id="L195" class="LineNr">195 </span>
-<span id="L196" class="LineNr">196 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='shell/line.mu.html#L196'>edit-line</a></span> _self: (addr <a href='shell/line.mu.html#L1'>line</a>), key: byte <span class="Delimiter">{</span>
-<span id="L197" class="LineNr">197 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _self
-<span id="L198" class="LineNr">198 </span>  <span class="PreProc">var</span> cursor-word-ah/<span class="Constant">edx</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get self, cursor
-<span id="L199" class="LineNr">199 </span>  <span class="PreProc">var</span> _cursor-word/<span class="Constant">eax</span>: (addr <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='120allocate.subx.html#L226'>lookup</a> *cursor-word-ah
-<span id="L200" class="LineNr">200 </span>  <span class="PreProc">var</span> cursor-word/<span class="Constant">ecx</span>: (addr <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> copy _cursor-word
+<span id="L196" class="LineNr">196 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='line.mu.html#L196'>edit-line</a></span> _self: (addr <a href='line.mu.html#L1'>line</a>), key: byte <span class="Delimiter">{</span>
+<span id="L197" class="LineNr">197 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> copy _self
+<span id="L198" class="LineNr">198 </span>  <span class="PreProc">var</span> cursor-word-ah/<span class="Constant">edx</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> self, cursor
+<span id="L199" class="LineNr">199 </span>  <span class="PreProc">var</span> _cursor-word/<span class="Constant">eax</span>: (addr <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../120allocate.subx.html#L258'>lookup</a> *cursor-word-ah
+<span id="L200" class="LineNr">200 </span>  <span class="PreProc">var</span> cursor-word/<span class="Constant">ecx</span>: (addr <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> copy _cursor-word
 <span id="L201" class="LineNr">201 </span>  compare key, <span class="Constant">0x20</span>/space
 <span id="L202" class="LineNr">202 </span>  $edit-line:space: <span class="Delimiter">{</span>
 <span id="L203" class="LineNr">203 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L204" class="LineNr">204 </span>    <a href='shell/word.mu.html#L565'>append-word</a> cursor-word-ah
-<span id="L205" class="LineNr">205 </span>    <span class="PreProc">var</span> next-word-ah/<span class="Constant">eax</span>: (addr handle <a href='shell/word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> get cursor-word, next
+<span id="L204" class="LineNr">204 </span>    <a href='word.mu.html#L565'>append-word</a> cursor-word-ah
+<span id="L205" class="LineNr">205 </span>    <span class="PreProc">var</span> next-word-ah/<span class="Constant">eax</span>: (addr handle <a href='word.mu.html#L1'>word</a>) <span class="SpecialChar">&lt;-</span> <a href='../../131table.subx.html#L26'>get</a> cursor-word, next
 <span id="L206" class="LineNr">206 </span>    copy-object next-word-ah, cursor-word-ah
 <span id="L207" class="LineNr">207 </span>    <span class="PreProc">return</span>
 <span id="L208" class="LineNr">208 </span>  <span class="Delimiter">}</span>
 <span id="L209" class="LineNr">209 </span>  <span class="muComment"># otherwise insert key within current word</span>
 <span id="L210" class="LineNr">210 </span>  <span class="PreProc">var</span> g/<span class="Constant">edx</span>: grapheme <span class="SpecialChar">&lt;-</span> copy key
-<span id="L211" class="LineNr">211 </span>  <a href='shell/word.mu.html#L179'>add-grapheme-to-word</a> cursor-word, g
+<span id="L211" class="LineNr">211 </span>  <a href='word.mu.html#L179'>add-grapheme-to-word</a> cursor-word, g
 <span id="L212" class="LineNr">212 </span>  <span class="muComment"># silently ignore other hotkeys</span>
 <span id="L213" class="LineNr">213 </span><span class="Delimiter">}</span>
 <span id="L214" class="LineNr">214 </span>
-<span id="L215" class="LineNr">215 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='shell/line.mu.html#L215'>main</a></span> <span class="Delimiter">{</span>
-<span id="L216" class="LineNr">216 </span>  <span class="PreProc">var</span> line-storage: <a href='shell/line.mu.html#L1'>line</a>
-<span id="L217" class="LineNr">217 </span>  <span class="PreProc">var</span> <a href='shell/line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='shell/line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> address line-storage
-<span id="L218" class="LineNr">218 </span>  <a href='shell/line.mu.html#L10'>initialize-line</a> <a href='shell/line.mu.html#L1'>line</a>
+<span id="L215" class="LineNr">215 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='line.mu.html#L215'>main</a></span> <span class="Delimiter">{</span>
+<span id="L216" class="LineNr">216 </span>  <span class="PreProc">var</span> line-storage: <a href='line.mu.html#L1'>line</a>
+<span id="L217" class="LineNr">217 </span>  <span class="PreProc">var</span> <a href='line.mu.html#L1'>line</a>/<span class="Constant">esi</span>: (addr <a href='line.mu.html#L1'>line</a>) <span class="SpecialChar">&lt;-</span> address line-storage
+<span id="L218" class="LineNr">218 </span>  <a href='line.mu.html#L10'>initialize-line</a> <a href='line.mu.html#L1'>line</a>
 <span id="L219" class="LineNr">219 </span>  $main:<span class="PreProc">loop</span>: <span class="Delimiter">{</span>
-<span id="L220" class="LineNr">220 </span>    <a href='500text-screen.mu.html#L194'>clear-screen</a> <span class="Constant">0</span>/screen
+<span id="L220" class="LineNr">220 </span>    <a href='../../405screen.mu.html#L78'>clear-screen</a> <span class="Constant">0</span>/screen
 <span id="L221" class="LineNr">221 </span>    <span class="PreProc">var</span> dummy1/<span class="Constant">eax</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L222" class="LineNr">222 </span>    <span class="PreProc">var</span> dummy2/<span class="Constant">ecx</span>: int <span class="SpecialChar">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L223" class="LineNr">223 </span>    dummy1, dummy2 <span class="SpecialChar">&lt;-</span> <a href='shell/line.mu.html#L89'>render-line-with-stack</a> <span class="Constant">0</span>/screen, <a href='shell/line.mu.html#L1'>line</a>, <span class="Constant">2</span>/x, <span class="Constant">2</span>/y, <span class="Constant">1</span>/show-cursor
+<span id="L223" class="LineNr">223 </span>    dummy1, dummy2 <span class="SpecialChar">&lt;-</span> <a href='line.mu.html#L89'>render-line-with-stack</a> <span class="Constant">0</span>/screen, <a href='line.mu.html#L1'>line</a>, <span class="Constant">2</span>/x, <span class="Constant">2</span>/y, <span class="Constant">1</span>/show-cursor
 <span id="L224" class="LineNr">224 </span>    <span class="Delimiter">{</span>
-<span id="L225" class="LineNr">225 </span>      <span class="PreProc">var</span> key/<span class="Constant">eax</span>: byte <span class="SpecialChar">&lt;-</span> <a href='102keyboard.subx.html#L9'>read-key</a> <span class="Constant">0</span>/keyboard
+<span id="L225" class="LineNr">225 </span>      <span class="PreProc">var</span> key/<span class="Constant">eax</span>: byte <span class="SpecialChar">&lt;-</span> read-key <span class="Constant">0</span>/keyboard
 <span id="L226" class="LineNr">226 </span>      compare key, <span class="Constant">0</span>
 <span id="L227" class="LineNr">227 </span>      <span class="PreProc">loop-if-=</span>
 <span id="L228" class="LineNr">228 </span>      compare key, <span class="Constant">0x71</span>/q
 <span id="L229" class="LineNr">229 </span>      <span class="PreProc">break-if-=</span> $main:<span class="PreProc">loop</span>
-<span id="L230" class="LineNr">230 </span>      <a href='shell/line.mu.html#L196'>edit-line</a> <a href='shell/line.mu.html#L1'>line</a>, key
+<span id="L230" class="LineNr">230 </span>      <a href='line.mu.html#L196'>edit-line</a> <a href='line.mu.html#L1'>line</a>, key
 <span id="L231" class="LineNr">231 </span>    <span class="Delimiter">}</span>
 <span id="L232" class="LineNr">232 </span>    <span class="PreProc">loop</span>
 <span id="L233" class="LineNr">233 </span>  <span class="Delimiter">}</span>
