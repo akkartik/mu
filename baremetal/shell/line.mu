@@ -170,6 +170,7 @@ fn test-render-line-with-stack-singleton {
   check-screen-row screen, 1/y, "    ", "F - test-render-line-with-stack-singleton/1"
                                 # ___
   check-screen-row screen, 2/y, "  1 ", "F - test-render-line-with-stack-singleton/2"
+  check-screen-row screen, 3/y, "    ", "F - test-render-line-with-stack-singleton/3"
   # not bothering to test hash colors for numbers
 }
 
@@ -180,7 +181,7 @@ fn test-render-line-with-stack {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x20, 4
+  initialize-screen screen, 0x20, 8
   #
   var new-x/eax: int <- copy 0
   var new-y/ecx: int <- copy 0
@@ -190,6 +191,7 @@ fn test-render-line-with-stack {
                                 # ___  ___
   check-screen-row screen, 2/y, "  1    2 ", "F - test-render-line-with-stack/2"
   check-screen-row screen, 3/y, "       1 ", "F - test-render-line-with-stack/3"
+  check-screen-row screen, 4/y, "         ", "F - test-render-line-with-stack/4"
   # not bothering to test hash colors for numbers
 }
 
@@ -201,7 +203,7 @@ fn test-render-line-with-stack-groups {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x20, 4
+  initialize-screen screen, 0x20, 8
   #
   var new-x/eax: int <- copy 0
   var new-y/ecx: int <- copy 0
@@ -211,6 +213,7 @@ fn test-render-line-with-stack-groups {
                                 #    ___  ___
   check-screen-row screen, 2/y, "     1    2    ", "F - test-render-line-with-stack-groups/2"
   check-screen-row screen, 3/y, "          1    ", "F - test-render-line-with-stack-groups/3"
+  check-screen-row screen, 4/y, "               ", "F - test-render-line-with-stack-groups/4"
 }
 
 fn edit-line _self: (addr line), key: byte {
