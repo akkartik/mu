@@ -70,9 +70,12 @@ ELF binaries that run natively on Linux. The translators for most levels are
 built out of lower levels. The translator from Mu to SubX is written in SubX,
 and the translator from SubX to bare SubX is built in bare SubX.
 
-Mu builds and runs on Linux. It has also been tested on Windows using the
-Windows Subsystem for Linux (WSL2). For Macs and other Unix-like systems use
-the emulator:
+Mu builds and runs on Linux. It has also been tested on Windows 10 using the
+Windows Subsystem for Linux. Since Mu emits 32-bit binaries, it requires
+[installing WSL2](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+which isn't currently pre-installed by default.
+
+For Macs and other Unix-like systems, use the emulator:
 
 ```sh
 $ ./translate_mu_emulated apps/ex2.mu  # ~2 mins to emit a.elf
