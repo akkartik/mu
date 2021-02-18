@@ -70,11 +70,12 @@ ELF binaries that run natively on Linux. The translators for most levels are
 built out of lower levels. The translator from Mu to SubX is written in SubX,
 and the translator from SubX to bare SubX is built in bare SubX.
 
-There's an emulator for running Mu binaries (more slowly) on other Unix-like
-systems.
+Mu builds and runs on Linux. It has also been tested on Windows using the
+Windows Subsystem for Linux (WSL2). For Macs and other Unix-like systems use
+the emulator:
 
 ```sh
-$ ./translate_mu_emulated apps/ex2.mu  # emit a.elf using the emulator
+$ ./translate_mu_emulated apps/ex2.mu  # ~2 mins to emit a.elf
 $ ./bootstrap run ./a.elf  # run in the emulator
 $ echo $?
 ```
@@ -82,6 +83,25 @@ $ echo $?
 The emulator is also useful for [debugging](subx_debugging.md).
 
 ### incomplete tools
+
+The `baremetal/` sub-directory contains Mu programs that use no Linux
+services, and can control the screen and keyboard directly without an OS. You
+can make things like this with them:
+
+<img alt='screenshot of a Mu program running without any intervening Operating System' src='html/baremetal.png'>
+
+To reproduce it:
+
+```sh
+$ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
+$ qemu-system-i386 disk.img
+```
+
+Again, this can run under emulation in non-Linux Unix systems. On Windows the
+first command works on WSL2. For the second command you need to download Qemu
+for Windows (https://www.qemu.org/download/#windows)
+
+---
 
 There's a prototype Mu shell, a postfix language with a dynamically updating
 environment. It might turn into the initial experience when a Mu computer
@@ -111,19 +131,6 @@ $ ./translate_mu apps/ex2.mu  # emit a.elf
 $ sudo apt install build-essential util-linux nasm xorriso  # maybe also dosfstools and mtools
 $ tools/iso/soso a.elf  # requires sudo
 $ qemu-system-i386 -cdrom mu_soso.iso
-```
-
-Finally, there's a whole mini-universe inside the `baremetal/` sub-directory,
-Mu programs that use no Linux services, and can control the screen and
-keyboard directly without an OS. You can make things like this with them:
-
-<img alt='screenshot of a Mu program running without any intervening Operating System' src='html/baremetal.png'>
-
-To reproduce it:
-
-```sh
-$ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
-$ qemu-system-i386 disk.img
 ```
 
 ## Syntax
