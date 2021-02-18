@@ -97,9 +97,9 @@ $ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
 $ qemu-system-i386 disk.img
 ```
 
-Again, this can run under emulation in non-Linux Unix systems. On Windows the
-first command works on WSL2. For the second command you need to download Qemu
-for Windows (https://www.qemu.org/download/#windows)
+On other Unix systems, translate Mu sources in emulated mode. On Windows,
+perform the translation in WSL2 and then run [Qemu for
+Windows](https://www.qemu.org/download/#windows) outside WSL2.
 
 ---
 
