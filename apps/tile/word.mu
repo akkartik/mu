@@ -111,21 +111,6 @@ fn word-length _self: (addr word) -> _/eax: int {
   return result
 }
 
-fn first-word _in: (addr handle word), out: (addr handle word) {
-  var curr-ah/esi: (addr handle word) <- copy _in
-  var curr/eax: (addr word) <- lookup *curr-ah
-  var prev/edi: (addr handle word) <- copy 0
-  {
-    prev <- get curr, prev
-    var curr/eax: (addr word) <- lookup *prev
-    compare curr, 0
-    break-if-=
-    copy-object prev, curr-ah
-    loop
-  }
-  copy-object curr-ah, out
-}
-
 fn final-word _in: (addr handle word), out: (addr handle word) {
   var curr-h: (handle word)
   var curr-ah/esi: (addr handle word) <- address curr-h

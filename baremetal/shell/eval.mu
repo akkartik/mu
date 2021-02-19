@@ -214,12 +214,28 @@ fn evaluate-sub _curr: (addr word), end: (addr word), out: (addr value-stack), t
         var is-break?/eax: boolean <- stream-data-equal? curr-stream, "break"
         compare is-break?, 0/false
         break-if-=
+        # if curr == end, clear stack and break
+        # (TODO: move this into skip-rest-of-group)
+        compare curr, end
+        {
+          break-if-!=
+          clear-value-stack out
+          break $evaluate-sub:loop
+        }
         # scan ahead to containing '}'
         var next-word: (handle word)
         var next-word-ah/eax: (addr handle word) <- address next-word
         skip-rest-of-group curr, end, next-word-ah
         var _curr/eax: (addr word) <- lookup *next-word-ah
         curr <- copy _curr
+        # if '}' isn't found before end, we're rendering a word that isn't executed
+        # skip everything else and clear stack
+        var close-found?/eax: boolean <- word-equal? curr, "}"
+        compare close-found?, 0/false
+        {
+          break-if-!=
+          clear-value-stack out
+        }
         loop $evaluate-sub:loop
       }
       {
@@ -408,13 +424,15 @@ fn skip-word _curr: (addr word), end: (addr word), out: (addr handle word) {
   copy-object result-ah, out
 }
 
+# find next "}" from curr
+# if you hit 'end' before "}", return null
 fn skip-rest-of-group _curr: (addr word), end: (addr word), out: (addr handle word) {
   var curr/eax: (addr word) <- copy _curr
   var bracket-count/ecx: int <- copy 0
   var result-ah/esi: (addr handle word) <- get curr, next
   $skip-rest-of-group:loop: {
     var result-val/eax: (addr word) <- lookup *result-ah
-    compare result-val, end
+    compare result-val, 0
     break-if-=
     {
       var open?/eax: boolean <- word-equal? result-val, "{"
@@ -430,6 +448,12 @@ fn skip-rest-of-group _curr: (addr word), end: (addr word), out: (addr handle wo
       break-if-= $skip-rest-of-group:loop
       bracket-count <- decrement
     }
+    compare result-val, end
+    {
+      break-if-!=
+      clear-object out
+      return
+    }
     result-ah <- get result-val, next
     loop
   }
@@ -442,7 +466,9 @@ fn scan-to-start-of-group _curr: (addr word), end: (addr word), out: (addr handl
   var result-ah/esi: (addr handle word) <- get curr, prev
   $scan-to-start-of-group:loop: {
     var result-val/eax: (addr word) <- lookup *result-ah
-    compare result-val, end
+    compare result-val, 0
+    break-if-=
+    compare result-val, end  # not sure what error-detection should happen here
     break-if-=
     {
       var open?/eax: boolean <- word-equal? result-val, "{"
@@ -779,6 +805,87 @@ fn test-eval-conditional-skips-nested-group {
 
 # TODO: test error-handling on:
 #   1 2 > -> }
+
+# incomplete group rendering at 'break'
+fn test-eval-break-incomplete {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "3 { 4 break", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # break clears stack when final word
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 0, "F - test-eval-break-incomplete stack size"
+}
+
+# incomplete group rendering after 'break'
+fn test-eval-break-incomplete-2 {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "3 { 4 break 5", in
+  # end
+  var w-ah/eax: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  final-word w-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # break clears stack when final word
+#?   dump-stack out
+  var len/eax: int <- value-stack-length out
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, len, 0xc/red, 0/black
+  check-ints-equal len, 0, "F - test-eval-break-incomplete-2 stack size"
+}
+
+# complete group rendering at 'break'
+fn test-eval-break-incomplete-3 {
+  # in
+  var in-storage: line
+  var in/esi: (addr line) <- address in-storage
+  parse-line "{ 3 break 4 } 5", in
+  # end = 'break'
+  var w-ah/edx: (addr handle word) <- get in, data
+  var end-h: (handle word)
+  var end-ah/ecx: (addr handle word) <- address end-h
+  skip-one-word w-ah, end-ah
+  skip-one-word end-ah, end-ah
+  var end/eax: (addr word) <- lookup *end-ah
+  # out
+  var out-storage: value-stack
+  var out/edi: (addr value-stack) <- address out-storage
+  initialize-value-stack out, 8
+  #
+  evaluate in, end, out
+  # break clears stack when final word
+  var len/eax: int <- value-stack-length out
+  check-ints-equal len, 0, "F - test-eval-break-incomplete-3 stack size"
+}
+
+# { 1 break 2 } 3   => empty
+#           ^
+#
+# { 1 break 2 } 3   => empty
+#             ^
+#
+# { 1 break 2 } 3   => 1 3
+#               ^
 
 # break skips to next containing `}`
 fn test-eval-break {

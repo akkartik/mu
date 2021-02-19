@@ -101,6 +101,11 @@ fn copy-word-contents-before-cursor _src-ah: (addr handle word), _dest-ah: (addr
 
 fn word-equal? _self: (addr word), s: (addr array byte) -> _/eax: boolean {
   var self/esi: (addr word) <- copy _self
+  {
+    compare self, 0
+    break-if-!=
+    return 0/false
+  }
   var data-ah/eax: (addr handle gap-buffer) <- get self, scalar-data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   var result/eax: boolean <- gap-buffer-equal? data, s
@@ -127,19 +132,11 @@ fn word-length _self: (addr word) -> _/eax: int {
   return result
 }
 
-fn first-word _in: (addr handle word), out: (addr handle word) {
-  var curr-ah/esi: (addr handle word) <- copy _in
-  var curr/eax: (addr word) <- lookup *curr-ah
-  var prev/edi: (addr handle word) <- copy 0
-  {
-    prev <- get curr, prev
-    var curr/eax: (addr word) <- lookup *prev
-    compare curr, 0
-    break-if-=
-    copy-object prev, curr-ah
-    loop
-  }
-  copy-object curr-ah, out
+fn skip-one-word _in: (addr handle word), out: (addr handle word) {
+  var in/eax: (addr handle word) <- copy _in
+  var curr/eax: (addr word) <- lookup *in
+  var next/eax: (addr handle word) <- get curr, next
+  copy-object next, out  # modify 'out' right at the end, just in case it's same as 'in'
 }
 
 fn final-word _in: (addr handle word), out: (addr handle word) {
