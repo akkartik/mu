@@ -6,17 +6,17 @@ type gap-buffer {
   right: grapheme-stack
 }
 
-fn initialize-gap-buffer _self: (addr gap-buffer) {
+fn initialize-gap-buffer _self: (addr gap-buffer), max-word-size: int {
   var self/esi: (addr gap-buffer) <- copy _self
   var left/eax: (addr grapheme-stack) <- get self, left
-  initialize-grapheme-stack left, 0x10/max-word-size
+  initialize-grapheme-stack left, max-word-size
   var right/eax: (addr grapheme-stack) <- get self, right
-  initialize-grapheme-stack right, 0x10/max-word-size
+  initialize-grapheme-stack right, max-word-size
 }
 
 # just for tests
 fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
-  initialize-gap-buffer self
+  initialize-gap-buffer self, 0x10/max-word-size
   var stream-storage: (stream byte 0x10/max-word-size)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, s
@@ -280,7 +280,7 @@ fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> _/eax: bo
 fn test-gap-buffer-equal-from-end {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
-  initialize-gap-buffer g
+  initialize-gap-buffer g, 0x10
   #
   var c/eax: grapheme <- copy 0x61/a
   add-grapheme-at-gap g, c
@@ -294,7 +294,7 @@ fn test-gap-buffer-equal-from-end {
 fn test-gap-buffer-equal-from-middle {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
-  initialize-gap-buffer g
+  initialize-gap-buffer g, 0x10
   #
   var c/eax: grapheme <- copy 0x61/a
   add-grapheme-at-gap g, c
@@ -309,7 +309,7 @@ fn test-gap-buffer-equal-from-middle {
 fn test-gap-buffer-equal-from-start {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
-  initialize-gap-buffer g
+  initialize-gap-buffer g, 0x10
   #
   var c/eax: grapheme <- copy 0x61/a
   add-grapheme-at-gap g, c
@@ -327,7 +327,7 @@ fn test-gap-buffer-equal-fails {
   # g = "aaa"
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
-  initialize-gap-buffer g
+  initialize-gap-buffer g, 0x10
   var c/eax: grapheme <- copy 0x61/a
   add-grapheme-at-gap g, c
   add-grapheme-at-gap g, c
