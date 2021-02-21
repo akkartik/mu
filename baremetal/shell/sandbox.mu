@@ -1,5 +1,6 @@
 type sandbox {
   data: (handle gap-buffer)
+  value: (handle stream byte)
 }
 
 fn initialize-sandbox _self: (addr sandbox) {
@@ -8,6 +9,8 @@ fn initialize-sandbox _self: (addr sandbox) {
   allocate data-ah
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   initialize-gap-buffer data, 0x1000/4KB
+  var value-ah/eax: (addr handle stream byte) <- get self, value
+  populate-stream value-ah, 0x1000/4KB
 }
 
 ## some helpers for tests
@@ -47,14 +50,28 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), x: int, y: int {
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   var dummy/eax: int <- render-gap-buffer screen, data, x, y, 1/true
+  increment y
+  var value-ah/eax: (addr handle stream byte) <- get self, value
+  var value/eax: (addr stream byte) <- lookup *value-ah
+  var dummy/eax: int <- draw-stream-rightward screen, value, x, 0x30/xmax, y, 7/fg=grey, 0/bg
 }
 
-fn edit-sandbox self: (addr sandbox), key: byte {
+fn edit-sandbox _self: (addr sandbox), key: byte {
+  var self/esi: (addr sandbox) <- copy _self
   var g/edx: grapheme <- copy key
   {
     compare g, 8/backspace
     break-if-!=
     delete-grapheme-before-cursor self
+    return
+  }
+  {
+    compare g, 0x13/ctrl-s
+    break-if-!=
+    # ctrl-s: run sandbox(es)
+    var value-ah/eax: (addr handle stream byte) <- get self, value
+    var value/eax: (addr stream byte) <- lookup *value-ah
+    write value, "=> LISP"
     return
   }
   add-grapheme-to-sandbox self, g

@@ -82,6 +82,14 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
+  var xcurr/eax: int <- draw-stream-rightward screen, stream, x, xmax, y, color, background-color
+  return xcurr
+}
+
+# draw a single-line stream from x, y to xmax
+# return the next 'x' coordinate
+# if there isn't enough space, truncate
+fn draw-stream-rightward screen: (addr screen), stream: (addr stream byte), x: int, xmax: int, y: int, color: int, background-color: int -> _/eax: int {
   var xcurr/ecx: int <- copy x
   {
     var g/eax: grapheme <- read-grapheme stream
@@ -137,10 +145,21 @@ fn render-grapheme screen: (addr screen), g: grapheme, xmin: int, ymin: int, xma
 # return the next (x, y) coordinate in raster order where drawing stopped
 # that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, truncate
-fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
+  var x/eax: int <- copy _x
+  var y/ecx: int <- copy _y
+  x, y <- draw-stream-wrapping-right-then-down screen, stream, xmin, ymin, xmax, ymax, x, y, color, background-color
+  return x, y
+}
+
+# draw a stream in the rectangle from (xmin, ymin) to (xmax, ymax), starting from (x, y), wrapping as necessary
+# return the next (x, y) coordinate in raster order where drawing stopped
+# that way the caller can draw more if given the same min and max bounding-box.
+# if there isn't enough space, truncate
+fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var xcurr/eax: int <- copy x
   var ycurr/ecx: int <- copy y
   var g/ebx: grapheme <- copy 0
@@ -319,6 +338,14 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
+  var ycurr/eax: int <- draw-stream-downward screen, stream, x, y, ymax, color, background-color
+  return ycurr
+}
+
+# draw a single-line stream vertically from x, y to ymax
+# return the next 'y' coordinate
+# if there isn't enough space, truncate
+fn draw-stream-downward screen: (addr screen), stream: (addr stream byte), x: int, y: int, ymax: int, color: int, background-color: int -> _/eax: int {
   var ycurr/ecx: int <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
@@ -343,10 +370,21 @@ fn draw-text-downward-from-cursor screen: (addr screen), text: (addr array byte)
 # return the next (x, y) coordinate in raster order where drawing stopped
 # that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, truncate
-fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
+  var x/eax: int <- copy _x
+  var y/ecx: int <- copy _y
+  x, y <- draw-stream-wrapping-down-then-right screen, stream, xmin, ymin, xmax, ymax, x, y, color, background-color
+  return x, y
+}
+
+# draw a stream down and right in the rectangle from (xmin, ymin) to (xmax, ymax), starting from (x, y), wrapping as necessary
+# return the next (x, y) coordinate in raster order where drawing stopped
+# that way the caller can draw more if given the same min and max bounding-box.
+# if there isn't enough space, truncate
+fn draw-stream-wrapping-down-then-right screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var xcurr/edx: int <- copy x
   var ycurr/ecx: int <- copy y
   {
