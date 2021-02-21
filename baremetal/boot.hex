@@ -320,7 +320,7 @@ e9 fd ff  # loop forever
   # check output buffer of 8042 keyboard controller (https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)
   e4 64  # al <- port 0x64
   a8 01  # set zf if bit 0 (least significant) is not set
-  74 89  # jump to epilogue if 0 bit is not set [label]
+  74 bb  # jump to epilogue if 0 bit is not set [label]
 # 21e:
   # - if keyboard buffer is full, return
   31 c9  # ecx <- xor ecx;  11/direct 001/r32/ecx 001/rm32/ecx
@@ -334,7 +334,7 @@ e9 fd ff  # loop forever
     30 80 00 00  # disp32 [label]
   # if (al != 0) return
   3c 00  # compare al, 0
-  75 77  # jump to epilogue if != [label]
+  75 a9  # jump to epilogue if != [label]
 # 230:
   # - read keycode
   e4 60  # al <- port 0x60
@@ -357,61 +357,97 @@ e9 fd ff  # loop forever
     05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
     10 80 00 00  # disp32 [label]
     00 00 00 00  # imm32
+# 24e:
 # $2:
+  # if (al == 0x9d) ctrl = false  # ctrl is being lifted
+  3c 9d  # compare al, 0x9d
+  75 0a  # jump to $3 if != [label]
+  # *ctrl = 0
+  c7  # copy imm32 to rm32
+    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+    14 80 00 00  # disp32 [label]
+    00 00 00 00  # imm32
+# 25c:
+# $3:
   # if (al & 0x80) a key is being lifted; return
   50  # push eax
   24 80  # al <- and 0x80
   3c 00  # compare al, 0
   58  # pop to eax (without touching flags)
-  75 51  # jump to epilogue if != [label]
-# 256:
+  75 75  # jump to epilogue if != [label]
+# 264:
   # - key pressed
   # if (al == 0x2a) shift = true, return  # left shift pressed
   3c 2a  # compare al, 0x2a
-  75 0c  # jump to $3 if != [label]
-  # *shift = 1
-  c7  # copy imm32 to rm32
-    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    10 80 00 00  # disp32 [label]
-    01 00 00 00  # imm32
-  eb 41 # jump to epilogue [label]
-# 266:
-# $3:
-  # if (al == 0x36) shift = true, return  # right shift pressed
-  3c 36  # compare al, 0x36
   75 0c  # jump to $4 if != [label]
   # *shift = 1
   c7  # copy imm32 to rm32
     05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
     10 80 00 00  # disp32 [label]
     01 00 00 00  # imm32
-  eb 31 # jump to epilogue [label]
-# 276:
+  eb 65 # jump to epilogue [label]
+# 274:
 # $4:
+  # if (al == 0x36) shift = true, return  # right shift pressed
+  3c 36  # compare al, 0x36
+  75 0c  # jump to $5 if != [label]
+  # *shift = 1
+  c7  # copy imm32 to rm32
+    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+    10 80 00 00  # disp32 [label]
+    01 00 00 00  # imm32
+  eb 55 # jump to epilogue [label]
+# 284:
+# $5:
+  # if (al == 0x1d) ctrl = true, return
+  3c 1d  # compare al, 0x36
+  75 0c  # jump to $6 if != [label]
+  # *shift = 1
+  c7  # copy imm32 to rm32
+    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
+    14 80 00 00  # disp32 [label]
+    01 00 00 00  # imm32
+  eb 45 # jump to epilogue [label]
+# 294:
+# $6:
   # - convert key to character
   # if (shift) use keyboard shift map
   81  # operate on rm32 and imm32
     3d  # 00/mod/indirect 111/subop/compare 101/rm32/use-disp32
     10 80 00 00  # disp32 = shift [label]
     00 00 00 00  # imm32
-  74 08  # jump to $5 if = [label]
+  74 08  # jump to $7 if = [label]
   # al <- *(keyboard shift map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
     00 87 00 00  # disp32 [label]
-  eb 06  # jump to $6 [label]
-# 28a:
-# $5:
+  eb 1a  # jump to $8 [label]
+# 2a8:
+# $7:
+  # if (ctrl) use keyboard ctrl map
+  81  # operate on rm32 and imm32
+    3d  # 00/mod/indirect 111/subop/compare 101/rm32/use-disp32
+    14 80 00 00  # disp32 = ctrl [label]
+    00 00 00 00  # imm32
+  74 08  # jump to $8 if = [label]
+  # al <- *(keyboard ctrl map + eax)
+  8a  # copy m8 at rm32 to r8
+    80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
+    00 88 00 00  # disp32 [label]
+  eb 06  # jump to $9 [label]
+# 2bc:
+# $8:
   # otherwise use keyboard normal map
   # al <- *(keyboard normal map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
     00 86 00 00  # disp32 [label]
-# $6:
+# 2c2:
+# $9:
   # - if there's no character mapping, return
   3c 00  # compare al, 0
   74 13  # jump to epilogue if = [label]
-# 294:
+# 2c6:
   # - store al in keyboard buffer
   88  # copy r8 to m8 at r32
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
@@ -425,18 +461,15 @@ e9 fd ff  # loop forever
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
     28 80 00 00  # disp32 [label]
     0f  # imm8
-# 2a7:
+# 2d9:
   # epilogue
   61  # pop all registers
   fb  # enable interrupts
   cf  # iret
 
 # padding
-# 2aa:
-                              00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 2dc:
+                                    00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 # 300:
@@ -470,9 +503,13 @@ e9 fd ff  # loop forever
 # var shift: boolean
   00 00 00 00
 
-# padding
 # 414:
-            00 00 00 00 00 00 00 00 00 00 00 00
+# var ctrl: boolean
+  00 00 00 00
+
+# padding
+# 418:
+                        00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 
 # 428:
@@ -735,7 +772,7 @@ e9 fd ff  # loop forever
 # tab q  w  e  r  t  y  u  i  o  p  [  ]
    09 71 77 65 72 74 79 75 69 6f 70 5b 5d
 # 1c
-#                                         enter
+#                                         enter (newline)
                                           0a 00
 # 1e
 #     a  s  d  f  g  h  j  k  l  ;  '  `     \
@@ -774,9 +811,9 @@ e9 fd ff  # loop forever
       21 40 23 24 25 53 26 2a 28 29 5f 2b 08
 # 0f
 # tab Q  W  E  R  T  Y  U  I  O  P  {  }
-   09 51 57 55 52 54 59 55 59 5f 50 7b 7d
+   09 51 57 45 52 54 59 55 49 5f 50 7b 7d
 # 1c
-#                                         enter
+#                                         enter (newline)
                                           0a 00
 # 1e
 #     A  S  D  F  G  H  J  K  L  :  "  ~     |
@@ -807,9 +844,20 @@ e9 fd ff  # loop forever
 # c00:
 # keyboard ctrl map:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 10
+#     ^q ^w ^e ^r ^t ^y ^u tb ^o ^p
+      11 17 05 12 14 19 15 09 1f 10 00 00
+# 1c
+#                                         carriage-return
+                                          0d 00
+# 1e
+#     ^a ^s ^d ^f ^g ^h ^j ^j ^l             ^\
+      01 13 04 06 07 08 0a 0b 0c 00 00 00 00 1c
+# 2c
+#     ^z ^x ^c ^v ^b ^n ^m       ^/
+      1a 18 03 16 02 0e 0d 00 00 1f 00 00
+# 38
+                        00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
