@@ -351,7 +351,7 @@ e9 fd ff  # loop forever
 # $1:
   # if (al == 0xb6) shift = false  # right shift is being lifted
   3c b6  # compare al, 0xb6
-  75 0a  # jump to $1 if != [label]
+  75 0a  # jump to $2 if != [label]
   # *shift = 0
   c7  # copy imm32 to rm32
     05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
@@ -389,13 +389,12 @@ e9 fd ff  # loop forever
 # 276:
 # $4:
   # - convert key to character
-  # if (shift) use keyboard normal map
+  # if (shift) use keyboard shift map
   81  # operate on rm32 and imm32
     3d  # 00/mod/indirect 111/subop/compare 101/rm32/use-disp32
     10 80 00 00  # disp32 = shift [label]
     00 00 00 00  # imm32
   74 08  # jump to $5 if = [label]
-  # otherwise use keyboard shift map
   # al <- *(keyboard shift map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
@@ -403,6 +402,7 @@ e9 fd ff  # loop forever
   eb 06  # jump to $6 [label]
 # 28a:
 # $5:
+  # otherwise use keyboard normal map
   # al <- *(keyboard normal map + eax)
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
@@ -425,7 +425,7 @@ e9 fd ff  # loop forever
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
     28 80 00 00  # disp32 [label]
     0f  # imm8
-# 2a9:
+# 2a7:
   # epilogue
   61  # pop all registers
   fb  # enable interrupts
