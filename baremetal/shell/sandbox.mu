@@ -44,16 +44,19 @@ fn delete-grapheme-before-cursor _self: (addr sandbox) {
   delete-before-gap data
 }
 
-fn render-sandbox screen: (addr screen), _self: (addr sandbox), x: int, y: int {
+fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int {
   clear-screen screen
   var self/esi: (addr sandbox) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
-  var data/eax: (addr gap-buffer) <- lookup *data-ah
-  var dummy/eax: int <- render-gap-buffer screen, data, x, y, 1/true
-  increment y
+  var _data/eax: (addr gap-buffer) <- lookup *data-ah
+  var data/edx: (addr gap-buffer) <- copy _data
+  var x/eax: int <- copy _x
+  var y/ecx: int <- copy _y
+  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, 0x20/xmax, 0x20/ymax, x, y, 1/true
+  y <- increment
   var value-ah/eax: (addr handle stream byte) <- get self, value
   var value/eax: (addr stream byte) <- lookup *value-ah
-  var dummy/eax: int <- draw-stream-rightward screen, value, x, 0x30/xmax, y, 7/fg=grey, 0/bg
+  var dummy/eax: int <- draw-stream-rightward screen, value, _x, 0x30/xmax, y, 7/fg=grey, 0/bg
 }
 
 fn edit-sandbox _self: (addr sandbox), key: byte {
