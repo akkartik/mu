@@ -1,5 +1,4 @@
 # grapheme stacks are the smallest unit of editable text
-# they are typically rendered horizontally
 
 type grapheme-stack {
   data: (handle array grapheme)

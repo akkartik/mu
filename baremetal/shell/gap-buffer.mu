@@ -1,5 +1,4 @@
 # primitive for editing a single word
-# parameter: max-word-size = 16 graphemes
 
 type gap-buffer {
   left: grapheme-stack
