@@ -77,30 +77,12 @@ fn draw-code-point-at-cursor screen: (addr screen), c: code-point, color: int, b
 
 # draw a single line of text from x, y to xmax
 # return the next 'x' coordinate
-# if there isn't enough space, return 0 without modifying the screen
+# if there isn't enough space, truncate
 fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, xmax: int, y: int, color: int, background-color: int -> _/eax: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
-  # check if we have enough space
   var xcurr/ecx: int <- copy x
-  {
-    compare xcurr, xmax
-    break-if->
-    var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff/end-of-file
-    break-if-=
-    xcurr <- increment
-    loop
-  }
-  compare xcurr, xmax
-  {
-    break-if-<=
-    return 0
-  }
-  # we do; actually draw
-  rewind-stream stream
-  xcurr <- copy x
   {
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
@@ -154,7 +136,7 @@ fn render-grapheme screen: (addr screen), g: grapheme, xmin: int, ymin: int, xma
 # draw text in the rectangle from (xmin, ymin) to (xmax, ymax), starting from (x, y), wrapping as necessary
 # return the next (x, y) coordinate in raster order where drawing stopped
 # that way the caller can draw more if given the same min and max bounding-box.
-# if there isn't enough space, return 0 without modifying the screen
+# if there isn't enough space, truncate
 fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
@@ -224,33 +206,8 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write-int32-hex stream, n
-  # check if we have enough space
   var xcurr/edx: int <- copy x
   var ycurr/ecx: int <- copy y
-  {
-    compare ycurr, ymax
-    break-if->=
-    var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff/end-of-file
-    break-if-=
-    xcurr <- increment
-    compare xcurr, xmax
-    {
-      break-if-<
-      xcurr <- copy xmin
-      ycurr <- increment
-    }
-    loop
-  }
-  compare ycurr, ymax
-  {
-    break-if-<
-    return 0, 0
-  }
-  # we do; actually draw
-  rewind-stream stream
-  xcurr <- copy x
-  ycurr <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
@@ -303,33 +260,8 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write-int32-decimal stream, n
-  # check if we have enough space
   var xcurr/edx: int <- copy x
   var ycurr/ecx: int <- copy y
-  {
-    compare ycurr, ymax
-    break-if->=
-    var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff/end-of-file
-    break-if-=
-    xcurr <- increment
-    compare xcurr, xmax
-    {
-      break-if-<
-      xcurr <- copy xmin
-      ycurr <- increment
-    }
-    loop
-  }
-  compare ycurr, ymax
-  {
-    break-if-<
-    return 0, 0
-  }
-  # we do; actually draw
-  rewind-stream stream
-  xcurr <- copy x
-  ycurr <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
@@ -382,30 +314,12 @@ fn draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen scre
 
 # draw a single line of text vertically from x, y to ymax
 # return the next 'y' coordinate
-# if there isn't enough space, return 0 without modifying the screen
+# if there isn't enough space, truncate
 fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y: int, ymax: int, color: int, background-color: int -> _/eax: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
-  # check if we have enough space
   var ycurr/ecx: int <- copy y
-  {
-    compare ycurr, ymax
-    break-if->
-    var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff/end-of-file
-    break-if-=
-    ycurr <- increment
-    loop
-  }
-  compare ycurr, ymax
-  {
-    break-if-<=
-    return 0
-  }
-  # we do; actually draw
-  rewind-stream stream
-  ycurr <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
@@ -428,38 +342,13 @@ fn draw-text-downward-from-cursor screen: (addr screen), text: (addr array byte)
 # draw text down and right in the rectangle from (xmin, ymin) to (xmax, ymax), starting from (x, y), wrapping as necessary
 # return the next (x, y) coordinate in raster order where drawing stopped
 # that way the caller can draw more if given the same min and max bounding-box.
-# if there isn't enough space, return 0 without modifying the screen
+# if there isn't enough space, truncate
 fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
-  # check if we have enough space
   var xcurr/edx: int <- copy x
   var ycurr/ecx: int <- copy y
-  {
-    compare xcurr, xmax
-    break-if->=
-    var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff/end-of-file
-    break-if-=
-    ycurr <- increment
-    compare ycurr, ymax
-    {
-      break-if-<
-      xcurr <- increment
-      ycurr <- copy ymin
-    }
-    loop
-  }
-  compare xcurr, xmax
-  {
-    break-if-<
-    return 0, 0
-  }
-  # we do; actually draw
-  rewind-stream stream
-  xcurr <- copy x
-  ycurr <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
