@@ -34,7 +34,15 @@ fn add-grapheme-to-sandbox _self: (addr sandbox), c: grapheme {
   add-grapheme-at-gap data, c
 }
 
+fn delete-grapheme-before-cursor _self: (addr sandbox) {
+  var self/esi: (addr sandbox) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  delete-before-gap data
+}
+
 fn render-sandbox screen: (addr screen), _self: (addr sandbox), x: int, y: int {
+  clear-screen screen
   var self/esi: (addr sandbox) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
@@ -43,5 +51,11 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), x: int, y: int {
 
 fn edit-sandbox self: (addr sandbox), key: byte {
   var g/edx: grapheme <- copy key
+  {
+    compare g, 8/backspace
+    break-if-!=
+    delete-grapheme-before-cursor self
+    return
+  }
   add-grapheme-to-sandbox self, g
 }

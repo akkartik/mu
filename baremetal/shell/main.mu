@@ -7,11 +7,13 @@ fn main {
   initialize-sandbox sandbox
   {
     render-sandbox 0/screen, sandbox, 2/x, 2/y
-    var key/eax: byte <- read-key 0/keyboard
-    compare key, 0
-    loop-if-=
-    # no way to quit right now; just reboot
-    edit-sandbox sandbox, key
+    {
+      var key/eax: byte <- read-key 0/keyboard
+      compare key, 0
+      loop-if-=
+      # no way to quit right now; just reboot
+      edit-sandbox sandbox, key
+    }
     loop
   }
 }
