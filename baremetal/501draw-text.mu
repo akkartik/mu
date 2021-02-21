@@ -129,6 +129,28 @@ fn draw-text-rightward-from-cursor screen: (addr screen), text: (addr array byte
   return result
 }
 
+fn render-grapheme screen: (addr screen), g: grapheme, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+  compare g, 0xa/newline
+  var x/eax: int <- copy x
+  {
+    break-if-!=
+    # minimum effort to clear cursor
+    draw-code-point screen, 0x20/space, x, y, color, background-color
+    x <- copy xmin
+    increment y
+    return x, y
+  }
+  draw-grapheme screen, g, x, y, color, background-color
+  x <- increment
+  compare x, xmax
+  {
+    break-if-<
+    x <- copy xmin
+    increment y
+  }
+  return x, y
+}
+
 # draw text in the rectangle from (xmin, ymin) to (xmax, ymax), starting from (x, y), wrapping as necessary
 # return the next (x, y) coordinate in raster order where drawing stopped
 # that way the caller can draw more if given the same min and max bounding-box.
@@ -137,45 +159,17 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array b
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
-  # check if we have enough space
-  var xcurr/edx: int <- copy x
+  var xcurr/eax: int <- copy x
   var ycurr/ecx: int <- copy y
+  var g/ebx: grapheme <- copy 0
   {
-    compare ycurr, ymax
-    break-if->=
-    var g/eax: grapheme <- read-grapheme stream
+    {
+      var _g/eax: grapheme <- read-grapheme stream
+      g <- copy _g
+    }
     compare g, 0xffffffff/end-of-file
     break-if-=
-    xcurr <- increment
-    compare xcurr, xmax
-    {
-      break-if-<
-      xcurr <- copy xmin
-      ycurr <- increment
-    }
-    loop
-  }
-  compare ycurr, ymax
-  {
-    break-if-<
-    return 0, 0
-  }
-  # we do; actually draw
-  rewind-stream stream
-  xcurr <- copy x
-  ycurr <- copy y
-  {
-    var g/eax: grapheme <- read-grapheme stream
-    compare g, 0xffffffff/end-of-file
-    break-if-=
-    draw-grapheme screen, g, xcurr, ycurr, color, background-color
-    xcurr <- increment
-    compare xcurr, xmax
-    {
-      break-if-<
-      xcurr <- copy xmin
-      ycurr <- increment
-    }
+    xcurr, ycurr <- render-grapheme screen, g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     loop
   }
   set-cursor-position screen, xcurr, ycurr

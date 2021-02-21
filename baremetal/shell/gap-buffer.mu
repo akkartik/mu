@@ -78,15 +78,16 @@ fn emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte) {
 
 # We implicitly render everything editable in a single color, and assume the
 # cursor is a single other color.
-fn render-gap-buffer screen: (addr screen), _gap: (addr gap-buffer), x: int, y: int, render-cursor?: boolean -> _/eax: int {
+fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, render-cursor?: boolean -> _/eax: int, _/ecx: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
-  var left/eax: (addr grapheme-stack) <- get gap, left
-  var x2/eax: int <- render-stack-from-bottom screen, left, x, y
-  var right/ecx: (addr grapheme-stack) <- get gap, right
-  x2 <- render-stack-from-top screen, right, x2, y, render-cursor?
-  var x3/ebx: int <- copy x2
+  var left/edx: (addr grapheme-stack) <- get gap, left
+  var x2/eax: int <- copy 0
+  var y2/ecx: int <- copy 0
+  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, left, xmin, ymin, xmax, ymax, x, y
+  var right/edx: (addr grapheme-stack) <- get gap, right
+  x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, right, xmin, ymin, xmax, ymax, x2, y2, render-cursor?
   # decide whether we still need to print a cursor
-  var bg/edx: int <- copy 0
+  var bg/ebx: int <- copy 0
   compare render-cursor?, 0/false
   {
     break-if-=
@@ -97,10 +98,21 @@ fn render-gap-buffer screen: (addr screen), _gap: (addr gap-buffer), x: int, y: 
     bg <- copy 7/cursor
   }
   # print a grapheme either way so that cursor position doesn't affect printed width
-  var space/eax: grapheme <- copy 0x20
-  draw-grapheme screen, space, x3, y, 3/fg=cyan, bg
-  x3 <- increment
-  return x3
+  var space/edx: grapheme <- copy 0x20
+  x2, y2 <- render-grapheme screen, space, xmin, ymin, xmax, ymax, x2, y2, 3/fg=cyan, bg
+  return x2, y2
+}
+
+fn render-gap-buffer screen: (addr screen), gap: (addr gap-buffer), x: int, y: int, render-cursor?: boolean -> _/eax: int {
+  var _width/eax: int <- copy 0
+  var _height/ecx: int <- copy 0
+  _width, _height <- screen-size screen
+  var width/edx: int <- copy _width
+  var height/ebx: int <- copy _height
+  var x2/eax: int <- copy 0
+  var y2/ecx: int <- copy 0
+  x2, y2 <- render-gap-buffer-wrapping-right-then-down screen, gap, x, y, width, height, x, y, render-cursor?
+  return x2  # y2? yolo
 }
 
 fn gap-buffer-length _gap: (addr gap-buffer) -> _/eax: int {
