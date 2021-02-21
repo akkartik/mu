@@ -216,6 +216,26 @@ fn test-render-line-with-stack-groups {
   check-screen-row screen, 4/y, "               ", "F - test-render-line-with-stack-groups/4"
 }
 
+# break skips rest of the containing group
+#? fn test-render-line-with-break {
+#?   var line-storage: line
+#?   var line/esi: (addr line) <- address line-storage
+#?   parse-line "{ 1 break 2 }", line
+#?   # setup: screen
+#?   var screen-on-stack: screen
+#?   var screen/edi: (addr screen) <- address screen-on-stack
+#?   initialize-screen screen, 0x20, 8
+#?   #
+#?   var new-x/eax: int <- copy 0
+#?   var new-y/ecx: int <- copy 0
+#?   new-x, new-y <- render-line-with-stack screen, line, 0/x, 0/y, 0/no-cursor
+#?   check-screen-row screen, 0/y, "{  1    break  2    } ", "F - test-render-line-with-break/0"
+#?   check-screen-row screen, 1/y, "                      ", "F - test-render-line-with-break/1"
+#?                                 #    ___
+#?   check-screen-row screen, 2/y, "     1                ", "F - test-render-line-with-break/2"
+#? #?   check-screen-row screen, 3/y, "                      ", "F - test-render-line-with-break/3"
+#? }
+
 fn edit-line _self: (addr line), key: byte {
   var self/esi: (addr line) <- copy _self
   var cursor-word-ah/edx: (addr handle word) <- get self, cursor
