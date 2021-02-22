@@ -80,14 +80,12 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     compare g, 0x13/ctrl-s
     break-if-!=
     # ctrl-s: run sandbox(es)
-    var buffer-storage: (stream byte 0x1000)
-    var buffer/edi: (addr stream byte) <- address buffer-storage
     var data-ah/eax: (addr handle gap-buffer) <- get self, data
-    var data/eax: (addr gap-buffer) <- lookup *data-ah
-    emit-gap-buffer data, buffer
+    var _data/eax: (addr gap-buffer) <- lookup *data-ah
+    var data/ecx: (addr gap-buffer) <- copy _data
     var value-ah/eax: (addr handle stream byte) <- get self, value
     var value/eax: (addr stream byte) <- lookup *value-ah
-    run buffer, value
+    run data, value
     return
   }
   add-grapheme-to-sandbox self, g

@@ -18,18 +18,19 @@ fn main {
   }
 }
 
-fn run in: (addr stream byte), out: (addr stream byte) {
+fn run in: (addr gap-buffer), out: (addr stream byte) {
   # tokenize
   # insert parens
   # transform infix
   # token tree
   # syntax tree
+  rewind-gap-buffer in
   clear-stream out
   {
-    var done?/eax: boolean <- stream-empty? in
+    var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme in
+    var g/eax: grapheme <- read-from-gap-buffer in
     write-grapheme out, g
     loop
   }
