@@ -21,6 +21,7 @@ fn read-cell in: (addr gap-buffer), out: (addr handle cell) {
 
 fn next-token in: (addr gap-buffer), out: (addr stream byte) {
   clear-stream out
+  skip-whitespace-from-gap-buffer in
   {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false

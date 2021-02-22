@@ -611,6 +611,42 @@ fn gap-buffer-scan-done? _self: (addr gap-buffer) -> _/eax: boolean {
   return 1/true
 }
 
+fn peek-from-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme {
+  var self/esi: (addr gap-buffer) <- copy _self
+  # more in left?
+  var left/ecx: (addr grapheme-stack) <- get self, left
+  var left-size/eax: int <- grapheme-stack-length left
+  var left-read-index-a/edx: (addr int) <- get self, left-read-index
+  compare *left-read-index-a, left-size
+  {
+    break-if->=
+    var left-data-ah/eax: (addr handle array grapheme) <- get left, data
+    var left-data/eax: (addr array grapheme) <- lookup *left-data-ah
+    var left-read-index/ecx: int <- copy *left-read-index-a
+    var result/eax: (addr grapheme) <- index left-data, left-read-index
+    return *result
+  }
+  # more in right?
+  var right/ecx: (addr grapheme-stack) <- get self, right
+  var _right-size/eax: int <- grapheme-stack-length right
+  var right-size/ebx: int <- copy _right-size
+  var right-read-index-a/edx: (addr int) <- get self, right-read-index
+  compare *right-read-index-a, right-size
+  {
+    break-if->=
+    # read the right from reverse
+    var right-data-ah/eax: (addr handle array grapheme) <- get right, data
+    var right-data/eax: (addr array grapheme) <- lookup *right-data-ah
+    var right-read-index/ebx: int <- copy right-size
+    right-read-index <- subtract *right-read-index-a
+    right-read-index <- subtract 1
+    var result/eax: (addr grapheme) <- index right-data, right-read-index
+    return *result
+  }
+  # if we get here there's nothing left
+  return 0/nul
+}
+
 fn read-from-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme {
   var self/esi: (addr gap-buffer) <- copy _self
   # more in left?
@@ -697,4 +733,20 @@ fn test-read-from-gap-buffer {
   var g/eax: grapheme <- read-from-gap-buffer gap
   var x/ecx: int <- copy g
   check-ints-equal x, 0/nul, "F - test-read-from-gap-buffer/right-4"
+}
+
+fn skip-whitespace-from-gap-buffer self: (addr gap-buffer) {
+  var done?/eax: boolean <- gap-buffer-scan-done? self
+  compare done?, 0/false
+  break-if-!=
+  var g/eax: grapheme <- peek-from-gap-buffer self
+  {
+    compare g, 0x20/space
+    break-if-=
+    compare g, 0xa/newline
+    break-if-=
+    return
+  }
+  g <- read-from-gap-buffer self
+  loop
 }
