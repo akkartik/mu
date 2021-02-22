@@ -1,5 +1,5 @@
 # out is not allocated
-fn read-cell in: (addr gap-buffer), _out: (addr handle cell) {
+fn read-cell in: (addr gap-buffer), out: (addr handle cell) {
   # TODO:
   #   tokenize
   #   insert parens
@@ -7,7 +7,10 @@ fn read-cell in: (addr gap-buffer), _out: (addr handle cell) {
   #   token tree
   #   syntax tree
   rewind-gap-buffer in
-  # read symbol
+  read-symbol in, out
+}
+
+fn read-symbol in: (addr gap-buffer), _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   new-symbol out
   var out-a/eax: (addr cell) <- lookup *out
