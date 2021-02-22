@@ -3,6 +3,9 @@
 type gap-buffer {
   left: grapheme-stack
   right: grapheme-stack
+  # some fields for scanning incrementally through a gap-buffer
+  left-read-index: int
+  right-read-index: int
 }
 
 fn initialize-gap-buffer _self: (addr gap-buffer), max-word-size: int {
@@ -399,7 +402,12 @@ fn gap-index _self: (addr gap-buffer), _n: int -> _/eax: grapheme {
     break-if->=
     var data-ah/eax: (addr handle array grapheme) <- get right, data
     var data/eax: (addr array grapheme) <- lookup *data-ah
-    var result/eax: (addr grapheme) <- index data, n
+    # idx = right->len - n - 1
+    var idx/ebx: int <- copy n
+    idx <- subtract *right-len-a
+    idx <- negate
+    idx <- subtract 1
+    var result/eax: (addr grapheme) <- index data, idx
     return *result
   }
   # error
@@ -433,6 +441,34 @@ fn test-gap-buffers-equal? {
   check-not result, "F - test-gap-buffers-equal? - not equal 2"
   result <- gap-buffers-equal? d, a
   check-not result, "F - test-gap-buffers-equal? - not equal 3"
+}
+
+fn test-gap-buffer-index {
+  var gap-storage: gap-buffer
+  var gap/esi: (addr gap-buffer) <- address gap-storage
+  initialize-gap-buffer-with gap, "abc"
+  # gap is at end, all contents are in left
+  var g/eax: grapheme <- gap-index gap, 0
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x61/a, "F - test-gap-index/left-1"
+  var g/eax: grapheme <- gap-index gap, 1
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x62/b, "F - test-gap-index/left-2"
+  var g/eax: grapheme <- gap-index gap, 2
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x63/c, "F - test-gap-index/left-3"
+  # now check when everything is to the right
+  gap-to-start gap
+  rewind-gap-buffer gap
+  var g/eax: grapheme <- gap-index gap, 0
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x61/a, "F - test-gap-index/right-1"
+  var g/eax: grapheme <- gap-index gap, 1
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x62/b, "F - test-gap-index/right-2"
+  var g/eax: grapheme <- gap-index gap, 2
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x63/c, "F - test-gap-index/right-3"
 }
 
 fn copy-gap-buffer _src-ah: (addr handle gap-buffer), _dest-ah: (addr handle gap-buffer) {
@@ -536,4 +572,129 @@ fn test-render-gap-buffer-with-cursor-at-start {
   check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-at-start: result"
                                                                 # abc
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|   ", "F - test-render-gap-buffer-with-cursor-at-start: bg"
+}
+
+## some primitives for scanning through a gap buffer
+# don't modify the gap buffer while scanning
+# this includes moving the cursor around
+
+# restart scan without affecting gap-buffer contents
+fn rewind-gap-buffer _self: (addr gap-buffer) {
+  var self/esi: (addr gap-buffer) <- copy _self
+  var dest/eax: (addr int) <- get self, left-read-index
+  copy-to *dest, 0
+  dest <- get self, right-read-index
+  copy-to *dest, 0
+}
+
+fn gap-buffer-scan-done? _self: (addr gap-buffer) -> _/eax: boolean {
+  var self/esi: (addr gap-buffer) <- copy _self
+  # more in left?
+  var left/eax: (addr grapheme-stack) <- get self, left
+  var left-size/eax: int <- grapheme-stack-length left
+  var left-read-index/ecx: (addr int) <- get self, left-read-index
+  compare *left-read-index, left-size
+  {
+    break-if->=
+    return 0/false
+  }
+  # more in right?
+  var right/eax: (addr grapheme-stack) <- get self, right
+  var right-size/eax: int <- grapheme-stack-length right
+  var right-read-index/ecx: (addr int) <- get self, right-read-index
+  compare *right-read-index, right-size
+  {
+    break-if->=
+    return 0/false
+  }
+  #
+  return 1/true
+}
+
+fn read-from-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme {
+  var self/esi: (addr gap-buffer) <- copy _self
+  # more in left?
+  var left/ecx: (addr grapheme-stack) <- get self, left
+  var left-size/eax: int <- grapheme-stack-length left
+  var left-read-index-a/edx: (addr int) <- get self, left-read-index
+  compare *left-read-index-a, left-size
+  {
+    break-if->=
+    var left-data-ah/eax: (addr handle array grapheme) <- get left, data
+    var left-data/eax: (addr array grapheme) <- lookup *left-data-ah
+    var left-read-index/ecx: int <- copy *left-read-index-a
+    var result/eax: (addr grapheme) <- index left-data, left-read-index
+    increment *left-read-index-a
+    return *result
+  }
+  # more in right?
+  var right/ecx: (addr grapheme-stack) <- get self, right
+  var _right-size/eax: int <- grapheme-stack-length right
+  var right-size/ebx: int <- copy _right-size
+  var right-read-index-a/edx: (addr int) <- get self, right-read-index
+  compare *right-read-index-a, right-size
+  {
+    break-if->=
+    # read the right from reverse
+    var right-data-ah/eax: (addr handle array grapheme) <- get right, data
+    var right-data/eax: (addr array grapheme) <- lookup *right-data-ah
+    var right-read-index/ebx: int <- copy right-size
+    right-read-index <- subtract *right-read-index-a
+    right-read-index <- subtract 1
+    var result/eax: (addr grapheme) <- index right-data, right-read-index
+    increment *right-read-index-a
+    return *result
+  }
+  # if we get here there's nothing left
+  return 0/nul
+}
+
+fn test-read-from-gap-buffer {
+  var gap-storage: gap-buffer
+  var gap/esi: (addr gap-buffer) <- address gap-storage
+  initialize-gap-buffer-with gap, "abc"
+  # gap is at end, all contents are in left
+  var done?/eax: boolean <- gap-buffer-scan-done? gap
+  check-not done?, "F - test-read-from-gap-buffer/left-1/done"
+  var g/eax: grapheme <- read-from-gap-buffer gap
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x61/a, "F - test-read-from-gap-buffer/left-1"
+  var done?/eax: boolean <- gap-buffer-scan-done? gap
+  check-not done?, "F - test-read-from-gap-buffer/left-2/done"
+  var g/eax: grapheme <- read-from-gap-buffer gap
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x62/b, "F - test-read-from-gap-buffer/left-2"
+  var done?/eax: boolean <- gap-buffer-scan-done? gap
+  check-not done?, "F - test-read-from-gap-buffer/left-3/done"
+  var g/eax: grapheme <- read-from-gap-buffer gap
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x63/c, "F - test-read-from-gap-buffer/left-3"
+  var done?/eax: boolean <- gap-buffer-scan-done? gap
+  check done?, "F - test-read-from-gap-buffer/left-4/done"
+  var g/eax: grapheme <- read-from-gap-buffer gap
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0/nul, "F - test-read-from-gap-buffer/left-4"
+  # now check when everything is to the right
+  gap-to-start gap
+  rewind-gap-buffer gap
+  var done?/eax: boolean <- gap-buffer-scan-done? gap
+  check-not done?, "F - test-read-from-gap-buffer/right-1/done"
+  var g/eax: grapheme <- read-from-gap-buffer gap
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x61/a, "F - test-read-from-gap-buffer/right-1"
+  var done?/eax: boolean <- gap-buffer-scan-done? gap
+  check-not done?, "F - test-read-from-gap-buffer/right-2/done"
+  var g/eax: grapheme <- read-from-gap-buffer gap
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x62/b, "F - test-read-from-gap-buffer/right-2"
+  var done?/eax: boolean <- gap-buffer-scan-done? gap
+  check-not done?, "F - test-read-from-gap-buffer/right-3/done"
+  var g/eax: grapheme <- read-from-gap-buffer gap
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0x63/c, "F - test-read-from-gap-buffer/right-3"
+  var done?/eax: boolean <- gap-buffer-scan-done? gap
+  check done?, "F - test-read-from-gap-buffer/right-4/done"
+  var g/eax: grapheme <- read-from-gap-buffer gap
+  var x/ecx: int <- copy g
+  check-ints-equal x, 0/nul, "F - test-read-from-gap-buffer/right-4"
 }

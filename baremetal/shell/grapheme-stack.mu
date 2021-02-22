@@ -30,6 +30,12 @@ fn grapheme-stack-empty? _self: (addr grapheme-stack) -> _/eax: boolean {
   return 0/false
 }
 
+fn grapheme-stack-length _self: (addr grapheme-stack) -> _/eax: int {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var top/eax: (addr int) <- get self, top
+  return *top
+}
+
 fn push-grapheme-stack _self: (addr grapheme-stack), _val: grapheme {
   var self/esi: (addr grapheme-stack) <- copy _self
   var top-addr/ecx: (addr int) <- get self, top
