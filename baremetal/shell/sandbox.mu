@@ -53,10 +53,20 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int
   var x/eax: int <- copy _x
   var y/ecx: int <- copy _y
   x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, 0x20/xmax, 0x20/ymax, x, y, 1/true
+  {
+    var value-ah/eax: (addr handle stream byte) <- get self, value
+    var value/eax: (addr stream byte) <- lookup *value-ah
+    var done?/eax: boolean <- stream-empty? value
+    compare done?, 0/false
+    break-if-=
+    return
+  }
   y <- increment
+  x, y <- draw-text-wrapping-right-then-down screen, "=> ", _x, y, 0x20/xmax, 0x20/ymax, _x, y, 7/fg, 0/bg
+  var x2/edx: int <- copy x
   var value-ah/eax: (addr handle stream byte) <- get self, value
   var value/eax: (addr stream byte) <- lookup *value-ah
-  var dummy/eax: int <- draw-stream-rightward screen, value, _x, 0x30/xmax, y, 7/fg=grey, 0/bg
+  var dummy/eax: int <- draw-stream-rightward screen, value, x2, 0x30/xmax, y, 7/fg=grey, 0/bg
 }
 
 fn edit-sandbox _self: (addr sandbox), key: byte {
