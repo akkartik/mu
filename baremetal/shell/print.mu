@@ -1,0 +1,28 @@
+fn print-cell _in: (addr handle cell), out: (addr stream byte) {
+  clear-stream out
+  var in/eax: (addr handle cell) <- copy _in
+  var in-addr/eax: (addr cell) <- lookup *in
+  var in-type/ecx: (addr int) <- get in-addr, type
+  compare *in-type, 2/symbol
+  {
+    break-if-!=
+    print-symbol in-addr, out
+    return
+  }
+}
+
+fn print-symbol _in: (addr cell), out: (addr stream byte) {
+  var in/esi: (addr cell) <- copy _in
+  var data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var _data/eax: (addr stream byte) <- lookup *data-ah
+  var data/esi: (addr stream byte) <- copy _data
+  rewind-stream data
+  {
+    var done?/eax: boolean <- stream-empty? data
+    compare done?, 0/false
+    break-if-!=
+    var g/eax: grapheme <- read-grapheme data
+    write-grapheme out, g
+    loop
+  }
+}

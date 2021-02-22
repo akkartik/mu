@@ -102,19 +102,9 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
 }
 
 fn run in: (addr gap-buffer), out: (addr stream byte) {
-  # tokenize
-  # insert parens
-  # transform infix
-  # token tree
-  # syntax tree
-  rewind-gap-buffer in
-  clear-stream out
-  {
-    var done?/eax: boolean <- gap-buffer-scan-done? in
-    compare done?, 0/false
-    break-if-!=
-    var g/eax: grapheme <- read-from-gap-buffer in
-    write-grapheme out, g
-    loop
-  }
+  var read-result-storage: (handle cell)
+  var read-result/esi: (addr handle cell) <- address read-result-storage
+  read-cell in, read-result
+  # TODO: eval
+  print-cell read-result, out
 }
