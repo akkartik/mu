@@ -2,6 +2,9 @@
 # A Lisp with indent-sensitivity and infix, no macros. Commas are ignored.
 
 fn main {
+  var interpreter-storage: interpreter
+  var interpreter/edi: (addr interpreter) <- address interpreter-storage
+#?   initialize-interpreter interpreter
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
@@ -12,7 +15,7 @@ fn main {
       compare key, 0
       loop-if-=
       # no way to quit right now; just reboot
-      edit-sandbox sandbox, key
+      edit-sandbox sandbox, key, interpreter
     }
     loop
   }

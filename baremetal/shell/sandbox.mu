@@ -59,7 +59,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int
   var dummy/eax: int <- draw-stream-rightward screen, value, _x, 0x30/xmax, y, 7/fg=grey, 0/bg
 }
 
-fn edit-sandbox _self: (addr sandbox), key: byte {
+fn edit-sandbox _self: (addr sandbox), key: byte, interpreter: (addr interpreter) {
   var self/esi: (addr sandbox) <- copy _self
   var g/edx: grapheme <- copy key
   {
@@ -72,9 +72,14 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     compare g, 0x13/ctrl-s
     break-if-!=
     # ctrl-s: run sandbox(es)
+    var buffer-storage: (stream byte 0x1000)
+    var buffer/edi: (addr stream byte) <- address buffer-storage
+    var data-ah/eax: (addr handle gap-buffer) <- get self, data
+    var data/eax: (addr gap-buffer) <- lookup *data-ah
+    emit-gap-buffer data, buffer
     var value-ah/eax: (addr handle stream byte) <- get self, value
     var value/eax: (addr stream byte) <- lookup *value-ah
-    write value, "=> LISP"
+    evaluate interpreter, buffer, value
     return
   }
   add-grapheme-to-sandbox self, g
