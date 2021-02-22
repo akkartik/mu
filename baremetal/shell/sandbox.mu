@@ -59,7 +59,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int
   var dummy/eax: int <- draw-stream-rightward screen, value, _x, 0x30/xmax, y, 7/fg=grey, 0/bg
 }
 
-fn edit-sandbox _self: (addr sandbox), key: byte, interpreter: (addr interpreter) {
+fn edit-sandbox _self: (addr sandbox), key: byte {
   var self/esi: (addr sandbox) <- copy _self
   var g/edx: grapheme <- copy key
   {
@@ -87,7 +87,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, interpreter: (addr interpreter
     emit-gap-buffer data, buffer
     var value-ah/eax: (addr handle stream byte) <- get self, value
     var value/eax: (addr stream byte) <- lookup *value-ah
-    run interpreter, buffer, value
+    run buffer, value
     return
   }
   add-grapheme-to-sandbox self, g
