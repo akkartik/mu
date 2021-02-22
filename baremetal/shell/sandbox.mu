@@ -69,6 +69,14 @@ fn edit-sandbox _self: (addr sandbox), key: byte, interpreter: (addr interpreter
     return
   }
   {
+    compare g, 0x12/ctrl-r
+    break-if-!=
+    # ctrl-r: run function outside sandbox
+    # required: fn (addr screen), (addr keyboard)
+    # Mu will pass in the real screen and keyboard.
+    return
+  }
+  {
     compare g, 0x13/ctrl-s
     break-if-!=
     # ctrl-s: run sandbox(es)
@@ -79,7 +87,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, interpreter: (addr interpreter
     emit-gap-buffer data, buffer
     var value-ah/eax: (addr handle stream byte) <- get self, value
     var value/eax: (addr stream byte) <- lookup *value-ah
-    evaluate interpreter, buffer, value
+    run interpreter, buffer, value
     return
   }
   add-grapheme-to-sandbox self, g
