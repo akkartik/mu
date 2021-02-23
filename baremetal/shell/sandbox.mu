@@ -36,19 +36,7 @@ fn allocate-sandbox-with _out: (addr handle sandbox), s: (addr array byte) {
   initialize-sandbox-with out-addr, s
 }
 
-fn add-grapheme-to-sandbox _self: (addr sandbox), c: grapheme {
-  var self/esi: (addr sandbox) <- copy _self
-  var data-ah/eax: (addr handle gap-buffer) <- get self, data
-  var data/eax: (addr gap-buffer) <- lookup *data-ah
-  add-grapheme-at-gap data, c
-}
-
-fn delete-grapheme-before-cursor _self: (addr sandbox) {
-  var self/esi: (addr sandbox) <- copy _self
-  var data-ah/eax: (addr handle gap-buffer) <- get self, data
-  var data/eax: (addr gap-buffer) <- lookup *data-ah
-  delete-before-gap data
-}
+##
 
 fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int {
   clear-screen screen
@@ -93,12 +81,6 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int
 fn edit-sandbox _self: (addr sandbox), key: byte {
   var self/esi: (addr sandbox) <- copy _self
   var g/edx: grapheme <- copy key
-  {
-    compare g, 8/backspace
-    break-if-!=
-    delete-grapheme-before-cursor self
-    return
-  }
   # running code
   {
     compare g, 0x12/ctrl-r
@@ -125,11 +107,11 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     return
   }
   # arrow keys
+  var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
   {
     compare g, 0x4/ctrl-d
     break-if-!=
     # ctrl-d: cursor down (into trace if it makes sense)
-    var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
     # if cursor in input, check if we need to switch to trace
     {
       compare *cursor-in-trace?, 0/false
@@ -143,44 +125,27 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
       copy-to *cursor-in-trace?, 1/true
       return
     }
-    # if cursor in trace, send cursor to trace
-    {
-      compare cursor-in-trace?, 0/false
-      break-if-=
-      var trace-ah/eax: (addr handle trace) <- get self, trace
-      var trace/eax: (addr trace) <- lookup *trace-ah
-      edit-trace trace, g
-      return
-    }
-    # otherwise send cursor to input
-    var data-ah/eax: (addr handle gap-buffer) <- get self, data
-    var data/eax: (addr gap-buffer) <- lookup *data-ah
-    edit-gap-buffer data, g
-    return
   }
   {
     compare g, 0x15/ctrl-u
     break-if-!=
     # ctrl-u: cursor up
-    var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
     # if cursor in trace, check if we need to switch to trace
-    # if cursor in trace, send cursor to trace
-    {
-      compare cursor-in-trace?, 0/false
-      break-if-=
-      var trace-ah/eax: (addr handle trace) <- get self, trace
-      var trace/eax: (addr trace) <- lookup *trace-ah
-      edit-trace trace, g
-      return
-    }
-    # otherwise send cursor to input
-    var data-ah/eax: (addr handle gap-buffer) <- get self, data
-    var data/eax: (addr gap-buffer) <- lookup *data-ah
-    edit-gap-buffer data, g
+  }
+  # if cursor in trace, send cursor to trace
+  {
+    compare *cursor-in-trace?, 0/false
+    break-if-=
+    var trace-ah/eax: (addr handle trace) <- get self, trace
+    var trace/eax: (addr trace) <- lookup *trace-ah
+    edit-trace trace, g
     return
   }
-  # default: insert character
-  add-grapheme-to-sandbox self, g
+  # otherwise send cursor to input
+  var data-ah/eax: (addr handle gap-buffer) <- get self, data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  edit-gap-buffer data, g
+  return
 }
 
 fn run in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {

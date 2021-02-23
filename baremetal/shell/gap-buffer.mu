@@ -752,6 +752,28 @@ fn skip-whitespace-from-gap-buffer self: (addr gap-buffer) {
 }
 
 fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
+  var g/edx: grapheme <- copy key
+  {
+    compare g, 8/backspace
+    break-if-!=
+    delete-before-gap self
+    return
+  }
+  # arrow keys
+  {
+    compare g, 0x4/ctrl-d
+    break-if-!=
+    # ctrl-d: cursor down
+    return
+  }
+  {
+    compare g, 0x15/ctrl-u
+    break-if-!=
+    # ctrl-u: cursor up
+    return
+  }
+  # default: insert character
+  add-grapheme-at-gap self, g
 }
 
 fn cursor-on-final-line? self: (addr gap-buffer) -> _/eax: boolean {
