@@ -158,6 +158,27 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     edit-gap-buffer data, g
     return
   }
+  {
+    compare g, 0x15/ctrl-u
+    break-if-!=
+    # ctrl-u: cursor up
+    var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
+    # if cursor in trace, check if we need to switch to trace
+    # if cursor in trace, send cursor to trace
+    {
+      compare cursor-in-trace?, 0/false
+      break-if-=
+      var trace-ah/eax: (addr handle trace) <- get self, trace
+      var trace/eax: (addr trace) <- lookup *trace-ah
+      edit-trace trace, g
+      return
+    }
+    # otherwise send cursor to input
+    var data-ah/eax: (addr handle gap-buffer) <- get self, data
+    var data/eax: (addr gap-buffer) <- lookup *data-ah
+    edit-gap-buffer data, g
+    return
+  }
   # default: insert character
   add-grapheme-to-sandbox self, g
 }

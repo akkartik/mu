@@ -99,14 +99,17 @@ fn trace-higher _self: (addr trace) {
 
 fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int, xmax: int, ymax: int, show-cursor?: boolean -> _/ecx: int {
   var already-hiding-lines?/ebx: boolean <- copy 0/false
-  var bg/edi: int <- copy 0/black
+  var y/ecx: int <- copy ymin
+  var self/eax: (addr trace) <- copy _self
+  # initialize cursor-y if necessary
   compare show-cursor?, 0/false
   {
     break-if-=
-    bg <- copy 7/grey
+    var cursor-y/eax: (addr int) <- get self, cursor-y
+    compare *cursor-y, y
+    break-if->=
+    copy-to *cursor-y, y
   }
-  var y/ecx: int <- copy ymin
-  var self/eax: (addr trace) <- copy _self
   var trace-ah/eax: (addr handle stream trace-line) <- get self, data
   var _trace/eax: (addr stream trace-line) <- lookup *trace-ah
   var trace/esi: (addr stream trace-line) <- copy _trace
@@ -120,6 +123,16 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
     read-from-stream trace, curr
     var curr-label-ah/eax: (addr handle array byte) <- get curr, label
     var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
+    var bg/edi: int <- copy 0/black
+    compare show-cursor?, 0/false
+    {
+      break-if-=
+      var self/eax: (addr trace) <- copy _self
+      var cursor-y/eax: (addr int) <- get self, cursor-y
+      compare *cursor-y, y
+      break-if-!=
+      bg <- copy 7/grey
+    }
     # always display errors
     var is-error?/eax: boolean <- string-equal? curr-label, "error"
     {
@@ -144,6 +157,14 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
       already-hiding-lines? <- copy 1/true
     }
     loop
+  }
+  # prevent cursor from going too far down
+  {
+    var self/eax: (addr trace) <- copy _self
+    var cursor-y/eax: (addr int) <- get self, cursor-y
+    compare *cursor-y, y
+    break-if-<=
+    copy-to *cursor-y, y
   }
   return y
 }
@@ -270,5 +291,98 @@ fn test-render-trace-error-in-the-middle {
   check-screen-row screen, 2/y, "...  ", "F - test-render-trace-error-in-the-middle/2"
 }
 
-fn edit-trace self: (addr trace), key: grapheme {
+fn test-render-trace-cursor-in-single-line {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10
+  # line 1
+  var contents-storage: (stream byte 0x10)
+  var contents/ecx: (addr stream byte) <- address contents-storage
+  write contents, "data"
+  trace t, "l", contents
+  # line 2
+  error t, "error"
+  # line 3
+  trace t, "l", contents
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0xa, 4
+  #
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "...   ", "F - test-render-trace-cursor-in-single-line/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||   ", "F - test-render-trace-cursor-in-single-line/0/cursor"
+  check-screen-row screen,                                  1/y, "error ", "F - test-render-trace-cursor-in-single-line/1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-render-trace-cursor-in-single-line/1/cursor"
+  check-screen-row screen,                                  2/y, "...   ", "F - test-render-trace-cursor-in-single-line/2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-render-trace-cursor-in-single-line/2/cursor"
+}
+
+fn edit-trace _self: (addr trace), key: grapheme {
+  var self/esi: (addr trace) <- copy _self
+  # cursor down
+  {
+    compare key, 4/ctrl-d
+    break-if-!=
+    var cursor-y/eax: (addr int) <- get self, cursor-y
+    increment *cursor-y
+    return
+  }
+  # cursor up
+  {
+    compare key, 0x15/ctrl-u
+    break-if-!=
+    var cursor-y/eax: (addr int) <- get self, cursor-y
+    decrement *cursor-y
+    return
+  }
+}
+
+fn test-cursor-down-and-up-within-trace {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10
+  # line 1
+  var contents-storage: (stream byte 0x10)
+  var contents/ecx: (addr stream byte) <- address contents-storage
+  write contents, "data"
+  trace t, "l", contents
+  # line 2
+  error t, "error"
+  # line 3
+  trace t, "l", contents
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0xa, 4
+  #
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-and-up-within-trace/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||   ", "F - test-cursor-down-and-up-within-trace/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "error ", "F - test-cursor-down-and-up-within-trace/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-cursor-down-and-up-within-trace/pre-1/cursor"
+  check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-and-up-within-trace/pre-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-and-up-within-trace/pre-2/cursor"
+  # cursor down
+  edit-trace t, 4/ctrl-d
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-and-up-within-trace/down-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "      ", "F - test-cursor-down-and-up-within-trace/down-0/cursor"
+  check-screen-row screen,                                  1/y, "error ", "F - test-cursor-down-and-up-within-trace/down-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "||||| ", "F - test-cursor-down-and-up-within-trace/down-1/cursor"
+  check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-and-up-within-trace/down-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-and-up-within-trace/down-2/cursor"
+  # cursor up
+  edit-trace t, 0x15/ctrl-u
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-and-up-within-trace/up-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||   ", "F - test-cursor-down-and-up-within-trace/up-0/cursor"
+  check-screen-row screen,                                  1/y, "error ", "F - test-cursor-down-and-up-within-trace/up-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-cursor-down-and-up-within-trace/up-1/cursor"
+  check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-and-up-within-trace/up-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-and-up-within-trace/up-2/cursor"
 }
