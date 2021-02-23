@@ -62,6 +62,25 @@ fn move-cursor-down screen: (addr screen) {
   set-cursor-position screen, cursor-x, cursor-y
 }
 
+fn move-cursor-to-start-of-next-line screen: (addr screen) {
+  var dummy/eax: int <- copy 0
+  var _height/ecx: int <- copy 0
+  dummy, _height <- screen-size screen
+  var limit/edx: int <- copy _height
+  limit <- decrement
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  compare cursor-y, limit
+  {
+    break-if-<
+    return
+  }
+  cursor-y <- increment
+  cursor-x <- copy 0
+  set-cursor-position screen, cursor-x, cursor-y
+}
+
 fn draw-grapheme-at-cursor screen: (addr screen), g: grapheme, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
