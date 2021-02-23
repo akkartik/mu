@@ -1,6 +1,7 @@
 type sandbox {
   data: (handle gap-buffer)
   value: (handle stream byte)
+  trace: (handle trace)
 }
 
 fn initialize-sandbox _self: (addr sandbox) {
@@ -94,17 +95,26 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     var _data/eax: (addr gap-buffer) <- lookup *data-ah
     var data/ecx: (addr gap-buffer) <- copy _data
     var value-ah/eax: (addr handle stream byte) <- get self, value
-    var value/eax: (addr stream byte) <- lookup *value-ah
-    run data, value
+    var _value/eax: (addr stream byte) <- lookup *value-ah
+    var value/edx: (addr stream byte) <- copy _value
+    var trace-ah/eax: (addr handle trace) <- get self, trace
+    var trace/eax: (addr trace) <- lookup *trace-ah
+    run data, value, trace
     return
   }
   add-grapheme-to-sandbox self, g
 }
 
-fn run in: (addr gap-buffer), out: (addr stream byte) {
+fn run in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
   var read-result-storage: (handle cell)
   var read-result/esi: (addr handle cell) <- address read-result-storage
-  read-cell in, read-result
+  read-cell in, read-result, trace
+  var error?/eax: boolean <- has-errors? trace
+  {
+    compare error?, 0/false
+    break-if-=
+    return
+  }
   # TODO: eval
   print-cell read-result, out
 }

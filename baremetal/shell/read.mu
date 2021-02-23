@@ -1,5 +1,5 @@
 # out is not allocated
-fn read-cell in: (addr gap-buffer), out: (addr handle cell) {
+fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace) {
   # TODO:
   #   tokenize
   #   insert parens
@@ -13,13 +13,16 @@ fn read-cell in: (addr gap-buffer), out: (addr handle cell) {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
-    next-token in, token
+    next-token in, token, trace
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-!=
     read-symbol token, out
     loop
   }
 }
 
-fn next-token in: (addr gap-buffer), out: (addr stream byte) {
+fn next-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
   clear-stream out
   skip-whitespace-from-gap-buffer in
   var g/eax: grapheme <- peek-from-gap-buffer in
@@ -27,13 +30,13 @@ fn next-token in: (addr gap-buffer), out: (addr stream byte) {
     var digit?/eax: boolean <- is-decimal-digit? g
     compare digit?, 0/false
     break-if-=
-    next-number-token in, out
+    next-number-token in, out, trace
     return
   }
-  next-symbol-token in, out
+  next-symbol-token in, out, trace
 }
 
-fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte) {
+fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
   {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
@@ -101,7 +104,7 @@ fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
   return 1/true
 }
 
-fn next-number-token in: (addr gap-buffer), out: (addr stream byte) {
+fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
   var done?/eax: boolean <- gap-buffer-scan-done? in
   compare done?, 0/false
   break-if-!=
