@@ -761,7 +761,7 @@ fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
   }
   # arrow keys
   {
-    compare g, 0x4/ctrl-d
+    compare g, 4/ctrl-d
     break-if-!=
     # ctrl-d: cursor down
     return
