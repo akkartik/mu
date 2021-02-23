@@ -12,6 +12,10 @@ fn initialize-sandbox _self: (addr sandbox) {
   initialize-gap-buffer data, 0x1000/4KB
   var value-ah/eax: (addr handle stream byte) <- get self, value
   populate-stream value-ah, 0x1000/4KB
+  var trace-ah/eax: (addr handle trace) <- get self, trace
+  allocate trace-ah
+  var trace/eax: (addr trace) <- lookup *trace-ah
+  initialize-trace trace, 0x100/lines
 }
 
 ## some helpers for tests
@@ -48,12 +52,13 @@ fn delete-grapheme-before-cursor _self: (addr sandbox) {
 fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int {
   clear-screen screen
   var self/esi: (addr sandbox) <- copy _self
+  # data
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
   var _data/eax: (addr gap-buffer) <- lookup *data-ah
   var data/edx: (addr gap-buffer) <- copy _data
   var x/eax: int <- copy _x
   var y/ecx: int <- copy _y
-  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, 0x20/xmax, 0x20/ymax, x, y, 1/true
+  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, 0x20/xmax, 0x20/ymax, x, y, 1/show-cursor
   {
     var value-ah/eax: (addr handle stream byte) <- get self, value
     var value/eax: (addr stream byte) <- lookup *value-ah
@@ -63,6 +68,14 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int
     return
   }
   y <- increment
+  # trace
+  var trace-ah/eax: (addr handle trace) <- get self, trace
+  var _trace/eax: (addr trace) <- lookup *trace-ah
+  var trace/edx: (addr trace) <- copy _trace
+  y <- render-trace screen, trace, _x, y, 0x20/xmax, 0x20/ymax
+  y <- increment
+  # value
+  var x/eax: int <- copy 0
   x, y <- draw-text-wrapping-right-then-down screen, "=> ", _x, y, 0x20/xmax, 0x20/ymax, _x, y, 7/fg, 0/bg
   var x2/edx: int <- copy x
   var value-ah/eax: (addr handle stream byte) <- get self, value
@@ -99,6 +112,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     var value/edx: (addr stream byte) <- copy _value
     var trace-ah/eax: (addr handle trace) <- get self, trace
     var trace/eax: (addr trace) <- lookup *trace-ah
+    clear-trace trace
     run data, value, trace
     return
   }

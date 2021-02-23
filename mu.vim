@@ -49,6 +49,8 @@ highlight link muError Error
 " sources of action at a distance
 syntax match muAssign "<-"
 highlight link muAssign SpecialChar
+syntax keyword muAssign error
+highlight link muAssign Special
 
 " common keywords
 syntax match muControl "\<return\>\|\<return-if[^ ]*\>"
