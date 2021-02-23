@@ -386,3 +386,56 @@ fn test-cursor-down-and-up-within-trace {
   check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-and-up-within-trace/up-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-and-up-within-trace/up-2/cursor"
 }
+
+fn test-cursor-down-past-bottom-of-trace {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10
+  # line 1
+  var contents-storage: (stream byte 0x10)
+  var contents/ecx: (addr stream byte) <- address contents-storage
+  write contents, "data"
+  trace t, "l", contents
+  # line 2
+  error t, "error"
+  # line 3
+  trace t, "l", contents
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0xa, 4
+  #
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||   ", "F - test-cursor-down-past-bottom-of-trace/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "error ", "F - test-cursor-down-past-bottom-of-trace/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-cursor-down-past-bottom-of-trace/pre-1/cursor"
+  check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/pre-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-past-bottom-of-trace/pre-2/cursor"
+  # cursor down several times
+  edit-trace t, 4/ctrl-d
+  edit-trace t, 4/ctrl-d
+  edit-trace t, 4/ctrl-d
+  edit-trace t, 4/ctrl-d
+  edit-trace t, 4/ctrl-d
+  # hack: we do need to render to make this test pass; a sign that we're mixing state management with rendering
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
+  # cursor disappears past bottom
+  check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/down-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "      ", "F - test-cursor-down-past-bottom-of-trace/down-0/cursor"
+  check-screen-row screen,                                  1/y, "error ", "F - test-cursor-down-past-bottom-of-trace/down-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-cursor-down-past-bottom-of-trace/down-1/cursor"
+  check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/down-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-past-bottom-of-trace/down-2/cursor"
+  # then cursor up
+  edit-trace t, 0x15/ctrl-u
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
+  # we still display cursor at bottom
+  check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/up-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "      ", "F - test-cursor-down-past-bottom-of-trace/up-0/cursor"
+  check-screen-row screen,                                  1/y, "error ", "F - test-cursor-down-past-bottom-of-trace/up-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-cursor-down-past-bottom-of-trace/up-1/cursor"
+  check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/up-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||   ", "F - test-cursor-down-past-bottom-of-trace/up-2/cursor"
+}
