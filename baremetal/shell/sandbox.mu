@@ -191,7 +191,8 @@ fn test-run-integer {
   #
   render-sandbox screen, sandbox, 0/x, 0/y
   check-screen-row screen, 0/y, "1    ", "F - test-run-integer/0"
-  check-screen-row screen, 1/y, "=> 1 ", "F - test-run-integer/1"
+  check-screen-row screen, 1/y, "...  ", "F - test-run-integer/1"
+  check-screen-row screen, 2/y, "=> 1 ", "F - test-run-integer/2"
 }
 
 fn test-run-error-invalid-integer {
@@ -210,34 +211,39 @@ fn test-run-error-invalid-integer {
   #
   render-sandbox screen, sandbox, 0/x, 0/y
   check-screen-row screen, 0/y, "1a             ", "F - test-run-error-invalid-integer/0"
-  check-screen-row screen, 1/y, "invalid number ", "F - test-run-error-invalid-integer/1"
+  check-screen-row screen, 1/y, "...            ", "F - test-run-error-invalid-integer/0"
+  check-screen-row screen, 2/y, "invalid number ", "F - test-run-error-invalid-integer/2"
 }
 
 fn test-run-move-cursor-into-trace {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
-  # type "1a"
+  # type "12"
   edit-sandbox sandbox, 0x31/1
-  edit-sandbox sandbox, 0x61/a
+  edit-sandbox sandbox, 0x32/2
   # eval
   edit-sandbox sandbox, 0x13/ctrl-s
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10, 4
+  initialize-screen screen, 0x10, 8
   #
   render-sandbox screen, sandbox, 0/x, 0/y
-  check-screen-row screen,                                  0/y, "1a             ", "F - test-run-move-cursor-into-trace/pre-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "  |            ", "F - test-run-move-cursor-into-trace/pre-0/cursor"
-  check-screen-row screen,                                  1/y, "invalid number ", "F - test-run-move-cursor-into-trace/pre-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "               ", "F - test-run-move-cursor-into-trace/pre-1/cursor"
+  check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "  |   ", "F - test-run-move-cursor-into-trace/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "...   ", "F - test-run-move-cursor-into-trace/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-run-move-cursor-into-trace/pre-1/cursor"
+  check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/pre-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/pre-2/cursor"
   # move cursor down
   edit-sandbox sandbox, 4/ctrl-d
   #
   render-sandbox screen, sandbox, 0/x, 0/y
-  check-screen-row screen,                                  0/y, "1a             ", "F - test-run-move-cursor-into-trace/0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "               ", "F - test-run-move-cursor-into-trace/0/cursor"
-  check-screen-row screen,                                  1/y, "invalid number ", "F - test-run-move-cursor-into-trace/1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "|||||||||||||| ", "F - test-run-move-cursor-into-trace/1/cursor"
+  check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "      ", "F - test-run-move-cursor-into-trace/0/cursor"
+  check-screen-row screen,                                  1/y, "...   ", "F - test-run-move-cursor-into-trace/1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "|||   ", "F - test-run-move-cursor-into-trace/1/cursor"
+  check-screen-row screen,                                  2/y, "      ", "F - test-run-move-cursor-into-trace/2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/2/cursor"
 }

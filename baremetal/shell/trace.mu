@@ -60,11 +60,15 @@ fn trace _self: (addr trace), label: (addr array byte), data: (addr stream byte)
   write-to-stream dest, line
 }
 
-fn error self: (addr trace), data: (addr array byte) {
-  var s: (stream byte 0x100)
-  var s-a/eax: (addr stream byte) <- address s
-  write s-a, data
-  trace self, "error", s-a
+fn trace-text self: (addr trace), label: (addr array byte), s: (addr array byte) {
+  var data-storage: (stream byte 0x100)
+  var data/eax: (addr stream byte) <- address data-storage
+  write data, s
+  trace self, label, data
+}
+
+fn error self: (addr trace), message: (addr array byte) {
+  trace-text self, "error", message
 }
 
 fn initialize-trace-line depth: int, label: (addr array byte), data: (addr stream byte), _out: (addr trace-line) {
@@ -137,6 +141,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
       var x/eax: int <- copy xmin
       x, y <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, x, y, 9/fg=trace, bg
       y <- increment
+      already-hiding-lines? <- copy 1/true
     }
     loop
   }

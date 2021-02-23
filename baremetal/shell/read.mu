@@ -1,11 +1,8 @@
 # out is not allocated
 fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace) {
-  # TODO:
-  #   tokenize
-  #   insert parens
-  #   transform infix
-  #   token tree
-  #   syntax tree
+  trace-text trace, "read", ""
+  trace-lower trace
+  trace-text trace, "read", "tokenize"
   rewind-gap-buffer in
   var token-storage: (stream byte 0x1000)  # strings can be large
   var token/ecx: (addr stream byte) <- address token-storage
@@ -20,20 +17,36 @@ fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace)
     read-symbol token, out
     loop
   }
+  trace-higher trace  # tokenize
+  # TODO:
+  #   insert parens
+  #   transform infix
+  #   token tree
+  #   syntax tree
+  trace-higher trace  # read
 }
 
 fn next-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
-  clear-stream out
-  skip-whitespace-from-gap-buffer in
-  var g/eax: grapheme <- peek-from-gap-buffer in
-  {
-    var digit?/eax: boolean <- is-decimal-digit? g
-    compare digit?, 0/false
-    break-if-=
-    next-number-token in, out, trace
-    return
+  trace-text trace, "read", "next-token"
+  trace-lower trace
+  $next-token:body: {
+    clear-stream out
+    skip-whitespace-from-gap-buffer in
+    var g/eax: grapheme <- peek-from-gap-buffer in
+    {
+      var digit?/eax: boolean <- is-decimal-digit? g
+      compare digit?, 0/false
+      break-if-=
+      next-number-token in, out, trace
+      break $next-token:body
+    }
+    next-symbol-token in, out, trace
   }
-  next-symbol-token in, out, trace
+  trace-higher trace
+  var stream-storage: (stream byte 0x40)
+  var stream/eax: (addr stream byte) <- address stream-storage
+  write stream, "next-token: result"
+  trace trace, "read", stream
 }
 
 fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
