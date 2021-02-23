@@ -80,12 +80,12 @@ fn emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte) {
 
 # We implicitly render everything editable in a single color, and assume the
 # cursor is a single other color.
-fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, render-cursor?: boolean -> _/eax: int, _/ecx: int {
+fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, render-cursor?: boolean -> _/eax: int, _/ecx: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
   var left/edx: (addr grapheme-stack) <- get gap, left
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
-  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, left, xmin, ymin, xmax, ymax, x, y
+  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, left, xmin, ymin, xmax, ymax, xmin, ymin
   var right/edx: (addr grapheme-stack) <- get gap, right
   x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, right, xmin, ymin, xmax, ymax, x2, y2, render-cursor?
   # decide whether we still need to print a cursor
@@ -113,7 +113,7 @@ fn render-gap-buffer screen: (addr screen), gap: (addr gap-buffer), x: int, y: i
   var height/ebx: int <- copy _height
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
-  x2, y2 <- render-gap-buffer-wrapping-right-then-down screen, gap, x, y, width, height, x, y, render-cursor?
+  x2, y2 <- render-gap-buffer-wrapping-right-then-down screen, gap, x, y, width, height, render-cursor?
   return x2  # y2? yolo
 }
 

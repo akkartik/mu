@@ -130,12 +130,12 @@ fn draw-text-rightward-over-full-screen screen: (addr screen), text: (addr array
   return result
 }
 
-fn draw-text-rightward-from-cursor screen: (addr screen), text: (addr array byte), xmax: int, color: int, background-color: int -> _/eax: int {
+fn draw-text-rightward-from-cursor screen: (addr screen), text: (addr array byte), xmax: int, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  var result/eax: int <- draw-text-rightward screen, text, cursor-x, xmax, cursor-y, color, background-color
-  return result
+  cursor-x <- draw-text-rightward screen, text, cursor-x, xmax, cursor-y, color, background-color
+  set-cursor-position screen, cursor-x, cursor-y
 }
 
 fn render-grapheme screen: (addr screen), g: grapheme, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
