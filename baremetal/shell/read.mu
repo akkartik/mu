@@ -122,6 +122,7 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     compare digit?, 0/false
     break-if-!=
     error trace, "invalid number"
+    return
   }
   var g/eax: grapheme <- read-from-gap-buffer in
   write-grapheme out, g

@@ -59,27 +59,25 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int
   var x/eax: int <- copy _x
   var y/ecx: int <- copy _y
   x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, 0x20/xmax, 0x20/ymax, x, y, 1/show-cursor
-  {
-    var value-ah/eax: (addr handle stream byte) <- get self, value
-    var value/eax: (addr stream byte) <- lookup *value-ah
-    var done?/eax: boolean <- stream-empty? value
-    compare done?, 0/false
-    break-if-=
-    return
-  }
   y <- increment
   # trace
   var trace-ah/eax: (addr handle trace) <- get self, trace
   var _trace/eax: (addr trace) <- lookup *trace-ah
   var trace/edx: (addr trace) <- copy _trace
   y <- render-trace screen, trace, _x, y, 0x20/xmax, 0x20/ymax
-  y <- increment
   # value
+  var value-ah/eax: (addr handle stream byte) <- get self, value
+  var _value/eax: (addr stream byte) <- lookup *value-ah
+  var value/esi: (addr stream byte) <- copy _value
+  var done?/eax: boolean <- stream-empty? value
+  compare done?, 0/false
+  {
+    break-if-=
+    return
+  }
   var x/eax: int <- copy 0
   x, y <- draw-text-wrapping-right-then-down screen, "=> ", _x, y, 0x20/xmax, 0x20/ymax, _x, y, 7/fg, 0/bg
   var x2/edx: int <- copy x
-  var value-ah/eax: (addr handle stream byte) <- get self, value
-  var value/eax: (addr stream byte) <- lookup *value-ah
   var dummy/eax: int <- draw-stream-rightward screen, value, x2, 0x30/xmax, y, 7/fg=grey, 0/bg
 }
 
