@@ -2,8 +2,9 @@
 # An integral part of the Mu Shell is facilities for browsing traces.
 
 type trace {
-  curr-depth: int
+  curr-depth: int  # depth that will be assigned to next line appended
   data: (handle stream trace-line)
+  cursor-y: int  # row index on screen
 }
 
 type trace-line {
@@ -92,8 +93,14 @@ fn trace-higher _self: (addr trace) {
   decrement *depth
 }
 
-fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int, xmax: int, ymax: int -> _/ecx: int {
+fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int, xmax: int, ymax: int, show-cursor?: boolean -> _/ecx: int {
   var already-hiding-lines?/ebx: boolean <- copy 0/false
+  var bg/edi: int <- copy 0/black
+  compare show-cursor?, 0/false
+  {
+    break-if-=
+    bg <- copy 7/grey
+  }
   var y/ecx: int <- copy ymin
   var self/eax: (addr trace) <- copy _self
   var trace-ah/eax: (addr handle stream trace-line) <- get self, data
@@ -118,7 +125,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
       var _curr-data/eax: (addr array byte) <- lookup *curr-data-ah
       var curr-data/edx: (addr array byte) <- copy _curr-data
       var x/eax: int <- copy xmin
-      x, y <- draw-text-wrapping-right-then-down screen, curr-data, xmin, ymin, xmax, ymax, x, y, 0xc/fg=trace-error, 0/bg
+      x, y <- draw-text-wrapping-right-then-down screen, curr-data, xmin, ymin, xmax, ymax, x, y, 0xc/fg=trace-error, bg
       y <- increment
       already-hiding-lines? <- copy 0/false
       loop $render-trace:loop
@@ -128,7 +135,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
     {
       break-if-!=
       var x/eax: int <- copy xmin
-      x, y <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, x, y, 9/fg=trace, 0/bg
+      x, y <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, x, y, 9/fg=trace, bg
       y <- increment
     }
     loop
@@ -145,7 +152,7 @@ fn test-render-trace-empty {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4
   #
-  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 5/xmax, 4/ymax
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 5/xmax, 4/ymax, 0/no-cursor
   #
   check-ints-equal y, 0, "F - test-render-trace-empty/cursor"
   check-screen-row screen, 0/y, "    ", "F - test-render-trace-empty"
@@ -164,7 +171,7 @@ fn test-render-trace-collapsed-by-default {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4
   #
-  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 5/xmax, 4/ymax
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 5/xmax, 4/ymax, 0/no-cursor
   #
   check-ints-equal y, 1, "F - test-render-trace-collapsed-by-default/cursor"
   check-screen-row screen, 0/y, "... ", "F - test-render-trace-collapsed-by-default"
@@ -180,7 +187,7 @@ fn test-render-trace-error {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0xa, 4
   #
-  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
   check-ints-equal y, 1, "F - test-render-trace-error/cursor"
   check-screen-row screen, 0/y, "error", "F - test-render-trace-error"
@@ -202,7 +209,7 @@ fn test-render-trace-error-at-start {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0xa, 4
   #
-  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
   check-ints-equal y, 2, "F - test-render-trace-error-at-start/cursor"
   check-screen-row screen, 0/y, "error", "F - test-render-trace-error-at-start/0"
@@ -225,7 +232,7 @@ fn test-render-trace-error-at-end {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0xa, 4
   #
-  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
   check-ints-equal y, 2, "F - test-render-trace-error-at-end/cursor"
   check-screen-row screen, 0/y, "...  ", "F - test-render-trace-error-at-end/0"
@@ -250,10 +257,13 @@ fn test-render-trace-error-in-the-middle {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0xa, 4
   #
-  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
   check-ints-equal y, 3, "F - test-render-trace-error-in-the-middle/cursor"
   check-screen-row screen, 0/y, "...  ", "F - test-render-trace-error-in-the-middle/0"
   check-screen-row screen, 1/y, "error", "F - test-render-trace-error-in-the-middle/1"
   check-screen-row screen, 2/y, "...  ", "F - test-render-trace-error-in-the-middle/2"
+}
+
+fn edit-trace self: (addr trace), key: grapheme {
 }

@@ -2,6 +2,7 @@ type sandbox {
   data: (handle gap-buffer)
   value: (handle stream byte)
   trace: (handle trace)
+  cursor-in-trace?: boolean
 }
 
 fn initialize-sandbox _self: (addr sandbox) {
@@ -58,13 +59,21 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), _x: int, _y: int
   var data/edx: (addr gap-buffer) <- copy _data
   var x/eax: int <- copy _x
   var y/ecx: int <- copy _y
-  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, 0x20/xmax, 0x20/ymax, x, y, 1/show-cursor
+  var cursor-in-sandbox?/ebx: boolean <- copy 0/false
+  {
+    var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
+    compare *cursor-in-trace?, 0/false
+    break-if-!=
+    cursor-in-sandbox? <- copy 1/true
+  }
+  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, 0x20/xmax, 0x20/ymax, x, y, cursor-in-sandbox?
   y <- increment
   # trace
   var trace-ah/eax: (addr handle trace) <- get self, trace
   var _trace/eax: (addr trace) <- lookup *trace-ah
   var trace/edx: (addr trace) <- copy _trace
-  y <- render-trace screen, trace, _x, y, 0x20/xmax, 0x20/ymax
+  var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
+  y <- render-trace screen, trace, _x, y, 0x20/xmax, 0x20/ymax, *cursor-in-trace?
   # value
   var value-ah/eax: (addr handle stream byte) <- get self, value
   var _value/eax: (addr stream byte) <- lookup *value-ah
@@ -90,6 +99,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     delete-grapheme-before-cursor self
     return
   }
+  # running code
   {
     compare g, 0x12/ctrl-r
     break-if-!=
@@ -114,6 +124,41 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     run data, value, trace
     return
   }
+  # arrow keys
+  {
+    compare g, 0x4/ctrl-d
+    break-if-!=
+    # ctrl-d: cursor down (into trace if it makes sense)
+    var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
+    # if cursor in input, check if we need to switch to trace
+    {
+      compare *cursor-in-trace?, 0/false
+      break-if-!=
+      var data-ah/eax: (addr handle gap-buffer) <- get self, data
+      var data/eax: (addr gap-buffer) <- lookup *data-ah
+      var at-bottom?/eax: boolean <- cursor-on-final-line? data
+      compare at-bottom?, 0/false
+      break-if-=
+      var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
+      copy-to *cursor-in-trace?, 1/true
+      return
+    }
+    # if cursor in trace, send cursor to trace
+    {
+      compare cursor-in-trace?, 0/false
+      break-if-=
+      var trace-ah/eax: (addr handle trace) <- get self, trace
+      var trace/eax: (addr trace) <- lookup *trace-ah
+      edit-trace trace, g
+      return
+    }
+    # otherwise send cursor to input
+    var data-ah/eax: (addr handle gap-buffer) <- get self, data
+    var data/eax: (addr gap-buffer) <- lookup *data-ah
+    edit-gap-buffer data, g
+    return
+  }
+  # default: insert character
   add-grapheme-to-sandbox self, g
 }
 
@@ -129,4 +174,70 @@ fn run in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
   }
   # TODO: eval
   print-cell read-result, out
+}
+
+fn test-run-integer {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox
+  # type "1"
+  edit-sandbox sandbox, 0x31/1
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0xa, 4
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y
+  check-screen-row screen, 0/y, "1    ", "F - test-run-integer/0"
+  check-screen-row screen, 1/y, "=> 1 ", "F - test-run-integer/1"
+}
+
+fn test-run-error-invalid-integer {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox
+  # type "1a"
+  edit-sandbox sandbox, 0x31/1
+  edit-sandbox sandbox, 0x61/a
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x10, 4
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y
+  check-screen-row screen, 0/y, "1a             ", "F - test-run-error-invalid-integer/0"
+  check-screen-row screen, 1/y, "invalid number ", "F - test-run-error-invalid-integer/1"
+}
+
+fn test-run-move-cursor-into-trace {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox
+  # type "1a"
+  edit-sandbox sandbox, 0x31/1
+  edit-sandbox sandbox, 0x61/a
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x10, 4
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y
+  check-screen-row screen,                                  0/y, "1a             ", "F - test-run-move-cursor-into-trace/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "  |            ", "F - test-run-move-cursor-into-trace/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "invalid number ", "F - test-run-move-cursor-into-trace/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "               ", "F - test-run-move-cursor-into-trace/pre-1/cursor"
+  # move cursor down
+  edit-sandbox sandbox, 4/ctrl-d
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y
+  check-screen-row screen,                                  0/y, "1a             ", "F - test-run-move-cursor-into-trace/0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "               ", "F - test-run-move-cursor-into-trace/0/cursor"
+  check-screen-row screen,                                  1/y, "invalid number ", "F - test-run-move-cursor-into-trace/1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "|||||||||||||| ", "F - test-run-move-cursor-into-trace/1/cursor"
 }

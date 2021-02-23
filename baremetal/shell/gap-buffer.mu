@@ -750,3 +750,10 @@ fn skip-whitespace-from-gap-buffer self: (addr gap-buffer) {
   g <- read-from-gap-buffer self
   loop
 }
+
+fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
+}
+
+fn cursor-on-final-line? self: (addr gap-buffer) -> _/eax: boolean {
+  return 1/true
+}
