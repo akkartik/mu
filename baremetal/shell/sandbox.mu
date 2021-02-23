@@ -67,6 +67,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     var value-ah/eax: (addr handle stream byte) <- get self, value
     var _value/eax: (addr stream byte) <- lookup *value-ah
     var value/esi: (addr stream byte) <- copy _value
+    rewind-stream value
     var done?/eax: boolean <- stream-empty? value
     compare done?, 0/false
     break-if-!=
@@ -131,7 +132,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     run data, value, trace
     return
   }
-  # arrow keys
+  # tab
   var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
   {
     compare g, 9/tab
@@ -245,7 +246,7 @@ fn test-run-move-cursor-into-trace {
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "      ", "F - test-run-move-cursor-into-trace/trace-0/cursor"
   check-screen-row screen,                                  1/y, "...   ", "F - test-run-move-cursor-into-trace/trace-1"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "|||   ", "F - test-run-move-cursor-into-trace/trace-1/cursor"
-  check-screen-row screen,                                  2/y, "      ", "F - test-run-move-cursor-into-trace/trace-2"
+  check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/trace-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/trace-2/cursor"
   # move cursor into input
   edit-sandbox sandbox, 9/tab
@@ -255,6 +256,6 @@ fn test-run-move-cursor-into-trace {
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "  |   ", "F - test-run-move-cursor-into-trace/input-0/cursor"
   check-screen-row screen,                                  1/y, "...   ", "F - test-run-move-cursor-into-trace/input-1"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-run-move-cursor-into-trace/input-1/cursor"
-  check-screen-row screen,                                  2/y, "      ", "F - test-run-move-cursor-into-trace/input-2"
+  check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/input-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/input-2/cursor"
 }
