@@ -103,23 +103,6 @@ fn render-sandbox-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " move to trace  ", width, 7/fg, 0/bg
 }
 
-fn render-trace-menu screen: (addr screen) {
-  var width/eax: int <- copy 0
-  var height/ecx: int <- copy 0
-  width, height <- screen-size screen
-  var y/ecx: int <- copy height
-  y <- decrement
-  set-cursor-position screen, 0/x, y
-  draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ctrl-d ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " cursor down  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ctrl-u ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " cursor up  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 3/bg=cyan
-  draw-text-rightward-from-cursor screen, " move to sandbox  ", width, 7/fg, 0/bg
-}
-
 fn edit-sandbox _self: (addr sandbox), key: byte {
   var self/esi: (addr sandbox) <- copy _self
   var g/edx: grapheme <- copy key

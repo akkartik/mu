@@ -319,6 +319,23 @@ fn test-render-trace-cursor-in-single-line {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-render-trace-cursor-in-single-line/2/cursor"
 }
 
+fn render-trace-menu screen: (addr screen) {
+  var width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  width, height <- screen-size screen
+  var y/ecx: int <- copy height
+  y <- decrement
+  set-cursor-position screen, 0/x, y
+  draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl-d ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " cursor down  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl-u ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " cursor up  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 3/bg=cyan
+  draw-text-rightward-from-cursor screen, " move to sandbox  ", width, 7/fg, 0/bg
+}
+
 fn edit-trace _self: (addr trace), key: grapheme {
   var self/esi: (addr trace) <- copy _self
   # cursor down
