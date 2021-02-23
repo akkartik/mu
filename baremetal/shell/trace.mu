@@ -188,10 +188,7 @@ fn test-render-trace-collapsed-by-default {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10
-  var contents-storage: (stream byte 0x10)
-  var contents/ecx: (addr stream byte) <- address contents-storage
-  write contents, "data"
-  trace t, "l", contents
+  trace-text t, "l", "data"
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -223,13 +220,9 @@ fn test-render-trace-error-at-start {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10
-  # line 1
+  #
   error t, "error"
-  # line 2
-  var contents-storage: (stream byte 0x10)
-  var contents/ecx: (addr stream byte) <- address contents-storage
-  write contents, "data"
-  trace t, "l", contents
+  trace-text t, "l", "data"
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -246,12 +239,8 @@ fn test-render-trace-error-at-end {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10
-  # line 1
-  var contents-storage: (stream byte 0x10)
-  var contents/ecx: (addr stream byte) <- address contents-storage
-  write contents, "data"
-  trace t, "l", contents
-  # line 2
+  #
+  trace-text t, "l", "data"
   error t, "error"
   # setup: screen
   var screen-on-stack: screen
@@ -269,15 +258,10 @@ fn test-render-trace-error-in-the-middle {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10
-  # line 1
-  var contents-storage: (stream byte 0x10)
-  var contents/ecx: (addr stream byte) <- address contents-storage
-  write contents, "data"
-  trace t, "l", contents
-  # line 2
+  #
+  trace-text t, "l", "line 1"
   error t, "error"
-  # line 3
-  trace t, "l", contents
+  trace-text t, "l", "line 3"
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -295,15 +279,10 @@ fn test-render-trace-cursor-in-single-line {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10
-  # line 1
-  var contents-storage: (stream byte 0x10)
-  var contents/ecx: (addr stream byte) <- address contents-storage
-  write contents, "data"
-  trace t, "l", contents
-  # line 2
+  #
+  trace-text t, "l", "line 1"
   error t, "error"
-  # line 3
-  trace t, "l", contents
+  trace-text t, "l", "line 3"
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -360,15 +339,10 @@ fn test-cursor-down-and-up-within-trace {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10
-  # line 1
-  var contents-storage: (stream byte 0x10)
-  var contents/ecx: (addr stream byte) <- address contents-storage
-  write contents, "data"
-  trace t, "l", contents
-  # line 2
+  #
+  trace-text t, "l", "line 1"
   error t, "error"
-  # line 3
-  trace t, "l", contents
+  trace-text t, "l", "line 3"
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -408,15 +382,10 @@ fn test-cursor-down-past-bottom-of-trace {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10
-  # line 1
-  var contents-storage: (stream byte 0x10)
-  var contents/ecx: (addr stream byte) <- address contents-storage
-  write contents, "data"
-  trace t, "l", contents
-  # line 2
+  #
+  trace-text t, "l", "line 1"
   error t, "error"
-  # line 3
-  trace t, "l", contents
+  trace-text t, "l", "line 3"
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
