@@ -187,18 +187,18 @@ fn test-render-grapheme-stack {
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 0/y
   check-screen-row screen, 0/y, "abc ", "F - test-render-grapheme-stack from bottom"
-#?   check-ints-equal x, 3, "F - test-render-grapheme-stack from bottom: result"
-#?   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "   ", "F - test-render-grapheme-stack from bottom: bg"
-#?   #
-#?   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 1/y, 0/cursor=false
-#?   check-screen-row screen, 1/y, "cba ", "F - test-render-grapheme-stack from top without cursor"
-#?   check-ints-equal x, 3, "F - test-render-grapheme-stack from top without cursor: result"
-#?   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   ", "F - test-render-grapheme-stack from top without cursor: bg"
-#?   #
-#?   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
-#?   check-screen-row screen, 2/y, "cba ", "F - test-render-grapheme-stack from top with cursor"
-#?   check-ints-equal x, 3, "F - test-render-grapheme-stack from top without cursor: result"
-#?   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|   ", "F - test-render-grapheme-stack from top with cursor: bg"
+  check-ints-equal x, 3, "F - test-render-grapheme-stack from bottom: result"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "   ", "F - test-render-grapheme-stack from bottom: bg"
+  #
+  var x/eax: int <- render-stack-from-top screen, gs, 0/x, 1/y, 0/cursor=false
+  check-screen-row screen, 1/y, "cba ", "F - test-render-grapheme-stack from top without cursor"
+  check-ints-equal x, 3, "F - test-render-grapheme-stack from top without cursor: result"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   ", "F - test-render-grapheme-stack from top without cursor: bg"
+  #
+  var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
+  check-screen-row screen, 2/y, "cba ", "F - test-render-grapheme-stack from top with cursor"
+  check-ints-equal x, 3, "F - test-render-grapheme-stack from top without cursor: result"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|   ", "F - test-render-grapheme-stack from top with cursor: bg"
 }
 
 # compare from bottom
