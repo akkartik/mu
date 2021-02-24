@@ -176,7 +176,7 @@ fn test-render-trace-empty {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/width, 4/height
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 5/xmax, 4/ymax, 0/no-cursor
   #
@@ -192,7 +192,7 @@ fn test-render-trace-collapsed-by-default {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5/width, 4/height
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 5/xmax, 4/ymax, 0/no-cursor
   #
@@ -208,7 +208,7 @@ fn test-render-trace-error {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa, 4
+  initialize-screen screen, 0xa/width, 4/height
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
@@ -226,7 +226,7 @@ fn test-render-trace-error-at-start {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa, 4
+  initialize-screen screen, 0xa/width, 4/height
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
@@ -245,7 +245,7 @@ fn test-render-trace-error-at-end {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa, 4
+  initialize-screen screen, 0xa/width, 4/height
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
@@ -265,7 +265,7 @@ fn test-render-trace-error-in-the-middle {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa, 4
+  initialize-screen screen, 0xa/width, 4/height
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
@@ -286,7 +286,7 @@ fn test-render-trace-cursor-in-single-line {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa, 4
+  initialize-screen screen, 0xa/width, 4/height
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
   #
@@ -346,7 +346,7 @@ fn test-cursor-down-and-up-within-trace {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa, 4
+  initialize-screen screen, 0xa/width, 4/height
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
   #
@@ -389,7 +389,7 @@ fn test-cursor-down-past-bottom-of-trace {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa, 4
+  initialize-screen screen, 0xa/width, 4/height
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
   #
