@@ -3,7 +3,8 @@
 
 type trace {
   curr-depth: int  # depth that will be assigned to next line appended
-  data: (handle stream trace-line)
+  data: (handle array trace-line)
+  first-free: int
   cursor-y: int  # row index on screen
 }
 
@@ -15,49 +16,54 @@ type trace-line {
 
 fn initialize-trace _self: (addr trace), capacity: int {
   var self/eax: (addr trace) <- copy _self
-  var trace-ah/eax: (addr handle stream trace-line) <- get self, data
-  populate-stream trace-ah, capacity
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  populate trace-ah, capacity
 }
 
 fn clear-trace _self: (addr trace) {
   var self/eax: (addr trace) <- copy _self
-  var trace-ah/eax: (addr handle stream trace-line) <- get self, data
-  var trace/eax: (addr stream trace-line) <- lookup *trace-ah
-  clear-stream trace  # leaks memory
+  var len/edx: (addr int) <- get self, first-free
+  copy-to *len, 0
+  # might leak memory; existing elements won't be used anymore
 }
 
 fn has-errors? _self: (addr trace) -> _/eax: boolean {
   var self/eax: (addr trace) <- copy _self
-  var trace-ah/eax: (addr handle stream trace-line) <- get self, data
-  var _trace/eax: (addr stream trace-line) <- lookup *trace-ah
-  var trace/esi: (addr stream trace-line) <- copy _trace
-  rewind-stream trace
+  var max/edx: (addr int) <- get self, first-free
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  var _trace/eax: (addr array trace-line) <- lookup *trace-ah
+  var trace/esi: (addr array trace-line) <- copy _trace
+  var i/ecx: int <- copy 0
   {
-    var done?/eax: boolean <- stream-empty? trace
-    compare done?, 0/false
-    break-if-!=
-    var curr-storage: trace-line
-    var curr/eax: (addr trace-line) <- address curr-storage
-    read-from-stream trace, curr
+    compare i, *max
+    break-if->=
+    var offset/eax: (offset trace-line) <- compute-offset trace, i
+    var curr/eax: (addr trace-line) <- index trace, offset
     var curr-label-ah/eax: (addr handle array byte) <- get curr, label
     var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
     var is-error?/eax: boolean <- string-equal? curr-label, "error"
     compare is-error?, 0/false
-    loop-if-=
-    return 1/true
+    {
+      break-if-=
+      return 1/true
+    }
+    i <- increment
+    loop
   }
   return 0/false
 }
 
-fn trace _self: (addr trace), label: (addr array byte), data: (addr stream byte) {
+fn trace _self: (addr trace), label: (addr array byte), message: (addr stream byte) {
   var self/esi: (addr trace) <- copy _self
-  var line-storage: trace-line
-  var line/ecx: (addr trace-line) <- address line-storage
-  var depth/eax: (addr int) <- get self, curr-depth
-  initialize-trace-line *depth, label, data, line
-  var dest-ah/eax: (addr handle stream trace-line) <- get self, data
-  var dest/eax: (addr stream trace-line) <- lookup *dest-ah
-  write-to-stream dest, line
+  var data-ah/eax: (addr handle array trace-line) <- get self, data
+  var data/eax: (addr array trace-line) <- lookup *data-ah
+  var index-addr/edi: (addr int) <- get self, first-free
+  var index/ecx: int <- copy *index-addr
+  var offset/ecx: (offset trace-line) <- compute-offset data, index
+  var dest/eax: (addr trace-line) <- index data, offset
+  var depth/ecx: (addr int) <- get self, curr-depth
+  initialize-trace-line *depth, label, message, dest
+  increment *index-addr
 }
 
 fn trace-text self: (addr trace), label: (addr array byte), s: (addr array byte) {
@@ -98,75 +104,82 @@ fn trace-higher _self: (addr trace) {
 }
 
 fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int, xmax: int, ymax: int, show-cursor?: boolean -> _/ecx: int {
-  var already-hiding-lines?/ebx: boolean <- copy 0/false
+  var already-hiding-lines?: boolean
   var y/ecx: int <- copy ymin
-  var self/eax: (addr trace) <- copy _self
-  # initialize cursor-y if necessary
-  compare show-cursor?, 0/false
-  {
-    break-if-=
-    var cursor-y/eax: (addr int) <- get self, cursor-y
-    compare *cursor-y, y
-    break-if->=
-    copy-to *cursor-y, y
-  }
-  var trace-ah/eax: (addr handle stream trace-line) <- get self, data
-  var _trace/eax: (addr stream trace-line) <- lookup *trace-ah
-  var trace/esi: (addr stream trace-line) <- copy _trace
-  rewind-stream trace
+  var self/esi: (addr trace) <- copy _self
+  clamp-cursor-to-top self, y
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  var _trace/eax: (addr array trace-line) <- lookup *trace-ah
+  var trace/edi: (addr array trace-line) <- copy _trace
+  var i/edx: int <- copy 0
+  var max-addr/ebx: (addr int) <- get self, first-free
+  var max/ebx: int <- copy *max-addr
   $render-trace:loop: {
-    var done?/eax: boolean <- stream-empty? trace
-    compare done?, 0/false
-    break-if-!=
-    var curr-storage: trace-line
-    var curr/edx: (addr trace-line) <- address curr-storage
-    read-from-stream trace, curr
-    var curr-label-ah/eax: (addr handle array byte) <- get curr, label
-    var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
-    var bg/edi: int <- copy 0/black
-    compare show-cursor?, 0/false
-    {
-      break-if-=
-      var self/eax: (addr trace) <- copy _self
-      var cursor-y/eax: (addr int) <- get self, cursor-y
-      compare *cursor-y, y
-      break-if-!=
-      bg <- copy 7/grey
+    compare i, max
+    break-if->=
+    $render-trace:iter: {
+      var offset/edx: (offset trace-line) <- compute-offset trace, i
+      var curr/edx: (addr trace-line) <- index trace, offset
+      var curr-label-ah/eax: (addr handle array byte) <- get curr, label
+      var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
+      var bg/edi: int <- copy 0/black
+      compare show-cursor?, 0/false
+      {
+        break-if-=
+        var self/eax: (addr trace) <- copy _self
+        var cursor-y/eax: (addr int) <- get self, cursor-y
+        compare *cursor-y, y
+        break-if-!=
+        bg <- copy 7/grey
+      }
+      # always display errors
+      var is-error?/eax: boolean <- string-equal? curr-label, "error"
+      {
+        compare is-error?, 0/false
+        break-if-=
+        var curr-data-ah/eax: (addr handle array byte) <- get curr, data
+        var _curr-data/eax: (addr array byte) <- lookup *curr-data-ah
+        var curr-data/edx: (addr array byte) <- copy _curr-data
+        var x/eax: int <- copy xmin
+        x, y <- draw-text-wrapping-right-then-down screen, curr-data, xmin, ymin, xmax, ymax, x, y, 0xc/fg=trace-error, bg
+        y <- increment
+        copy-to already-hiding-lines?, 0/false
+        break $render-trace:iter
+      }
+      # otherwise ignore the rest
+      compare already-hiding-lines?, 0/false
+      {
+        break-if-!=
+        var x/eax: int <- copy xmin
+        x, y <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, x, y, 9/fg=trace, bg
+        y <- increment
+        copy-to already-hiding-lines?, 1/true
+      }
     }
-    # always display errors
-    var is-error?/eax: boolean <- string-equal? curr-label, "error"
-    {
-      compare is-error?, 0/false
-      break-if-=
-      var curr-data-ah/eax: (addr handle array byte) <- get curr, data
-      var _curr-data/eax: (addr array byte) <- lookup *curr-data-ah
-      var curr-data/edx: (addr array byte) <- copy _curr-data
-      var x/eax: int <- copy xmin
-      x, y <- draw-text-wrapping-right-then-down screen, curr-data, xmin, ymin, xmax, ymax, x, y, 0xc/fg=trace-error, bg
-      y <- increment
-      already-hiding-lines? <- copy 0/false
-      loop $render-trace:loop
-    }
-    # otherwise ignore the rest
-    compare already-hiding-lines?, 0/false
-    {
-      break-if-!=
-      var x/eax: int <- copy xmin
-      x, y <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, x, y, 9/fg=trace, bg
-      y <- increment
-      already-hiding-lines? <- copy 1/true
-    }
+    i <- increment
     loop
   }
   # prevent cursor from going too far down
-  {
-    var self/eax: (addr trace) <- copy _self
-    var cursor-y/eax: (addr int) <- get self, cursor-y
-    compare *cursor-y, y
-    break-if-<=
-    copy-to *cursor-y, y
-  }
+  clamp-cursor-to-bottom _self, y
   return y
+}
+
+fn clamp-cursor-to-top _self: (addr trace), _y: int {
+  var y/ecx: int <- copy _y
+  var self/esi: (addr trace) <- copy _self
+  var cursor-y/eax: (addr int) <- get self, cursor-y
+  compare *cursor-y, y
+  break-if->=
+  copy-to *cursor-y, y
+}
+
+fn clamp-cursor-to-bottom _self: (addr trace), _y: int {
+  var y/ecx: int <- copy _y
+  var self/esi: (addr trace) <- copy _self
+  var cursor-y/eax: (addr int) <- get self, cursor-y
+  compare *cursor-y, y
+  break-if-<=
+  copy-to *cursor-y, y
 }
 
 fn test-render-trace-empty {
