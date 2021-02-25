@@ -1,0 +1,173 @@
+# write-stream: like write, but write streams rather than strings
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+write-stream:  # f: (addr stream byte), s: (addr stream byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    56/push-esi
+    57/push-edi
+    # edi = f
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
+    # esi = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
+    # eax = _append-4(&f->data[f->write], &f->data[f->size], &s->data[s->read], &s->data[s->write])
+    # . . push &s->data[s->write]
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
+    50/push-eax
+    # . . push &s->data[s->read]
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
+    50/push-eax
+    # . . push &f->data[f->size]
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   8/disp8         .                 # copy *(edi+8) to eax
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy edi+eax+12 to eax
+    50/push-eax
+    # . . push &f->data[f->write]
+    8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy *edi to eax
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy edi+eax+12 to eax
+    50/push-eax
+    # . . call
+    e8/call  _append-4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # f->write += eax
+    01/add                          0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # add eax to *edi
+    # s->read += eax
+    01/add                          1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # add eax to *(esi+4)
+$write-stream:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-write-stream-single:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(_test-stream2)
+    # . . push args
+    68/push  _test-stream2/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream2, "Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    68/push  _test-stream2/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # write-stream(_test-stream, _test-stream2)
+    # . . push args
+    68/push  _test-stream2/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-stream-equal(_test-stream, "Ab", msg)
+    # . . push args
+    68/push  "F - test-write-stream-single"/imm32
+    68/push  "Ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . end
+    c3/return
+
+test-write-stream-appends:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(_test-stream2)
+    # . . push args
+    68/push  _test-stream2/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream2, "C")
+    # . . push args
+    68/push  "C"/imm32
+    68/push  _test-stream2/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # first write
+    # . write-stream(_test-stream, _test-stream2)
+    # . . push args
+    68/push  _test-stream2/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # second write
+    # . write(_test-stream2, "D")
+    # . . push args
+    68/push  "D"/imm32
+    68/push  _test-stream2/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-stream(_test-stream, _test-stream2)
+    # . . push args
+    68/push  _test-stream2/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-stream-equal(_test-stream, "CD", msg)
+    # . . push args
+    68/push  "F - test-write-stream-appends"/imm32
+    68/push  "CD"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . end
+    c3/return
+
+== data
+
+_test-stream2:  # (stream byte)
+    # current write index
+    4/imm32
+    # current read index
+    1/imm32
+    # size
+    8/imm32
+    # data
+    41/A 42/B 43/C 44/D 00 00 00 00  # 8 bytes
+
+# . . vim:nowrap:textwidth=0

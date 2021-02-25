@@ -24,6 +24,7 @@ sig check-stream-equal f: (addr stream byte), s: (addr array byte), msg: (addr a
 sig next-stream-line-equal? f: (addr stream byte), s: (addr array byte) -> _/eax: boolean
 sig check-next-stream-line-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
 sig write f: (addr stream byte), s: (addr array byte)
+sig write-stream f: (addr stream byte), s: (addr stream byte)
 sig read-byte s: (addr stream byte) -> _/eax: byte
 sig append-byte f: (addr stream byte), n: int
 #sig to-hex-char in/eax: int -> out/eax: int
