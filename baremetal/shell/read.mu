@@ -1,8 +1,7 @@
 # out is not allocated
 fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "read", ""
-  trace-lower trace
   trace-text trace, "read", "tokenize"
+  trace-lower trace
   rewind-gap-buffer in
   var token-storage: (stream byte 0x1000)  # strings can be large
   var token/ecx: (addr stream byte) <- address token-storage
@@ -17,13 +16,12 @@ fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace)
     read-symbol token, out
     loop
   }
-  trace-higher trace  # tokenize
   # TODO:
   #   insert parens
   #   transform infix
   #   token tree
   #   syntax tree
-  trace-higher trace  # read
+  trace-higher trace
 }
 
 fn next-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
