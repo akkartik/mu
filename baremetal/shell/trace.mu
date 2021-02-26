@@ -486,7 +486,7 @@ fn edit-trace _self: (addr trace), key: grapheme {
     decrement *cursor-y
     return
   }
-  # enter
+  # enter = expand
   {
     compare key, 0xa/newline
     break-if-!=
@@ -505,7 +505,6 @@ fn expand _self: (addr trace) {
   var cursor-line-offset/eax: (offset trace-line) <- compute-offset trace, cursor-line-index
   var cursor-line/edx: (addr trace-line) <- index trace, cursor-line-offset
   var cursor-line-visible?/eax: (addr boolean) <- get cursor-line, visible?
-  compare *cursor-line-visible?, 0/false
   var cursor-line-depth/ebx: (addr int) <- get cursor-line, depth
   var target-depth/ebx: int <- copy *cursor-line-depth
   # if cursor-line is already visible, increment target-depth
@@ -657,7 +656,7 @@ fn test-cursor-down-past-bottom-of-trace {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||   ", "F - test-cursor-down-past-bottom-of-trace/up-2/cursor"
 }
 
-fn test-cursor-expand-within-trace {
+fn test-expand-within-trace {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10, 0x10
@@ -671,23 +670,23 @@ fn test-cursor-expand-within-trace {
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "...         ", "F - test-cursor-expand-within-trace/pre-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||         ", "F - test-cursor-expand-within-trace/pre-0/cursor"
-  check-screen-row screen,                                  1/y, "            ", "F - test-cursor-expand-within-trace/pre-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-cursor-expand-within-trace/pre-1/cursor"
+  check-screen-row screen,                                  0/y, "...         ", "F - test-expand-within-trace/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||         ", "F - test-expand-within-trace/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "            ", "F - test-expand-within-trace/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-expand-within-trace/pre-1/cursor"
   # expand
   edit-trace t, 0xa/enter
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1 ", "F - test-cursor-expand-within-trace/expand-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||||| ", "F - test-cursor-expand-within-trace/expand-0/cursor"
-  check-screen-row screen,                                  1/y, "0 l: line 2 ", "F - test-cursor-expand-within-trace/expand-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-cursor-expand-within-trace/expand-1/cursor"
-  check-screen-row screen,                                  2/y, "            ", "F - test-cursor-expand-within-trace/expand-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "            ", "F - test-cursor-expand-within-trace/expand-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1 ", "F - test-expand-within-trace/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||||| ", "F - test-expand-within-trace/expand-0/cursor"
+  check-screen-row screen,                                  1/y, "0 l: line 2 ", "F - test-expand-within-trace/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-expand-within-trace/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "            ", "F - test-expand-within-trace/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "            ", "F - test-expand-within-trace/expand-2/cursor"
 }
 
-fn test-cursor-expand-skips-lower-depth {
+fn test-trace-expand-skips-lower-depth {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10, 0x10
@@ -702,23 +701,23 @@ fn test-cursor-expand-skips-lower-depth {
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "...         ", "F - test-cursor-expand-skips-lower-depth/pre-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||         ", "F - test-cursor-expand-skips-lower-depth/pre-0/cursor"
-  check-screen-row screen,                                  1/y, "            ", "F - test-cursor-expand-skips-lower-depth/pre-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-cursor-expand-skips-lower-depth/pre-1/cursor"
+  check-screen-row screen,                                  0/y, "...         ", "F - test-trace-expand-skips-lower-depth/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||         ", "F - test-trace-expand-skips-lower-depth/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "            ", "F - test-trace-expand-skips-lower-depth/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-trace-expand-skips-lower-depth/pre-1/cursor"
   # expand
   edit-trace t, 0xa/enter
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1 ", "F - test-cursor-expand-skips-lower-depth/expand-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||||| ", "F - test-cursor-expand-skips-lower-depth/expand-0/cursor"
-  check-screen-row screen,                                  1/y, "...         ", "F - test-cursor-expand-skips-lower-depth/expand-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-cursor-expand-skips-lower-depth/expand-1/cursor"
-  check-screen-row screen,                                  2/y, "            ", "F - test-cursor-expand-skips-lower-depth/expand-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "            ", "F - test-cursor-expand-skips-lower-depth/expand-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1 ", "F - test-trace-expand-skips-lower-depth/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||||| ", "F - test-trace-expand-skips-lower-depth/expand-0/cursor"
+  check-screen-row screen,                                  1/y, "...         ", "F - test-trace-expand-skips-lower-depth/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-trace-expand-skips-lower-depth/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "            ", "F - test-trace-expand-skips-lower-depth/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "            ", "F - test-trace-expand-skips-lower-depth/expand-2/cursor"
 }
 
-fn test-cursor-expand-continues-past-lower-depth {
+fn test-trace-expand-continues-past-lower-depth {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10, 0x10
@@ -735,24 +734,24 @@ fn test-cursor-expand-continues-past-lower-depth {
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "...         ", "F - test-cursor-expand-continues-past-lower-depth/pre-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||         ", "F - test-cursor-expand-continues-past-lower-depth/pre-0/cursor"
-  check-screen-row screen,                                  1/y, "            ", "F - test-cursor-expand-continues-past-lower-depth/pre-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-cursor-expand-continues-past-lower-depth/pre-1/cursor"
+  check-screen-row screen,                                  0/y, "...         ", "F - test-trace-expand-continues-past-lower-depth/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||         ", "F - test-trace-expand-continues-past-lower-depth/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "            ", "F - test-trace-expand-continues-past-lower-depth/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-trace-expand-continues-past-lower-depth/pre-1/cursor"
   # expand
   edit-trace t, 0xa/enter
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1 ", "F - test-cursor-expand-continues-past-lower-depth/expand-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||||| ", "F - test-cursor-expand-continues-past-lower-depth/expand-0/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1 ", "F - test-trace-expand-continues-past-lower-depth/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||||| ", "F - test-trace-expand-continues-past-lower-depth/expand-0/cursor"
   # TODO: might be too wasteful to show every place where lines are hidden
-  check-screen-row screen,                                  1/y, "...         ", "F - test-cursor-expand-continues-past-lower-depth/expand-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-cursor-expand-continues-past-lower-depth/expand-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 2 ", "F - test-cursor-expand-continues-past-lower-depth/expand-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "            ", "F - test-cursor-expand-continues-past-lower-depth/expand-2/cursor"
+  check-screen-row screen,                                  1/y, "...         ", "F - test-trace-expand-continues-past-lower-depth/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "            ", "F - test-trace-expand-continues-past-lower-depth/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 2 ", "F - test-trace-expand-continues-past-lower-depth/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "            ", "F - test-trace-expand-continues-past-lower-depth/expand-2/cursor"
 }
 
-fn test-cursor-expand-stops-at-higher-depth {
+fn test-trace-expand-stops-at-higher-depth {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10, 0x10
@@ -773,27 +772,27 @@ fn test-cursor-expand-stops-at-higher-depth {
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 8/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "...           ", "F - test-cursor-expand-continues-past-lower-depth/pre-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||           ", "F - test-cursor-expand-continues-past-lower-depth/pre-0/cursor"
-  check-screen-row screen,                                  1/y, "              ", "F - test-cursor-expand-continues-past-lower-depth/pre-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-expand-continues-past-lower-depth/pre-1/cursor"
+  check-screen-row screen,                                  0/y, "...           ", "F - test-trace-expand-stops-at-higher-depth/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||           ", "F - test-trace-expand-stops-at-higher-depth/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "              ", "F - test-trace-expand-stops-at-higher-depth/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-expand-stops-at-higher-depth/pre-1/cursor"
   # expand
   edit-trace t, 0xa/enter
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 8/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1.1 ", "F - test-cursor-expand-continues-past-lower-depth/expand-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||||||| ", "F - test-cursor-expand-continues-past-lower-depth/expand-0/cursor"
-  check-screen-row screen,                                  1/y, "...           ", "F - test-cursor-expand-continues-past-lower-depth/expand-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-expand-continues-past-lower-depth/expand-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 1.2 ", "F - test-cursor-expand-continues-past-lower-depth/expand-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-cursor-expand-continues-past-lower-depth/expand-2/cursor"
-  check-screen-row screen,                                  3/y, "...           ", "F - test-cursor-expand-continues-past-lower-depth/expand-3"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "              ", "F - test-cursor-expand-continues-past-lower-depth/expand-3/cursor"
-  check-screen-row screen,                                  4/y, "              ", "F - test-cursor-expand-continues-past-lower-depth/expand-4"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "              ", "F - test-cursor-expand-continues-past-lower-depth/expand-4/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1.1 ", "F - test-trace-expand-stops-at-higher-depth/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||||||| ", "F - test-trace-expand-stops-at-higher-depth/expand-0/cursor"
+  check-screen-row screen,                                  1/y, "...           ", "F - test-trace-expand-stops-at-higher-depth/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-expand-stops-at-higher-depth/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 1.2 ", "F - test-trace-expand-stops-at-higher-depth/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-trace-expand-stops-at-higher-depth/expand-2/cursor"
+  check-screen-row screen,                                  3/y, "...           ", "F - test-trace-expand-stops-at-higher-depth/expand-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "              ", "F - test-trace-expand-stops-at-higher-depth/expand-3/cursor"
+  check-screen-row screen,                                  4/y, "              ", "F - test-trace-expand-stops-at-higher-depth/expand-4"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "              ", "F - test-trace-expand-stops-at-higher-depth/expand-4/cursor"
 }
 
-fn test-cursor-expand-twice {
+fn test-trace-expand-twice {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10, 0x10
@@ -810,44 +809,44 @@ fn test-cursor-expand-twice {
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "...           ", "F - test-cursor-expand-twice/pre-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||           ", "F - test-cursor-expand-twice/pre-0/cursor"
-  check-screen-row screen,                                  1/y, "              ", "F - test-cursor-expand-twice/pre-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-expand-twice/pre-1/cursor"
+  check-screen-row screen,                                  0/y, "...           ", "F - test-trace-expand-twice/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||           ", "F - test-trace-expand-twice/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "              ", "F - test-trace-expand-twice/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-expand-twice/pre-1/cursor"
   # expand
   edit-trace t, 0xa/enter
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-cursor-expand-twice/expand-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||||||||||   ", "F - test-cursor-expand-twice/expand-0/cursor"
-  check-screen-row screen,                                  1/y, "...           ", "F - test-cursor-expand-twice/expand-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-expand-twice/expand-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 2   ", "F - test-cursor-expand-twice/expand-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-cursor-expand-twice/expand-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-trace-expand-twice/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||||||||||   ", "F - test-trace-expand-twice/expand-0/cursor"
+  check-screen-row screen,                                  1/y, "...           ", "F - test-trace-expand-twice/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-expand-twice/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 2   ", "F - test-trace-expand-twice/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-trace-expand-twice/expand-2/cursor"
   # cursor down
   edit-trace t, 4/ctrl-d
   # hack: we need to render here to make this test pass; we're mixing state management with rendering
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-cursor-expand-twice/down-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-cursor-expand-twice/down-0/cursor"
-  check-screen-row screen,                                  1/y, "...           ", "F - test-cursor-expand-twice/down-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "|||           ", "F - test-cursor-expand-twice/down-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 2   ", "F - test-cursor-expand-twice/down-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-cursor-expand-twice/down-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-trace-expand-twice/down-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-trace-expand-twice/down-0/cursor"
+  check-screen-row screen,                                  1/y, "...           ", "F - test-trace-expand-twice/down-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "|||           ", "F - test-trace-expand-twice/down-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 2   ", "F - test-trace-expand-twice/down-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-trace-expand-twice/down-2/cursor"
   # expand again
   edit-trace t, 0xa/enter
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-cursor-expand-twice/expand2-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-cursor-expand-twice/expand2-0/cursor"
-  check-screen-row screen,                                  1/y, "1 l: line 1.1 ", "F - test-cursor-expand-twice/expand2-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "||||||||||||| ", "F - test-cursor-expand-twice/expand2-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 2   ", "F - test-cursor-expand-twice/expand2-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-cursor-expand-twice/expand2-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-trace-expand-twice/expand2-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-trace-expand-twice/expand2-0/cursor"
+  check-screen-row screen,                                  1/y, "1 l: line 1.1 ", "F - test-trace-expand-twice/expand2-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "||||||||||||| ", "F - test-trace-expand-twice/expand2-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 2   ", "F - test-trace-expand-twice/expand2-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-trace-expand-twice/expand2-2/cursor"
 }
 
-fn test-cursor-refresh-cursor {
+fn test-trace-refresh-cursor {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10, 0x10
@@ -862,31 +861,31 @@ fn test-cursor-refresh-cursor {
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "...           ", "F - test-cursor-refresh-cursor/pre-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||           ", "F - test-cursor-refresh-cursor/pre-0/cursor"
-  check-screen-row screen,                                  1/y, "              ", "F - test-cursor-refresh-cursor/pre-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-refresh-cursor/pre-1/cursor"
+  check-screen-row screen,                                  0/y, "...           ", "F - test-trace-refresh-cursor/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||           ", "F - test-trace-refresh-cursor/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "              ", "F - test-trace-refresh-cursor/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-refresh-cursor/pre-1/cursor"
   # expand
   edit-trace t, 0xa/enter
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-cursor-refresh-cursor/expand-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||||||||||   ", "F - test-cursor-refresh-cursor/expand-0/cursor"
-  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-cursor-refresh-cursor/expand-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-refresh-cursor/expand-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-cursor-refresh-cursor/expand-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-cursor-refresh-cursor/expand-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-trace-refresh-cursor/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||||||||||   ", "F - test-trace-refresh-cursor/expand-0/cursor"
+  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-trace-refresh-cursor/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-refresh-cursor/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-trace-refresh-cursor/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-trace-refresh-cursor/expand-2/cursor"
   # cursor down
   edit-trace t, 4/ctrl-d
   edit-trace t, 4/ctrl-d
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-cursor-refresh-cursor/down-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-cursor-refresh-cursor/down-0/cursor"
-  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-cursor-refresh-cursor/down-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-refresh-cursor/down-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-cursor-refresh-cursor/down-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||||||||||   ", "F - test-cursor-refresh-cursor/down-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-trace-refresh-cursor/down-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-trace-refresh-cursor/down-0/cursor"
+  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-trace-refresh-cursor/down-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-refresh-cursor/down-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-trace-refresh-cursor/down-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||||||||||   ", "F - test-trace-refresh-cursor/down-2/cursor"
   # recreate trace
   clear-trace t
   trace-text t, "l", "line 1"
@@ -894,15 +893,15 @@ fn test-cursor-refresh-cursor {
   trace-text t, "l", "line 3"
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   # cursor remains unchanged
-  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-cursor-refresh-cursor/refresh-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-cursor-refresh-cursor/refresh-0/cursor"
-  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-cursor-refresh-cursor/refresh-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-refresh-cursor/refresh-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-cursor-refresh-cursor/refresh-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||||||||||   ", "F - test-cursor-refresh-cursor/refresh-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-trace-refresh-cursor/refresh-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-trace-refresh-cursor/refresh-0/cursor"
+  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-trace-refresh-cursor/refresh-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-refresh-cursor/refresh-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-trace-refresh-cursor/refresh-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||||||||||   ", "F - test-trace-refresh-cursor/refresh-2/cursor"
 }
 
-fn test-cursor-preserve-cursor-on-edit-in-other-line {
+fn test-trace-preserve-cursor-on-refresh {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x10, 0x10
@@ -917,31 +916,31 @@ fn test-cursor-preserve-cursor-on-edit-in-other-line {
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "...           ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/pre-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||           ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/pre-0/cursor"
-  check-screen-row screen,                                  1/y, "              ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/pre-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/pre-1/cursor"
+  check-screen-row screen,                                  0/y, "...           ", "F - test-trace-preserve-cursor-on-refresh/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||           ", "F - test-trace-preserve-cursor-on-refresh/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "              ", "F - test-trace-preserve-cursor-on-refresh/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-preserve-cursor-on-refresh/pre-1/cursor"
   # expand
   edit-trace t, 0xa/enter
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/expand-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||||||||||   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/expand-0/cursor"
-  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/expand-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/expand-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/expand-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/expand-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-trace-preserve-cursor-on-refresh/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||||||||||   ", "F - test-trace-preserve-cursor-on-refresh/expand-0/cursor"
+  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-trace-preserve-cursor-on-refresh/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-preserve-cursor-on-refresh/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-trace-preserve-cursor-on-refresh/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-trace-preserve-cursor-on-refresh/expand-2/cursor"
   # cursor down
   edit-trace t, 4/ctrl-d
   edit-trace t, 4/ctrl-d
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/down-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/down-0/cursor"
-  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/down-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/down-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/down-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||||||||||   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/down-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 1   ", "F - test-trace-preserve-cursor-on-refresh/down-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-trace-preserve-cursor-on-refresh/down-0/cursor"
+  check-screen-row screen,                                  1/y, "0 l: line 2   ", "F - test-trace-preserve-cursor-on-refresh/down-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-preserve-cursor-on-refresh/down-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-trace-preserve-cursor-on-refresh/down-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||||||||||   ", "F - test-trace-preserve-cursor-on-refresh/down-2/cursor"
   # recreate trace with slightly different lines
   clear-trace t
   trace-text t, "l", "line 4"
@@ -949,10 +948,10 @@ fn test-cursor-preserve-cursor-on-edit-in-other-line {
   trace-text t, "l", "line 3"  # cursor line is unchanged
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   # cursor remains unchanged
-  check-screen-row screen,                                  0/y, "0 l: line 4   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/refresh-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/refresh-0/cursor"
-  check-screen-row screen,                                  1/y, "0 l: line 5   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/refresh-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/refresh-1/cursor"
-  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/refresh-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||||||||||   ", "F - test-cursor-preserve-cursor-on-edit-in-other-line/refresh-2/cursor"
+  check-screen-row screen,                                  0/y, "0 l: line 4   ", "F - test-trace-preserve-cursor-on-refresh/refresh-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "              ", "F - test-trace-preserve-cursor-on-refresh/refresh-0/cursor"
+  check-screen-row screen,                                  1/y, "0 l: line 5   ", "F - test-trace-preserve-cursor-on-refresh/refresh-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "              ", "F - test-trace-preserve-cursor-on-refresh/refresh-1/cursor"
+  check-screen-row screen,                                  2/y, "0 l: line 3   ", "F - test-trace-preserve-cursor-on-refresh/refresh-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||||||||||   ", "F - test-trace-preserve-cursor-on-refresh/refresh-2/cursor"
 }
