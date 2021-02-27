@@ -1,10 +1,28 @@
 # out is not allocated
 fn read-cell in: (addr gap-buffer), _out: (addr handle cell), trace: (addr trace) {
+  var tokens-storage: (stream cell 0x100)
+  var tokens/ecx: (addr stream cell) <- address tokens-storage
+  tokenize in, tokens, trace
+  # TODO: insert parens
+  # TODO: transform infix
+  # TODO: parse. For now we just convert first token into a symbol and return it.
+  var empty?/eax: boolean <- stream-empty? tokens
+  compare empty?, 0/false
+  {
+    break-if-!=
+    var out/eax: (addr handle cell) <- copy _out
+    allocate out
+    var out-addr/eax: (addr cell) <- lookup *out
+    read-from-stream tokens, out-addr
+    var type/ecx: (addr int) <- get out-addr, type
+    copy-to *type, 2/symbol
+  }
+}
+
+fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) {
   trace-text trace, "read", "tokenize"
   trace-lower trace
   rewind-gap-buffer in
-  var tokens-storage: (stream cell 0x100)
-  var tokens/ecx: (addr stream cell) <- address tokens-storage
   var token-storage: cell
   var token/edx: (addr cell) <- address token-storage
   # initialize token
@@ -22,22 +40,8 @@ fn read-cell in: (addr gap-buffer), _out: (addr handle cell), trace: (addr trace
       break-if-=
       return
     }
-    write-to-stream tokens, token
+    write-to-stream out, token
     loop
-  }
-  # TODO: insert parens
-  # TODO: transform infix
-  # TODO: parse. For now we just convert first token into a symbol and return it.
-  var empty?/eax: boolean <- stream-empty? tokens
-  compare empty?, 0/false
-  {
-    break-if-!=
-    var out/eax: (addr handle cell) <- copy _out
-    allocate out
-    var out-addr/eax: (addr cell) <- lookup *out
-    read-from-stream tokens, out-addr
-    var type/ecx: (addr int) <- get out-addr, type
-    copy-to *type, 2/symbol
   }
   trace-higher trace
 }
