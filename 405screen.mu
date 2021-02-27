@@ -174,15 +174,19 @@ fn print-string screen: (addr screen), s: (addr array byte) {
     return
   }
   # fake screen
-  var s2: (stream byte 0x100)
-  var s2-addr/esi: (addr stream byte) <- address s2
-  write s2-addr, s
-  var screen-addr/edi: (addr screen) <- copy screen
+  var stream-storage: (stream byte 0x100)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  write stream, s
+  print-stream screen, stream
+}
+
+fn print-stream _screen: (addr screen), s: (addr stream byte) {
+  var screen/edi: (addr screen) <- copy _screen
   {
-    var done?/eax: boolean <- stream-empty? s2-addr
+    var done?/eax: boolean <- stream-empty? s
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- read-grapheme s2-addr
+    var g/eax: grapheme <- read-grapheme s
     print-grapheme screen, g
     loop
   }

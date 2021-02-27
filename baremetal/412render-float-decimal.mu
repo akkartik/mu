@@ -22,166 +22,170 @@
 # This approach turns out to be fast enough for most purposes.
 # Optimizations, however, get wildly more complex.
 
-fn test-render-float-decimal-normal {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x20, 5  # 32 columns should be more than enough
+fn test-write-float-decimal-approximate-normal {
+  var s-storage: (stream byte 0x10)
+  var s/ecx: (addr stream byte) <- address s-storage
   # 0.5
   var half/xmm0: float <- rational 1, 2
-  var dummy/eax: int <- render-float-decimal screen, half, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "0.5 ", "F - test-render-float-decimal-normal 0.5"
+  write-float-decimal-approximate s, half, 3
+  check-stream-equal s, "0.5", "F - test-write-float-decimal-approximate-normal 0.5"
   # 0.25
-  clear-screen screen
+  clear-stream s
   var quarter/xmm0: float <- rational 1, 4
-  var dummy/eax: int <- render-float-decimal screen, quarter, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "0.25 ", "F - test-render-float-decimal-normal 0.25"
+  write-float-decimal-approximate s, quarter, 3
+  check-stream-equal s, "0.25", "F - test-write-float-decimal-approximate-normal 0.25"
   # 0.75
-  clear-screen screen
+  clear-stream s
   var three-quarters/xmm0: float <- rational 3, 4
-  var dummy/eax: int <- render-float-decimal screen, three-quarters, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "0.75 ", "F - test-render-float-decimal-normal 0.75"
+  write-float-decimal-approximate s, three-quarters, 3
+  check-stream-equal s, "0.75", "F - test-write-float-decimal-approximate-normal 0.75"
   # 0.125
-  clear-screen screen
+  clear-stream s
   var eighth/xmm0: float <- rational 1, 8
-  var dummy/eax: int <- render-float-decimal screen, eighth, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "0.125 ", "F - test-render-float-decimal-normal 0.125"
+  write-float-decimal-approximate s, eighth, 3
+  check-stream-equal s, "0.125", "F - test-write-float-decimal-approximate-normal 0.125"
   # 0.0625; start using scientific notation
-  clear-screen screen
+  clear-stream s
   var sixteenth/xmm0: float <- rational 1, 0x10
-  var dummy/eax: int <- render-float-decimal screen, sixteenth, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "6.25e-2 ", "F - test-render-float-decimal-normal 0.0625"
+  write-float-decimal-approximate s, sixteenth, 3
+  check-stream-equal s, "6.25e-2", "F - test-write-float-decimal-approximate-normal 0.0625"
   # sqrt(2); truncate floats with lots of digits after the decimal but not too many before
-  clear-screen screen
+  clear-stream s
   var two-f/xmm0: float <- rational 2, 1
   var sqrt-2/xmm0: float <- square-root two-f
-  var dummy/eax: int <- render-float-decimal screen, sqrt-2, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "1.414 ", "F - test-render-float-decimal-normal √2"
+  write-float-decimal-approximate s, sqrt-2, 3
+  check-stream-equal s, "1.414", "F - test-write-float-decimal-approximate-normal √2"
 }
 
 # print whole integers without decimals
-fn test-render-float-decimal-integer {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x20, 5  # 32 columns should be more than enough
+fn test-write-float-decimal-approximate-integer {
+  var s-storage: (stream byte 0x10)
+  var s/ecx: (addr stream byte) <- address s-storage
   # 1
   var one-f/xmm0: float <- rational 1, 1
-  var dummy/eax: int <- render-float-decimal screen, one-f, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "1 ", "F - test-render-float-decimal-integer 1"
+  write-float-decimal-approximate s, one-f, 3
+  check-stream-equal s, "1", "F - test-write-float-decimal-approximate-integer 1"
   # 2
-  clear-screen screen
+  clear-stream s
   var two-f/xmm0: float <- rational 2, 1
-  var dummy/eax: int <- render-float-decimal screen, two-f, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "2 ", "F - test-render-float-decimal-integer 2"
+  write-float-decimal-approximate s, two-f, 3
+  check-stream-equal s, "2", "F - test-write-float-decimal-approximate-integer 2"
   # 10
-  clear-screen screen
+  clear-stream s
   var ten-f/xmm0: float <- rational 0xa, 1
-  var dummy/eax: int <- render-float-decimal screen, ten-f, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "10 ", "F - test-render-float-decimal-integer 10"
+  write-float-decimal-approximate s, ten-f, 3
+  check-stream-equal s, "10", "F - test-write-float-decimal-approximate-integer 10"
   # -10
-  clear-screen screen
+  clear-stream s
   var minus-ten-f/xmm0: float <- rational -0xa, 1
-  var dummy/eax: int <- render-float-decimal screen, minus-ten-f, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "-10 ", "F - test-render-float-decimal-integer -10"
+  write-float-decimal-approximate s, minus-ten-f, 3
+  check-stream-equal s, "-10", "F - test-write-float-decimal-approximate-integer -10"
   # 999
-  clear-screen screen
+  clear-stream s
   var minus-ten-f/xmm0: float <- rational 0x3e7, 1
-  var dummy/eax: int <- render-float-decimal screen, minus-ten-f, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "999 ", "F - test-render-float-decimal-integer 1000"
+  write-float-decimal-approximate s, minus-ten-f, 3
+  check-stream-equal s, "999", "F - test-write-float-decimal-approximate-integer 1000"
   # 1000 - start using scientific notation
-  clear-screen screen
+  clear-stream s
   var minus-ten-f/xmm0: float <- rational 0x3e8, 1
-  var dummy/eax: int <- render-float-decimal screen, minus-ten-f, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "1.00e3 ", "F - test-render-float-decimal-integer 1000"
+  write-float-decimal-approximate s, minus-ten-f, 3
+  check-stream-equal s, "1.00e3", "F - test-write-float-decimal-approximate-integer 1000"
   # 100,000
-  clear-screen screen
+  clear-stream s
   var hundred-thousand/eax: int <- copy 0x186a0
   var hundred-thousand-f/xmm0: float <- convert hundred-thousand
-  var dummy/eax: int <- render-float-decimal screen, hundred-thousand-f, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "1.00e5 ", "F - test-render-float-decimal-integer 100,000"
+  write-float-decimal-approximate s, hundred-thousand-f, 3
+  check-stream-equal s, "1.00e5", "F - test-write-float-decimal-approximate-integer 100,000"
 }
 
-fn test-render-float-decimal-zero {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x20, 5  # 32 columns should be more than enough
+fn test-write-float-decimal-approximate-zero {
+  var s-storage: (stream byte 0x10)
+  var s/ecx: (addr stream byte) <- address s-storage
   var zero: float
-  var dummy/eax: int <- render-float-decimal screen, zero, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "0 ", "F - test-render-float-decimal-zero"
+  write-float-decimal-approximate s, zero, 3
+  check-stream-equal s, "0", "F - test-write-float-decimal-approximate-zero"
 }
 
-fn test-render-float-decimal-negative-zero {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x20, 5  # 32 columns should be more than enough
+fn test-write-float-decimal-approximate-negative-zero {
+  var s-storage: (stream byte 0x10)
+  var s/ecx: (addr stream byte) <- address s-storage
   var n: int
   copy-to n, 0x80000000
   var negative-zero/xmm0: float <- reinterpret n
-  var dummy/eax: int <- render-float-decimal screen, negative-zero, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "-0 ", "F - test-render-float-decimal-negative-zero"
+  write-float-decimal-approximate s, negative-zero, 3
+  check-stream-equal s, "-0", "F - test-write-float-decimal-approximate-negative-zero"
 }
 
-fn test-render-float-decimal-infinity {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x20, 5  # 32 columns should be more than enough
+fn test-write-float-decimal-approximate-infinity {
+  var s-storage: (stream byte 0x10)
+  var s/ecx: (addr stream byte) <- address s-storage
   var n: int
   #          0|11111111|00000000000000000000000
   #          0111|1111|1000|0000|0000|0000|0000|0000
   copy-to n, 0x7f800000
   var infinity/xmm0: float <- reinterpret n
-  var dummy/eax: int <- render-float-decimal screen, infinity, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "Inf ", "F - test-render-float-decimal-infinity"
+  write-float-decimal-approximate s, infinity, 3
+  check-stream-equal s, "Inf", "F - test-write-float-decimal-approximate-infinity"
 }
 
-fn test-render-float-decimal-negative-infinity {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x20, 5  # 32 columns should be more than enough
+fn test-write-float-decimal-approximate-negative-infinity {
+  var s-storage: (stream byte 0x10)
+  var s/ecx: (addr stream byte) <- address s-storage
   var n: int
   copy-to n, 0xff800000
   var negative-infinity/xmm0: float <- reinterpret n
-  var dummy/eax: int <- render-float-decimal screen, negative-infinity, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "-Inf ", "F - test-render-float-decimal-negative-infinity"
+  write-float-decimal-approximate s, negative-infinity, 3
+  check-stream-equal s, "-Inf", "F - test-write-float-decimal-approximate-negative-infinity"
 }
 
-fn test-render-float-decimal-not-a-number {
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x20, 5  # 32 columns should be more than enough
+fn test-write-float-decimal-approximate-not-a-number {
+  var s-storage: (stream byte 0x10)
+  var s/ecx: (addr stream byte) <- address s-storage
   var n: int
   copy-to n, 0xffffffff  # exponent must be all 1's, and mantissa must be non-zero
   var nan/xmm0: float <- reinterpret n
-  var dummy/eax: int <- render-float-decimal screen, nan, 3/precision, 0, 0, 3/fg, 0/bg
-  check-screen-row screen, 0/y, "NaN ", "F - test-render-float-decimal-not-a-number"
+  write-float-decimal-approximate s, nan, 3
+  check-stream-equal s, "NaN", "F - test-write-float-decimal-approximate-not-a-number"
+}
+
+fn render-float-decimal screen: (addr screen), in: float, precision: int, x: int, y: int, color: int, background-color: int -> _/eax: int {
+  var s-storage: (stream byte 0x10)
+  var s/esi: (addr stream byte) <- address s-storage
+  write-float-decimal-approximate s, in, precision
+  var width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  width, height <- screen-size screen
+  var result/eax: int <- draw-stream-rightward screen, s, x, width, y, color, background-color
+  return result
 }
 
 # 'precision' controls the maximum width past which we resort to scientific notation
-fn render-float-decimal screen: (addr screen), in: float, precision: int, x: int, y: int, color: int, background-color: int -> _/eax: int {
+fn write-float-decimal-approximate out: (addr stream byte), in: float, precision: int {
   # - special names
   var bits/eax: int <- reinterpret in
   compare bits, 0
   {
     break-if-!=
-    var new-x/eax: int <- draw-text-rightward-over-full-screen screen, "0", x, y, color, background-color
-    return new-x
+    write out, "0"
+    return
   }
   compare bits, 0x80000000
   {
     break-if-!=
-    var new-x/eax: int <- draw-text-rightward-over-full-screen screen, "-0", x, y, color, background-color
-    return new-x
+    write out, "-0"
+    return
   }
   compare bits, 0x7f800000
   {
     break-if-!=
-    var new-x/eax: int <- draw-text-rightward-over-full-screen screen, "Inf", x, y, color, background-color
-    return new-x
+    write out, "Inf"
+    return
   }
   compare bits, 0xff800000
   {
     break-if-!=
-    var new-x/eax: int <- draw-text-rightward-over-full-screen screen, "-Inf", x, y, color, background-color
-    return new-x
+    write out, "-Inf"
+    return
   }
   var exponent/ecx: int <- copy bits
   exponent <- shift-right 0x17  # 23 bits of mantissa
@@ -190,8 +194,8 @@ fn render-float-decimal screen: (addr screen), in: float, precision: int, x: int
   compare exponent, 0x80
   {
     break-if-!=
-    var new-x/eax: int <- draw-text-rightward-over-full-screen screen, "NaN", x, y, color, background-color
-    return new-x
+    write out, "NaN"
+    return
   }
   # - regular numbers
   var sign/edx: int <- copy bits
@@ -199,8 +203,7 @@ fn render-float-decimal screen: (addr screen), in: float, precision: int, x: int
   {
     compare sign, 1
     break-if-!=
-    draw-code-point screen, 0x2d/minus, x, y, color, background-color
-    increment x
+    append-byte out, 0x2d/minus
   }
 
   # v = 1.mantissa (in base 2) << 0x17
@@ -240,8 +243,7 @@ fn render-float-decimal screen: (addr screen), in: float, precision: int, x: int
     loop
   }
 
-  var new-x/eax: int <- render-float-buffer screen, buf, n, dp, precision, x, y, color, background-color
-  return new-x
+  _write-float-array-of-decimal-digits out, buf, n, dp, precision
 }
 
 # store the decimal digits of 'n' into 'buf', units first
@@ -410,26 +412,25 @@ fn halve-array-of-decimal-digits _buf: (addr array byte), _n: int, _dp: int -> _
   return n, dp
 }
 
-fn render-float-buffer screen: (addr screen), _buf: (addr array byte), n: int, dp: int, precision: int, x: int, y: int, color: int, background-color: int -> _/eax: int {
+fn _write-float-array-of-decimal-digits out: (addr stream byte), _buf: (addr array byte), n: int, dp: int, precision: int {
   var buf/edi: (addr array byte) <- copy _buf
   {
     compare dp, 0
     break-if->=
-    var new-x/eax: int <- render-float-buffer-in-scientific-notation screen, buf, n, dp, precision, x, y, color, background-color
-    return new-x
+    _write-float-array-of-decimal-digits-in-scientific-notation out, buf, n, dp, precision
+    return
   }
   {
     var dp2/eax: int <- copy dp
     compare dp2, precision
     break-if-<=
-    var new-x/eax: int <- render-float-buffer-in-scientific-notation screen, buf, n, dp, precision, x, y, color, background-color
-    return new-x
+    _write-float-array-of-decimal-digits-in-scientific-notation out, buf, n, dp, precision
+    return
   }
   {
     compare dp, 0
     break-if-!=
-    draw-code-point screen, 0x30/0, x, y, color, background-color
-    increment x
+    append-byte out, 0x30/0
   }
   var i/eax: int <- copy 0
   # bounds = min(n, dp+3)
@@ -447,22 +448,20 @@ fn render-float-buffer screen: (addr screen), _buf: (addr array byte), n: int, d
     compare i, dp
     {
       break-if-!=
-      draw-code-point screen, 0x2e/decimal-point, x, y, color, background-color
-      increment x
+      append-byte out, 0x2e/decimal-point
     }
     var curr-a/ecx: (addr byte) <- index buf, i
     var curr/ecx: byte <- copy-byte *curr-a
-    curr <- add 0x30/0
-    var curr-grapheme/ecx: grapheme <- copy curr
-    draw-grapheme screen, curr-grapheme, x, y, color, background-color
-    increment x
+    var curr-int/ecx: int <- copy curr
+    curr-int <- add 0x30/0
+    append-byte out, curr-int
+    #
     i <- increment
     loop
   }
-  return x
 }
 
-fn render-float-buffer-in-scientific-notation screen: (addr screen), _buf: (addr array byte), n: int, dp: int, precision: int, x: int, y: int, color: int, background-color: int -> _/eax: int {
+fn _write-float-array-of-decimal-digits-in-scientific-notation out: (addr stream byte), _buf: (addr array byte), n: int, dp: int, precision: int {
   var buf/edi: (addr array byte) <- copy _buf
   var i/eax: int <- copy 0
   {
@@ -473,29 +472,23 @@ fn render-float-buffer-in-scientific-notation screen: (addr screen), _buf: (addr
     compare i, 1
     {
       break-if-!=
-      draw-code-point screen, 0x2e/decimal-point, x, y, color, background-color
-      increment x
+      append-byte out, 0x2e/decimal-point
     }
     var curr-a/ecx: (addr byte) <- index buf, i
     var curr/ecx: byte <- copy-byte *curr-a
-    curr <- add 0x30/0
-    var curr-grapheme/ecx: grapheme <- copy curr
-    draw-grapheme screen, curr-grapheme, x, y, color, background-color
-    increment x
+    var curr-int/ecx: int <- copy curr
+    curr-int <- add 0x30/0
+    append-byte out, curr-int
     #
     i <- increment
     loop
   }
-  draw-code-point screen, 0x65/e, x, y, color, background-color
-  increment x
+  append-byte out, 0x65/e
   decrement dp
-  var new-x/eax: int <- copy 0
-  var new-y/ecx: int <- copy 0
-  new-x, new-y <- draw-int32-decimal-wrapping-right-then-down-over-full-screen screen, dp, x, y, color, background-color
-  return new-x
+  write-int32-decimal out, dp
 }
 
-# follows the structure of render-float-decimal
+# follows the structure of write-float-decimal-approximate
 # 'precision' controls the maximum width past which we resort to scientific notation
 fn float-size in: float, precision: int -> _/eax: int {
   # - special names
