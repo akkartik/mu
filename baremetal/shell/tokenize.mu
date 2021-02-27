@@ -1,3 +1,7 @@
+# We reuse the cell data structure for tokenization
+# Token cells are special, though. They have no type, they're always atoms,
+# they always have text-data.
+
 fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) {
   trace-text trace, "read", "tokenize"
   trace-lower trace
@@ -367,4 +371,14 @@ fn is-bracket-grapheme? g: grapheme -> _/eax: boolean {
     return 1/true
   }
   return 0/false
+}
+
+fn is-number-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  rewind-stream in-data
+  var g/eax: grapheme <- read-grapheme in-data
+  var result/eax: boolean <- is-decimal-digit? g
+  return result
 }

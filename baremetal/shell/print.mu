@@ -3,6 +3,12 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte) {
   var in/eax: (addr handle cell) <- copy _in
   var in-addr/eax: (addr cell) <- lookup *in
   var in-type/ecx: (addr int) <- get in-addr, type
+  compare *in-type, 1/number
+  {
+    break-if-!=
+    print-number in-addr, out
+    return
+  }
   compare *in-type, 2/symbol
   {
     break-if-!=
@@ -25,4 +31,10 @@ fn print-symbol _in: (addr cell), out: (addr stream byte) {
     write-grapheme out, g
     loop
   }
+}
+
+fn print-number _in: (addr cell), out: (addr stream byte) {
+  var in/esi: (addr cell) <- copy _in
+  var val/eax: (addr float) <- get in, number-data
+  write-float-decimal-approximate out, *val, 3/precision
 }
