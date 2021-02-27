@@ -55,6 +55,15 @@ fn next-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace
       next-symbol-token in, out, trace
       break $next-token:body
     }
+    # brackets are always single-char tokens
+    {
+      var bracket?/eax: boolean <- is-bracket-grapheme? g
+      compare bracket?, 0/false
+      break-if-=
+      var g/eax: grapheme <- read-from-gap-buffer in
+      next-bracket-token g, out, trace
+      break $next-token:body
+    }
   }
   trace-higher trace
   var stream-storage: (stream byte 0x40)
@@ -138,6 +147,16 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     loop
   }
   trace-higher trace
+}
+
+fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) {
+  trace-text trace, "read", "bracket"
+  write-grapheme out, g
+  var stream-storage: (stream byte 0x40)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  write stream, "=> "
+  write-stream stream, out
+  trace trace, "read", stream
 }
 
 fn read-symbol in: (addr stream byte), _out: (addr handle cell) {
@@ -324,4 +343,38 @@ fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
     return 0/false
   }
   return 1/true
+}
+
+fn is-bracket-grapheme? g: grapheme -> _/eax: boolean {
+  compare g, 0x28/open-paren
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x29/close-paren
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x5b/open-square-bracket
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x5d/close-square-bracket
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x7b/open-curly-bracket
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x7d/close-curly-bracket
+  {
+    break-if-!=
+    return 1/true
+  }
+  return 0/false
 }
