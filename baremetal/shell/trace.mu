@@ -90,6 +90,7 @@ fn trace _self: (addr trace), label: (addr array byte), message: (addr stream by
   var offset/ecx: (offset trace-line) <- compute-offset data, index
   var dest/eax: (addr trace-line) <- index data, offset
   var depth/ecx: (addr int) <- get self, curr-depth
+  rewind-stream message
   initialize-trace-line *depth, label, message, dest
   increment *index-addr
 }

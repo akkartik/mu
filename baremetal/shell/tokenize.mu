@@ -8,14 +8,14 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
   rewind-gap-buffer in
   var token-storage: cell
   var token/edx: (addr cell) <- address token-storage
-  # initialize token
-  var dest-ah/eax: (addr handle stream byte) <- get token, text-data
-  populate-stream dest-ah, 0x40/max-token-size
-  #
   {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
+    # initialize token data each iteration to avoid aliasing
+    var dest-ah/eax: (addr handle stream byte) <- get token, text-data
+    populate-stream dest-ah, 0x40/max-token-size
+    #
     next-token in, token, trace
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
@@ -23,7 +23,7 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
       break-if-=
       return
     }
-    write-to-stream out, token
+    write-to-stream out, token  # shallow-copy text-data
     loop
   }
   trace-higher trace
