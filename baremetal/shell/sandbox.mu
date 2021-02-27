@@ -16,7 +16,7 @@ fn initialize-sandbox _self: (addr sandbox) {
   var trace-ah/eax: (addr handle trace) <- get self, trace
   allocate trace-ah
   var trace/eax: (addr trace) <- lookup *trace-ah
-  initialize-trace trace, 0x100/lines, 0x10/visible-lines
+  initialize-trace trace, 0x1000/lines, 0x80/visible-lines
 }
 
 ## some helpers for tests
