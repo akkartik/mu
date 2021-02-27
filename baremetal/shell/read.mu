@@ -1,10 +1,16 @@
 # out is not allocated
-fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace) {
+fn read-cell in: (addr gap-buffer), _out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "read", "tokenize"
   trace-lower trace
   rewind-gap-buffer in
-  var token-storage: (stream byte 0x1000)  # strings can be large
-  var token/ecx: (addr stream byte) <- address token-storage
+  var tokens-storage: (stream cell 0x100)
+  var tokens/ecx: (addr stream cell) <- address tokens-storage
+  var token-storage: cell
+  var token/edx: (addr cell) <- address token-storage
+  # initialize token
+  var dest-ah/eax: (addr handle stream byte) <- get token, text-data
+  populate-stream dest-ah, 0x40/max-token-size
+  #
   {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
@@ -12,21 +18,37 @@ fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace)
     next-token in, token, trace
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
-    break-if-!=
-    read-symbol token, out
+    {
+      break-if-=
+      return
+    }
+    write-to-stream tokens, token
     loop
   }
-  # TODO:
-  #   insert parens
-  #   transform infix
-  #   token tree
-  #   syntax tree
+  # TODO: insert parens
+  # TODO: transform infix
+  # TODO: parse. For now we just convert first token into a symbol and return it.
+  var empty?/eax: boolean <- stream-empty? tokens
+  compare empty?, 0/false
+  {
+    break-if-!=
+    var out/eax: (addr handle cell) <- copy _out
+    allocate out
+    var out-addr/eax: (addr cell) <- lookup *out
+    read-from-stream tokens, out-addr
+    var type/ecx: (addr int) <- get out-addr, type
+    copy-to *type, 2/symbol
+  }
   trace-higher trace
 }
 
-fn next-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace) {
   trace-text trace, "read", "next-token"
   trace-lower trace
+  var out-cell/eax: (addr cell) <- copy _out-cell
+  var out-ah/eax: (addr handle stream byte) <- get out-cell, text-data
+  var _out/eax: (addr stream byte) <- lookup *out-ah
+  var out/edi: (addr stream byte) <- copy _out
   $next-token:body: {
     clear-stream out
     skip-whitespace-from-gap-buffer in
@@ -160,24 +182,6 @@ fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) 
   rewind-stream out
   write-stream stream, out
   trace trace, "read", stream
-}
-
-fn read-symbol in: (addr stream byte), _out: (addr handle cell) {
-  rewind-stream in
-  var out/eax: (addr handle cell) <- copy _out
-  new-symbol out
-  var out-a/eax: (addr cell) <- lookup *out
-  var out-data-ah/eax: (addr handle stream byte) <- get out-a, text-data
-  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
-  var out-data/edi: (addr stream byte) <- copy _out-data
-  {
-    var done?/eax: boolean <- stream-empty? in
-    compare done?, 0/false
-    break-if-!=
-    var g/eax: grapheme <- read-grapheme in
-    write-grapheme out-data, g
-    loop
-  }
 }
 
 fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
