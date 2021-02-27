@@ -1,11 +1,15 @@
 # out is not allocated
-fn read-cell in: (addr gap-buffer), _out: (addr handle cell), trace: (addr trace) {
+fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace) {
   var tokens-storage: (stream cell 0x100)
   var tokens/ecx: (addr stream cell) <- address tokens-storage
   tokenize in, tokens, trace
   # TODO: insert parens
   # TODO: transform infix
-  # TODO: parse. For now we just convert first token into a symbol and return it.
+  parse-sexpression tokens, out, trace
+}
+
+fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) {
+  # For now we just convert first token into a symbol and return it. TODO
   var empty?/eax: boolean <- stream-empty? tokens
   compare empty?, 0/false
   {
