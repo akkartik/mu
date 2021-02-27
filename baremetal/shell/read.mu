@@ -69,6 +69,7 @@ fn next-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace
   var stream-storage: (stream byte 0x40)
   var stream/eax: (addr stream byte) <- address stream-storage
   write stream, "=> "
+  rewind-stream out
   write-stream stream, out
   trace trace, "read", stream
 }
@@ -105,6 +106,7 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
   var stream-storage: (stream byte 0x40)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, "=> "
+  rewind-stream out
   write-stream stream, out
   trace trace, "read", stream
 }
@@ -155,6 +157,7 @@ fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) 
   var stream-storage: (stream byte 0x40)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, "=> "
+  rewind-stream out
   write-stream stream, out
   trace trace, "read", stream
 }
