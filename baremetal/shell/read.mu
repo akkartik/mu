@@ -93,6 +93,11 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     loop
   }
   trace-higher trace
+  var stream-storage: (stream byte 0x40)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  write stream, "=> "
+  write-stream stream, out
+  trace trace, "read", stream
 }
 
 fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
