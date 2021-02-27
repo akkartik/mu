@@ -39,6 +39,7 @@ fn next-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace
       write-int32-hex stream, gval
       trace trace, "read", stream
     }
+    # digit
     {
       var digit?/eax: boolean <- is-decimal-digit? g
       compare digit?, 0/false
@@ -46,7 +47,14 @@ fn next-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace
       next-number-token in, out, trace
       break $next-token:body
     }
-    next-symbol-token in, out, trace
+    # other symbol char
+    {
+      var symbol?/eax: boolean <- is-symbol-grapheme? g
+      compare symbol?, 0/false
+      break-if-=
+      next-symbol-token in, out, trace
+      break $next-token:body
+    }
   }
   trace-higher trace
   var stream-storage: (stream byte 0x40)
@@ -85,6 +93,64 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     loop
   }
   trace-higher trace
+}
+
+fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+  trace-text trace, "read", "looking for a number"
+  trace-lower trace
+  $next-number-token:loop: {
+    var done?/eax: boolean <- gap-buffer-scan-done? in
+    compare done?, 0/false
+    break-if-!=
+    var g/eax: grapheme <- peek-from-gap-buffer in
+    {
+      var stream-storage: (stream byte 0x40)
+      var stream/esi: (addr stream byte) <- address stream-storage
+      write stream, "next: "
+      var gval/eax: int <- copy g
+      write-int32-hex stream, gval
+      trace trace, "read", stream
+    }
+    # if not symbol grapheme, return
+    {
+      var symbol-grapheme?/eax: boolean <- is-symbol-grapheme? g
+      compare symbol-grapheme?, 0/false
+      break-if-!=
+      trace-text trace, "read", "stop"
+      break $next-number-token:loop
+    }
+    # if not digit grapheme, abort
+    {
+      var digit?/eax: boolean <- is-decimal-digit? g
+      compare digit?, 0/false
+      break-if-!=
+      error trace, "invalid number"
+      return
+    }
+    trace-text trace, "read", "append"
+    var g/eax: grapheme <- read-from-gap-buffer in
+    write-grapheme out, g
+    loop
+  }
+  trace-higher trace
+}
+
+fn read-symbol in: (addr stream byte), _out: (addr handle cell) {
+  rewind-stream in
+  var out/eax: (addr handle cell) <- copy _out
+  new-symbol out
+  var out-a/eax: (addr cell) <- lookup *out
+  var out-data-ah/eax: (addr handle stream byte) <- get out-a, text-data
+  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
+  var out-data/edi: (addr stream byte) <- copy _out-data
+  {
+    var done?/eax: boolean <- stream-empty? in
+    compare done?, 0/false
+    break-if-!=
+    var g/eax: grapheme <- read-grapheme in
+    write-grapheme out-data, g
+    loop
+  }
 }
 
 fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
@@ -253,62 +319,4 @@ fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
     return 0/false
   }
   return 1/true
-}
-
-fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
-  trace-text trace, "read", "looking for a number"
-  trace-lower trace
-  $next-number-token:loop: {
-    var done?/eax: boolean <- gap-buffer-scan-done? in
-    compare done?, 0/false
-    break-if-!=
-    var g/eax: grapheme <- peek-from-gap-buffer in
-    {
-      var stream-storage: (stream byte 0x40)
-      var stream/esi: (addr stream byte) <- address stream-storage
-      write stream, "next: "
-      var gval/eax: int <- copy g
-      write-int32-hex stream, gval
-      trace trace, "read", stream
-    }
-    # if not symbol grapheme, return
-    {
-      var symbol-grapheme?/eax: boolean <- is-symbol-grapheme? g
-      compare symbol-grapheme?, 0/false
-      break-if-!=
-      trace-text trace, "read", "stop"
-      break $next-number-token:loop
-    }
-    # if not digit grapheme, abort
-    {
-      var digit?/eax: boolean <- is-decimal-digit? g
-      compare digit?, 0/false
-      break-if-!=
-      error trace, "invalid number"
-      return
-    }
-    trace-text trace, "read", "append"
-    var g/eax: grapheme <- read-from-gap-buffer in
-    write-grapheme out, g
-    loop
-  }
-  trace-higher trace
-}
-
-fn read-symbol in: (addr stream byte), _out: (addr handle cell) {
-  rewind-stream in
-  var out/eax: (addr handle cell) <- copy _out
-  new-symbol out
-  var out-a/eax: (addr cell) <- lookup *out
-  var out-data-ah/eax: (addr handle stream byte) <- get out-a, text-data
-  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
-  var out-data/edi: (addr stream byte) <- copy _out-data
-  {
-    var done?/eax: boolean <- stream-empty? in
-    compare done?, 0/false
-    break-if-!=
-    var g/eax: grapheme <- read-grapheme in
-    write-grapheme out-data, g
-    loop
-  }
 }
