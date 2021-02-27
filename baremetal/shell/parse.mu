@@ -37,13 +37,25 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       }
       return
     }
-    # Temporary default: just convert first token to symbol and return it.
+    # list
+    {
+    }
+    # default: symbol
+    # just copy token data
+    new-symbol _out
     var out/eax: (addr handle cell) <- copy _out
-    allocate out
     var out-addr/eax: (addr cell) <- lookup *out
-    copy-object curr-token, out-addr
-    var type/ecx: (addr int) <- get out-addr, type
-    copy-to *type, 2/symbol
+    var curr-token-data-ah/ecx: (addr handle stream byte) <- get curr-token, text-data
+    var dest-ah/edx: (addr handle stream byte) <- get out-addr, text-data
+    copy-object curr-token-data-ah, dest-ah
+    {
+      var stream-storage: (stream byte 0x40)
+      var stream/ecx: (addr stream byte) <- address stream-storage
+      trace-higher trace
+      write stream, "=> symbol "
+      print-symbol out-addr, stream, 0/no-trace
+      trace trace, "read", stream
+    }
     return
   }
   abort "unexpected tokens at end; only type in a single expression at a time"
