@@ -88,7 +88,8 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
 }
 
 fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
-  compare g, 0x20/space
+  ## whitespace
+  compare g, 9/tab
   {
     break-if-!=
     return 0/false
@@ -98,11 +99,28 @@ fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
     break-if-!=
     return 0/false
   }
+  compare g, 0x20/space
+  {
+    break-if-!=
+    return 0/false
+  }
+  ## quotes
   compare g, 0x22/double-quote
   {
     break-if-!=
     return 0/false
   }
+  compare g, 0x27/single-quote
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x60/backquote
+  {
+    break-if-!=
+    return 0/false
+  }
+  ## brackets
   compare g, 0x28/open-paren
   {
     break-if-!=
@@ -129,6 +147,107 @@ fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
     return 0/false
   }
   compare g, 0x7d/close-curly-bracket
+  {
+    break-if-!=
+    return 0/false
+  }
+  # - other punctuation
+  # '!' is a symbol char
+  compare g, 0x23/hash
+  {
+    break-if-!=
+    return 0/false
+  }
+  # '$' is a symbol char
+  compare g, 0x25/percent
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x26/ampersand
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x2a/asterisk
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x2b/plus
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x2c/comma
+  {
+    break-if-!=
+    return 0/false
+  }
+  # '-' is a symbol char
+  compare g, 0x2e/period
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x2f/slash
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x2f/slash
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x3a/colon
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x3b/semi-colon
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x3c/less-than
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x3d/equal
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x3e/greater-than
+  {
+    break-if-!=
+    return 0/false
+  }
+  # '?' is a symbol char
+  compare g, 0x40/at-sign
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x5c/backslash
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x5e/caret
+  {
+    break-if-!=
+    return 0/false
+  }
+  # '_' is a symbol char
+  compare g, 0x7c/vertical-line
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x7e/tilde
   {
     break-if-!=
     return 0/false
