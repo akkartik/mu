@@ -9,54 +9,56 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
     compare done?, 0/false
     break-if-!=
     read-from-stream tokens, curr-token
-    var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
-    var _curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
-    var curr-token-data/esi: (addr stream byte) <- copy _curr-token-data
-    trace trace, "read", curr-token-data
-    # number
-    var is-number-token?/eax: boolean <- is-number-token? curr-token
-    compare is-number-token?, 0/false
-    {
-      break-if-=
-      rewind-stream curr-token-data
-      var _val/eax: int <- parse-decimal-int-from-stream curr-token-data
-      var val/ecx: int <- copy _val
-      var val-float/xmm0: float <- convert val
-      new-number _out
-      var out/eax: (addr handle cell) <- copy _out
-      var out-addr/eax: (addr cell) <- lookup *out
-      var dest/edi: (addr float) <- get out-addr, number-data
-      copy-to *dest, val-float
-      {
-        var stream-storage: (stream byte 0x40)
-        var stream/ecx: (addr stream byte) <- address stream-storage
-        trace-higher trace
-        write stream, "=> number "
-        print-number out-addr, stream, 0/no-trace
-        trace trace, "read", stream
-      }
-      return
-    }
-    # list
-    {
-    }
-    # default: symbol
-    # just copy token data
-    new-symbol _out
+    parse-atom curr-token, _out, trace
+    return
+  }
+  abort "unexpected tokens at end; only type in a single expression at a time"
+}
+
+fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr trace) {
+  var curr-token/ecx: (addr cell) <- copy _curr-token
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var _curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  var curr-token-data/esi: (addr stream byte) <- copy _curr-token-data
+  trace trace, "read", curr-token-data
+  # number
+  var is-number-token?/eax: boolean <- is-number-token? curr-token
+  compare is-number-token?, 0/false
+  {
+    break-if-=
+    rewind-stream curr-token-data
+    var _val/eax: int <- parse-decimal-int-from-stream curr-token-data
+    var val/ecx: int <- copy _val
+    var val-float/xmm0: float <- convert val
+    new-number _out
     var out/eax: (addr handle cell) <- copy _out
     var out-addr/eax: (addr cell) <- lookup *out
-    var curr-token-data-ah/ecx: (addr handle stream byte) <- get curr-token, text-data
-    var dest-ah/edx: (addr handle stream byte) <- get out-addr, text-data
-    copy-object curr-token-data-ah, dest-ah
+    var dest/edi: (addr float) <- get out-addr, number-data
+    copy-to *dest, val-float
     {
       var stream-storage: (stream byte 0x40)
       var stream/ecx: (addr stream byte) <- address stream-storage
       trace-higher trace
-      write stream, "=> symbol "
-      print-symbol out-addr, stream, 0/no-trace
+      write stream, "=> number "
+      print-number out-addr, stream, 0/no-trace
       trace trace, "read", stream
     }
     return
   }
-  abort "unexpected tokens at end; only type in a single expression at a time"
+  # default: symbol
+  # just copy token data
+  new-symbol _out
+  var out/eax: (addr handle cell) <- copy _out
+  var out-addr/eax: (addr cell) <- lookup *out
+  var curr-token-data-ah/ecx: (addr handle stream byte) <- get curr-token, text-data
+  var dest-ah/edx: (addr handle stream byte) <- get out-addr, text-data
+  copy-object curr-token-data-ah, dest-ah
+  {
+    var stream-storage: (stream byte 0x40)
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    trace-higher trace
+    write stream, "=> symbol "
+    print-symbol out-addr, stream, 0/no-trace
+    trace trace, "read", stream
+  }
 }
