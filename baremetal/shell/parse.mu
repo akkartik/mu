@@ -20,6 +20,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
 }
 
 fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "read", "parse atom"
   var curr-token/ecx: (addr cell) <- copy _curr-token
   var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
   var _curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
@@ -42,7 +43,6 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
     {
       var stream-storage: (stream byte 0x40)
       var stream/ecx: (addr stream byte) <- address stream-storage
-      trace-higher trace
       write stream, "=> number "
       print-number out-addr, stream, 0/no-trace
       trace trace, "read", stream
@@ -60,7 +60,6 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
   {
     var stream-storage: (stream byte 0x40)
     var stream/ecx: (addr stream byte) <- address stream-storage
-    trace-higher trace
     write stream, "=> symbol "
     print-symbol out-addr, stream, 0/no-trace
     trace trace, "read", stream

@@ -21,7 +21,7 @@ fn print-symbol _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   {
     compare trace, 0
     break-if-=
-    trace-text trace, "print", "symbol"
+#?     trace-text trace, "print", "symbol"
   }
   var in/esi: (addr cell) <- copy _in
   var data-ah/eax: (addr handle stream byte) <- get in, text-data
@@ -42,7 +42,7 @@ fn print-number _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   {
     compare trace, 0
     break-if-=
-    trace-text trace, "print", "number"
+#?     trace-text trace, "print", "number"
   }
   var in/esi: (addr cell) <- copy _in
   var val/eax: (addr float) <- get in, number-data
