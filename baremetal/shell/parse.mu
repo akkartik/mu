@@ -13,6 +13,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
   }
   read-from-stream tokens, curr-token
   parse-atom curr-token, _out, trace
+  trace-higher trace
   var empty?/eax: boolean <- stream-empty? tokens
   compare empty?, 0/false
   break-if-!=
