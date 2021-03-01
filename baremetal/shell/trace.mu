@@ -1194,6 +1194,7 @@ fn test-trace-collapse-at-top {
   clear-screen screen
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
+  check-ints-equal y, 1, "F - test-trace-collapse-at-top/post-0/y"
   check-screen-row screen,                                  0/y, "...        ", "F - test-trace-collapse-at-top/post-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||        ", "F - test-trace-collapse-at-top/post-0/cursor"
   check-screen-row screen,                                  1/y, "           ", "F - test-trace-collapse-at-top/post-1"
@@ -1234,6 +1235,7 @@ fn test-trace-collapse {
   clear-screen screen
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
+  check-ints-equal y, 1, "F - test-trace-collapse/post-0/y"
   check-screen-row screen,                                  0/y, "...        ", "F - test-trace-collapse/post-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||        ", "F - test-trace-collapse/post-0/cursor"
   check-screen-row screen,                                  1/y, "           ", "F - test-trace-collapse/post-1"
