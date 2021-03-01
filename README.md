@@ -92,13 +92,14 @@ Mu programs can be written for two very different environments:
   no persistent storage, no network. These programs have not yet been tested
   on native hardware, only on on Qemu and Bochs. But these _baremetal_
   programs build from scratch, without any reliance on C. This is the future.
+  Here is Conway's Game of Life on Mu:
 
   ```sh
-  $ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
+  $ ./translate_mu_baremetal baremetal/life.mu  # emit disk.img
   $ qemu-system-i386 disk.img
   ```
 
-  <img alt='screenshot of a Mu program running without any intervening Operating System' src='html/baremetal.png'>
+  <img alt='screenshot of Game of Life running on Mu without any intervening Operating System' src='html/baremetal-life.png'>
 
 Use `translate_mu` to build programs for Linux, and `translate_mu_baremetal`
 for running without Linux. The standard libraries are totally separate for the
