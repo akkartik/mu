@@ -658,7 +658,6 @@ fn collapse _self: (addr trace) {
     compare *curr-line-depth, target-depth
     break-if-<
     {
-      break-if-!=
       hide-trace-line self, curr-line
       var curr-line-visible?/eax: (addr boolean) <- get curr-line, visible?
       copy-to *curr-line-visible?, 0/false
@@ -1282,8 +1281,72 @@ fn test-trace-collapse-skips-invisible-lines {
   clear-screen screen
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
+  check-ints-equal y, 1, "F - test-trace-collapse-skips-invisible-lines/post-0/y"
+  var cursor-y/eax: (addr int) <- get t, cursor-y
+  check-ints-equal *cursor-y, 0, "F - test-trace-collapse-skips-invisible-lines/post-0/cursor-y"
   check-screen-row screen,                                  0/y, "...        ", "F - test-trace-collapse-skips-invisible-lines/post-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||        ", "F - test-trace-collapse-skips-invisible-lines/post-0/cursor"
   check-screen-row screen,                                  1/y, "           ", "F - test-trace-collapse-skips-invisible-lines/post-1"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-collapse-skips-invisible-lines/post-1/cursor"
+}
+
+fn test-trace-collapse-two-levels {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10, 0x10
+  #
+  trace-text t, "l", "line 1"
+  trace-lower t
+  trace-text t, "l", "line 1.1"
+  trace-higher t
+  trace-text t, "l", "line 2"
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x10/width, 4/height
+  #
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "...        ", "F - test-trace-collapse-two-levels/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||        ", "F - test-trace-collapse-two-levels/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "           ", "F - test-trace-collapse-two-levels/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-collapse-two-levels/pre-1/cursor"
+  # expand
+  edit-trace t, 0xa/enter
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  # two visible lines with an invisible line in between
+  check-screen-row screen,                                  0/y, "0 line 1   ", "F - test-trace-collapse-two-levels/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-collapse-two-levels/expand-0/cursor"
+  check-screen-row screen,                                  1/y, "...        ", "F - test-trace-collapse-two-levels/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-collapse-two-levels/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "0 line 2   ", "F - test-trace-collapse-two-levels/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-collapse-two-levels/expand-2/cursor"
+  # cursor down to ellipses
+  edit-trace t, 4/ctrl-d
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  # expand
+  edit-trace t, 0xa/enter
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  # two visible lines with an invisible line in between
+  check-screen-row screen,                                  0/y, "0 line 1   ", "F - test-trace-collapse-two-levels/expand2-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "           ", "F - test-trace-collapse-two-levels/expand2-0/cursor"
+  check-screen-row screen,                                  1/y, "1 line 1.1 ", "F - test-trace-collapse-two-levels/expand2-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "|||||||||| ", "F - test-trace-collapse-two-levels/expand2-1/cursor"
+  check-screen-row screen,                                  2/y, "0 line 2   ", "F - test-trace-collapse-two-levels/expand2-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-collapse-two-levels/expand2-2/cursor"
+  # cursor down to second visible line
+  edit-trace t, 4/ctrl-d
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  # collapse
+  edit-trace t, 8/backspace
+  clear-screen screen
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  #
+  check-ints-equal y, 1, "F - test-trace-collapse-two-levels/post-0/y"
+  var cursor-y/eax: (addr int) <- get t, cursor-y
+  check-ints-equal *cursor-y, 0, "F - test-trace-collapse-two-levels/post-0/cursor-y"
+  check-screen-row screen,                                  0/y, "...        ", "F - test-trace-collapse-two-levels/post-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||        ", "F - test-trace-collapse-two-levels/post-0/cursor"
+  check-screen-row screen,                                  1/y, "           ", "F - test-trace-collapse-two-levels/post-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-collapse-two-levels/post-1/cursor"
 }
