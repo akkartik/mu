@@ -22,8 +22,7 @@ to _some_ safe and clear syntax with as few layers of translation as possible.
 The emphasis is on internal consistency at any point in time rather than
 compatibility with the past. ([More details.](http://akkartik.name/akkartik-convivial-20200607.pdf))
 
-Currently Mu requires a 32-bit x86 processor. Generated programs require just
-a Linux kernel and nothing else.
+Currently Mu requires a 32-bit x86 processor.
 
 ## Goals
 
@@ -66,11 +65,11 @@ The Mu stack consists of:
 - _bare_ SubX, a more rudimentary form of SubX without certain syntax sugar.
 
 All Mu programs get translated through these layers into tiny zero-dependency
-ELF binaries that run natively on Linux. The translators for most levels are
-built out of lower levels. The translator from Mu to SubX is written in SubX,
-and the translator from SubX to bare SubX is built in bare SubX. There is also
-an emulator for Mu's supported subset of x86, that's useful for [debugging
-SubX programs](subx_debugging.md).
+binaries that run natively. The translators for most levels are built out of
+lower levels. The translator from Mu to SubX is written in SubX, and the
+translator from SubX to bare SubX is built in bare SubX. There is also an
+emulator for Mu's supported subset of x86, that's useful for [debugging SubX
+programs](subx_debugging.md).
 
 Mu programs build natively either on Linux or on Windows using [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 For Macs and other Unix-like systems, use the emulator:
@@ -92,7 +91,7 @@ Mu programs can be written for two very different environments:
   hardware acceleration, no virtual memory, no process separation, no multi-tasking,
   no persistent storage, no network. These programs have not yet been tested
   on native hardware, only on on Qemu and Bochs. But these _baremetal_
-  programs build from scratch, without any C. This is the future.
+  programs build from scratch, without any reliance on C. This is the future.
 
   ```sh
   $ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
