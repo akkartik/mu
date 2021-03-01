@@ -1,7 +1,7 @@
 # Mu: a human-scale computer
 
 Mu is a minimal-dependency hobbyist computing stack (everything above the
-processor and OS kernel).
+processor).
 
 Mu is not designed to operate in large clusters providing services for
 millions of people. Mu is designed for _you_, to run one computer. (Or a few.)
@@ -68,13 +68,11 @@ The Mu stack consists of:
 All Mu programs get translated through these layers into tiny zero-dependency
 ELF binaries that run natively on Linux. The translators for most levels are
 built out of lower levels. The translator from Mu to SubX is written in SubX,
-and the translator from SubX to bare SubX is built in bare SubX.
+and the translator from SubX to bare SubX is built in bare SubX. There is also
+an emulator for Mu's supported subset of x86, that's useful for [debugging
+SubX programs](subx_debugging.md).
 
-Mu builds and runs on Linux. It has also been tested on Windows 10 using the
-Windows Subsystem for Linux. Since Mu emits 32-bit binaries, it requires
-[installing WSL2](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
-which isn't currently pre-installed by default.
-
+Mu programs build natively either on Linux or on Windows using [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 For Macs and other Unix-like systems, use the emulator:
 
 ```sh
@@ -83,35 +81,42 @@ $ ./bootstrap run ./a.elf  # run in the emulator
 $ echo $?
 ```
 
-The emulator is also useful for [debugging](subx_debugging.md).
+Mu programs can be written for two very different environments:
+
+* With just a Linux kernel. This is the environment that Mu bootstraps itself
+  into, and it's the option for programming with stdin, stdout and file
+  descriptors.
+
+* Without an OS, by interacting directly with the screen and keyboard. This
+  is the option for rudimentary pixel graphics. There's currently no mouse, no
+  hardware acceleration, no virtual memory, no process separation, no multi-tasking,
+  no persistent storage, no network. These programs have not yet been tested
+  on native hardware, only on on Qemu and Bochs. But these _baremetal_
+  programs build from scratch, without any C. This is the future.
+
+  ```sh
+  $ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
+  $ qemu-system-i386 disk.img
+  ```
+
+  <img alt='screenshot of a Mu program running without any intervening Operating System' src='html/baremetal.png'>
+
+Use `translate_mu` to build programs for Linux, and `translate_mu_baremetal`
+for running without Linux. The standard libraries are totally separate for the
+two options, so programs for one won't run on the other.
 
 ### incomplete tools
 
-The `baremetal/` sub-directory contains Mu programs that use no Linux
-services, and can control the screen and keyboard directly without an OS. You
-can make things like this with them:
-
-<img alt='screenshot of a Mu program running without any intervening Operating System' src='html/baremetal.png'>
-
-To reproduce it:
+There's a prototype live-updating programming environment for a postfix
+language:
 
 ```sh
-$ ./translate_mu_baremetal baremetal/ex2.mu  # emit disk.img
-$ qemu-system-i386 disk.img
+$ ./translate_mu apps/tile/*.mu
+$ ./a.elf screen
 ```
 
-On other Unix systems, translate Mu sources in emulated mode. On Windows,
-perform the translation in WSL2 and then run [Qemu for
-Windows](https://www.qemu.org/download/#windows) outside WSL2.
-
----
-
-There's a prototype Mu shell, a postfix language with a dynamically updating
-environment. It might turn into the initial experience when a Mu computer
-boots.
-
 Once generated, ELF binaries can be packaged up with a Linux kernel into a
-bootable disk image. Here's how the Mu shell might look on startup:
+bootable disk image. Here's how the postfix environment might look on startup:
 
 ```sh
 $ ./translate_mu apps/tile/*.mu  # emit a.elf
