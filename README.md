@@ -199,6 +199,8 @@ If you're still reading, here are some more things to check out:
 - The references on [Mu](mu.md) and [SubX](subx.md) syntax, and also [bare
   SubX](subx_bare.md) without any syntax sugar.
 
+- [Some 2-minute videos demonstrating Mu programs](https://archive.org/details/@kartik_agaram).
+
 - [How to get your text editor set up for Mu and SubX programs.](editor.md)
 
 - [Some tips for debugging SubX programs.](subx_debugging.md)
