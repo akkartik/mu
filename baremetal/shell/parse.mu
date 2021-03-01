@@ -1,7 +1,15 @@
+fn parse-input tokens: (addr stream cell), out: (addr handle cell), trace: (addr trace) {
+  rewind-stream tokens
+  parse-sexpression tokens, out, trace
+  var empty?/eax: boolean <- stream-empty? tokens
+  compare empty?, 0/false
+  break-if-!=
+  error trace, "unexpected tokens at end; only type in a single expression at a time"
+}
+
 fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "read", "parse"
   trace-lower trace
-  rewind-stream tokens
   var curr-token-storage: cell
   var curr-token/ecx: (addr cell) <- address curr-token-storage
   var empty?/eax: boolean <- stream-empty? tokens
@@ -14,10 +22,6 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
   read-from-stream tokens, curr-token
   parse-atom curr-token, _out, trace
   trace-higher trace
-  var empty?/eax: boolean <- stream-empty? tokens
-  compare empty?, 0/false
-  break-if-!=
-  error trace, "unexpected tokens at end; only type in a single expression at a time"
 }
 
 fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr trace) {

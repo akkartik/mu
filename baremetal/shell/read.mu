@@ -11,5 +11,5 @@ fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace)
   }
   # TODO: insert parens
   # TODO: transform infix
-  parse-sexpression tokens, out, trace
+  parse-input tokens, out, trace
 }
