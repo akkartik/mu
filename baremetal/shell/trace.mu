@@ -158,7 +158,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
         var cursor-y/eax: (addr int) <- get self, cursor-y
         compare *cursor-y, y
         break-if-!=
-        bg <- copy 7/grey
+        bg <- copy 7/cursor-line-bg
         var cursor-line-index/eax: (addr int) <- get self, cursor-line-index
         copy-to *cursor-line-index, i
       }
@@ -194,7 +194,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
     loop
   }
   # prevent cursor from going too far down
-  clamp-cursor-to-bottom self, y
+  clamp-cursor-to-bottom self, y, screen, xmin, ymin, xmax, ymax
   mark-lines-clean self
   return y
 }
@@ -309,13 +309,44 @@ fn clamp-cursor-to-top _self: (addr trace), _y: int {
   copy-to *cursor-y, y
 }
 
-fn clamp-cursor-to-bottom _self: (addr trace), _y: int {
-  var y/ecx: int <- copy _y
+# extremely hacky; consider deleting test-render-trace-empty-3 when you clean this up
+fn clamp-cursor-to-bottom _self: (addr trace), _y: int, screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int {
+  var y/ebx: int <- copy _y
+  compare y, ymin
+  {
+    break-if->
+    return
+  }
+  y <- decrement
   var self/esi: (addr trace) <- copy _self
   var cursor-y/eax: (addr int) <- get self, cursor-y
   compare *cursor-y, y
   break-if-<=
   copy-to *cursor-y, y
+  # redraw cursor-line
+  # TODO: ugly duplication
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  var trace/eax: (addr array trace-line) <- lookup *trace-ah
+  var cursor-line-index-addr/ecx: (addr int) <- get self, cursor-line-index
+  var cursor-line-index/ecx: int <- copy *cursor-line-index-addr
+  var first-free/edx: (addr int) <- get self, first-free
+  compare cursor-line-index, *first-free
+  {
+    break-if-<
+    return
+  }
+  var cursor-offset/ecx: (offset trace-line) <- compute-offset trace, cursor-line-index
+  var cursor-line/ecx: (addr trace-line) <- index trace, cursor-offset
+  var display?/eax: boolean <- should-render? self, cursor-line
+  {
+    compare display?, 0/false
+    break-if-=
+    var dummy/ecx: int <- render-trace-line screen, cursor-line, xmin, y, xmax, ymax, 9/fg=blue, 7/cursor-line-bg
+    return
+  }
+  var dummy1/eax: int <- copy 0
+  var dummy2/ecx: int <- copy 0
+  dummy1, dummy2 <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, xmin, y, 9/fg=trace, 7/cursor-line-bg
 }
 
 fn test-render-trace-empty {
@@ -330,7 +361,42 @@ fn test-render-trace-empty {
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 5/xmax, 4/ymax, 0/no-cursor
   #
   check-ints-equal y, 0, "F - test-render-trace-empty/cursor"
-  check-screen-row screen, 0/y, "    ", "F - test-render-trace-empty"
+  check-screen-row screen,                                  0/y, "    ", "F - test-render-trace-empty"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "    ", "F - test-render-trace-empty/bg"
+}
+
+fn test-render-trace-empty-2 {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10, 0x10
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5/width, 4/height
+  #
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 2/ymin, 5/xmax, 4/ymax, 0/no-cursor  # cursor below top row
+  #
+  check-ints-equal y, 2, "F - test-render-trace-empty-2/cursor"
+  check-screen-row screen,                                  2/y, "    ", "F - test-render-trace-empty-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "    ", "F - test-render-trace-empty-2/bg"
+}
+
+fn test-render-trace-empty-3 {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10, 0x10
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5/width, 4/height
+  #
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 2/ymin, 5/xmax, 4/ymax, 1/show-cursor  # try show cursor
+  # still no cursor to show
+  check-ints-equal y, 2, "F - test-render-trace-empty-3/cursor"
+  check-screen-row screen,                                  1/y, "    ", "F - test-render-trace-empty-3/line-above-cursor"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "    ", "F - test-render-trace-empty-3/bg-for-line-above-cursor"
+  check-screen-row screen,                                  2/y, "    ", "F - test-render-trace-empty-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "    ", "F - test-render-trace-empty-3/bg"
 }
 
 fn test-render-trace-collapsed-by-default {
@@ -726,23 +792,13 @@ fn test-cursor-down-past-bottom-of-trace {
   edit-trace t, 4/ctrl-d
   # hack: we do need to render to make this test pass; we're mixing state management with rendering
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
-  # cursor disappears past bottom
+  # cursor clamps at bottom
   check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/down-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "      ", "F - test-cursor-down-past-bottom-of-trace/down-0/cursor"
   check-screen-row screen,                                  1/y, "error ", "F - test-cursor-down-past-bottom-of-trace/down-1"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-cursor-down-past-bottom-of-trace/down-1/cursor"
   check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/down-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-past-bottom-of-trace/down-2/cursor"
-  # then cursor up
-  edit-trace t, 0x15/ctrl-u
-  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
-  # we still display cursor at bottom
-  check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/up-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "      ", "F - test-cursor-down-past-bottom-of-trace/up-0/cursor"
-  check-screen-row screen,                                  1/y, "error ", "F - test-cursor-down-past-bottom-of-trace/up-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-cursor-down-past-bottom-of-trace/up-1/cursor"
-  check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/up-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||   ", "F - test-cursor-down-past-bottom-of-trace/up-2/cursor"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|||   ", "F - test-cursor-down-past-bottom-of-trace/down-2/cursor"
 }
 
 fn test-expand-within-trace {
@@ -1043,6 +1099,63 @@ fn test-trace-preserve-cursor-on-refresh {
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-preserve-cursor-on-refresh/refresh-1/cursor"
   check-screen-row screen,                                  2/y, "0 line 3   ", "F - test-trace-preserve-cursor-on-refresh/refresh-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "||||||||   ", "F - test-trace-preserve-cursor-on-refresh/refresh-2/cursor"
+}
+
+fn test-trace-keep-cursor-visible-on-refresh {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10, 0x10
+  #
+  trace-text t, "l", "line 1"
+  trace-text t, "l", "line 2"
+  trace-text t, "l", "line 3"
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x10/width, 4/height
+  #
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "...        ", "F - test-trace-keep-cursor-visible-on-refresh/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||        ", "F - test-trace-keep-cursor-visible-on-refresh/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "           ", "F - test-trace-keep-cursor-visible-on-refresh/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-keep-cursor-visible-on-refresh/pre-1/cursor"
+  # expand
+  edit-trace t, 0xa/enter
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "0 line 1   ", "F - test-trace-keep-cursor-visible-on-refresh/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-keep-cursor-visible-on-refresh/expand-0/cursor"
+  check-screen-row screen,                                  1/y, "0 line 2   ", "F - test-trace-keep-cursor-visible-on-refresh/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-keep-cursor-visible-on-refresh/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "0 line 3   ", "F - test-trace-keep-cursor-visible-on-refresh/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-trace-keep-cursor-visible-on-refresh/expand-2/cursor"
+  # cursor down
+  edit-trace t, 4/ctrl-d
+  edit-trace t, 4/ctrl-d
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "0 line 1   ", "F - test-trace-keep-cursor-visible-on-refresh/down-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "           ", "F - test-trace-keep-cursor-visible-on-refresh/down-0/cursor"
+  check-screen-row screen,                                  1/y, "0 line 2   ", "F - test-trace-keep-cursor-visible-on-refresh/down-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-keep-cursor-visible-on-refresh/down-1/cursor"
+  check-screen-row screen,                                  2/y, "0 line 3   ", "F - test-trace-keep-cursor-visible-on-refresh/down-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "||||||||   ", "F - test-trace-keep-cursor-visible-on-refresh/down-2/cursor"
+  # recreate trace with entirely different lines
+  clear-trace t
+  trace-text t, "l", "line 4"
+  trace-text t, "l", "line 5"
+  trace-text t, "l", "line 6"
+  mark-lines-dirty t
+  clear-screen screen
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  # trace collapses, and cursor bumps up
+  check-screen-row screen,                                  0/y, "...        ", "F - test-trace-keep-cursor-visible-on-refresh/refresh-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||        ", "F - test-trace-keep-cursor-visible-on-refresh/refresh-0/cursor"
+  check-screen-row screen,                                  1/y, "           ", "F - test-trace-keep-cursor-visible-on-refresh/refresh-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-keep-cursor-visible-on-refresh/refresh-1/cursor"
+  check-screen-row screen,                                  2/y, "           ", "F - test-trace-keep-cursor-visible-on-refresh/refresh-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-keep-cursor-visible-on-refresh/refresh-2/cursor"
 }
 
 fn test-trace-collapse-at-top {
