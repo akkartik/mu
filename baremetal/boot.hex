@@ -143,6 +143,20 @@
   cd 13  # int 13h, BIOS disk service
   0f 82 9b 00  # jump-if-carry disk_error [label]
 
+  # load two more tracks of disk into addresses [0x27400, 0x37000)
+  b4 02  # ah <- 2  # read sectors from disk
+  # dl comes conveniently initialized at boot time with the index of the device being booted
+  b5 00  # ch <- 0  # cylinder 0
+  b6 02  # dh <- 2  # track 0
+  b1 01  # cl <- 1  # first sector, 1-based
+  b0 7e  # al <- 126  # number of sectors to read = 2*63
+  # address to write sectors to = es:bx = 0x17800
+  bb 80 17  # bx <- 0x1780 [label]
+  8e c3  # es <- bx
+  bb 00 00  # bx <- 0
+  cd 13  # int 13h, BIOS disk service
+  0f 82 9b 00  # jump-if-carry disk_error [label]
+
   # reset es
   bb 00 00  # bx <- 0
   8e c3  # es <- bx
@@ -172,9 +186,8 @@
   ea 00 7d 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
 
 # padding
-# 76:
-                  00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+# 8e:
+                                          00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
