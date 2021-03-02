@@ -219,3 +219,42 @@ fn test-print-cell-singleton-list {
   print-cell list, out, 0/no-trace
   check-stream-equal out, "(abc)", "F - test-print-cell-singleton-list"
 }
+
+fn test-print-cell-list {
+  # list = cons "abc", nil
+  var left-storage: (handle cell)
+  var left/ecx: (addr handle cell) <- address left-storage
+  new-symbol left, "abc"
+  var nil-storage: (handle cell)
+  var nil/edx: (addr handle cell) <- address nil-storage
+  allocate-pair nil
+  var list-storage: (handle cell)
+  var list/esi: (addr handle cell) <- address list-storage
+  new-pair list, *left, *nil
+  # list = cons 64, list
+  new-integer left, 0x40
+  new-pair list, *left, *list
+  #
+  var out-storage: (stream byte 0x40)
+  var out/edi: (addr stream byte) <- address out-storage
+  print-cell list, out, 0/no-trace
+  check-stream-equal out, "(64 abc)", "F - test-print-cell-list"
+}
+
+fn test-print-dotted-list {
+  # list = cons 64, "abc"
+  var left-storage: (handle cell)
+  var left/ecx: (addr handle cell) <- address left-storage
+  new-symbol left, "abc"
+  var right-storage: (handle cell)
+  var right/edx: (addr handle cell) <- address right-storage
+  new-integer right, 0x40
+  var list-storage: (handle cell)
+  var list/esi: (addr handle cell) <- address list-storage
+  new-pair list, *left, *right
+  #
+  var out-storage: (stream byte 0x40)
+  var out/edi: (addr stream byte) <- address out-storage
+  print-cell list, out, 0/no-trace
+  check-stream-equal out, "(abc . 64)", "F - test-print-dotted-list"
+}
