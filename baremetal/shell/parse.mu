@@ -52,7 +52,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       break-if-=
       var curr/esi: (addr handle cell) <- copy _out
       $parse-sexpression:list-loop: {
-        new-pair curr
+        allocate-pair curr
         var curr-addr/eax: (addr cell) <- lookup *curr
         var left/ecx: (addr handle cell) <- get curr-addr, left
         {
@@ -104,7 +104,7 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
     var _val/eax: int <- parse-decimal-int-from-stream curr-token-data
     var val/ecx: int <- copy _val
     var val-float/xmm0: float <- convert val
-    new-number _out
+    allocate-number _out
     var out/eax: (addr handle cell) <- copy _out
     var out-addr/eax: (addr cell) <- lookup *out
     var dest/edi: (addr float) <- get out-addr, number-data
@@ -120,7 +120,7 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
   }
   # default: symbol
   # just copy token data
-  new-symbol _out
+  allocate-symbol _out
   var out/eax: (addr handle cell) <- copy _out
   var out-addr/eax: (addr cell) <- lookup *out
   var curr-token-data-ah/ecx: (addr handle stream byte) <- get curr-token, text-data

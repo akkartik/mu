@@ -11,7 +11,7 @@ type cell {
   # TODO: array, (associative) table, stream
 }
 
-fn new-symbol _out: (addr handle cell) {
+fn allocate-symbol _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out
   var out-addr/eax: (addr cell) <- lookup *out
@@ -21,7 +21,7 @@ fn new-symbol _out: (addr handle cell) {
   populate-stream dest-ah, 0x40/max-symbol-size
 }
 
-fn new-number _out: (addr handle cell) {
+fn allocate-number _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out
   var out-addr/eax: (addr cell) <- lookup *out
@@ -29,7 +29,7 @@ fn new-number _out: (addr handle cell) {
   copy-to *type, 1/number
 }
 
-fn new-pair _out: (addr handle cell) {
+fn allocate-pair _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out
   # new cells have type pair by default

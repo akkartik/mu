@@ -144,7 +144,7 @@ fn is-nil? _in: (addr cell) -> _/eax: boolean {
 fn test-print-cell-zero {
   var num-storage: (handle cell)
   var num/esi: (addr handle cell) <- address num-storage
-  new-number num
+  allocate-number num
   # value is 0 by default
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
@@ -155,7 +155,7 @@ fn test-print-cell-zero {
 fn test-print-cell-integer {
   var num-storage: (handle cell)
   var num/esi: (addr handle cell) <- address num-storage
-  new-number num
+  allocate-number num
   var num-addr/eax: (addr cell) <- lookup *num
   var num-data/eax: (addr float) <- get num-addr, number-data
   var src/xmm0: float <- rational 1, 1
@@ -169,7 +169,7 @@ fn test-print-cell-integer {
 fn test-print-cell-integer-2 {
   var num-storage: (handle cell)
   var num/esi: (addr handle cell) <- address num-storage
-  new-number num
+  allocate-number num
   var num-addr/eax: (addr cell) <- lookup *num
   var num-data/eax: (addr float) <- get num-addr, number-data
   var src/xmm0: float <- rational 0x30, 1
@@ -183,7 +183,7 @@ fn test-print-cell-integer-2 {
 fn test-print-cell-fraction {
   var num-storage: (handle cell)
   var num/esi: (addr handle cell) <- address num-storage
-  new-number num
+  allocate-number num
   var num-addr/eax: (addr cell) <- lookup *num
   var num-data/eax: (addr float) <- get num-addr, number-data
   var src/xmm0: float <- rational 1, 2
@@ -197,7 +197,7 @@ fn test-print-cell-fraction {
 fn test-print-cell-symbol {
   var sym-storage: (handle cell)
   var sym/esi: (addr handle cell) <- address sym-storage
-  new-symbol sym
+  allocate-symbol sym
   var sym-addr/eax: (addr cell) <- lookup *sym
   var sym-data-ah/eax: (addr handle stream byte) <- get sym-addr, text-data
   var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
@@ -211,7 +211,7 @@ fn test-print-cell-symbol {
 fn test-print-cell-nil-list {
   var nil-storage: (handle cell)
   var nil/esi: (addr handle cell) <- address nil-storage
-  new-pair nil
+  allocate-pair nil
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
   print-cell nil, out, 0/no-trace
@@ -221,11 +221,11 @@ fn test-print-cell-nil-list {
 fn test-print-cell-singleton-list {
   var list-storage: (handle cell)
   var list/esi: (addr handle cell) <- address list-storage
-  new-pair list
+  allocate-pair list
   # left
   var list-addr/eax: (addr cell) <- lookup *list
   var list-left/eax: (addr handle cell) <- get list-addr, left
-  new-symbol list-left
+  allocate-symbol list-left
   var sym-addr/eax: (addr cell) <- lookup *list-left
   var sym-data-ah/eax: (addr handle stream byte) <- get sym-addr, text-data
   var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
@@ -233,7 +233,7 @@ fn test-print-cell-singleton-list {
   # right
   var list-addr/eax: (addr cell) <- lookup *list
   var list-right/eax: (addr handle cell) <- get list-addr, right
-  new-pair list-right
+  allocate-pair list-right
   #
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
