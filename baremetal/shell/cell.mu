@@ -28,3 +28,9 @@ fn new-number _out: (addr handle cell) {
   var type/ecx: (addr int) <- get out-addr, type
   copy-to *type, 1/number
 }
+
+fn new-pair _out: (addr handle cell) {
+  var out/eax: (addr handle cell) <- copy _out
+  allocate out
+  # new cells have type pair by default
+}

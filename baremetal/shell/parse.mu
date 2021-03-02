@@ -1,13 +1,29 @@
 fn parse-input tokens: (addr stream cell), out: (addr handle cell), trace: (addr trace) {
   rewind-stream tokens
-  parse-sexpression tokens, out, trace
   var empty?/eax: boolean <- stream-empty? tokens
   compare empty?, 0/false
-  break-if-!=
-  error trace, "unexpected tokens at end; only type in a single expression at a time"
+  {
+    break-if-=
+    error trace, "nothing to parse"
+    return
+  }
+  var close-paren?/eax: boolean <- parse-sexpression tokens, out, trace
+  {
+    compare close-paren?, 0/false
+    break-if-=
+    error trace, "')' is not a valid expression"
+    return
+  }
+  {
+    var empty?/eax: boolean <- stream-empty? tokens
+    compare empty?, 0/false
+    break-if-!=
+    error trace, "unexpected tokens at end; only type in a single expression at a time"
+  }
 }
 
-fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) {
+# return value: true if close-paren was encountered
+fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) -> _/eax: boolean {
   trace-text trace, "read", "parse"
   trace-lower trace
   var curr-token-storage: cell
@@ -16,12 +32,60 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
   compare empty?, 0/false
   {
     break-if-=
-    error trace, "nothing to parse"
-    return
+    error trace, "end of stream; never found a balancing ')'"
+    return 1/true
   }
   read-from-stream tokens, curr-token
-  parse-atom curr-token, _out, trace
+  $parse-sexpression:type-check: {
+    # not bracket -> parse atom
+    var is-bracket-token?/eax: boolean <- is-bracket-token? curr-token
+    compare is-bracket-token?, 0/false
+    {
+      break-if-!=
+      parse-atom curr-token, _out, trace
+      break $parse-sexpression:type-check
+    }
+    # open paren -> parse list
+    var is-open-paren?/eax: boolean <- is-open-paren-token? curr-token
+    compare is-open-paren?, 0/false
+    {
+      break-if-=
+      var curr/esi: (addr handle cell) <- copy _out
+      $parse-sexpression:list-loop: {
+        new-pair curr
+        var curr-addr/eax: (addr cell) <- lookup *curr
+        var left/ecx: (addr handle cell) <- get curr-addr, left
+        {
+          var is-close-paren?/eax: boolean <- parse-sexpression tokens, left, trace
+          compare is-close-paren?, 0/false
+          break-if-!= $parse-sexpression:list-loop
+        }
+        #
+        curr <- get curr-addr, right
+        loop
+      }
+      break $parse-sexpression:type-check
+    }
+    # close paren -> parse list
+    var is-close-paren?/eax: boolean <- is-close-paren-token? curr-token
+    compare is-close-paren?, 0/false
+    {
+      break-if-=
+      trace-higher trace
+      return 1/true
+    }
+    # otherwise abort
+    var stream-storage: (stream byte 0x40)
+    var stream/edx: (addr stream byte) <- address stream-storage
+    write stream, "unexpected token "
+    var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+    var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+    rewind-stream curr-token-data
+    write-stream stream, curr-token-data
+    trace trace, "error", stream
+  }
   trace-higher trace
+  return 0/false
 }
 
 fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr trace) {

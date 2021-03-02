@@ -30,6 +30,8 @@ type trace-line {
 
 fn initialize-trace _self: (addr trace), capacity: int, visible-capacity: int {
   var self/esi: (addr trace) <- copy _self
+  compare self, 0
+  break-if-=
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   populate trace-ah, capacity
   var visible-ah/eax: (addr handle array trace-line) <- get self, visible
@@ -38,6 +40,8 @@ fn initialize-trace _self: (addr trace), capacity: int, visible-capacity: int {
 
 fn clear-trace _self: (addr trace) {
   var self/eax: (addr trace) <- copy _self
+  compare self, 0
+  break-if-=
   var len/edx: (addr int) <- get self, first-free
   copy-to *len, 0
   # might leak memory; existing elements won't be used anymore
@@ -83,6 +87,8 @@ fn has-errors? _self: (addr trace) -> _/eax: boolean {
 
 fn trace _self: (addr trace), label: (addr array byte), message: (addr stream byte) {
   var self/esi: (addr trace) <- copy _self
+  compare self, 0
+  break-if-=
   var data-ah/eax: (addr handle array trace-line) <- get self, data
   var data/eax: (addr array trace-line) <- lookup *data-ah
   var index-addr/edi: (addr int) <- get self, first-free
@@ -96,6 +102,8 @@ fn trace _self: (addr trace), label: (addr array byte), message: (addr stream by
 }
 
 fn trace-text self: (addr trace), label: (addr array byte), s: (addr array byte) {
+  compare self, 0
+  break-if-=
   var data-storage: (stream byte 0x100)
   var data/eax: (addr stream byte) <- address data-storage
   write data, s
@@ -122,12 +130,16 @@ fn initialize-trace-line depth: int, label: (addr array byte), data: (addr strea
 
 fn trace-lower _self: (addr trace) {
   var self/esi: (addr trace) <- copy _self
+  compare self, 0
+  break-if-=
   var depth/eax: (addr int) <- get self, curr-depth
   increment *depth
 }
 
 fn trace-higher _self: (addr trace) {
   var self/esi: (addr trace) <- copy _self
+  compare self, 0
+  break-if-=
   var depth/eax: (addr int) <- get self, curr-depth
   decrement *depth
 }
@@ -136,6 +148,11 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
   var already-hiding-lines?: boolean
   var y/ecx: int <- copy ymin
   var self/esi: (addr trace) <- copy _self
+  compare self, 0
+  {
+    break-if-!=
+    return ymin
+  }
   clamp-cursor-to-top self, y
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   var _trace/eax: (addr array trace-line) <- lookup *trace-ah

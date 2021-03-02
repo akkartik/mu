@@ -382,3 +382,41 @@ fn is-number-token? _in: (addr cell) -> _/eax: boolean {
   var result/eax: boolean <- is-decimal-digit? g
   return result
 }
+
+fn is-bracket-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  rewind-stream in-data
+  var g/eax: grapheme <- read-grapheme in-data
+  var result/eax: boolean <- is-bracket-grapheme? g
+  return result
+}
+
+fn is-open-paren-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  rewind-stream in-data
+  var g/eax: grapheme <- read-grapheme in-data
+  compare g, 0x28/open-paren
+  {
+    break-if-!=
+    return 1/true
+  }
+  return 0/false
+}
+
+fn is-close-paren-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  rewind-stream in-data
+  var g/eax: grapheme <- read-grapheme in-data
+  compare g, 0x29/open-paren
+  {
+    break-if-!=
+    return 1/true
+  }
+  return 0/false
+}

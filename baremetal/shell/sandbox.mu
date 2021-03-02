@@ -175,6 +175,7 @@ fn run in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
     return
   }
   # TODO: eval
+  clear-stream out
   print-cell read-result, out, trace
   mark-lines-dirty trace
 }
