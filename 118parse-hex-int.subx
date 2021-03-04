@@ -888,51 +888,10 @@ $from-hex-char:letter:
     c3/return
 
 $from-hex-char:abort:
-    # . _write(2/stderr, error)
-    # . . push args
-    68/push  "invalid hex char: "/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . clear-stream($Stderr->buffer)
-    # . . save eax
-    50/push-eax
-    # . . push args
-    68/push  $Stderr->buffer/imm32
-    # . . call
-    e8/call  clear-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . . restore eax
-    58/pop-to-eax
-    # . write-int32-hex-buffered(Stderr, eax)
-    # . . push args
-    50/push-eax
-    68/push  Stderr/imm32
-    # . . call
-    e8/call  write-int32-hex-buffered/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . flush(Stderr)
-    # . . push args
-    68/push  Stderr/imm32
-    # . . call
-    e8/call  flush/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . _write(2/stderr, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call  syscall_exit/disp32
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "invalid hex char" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
 
 # . . vim:nowrap:textwidth=0

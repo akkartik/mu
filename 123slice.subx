@@ -848,17 +848,10 @@ $write-slice:end:
     c3/return
 
 $write-slice:abort:
-    # . _write(2/stderr, error)
-    # . . push args
-    68/push  "write-slice: out of space"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call  syscall_exit/disp32
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "write-slice: out of space" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
 
 test-write-slice:
@@ -893,141 +886,6 @@ test-write-slice:
     # check-stream-equal(_test-stream, "Abc", msg)
     # . . push args
     68/push  "F - test-write-slice"/imm32
-    68/push  "Abc"/imm32
-    68/push  _test-stream/imm32
-    # . . call
-    e8/call  check-stream-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilogue
-    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
-    5d/pop-to-ebp
-    c3/return
-
-# write a slice to a buffered-file
-write-slice-buffered:  # out: (addr buffered-file), s: (addr slice)
-    # . prologue
-    55/push-ebp
-    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # . save registers
-    50/push-eax
-    51/push-ecx
-    52/push-edx
-    53/push-ebx
-    56/push-esi
-    57/push-edi
-    # esi = s
-    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var curr/ecx: (addr byte) = s->start
-    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
-    # var max/esi: (addr byte) = s->end
-    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
-    # edi = out
-    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # edx = out->size
-    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(edi+12) to edx
-    # ebx = out->write
-    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy *(edi+4) to ebx
-$write-slice-buffered:loop:
-    # if (curr >= max) break
-    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # compare ecx with esi
-    73/jump-if-addr>=  $write-slice-buffered:loop-end/disp8
-    # if (out->write >= out->size) flush and clear out's stream
-    39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx with edx
-    7c/jump-if-<  $write-slice-buffered:to-stream/disp8
-    # . persist out->write
-    89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy ebx to *(edi+4)
-    # . flush(out)
-    # . . push args
-    57/push-edi
-    # . . call
-    e8/call  flush/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . clear-stream(stream = out+4)
-    # . . push args
-    8d/copy-address                 1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   4/disp8         .                 # copy edi+4 to eax
-    50/push-eax
-    # . . call
-    e8/call  clear-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . out->write must now be 0; update its cache at ebx
-    31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
-$write-slice-buffered:to-stream:
-    # out->data[out->write] = *in
-    # . AL = *in
-    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
-    # . out->data[out->write] = AL
-    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/edi  3/index/ebx   .           0/r32/AL    0x10/disp8      .                 # copy AL to *(edi+ebx+16)
-    # ++out->write
-    43/increment-ebx
-    # ++in
-    41/increment-ecx
-    eb/jump  $write-slice-buffered:loop/disp8
-$write-slice-buffered:loop-end:
-    # persist necessary variables from registers
-    89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy ebx to *(edi+4)
-$write-slice-buffered:end:
-    # . restore registers
-    5f/pop-to-edi
-    5e/pop-to-esi
-    5b/pop-to-ebx
-    5a/pop-to-edx
-    59/pop-to-ecx
-    58/pop-to-eax
-    # . epilogue
-    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
-    5d/pop-to-ebp
-    c3/return
-
-test-write-slice-buffered:
-    # . prologue
-    55/push-ebp
-    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # setup
-    # . clear-stream(_test-stream)
-    # . . push args
-    68/push  _test-stream/imm32
-    # . . call
-    e8/call  clear-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . clear-stream($_test-buffered-file->buffer)
-    # . . push args
-    68/push  $_test-buffered-file->buffer/imm32
-    # . . call
-    e8/call  clear-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # (eax..ecx) = "Abc"
-    b8/copy-to-eax  "Abc"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
-    05/add-to-eax  4/imm32
-    # var slice/ecx: slice = {eax, ecx}
-    51/push-ecx
-    50/push-eax
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # write-slice-buffered(_test-buffered-file, slice)
-    # . . push args
-    51/push-ecx
-    68/push  _test-buffered-file/imm32
-    # . . call
-    e8/call  write-slice-buffered/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # flush(_test-buffered-file)
-    # . . push args
-    68/push  _test-buffered-file/imm32
-    # . . call
-    e8/call  flush/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # check-stream-equal(_test-stream, "Abc", msg)
-    # . . push args
-    68/push  "F - test-write-slice-buffered"/imm32
     68/push  "Abc"/imm32
     68/push  _test-stream/imm32
     # . . call
@@ -1112,35 +970,26 @@ $slice-to-string:end:
     c3/return
 
 $slice-to-string:abort:
-    # . _write(2/stderr, error)
-    # . . push args
-    68/push  "slice-to-string: out of space\n"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call  syscall_exit/disp32
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "slice-to-string: out of space\n" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
 
 test-slice-to-string:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var heap/edx: allocation-descriptor
-    68/push  0/imm32/limit
-    68/push  0/imm32/curr
-    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-    # heap = new-segment(512)
-    # . . push args
+    # var ad/edx: allocation-descriptor containing 16 bytes
+    # . var end/ecx: (addr byte)
+    89/<- %ecx 4/r32/esp
+    81 5/subop/subtract %esp 0x10/imm32
+    # . var start/edx: (addr byte) = end - 0x10
+    89/<- %edx 4/r32/esp
+    # . ad = {start, end}
+    51/push-ecx
     52/push-edx
-    68/push  0x200/imm32
-    # . . call
-    e8/call  new-segment/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
     # (eax..ecx) = "Abc"
     b8/copy-to-eax  "Abc"/imm32
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
@@ -1154,7 +1003,7 @@ test-slice-to-string:
     68/push  0/imm32
     68/push  0/imm32
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
-    # slice-to-string(heap, slice, h)
+    # slice-to-string(ad, slice, h)
     # . . push args
     53/push-ebx
     51/push-ecx

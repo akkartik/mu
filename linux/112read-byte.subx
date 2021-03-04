@@ -1,0 +1,418 @@
+# read-byte-buffered: one higher-level abstraction atop 'read'.
+#
+# There are many situations where 'read' is a lot to manage, and we need
+# to abstract some details away. One of them is when we want to read a file
+# character by character. In this situation we follow C's FILE data structure,
+# which manages the underlying file descriptor together with the buffer it
+# reads into. We call our version 'buffered-file'. Should be useful with other
+# primitives as well, in later layers.
+
+== data
+
+# The buffered file for standard input. Also illustrates the layout for
+# buffered-file: a pointer to the backing store, followed by a 'buffer' stream
+Stdin:  # buffered-file
+    # file descriptor or (addr stream byte)
+    0/imm32  # standard input
+$Stdin->buffer:
+    # inlined fields for a stream
+    #   current write index
+    0/imm32
+    #   current read index
+    0/imm32
+    #   size
+    8/imm32
+    #   data
+    00 00 00 00 00 00 00 00  # 8 bytes
+
+# TODO: 8 bytes is too small. We'll need to grow the buffer for efficiency. But
+# I don't want to type in 1024 bytes here.
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+# Return next byte value in eax, with top 3 bytes cleared.
+# On reaching end of file, return 0xffffffff (Eof).
+read-byte-buffered:  # f: (addr buffered-file) -> byte-or-Eof/eax: byte
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # esi = f
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # ecx = f->read
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(esi+8) to ecx
+    # if (f->read >= f->write) populate stream from file
+    3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # compare ecx with *(esi+4)
+    7c/jump-if-<  $read-byte-buffered:from-stream/disp8
+    # . clear-stream(stream = f+4)
+    # . . push args
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy esi+4 to eax
+    50/push-eax
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . f->read must now be 0; update its cache at ecx
+    31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
+    # . eax = read(f->fd, stream = f+4)
+    # . . push args
+    50/push-eax
+    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
+    # . . call
+    e8/call  read/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # if (eax == 0) return 0xffffffff
+    3d/compare-eax-and  0/imm32
+    75/jump-if-!=  $read-byte-buffered:from-stream/disp8
+    b8/copy-to-eax  0xffffffff/imm32/Eof
+    eb/jump  $read-byte-buffered:end/disp8
+$read-byte-buffered:from-stream:
+    # byte-or-Eof = f->data[f->read]
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0x10/disp8      .                 # copy byte at *(esi+ecx+16) to AL
+    # ++f->read
+    ff          0/subop/increment   1/mod/*+disp8   6/rm32/esi    .           .             .           .           8/disp8         .                 # increment *(esi+8)
+$read-byte-buffered:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# - tests
+
+test-read-byte-buffered-single:
+    # - check that read-byte-buffered returns first byte of 'file'
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(_test-buffered-file->buffer)
+    # . . push args
+    68/push  $_test-buffered-file->buffer/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # read-byte-buffered(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  read-byte-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(eax, 'A', msg)
+    # . . push args
+    68/push  "F - test-read-byte-buffered-single"/imm32
+    68/push  0x41/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . end
+    c3/return
+
+test-read-byte-buffered-multiple:
+    # - call read-byte-buffered twice, check that second call returns second byte
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream($_test-buffered-file->buffer)
+    # . . push args
+    68/push  $_test-buffered-file->buffer/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # read-byte-buffered(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  read-byte-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # read-byte-buffered(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  read-byte-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(eax, 'b', msg)
+    # . . push args
+    68/push  "F - test-read-byte-buffered-multiple"/imm32
+    68/push  0x62/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . end
+    c3/return
+
+test-read-byte-buffered-end-of-file:
+    # - call read-byte-buffered on an empty 'file', check that it returns Eof
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream($_test-buffered-file->buffer)
+    # . . push args
+    68/push  $_test-buffered-file->buffer/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # read-byte-buffered(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  read-byte-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(eax, 0xffffffff, msg)
+    # . . push args
+    68/push  "F - test-read-byte-buffered-end-of-file"/imm32
+    68/push  0xffffffff/imm32/Eof
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . end
+    c3/return
+
+test-read-byte-buffered-refills-buffer:
+    # - consume buffered-file's buffer, check that next read-byte-buffered still works
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream($_test-buffered-file->buffer)
+    # . . push args
+    68/push  $_test-buffered-file->buffer/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . write(_test-stream, "Abcdefgh")
+    # . . push args
+    68/push  "Abcdefgh"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # pretend buffer is full
+    # . _test-buffered-file->read = 6  # >= _test-buffered-file->size
+    b8/copy-to-eax  _test-buffered-file/imm32
+    c7          0/subop/copy        1/mod/*+disp8   0/rm32/eax    .           .             .           .           8/disp8         6/imm32           # copy to *(eax+8)
+    # read-byte-buffered(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  read-byte-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(eax, 'A', msg)
+    # . . push args
+    68/push  "F - test-read-byte-buffered-refills-buffer"/imm32
+    68/push  0x41/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . end
+    c3/return
+
+# Return next byte value in eax, with top 3 bytes cleared.
+# Abort on reaching end of stream.
+read-byte:  # s: (addr stream byte) -> result/eax: byte
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # esi = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # ecx = s->read
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    # if (f->read >= f->write) abort
+    3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare ecx with *esi
+    0f 8d/jump-if->=  $read-byte:abort/disp32
+    # result = f->data[f->read]
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
+    # ++f->read
+    ff          0/subop/increment   1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # increment *(esi+4)
+$read-byte:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$read-byte:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "read-byte: empty stream\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
+== data
+
+# a test buffered file for _test-stream
+_test-buffered-file:  # buffered-file
+    # file descriptor or (addr stream byte)
+    _test-stream/imm32
+$_test-buffered-file->buffer:
+    # current write index
+    0/imm32
+    # current read index
+    0/imm32
+    # size
+    6/imm32
+    # data
+    00 00 00 00 00 00  # 6 bytes
+
+_test-input-stream:  # (stream byte)
+    # current write index
+    0/imm32
+    # current read index
+    0/imm32
+    # size
+    0x400/imm32  # 1024 bytes
+    # data (64 lines x 16 bytes/line)
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+# a test buffered file for _test-input-stream
+_test-input-buffered-file:  # buffered-file
+    # file descriptor or (addr stream byte)
+    _test-input-stream/imm32
+$_test-input-buffered-file->buffer:
+    # current write index
+    0/imm32
+    # current read index
+    0/imm32
+    # size
+    6/imm32
+    # data
+    00 00 00 00 00 00  # 6 bytes
+
+# . . vim:nowrap:textwidth=0

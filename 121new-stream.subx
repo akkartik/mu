@@ -58,42 +58,33 @@ $new-stream:end:
     c3/return
 
 $new-stream:abort:
-    # . _write(2/stderr, error)
-    # . . push args
-    68/push  "new-stream: size too large\n"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call  syscall_exit/disp32
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "new-stream: size too large" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
 
 test-new-stream:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var heap/ecx: allocation-descriptor
-    68/push  0/imm32/limit
-    68/push  0/imm32/curr
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # heap = new-segment(512)
-    # . . push args
+    # var ad/ecx: allocation-descriptor containing 16 bytes
+    # . var end/ecx: (addr byte)
+    89/<- %ecx 4/r32/esp
+    # . var start/edx: (addr byte) = end - 32
+    81 5/subop/subtract %esp 0x20/imm32
+    89/<- %edx 4/r32/esp
+    # . ad = {start, end}
     51/push-ecx
-    68/push  0x200/imm32
-    # . . call
-    e8/call  new-segment/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    52/push-edx
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # var start/edx = ad->curr
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # copy *ecx to edx
     # var h/ebx: (handle stream byte)
     68/push  0/imm32
     68/push  0/imm32
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
-    # new-stream(heap, 3, 2, h)
+    # new-stream(ad, 3, 2, h)
     # . . push args
     53/push-ebx
     68/push  2/imm32
@@ -127,7 +118,7 @@ test-new-stream:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # the rest is delegated to clear-stream() so we won't bother checking it
     # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x30/imm32        # add to esp
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp

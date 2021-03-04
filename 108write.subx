@@ -1,46 +1,20 @@
-# write: like _write, but also support in-memory streams in addition to file
-# descriptors.
+# write: write to in-memory streams
 #
-# Our first dependency-injected and testable primitive. We can pass it either
-# a file descriptor or an address to a stream. If a file descriptor is passed
-# in, we _write to it using the right syscall. If a 'fake file descriptor' or
-# stream is passed in, we append to the stream. This lets us redirect output
-# in tests and check it later.
-#
-# We assume our data segment will never begin at an address shorter than
-# 0x08000000, so any smaller arguments are assumed to be real file descriptors.
-#
-# A stream looks like this:
-#   read: int  # index at which to read next
-#   write: int  # index at which writes go
-#   data: (array byte)  # prefixed by size as usual
+# We need to do this in machine code because streams need to be opaque types,
+# and we don't yet support opaque types in Mu.
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-# TODO: come up with a way to signal when a write to disk fails
-write:  # f: fd or (addr stream byte), s: (addr array byte)
+write:  # f: (addr stream byte), s: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # if (s == 0) return
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       0/imm32           # compare *(ebp+12)
     74/jump-if-=  $write:end/disp8
-    # if (f < 0x08000000) _write(f, s) and return  # f can't be a user-mode address, so treat it as a kernel file descriptor
-    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         0x08000000/imm32  # compare *(ebp+8)
-    73/jump-if-addr>=  $write:fake/disp8
-    # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    eb/jump  $write:end/disp8
-$write:fake:
-    # otherwise, treat 'f' as a stream to append to
     # . save registers
     50/push-eax
     51/push-ecx
@@ -158,5 +132,89 @@ _test-stream:  # (stream byte)
     # data (2 lines x 8 bytes/line)
     00 00 00 00 00 00 00 00
     00 00 00 00 00 00 00 00
+
+== code
+
+# 3-argument variant of _append
+_append-3:  # out: (addr byte), outend: (addr byte), s: (addr array byte) -> num_bytes_appended/eax
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    # eax = _append-4(out, outend, &s->data[0], &s->data[s->size])
+    # . . push &s->data[s->size]
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    51/push-ecx
+    # . . push &s->data[0]
+    8d/copy-address                 1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy eax+4 to ecx
+    51/push-ecx
+    # . . push outend
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . push out
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  _append-4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+$_append-3:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# 4-argument variant of _append
+_append-4:  # out: (addr byte), outend: (addr byte), in: (addr byte), inend: (addr byte) -> num_bytes_appended/eax: int
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # num_bytes_appended = 0
+    b8/copy-to-eax  0/imm32
+    # edi = out
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
+    # edx = outend
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
+    # esi = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0x10/disp8      .                 # copy *(ebp+16) to esi
+    # ecx = inend
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x14/disp8      .                 # copy *(ebp+20) to ecx
+$_append-4:loop:
+    # if (in >= inend) break
+    39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi with ecx
+    73/jump-if-addr>=  $_append-4:end/disp8
+    # if (out >= outend) abort  # just to catch test failures fast
+    39/compare                      3/mod/direct    7/rm32/edi    .           .             .           2/r32/edx   .               .                 # compare edi with edx
+    73/jump-if-addr>=  $_append-4:end/disp8  # TODO: abort
+    # *out = *in
+    8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           3/r32/BL    .               .                 # copy byte at *esi to BL
+    88/copy-byte                    0/mod/indirect  7/rm32/edi    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *edi
+    # ++num_bytes_appended
+    40/increment-eax
+    # ++in
+    46/increment-esi
+    # ++out
+    47/increment-edi
+    eb/jump  $_append-4:loop/disp8
+$_append-4:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
 
 # . . vim:nowrap:textwidth=0

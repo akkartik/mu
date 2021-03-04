@@ -1,0 +1,214 @@
+# Some unsafe methods not intended to be used directly in SubX, only through
+# Mu after proper type-checking.
+
+== code
+
+stream-empty?:  # s: (addr stream _) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # result = false
+    b8/copy-to-eax 0/imm32/false
+    # esi = s
+    8b/-> *(ebp+8) 6/r32/esi
+    # return s->read >= s->write
+    8b/-> *esi 1/r32/ecx
+    39/compare-with *(esi+4) 1/r32/ecx
+    0f 9d/set-if->= %al
+$stream-empty?:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+stream-full?:  # s: (addr stream _) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # result = false
+    b8/copy-to-eax 0/imm32/false
+    # esi = s
+    8b/-> *(ebp+8) 6/r32/esi
+    # return s->write >= s->size
+    8b/-> *(esi+8) 1/r32/ecx
+    39/compare-with *esi 1/r32/ecx
+    0f 9d/set-if->= %al
+$stream-full?:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+write-to-stream:  # s: (addr stream _), in: (addr byte), n: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    57/push-edi
+    # edi = s
+    8b/-> *(ebp+8) 7/r32/edi
+    # var swrite/edx: int = s->write
+    8b/-> *edi 2/r32/edx
+    # if (swrite + n > s->size) abort
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    01/add-to %ecx 2/r32/edx
+    3b/compare 1/r32/ecx *(edi+8)
+    0f 8f/jump-if-> $write-to-stream:abort/disp32
+    # var out/edx: (addr byte) = s->data + s->write
+    8d/copy-address *(edi+edx+0xc) 2/r32/edx
+    # var outend/ebx: (addr byte) = out + n
+    8b/-> *(ebp+0x10) 3/r32/ebx
+    8d/copy-address *(edx+ebx) 3/r32/ebx
+    # eax = in
+    8b/-> *(ebp+0xc) 0/r32/eax
+    # var inend/ecx: (addr byte) = in + n
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    8d/copy-address *(eax+ecx) 1/r32/ecx
+    #
+    (_append-4  %edx %ebx  %eax %ecx)  # => eax
+    # s->write += n
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    01/add-to *edi 1/r32/ecx
+$write-to-stream:end:
+    # . restore registers
+    5f/pop-to-edi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$write-to-stream:abort:
+    (write-buffered Stderr "write-to-stream: stream full\n")
+    (flush Stderr)
+    bb/copy-to-ebx 1/imm32
+    (syscall_exit)
+    # never gets here
+
+read-from-stream:  # s: (addr stream _), out: (addr byte), n: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = s
+    8b/-> *(ebp+8) 6/r32/esi
+    # var sread/edx: int = s->read
+    8b/-> *(esi+4) 2/r32/edx
+    # if (sread + n > s->write) abort
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    01/add-to %ecx 2/r32/edx
+    3b/compare 1/r32/ecx *esi
+    0f 8f/jump-if-> $read-from-stream:abort/disp32
+    # var in/edx: (addr byte) = s->data + s->read
+    8d/copy-address *(esi+edx+0xc) 2/r32/edx
+    # var inend/ebx: (addr byte) = in + n
+    8b/-> *(ebp+0x10) 3/r32/ebx
+    8d/copy-address *(edx+ebx) 3/r32/ebx
+    # eax = out
+    8b/-> *(ebp+0xc) 0/r32/eax
+    # var outend/ecx: (addr byte) = out + n
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    8d/copy-address *(eax+ecx) 1/r32/ecx
+    #
+    (_append-4  %eax %ecx  %edx %ebx)  # => eax
+    # s->read += n
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    01/add-to *(esi+4) 1/r32/ecx
+$read-from-stream:end:
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$read-from-stream:abort:
+    (write-buffered Stderr "read-from-stream: stream empty\n")
+    (flush Stderr)
+    bb/copy-to-ebx 1/imm32
+    (syscall_exit)
+    # never gets here
+
+stream-first:  # s: (addr stream byte) -> result/eax: byte
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # result = false
+    b8/copy-to-eax 0/imm32
+    # esi = s
+    8b/-> *(ebp+8) 6/r32/esi
+    # var idx/ecx: int = s->read
+    8b/-> *(esi+4) 1/r32/ecx
+    # if idx >= s->write return 0
+    3b/compare-with 1/r32/ecx *esi
+    7d/jump-if->= $stream-first:end/disp8
+    # result = s->data[idx]
+    8a/byte-> *(esi+ecx+0xc) 0/r32/AL
+$stream-first:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+stream-final:  # s: (addr stream byte) -> result/eax: byte
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # result = false
+    b8/copy-to-eax 0/imm32
+    # esi = s
+    8b/-> *(ebp+8) 6/r32/esi
+    # var max/ecx: int = s->write
+    8b/-> *esi 1/r32/ecx
+    # if s->read >= max return 0
+    39/compare-with *(esi+4) 1/r32/ecx
+    7d/jump-if->= $stream-final:end/disp8
+    # var idx/ecx: int = max - 1
+    49/decrement-ecx
+    # result = s->data[idx]
+    8a/byte-> *(esi+ecx+0xc) 0/r32/AL
+$stream-final:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return

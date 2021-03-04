@@ -1,0 +1,62 @@
+# Initialize the minimal runtime for Mu programs.
+#
+# See translate_mu for how this file is used.
+#
+# Mu programs start at a function called 'main' with this signature:
+#   fn main args: (addr array addr array byte) -> _/ebx: int
+# If your program doesn't need commandline arguments you can drop it:
+#   fn main -> _/ebx: int
+#
+# Notice that the output must be in ebx, so that the exit() syscall can pick
+# it up.
+
+== code
+
+Entry:
+    # we don't use ebp in Entry; just initialize it
+    bd/copy-to-ebp 0/imm32
+    # - save argc and argv
+    # var argc-and-argv/esi
+    89/<- %esi 4/r32/esp
+$Entry:initialize-heap:
+    # - initialize the heap
+    (new-segment *Heap-size Heap)
+$Entry:initialize-args:
+    # - convert argv from null-terminated 'kernel' strings to length-prefixed Mu strings
+    # var argc/edx: int
+    8b/-> *esi 2/r32/edx
+    # argc is in words; convert it to bytes
+    c1/shift 4/subop/left %edx 2/imm8
+    # var tmp/ebx: handle
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ebx 4/r32/esp
+    # var args/edi: (addr array (addr array byte))
+    (allocate-array Heap %edx %ebx)
+    (lookup *ebx *(ebx+4))  # => eax
+    89/<- %edi 0/r32/eax
+    # var curr/ecx: (addr kernel-string) = argv
+    8d/copy-address *(esi+4) 1/r32/ecx
+    # var max/edx: (addr kernel-string) = argv+4+argc
+    8d/copy-address *(ecx+edx) 2/r32/edx
+    # var dest/esi: (addr (addr array byte)) = args+4
+    8d/copy-address *(edi+4) 6/r32/esi
+    {
+      # if (curr >= max) break
+      39/compare %ecx 2/r32/edx
+      73/jump-if-addr>= break/disp8
+      # *dest = kernel-string-to-string(*curr)
+      (kernel-string-to-string Heap *ecx %ebx)
+      (lookup *ebx *(ebx+4))  # => eax
+      89/<- *esi 0/r32/eax
+      # curr += 4
+      81 0/subop/add %ecx 4/imm32
+      # dest += 4
+      81 0/subop/add %esi 4/imm32
+      #
+      eb/jump loop/disp8
+    }
+    # - run Mu program
+    (main %edi)  # => ebx
+    # - exit
+    (syscall_exit)

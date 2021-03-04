@@ -1,0 +1,38 @@
+#!/bin/sh
+# Translate given SubX files by running the self-hosted translator natively on
+# Linux.
+
+set -e
+
+cat $*          |./braces      > a.braces
+
+cat a.braces    |./calls       > a.calls
+
+cat a.calls     |./sigils      > a.sigils
+
+cat a.sigils    |./tests       > a.tests
+
+cat a.tests     |./assort      > a.assort
+
+cat a.assort    |./dquotes     > a.dquotes
+
+# A little hack. We want translate_subx to always emit identical binaries to
+# the C++ translator. The C++ translator assorts segments before it processes
+# string literals, so we follow the same order above.
+#
+# However, dquotes currently emits a separate data segment for string literals.
+# So we need to run assort a second time to clean up after it.
+#
+# Potential solutions:
+#   a) modify C++ translator to process string literals before assorting.
+#   b) clean up dquotes to assume assorted segments, and append to the
+#   existing data segment.
+cat a.dquotes   |./assort      > a.assort2
+
+cat a.assort2   |./pack        > a.pack
+
+cat a.pack      |./survey_elf  > a.survey
+
+cat a.survey    |./hex         > a.elf
+
+chmod +x a.elf

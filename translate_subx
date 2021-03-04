@@ -1,40 +1,43 @@
 #!/bin/sh
-# Translate given SubX files by running the self-hosted translator natively on
-# Linux.
+# Translate SubX files to a bootable disk image.
+#
+# A couple of gotchas:
+# * Many phases here have no error-checking. Perhaps I should use a
+#   version of translate_subx_debug for baremetal.
+# * Don't pass in numbered .subx files without translated .mu files. Our test
+#   harness is in test.mu, and only Mu programs can run tests in baremetal.
+#
+# The top level is in general not as rigorous about avoiding dependency cycles
+# as the lower-level tools in linux/
 
 set -e
 
-./build
+cat $*          |linux/braces            > a.braces
 
-cat $*          |apps/braces      > a.braces
+cat a.braces    |linux/calls             > a.calls
 
-cat a.braces    |apps/calls       > a.calls
+cat a.calls     |linux/sigils            > a.sigils
 
-cat a.calls     |apps/sigils      > a.sigils
+cat a.sigils    |linux/tests             > a.tests
 
-cat a.sigils    |apps/tests       > a.tests
+# no assort since baremetal SubX doesn't have segments yet
 
-cat a.tests     |apps/assort      > a.assort
+cat a.tests     |linux/dquotes           > a.dquotes
 
-cat a.assort    |apps/dquotes     > a.dquotes
+cat a.dquotes   |linux/pack              > a.pack
 
-# A little hack. We want translate_subx to always emit identical binaries to
-# the C++ translator. The C++ translator assorts segments before it processes
-# string literals, so we follow the same order above.
-#
-# However, dquotes currently emits a separate data segment for string literals.
-# So we need to run assort a second time to clean up after it.
-#
-# Potential solutions:
-#   a) modify C++ translator to process string literals before assorting.
-#   b) clean up dquotes to assume assorted segments, and append to the
-#   existing data segment.
-cat a.dquotes   |apps/assort      > a.assort2
+cat a.pack      |linux/survey_baremetal  > a.survey
 
-cat a.assort2   |apps/pack        > a.pack
+cat a.survey    |linux/hex               > a.bin
 
-cat a.pack      |apps/survey_elf  > a.survey
+# Create disk.img containing baremetal/boot.hex and a.bin
+dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
+linux/hex < boot.hex  > boot.bin
+cat boot.bin a.bin > disk.bin
+dd if=disk.bin of=disk.img conv=notrunc
 
-cat a.survey    |apps/hex         > a.elf
-
-chmod +x a.elf
+if [ `stat --printf="%s" disk.bin` -ge 193536 ]  # 6 tracks * 63 sectors per track * 512 bytes per sector (keep this sync'd with boot.hex)
+then
+  echo "disk.bin won't all be loaded on boot"
+  exit 1
+fi

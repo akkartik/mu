@@ -1,0 +1,18 @@
+#!/bin/bash
+# Repeatedly stop building until successive layers, and run all tests built.
+#
+# Assumes .subx files all come after .cc files.
+
+set -e
+
+cd `dirname $0`
+# add C++ files one at a time
+for f in [0-9]*cc
+do
+  echo "=== bootstrap $f"
+  ./build_and_test_until $f
+done
+
+# build everything one last time
+./clean
+./build  # build optimized since we'll be running it repeatedly below

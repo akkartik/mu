@@ -105,42 +105,6 @@ Use `translate_mu` to build programs for Linux, and `translate_mu_baremetal`
 for running without Linux. The standard libraries are totally separate for the
 two options, so programs for one won't run on the other.
 
-### incomplete tools
-
-There's a prototype live-updating programming environment for a postfix
-language:
-
-```sh
-$ ./translate_mu apps/tile/*.mu
-$ ./a.elf screen
-```
-
-Once generated, ELF binaries can be packaged up with a Linux kernel into a
-bootable disk image. Here's how the postfix environment might look on startup:
-
-```sh
-$ ./translate_mu apps/tile/*.mu  # emit a.elf
-# dependencies
-$ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
-$ tools/iso/linux a.elf
-$ qemu-system-x86_64 -m 256M -cdrom mu_linux.iso -boot d
-```
-
-<img alt='screenshot of Mu running on Qemu' src='html/20201114-qemu.png'>
-
-The disk image also runs on [any cloud server that supports custom images](http://akkartik.name/post/iso-on-linode).
-
-Mu also runs on the minimal hobbyist OS [Soso](https://github.com/ozkl/soso).
-(Requires graphics and sudo access. Currently doesn't work on a cloud server.)
-
-```sh
-$ ./translate_mu apps/ex2.mu  # emit a.elf
-# dependencies
-$ sudo apt install build-essential util-linux nasm xorriso  # maybe also dosfstools and mtools
-$ tools/iso/soso a.elf  # requires sudo
-$ qemu-system-i386 -cdrom mu_soso.iso
-```
-
 ## Syntax
 
 The entire stack shares certain properties and conventions. Programs consist
@@ -200,6 +164,14 @@ If you're still reading, here are some more things to check out:
   SubX](subx_bare.md) without any syntax sugar.
 
 - [Some 2-minute videos demonstrating Mu programs](https://archive.org/details/@kartik_agaram).
+  Many of them involve this prototype live-updating programming environment
+  for a postfix language that I might work on again one day:
+
+  ```sh
+  $ cd linux
+  $ ./translate tile/*.mu
+  $ ./a.elf screen
+  ```
 
 - [How to get your text editor set up for Mu and SubX programs.](editor.md)
 

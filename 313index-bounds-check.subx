@@ -26,17 +26,16 @@ __check-mu-array-bounds:  # index: int, elem-size: int, arr-size: int, function-
     39/compare %eax 1/r32/ecx
     0f 82/jump-if-unsigned< $__check-mu-array-bounds:end/disp32  # negative index should always abort
     # abort if necessary
-    (write-buffered Stderr "fn ")
-    (write-buffered Stderr *(ebp+0x14))
-    (write-buffered Stderr ": offset ")
-    (write-int32-hex-buffered Stderr %eax)
-    (write-buffered Stderr " is too large for array '")
-    (write-buffered Stderr *(ebp+0x18))
-    (write-buffered Stderr "'\n")
-    (flush Stderr)
-    # exit(1)
-    bb/copy-to-ebx 1/imm32
-    e8/call syscall_exit/disp32
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "fn " 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0x14) 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 ": offset " 3 0)  # 3=cyan
+    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " is too large for array '" 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0x18) 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "'" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
 $__check-mu-array-bounds:end:
     # . restore registers
@@ -49,38 +48,13 @@ $__check-mu-array-bounds:end:
     c3/return
 
 __check-mu-array-bounds:overflow:
-    # "fn " function-name ": offset to array '" array-name "' overflowed 32 bits\n"
-    (write-buffered Stderr "fn ")
-    (write-buffered Stderr *(ebp+0x14))
-    (write-buffered Stderr ": offset to array '")
-    (write-buffered Stderr *(ebp+0x18))
-    (write-buffered Stderr "' overflowed 32 bits\n")
-    (flush Stderr)
-    # exit(1)
-    bb/copy-to-ebx 1/imm32
-    e8/call syscall_exit/disp32
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "fn " 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0x14) 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 ": offset to array '" 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "offset to array overflowed 32 bits" 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0x18) 3 0)  # 3=cyan
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "' overflowed 32 bits" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
-
-# potential alternative
-
-#? __bounds-check:  # msg: (addr array byte)
-#?   (write-buffered Stderr "abort: array bounds exceeded in fn ")
-#?   8b/-> *(esp+4) 0/r32/eax  # we're going to abort, so just clobber away
-#?   (write-buffered Stderr %eax)
-#?   (write-buffered Stderr Newline)
-#?   # exit(1)
-#?   bb/copy-to-ebx 1/imm32
-#?   e8/call syscall_exit/disp32
-
-# to be called as follows:
-#   var/reg <- index arr/rega: (addr array T), idx/regi: int
-#     | if size-of(T) is 1, 2, 4 or 8
-#         => # temporarily save array size to reg to check bounds
-#            "8b/-> *" rega " " reg "/r32"
-#            "c1/shift 5/subop/right %" reg " " log2(size-of(T)) "/imm32"
-#            "3b/compare " reg "/r32 *" rega
-#            "68/push \"" function "\"/imm32"  # pass function name to error message
-#            "0f 8d/jump-if->= __bounds_check/disp32"
-#            "81 0/subop/add %esp 4/imm32"  # drop function name
-#            # actually save the index addr in reg
-#            "8d/copy-address *(" rega "+" regi "<<" log2(size-of(T)) "+4) " reg "/r32"

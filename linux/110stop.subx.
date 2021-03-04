@@ -1,0 +1,231 @@
+# stop: dependency-injected wrapper around the exit() syscall
+#
+# We'd like to be able to write tests for functions that call exit(), and to
+# make assertions about whether they exit() or not in a given situation. To
+# achieve this we'll call exit() via a smarter wrapper called 'stop'.
+#
+# In the context of a test, calling a function X that calls 'stop' (directly
+# or through further intervening calls) will unwind the stack until X returns,
+# so that we can say check any further assertions after the execution of X. To
+# achieve this end, we'll pass the return address of X as a 'target' argument
+# into X, plumbing it through to 'stop'. When 'stop' gets a non-null target it
+# unwinds the stack until the target. If it gets a null target it calls
+# exit().
+#
+# We'd also like to get the exit status out of 'stop', so we'll combine the
+# input target with an output status parameter into a type called 'exit-descriptor'.
+#
+# So the exit-descriptor looks like this:
+#   target : address  # return address for 'stop' to unwind to
+#   value : int  # exit status stop was called with
+#
+# 'stop' thus takes two parameters: an exit-descriptor and the exit status.
+#
+# 'stop' won't bother cleaning up any other processor state besides the stack,
+# such as registers. Only ESP will have a well-defined value after 'stop'
+# returns. (This is a poor man's setjmp/longjmp, if you know what that is.)
+#
+# Before you can call any function that may call 'stop', you need to pass in an
+# exit-descriptor to it. The value will initially be empty. What should the
+# target be? The simplest way to compute the target requires violating the
+# usual pattern of function calls.
+#
+# Normally function calls follow this pattern:
+#   * push all args on the stack
+#   * call
+#   * increment ESP to pop all args off the stack
+#
+# When passing in a new exit descriptor, the process of calling looks like this:
+#   * allocate space for the exit descriptor on the stack
+#   * assign the exit descriptor to some register 'r'
+#   ... some time later ...
+#   * push all args on the stack, including register 'r'
+#   * save ESP to *r (the target of the exit descriptor)
+#
+# The value saved to the target isn't quite right, so stop needs to adjust its
+# exit-descriptor argument 'ed':
+#   copy *ed to ESP
+#   decrement ESP by 4 (from last arg to return address)
+#   ret
+#
+# Performing the decrement inside 'stop' reduces our overhead for creating exit
+# descriptors to a single 2-byte instruction.
+# We only adjust the target if we ever actually call 'stop'.
+#
+# There's no good way to abstract away the target computation, since it depends
+# on the number of args a function is called with.
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+# Configure an exit-descriptor for a call pushing 'nbytes' bytes of args to
+# the stack.
+# Ugly that we need to know the size of args, but so it goes.
+tailor-exit-descriptor:  # ed : (address exit-descriptor), nbytes : int -> <void>
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    51/push-ECX
+    # EAX = nbytes
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
+    # Let X be the value of ESP in the caller, before the call to tailor-exit-descriptor.
+    # The return address for a call in the caller's body will be at:
+    #   X-8 if the caller takes 4 bytes of args for the exit-descriptor (add 4 bytes for the return address)
+    #   X-12 if the caller takes 8 bytes of args
+    #   ..and so on
+    # That's the value we need to return: X-nbytes-4
+    #
+    # However, we also need to account for the perturbance to ESP caused by the
+    # call to tailor-exit-descriptor. It pushes 8 bytes of args followed by 4
+    # bytes for the return address and 4 bytes to push EBP above.
+    # So EBP at this point is X-16.
+    #
+    # So the return address for the next call in the caller is:
+    #   EBP+8 if the caller takes 4 bytes of args
+    #   EBP+4 if the caller takes 8 bytes of args
+    #   EBP if the caller takes 12 bytes of args
+    #   EBP-4 if the caller takes 16 bytes of args
+    #   ..and so on
+    # That's EBP+12-nbytes.
+    # option 1: 6 + 3 bytes
+#?     2d/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           .           .               8/imm32           # subtract from EAX
+#?     8d/copy-address                 0/mod/indirect  4/rm32/sib    5/base/EBP  0/index/EAX   .           0/r32/EAX   .               .                 # copy EBP+EAX to EAX
+    # option 2: 2 + 4 bytes
+    f7          3/subop/negate      3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # negate EAX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    5/base/EBP  0/index/EAX   .           0/r32/EAX   0xc/disp8         .               # copy EBP+EAX+12 to EAX
+    # copy EAX to ed->target
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    89/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ECX
+    # initialize ed->value
+    c7          0/subop/copy        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         0/imm32           # copy to *(ECX+4)
+$tailor-exit-descriptor:end:
+    # . restore registers
+    59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+stop:  # ed : (address exit-descriptor), value : int
+    # no prolog; one way or another, we're going to clobber registers
+    # EAX = ed
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   4/disp8         .                 # copy *(ESP+4) to EAX
+    # if (ed->target == 0) really exit
+    81          7/subop/compare     0/mod/indirect  0/rm32/EAX    .           .             .           .           .               0/imm32           # compare *EAX
+    75/jump-if-not-equal  $stop:fake/disp8
+    # . syscall(exit, value)
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           3/r32/EBX   8/disp8         .                 # copy *(ESP+8) to EBX
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+$stop:fake:
+    # otherwise:
+    # ed->value = value+1
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(ESP+8) to ECX
+    41/increment-ECX
+    89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy ECX to *(EAX+4)
+    # perform a non-local jump to ed->target
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy *EAX to ESP
+$stop:end:
+    c3/return  # doesn't return to caller
+
+test-stop-skips-returns-on-exit:
+    # This looks like the standard prolog, but is here for different reasons.
+    # A function calling 'stop' can't rely on EBP persisting past the call.
+    #
+    # Use EBP here as a stable base to refer to locals and arguments from in the
+    # presence of push/pop/call instructions.
+    # *Don't* use EBP as a way to restore ESP.
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # Make room for an exit descriptor on the stack. That's almost always the
+    # right place for it, available only as long as it's legal to use. Once this
+    # containing function returns we'll need a new exit descriptor.
+    # var ed/EAX : (address exit-descriptor)
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EAX
+    # Size the exit-descriptor precisely for the next call below, to _test-stop-1.
+    # tailor-exit-descriptor(ed, 4)
+    # . . push args
+    68/push  4/imm32/nbytes-of-args-for-_test-stop-1
+    50/push-EAX
+    # . . call
+    e8/call  tailor-exit-descriptor/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # call/ed(ed) _test-stop-1(ed)
+    # w/exit(ed) _test-stop-1(ed)
+    # . _test-stop-1(ed)
+    # . . push args
+    50/push-EAX
+    # . . call
+    e8/call  _test-stop-1/disp32
+    # registers except ESP may be clobbered at this point
+    # restore args
+    58/pop-to-EAX
+    # check that _test-stop-1 tried to call exit(1)
+    # check-ints-equal(ed->value, 2, msg)  # i.e. stop was called with value 1
+    # . . push args
+    68/push  "F - test-stop-skips-returns-on-exit"/imm32
+    68/push  2/imm32
+    # . . push ed->value
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    # don't restore ESP from EBP; manually reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    5d/pop-to-EBP
+    c3/return
+
+_test-stop-1:  # ed : (address exit-descriptor)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # _test-stop-2(ed)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  _test-stop-2/disp32
+    # should never get past this point
+$_test-stop-1:dead-end:
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # signal test failed: check-ints-equal(1, 0, msg)
+    # . . push args
+    68/push  "F - test-stop-skips-returns-on-exit"/imm32
+    68/push  0/imm32
+    68/push  1/imm32
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+_test-stop-2:  # ed : (address exit-descriptor)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . stop(ed, 1)
+    # . . push args
+    68/push  1/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  stop/disp32
+    # should never get past this point
+$_test-stop-2:dead-end:
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# . . vim:nowrap:textwidth=0

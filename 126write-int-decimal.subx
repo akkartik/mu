@@ -114,17 +114,10 @@ $write-int32-decimal:end:
     c3/return
 
 $write-int32-decimal:abort:
-    # . _write(2/stderr, error)
-    # . . push args
-    68/push  "write-int32-decimal: out of space\n"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call  syscall_exit/disp32
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "write-int32-decimal: stream out of space" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
 
 test-write-int32-decimal:
@@ -426,41 +419,10 @@ $to-decimal-digit:end:
     c3/return
 
 $to-decimal-digit:abort:
-    # . write-buffered(stderr, error)
-    # . . push args
-    68/push  "to-decimal-digit: not a digit character: "/imm32
-    68/push  Stderr/imm32
-    # . . call
-    e8/call  write-buffered/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . write-byte-buffered(stderr, %eax)
-    # . . push args
-    50/push-eax
-    68/push  Stderr/imm32
-    # . . call
-#?     e8/call  write-byte-buffered/disp32
-    e8/call  write-int32-hex-buffered/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . write-buffered(stderr, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  Stderr/imm32
-    # . . call
-    e8/call  write-buffered/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . flush(Stderr)
-    # . . push args
-    68/push  Stderr/imm32
-    # . . call
-    e8/call  flush/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call  syscall_exit/disp32
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "to-decimal-digit: not a digit character" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
 
 # . . vim:nowrap:textwidth=0

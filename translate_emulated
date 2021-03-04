@@ -1,0 +1,12 @@
+#!/bin/sh
+# Translate a Mu program to a bootable disk image.
+#
+# This script uses emulation, so it does not require x86 or Linux. However it
+# is slow.
+
+set -e
+set -v
+
+cat $* [0-9]*.mu  |linux/bootstrap/bootstrap run linux/mu                 > a.subx
+
+./translate_subx_emulated mu-init.subx [0-9]*.subx a.subx

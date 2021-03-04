@@ -1,0 +1,967 @@
+# Helper to dynamically allocate memory on the heap.
+#
+# We'd like to be able to write tests for functions that allocate memory,
+# making assertions on the precise addresses used. To achieve this we'll pass
+# in an *allocation descriptor* to allocate from.
+#
+# Allocation descriptors are also useful outside of tests. Assembly and machine
+# code are of necessity unsafe languages, and one of the most insidious kinds
+# of bugs unsafe languages expose us to are dangling pointers to memory that
+# has been freed and potentially even reused for something totally different.
+# To reduce the odds of such "use after free" errors, SubX programs tend to not
+# reclaim and reuse dynamically allocated memory. (Running out of memory is far
+# easier to debug.) Long-running programs that want to reuse memory are mostly
+# on their own to be careful. However, they do get one bit of help: they can
+# carve out chunks of memory and then allocate from them manually using this
+# very same 'allocate' helper. They just need a new allocation descriptor for
+# their book-keeping.
+
+== data
+
+# Allocations are returned in a handle, which consists of an alloc-id and a payload.
+# The alloc-id helps detect use-after-free errors.
+Handle-size:  # (addr int)
+  8/imm32
+
+# A default allocation descriptor for programs to use.
+Heap:  # allocation-descriptor
+  # curr
+  0/imm32
+  # limit
+  0/imm32
+
+# a reasonable default
+Heap-size:  # int
+  0x800000/imm32/8MB
+
+Next-alloc-id:  # int
+  0x100/imm32  # save a few alloc ids for fake handles
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+# Let's start initializing the default allocation descriptor.
+
+Entry:
+    # initialize heap
+    # . Heap = new-segment(Heap-size)
+    # . . push args
+    68/push  Heap/imm32
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Heap-size/disp32                  # push *Heap-size
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+
+    e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
+$array-equal-main:end:
+    # syscall(exit, Num-test-failures)
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
+    e8/call  syscall_exit/disp32
+
+# Allocate and clear 'n' bytes of memory from an allocation-descriptor 'ad'.
+# Abort if there isn't enough memory in 'ad'.
+allocate:  # ad: (addr allocation-descriptor), n: int, out: (addr handle _)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    # allocate-raw(ad, n, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  allocate-raw/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = out->payload + 4
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           0/r32/eax   4/disp8         .                 # copy *(eax+4) to eax
+    05/add-to-eax  4/imm32
+    # zero-out(eax, n)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    50/push-eax
+    # . . call
+    e8/call  zero-out/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+$allocate:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# Claim the next 'n' bytes of memory starting at ad->curr and update ad->curr.
+# Abort if there isn't enough memory in 'ad'.
+allocate-raw:  # ad: (addr allocation-descriptor), n: int, out: (addr handle _)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # ecx = ad
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # edx = out
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0x10/disp8      .                 # copy *(ebp+16) to edx
+    # ebx = n
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   0xc/disp8       .                 # copy *(ebp+12) to ebx
+    # out->alloc-id = Next-alloc-id
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Next-alloc-id/disp32              # copy *Next-alloc-id to eax
+    89/copy                         0/mod/indirect  2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy eax to *edx
+    # out->payload = ad->curr
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
+$allocate-raw:save-payload-in-eax:
+    89/copy                         1/mod/*+disp8   2/rm32/edx    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(edx+4)
+    # *out->payload = Next-alloc-id
+    8b/copy                         1/mod/*+disp8   2/rm32/edx    .           .             .           7/r32/edi   4/disp8         .                 # copy *(edx+4) to edi
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           6/r32/esi   Next-alloc-id/disp32              # copy *Next-alloc-id to esi
+    89/copy                         0/mod/indirect  7/rm32/edi    .           .             .           6/r32/esi   .               .                 # copy esi to *edi
+$allocate-raw:increment-next-alloc-id:
+    # increment *Next-alloc-id
+    ff          0/subop/increment   0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32              # increment *Next-alloc-id
+    # check if there's enough space
+    # TODO: move this check up before any state updates when we support error recovery
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  3/index/ebx   .           0/r32/eax   4/disp8         .                 # copy eax+ebx+4 to eax
+    3b/compare                      1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # compare eax with *(ecx+4)
+    73/jump-if->=-signed  $allocate-raw:abort/disp8
+$allocate-raw:commit:
+    # ad->curr += n+4
+    89/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy eax to *ecx
+$allocate-raw:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$allocate-raw:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "allocate: failed\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
+test-allocate-raw-success:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var ad/ecx: allocation-descriptor
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # ad = new-segment(512)
+    # . . push args
+    51/push-ecx
+    68/push  0x200/imm32
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # var expected-payload/ebx = ad->curr
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # copy *ecx to ebx
+    # var h/edx: handle = {0, 0}
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # *Next-alloc-id = 0x34
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x34/imm32  # copy to *Next-alloc-id
+    # allocate-raw(ad, 3, h)
+    # . . push args
+    52/push-edx
+    68/push  3/imm32
+    51/push-ecx
+    # . . call
+    e8/call  allocate-raw/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->alloc-id, 0x34, msg)
+    # . . push args
+    68/push  "F - test-allocate-raw-success: sets alloc-id in handle"/imm32
+    68/push  0x34/imm32
+    ff          6/subop/push        0/mod/indirect  2/rm32/edx    .           .             .           .           .               .                 # push *edx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->payload, expected-payload, msg)
+    # . . push args
+    68/push  "F - test-allocate-raw-success: sets payload in handle"/imm32
+    53/push-ebx
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # push *(edx+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->payload->alloc-id, 0x34, msg)
+    # . . push args
+    68/push  "F - test-allocate-raw-success: sets alloc-id in payload"/imm32
+    68/push  0x34/imm32
+    ff          6/subop/push        0/mod/indirect  3/rm32/ebx    .           .             .           .           .               .                 # push *ebx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(*Next-alloc-id, 0x35, msg)
+    # . . push args
+    68/push  "F - test-allocate-raw-success: increments Next-alloc-id"/imm32
+    68/push  0x35/imm32
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32              # push *Next-alloc-id
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(ad->curr - expected-payload, 3 + 4 for alloc-id, msg)
+    # . . push args
+    68/push  "F - test-allocate-raw-success: updates allocation descriptor"/imm32
+    68/push  7/imm32
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # subtract ebx from eax
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # clean up
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x100/imm32 # copy to *Next-alloc-id
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+lookup:  # h: (handle _T) -> result/eax: (addr _T)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    # eax = 0
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    # ecx = handle->alloc_id
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # if (ecx == 0) return 0
+    81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0/imm32           # compare ecx
+    74/jump-if-=  $lookup:end/disp8
+    # eax = handle->address (payload)
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
+    # if (ecx != *eax) abort
+    39/compare                      0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare *eax and ecx
+    75/jump-if-!=  $lookup:abort/disp8
+    # add 4 to eax
+    05/add-to-eax  4/imm32
+$lookup:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$lookup:abort:
+    # . _write(2/stderr, msg)
+    # . . push args
+    68/push  "lookup failed\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32/exit-status
+    e8/call  syscall_exit/disp32
+
+test-lookup-success:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var ad/ebx: allocation-descriptor
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
+    # ad = new-segment(512)
+    # . . push args
+    53/push-ebx
+    68/push  0x200/imm32
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # var handle/ecx: handle
+    68/push  0/imm32/address
+    68/push  0/imm32/alloc-id
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # var old-top/edx = ad->curr
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # copy *ebx to edx
+    # allocate-raw(ad, 2, handle)
+    # . . push args
+    51/push-ecx
+    68/push  2/imm32/size
+    53/push-ebx
+    # . . call
+    e8/call  allocate-raw/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = lookup(handle)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # eax contains old top of heap, except skipping the alloc-id in the payload
+    # . check-ints-equal(eax, old-top+4, msg)
+    # . . push args
+    68/push  "F - test-lookup-success"/imm32
+    81          0/subop/add         3/mod/direct    2/rm32/edx    .           .             .           .           .               4/imm32           # add to edx
+    52/push-edx
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # clean up
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x100/imm32 # copy to *Next-alloc-id
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-lookup-null-returns-null:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var handle/ecx: handle
+    68/push  0/imm32/address
+    68/push  0/imm32/alloc-id
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = lookup(handle)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-lookup-null-returns-null"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+_pending-test-lookup-failure:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var heap/esi: allocation-descriptor
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
+    89/copy                         3/mod/direct    6/rm32/esi    .           .             .           4/r32/esp   .               .                 # copy esp to esi
+    # heap = new-segment(512)
+    # . . push args
+    56/push-esi
+    68/push  0x200/imm32
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # var h1/ecx: handle
+    68/push  0/imm32/address
+    68/push  0/imm32/alloc-id
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # var old_top/ebx = heap->curr
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           3/r32/ebx   .               .                 # copy *esi to ebx
+    # first allocation, to h1
+    # . allocate(heap, 2, h1)
+    # . . push args
+    51/push-ecx
+    68/push  2/imm32/size
+    56/push-esi
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # reset heap->curr to mimic reclamation
+    89/copy                         0/mod/indirect  6/rm32/esi    .           .             .           3/r32/ebx   .               .                 # copy ebx to *esi
+    # second allocation that returns the same address as the first
+    # var h2/edx: handle
+    68/push  0/imm32/address
+    68/push  0/imm32/alloc-id
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # . allocate(heap, 2, h2)
+    # . . push args
+    52/push-edx
+    68/push  2/imm32/size
+    56/push-esi
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h1->address, h2->address, msg)
+    # . . push args
+    68/push  "F - test-lookup-failure"/imm32
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(edx+4)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # lookup(h1) should crash
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  lookup/disp32
+    # should never get past this point
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # clean up
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x100/imm32 # copy to *Next-alloc-id
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# when comparing handles, just treat them as pure values
+handle-equal?:  # a: (handle _T), b: (handle _T) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    # eax = false
+    b8/copy-to-eax  0/imm32/false
+$handle-equal?:compare-alloc-id:
+    # ecx = a->alloc_id
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # if (ecx != b->alloc_id) return false
+    39/compare                      1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # compare ecx and *(ebp+16)
+    75/jump-if-!=  $handle-equal?:end/disp8
+$handle-equal?:compare-address:
+    # ecx = handle->address
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
+    # if (ecx != b->address) return false
+    39/compare                      1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x14/disp8      .                 # compare ecx and *(ebp+20)
+    75/jump-if-!=  $handle-equal?:end/disp8
+$handle-equal?:return-true:
+    # return true
+    b8/copy-to-eax  1/imm32/true
+$handle-equal?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+copy-handle:  # src: (handle _T), dest: (addr handle _T)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # ecx = dest
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # copy *(ebp+16) to ecx
+    # *dest = src
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    89/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy eax to *ecx
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
+    89/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(ecx+4)
+$copy-handle:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# helper: create a nested allocation descriptor (useful for tests)
+allocate-region:  # ad: (addr allocation-descriptor), n: int, out: (addr handle allocation-descriptor)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # allocate(ad, n, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = out->payload
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           0/r32/eax   4/disp8         .                 # copy *(eax+4) to eax
+    # skip payload->allocid
+    05/add-to-eax  4/imm32
+    # if (eax == 0) abort
+    3d/compare-eax-and  0/imm32
+    74/jump-if-=  $allocate-region:abort/disp8
+    # earmark 8 bytes at the start for a new allocation descriptor
+    # . *eax = eax + 8
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy eax to ecx
+    81          0/subop/add         3/mod/direct    1/rm32/ecx    .           .             .           .           .               8/imm32           # add to ecx
+    89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to *eax
+    # . *(eax+4) = eax + n
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy eax to ecx
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # add *(ebp+12) to ecx
+    89/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy ecx to *(eax+4)
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# We could create a more general '$abort' jump target, but then we'd need to do
+# a conditional jump followed by loading the error message and an unconditional
+# jump. Or we'd need to unconditionally load the error message before a
+# conditional jump, even if it's unused the vast majority of the time. This way
+# we bloat a potentially cold segment in RAM so we can abort with a single
+# instruction.
+$allocate-region:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "allocate-region: failed to allocate\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
+# Claim the next 'n+4' bytes of memory and initialize the first 4 to n.
+# Abort if there isn't enough memory in 'ad'.
+allocate-array:  # ad: (addr allocation-descriptor), n: int, out: (addr handle _)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    # ecx = n
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
+    # var size/edx: int = n+4
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           2/r32/edx   4/disp8         .                 # copy ecx+4 to edx
+    # allocate(ad, size, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    52/push-edx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # *out->payload = n
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           0/r32/eax   4/disp8         .                 # copy *(eax+4) to eax
+    # . skip payload->allocid
+    05/add-to-eax  4/imm32
+    # .
+    89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to *eax
+$allocate-array:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-allocate-array:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var ad/ecx: allocation-descriptor
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # ad = new-segment(512)
+    # . . push args
+    51/push-ecx
+    68/push  0x200/imm32
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # var expected-payload/ebx = ad->curr
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # copy *ecx to ebx
+    # var h/edx: handle = {0, 0}
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # *Next-alloc-id = 0x34
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x34/imm32  # copy to *Next-alloc-id
+    # allocate-array(ad, 3, h)
+    # . . push args
+    52/push-edx
+    68/push  3/imm32
+    51/push-ecx
+    # . . call
+    e8/call  allocate-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->alloc-id, 0x34, msg)
+    # . . push args
+    68/push  "F - test-allocate-array: sets alloc-id in handle"/imm32
+    68/push  0x34/imm32
+    ff          6/subop/push        0/mod/indirect  2/rm32/edx    .           .             .           .           .               .                 # push *edx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->payload, expected-payload, msg)
+    # . . push args
+    68/push  "F - test-allocate-array: sets payload in handle"/imm32
+    53/push-ebx
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # push *(edx+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->payload->alloc-id, 0x34, msg)
+    # . . push args
+    68/push  "F - test-allocate-array: sets alloc-id in payload"/imm32
+    68/push  0x34/imm32
+    ff          6/subop/push        0/mod/indirect  3/rm32/ebx    .           .             .           .           .               .                 # push *ebx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->payload->size, 3, msg)
+    # . . push args
+    68/push  "F - test-allocate-array: sets array size in payload"/imm32
+    68/push  3/imm32
+    ff          6/subop/push        1/mod/*+disp8   3/rm32/ebx    .           .             .           .           4/disp8         .                 # push *(ebx+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(*Next-alloc-id, 0x35, msg)
+    # . . push args
+    68/push  "F - test-allocate-array: increments Next-alloc-id"/imm32
+    68/push  0x35/imm32
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32              # push *Next-alloc-id
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(ad->curr - expected-payload, 3 + 4 for alloc-id + 4 for array size, msg)
+    # . . push args
+    68/push  "F - test-allocate-array: updates allocation descriptor"/imm32
+    68/push  0xb/imm32
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # subtract ebx from eax
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # clean up
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  1/imm32     # copy to *Next-alloc-id
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+copy-array:  # ad: (addr allocation-descriptor), src: (addr array _T), out: (addr handle array _T)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = src
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
+    # var size/ecx: int = src->size+4
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+    81          0/subop/add         3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # add to ecx
+    # allocate(ad, size, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    51/push-ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # var payload/eax: (addr byte) = out->payload
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           0/r32/eax   4/disp8         .                 # copy *(eax+4) to eax
+    # . skip payload->allocid
+    05/add-to-eax  4/imm32
+    # var max/ecx: (addr byte) = payload + size
+    01/add                          3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # add eax to ecx
+    # _append-4(payload, max, src, &src->data[src->size])
+    # . . push &src->data[src->size]
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy esi+edx+4 to edx
+    52/push-edx
+    # . . push src
+    56/push-esi
+    # . . push max
+    51/push-ecx
+    # . . push payload
+    50/push-eax
+    # . . call
+    e8/call  _append-4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+$copy-array:end:
+    # . restore registers
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-copy-array:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var src/esi: (addr array int) = [3, 4, 5]
+    68/push  5/imm32
+    68/push  4/imm32
+    68/push  3/imm32
+    68/push  0xc/imm32/size
+    89/copy                         3/mod/direct    6/rm32/esi    .           .             .           4/r32/esp   .               .                 # copy esp to esi
+    # var ad/ecx: allocation-descriptor
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # ad = new-segment(512)
+    # . . push args
+    51/push-ecx
+    68/push  0x200/imm32
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # var expected-payload/ebx = ad->curr
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # copy *ecx to ebx
+    # var h/edx: handle = {0, 0}
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # *Next-alloc-id = 0x34
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x34/imm32  # copy to *Next-alloc-id
+    # copy-array(ad, src, h)
+    # . . push args
+    52/push-edx
+    56/push-esi
+    51/push-ecx
+    # . . call
+    e8/call  copy-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->alloc-id, 0x34, msg)
+    # . . push args
+    68/push  "F - test-copy-array: sets alloc-id in handle"/imm32
+    68/push  0x34/imm32
+    ff          6/subop/push        0/mod/indirect  2/rm32/edx    .           .             .           .           .               .                 # push *edx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->payload, expected-payload, msg)
+    # . . push args
+    68/push  "F - test-copy-array: sets payload in handle"/imm32
+    53/push-ebx
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # push *(edx+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(h->payload->alloc-id, 0x34, msg)
+    # . . push args
+    68/push  "F - test-copy-array: sets alloc-id in payload"/imm32
+    68/push  0x34/imm32
+    ff          6/subop/push        0/mod/indirect  2/rm32/edx    .           .             .           .           .               .                 # push *edx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # var payload/eax: (addr int) = lookup(h)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # push *(edx+4)
+    ff          6/subop/push        0/mod/indirect  2/rm32/edx    .           .             .           .           .               .                 # push *edx
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(payload->size, 0xc, msg)
+    # . . push args
+    68/push  "F - test-copy-array: sets array size in payload"/imm32
+    68/push  0xc/imm32
+    ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(*Next-alloc-id, 0x35, msg)
+    # . . push args
+    68/push  "F - test-copy-array: increments Next-alloc-id"/imm32
+    68/push  0x35/imm32
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32              # push *Next-alloc-id
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(ad->curr - expected-payload, 12 + 4 for alloc-id + 4 for size, msg)
+    # . . push args
+    68/push  "F - test-copy-array: updates allocation descriptor"/imm32
+    68/push  0x14/imm32
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # subtract ebx from eax
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # clean up
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  1/imm32     # copy to *Next-alloc-id
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# Fill a region of memory with zeroes.
+zero-out:  # start: (addr byte), size: int
+    # pseudocode:
+    #   curr/esi = start
+    #   i/ecx = 0
+    #   while true
+    #     if (i >= size) break
+    #     *curr = 0
+    #     ++curr
+    #     ++i
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # curr/esi = start
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # var i/ecx: int = 0
+    31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
+    # edx = size
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
+$zero-out:loop:
+    # if (i >= size) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+    7d/jump-if->=  $zero-out:end/disp8
+    # *curr = 0
+    c6          0/subop/copy-byte   0/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm8            # copy byte to *esi
+    # ++curr
+    46/increment-esi
+    # ++i
+    41/increment-ecx
+    eb/jump  $zero-out:loop/disp8
+$zero-out:end:
+    # . restore registers
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-zero-out:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # region/ecx = 34, 35, 36, 37
+    68/push  0x37363534/imm32
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # zero-out(ecx, 3)
+    # . . push args
+    68/push  3/imm32/size
+    51/push-ecx
+    # . . call
+    e8/call  zero-out/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # first 3 bytes cleared, fourth left alone
+    # . check-ints-equal(*ecx, 0x37000000, msg)
+    # . . push args
+    68/push  "F - test-zero-out"/imm32
+    68/push  0x37000000/imm32
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# . . vim:nowrap:textwidth=0

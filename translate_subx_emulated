@@ -1,22 +1,38 @@
 #!/bin/sh
-# Translate given SubX files by running the self-hosted translator in emulated
-# mode on Linux or BSD or Mac.
+# Translate SubX files to a bootable disk image.
 #
-# We _could_ generate traces here, but that's often extremely slow.
+# This script uses emulation, so it does not require x86 or Linux. However it
+# is slow.
 
 set -e
+set -v
 
-./build
+cat $*            |linux/bootstrap/bootstrap run linux/braces             > a.braces
 
-cat $*          |./bootstrap_bin run apps/braces      > a.braces
-cat a.braces    |./bootstrap_bin run apps/calls       > a.calls
-cat a.calls     |./bootstrap_bin run apps/sigils      > a.sigils
-cat a.sigils    |./bootstrap_bin run apps/tests       > a.tests
-cat a.tests     |./bootstrap_bin run apps/assort      > a.assort
-cat a.assort    |./bootstrap_bin run apps/dquotes     > a.dquotes
-cat a.dquotes   |./bootstrap_bin run apps/assort      > a.assort2
-cat a.assort2   |./bootstrap_bin run apps/pack        > a.pack
-cat a.pack      |./bootstrap_bin run apps/survey_elf  > a.survey
-cat a.survey    |./bootstrap_bin run apps/hex         > a.elf
+cat a.braces      |linux/bootstrap/bootstrap run linux/calls              > a.calls
 
-chmod +x a.elf
+cat a.calls       |linux/bootstrap/bootstrap run linux/sigils             > a.sigils
+
+cat a.sigils      |linux/bootstrap/bootstrap run linux/tests              > a.tests
+
+# no assort since baremetal SubX doesn't have segments yet
+
+cat a.tests       |linux/bootstrap/bootstrap run linux/dquotes            > a.dquotes
+
+cat a.dquotes     |linux/bootstrap/bootstrap run linux/pack               > a.pack
+
+cat a.pack        |linux/bootstrap/bootstrap run linux/survey_baremetal   > a.survey
+
+cat a.survey      |linux/bootstrap/bootstrap run linux/hex                > a.bin
+
+# Create disk.img containing boot.hex and a.bin
+dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
+linux/bootstrap/bootstrap run linux/hex < boot.hex  > boot.bin
+cat boot.bin a.bin > disk.bin
+dd if=disk.bin of=disk.img conv=notrunc
+
+if [ `stat --printf="%s" disk.bin` -ge 193536 ]  # 6 tracks * 63 sectors per track * 512 bytes per sector (keep this sync'd with boot.hex)
+then
+  echo "disk.bin won't all be loaded on boot"
+  exit 1
+fi

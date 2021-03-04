@@ -98,10 +98,10 @@ $write-to-stream:end:
     c3/return
 
 $write-to-stream:abort:
-    (write-buffered Stderr "write-to-stream: stream full\n")
-    (flush Stderr)
-    bb/copy-to-ebx 1/imm32
-    (syscall_exit)
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "write-to-stream: stream full" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
 
 read-from-stream:  # s: (addr stream _), out: (addr byte), n: int
@@ -151,10 +151,10 @@ $read-from-stream:end:
     c3/return
 
 $read-from-stream:abort:
-    (write-buffered Stderr "read-from-stream: stream empty\n")
-    (flush Stderr)
-    bb/copy-to-ebx 1/imm32
-    (syscall_exit)
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "read-from-stream: stream empty" 3 0)  # 3=cyan
+    {
+      eb/jump loop/disp8
+    }
     # never gets here
 
 stream-first:  # s: (addr stream byte) -> result/eax: byte

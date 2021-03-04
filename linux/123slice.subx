@@ -1,0 +1,1220 @@
+# new data structure: a slice is an open interval of addresses [start, end)
+# that includes 'start' but not 'end'
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+slice-empty?:  # s: (addr slice) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    # ecx = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # if (s->start >= s->end) return true
+    # . eax = s->start
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
+    # . if (eax >= s->end) return true
+    3b/compare                      1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # compare eax with *(ecx+4)
+    b8/copy-to-eax  1/imm32/true
+    73/jump-if-addr>=  $slice-empty?:end/disp8
+    b8/copy-to-eax  0/imm32/false
+$slice-empty?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-empty-true:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var slice/ecx: slice = {34, 34}
+    68/push  34/imm32/end
+    68/push  34/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # slice-empty?(slice)
+    # . . push args
+    51/push-ecx
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(eax, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-empty-true"/imm32
+    68/push  1/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-empty-false:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var slice/ecx: slice = {32, 34}
+    68/push  34/imm32/end
+    68/push  32/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # slice-empty?(slice)
+    # . . push args
+    51/push-ecx
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-empty-false"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-empty-if-start-greater-than-end:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var slice/ecx: slice = {34, 32}
+    68/push  32/imm32/end
+    68/push  34/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # slice-empty?(slice)
+    # . . push args
+    51/push-ecx
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(eax, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-empty-if-start-greater-than-end"/imm32
+    68/push  1/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+slice-equal?:  # s: (addr slice), p: (addr array byte) -> result/eax: boolean
+    # pseudocode:
+    #   if (p == 0) return (s == 0)
+    #   currs = s->start
+    #   maxs = s->end
+    #   if (maxs - currs != p->size) return false
+    #   currp = p->data
+    #   while currs < maxs
+    #     if (*currs != *currp) return false
+    #     ++currs
+    #     ++currp
+    #   return true
+    #
+    # registers:
+    #   currs: edx
+    #   maxs: esi
+    #   currp: ebx
+    #   *currs: eax
+    #   *currp: ecx
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # var currs/edx: (addr byte) = s->start
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    # var maxs/esi: (addr byte) = s->end
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
+    # var ssize/eax: int = maxs - currs
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           6/r32/esi   .               .                 # copy esi to eax
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # subtract edx from eax
+    # ebx = p
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   0xc/disp8       .                 # copy *(ebp+12) to ebx
+    # if (p != 0) goto next check
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
+    75/jump-if-!=  $slice-equal?:nonnull-string/disp8
+$slice-equal?:null-string:
+    # return s->start == s->end
+    3d/compare-eax-and  0/imm32
+    74/jump-if-=  $slice-equal?:true/disp8
+    eb/jump  $slice-equal?:false/disp8
+$slice-equal?:nonnull-string:
+    # if (ssize != p->size) return false
+    39/compare                      0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # compare *ebx and eax
+    75/jump-if-!=  $slice-equal?:false/disp8
+    # var currp/ebx: (addr byte) = p->data
+    81          0/subop/add         3/mod/direct    3/rm32/ebx    .           .             .           .           .               4/imm32           # add to ebx
+    # var c1/eax: byte = 0
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    # var c2/ecx: byte = 0
+    31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
+$slice-equal?:loop:
+    # if (currs >= maxs) return true
+    39/compare                      3/mod/direct    2/rm32/edx    .           .             .           6/r32/esi   .               .                 # compare edx with esi
+    73/jump-if-addr>=  $slice-equal?:true/disp8
+    # c1 = *currp
+    8a/copy-byte                    0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/AL    .               .                 # copy byte at *ebx to AL
+    # c2 = *currs
+    8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           1/r32/CL    .               .                 # copy byte at *edx to CL
+    # if (c1 != c2) return false
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax and ecx
+    75/jump-if-!=  $slice-equal?:false/disp8
+    # ++currp
+    43/increment-ebx
+    # ++currs
+    42/increment-edx
+    eb/jump $slice-equal?:loop/disp8
+$slice-equal?:false:
+    b8/copy-to-eax  0/imm32
+    eb/jump  $slice-equal?:end/disp8
+$slice-equal?:true:
+    b8/copy-to-eax  1/imm32
+$slice-equal?:end:
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-equal:
+    # - slice-equal?(slice("Abc"), "Abc") == 1
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-equal?(ecx, "Abc")
+    # . . push args
+    68/push  "Abc"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-equal"/imm32
+    68/push  1/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-equal-false:
+    # - slice-equal?(slice("bcd"), "Abc") == 0
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "bcd"
+    b8/copy-to-eax  "bcd"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-equal?(ecx, "Abc")
+    # . . push args
+    68/push  "Abc"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-equal-false"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-equal-too-long:
+    # - slice-equal?(slice("Abcd"), "Abc") == 0
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Abcd"
+    b8/copy-to-eax  "Abcd"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-equal?(ecx, "Abc")
+    # . . push args
+    68/push  "Abc"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-equal-too-long"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-equal-too-short:
+    # - slice-equal?(slice("A"), "Abc") == 0
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "A"
+    b8/copy-to-eax  "A"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-equal?(ecx, "Abc")
+    # . . push args
+    68/push  "Abc"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-equal-too-short"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-equal-empty:
+    # - slice-equal?(slice(""), "Abc") == 0
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var slice/ecx: slice
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-equal?(ecx, "Abc")
+    # . . push args
+    68/push  "Abc"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-equal-empty"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-equal-with-empty:
+    # - slice-equal?(slice("Ab"), "") == 0
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Ab"
+    b8/copy-to-eax  "Ab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-equal?(ecx, "")
+    # . . push args
+    68/push  ""/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-equal-with-empty"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-equal-empty-with-empty:
+    # - slice-equal?(slice(""), "") == 1
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var slice/ecx: slice
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-equal?(ecx, "")
+    # . . push args
+    68/push  ""/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-equal-empty-with-empty"/imm32
+    68/push  1/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-equal-with-null:
+    # - slice-equal?(slice("Ab"), null) == 0
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Ab"
+    b8/copy-to-eax  "Ab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-equal?(ecx, 0)
+    # . . push args
+    68/push  0/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-equal-with-null"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+slice-starts-with?:  # s: (addr slice), head: (addr array byte) -> result/eax: boolean
+    # pseudocode
+    #   hsize = head->size
+    #   if (hsize > s->end - s->start) return false
+    #   i = 0
+    #   currs = s->start
+    #   currp = head->data
+    #   while i < hsize
+    #     if (*currs != *currh) return false
+    #     ++i
+    #     ++currs
+    #     ++currh
+    #   return true
+    #
+    # registers:
+    #   currs: esi
+    #   currh: edi
+    #   *currs: eax
+    #   *currh: ebx
+    #   i: ecx
+    #   hsize: edx
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # var lens/ecx: int = s->end - s->start
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    2b/subtract                     0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # subtract *esi from ecx
+    # edi = head
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
+    # var hsize/edx: int = head->size
+    8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # copy *edi to edx
+    # if (hsize > lens) return false
+    39/compare                      3/mod/direct    2/rm32/edx    .           .             .           1/r32/ecx   .               .                 # compare edx with ecx
+    7f/jump-if->  $slice-starts-with?:false/disp8
+    # var currs/esi: (addr byte) = s->start
+    8b/subtract                     0/mod/indirect  6/rm32/esi    .           .             .           6/r32/esi   .               .                 # copy *esi to esi
+    # var currh/edi: (addr byte) = head->data
+    81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               4/imm32           # add to edi
+    # var i/ecx: int = 0
+    31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
+    # var c1/eax: byte = 0
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    # var c2/ebx: byte = 0
+    31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
+$slice-starts-with?:loop:
+    # if (i >= hsize) return true
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+    7d/jump-if->=  $slice-starts-with?:true/disp8
+    # c1 = *currs
+    8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
+    # c2 = *currh
+    8a/copy-byte                    0/mod/indirect  7/rm32/edi    .           .             .           3/r32/BL    .               .                 # copy byte at *edi to BL
+    # if (c1 != c2) return false
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # compare eax and ebx
+    75/jump-if-!=  $slice-starts-with?:false/disp8
+    # ++i
+    41/increment-ecx
+    # ++currs
+    46/increment-esi
+    # ++currh
+    47/increment-edi
+    eb/jump $slice-starts-with?:loop/disp8
+$slice-starts-with?:true:
+    b8/copy-to-eax  1/imm32
+    eb/jump  $slice-starts-with?:end/disp8
+$slice-starts-with?:false:
+    b8/copy-to-eax  0/imm32
+$slice-starts-with?:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-starts-with-single-character:
+    # - slice-starts-with?(slice("Abc"), "A") == 1
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-starts-with?(ecx, "A")
+    # . . push args
+    68/push  "A"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-starts-with?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-starts-with-single-character"/imm32
+    68/push  1/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-starts-with-empty-string:
+    # - slice-starts-with?(slice("Abc"), "") == 1
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-starts-with?(ecx, "")
+    # . . push args
+    68/push  ""/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-starts-with?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-starts-with-empty-string"/imm32
+    68/push  1/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-starts-with-multiple-characters:
+    # - slice-starts-with?(slice("Abc"), "Ab") == 1
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-starts-with?(ecx, "Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-starts-with?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-starts-with-multiple-characters"/imm32
+    68/push  1/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-starts-with-entire-string:
+    # - slice-starts-with?(slice("Abc"), "Abc") == 1
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-starts-with?(ecx, "Abc")
+    # . . push args
+    68/push  "Abc"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-starts-with?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-starts-with-entire-string"/imm32
+    68/push  1/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-starts-with-fails:
+    # - slice-starts-with?(slice("Abc"), "Abd") == 1
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-starts-with?(ecx, "Abd")
+    # . . push args
+    68/push  "Abd"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-starts-with?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-starts-with-fails"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-slice-starts-with-fails-2:
+    # - slice-starts-with?(slice("Abc"), "Ac") == 1
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = slice-starts-with?(ecx, "Ac")
+    # . . push args
+    68/push  "Ac"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-starts-with?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-starts-with-fails-2"/imm32
+    68/push  0/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# write a slice to a stream
+# abort if the stream doesn't have enough space
+write-slice:  # out: (addr stream byte), s: (addr slice)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
+    # var curr/ecx: (addr byte) = s->start
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+    # var max/esi: (addr byte) = s->end
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
+    # edi = out
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
+    # edx = out->size
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # copy *(edi+8) to edx
+    # ebx = out->write
+    8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           3/r32/ebx   .               .                 # copy *edi to ebx
+$write-slice:loop:
+    # if (curr >= max) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # compare ecx with esi
+    73/jump-if-addr>=  $write-slice:loop-end/disp8
+    # if (out->write >= out->size) abort
+    39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx with edx
+    7d/jump-if->=  $write-slice:abort/disp8
+    # out->data[out->write] = *in
+    # . AL = *in
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
+    # . out->data[out->write] = AL
+    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/edi  3/index/ebx   .           0/r32/AL    0xc/disp8       .                 # copy AL to *(edi+ebx+12)
+    # ++out->write
+    43/increment-ebx
+    # ++in
+    41/increment-ecx
+    eb/jump  $write-slice:loop/disp8
+$write-slice:loop-end:
+    # persist out->write
+    89/copy                         0/mod/indirect  7/rm32/edi    .           .             .           3/r32/ebx   .               .                 # copy ebx to *edi
+$write-slice:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$write-slice:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "write-slice: out of space"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
+test-write-slice:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # write-slice(_test-stream, slice)
+    # . . push args
+    51/push-ecx
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-stream-equal(_test-stream, "Abc", msg)
+    # . . push args
+    68/push  "F - test-write-slice"/imm32
+    68/push  "Abc"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# write a slice to a buffered-file
+write-slice-buffered:  # out: (addr buffered-file), s: (addr slice)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
+    # var curr/ecx: (addr byte) = s->start
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+    # var max/esi: (addr byte) = s->end
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
+    # edi = out
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
+    # edx = out->size
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(edi+12) to edx
+    # ebx = out->write
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy *(edi+4) to ebx
+$write-slice-buffered:loop:
+    # if (curr >= max) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # compare ecx with esi
+    73/jump-if-addr>=  $write-slice-buffered:loop-end/disp8
+    # if (out->write >= out->size) flush and clear out's stream
+    39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx with edx
+    7c/jump-if-<  $write-slice-buffered:to-stream/disp8
+    # . persist out->write
+    89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy ebx to *(edi+4)
+    # . flush(out)
+    # . . push args
+    57/push-edi
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(stream = out+4)
+    # . . push args
+    8d/copy-address                 1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   4/disp8         .                 # copy edi+4 to eax
+    50/push-eax
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . out->write must now be 0; update its cache at ebx
+    31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
+$write-slice-buffered:to-stream:
+    # out->data[out->write] = *in
+    # . AL = *in
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
+    # . out->data[out->write] = AL
+    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/edi  3/index/ebx   .           0/r32/AL    0x10/disp8      .                 # copy AL to *(edi+ebx+16)
+    # ++out->write
+    43/increment-ebx
+    # ++in
+    41/increment-ecx
+    eb/jump  $write-slice-buffered:loop/disp8
+$write-slice-buffered:loop-end:
+    # persist necessary variables from registers
+    89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy ebx to *(edi+4)
+$write-slice-buffered:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-write-slice-buffered:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream($_test-buffered-file->buffer)
+    # . . push args
+    68/push  $_test-buffered-file->buffer/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # write-slice-buffered(_test-buffered-file, slice)
+    # . . push args
+    51/push-ecx
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  write-slice-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # flush(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-stream-equal(_test-stream, "Abc", msg)
+    # . . push args
+    68/push  "F - test-write-slice-buffered"/imm32
+    68/push  "Abc"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# copy a slice into a new (dynamically allocated) string
+slice-to-string:  # ad: (addr allocation-descriptor), in: (addr slice), out: (addr handle array byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
+    # var curr/edx: (addr byte) = in->start
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    # var max/ebx: (addr byte) = in->end
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           3/r32/ebx   4/disp8         .                 # copy *(esi+4) to ebx
+    # var size/ecx: int = max - curr + 4  # total size of output string (including the initial 'size' field)
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # copy ebx to ecx
+    29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # subtract edx from ecx
+    81          0/subop/add         3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # add to ecx
+    # allocate(ad, size, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    51/push-ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = out->payload
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           0/r32/eax   4/disp8         .                 # copy *(eax+4) to eax
+    # skip payload->allocid
+    05/add-to-eax  4/imm32
+    # if (eax == 0) abort
+    3d/compare-eax-and  0/imm32
+    74/jump-if-=  $slice-to-string:abort/disp8
+    # out->size = size-4
+    89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to *eax
+    81          5/subop/subtract    0/mod/indirect  0/rm32/eax    .           .             .           .           .               4/imm32           # subtract 4 from *eax
+    # save out
+    50/push-eax
+$slice-to-string:initialize:
+    # eax = _append-4(eax+4, eax+size, curr, max)  # clobbering ecx
+    # . . push args
+    53/push-ebx
+    52/push-edx
+    # . . push eax+size (clobbering ecx)
+    01/add                          3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # add eax to ecx
+    51/push-ecx
+    # . . push eax+4 (clobbering eax)
+    81          0/subop/add         3/mod/direct    0/rm32/eax    .           .             .           .           .               4/imm32           # add to eax
+    50/push-eax
+    # . . call
+    e8/call  _append-4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # restore out (assumes _append-4 can't error)
+    58/pop-to-eax
+$slice-to-string:end:
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$slice-to-string:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "slice-to-string: out of space\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
+test-slice-to-string:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var heap/edx: allocation-descriptor
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # heap = new-segment(512)
+    # . . push args
+    52/push-edx
+    68/push  0x200/imm32
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # (eax..ecx) = "Abc"
+    b8/copy-to-eax  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
+    05/add-to-eax  4/imm32
+    # var slice/ecx: slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # var h/ebx: (handle array byte)
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
+    # slice-to-string(heap, slice, h)
+    # . . push args
+    53/push-ebx
+    51/push-ecx
+    52/push-edx
+    # . . call
+    e8/call  slice-to-string/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = h->payload
+    8b/copy                         1/mod/*+disp8   3/rm32/ebx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ebx+4) to eax
+    # skip payload->allocid
+    05/add-to-eax  4/imm32
+#?     # dump eax {{{
+#?     # . write(2/stderr, "AA: ")
+#?     # . . push args
+#?     68/push  "AA: "/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write(2/stderr, eax)
+#?     # . . push args
+#?     50/push-eax
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # }}}
+    # eax = string-equal?(eax, "Abc")
+    # . . push args
+    68/push  "Abc"/imm32
+    50/push-eax
+    # . . call
+    e8/call  string-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(eax, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-to-string"/imm32
+    68/push  1/imm32/true
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x18/imm32        # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# . . vim:nowrap:textwidth=0

@@ -1,0 +1,21 @@
+#!/bin/sh
+# Translate given SubX files by running the self-hosted translator in emulated
+# mode on Linux or BSD or Mac.
+#
+# We _could_ generate traces here, but that's often extremely slow.
+
+set -e
+set -v
+
+cat $*              |bootstrap/bootstrap run ./braces       > a.braces
+cat a.braces        |bootstrap/bootstrap run ./calls        > a.calls
+cat a.calls         |bootstrap/bootstrap run ./sigils       > a.sigils
+cat a.sigils        |bootstrap/bootstrap run ./tests        > a.tests
+cat a.tests         |bootstrap/bootstrap run ./assort       > a.assort
+cat a.assort        |bootstrap/bootstrap run ./dquotes      > a.dquotes
+cat a.dquotes       |bootstrap/bootstrap run ./assort       > a.assort2
+cat a.assort2       |bootstrap/bootstrap run ./pack         > a.pack
+cat a.pack          |bootstrap/bootstrap run ./survey_elf   > a.survey
+cat a.survey        |bootstrap/bootstrap run ./hex          > a.elf
+
+chmod +x a.elf
