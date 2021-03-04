@@ -29,7 +29,7 @@ rudimentary but hopefully still workable toolkit:
   ```
   $ cd linux
   $ ./translate_subx_debug file1.subx file2.subx ...  # generating a.elf
-  $ ./bootstrap --trace run a.elf arg1 arg2
+  $ bootstrap/bootstrap --trace run a.elf arg1 arg2
   saving trace to 'last_run'
   ```
 

@@ -200,8 +200,7 @@ If you're still reading, here are some more things to check out:
 
 - [Commandline reference for the bootstrap C++ program.](bootstrap.md)
 
-- The [list of x86 opcodes](subx_opcodes) supported in SubX: `./bootstrap
-  help opcodes`.
+- The [list of x86 opcodes](subx_opcodes) supported in SubX: `linux/bootstrap/bootstrap help opcodes`.
 
 - [Some details on the unconventional organization of this project.](http://akkartik.name/post/four-repos)
 
