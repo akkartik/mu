@@ -7,6 +7,8 @@ Mu is not designed to operate in large clusters providing services for
 millions of people. Mu is designed for _you_, to run one computer. (Or a few.)
 Running the code you want to run, and nothing else.
 
+Here's the Mu computer running [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
+
 ```sh
 $ git clone https://github.com/akkartik/mu
 $ cd mu
