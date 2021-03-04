@@ -29,13 +29,14 @@ compatibility with the past. ([More details.](http://akkartik.name/akkartik-conv
 Tests are a key mechanism here for creating a computer that others can make
 their own. I want to encourage a style of active and interactive reading with
 Mu. If something doesn't make sense, try changing it and see what tests break.
-Any breaking change should break some well-named test somewhere. Consequently,
-any manual test should be easy to turn into a reproducible automated test. Mu
-is a testbed for providing this guarantee. It exposes testable interfaces for
-hardware using dependency injection so that tests can run on -- and make
-assertions against -- fake hardware. It also is an experiment in [automated
-white-box testing](http://akkartik.name/post/tracing-tests) which promises
-robust tests for performance, concurrency, fault-tolerance, etc.
+Any breaking change should break some well-named test somewhere. This requirement
+implies that any manual test should be easy to turn into a reproducible
+automated test. Mu is a testbed for providing this guarantee. It exposes
+testable interfaces for hardware using dependency injection so that tests can
+run on -- and make assertions against -- fake hardware. It also is an experiment
+in [automated white-box testing](http://akkartik.name/post/tracing-tests)
+which promises robust tests for performance, concurrency, fault-tolerance,
+etc.
 
 Currently Mu requires a 32-bit x86 processor.
 
