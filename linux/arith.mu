@@ -7,7 +7,7 @@
 #   No division yet.
 #
 # To build:
-#   $ ./translate_mu apps/arith.mu
+#   $ ./translate arith.mu
 #
 # Example session:
 #   $ ./a.elf

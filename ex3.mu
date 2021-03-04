@@ -2,7 +2,7 @@
 # and in raster order.
 #
 # To build a disk image:
-#   ./translate_mu_baremetal baremetal/ex3.mu     # emits disk.img
+#   ./translate ex3.mu                            # emits disk.img
 # To run:
 #   qemu-system-i386 disk.img
 # Or:

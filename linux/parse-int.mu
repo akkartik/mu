@@ -1,7 +1,7 @@
 # parse a decimal int at the commandline
 #
 # To run:
-#   $ ./translate_mu apps/parse-int.mu
+#   $ ./translate parse-int.mu
 #   $ ./a.elf 123
 #   $ echo $?
 #   123

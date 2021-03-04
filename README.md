@@ -93,7 +93,7 @@ Mu programs build natively either on Linux or on Windows using [WSL 2](https://d
 For Macs and other Unix-like systems, use the (much slower) emulator:
 
 ```sh
-$ ./translate_mu_emulated ex2.mu  # ~2 mins to emit disk.img
+$ ./translate_emulated ex2.mu  # ~2 mins to emit disk.img
 ```
 
 Mu programs can be written for two very different environments:

@@ -4,7 +4,7 @@
 #   Division not implemented yet.
 #
 # To build:
-#   $ ./translate_mu_baremetal baremetal/rpn.mu
+#   $ ./translate rpn.mu
 #
 # Example session:
 #   $ qemu-system-i386 disk.img

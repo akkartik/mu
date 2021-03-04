@@ -1,7 +1,7 @@
 # Add the first 10 numbers, and return the result in the exit code.
 #
 # To run:
-#   $ ./translate_mu apps/browse.mu
+#   $ ./translate browse.mu
 #   $ ./a.elf
 # Expected result:
 #   $ echo $?

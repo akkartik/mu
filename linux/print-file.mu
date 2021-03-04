@@ -2,7 +2,7 @@
 # only ascii right now, just like the rest of Mu
 #
 # To run:
-#   $ ./translate_mu apps/print-file.mu
+#   $ ./translate print-file.mu
 #   $ echo abc > x
 #   $ ./a.elf x
 #   abc

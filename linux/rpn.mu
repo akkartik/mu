@@ -4,7 +4,7 @@
 #   No division yet.
 #
 # To build:
-#   $ ./translate_mu apps/rpn.mu
+#   $ ./translate rpn.mu
 #
 # Example session:
 #   $ ./a.elf

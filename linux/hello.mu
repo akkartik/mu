@@ -1,7 +1,7 @@
 # Meaningless conventional example.
 #
 # To run:
-#   $ ./translate_mu apps/hello.mu
+#   $ ./translate hello.mu
 #   $ ./a.elf
 
 fn main -> _/ebx: int {

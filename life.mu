@@ -1,7 +1,7 @@
 # Conway's Game of Life
 #
 # To build:
-#   $ ./translate_mu_baremetal baremetal/life.mu
+#   $ ./translate life.mu
 # To run:
 #   $ qemu-system-i386 disk.img
 

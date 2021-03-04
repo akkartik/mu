@@ -3,7 +3,8 @@ Render a subset of Markdown.
 To run:
 
   ```
-  $ ./translate_mu apps/browse.mu
+  $ cd linux
+  $ ./translate browse.mu
   $ ./a.elf __text_file__
   ```
 

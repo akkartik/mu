@@ -367,13 +367,6 @@ fn test-shift-left-bytes-5 {
   check-ints-equal result, 0, "F - shift-left-bytes >4"
 }
 
-# To run all tests, uncomment this and run:
-#   $ ./translate_mu  &&  ./a.elf
-#? fn main -> _/ebx: int {
-#?   run-tests
-#?   r <- copy 0
-#? }
-
 # write a grapheme to a stream of bytes
 # this is like write-to-stream, except we skip leading 0 bytes
 fn write-grapheme out: (addr stream byte), g: grapheme {

@@ -1,7 +1,7 @@
 # Test some primitives for text-mode.
 #
 # To run:
-#   $ ./translate_mu apps/tui.mu
+#   $ ./translate tui.mu
 #   $ ./a.elf
 
 fn main -> _/ebx: int {

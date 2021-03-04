@@ -1,7 +1,7 @@
 # compute the factorial of 5, and return the result in the exit code
 #
 # To run:
-#   $ ./translate_mu apps/factorial.mu
+#   $ ./translate factorial.mu
 #   $ ./a.elf
 #   $ echo $?
 #   120

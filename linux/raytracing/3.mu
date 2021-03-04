@@ -3,7 +3,7 @@
 # To run (on Linux):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu apps/raytracing/3.mu
+#   $ ./translate raytracing/3.mu
 #   $ ./a.elf > 3.ppm
 
 fn ray-color _in: (addr ray), _out: (addr rgb) {

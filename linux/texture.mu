@@ -3,7 +3,7 @@
 # To run (on Linux):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu apps/texture.mu
+#   $ ./translate texture.mu
 #   $ ./a.elf > a.ppm
 
 fn main -> _/ebx: int {

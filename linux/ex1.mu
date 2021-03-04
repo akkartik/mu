@@ -2,7 +2,7 @@
 # Universe, and Everything.
 #
 # To run:
-#   $ ./translate_mu apps/ex1.mu
+#   $ ./translate ex1.mu
 #   $ ./a.elf
 # Expected result:
 #   $ echo $?

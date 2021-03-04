@@ -1,7 +1,7 @@
 # Unnecessarily use an array to sum 1..10
 #
 # To run:
-#   $ ./translate_mu apps/ex3.2.mu
+#   $ ./translate ex3.2.mu
 #   $ ./a.elf
 #   $ echo $?
 #   55

@@ -1,7 +1,7 @@
 # Drawing ASCII text incrementally.
 #
 # To build a disk image:
-#   ./translate_mu_baremetal baremetal/ex6.mu     # emits disk.img
+#   ./translate ex6.mu                            # emits disk.img
 # To run:
 #   qemu-system-i386 disk.img
 # Or:

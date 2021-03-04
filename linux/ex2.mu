@@ -1,7 +1,7 @@
 # Add 3 and 4, and return the result in the exit code.
 #
 # To run:
-#   $ ./translate_mu apps/ex2.mu
+#   $ ./translate ex2.mu
 #   $ ./a.elf
 # Expected result:
 #   $ echo $?

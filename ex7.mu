@@ -1,7 +1,7 @@
 # Cursor-based motions.
 #
 # To build a disk image:
-#   ./translate_mu_baremetal baremetal/ex7.mu     # emits disk.img
+#   ./translate ex7.mu                            # emits disk.img
 # To run:
 #   qemu-system-i386 disk.img
 # Or:

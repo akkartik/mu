@@ -1,7 +1,7 @@
 # Test out the video mode by filling in the screen with pixels.
 #
 # To build a disk image:
-#   ./translate_mu_baremetal baremetal/ex2.mu     # emits disk.img
+#   ./translate ex2.mu                            # emits disk.img
 # To run:
 #   qemu-system-i386 disk.img
 # Or:

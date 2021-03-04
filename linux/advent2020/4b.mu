@@ -3,7 +3,7 @@
 # To run (on Linux):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu apps/advent2020/4b.mu
+#   $ ./translate advent2020/4b.mu
 #   $ ./a.elf < input
 #
 # You'll need to register to download the 'input' file for yourself.

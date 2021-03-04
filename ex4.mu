@@ -1,7 +1,7 @@
 # Draw a character using the built-in font (GNU unifont)
 #
 # To build a disk image:
-#   ./translate_mu_baremetal baremetal/ex4.mu     # emits disk.img
+#   ./translate ex4.mu                            # emits disk.img
 # To run:
 #   qemu-system-i386 disk.img
 # Or:

@@ -3,7 +3,7 @@
 # To run (on Linux):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu apps/advent2020/1a.mu
+#   $ ./translate advent2020/1a.mu
 #   $ ./a.elf < input
 #   found
 #   1353 667

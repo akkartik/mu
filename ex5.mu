@@ -2,7 +2,7 @@
 # Also demonstrates bounds-checking _before_ drawing.
 #
 # To build a disk image:
-#   ./translate_mu_baremetal baremetal/ex5.mu     # emits disk.img
+#   ./translate ex5.mu                            # emits disk.img
 # To run:
 #   qemu-system-i386 disk.img
 # Or:

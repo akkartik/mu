@@ -5,20 +5,21 @@ A programming environment that tries to [&ldquo;stop drawing dead fish&rdquo;](h
 To run:
 
 ```
-./translate_mu apps/tile/*.mu
-./a.elf screen
+$ cd linux
+$ ./translate tile/*.mu
+$ ./a.elf screen
 ```
 
 To run tests:
 
 ```
-./a.elf test
+$ ./a.elf test
 ```
 
 To run a conventional REPL (for debugging):
 
 ```
-./a.elf type
+$ ./a.elf type
 ```
 
 ## hacking

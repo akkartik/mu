@@ -4,7 +4,7 @@
 # To run (on Linux):
 #   $ git clone https://github.com/akkartik/mu
 #   $ cd mu
-#   $ ./translate_mu apps/raytracing/1.mu
+#   $ ./translate raytracing/1.mu
 #   $ ./a.elf > 1.ppm
 
 fn main -> _/ebx: int {

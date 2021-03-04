@@ -1,10 +1,11 @@
 ### A debugging helper that lets you zoom in/out on a trace.
 
-To try it out, first create an example trace (from the top-level `mu/`
-directory):
+To try it out, first create an example trace:
 
   ```shell
-  ./subx --trace run apps/factorial
+  $ cd linux
+  $ bootstrap/bootstrap translate [01]*.subx factorial.subx -o factorial
+  $ bootstrap/bootstrap --trace run factorial
   ```
 
 This command will save a trace of its execution in a file called `last_run`.
@@ -14,7 +15,8 @@ and a single-word 'label', followed by a colon and whitespace.
 Now browse this trace:
 
   ```shell
-  tools/browse_trace last_run
+  $ cd ..
+  $ tools/browse_trace linux/last_run
   ```
 
 You should now find yourself in a UI showing a subsequence of lines from the
