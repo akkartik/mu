@@ -21,8 +21,9 @@ Here's a test Mu program that prints out the bits for 0.5:
 It gives different results when emulated and run natively:
 
   ```
-  $ ./translate_mu_debug x.mu  # debug mode = error checking
-  $ ./bootstrap run a.elf
+  $ cd linux
+  $ ./translate_debug x.mu  # debug mode = error checking
+  $ bootstrap/bootstrap run a.elf
   0x3f000000  # correct
   $ ./a.elf
   0x3efff000  # wrong

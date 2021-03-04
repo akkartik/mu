@@ -10,17 +10,32 @@ Running the code you want to run, and nothing else.
 ```sh
 $ git clone https://github.com/akkartik/mu
 $ cd mu
-$ ./translate_mu apps/ex2.mu  # emit a.elf
-$ ./a.elf  # add 3 and 4
-$ echo $?
-7
+$ ./translate life.mu  # emit a bootable disk.img
+$ qemu-system-i386 disk.img
 ```
+
+<img alt='screenshot of Game of Life running on the Mu computer' src='html/baremetal-life.png'>
+
+([Colorized sources.](http://akkartik.github.io/mu/html/baremetal/life.mu.html)
+This is memory-safe code, and most statements map to a single instruction of
+machine code.)
 
 Rather than start from some syntax and introduce layers of translation to
 implement it, Mu starts from the processor's instruction set and tries to get
 to _some_ safe and clear syntax with as few layers of translation as possible.
 The emphasis is on internal consistency at any point in time rather than
 compatibility with the past. ([More details.](http://akkartik.name/akkartik-convivial-20200607.pdf))
+
+Tests are a key mechanism here for creating a computer that others can make
+their own. I want to encourage a style of active and interactive reading with
+Mu. If something doesn't make sense, try changing it and see what tests break.
+Any breaking change should break some well-named test somewhere. Consequently,
+any manual test should be easy to turn into a reproducible automated test. Mu
+is a testbed for providing this guarantee. It exposes testable interfaces for
+hardware using dependency injection so that tests can run on -- and make
+assertions against -- fake hardware. It also is an experiment in [automated
+white-box testing](http://akkartik.name/post/tracing-tests) which promises
+robust tests for performance, concurrency, fault-tolerance, etc.
 
 Currently Mu requires a 32-bit x86 processor.
 
@@ -60,7 +75,7 @@ In priority order:
 ## Toolchain
 
 The Mu stack consists of:
-- the Mu type-safe language;
+- the Mu type-safe and memory-safe language;
 - SubX, an unsafe notation for a subset of x86 machine code; and
 - _bare_ SubX, a more rudimentary form of SubX without certain syntax sugar.
 
@@ -72,38 +87,31 @@ emulator for Mu's supported subset of x86, that's useful for [debugging SubX
 programs](subx_debugging.md).
 
 Mu programs build natively either on Linux or on Windows using [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
-For Macs and other Unix-like systems, use the emulator:
+For Macs and other Unix-like systems, use the (much slower) emulator:
 
 ```sh
-$ ./translate_mu_emulated apps/ex2.mu  # ~2 mins to emit a.elf
-$ ./bootstrap run ./a.elf  # run in the emulator
-$ echo $?
+$ ./translate_mu_emulated ex2.mu  # ~2 mins to emit disk.img
 ```
 
 Mu programs can be written for two very different environments:
 
-* With just a Linux kernel. This is the environment that Mu bootstraps itself
-  into, and it's the option for programming with stdin, stdout and file
-  descriptors.
+* At the top-level, Mu programs emit a bootable image that runs without an OS
+  (under emulation; I haven't tested on native hardware yet). There's just a
+  screen and a keyboard, and that's it. No mouse, no hardware acceleration, no
+  virtual memory, no process separation, no multi-tasking, no persistent
+  storage, no network.
 
-* Without an OS, by interacting directly with the screen and keyboard. This
-  is the option for rudimentary pixel graphics. There's currently no mouse, no
-  hardware acceleration, no virtual memory, no process separation, no multi-tasking,
-  no persistent storage, no network. These programs have not yet been tested
-  on native hardware, only on on Qemu and Bochs. But these _baremetal_
-  programs build from scratch, without any reliance on C. This is the future.
-  Here is Conway's Game of Life on Mu:
+* The top-level is built using tools created under the linux/ sub-directory.
+  This sub-directory contains an entirely separate set of standard libraries
+  intended for building programs that run with just a Linux kernel, reading
+  from stdin and writing to stdout. The Mu compiler is such a program, at
+  linux/mu.subx.
 
-  ```sh
-  $ ./translate_mu_baremetal baremetal/life.mu  # emit disk.img
-  $ qemu-system-i386 disk.img
-  ```
-
-  <img alt='screenshot of Game of Life running on Mu without any intervening Operating System' src='html/baremetal-life.png'>
-
-Use `translate_mu` to build programs for Linux, and `translate_mu_baremetal`
-for running without Linux. The standard libraries are totally separate for the
-two options, so programs for one won't run on the other.
+While I currently focus on programs without an OS, the `linux/` sub-directory
+is fairly ergonomic. There's a couple of dozen example programs to try out
+there. It is likely to be the option for a network stack in the foreseeable
+future; I have no idea how to write to disk or interact on the network without
+Linux.
 
 ## Syntax
 
@@ -173,15 +181,16 @@ If you're still reading, here are some more things to check out:
   $ ./a.elf screen
   ```
 
-- [How to get your text editor set up for Mu and SubX programs.](editor.md)
+- [How to get your text editor set up for Mu and SubX programs.](editor/editor.md)
 
 - [Some tips for debugging SubX programs.](subx_debugging.md)
 
 - [Shared vocabulary of data types and functions shared by Mu programs.](vocabulary.md)
   Mu programs can transparently call low-level functions written in SubX.
 
-- [A summary](mu_instructions) of how the Mu compiler translates instructions
-  to SubX. ([colorized version](http://akkartik.github.io/mu/html/mu_instructions.html))
+- [A summary](mu_instructions) of how the Mu compiler translates statements
+  to SubX. Most Mu statements map to a single x86 instruction.
+  ([colorized version](http://akkartik.github.io/mu/html/mu_instructions.html))
 
 - [Some starter exercises for learning SubX](https://github.com/akkartik/mu/pulls)
   (labelled `hello`). Feel free to [ping me](mailto:ak@akkartik.com) with any questions.

@@ -1,7 +1,8 @@
+A set of standard libraries for building programs that run with just a Linux
+kernel. Most programs here read from stdin and write to stdout. One of these
+programs is the Mu compiler ([colorized sources](http://akkartik.github.io/mu/html/apps/mu.subx.html)).
 
-
-
-Some apps written in SubX and Mu. Check out:
+Other apps beyond the Mu toolchain:
 
 * `tile`: [An experimental live-updating postfix shell environment](https://mastodon.social/@akkartik/105108305362341204)
   that updates as you type. Prototype. Look at this to see what is currently
@@ -17,15 +18,13 @@ Some apps written in SubX and Mu. Check out:
 * `factorial*`: A simple program to compute factorials in 5 versions, showing
   all the different syntax sugars and what they expand to.
 
-* Code unique to phases of our build toolchain:
-  * Core SubX: `hex`, `survey_elf`, `pack`, `dquotes`, `assort`, `tests`
-  * Syntax sugar for SubX: `sigils`, `calls`, `braces`
-  * More ambitious translator for a memory-safe language (in progress): `mu`
+The Mu toolchain is also here in the following phases:
+* Core SubX: `hex`, `survey_elf`, `pack`, `dquotes`, `assort`, `tests`
+* Syntax sugar for SubX: `sigils`, `calls`, `braces`
+* More ambitious translator for a memory-safe language (in progress): `mu`
 
-* Miscellaneous test programs.
-
-All SubX apps include binaries. At any commit, an example's binary should be
-identical bit for bit with the result of translating the corresponding `.subx`
-file. The binary should also be natively runnable on a Linux system running on
-Intel x86 processors, either 32- or 64-bit. If either of these invariants is
-violated, it's a bug.
+The toolchain includes binaries in the repo. At any commit, the binary should
+be identical bit for bit with the result of translating the corresponding
+`.subx` file. The binary should also be natively runnable on a Linux system
+running on Intel x86 processors, either 32- or 64-bit. If either of these
+invariants is violated, it's a bug.

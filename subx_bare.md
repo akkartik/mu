@@ -107,8 +107,9 @@ reader's burden. Here's the order I've been using after opcodes:
 Try running this example now:
 
 ```sh
-$ ./bootstrap translate init.linux apps/ex3.subx -o apps/ex3
-$ ./bootstrap run apps/ex3
+$ cd linux
+$ bootstrap/bootstrap translate 000init.subx ex3.subx -o ex3
+$ bootstrap/bootstrap run ex3
 $ echo $?
 55
 ```
@@ -116,7 +117,8 @@ $ echo $?
 If you're on Linux you can also run it natively:
 
 ```sh
-$ ./apps/ex3
+$ chmod +x ex3
+$ ./ex3
 $ echo $?
 55
 ```
@@ -127,21 +129,22 @@ low-level SubX programs.
 ## Translating SubX programs
 
 This repo includes two translators for bare SubX. The first is [the bootstrap
-translator](bootstrap.md) implemented in C++. In addition, you can use SubX to
-translate itself. For example, running natively on Linux:
+translator](bootstrap/bootstrap.md) implemented in C++. In addition, you can
+use SubX to translate itself. For example, running natively on Linux:
 
 ```sh
 # generate translator phases using the C++ translator
-$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/hex.subx    -o hex
-$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/survey_elf.subx -o survey_elf
-$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/pack.subx   -o pack
-$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/assort.subx -o assort
-$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/dquotes.subx -o dquotes
-$ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/tests.subx  -o tests
+$ cd linux
+$ bootstrap/bootstrap translate [01]*.subx subx-params.subx hex.subx      -o hex
+$ bootstrap/bootstrap translate [01]*.subx subx-params.subx survey_elf.subx -o survey_elf
+$ bootstrap/bootstrap translate [01]*.subx subx-params.subx pack.subx     -o pack
+$ bootstrap/bootstrap translate [01]*.subx subx-params.subx assort.subx   -o assort
+$ bootstrap/bootstrap translate [01]*.subx subx-params.subx dquotes.subx  -o dquotes
+$ bootstrap/bootstrap translate [01]*.subx subx-params.subx tests.subx    -o tests
 $ chmod +x hex survey_elf pack assort dquotes tests
 
 # use the generated translator phases to translate SubX programs
-$ cat init.linux apps/ex1.subx |./tests |./dquotes |./assort |./pack |./survey_elf |./hex > a.elf
+$ cat 000init.subx ex1.subx |./tests |./dquotes |./assort |./pack |./survey_elf |./hex > a.elf
 $ chmod +x a.elf
 $ ./a.elf
 $ echo $?
@@ -158,7 +161,7 @@ Or, running in a VM on other platforms (much slower):
 
 ```sh
 $ ./translate_subx_emulated init.linux apps/ex1.subx  # generates identical a.elf to above
-$ ./bootstrap run a.elf
+$ bootstrap/bootstrap run a.elf
 $ echo $?
 42
 ```
