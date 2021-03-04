@@ -104,11 +104,11 @@ Mu programs can be written for two very different environments:
   virtual memory, no process separation, no multi-tasking, no persistent
   storage, no network.
 
-* The top-level is built using tools created under the linux/ sub-directory.
+* The top-level is built using tools created under the `linux/` sub-directory.
   This sub-directory contains an entirely separate set of standard libraries
   intended for building programs that run with just a Linux kernel, reading
   from stdin and writing to stdout. The Mu compiler is such a program, at
-  linux/mu.subx.
+  `linux/mu.subx`.
 
 While I currently focus on programs without an OS, the `linux/` sub-directory
 is fairly ergonomic. There's a couple of dozen example programs to try out
