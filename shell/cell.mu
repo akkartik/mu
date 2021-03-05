@@ -8,6 +8,8 @@ type cell {
   # type 2: symbol
   # type 3: string
   text-data: (handle stream byte)
+  # type 4: primitive function
+  index-data: int
   # TODO: array, (associative) table, stream
 }
 
@@ -45,9 +47,9 @@ fn allocate-number _out: (addr handle cell) {
 fn initialize-integer _out: (addr handle cell), n: int {
   var out/eax: (addr handle cell) <- copy _out
   var out-addr/eax: (addr cell) <- lookup *out
-  var dest-ah/eax: (addr float) <- get out-addr, number-data
+  var dest-addr/eax: (addr float) <- get out-addr, number-data
   var src/xmm0: float <- convert n
-  copy-to *dest-ah, src
+  copy-to *dest-addr, src
 }
 
 fn new-integer out: (addr handle cell), n: int {
@@ -86,4 +88,25 @@ fn initialize-pair _out: (addr handle cell), left: (handle cell), right: (handle
 fn new-pair out: (addr handle cell), left: (handle cell), right: (handle cell) {
   allocate-pair out
   initialize-pair out, left, right
+}
+
+fn allocate-primitive-function _out: (addr handle cell) {
+  var out/eax: (addr handle cell) <- copy _out
+  allocate out
+  var out-addr/eax: (addr cell) <- lookup *out
+  var type/ecx: (addr int) <- get out-addr, type
+  copy-to *type, 4/primitive-function
+}
+
+fn initialize-primitive-function _out: (addr handle cell), n: int {
+  var out/eax: (addr handle cell) <- copy _out
+  var out-addr/eax: (addr cell) <- lookup *out
+  var dest-addr/eax: (addr int) <- get out-addr, index-data
+  var src/ecx: int <- copy n
+  copy-to *dest-addr, src
+}
+
+fn new-primitive-function out: (addr handle cell), n: int {
+  allocate-primitive-function out
+  initialize-primitive-function out, n
 }

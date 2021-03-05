@@ -58,21 +58,12 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), _env: (addr cell), t
     trace-higher trace
     return
   }
-  # if env is nil, abort
+  # if env is nil, look up in globals
   {
     var env-is-nil?/eax: boolean <- is-nil? env
     compare env-is-nil?, 0/false
     break-if-=
-    # error "unbound symbol: ", sym
-    var stream-storage: (stream byte 0x40)
-    var stream/ecx: (addr stream byte) <- address stream-storage
-    write stream, "unbound symbol: "
-    var sym2/eax: (addr cell) <- copy sym
-    var sym-data-ah/eax: (addr handle stream byte) <- get sym2, text-data
-    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
-    rewind-stream sym-data
-    write-stream stream, sym-data
-    trace trace, "error", stream
+    lookup-symbol-in-hardcoded-globals sym, out, trace
     trace-higher trace
     return
   }
@@ -121,6 +112,78 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), _env: (addr cell), t
   var env-tail/eax: (addr cell) <- lookup *env-tail-ah
   lookup-symbol sym, out, env-tail, trace
   trace-higher trace
+}
+
+fn lookup-symbol-in-hardcoded-globals _sym: (addr cell), out: (addr handle cell), trace: (addr trace) {
+  var sym/eax: (addr cell) <- copy _sym
+  var sym-data-ah/eax: (addr handle stream byte) <- get sym, text-data
+  var _sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
+  var sym-data/esi: (addr stream byte) <- copy _sym-data
+  {
+    var is-plus?/eax: boolean <- stream-data-equal? sym-data, "+"
+    compare is-plus?, 0/false
+    break-if-=
+    new-primitive-function out, 1/plus
+    trace-text trace, "eval", "global +"
+    return
+  }
+  # otherwise error "unbound symbol: ", sym
+  var stream-storage: (stream byte 0x40)
+  var stream/ecx: (addr stream byte) <- address stream-storage
+  write stream, "unbound symbol: "
+  rewind-stream sym-data
+  write-stream stream, sym-data
+  trace trace, "error", stream
+}
+
+fn test-lookup-symbol-in-env {
+  # tmp = (a . 3)
+  var val-storage: (handle cell)
+  var val-ah/ecx: (addr handle cell) <- address val-storage
+  new-integer val-ah, 3
+  var key-storage: (handle cell)
+  var key-ah/edx: (addr handle cell) <- address key-storage
+  new-symbol key-ah, "a"
+  var tmp-storage: (handle cell)
+  var tmp-ah/ebx: (addr handle cell) <- address tmp-storage
+  new-pair tmp-ah, *key-ah, *val-ah
+  # env = ((a . 3))
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  new-pair tmp-ah, *tmp-ah, *nil-ah
+  var _env/eax: (addr cell) <- lookup *tmp-ah
+  var env/ecx: (addr cell) <- copy _env
+  # lookup sym(a), env
+  new-symbol tmp-ah, "a"
+  var in/eax: (addr cell) <- lookup *tmp-ah
+  lookup-symbol in, tmp-ah, env, 0/no-trace
+  var result/eax: (addr cell) <- lookup *tmp-ah
+  var result-type/edx: (addr int) <- get result, type
+  check-ints-equal *result-type, 1/number, "F - test-lookup-symbol-in-env/0"
+  var result-value-addr/eax: (addr float) <- get result, number-data
+  var result-value/eax: int <- convert *result-value-addr
+  check-ints-equal result-value, 3, "F - test-lookup-symbol-in-env/1"
+}
+
+fn test-lookup-symbol-in-hardcoded-globals {
+  # env = nil
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  var _env/eax: (addr cell) <- lookup *nil-ah
+  var env/ecx: (addr cell) <- copy _env
+  # lookup sym(a), env
+  var tmp-storage: (handle cell)
+  var tmp-ah/ebx: (addr handle cell) <- address tmp-storage
+  new-symbol tmp-ah, "+"
+  var in/eax: (addr cell) <- lookup *tmp-ah
+  lookup-symbol in, tmp-ah, env, 0/no-trace
+  var result/eax: (addr cell) <- lookup *tmp-ah
+  var result-type/edx: (addr int) <- get result, type
+  check-ints-equal *result-type, 4/primitive-function, "F - test-lookup-symbol-in-hardcoded-globals/0"
+  var result-value/eax: (addr int) <- get result, index-data
+  check-ints-equal *result-value, 1/plus, "F - test-lookup-symbol-in-hardcoded-globals/1"
 }
 
 fn car _in: (addr cell), out: (addr handle cell), trace: (addr trace) {
@@ -350,4 +413,24 @@ fn test-evaluate-symbol {
   var result-value-addr/eax: (addr float) <- get result, number-data
   var result-value/eax: int <- convert *result-value-addr
   check-ints-equal result-value, 3, "F - test-evaluate-symbol/1"
+}
+
+fn test-evaluate-primitive-function {
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  var plus-storage: (handle cell)
+  var plus-ah/ebx: (addr handle cell) <- address plus-storage
+  new-symbol plus-ah, "+"
+  # eval +, nil env
+  var tmp-storage: (handle cell)
+  var tmp-ah/esi: (addr handle cell) <- address tmp-storage
+  var env/eax: (addr cell) <- lookup *nil-ah
+  evaluate plus-ah, tmp-ah, env, 0/no-trace
+  #
+  var result/eax: (addr cell) <- lookup *tmp-ah
+  var result-type/edx: (addr int) <- get result, type
+  check-ints-equal *result-type, 4/primitive-function, "F - test-evaluate-primitive-function/0"
+  var result-value/eax: (addr int) <- get result, index-data
+  check-ints-equal *result-value, 1/plus, "F - test-evaluate-primitive-function/1"
 }
