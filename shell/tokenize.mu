@@ -73,6 +73,14 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       next-bracket-token g, out, trace
       break $next-token:body
     }
+    # non-symbol operators
+    {
+      var operator?/eax: boolean <- is-operator-grapheme? g
+      compare operator?, 0/false
+      break-if-=
+      next-operator-token in, out, trace
+      break $next-token:body
+    }
   }
   trace-higher trace
   var stream-storage: (stream byte 0x40)
@@ -106,6 +114,43 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
       break-if-!=
       trace-text trace, "read", "stop"
       break $next-symbol-token:loop
+    }
+    var g/eax: grapheme <- read-from-gap-buffer in
+    write-grapheme out, g
+    loop
+  }
+  trace-higher trace
+  var stream-storage: (stream byte 0x40)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  write stream, "=> "
+  rewind-stream out
+  write-stream stream, out
+  trace trace, "read", stream
+}
+
+fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+  trace-text trace, "read", "looking for a operator"
+  trace-lower trace
+  $next-operator-token:loop: {
+    var done?/eax: boolean <- gap-buffer-scan-done? in
+    compare done?, 0/false
+    break-if-!=
+    var g/eax: grapheme <- peek-from-gap-buffer in
+    {
+      var stream-storage: (stream byte 0x40)
+      var stream/esi: (addr stream byte) <- address stream-storage
+      write stream, "next: "
+      var gval/eax: int <- copy g
+      write-int32-hex stream, gval
+      trace trace, "read", stream
+    }
+    # if non-operator, return
+    {
+      var operator-grapheme?/eax: boolean <- is-operator-grapheme? g
+      compare operator-grapheme?, 0/false
+      break-if-!=
+      trace-text trace, "read", "stop"
+      break $next-operator-token:loop
     }
     var g/eax: grapheme <- read-from-gap-buffer in
     write-grapheme out, g
@@ -194,11 +239,6 @@ fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
     break-if-!=
     return 0/false
   }
-  compare g, 0x27/single-quote
-  {
-    break-if-!=
-    return 0/false
-  }
   compare g, 0x60/backquote
   {
     break-if-!=
@@ -253,6 +293,11 @@ fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
     break-if-!=
     return 0/false
   }
+  compare g, 0x27/single-quote
+  {
+    break-if-!=
+    return 0/false
+  }
   compare g, 0x2a/asterisk
   {
     break-if-!=
@@ -268,13 +313,12 @@ fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
     break-if-!=
     return 0/false
   }
-  # '-' is a symbol char
-  compare g, 0x2e/period
+  compare g, 0x2d/dash  # '-' not allowed in symbols
   {
     break-if-!=
     return 0/false
   }
-  compare g, 0x2f/slash
+  compare g, 0x2e/period
   {
     break-if-!=
     return 0/false
@@ -366,6 +410,108 @@ fn is-bracket-grapheme? g: grapheme -> _/eax: boolean {
     return 1/true
   }
   compare g, 0x7d/close-curly-bracket
+  {
+    break-if-!=
+    return 1/true
+  }
+  return 0/false
+}
+
+fn is-operator-grapheme? g: grapheme -> _/eax: boolean {
+  # '$' is a symbol char
+  compare g, 0x25/percent
+  {
+    break-if-!=
+    return 1/false
+  }
+  compare g, 0x26/ampersand
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x27/single-quote
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x2a/asterisk
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x2b/plus
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x2c/comma
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x2d/dash  # '-' not allowed in symbols
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x2e/period
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x2f/slash
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x3a/colon
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x3b/semi-colon
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x3c/less-than
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x3d/equal
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x3e/greater-than
+  {
+    break-if-!=
+    return 1/true
+  }
+  # '?' is a symbol char
+  compare g, 0x40/at-sign
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x5c/backslash
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x5e/caret
+  {
+    break-if-!=
+    return 1/true
+  }
+  # '_' is a symbol char
+  compare g, 0x7c/vertical-line
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x7e/tilde
   {
     break-if-!=
     return 1/true

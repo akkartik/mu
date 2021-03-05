@@ -29,9 +29,108 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env: (addr cell), 
     trace-higher trace
     return
   }
-  # TODO: pairs
-  copy-object _in, out
-  trace-higher trace
+  # in-addr is a pair
+  # TODO: special forms
+  trace-text trace, "eval", "function call"
+  trace-text trace, "eval", "evaluating list elements"
+  var evaluated-list-storage: (handle cell)
+  var evaluated-list-ah/esi: (addr handle cell) <- address evaluated-list-storage
+  var curr-out-ah/edx: (addr handle cell) <- copy evaluated-list-ah
+  var curr/ecx: (addr cell) <- copy in-addr
+  $evaluate-list:loop: {
+    allocate-pair curr-out-ah
+    var is-nil?/eax: boolean <- is-nil? curr
+    compare is-nil?, 0/false
+    break-if-!=
+    # eval left
+    var curr-out/eax: (addr cell) <- lookup *curr-out-ah
+    var left-out-ah/edi: (addr handle cell) <- get curr-out, left
+    var left-ah/esi: (addr handle cell) <- get curr, left
+    evaluate left-ah, left-out-ah, env, trace
+    #
+    curr-out-ah <- get curr-out, right
+    var right-ah/eax: (addr handle cell) <- get curr, right
+    var right/eax: (addr cell) <- lookup *right-ah
+    curr <- copy right
+    loop
+  }
+  trace-text trace, "eval", "apply"
+  var evaluated-list/eax: (addr cell) <- lookup *evaluated-list-ah
+  var function-ah/ecx: (addr handle cell) <- get evaluated-list, left
+  var args-ah/edx: (addr handle cell) <- get evaluated-list, right
+#?   dump-cell args-ah
+#?   abort "aaa"
+  apply function-ah, args-ah, out, env, trace
+}
+
+fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), env: (addr cell), trace: (addr trace) {
+  var f-ah/eax: (addr handle cell) <- copy _f-ah
+  var f/eax: (addr cell) <- lookup *f-ah
+  {
+    var f-type/ecx: (addr int) <- get f, type
+    compare *f-type, 4/primitive-function
+    break-if-!=
+    apply-primitive f, args-ah, out, env, trace
+    return
+  }
+  abort "unknown function"
+}
+
+fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), env: (addr cell), trace: (addr trace) {
+  var f/esi: (addr cell) <- copy _f
+  var f-index/eax: (addr int) <- get f, index-data
+  {
+    compare *f-index, 1/add
+    break-if-!=
+    apply-add args-ah, out, env, trace
+    return
+  }
+  abort "unknown primitive function"
+}
+
+fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), env: (addr cell), trace: (addr trace) {
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- is-nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "+ needs 2 args but got 0"
+    return
+  }
+  # args->left->value
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for + is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  # args->right->left->value
+  var right-ah/eax: (addr handle cell) <- get args, right
+#?   dump-cell right-ah
+#?   abort "aaa"
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/eax: (addr handle cell) <- get right, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/edx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "second arg for + is not a number"
+    return
+  }
+  var second-value/edx: (addr float) <- get second, number-data
+  # add
+  var result/xmm0: float <- copy *first-value
+  result <- add *second-value
+  new-float out, result
 }
 
 fn lookup-symbol sym: (addr cell), out: (addr handle cell), _env: (addr cell), trace: (addr trace) {
@@ -120,10 +219,10 @@ fn lookup-symbol-in-hardcoded-globals _sym: (addr cell), out: (addr handle cell)
   var _sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
   var sym-data/esi: (addr stream byte) <- copy _sym-data
   {
-    var is-plus?/eax: boolean <- stream-data-equal? sym-data, "+"
-    compare is-plus?, 0/false
+    var is-add?/eax: boolean <- stream-data-equal? sym-data, "+"
+    compare is-add?, 0/false
     break-if-=
-    new-primitive-function out, 1/plus
+    new-primitive-function out, 1/add
     trace-text trace, "eval", "global +"
     return
   }
@@ -183,7 +282,7 @@ fn test-lookup-symbol-in-hardcoded-globals {
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 4/primitive-function, "F - test-lookup-symbol-in-hardcoded-globals/0"
   var result-value/eax: (addr int) <- get result, index-data
-  check-ints-equal *result-value, 1/plus, "F - test-lookup-symbol-in-hardcoded-globals/1"
+  check-ints-equal *result-value, 1/add, "F - test-lookup-symbol-in-hardcoded-globals/1"
 }
 
 fn car _in: (addr cell), out: (addr handle cell), trace: (addr trace) {
@@ -419,18 +518,51 @@ fn test-evaluate-primitive-function {
   var nil-storage: (handle cell)
   var nil-ah/ecx: (addr handle cell) <- address nil-storage
   allocate-pair nil-ah
-  var plus-storage: (handle cell)
-  var plus-ah/ebx: (addr handle cell) <- address plus-storage
-  new-symbol plus-ah, "+"
+  var add-storage: (handle cell)
+  var add-ah/ebx: (addr handle cell) <- address add-storage
+  new-symbol add-ah, "+"
   # eval +, nil env
   var tmp-storage: (handle cell)
   var tmp-ah/esi: (addr handle cell) <- address tmp-storage
   var env/eax: (addr cell) <- lookup *nil-ah
-  evaluate plus-ah, tmp-ah, env, 0/no-trace
+  evaluate add-ah, tmp-ah, env, 0/no-trace
   #
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 4/primitive-function, "F - test-evaluate-primitive-function/0"
   var result-value/eax: (addr int) <- get result, index-data
-  check-ints-equal *result-value, 1/plus, "F - test-evaluate-primitive-function/1"
+  check-ints-equal *result-value, 1/add, "F - test-evaluate-primitive-function/1"
+}
+
+fn test-evaluate-primitive-function-call {
+  var t-storage: trace
+  var t/edi: (addr trace) <- address t-storage
+  initialize-trace t, 0x100, 0/visible  # we don't use trace UI
+  #
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  var one-storage: (handle cell)
+  var one-ah/edx: (addr handle cell) <- address one-storage
+  new-integer one-ah, 1
+  var add-storage: (handle cell)
+  var add-ah/ebx: (addr handle cell) <- address add-storage
+  new-symbol add-ah, "+"
+  # eval (+ 1 1), nil env
+  var tmp-storage: (handle cell)
+  var tmp-ah/esi: (addr handle cell) <- address tmp-storage
+  new-pair tmp-ah, *one-ah, *nil-ah
+  new-pair tmp-ah, *one-ah, *tmp-ah
+  new-pair tmp-ah, *add-ah, *tmp-ah
+#?   dump-cell tmp-ah
+  var env/eax: (addr cell) <- lookup *nil-ah
+  evaluate tmp-ah, tmp-ah, env, t
+#?   dump-trace t
+  #
+  var result/eax: (addr cell) <- lookup *tmp-ah
+  var result-type/edx: (addr int) <- get result, type
+  check-ints-equal *result-type, 1/number, "F - test-evaluate-primitive-function-call/0"
+  var result-value-addr/eax: (addr float) <- get result, number-data
+  var result-value/eax: int <- convert *result-value-addr
+  check-ints-equal result-value, 2, "F - test-evaluate-primitive-function-call/1"
 }
