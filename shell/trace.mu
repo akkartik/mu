@@ -2,6 +2,10 @@
 # An integral part of the Mu Shell is facilities for browsing traces.
 
 type trace {
+  curr-depth: int  # depth that will be assigned to next line appended
+  data: (handle array trace-line)
+  first-free: int
+
   # steady-state life cycle of a trace:
   #   reload loop:
   #     there are already some visible lines
@@ -11,9 +15,6 @@ type trace {
   #       rendering computes cursor-line based on the cursor-y coordinate
   #       edit-trace updates cursor-y coordinate
   #       edit-trace might add/remove lines to visible
-  curr-depth: int  # depth that will be assigned to next line appended
-  data: (handle array trace-line)
-  first-free: int
   visible: (handle array trace-line)
   recompute-visible?: boolean
   top-line-index: int  # index into data
@@ -27,6 +28,8 @@ type trace-line {
   data: (handle array byte)
   visible?: boolean
 }
+
+## generating traces
 
 fn initialize-trace _self: (addr trace), capacity: int, visible-capacity: int {
   var self/esi: (addr trace) <- copy _self
@@ -45,18 +48,6 @@ fn clear-trace _self: (addr trace) {
   var len/edx: (addr int) <- get self, first-free
   copy-to *len, 0
   # might leak memory; existing elements won't be used anymore
-}
-
-fn mark-lines-dirty _self: (addr trace) {
-  var self/eax: (addr trace) <- copy _self
-  var dest/edx: (addr boolean) <- get self, recompute-visible?
-  copy-to *dest, 1/true
-}
-
-fn mark-lines-clean _self: (addr trace) {
-  var self/eax: (addr trace) <- copy _self
-  var dest/edx: (addr boolean) <- get self, recompute-visible?
-  copy-to *dest, 0/false
 }
 
 fn has-errors? _self: (addr trace) -> _/eax: boolean {
@@ -142,6 +133,53 @@ fn trace-higher _self: (addr trace) {
   break-if-=
   var depth/eax: (addr int) <- get self, curr-depth
   decrement *depth
+}
+
+## checking traces
+
+fn trace-lines-equal? _a: (addr trace-line), _b: (addr trace-line) -> _/eax: boolean {
+  var a/esi: (addr trace-line) <- copy _a
+  var b/edi: (addr trace-line) <- copy _b
+  var a-depth/ecx: (addr int) <- get a, depth
+  var b-depth/edx: (addr int) <- get b, depth
+  var benchmark/eax: int <- copy *b-depth
+  compare *a-depth, benchmark
+  {
+    break-if-=
+    return 0/false
+  }
+  var a-label-ah/eax: (addr handle array byte) <- get a, label
+  var _a-label/eax: (addr array byte) <- lookup *a-label-ah
+  var a-label/ecx: (addr array byte) <- copy _a-label
+  var b-label-ah/ebx: (addr handle array byte) <- get b, label
+  var b-label/eax: (addr array byte) <- lookup *b-label-ah
+  var label-match?/eax: boolean <- string-equal? a-label, b-label
+  {
+    compare label-match?, 0/false
+    break-if-!=
+    return 0/false
+  }
+  var a-data-ah/eax: (addr handle array byte) <- get a, data
+  var _a-data/eax: (addr array byte) <- lookup *a-data-ah
+  var a-data/ecx: (addr array byte) <- copy _a-data
+  var b-data-ah/ebx: (addr handle array byte) <- get b, data
+  var b-data/eax: (addr array byte) <- lookup *b-data-ah
+  var data-match?/eax: boolean <- string-equal? a-data, b-data
+  return data-match?
+}
+
+## UI stuff
+
+fn mark-lines-dirty _self: (addr trace) {
+  var self/eax: (addr trace) <- copy _self
+  var dest/edx: (addr boolean) <- get self, recompute-visible?
+  copy-to *dest, 1/true
+}
+
+fn mark-lines-clean _self: (addr trace) {
+  var self/eax: (addr trace) <- copy _self
+  var dest/edx: (addr boolean) <- get self, recompute-visible?
+  copy-to *dest, 0/false
 }
 
 fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int, xmax: int, ymax: int, show-cursor?: boolean -> _/ecx: int {
@@ -245,6 +283,8 @@ fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int,
   return y
 }
 
+# this is probably super-inefficient, string comparing every trace line
+# against every visible line on every render
 fn should-render? _self: (addr trace), _line: (addr trace-line) -> _/eax: boolean {
   var self/esi: (addr trace) <- copy _self
   # if visible? is already cached, just return it
@@ -282,39 +322,6 @@ fn should-render? _self: (addr trace), _line: (addr trace-line) -> _/eax: boolea
   var dest/eax: (addr boolean) <- get line, visible?
   copy-to *dest, 0/false
   return 0/false
-}
-
-# this is probably super-inefficient, string comparing every trace line
-# against every visible line on every render
-fn trace-lines-equal? _a: (addr trace-line), _b: (addr trace-line) -> _/eax: boolean {
-  var a/esi: (addr trace-line) <- copy _a
-  var b/edi: (addr trace-line) <- copy _b
-  var a-depth/ecx: (addr int) <- get a, depth
-  var b-depth/edx: (addr int) <- get b, depth
-  var benchmark/eax: int <- copy *b-depth
-  compare *a-depth, benchmark
-  {
-    break-if-=
-    return 0/false
-  }
-  var a-label-ah/eax: (addr handle array byte) <- get a, label
-  var _a-label/eax: (addr array byte) <- lookup *a-label-ah
-  var a-label/ecx: (addr array byte) <- copy _a-label
-  var b-label-ah/ebx: (addr handle array byte) <- get b, label
-  var b-label/eax: (addr array byte) <- lookup *b-label-ah
-  var label-match?/eax: boolean <- string-equal? a-label, b-label
-  {
-    compare label-match?, 0/false
-    break-if-!=
-    return 0/false
-  }
-  var a-data-ah/eax: (addr handle array byte) <- get a, data
-  var _a-data/eax: (addr array byte) <- lookup *a-data-ah
-  var a-data/ecx: (addr array byte) <- copy _a-data
-  var b-data-ah/ebx: (addr handle array byte) <- get b, data
-  var b-data/eax: (addr array byte) <- lookup *b-data-ah
-  var data-match?/eax: boolean <- string-equal? a-data, b-data
-  return data-match?
 }
 
 fn clamp-cursor-to-top _self: (addr trace), _y: int {
