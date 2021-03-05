@@ -5,6 +5,7 @@ type trace {
   curr-depth: int  # depth that will be assigned to next line appended
   data: (handle array trace-line)
   first-free: int
+  first-full: int  # used only by check-trace-scan
 
   # steady-state life cycle of a trace:
   #   reload loop:
@@ -136,6 +137,92 @@ fn trace-higher _self: (addr trace) {
 }
 
 ## checking traces
+
+fn check-trace-scans-to self: (addr trace), label: (addr array byte), data: (addr array byte), message: (addr array byte) {
+  var tmp/eax: boolean <- trace-scans-to? self, label, data
+  check tmp, message
+}
+
+fn trace-scans-to? _self: (addr trace), label: (addr array byte), data: (addr array byte) -> _/eax: boolean {
+  var self/esi: (addr trace) <- copy _self
+  var start/eax: (addr int) <- get self, first-full
+  var result/eax: boolean <- trace-contains? self, label, data, *start
+  return result
+}
+
+fn test-trace-scans-to {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10, 0/visible  # we don't use trace UI
+  #
+  trace-text t, "label", "line 1"
+  trace-text t, "label", "line 2"
+  check-trace-scans-to t, "label", "line 1", "F - test-trace-scans-to/0"
+  check-trace-scans-to t, "label", "line 2", "F - test-trace-scans-to/1"
+  var tmp/eax: boolean <- trace-scans-to? t, "label", "line 1"
+  check-not tmp, "F - test-trace-scans-to: fail on previously encountered lines"
+  var tmp/eax: boolean <- trace-scans-to? t, "label", "line 3"
+  check-not tmp, "F - test-trace-scans-to: fail on missing"
+}
+
+# scan trace from start
+# resets previous scans
+fn check-trace-contains self: (addr trace), label: (addr array byte), data: (addr array byte), message: (addr array byte) {
+  var tmp/eax: boolean <- trace-contains? self, label, data, 0
+  check tmp, message
+}
+
+fn test-trace-contains {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10, 0/visible  # we don't use trace UI
+  #
+  trace-text t, "label", "line 1"
+  trace-text t, "label", "line 2"
+  check-trace-contains t, "label", "line 1", "F - test-trace-contains/0"
+  check-trace-contains t, "label", "line 2", "F - test-trace-contains/1"
+  check-trace-contains t, "label", "line 1", "F - test-trace-contains: find previously encountered lines"
+  var tmp/eax: boolean <- trace-contains? t, "label", "line 3", 0/start
+  check-not tmp, "F - test-trace-contains: fail on missing"
+}
+
+# this is super-inefficient, string comparing every trace line
+# against every visible line on every render
+fn trace-contains? _self: (addr trace), label: (addr array byte), data: (addr array byte), start: int -> _/eax: boolean {
+  var self/esi: (addr trace) <- copy _self
+  var candidates-ah/eax: (addr handle array trace-line) <- get self, data
+  var candidates/eax: (addr array trace-line) <- lookup *candidates-ah
+  var i/ecx: int <- copy start
+  var max/edx: (addr int) <- get self, first-free
+  {
+    compare i, *max
+    break-if->=
+    {
+      var read-until-index/eax: (addr int) <- get self, first-full
+      copy-to *read-until-index, i
+    }
+    {
+      var curr-offset/ecx: (offset trace-line) <- compute-offset candidates, i
+      var curr/ecx: (addr trace-line) <- index candidates, curr-offset
+      # if curr->label does not match, return false
+      var curr-label-ah/eax: (addr handle array byte) <- get curr, label
+      var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
+      var match?/eax: boolean <- string-equal? curr-label, label
+      compare match?, 0/false
+      break-if-=
+      # if curr->data does not match, return false
+      var curr-data-ah/eax: (addr handle array byte) <- get curr, data
+      var curr-data/eax: (addr array byte) <- lookup *curr-data-ah
+      var match?/eax: boolean <- string-equal? curr-data, data
+      compare match?, 0/false
+      break-if-=
+      return 1/true
+    }
+    i <- increment
+    loop
+  }
+  return 0/false
+}
 
 fn trace-lines-equal? _a: (addr trace-line), _b: (addr trace-line) -> _/eax: boolean {
   var a/esi: (addr trace-line) <- copy _a
@@ -283,7 +370,7 @@ fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int,
   return y
 }
 
-# this is probably super-inefficient, string comparing every trace line
+# this is super-inefficient, string comparing every trace line
 # against every visible line on every render
 fn should-render? _self: (addr trace), _line: (addr trace-line) -> _/eax: boolean {
   var self/esi: (addr trace) <- copy _self
