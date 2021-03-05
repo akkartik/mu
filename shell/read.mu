@@ -1,4 +1,3 @@
-# out is not allocated
 fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace) {
   var tokens-storage: (stream cell 0x100)
   var tokens/ecx: (addr stream cell) <- address tokens-storage

@@ -174,9 +174,17 @@ fn run in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
     break-if-=
     return
   }
-  # TODO: eval
+  var eval-result-storage: (handle cell)
+  var eval-result/edi: (addr handle cell) <- address eval-result-storage
+  evaluate read-result, eval-result, trace
+  var error?/eax: boolean <- has-errors? trace
+  {
+    compare error?, 0/false
+    break-if-=
+    return
+  }
   clear-stream out
-  print-cell read-result, out, trace
+  print-cell eval-result, out, trace
   mark-lines-dirty trace
 }
 
