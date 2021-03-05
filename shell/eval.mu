@@ -307,7 +307,24 @@ fn test-evaluate-is-well-behaved {
   check-trace-contains t, "error", "unbound symbol: a", "F - test-evaluate-is-well-behaved"
 }
 
-fn test-evaluate {
+fn test-evaluate-number {
+  var tmp-storage: (handle cell)
+  var tmp-ah/edx: (addr handle cell) <- address tmp-storage
+  # eval 3, nil env
+  allocate-pair tmp-ah
+  var env/eax: (addr cell) <- lookup *tmp-ah
+  new-integer tmp-ah, 3
+  evaluate tmp-ah, tmp-ah, env, 0/no-trace
+  #
+  var result/eax: (addr cell) <- lookup *tmp-ah
+  var result-type/edx: (addr int) <- get result, type
+  check-ints-equal *result-type, 1/number, "F - test-evaluate-number/0"
+  var result-value-addr/eax: (addr float) <- get result, number-data
+  var result-value/eax: int <- convert *result-value-addr
+  check-ints-equal result-value, 3, "F - test-evaluate-number/1"
+}
+
+fn test-evaluate-symbol {
   # tmp = (a . 3)
   var val-storage: (handle cell)
   var val-ah/ecx: (addr handle cell) <- address val-storage
@@ -329,8 +346,8 @@ fn test-evaluate {
   evaluate tmp-ah, tmp-ah, env, 0/no-trace
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
-  check-ints-equal *result-type, 1/number, "F - test-evaluate/0"
+  check-ints-equal *result-type, 1/number, "F - test-evaluate-symbol/0"
   var result-value-addr/eax: (addr float) <- get result, number-data
   var result-value/eax: int <- convert *result-value-addr
-  check-ints-equal result-value, 3, "F - test-evaluate/1"
+  check-ints-equal result-value, 3, "F - test-evaluate-symbol/1"
 }
