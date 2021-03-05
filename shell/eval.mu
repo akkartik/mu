@@ -290,3 +290,47 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
   var result/eax: boolean <- cell-isomorphic? a-tmp, b-tmp, trace
   return result
 }
+
+fn test-evaluate-is-well-behaved {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x10, 0/visible  # we don't use trace UI
+  #
+  var tmp-storage: (handle cell)
+  var tmp-ah/edx: (addr handle cell) <- address tmp-storage
+  # eval sym(a), nil env
+  allocate-pair tmp-ah
+  var env/eax: (addr cell) <- lookup *tmp-ah
+  new-symbol tmp-ah, "a"
+  evaluate tmp-ah, tmp-ah, env, t
+  # doesn't die
+  check-trace-contains t, "error", "unbound symbol: a", "F - test-evaluate-is-well-behaved"
+}
+
+fn test-evaluate {
+  # tmp = (a . 3)
+  var val-storage: (handle cell)
+  var val-ah/ecx: (addr handle cell) <- address val-storage
+  new-integer val-ah, 3
+  var key-storage: (handle cell)
+  var key-ah/edx: (addr handle cell) <- address key-storage
+  new-symbol key-ah, "a"
+  var tmp-storage: (handle cell)
+  var tmp-ah/ebx: (addr handle cell) <- address tmp-storage
+  new-pair tmp-ah, *key-ah, *val-ah
+  # env = ((a . 3))
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  new-pair tmp-ah, *tmp-ah, *nil-ah
+  var env/eax: (addr cell) <- lookup *tmp-ah
+  # eval sym(a), env
+  new-symbol tmp-ah, "a"
+  evaluate tmp-ah, tmp-ah, env, 0/no-trace
+  var result/eax: (addr cell) <- lookup *tmp-ah
+  var result-type/edx: (addr int) <- get result, type
+  check-ints-equal *result-type, 1/number, "F - test-evaluate/0"
+  var result-value-addr/eax: (addr float) <- get result, number-data
+  var result-value/eax: int <- convert *result-value-addr
+  check-ints-equal result-value, 3, "F - test-evaluate/1"
+}
