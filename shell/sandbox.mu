@@ -174,9 +174,28 @@ fn run in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
     break-if-=
     return
   }
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  # HERE
+  var tmp-storage: (handle cell)
+  var tmp-ah/edx: (addr handle cell) <- address tmp-storage
+  # tmp = a
+  new-symbol tmp-ah, "a"
+  # tmp = (a)
+  new-pair tmp-ah, *tmp-ah, *nil-ah
+  # tmp = (a . (a)) = (a a)
+  var tmp/eax: (addr cell) <- lookup *tmp-ah
+  {
+    var new-ah/ecx: (addr handle cell) <- get tmp, left
+    new-pair tmp-ah, *new-ah, *tmp-ah
+  }
+  # env = tmp = ((a a))
+  new-pair tmp-ah, *tmp-ah, *nil-ah
+  var env/eax: (addr cell) <- lookup *tmp-ah
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
-  evaluate read-result, eval-result, trace
+  evaluate read-result, eval-result, env, trace
   var error?/eax: boolean <- has-errors? trace
   {
     compare error?, 0/false
