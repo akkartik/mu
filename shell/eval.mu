@@ -82,15 +82,38 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env: (addr cell), 
 
 fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), env: (addr cell), trace: (addr trace) {
   var f-ah/eax: (addr handle cell) <- copy _f-ah
-  var f/eax: (addr cell) <- lookup *f-ah
+  var _f/eax: (addr cell) <- lookup *f-ah
+  var f/esi: (addr cell) <- copy _f
+  # call primitive functions
   {
-    var f-type/ecx: (addr int) <- get f, type
+    var f-type/eax: (addr int) <- get f, type
     compare *f-type, 4/primitive-function
     break-if-!=
     apply-primitive f, args-ah, out, env, trace
     return
   }
+  # if it's not a primitive function it must be an anonymous function
+  {
+    var f-type/ecx: (addr int) <- get f, type
+    compare *f-type, 0/pair
+    break-if-!=
+    var first-ah/eax: (addr handle cell) <- get f, left
+    var first/eax: (addr cell) <- lookup *first-ah
+    var is-fn?/eax: boolean <- is-fn? first
+    compare is-fn?, 0/false
+    break-if-=
+    trace-text trace, "eval", "apply anonymous function"
+    var rest-ah/esi: (addr handle cell) <- get f, right
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    var params-ah/ecx: (addr handle cell) <- get rest, left
+    var body-ah/eax: (addr handle cell) <- get rest, right
+    apply-function params-ah, args-ah, body-ah, out, env, trace
+    return
+  }
   error trace, "unknown function"
+}
+
+fn apply-function _params-ah: (addr handle cell), _args-ah: (addr handle cell), _body-ah: (addr handle cell), out: (addr handle cell), env: (addr cell), trace: (addr trace) {
 }
 
 fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), env: (addr cell), trace: (addr trace) {
