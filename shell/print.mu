@@ -79,16 +79,6 @@ fn print-list _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   write out, "("
   $print-list:loop: {
     var left/ecx: (addr handle cell) <- get curr, left
-    {
-      var left-addr/eax: (addr cell) <- lookup *left
-      var left-is-nil?/eax: boolean <- is-nil? left-addr
-      compare left-is-nil?, 0/false
-      {
-        break-if-=
-        trace-text trace, "print", "left is null"
-        break $print-list:loop
-      }
-    }
     print-cell left, out, trace
     var right/ecx: (addr handle cell) <- get curr, right
     var right-addr/eax: (addr cell) <- lookup *right
@@ -249,6 +239,27 @@ fn test-print-cell-list {
   var out/edi: (addr stream byte) <- address out-storage
   print-cell list, out, 0/no-trace
   check-stream-equal out, "(64 abc)", "F - test-print-cell-list"
+}
+
+fn test-print-cell-list-of-nil {
+  # list = cons "abc", nil
+  var left-storage: (handle cell)
+  var left/ecx: (addr handle cell) <- address left-storage
+  allocate-pair left
+  var nil-storage: (handle cell)
+  var nil/edx: (addr handle cell) <- address nil-storage
+  allocate-pair nil
+  var list-storage: (handle cell)
+  var list/esi: (addr handle cell) <- address list-storage
+  new-pair list, *left, *nil
+  # list = cons 64, list
+  new-integer left, 0x40
+  new-pair list, *left, *list
+  #
+  var out-storage: (stream byte 0x40)
+  var out/edi: (addr stream byte) <- address out-storage
+  print-cell list, out, 0/no-trace
+  check-stream-equal out, "(64 ())", "F - test-print-cell-list-nil"
 }
 
 fn test-print-dotted-list {

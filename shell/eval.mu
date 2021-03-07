@@ -162,9 +162,85 @@ fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _b
   # `out` contains result of evaluating final expression
 }
 
+# Bind params to corresponding args and add the bindings to old-env. Return
+# the result in env-ah.
+#
+# We never modify old-env, but we point to it. This way other parts of the
+# interpreter can continue using old-env, and everything works harmoniously
+# even though no cells are copied around.
+#
+# env should always be a DAG (ignoring internals of values). It doesn't have
+# to be a tree (some values may be shared), but there are also no cycles.
+#
+# Learn more: https://en.wikipedia.org/wiki/Persistent_data_structure
 fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), old-env-h: (handle cell), env-ah: (addr handle cell), trace: (addr trace) {
-  # no bindings for now
-  copy-handle old-env-h, env-ah
+  var params-ah/edx: (addr handle cell) <- copy _params-ah
+  var args-ah/ebx: (addr handle cell) <- copy _args-ah
+  var _params/eax: (addr cell) <- lookup *params-ah
+  var params/esi: (addr cell) <- copy _params
+  {
+    var params-is-nil?/eax: boolean <- is-nil? params
+    compare params-is-nil?, 0/false
+    break-if-=
+    # nil is a literal
+    trace-text trace, "eval", "done with push-bindings"
+    copy-handle old-env-h, env-ah
+    trace-higher trace
+    return
+  }
+  # Params can only be symbols or pairs. Args can be anything.
+  # trace "pushing bindings from " params " to " args {{{
+  {
+    var stream-storage: (stream byte 0x40)
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    write stream, "pushing bindings from "
+    print-cell params-ah, stream, 0/no-trace
+    write stream, " to "
+    print-cell args-ah, stream, 0/no-trace
+    trace trace, "eval", stream
+  }
+  # }}}
+  trace-lower trace
+  var params-type/eax: (addr int) <- get params, type
+  compare *params-type, 2/symbol
+  {
+    break-if-!=
+    trace-text trace, "eval", "symbol; binding to all remaining args"
+    # create a new binding
+    var new-binding-storage: (handle cell)
+    var new-binding-ah/eax: (addr handle cell) <- address new-binding-storage
+    new-pair new-binding-ah, *params-ah, *args-ah
+    # push it to env
+    new-pair env-ah, *new-binding-ah, old-env-h
+    trace-higher trace
+    return
+  }
+  compare *params-type, 0/pair
+  {
+    break-if-=
+    error trace, "cannot bind a non-symbol"
+    trace-higher trace
+    return
+  }
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/edi: (addr cell) <- copy _args
+  # params is now a pair, so args must be also
+  var args-type/eax: (addr int) <- get args, type
+  compare *args-type, 0/pair
+  {
+    break-if-=
+    error trace, "args not in a proper list"
+    trace-higher trace
+    return
+  }
+  var intermediate-env-storage: (handle cell)
+  var intermediate-env-ah/edx: (addr handle cell) <- address intermediate-env-storage
+  var first-param-ah/eax: (addr handle cell) <- get params, left
+  var first-arg-ah/ecx: (addr handle cell) <- get args, left
+  push-bindings first-param-ah, first-arg-ah, old-env-h, intermediate-env-ah, trace
+  var remaining-params-ah/eax: (addr handle cell) <- get params, right
+  var remaining-args-ah/ecx: (addr handle cell) <- get args, right
+  push-bindings remaining-params-ah, remaining-args-ah, *intermediate-env-ah, env-ah, trace
 }
 
 fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
