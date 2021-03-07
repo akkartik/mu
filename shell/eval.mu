@@ -83,7 +83,6 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     curr <- copy right
     loop
   }
-  trace-text trace, "eval", "apply"
   var evaluated-list/eax: (addr cell) <- lookup *evaluated-list-ah
   var function-ah/ecx: (addr handle cell) <- get evaluated-list, left
   var args-ah/edx: (addr handle cell) <- get evaluated-list, right
@@ -115,6 +114,19 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     return
   }
   # if it's not a primitive function it must be an anonymous function
+  # trace "apply anonymous function " f " in environment " env {{{
+  {
+    var stream-storage: (stream byte 0x40)
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    write stream, "apply anonymous function "
+    print-cell _f-ah, stream, 0/no-trace
+    write stream, " in environment "
+    var env-ah/eax: (addr handle cell) <- address env-h
+    print-cell env-ah, stream, 0/no-trace
+    trace trace, "eval", stream
+  }
+  # }}}
+  trace-lower trace
   {
     var f-type/ecx: (addr int) <- get f, type
     compare *f-type, 0/pair
@@ -124,12 +136,12 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     var is-fn?/eax: boolean <- is-fn? first
     compare is-fn?, 0/false
     break-if-=
-    trace-text trace, "eval", "apply anonymous function"
     var rest-ah/esi: (addr handle cell) <- get f, right
     var rest/eax: (addr cell) <- lookup *rest-ah
     var params-ah/ecx: (addr handle cell) <- get rest, left
     var body-ah/eax: (addr handle cell) <- get rest, right
     apply-function params-ah, args-ah, body-ah, out, env-h, trace
+    trace-higher trace
     return
   }
   error trace, "unknown function"
@@ -185,7 +197,6 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
     # nil is a literal
     trace-text trace, "eval", "done with push-bindings"
     copy-handle old-env-h, env-ah
-    trace-higher trace
     return
   }
   # Params can only be symbols or pairs. Args can be anything.
@@ -197,6 +208,9 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
     print-cell params-ah, stream, 0/no-trace
     write stream, " to "
     print-cell args-ah, stream, 0/no-trace
+    write stream, " onto "
+    var old-env-ah/eax: (addr handle cell) <- address old-env-h
+    print-cell old-env-ah, stream, 0/no-trace
     trace trace, "eval", stream
   }
   # }}}
@@ -241,6 +255,7 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   var remaining-params-ah/eax: (addr handle cell) <- get params, right
   var remaining-args-ah/ecx: (addr handle cell) <- get args, right
   push-bindings remaining-params-ah, remaining-args-ah, *intermediate-env-ah, env-ah, trace
+  trace-higher trace
 }
 
 fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
@@ -256,6 +271,7 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
 }
 
 fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply +"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
@@ -307,12 +323,15 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   {
     var stream-storage: (stream byte 0x40)
     var stream/ecx: (addr stream byte) <- address stream-storage
-    write stream, "lookup "
+    write stream, "look up "
     var sym2/eax: (addr cell) <- copy sym
     var sym-data-ah/eax: (addr handle stream byte) <- get sym2, text-data
     var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
     rewind-stream sym-data
     write-stream stream, sym-data
+    write stream, " in "
+    var env-ah/eax: (addr handle cell) <- address env-h
+    print-cell env-ah, stream, 0/no-trace
     trace trace, "eval", stream
   }
   trace-lower trace
@@ -334,12 +353,25 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     break-if-=
     lookup-symbol-in-hardcoded-globals sym, out, trace
     trace-higher trace
+    # trace "=> " out " (global)" {{{
+    {
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-!=
+      var stream-storage: (stream byte 0x40)
+      var stream/ecx: (addr stream byte) <- address stream-storage
+      write stream, "=> "
+      print-cell out, stream, 0/no-trace
+      write stream, " (global)"
+      trace trace, "eval", stream
+    }
+    # }}}
     return
   }
   # check car
   var env-head-storage: (handle cell)
   var env-head-ah/eax: (addr handle cell) <- address env-head-storage
-  car env, env-head-ah, trace
+  car env, env-head-ah, 0/no-trace
   var _env-head/eax: (addr cell) <- lookup *env-head-ah
   var env-head/ecx: (addr cell) <- copy _env-head
   # if car is not a list, abort
@@ -370,7 +402,20 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   compare match?, 0/false
   {
     break-if-=
-    cdr env-head, out, trace
+    cdr env-head, out, 0/no-trace
+    # trace "=> " out " (match)" {{{
+    {
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-!=
+      var stream-storage: (stream byte 0x40)
+      var stream/ecx: (addr stream byte) <- address stream-storage
+      write stream, "=> "
+      print-cell out, stream, 0/no-trace
+      write stream, " (match)"
+      trace trace, "eval", stream
+    }
+    # }}}
     trace-higher trace
     return
   }
@@ -380,6 +425,19 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   cdr env, env-tail-ah, trace
   lookup-symbol sym, out, *env-tail-ah, trace
   trace-higher trace
+    # trace "=> " out " (recurse)" {{{
+    {
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-!=
+      var stream-storage: (stream byte 0x40)
+      var stream/ecx: (addr stream byte) <- address stream-storage
+      write stream, "=> "
+      print-cell out, stream, 0/no-trace
+      write stream, " (recurse)"
+      trace trace, "eval", stream
+    }
+    # }}}
 }
 
 fn lookup-symbol-in-hardcoded-globals _sym: (addr cell), out: (addr handle cell), trace: (addr trace) {
@@ -520,8 +578,8 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
   compare b-type, *a-type-addr
   {
     break-if-=
-    trace-text trace, "eval", "=> false (type)"
     trace-higher trace
+    trace-text trace, "eval", "=> false (type)"
     return 0/false
   }
   # if types are number, compare number-data
@@ -535,12 +593,12 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     compare a-val, *b-val-addr
     {
       break-if-=
-      trace-text trace, "eval", "=> false (numbers)"
       trace-higher trace
+      trace-text trace, "eval", "=> false (numbers)"
       return 0/false
     }
-    trace-text trace, "eval", "=> true (numbers)"
     trace-higher trace
+    trace-text trace, "eval", "=> true (numbers)"
     return 1/true
   }
   compare b-type, 2/symbol
@@ -557,8 +615,17 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     stream-to-array a-val, tmp-ah
     var tmp/eax: (addr array byte) <- lookup *tmp-ah
     var match?/eax: boolean <- stream-data-equal? b-val, tmp
-    trace-text trace, "eval", "=> ? (symbols)"
     trace-higher trace
+    {
+      compare match?, 0/false
+      break-if-=
+      trace-text trace, "eval", "=> true (symbols)"
+    }
+    {
+      compare match?, 0/false
+      break-if-!=
+      trace-text trace, "eval", "=> false (symbols)"
+    }
     return match?
   }
   # if a is nil, b should be nil
@@ -573,24 +640,24 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
       break-if-=
       compare b-is-nil?, 0/false
       break-if-=
-      trace-text trace, "eval", "=> true (nils)"
       trace-higher trace
+      trace-text trace, "eval", "=> true (nils)"
       return 1/true
     }
     # a == nil => return false
     {
       compare a-is-nil?, 0/false
       break-if-=
-      trace-text trace, "eval", "=> false (b != nil)"
       trace-higher trace
+      trace-text trace, "eval", "=> false (b != nil)"
       return 0/false
     }
     # b == nil => return false
     {
       compare b-is-nil?, 0/false
       break-if-=
-      trace-text trace, "eval", "=> false (a != nil)"
       trace-higher trace
+      trace-text trace, "eval", "=> false (a != nil)"
       return 0/false
     }
   }
@@ -609,6 +676,8 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     var result/eax: boolean <- cell-isomorphic? a-tmp, b-tmp, trace
     compare result, 0/false
     break-if-!=
+    trace-higher trace
+    trace-text trace, "eval", "=> false (car mismatch)"
     return 0/false
   }
   # recurse on cdrs
@@ -618,6 +687,7 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
   var a-tmp/ecx: (addr cell) <- copy _a-tmp
   var b-tmp/eax: (addr cell) <- lookup *b-tmp-ah
   var result/eax: boolean <- cell-isomorphic? a-tmp, b-tmp, trace
+  trace-higher trace
   return result
 }
 

@@ -53,6 +53,11 @@ fn clear-trace _self: (addr trace) {
 
 fn has-errors? _self: (addr trace) -> _/eax: boolean {
   var self/eax: (addr trace) <- copy _self
+  {
+    compare self, 0
+    break-if-!=
+    return 0/false
+  }
   var max/edx: (addr int) <- get self, first-free
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   var _trace/eax: (addr array trace-line) <- lookup *trace-ah
