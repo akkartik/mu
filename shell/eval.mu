@@ -1,9 +1,20 @@
 # env is an alist of ((sym . val) (sym . val) ...)
 # we never modify `in` or `env`
 fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "evaluate"
+  var in/esi: (addr handle cell) <- copy _in
+  # trace "evaluate " in " in environment " env {{{
+  {
+    var stream-storage: (stream byte 0x40)
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    write stream, "evaluate "
+    print-cell in, stream, 0/no-trace
+    write stream, " in environment "
+    var env-ah/eax: (addr handle cell) <- address env-h
+    print-cell env-ah, stream, 0/no-trace
+    trace trace, "eval", stream
+  }
+  # }}}
   trace-lower trace
-  var in/eax: (addr handle cell) <- copy _in
   var in-addr/eax: (addr cell) <- lookup *in
   {
     var is-nil?/eax: boolean <- is-nil? in-addr
@@ -79,6 +90,16 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
 #?   dump-cell args-ah
 #?   abort "aaa"
   apply function-ah, args-ah, out, env-h, trace
+  trace-higher trace
+  # trace "=> " out {{{
+  {
+    var stream-storage: (stream byte 0x40)
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    print-cell out, stream, 0/no-trace
+    trace trace, "eval", stream
+  }
+  # }}}
 }
 
 fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
@@ -456,6 +477,7 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     var a-val/eax: (addr stream byte) <- lookup *a-val-ah
     var tmp-array: (handle array byte)
     var tmp-ah/edx: (addr handle array byte) <- address tmp-array
+    rewind-stream a-val
     stream-to-array a-val, tmp-ah
     var tmp/eax: (addr array byte) <- lookup *tmp-ah
     var match?/eax: boolean <- stream-data-equal? b-val, tmp

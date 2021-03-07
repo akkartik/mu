@@ -1,6 +1,6 @@
 type cell {
   type: int
-  # type 0: pair
+  # type 0: pair; the unit of lists, trees, DAGS or graphs
   left: (handle cell)
   right: (handle cell)
   # type 1: number
