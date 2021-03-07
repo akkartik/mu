@@ -9,6 +9,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env: (addr cell), 
     compare is-nil?, 0/false
     break-if-=
     # nil is a literal
+    trace-text trace, "eval", "nil"
     copy-object _in, out
     trace-higher trace
     return
@@ -18,6 +19,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env: (addr cell), 
   {
     break-if-!=
     # numbers are literals
+    trace-text trace, "eval", "number"
     copy-object _in, out
     trace-higher trace
     return
@@ -25,12 +27,27 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env: (addr cell), 
   compare *in-type, 2/symbol
   {
     break-if-!=
+    trace-text trace, "eval", "symbol"
     lookup-symbol in-addr, out, env, trace
     trace-higher trace
     return
   }
-  # in-addr is a pair
-  # TODO: special forms
+  # in-addr is a syntax tree
+  $evaluate:anonymous-function: {
+    # trees starting with "fn" are anonymous functions and therefore literals
+    var expr/esi: (addr cell) <- copy in-addr
+    # if its first elem is not "fn", break
+    var first-ah/ecx: (addr handle cell) <- get in-addr, left
+    var first/eax: (addr cell) <- lookup *first-ah
+    var is-fn?/eax: boolean <- is-fn? first
+    compare is-fn?, 0/false
+    break-if-=
+    #
+    trace-text trace, "eval", "anonymous function"
+    copy-object _in, out
+    trace-higher trace
+    return
+  }
   trace-text trace, "eval", "function call"
   trace-text trace, "eval", "evaluating list elements"
   var evaluated-list-storage: (handle cell)
@@ -73,7 +90,7 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     apply-primitive f, args-ah, out, env, trace
     return
   }
-  abort "unknown function"
+  error trace, "unknown function"
 }
 
 fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), env: (addr cell), trace: (addr trace) {
@@ -450,6 +467,20 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
   var a-tmp/ecx: (addr cell) <- copy _a-tmp
   var b-tmp/eax: (addr cell) <- lookup *b-tmp-ah
   var result/eax: boolean <- cell-isomorphic? a-tmp, b-tmp, trace
+  return result
+}
+
+fn is-fn? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 2/symbol
+  {
+    break-if-=
+    return 0/false
+  }
+  var contents-ah/eax: (addr handle stream byte) <- get x, text-data
+  var contents/eax: (addr stream byte) <- lookup *contents-ah
+  var result/eax: boolean <- stream-data-equal? contents, "fn"
   return result
 }
 
