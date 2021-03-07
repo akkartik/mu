@@ -177,10 +177,9 @@ fn run in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
   var nil-storage: (handle cell)
   var nil-ah/eax: (addr handle cell) <- address nil-storage
   allocate-pair nil-ah
-  var env/eax: (addr cell) <- lookup *nil-ah
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
-  evaluate read-result, eval-result, env, trace
+  evaluate read-result, eval-result, *nil-ah, trace
   var error?/eax: boolean <- has-errors? trace
   {
     compare error?, 0/false
