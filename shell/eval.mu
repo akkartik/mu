@@ -114,7 +114,36 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
   error trace, "unknown function"
 }
 
-fn apply-function _params-ah: (addr handle cell), _args-ah: (addr handle cell), _body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  # push bindings for params to env
+  var new-env-storage: (handle cell)
+  var new-env-ah/esi: (addr handle cell) <- address new-env-storage
+  push-bindings params-ah, args-ah, env-h, new-env-ah, trace
+  # eval all expressions in body, writing result to `out` each time
+  var body-ah/ecx: (addr handle cell) <- copy _body-ah
+  $apply-function:body: {
+    var body/eax: (addr cell) <- lookup *body-ah
+    # stop when body is nil
+    {
+      var body-is-nil?/eax: boolean <- is-nil? body
+      compare body-is-nil?, 0/false
+      break-if-!= $apply-function:body
+    }
+    # evaluate each expression, writing result to `out`
+    {
+      var curr-ah/eax: (addr handle cell) <- get body, left
+      evaluate curr-ah, out, *new-env-ah, trace
+    }
+    #
+    body-ah <- get body, right
+    loop
+  }
+  # `out` contains result of evaluating final expression
+}
+
+fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), old-env-h: (handle cell), env-ah: (addr handle cell), trace: (addr trace) {
+  # no bindings for now
+  copy-handle old-env-h, env-ah
 }
 
 fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
