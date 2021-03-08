@@ -69,8 +69,8 @@ fn simplify in: (addr stream byte) -> _/eax: int {
     break-if-!=
     # if word is an operator, perform it
     {
-      var is-add?/eax: boolean <- slice-equal? word, "+"
-      compare is-add?, 0
+      var add?/eax: boolean <- slice-equal? word, "+"
+      compare add?, 0
       break-if-=
       var _b/eax: int <- pop-int-stack stack
       var b/edx: int <- copy _b
@@ -80,8 +80,8 @@ fn simplify in: (addr stream byte) -> _/eax: int {
       loop $simplify:word-loop
     }
     {
-      var is-sub?/eax: boolean <- slice-equal? word, "-"
-      compare is-sub?, 0
+      var sub?/eax: boolean <- slice-equal? word, "-"
+      compare sub?, 0
       break-if-=
       var _b/eax: int <- pop-int-stack stack
       var b/edx: int <- copy _b
@@ -91,8 +91,8 @@ fn simplify in: (addr stream byte) -> _/eax: int {
       loop $simplify:word-loop
     }
     {
-      var is-mul?/eax: boolean <- slice-equal? word, "*"
-      compare is-mul?, 0
+      var mul?/eax: boolean <- slice-equal? word, "*"
+      compare mul?, 0
       break-if-=
       var _b/eax: int <- pop-int-stack stack
       var b/edx: int <- copy _b

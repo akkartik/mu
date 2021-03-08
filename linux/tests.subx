@@ -82,7 +82,7 @@ subx-gen-run-tests:  # in: (addr buffered-file), out: (addr buffered-file)
     #     var word-slice = next-word(line)
     #     if slice-empty?(word-slice)               # empty line
     #       continue
-    #     if is-label?(word-slice)
+    #     if label?(word-slice)
     #       if slice-starts-with?(word-slice, "test-")
     #         tests-found = true
     #         write(new-code-segment, "  e8/call  ")
@@ -197,12 +197,12 @@ $subx-gen-run-tests:check-empty:
     3d/compare-eax-and  0/imm32/false
     75/jump-if-!=  $subx-gen-run-tests:loop/disp8
 $subx-gen-run-tests:check-for-label:
-    # if (!is-label?(word-slice)) continue
-    # . eax = is-label?(word-slice)
+    # if (!label?(word-slice)) continue
+    # . eax = label?(word-slice)
     # . . push args
     52/push-edx
     # . . call
-    e8/call  is-label?/disp32
+    e8/call  label?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) continue

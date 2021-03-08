@@ -1078,8 +1078,8 @@ fn copy-unbound-words-to-args _functions: (addr handle function) {
     $copy-unbound-words-to-args:loop-iter: {
       # is it a number?
       {
-        var is-int?/eax: boolean <- word-is-decimal-integer? curr
-        compare is-int?, 0/false
+        var int?/eax: boolean <- word-is-decimal-integer? curr
+        compare int?, 0/false
         break-if-!= $copy-unbound-words-to-args:loop-iter
       }
       # is it a pre-existing function?

@@ -65,11 +65,11 @@ sig write-int32-hex f: (addr stream byte), n: int
 sig write-int32-hex-bits f: (addr stream byte), n: int, bits: int
 sig write-int32-hex-buffered f: (addr buffered-file), n: int
 sig write-int32-hex-bits-buffered f: (addr buffered-file), n: int, bits: int
-sig is-hex-int? in: (addr slice) -> _/eax: boolean
+sig hex-int? in: (addr slice) -> _/eax: boolean
 sig parse-hex-int in: (addr array byte) -> _/eax: int
 sig parse-hex-int-from-slice in: (addr slice) -> _/eax: int
 #sig parse-hex-int-helper start: (addr byte), end: (addr byte) -> _/eax: int
-sig is-hex-digit? c: byte -> _/eax: boolean
+sig hex-digit? c: byte -> _/eax: boolean
 #sig from-hex-char in/eax: byte -> out/eax: nibble
 sig parse-decimal-int in: (addr array byte) -> _/eax: int
 sig parse-decimal-int-from-slice in: (addr slice) -> _/eax: int
@@ -113,7 +113,7 @@ sig skip-until-close-paren line: (addr stream byte)
 #sig skip-until-close-paren-in-slice curr: (addr byte), end: (addr byte) -> _/eax: (addr byte)
 sig write-stream-data f: (addr buffered-file), s: (addr stream byte)
 sig write-int32-decimal out: (addr stream byte), n: int
-sig is-decimal-digit? c: grapheme -> _/eax: boolean
+sig decimal-digit? c: grapheme -> _/eax: boolean
 sig to-decimal-digit in: grapheme -> _/eax: int
 # bad name alert
 # next-word really tokenizes
@@ -121,8 +121,8 @@ sig to-decimal-digit in: grapheme -> _/eax: int
 sig next-word line: (addr stream byte), out: (addr slice)  # skips '#' comments
 sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not skip '#' comments
 sig has-metadata? word: (addr slice), s: (addr string) -> _/eax: boolean
-sig is-valid-name? in: (addr slice) -> _/eax: boolean
-sig is-label? word: (addr slice) -> _/eax: boolean
+sig valid-name? in: (addr slice) -> _/eax: boolean
+sig label? word: (addr slice) -> _/eax: boolean
 sig emit-hex out: (addr buffered-file), n: int, width: int
 sig emit out: (addr buffered-file), word: (addr slice), width: int
 #sig get table: (addr stream {(handle array byte), T}), key: (addr array byte), row-size: int, abort-message-prefix: (addr array byte) -> _/eax: (addr T)

@@ -344,7 +344,7 @@ compute-offsets:  # in: (addr stream byte), labels: (addr stream {(handle array 
     #         break                                 # end of line
     #       else if slice-equal?(word-slice, "==")  # no need for segment header
     #         break
-    #       else if is-label?(word-slice)
+    #       else if label?(word-slice)
     #         strip trailing ':' from word-slice
     #         trace("label '" word-slice "' is at address " current-address ".")
     #         # labels occupy no space, so no need to increment offsets
@@ -466,12 +466,12 @@ $compute-offsets:case-segment-header:
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
 $compute-offsets:case-label:
-    # if (!is-label?(word-slice)) goto next case
-    # . eax = is-label?(word-slice)
+    # if (!label?(word-slice)) goto next case
+    # . eax = label?(word-slice)
     # . . push args
     52/push-edx
     # . . call
-    e8/call  is-label?/disp32
+    e8/call  label?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) goto next case
@@ -740,7 +740,7 @@ emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr
     #     read-line(in, line)
     #     if (line->write == 0) break               # end of file
     #     address-of-next-instruction += num-bytes(line)
-    #     var is-far-jump-or-call? = is-far-jump-or-call?(line)
+    #     var far-jump-or-call? = far-jump-or-call?(line)
     #     rewind-stream(line)
     #     while true
     #       var word-slice = next-word(line)
@@ -748,7 +748,7 @@ emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr
     #         break
     #       if slice-starts-with?(word-slice, "#")  # comment
     #         break
-    #       if is-label?(word-slice)                # no need for label declarations anymore
+    #       if label?(word-slice)                # no need for label declarations anymore
     #         goto line-loop                        # don't insert empty lines
     #       if slice-equal?(word-slice, "==")       # no need for segment header lines
     #         goto line-loop                        # don't insert empty lines
@@ -766,7 +766,7 @@ emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr
     #         value = *address - address-of-next-instruction
     #         emit(out, value, 1)
     #       else if has-metadata?(word-slice, "disp32")
-    #         if is-far-jump-or-call?
+    #         if far-jump-or-call?
     #           value = *address - address-of-next-instruction
     #         else
     #           value = *address
@@ -779,7 +779,7 @@ emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr
     #   line: ecx
     #   word-slice: edx
     #   address-of-next-instruction: ebx
-    #   is-far-jump-or-call?: edi
+    #   far-jump-or-call?: edi
     #   address: esi (inner loop only)
     #   temporaries: eax, esi (outer loop)
     #
@@ -868,11 +868,11 @@ $emit-output:check-for-end-of-input:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . ebx += eax
     01/add                          3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # add eax to ebx
-    # var is-far-jump-or-call?/edi: boolean = is-far-jump-or-call?(line)
+    # var far-jump-or-call?/edi: boolean = far-jump-or-call?(line)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-far-jump-or-call?/disp32
+    e8/call  far-jump-or-call?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # rewind-stream(line)
@@ -947,12 +947,12 @@ $emit-output:check-for-comment:
     3d/compare-eax-and  0x23/imm32/hash
     0f 84/jump-if-=  $emit-output:next-line/disp32
 $emit-output:check-for-label:
-    # if is-label?(word-slice) break
-    # . eax = is-label?(word-slice)
+    # if label?(word-slice) break
+    # . eax = label?(word-slice)
     # . . push args
     52/push-edx
     # . . call
-    e8/call  is-label?/disp32
+    e8/call  label?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) break
@@ -1169,7 +1169,7 @@ $emit-output:check-disp32:
 $emit-output:emit-disp32:
     # var value/eax = *address
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
-    # if (is-far-jump-or-call?) value -= address-of-next-instruction
+    # if (far-jump-or-call?) value -= address-of-next-instruction
     81          7/subop/compare     3/mod/direct    7/rm32/edi    .           .             .           .           .               0/imm32/false     # compare edi
     74/jump-if-=  $emit-output:really-emit-disp32/disp8
     29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # subtract ebx from eax
@@ -1851,7 +1851,7 @@ test-emit-output-code-label-absolute:
 
 # reads line to make some checks
 # don't assume the read state of line after calling this function
-is-far-jump-or-call?:  # line: (addr stream byte) -> result/edi: boolean
+far-jump-or-call?:  # line: (addr stream byte) -> result/edi: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1872,7 +1872,7 @@ is-far-jump-or-call?:  # line: (addr stream byte) -> result/edi: boolean
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
     # result = false
     bf/copy-to-edi  0/imm32/false
-$is-far-jump-or-call?:check-first-word:
+$far-jump-or-call?:check-first-word:
     # next-word(line, word-slice)
     # . . push args
     52/push-edx
@@ -1891,7 +1891,7 @@ $is-far-jump-or-call?:check-first-word:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != 0) return
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $is-far-jump-or-call?:end/disp32
+    0f 85/jump-if-!=  $far-jump-or-call?:end/disp32
     # datum = next-token-from-slice(word-slice->start, word-slice->end, "/")
     # . . push args
     53/push-ebx
@@ -1913,7 +1913,7 @@ $is-far-jump-or-call?:check-first-word:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return true
     3d/compare-eax-and  0/imm32/false
-    75/jump-if-!=  $is-far-jump-or-call?:return-true/disp8
+    75/jump-if-!=  $far-jump-or-call?:return-true/disp8
     # if (datum-slice == "e9") return true
     # . eax = slice-equal?(datum-slice, "e9")
     # . . push args
@@ -1925,7 +1925,7 @@ $is-far-jump-or-call?:check-first-word:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return true
     3d/compare-eax-and  0/imm32/false
-    75/jump-if-!=  $is-far-jump-or-call?:return-true/disp8
+    75/jump-if-!=  $far-jump-or-call?:return-true/disp8
     # if (datum-slice != "0f") return false
     # . eax = slice-equal?(datum-slice, "0f")
     # . . push args
@@ -1937,8 +1937,8 @@ $is-far-jump-or-call?:check-first-word:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) return
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-=  $is-far-jump-or-call?:end/disp8
-$is-far-jump-or-call?:check-second-word:
+    74/jump-if-=  $far-jump-or-call?:end/disp8
+$far-jump-or-call?:check-second-word:
     # next-word(line, word-slice)
     # . . push args
     52/push-edx
@@ -1957,7 +1957,7 @@ $is-far-jump-or-call?:check-second-word:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != 0) return
     3d/compare-eax-and  0/imm32/false
-    75/jump-if-!=  $is-far-jump-or-call?:end/disp8
+    75/jump-if-!=  $far-jump-or-call?:end/disp8
     # if datum of word-slice does not start with "8", return false
     # . start/eax = word-slice->start
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy *edx to eax
@@ -1966,11 +1966,11 @@ $is-far-jump-or-call?:check-second-word:
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     # . if (eax != '8') return
     3d/compare-eax-and  0x38/imm32/8
-    75/jump-if-!=  $is-far-jump-or-call?:end/disp8
+    75/jump-if-!=  $far-jump-or-call?:end/disp8
     # otherwise return true
-$is-far-jump-or-call?:return-true:
+$far-jump-or-call?:return-true:
     bf/copy-to-edi  1/imm32/true
-$is-far-jump-or-call?:end:
+$far-jump-or-call?:end:
     # . reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # . restore registers
@@ -2187,7 +2187,7 @@ num-bytes:  # line: (addr stream byte) -> eax: int
     #       break
     #     if slice-starts-with?(word-slice, "#")  # comment
     #       break
-    #     if is-label?(word-slice)                # no need for label declarations anymore
+    #     if label?(word-slice)                # no need for label declarations anymore
     #       break
     #     if slice-equal?(word-slice, "==")
     #       break                                 # no need for segment header lines

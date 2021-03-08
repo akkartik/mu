@@ -46,8 +46,8 @@ fn main -> _/ebx: int {
     }
     skip-chars-matching-whitespace line
     # now check the rest of the line
-    var is-valid?/eax: boolean <- is-valid? start, end, letter, line
-    compare is-valid?, 0/false
+    var valid?/eax: boolean <- valid? start, end, letter, line
+    compare valid?, 0/false
     {
       break-if-=
       print-string 0, "valid!\n"
@@ -60,7 +60,7 @@ fn main -> _/ebx: int {
   return 0
 }
 
-fn is-valid? start: int, end: int, letter: byte, password: (addr stream byte) -> _/eax: boolean {
+fn valid? start: int, end: int, letter: byte, password: (addr stream byte) -> _/eax: boolean {
   var letter-count/edi: int <- copy 0
   # for every c in password
   #   if (c == letter)

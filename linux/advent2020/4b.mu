@@ -231,7 +231,7 @@ fn main -> _/ebx: int {
           var c/eax: (addr byte) <- index s3, i
           {
             var c2/eax: byte <- copy-byte *c
-            var valid?/eax: boolean <- is-hex-digit? c2
+            var valid?/eax: boolean <- hex-digit? c2
             compare valid?, 0
             loop-if-= $main:word-loop
           }

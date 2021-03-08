@@ -16116,7 +16116,7 @@ $populate-mu-function-header:check-for-out:
       # if v->type is an addr, abort
       (lookup *ebx *(ebx+4))  # => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-mu-addr-type? %eax)  # => eax
+      (mu-addr-type? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-function-header:error-addr-output/disp32
       # out->outputs = append(v, out->outputs)
@@ -16428,7 +16428,7 @@ $populate-mu-function-signature:check-for-out:
         75/jump-if-!= break/disp8
         (lookup *ebx *(ebx+4))  # => eax
         (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-        (is-mu-addr-type? %eax)  # => eax
+        (mu-addr-type? %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
         0f 85/jump-if-!= $populate-mu-function-signature:error-addr-output/disp32
       }
@@ -16994,20 +16994,20 @@ $parse-var-with-type:check-register:
     (lookup *(edi+0x18) *(edi+0x1c))  # Var-register Var-register => eax
     3d/compare-eax-and 0/imm32
     74/jump-if-= $parse-var-with-type:end/disp8
-    (is-float-register? %eax)  # => eax
+    (float-register? %eax)  # => eax
     {
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       # var is in a float register; ensure type is float
       (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 0xf)  # float => eax
+      (simple-mu-type? %eax 0xf)  # float => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $parse-var-with-type:error-non-float-in-floating-point-register/disp32
       eb/jump $parse-var-with-type:end/disp8
     }
     # var is not in a float register; ensure type is not float
     (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
-    (is-simple-mu-type? %eax 0xf)  # float => eax
+    (simple-mu-type? %eax 0xf)  # float => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $parse-var-with-type:error-float-in-integer-register/disp32
 $parse-var-with-type:end:
@@ -17062,7 +17062,7 @@ $parse-var-with-type:error-non-float-in-floating-point-register:
     (stop *(ebp+0x1c) 1)
     # never gets here
 
-is-float-register?:  # r: (addr array byte) -> result/eax: boolean
+float-register?:  # r: (addr array byte) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -17071,7 +17071,7 @@ is-float-register?:  # r: (addr array byte) -> result/eax: boolean
     81 7/subop/compare *eax 8/imm32/start-of-floating-point-registers
     0f 9d/set-if->= %al
     81 4/subop/and %eax 0xff/imm32
-$is-float-register?:end:
+$float-register?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -17157,7 +17157,7 @@ $parse-type:check-for-int:
         8a/copy-byte *eax 0/r32/AL
         81 4/subop/and %eax 0xff/imm32
         # TODO: raise an error on `var x: (array int a)`
-        (is-decimal-digit? %eax)  # => eax
+        (decimal-digit? %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
 $parse-type:int:
@@ -17764,14 +17764,14 @@ test-parse-var-with-compound-type:
 # identifier starts with a letter or '$' or '_'
 # no constraints at the moment on later letters
 # all we really want to do so far is exclude '{', '}' and '->'
-is-identifier?:  # in: (addr slice) -> result/eax: boolean
+identifier?:  # in: (addr slice) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # if (slice-empty?(in)) return false
     (slice-empty? *(ebp+8))  # => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $is-identifier?:false/disp8
+    75/jump-if-!= $identifier?:false/disp8
     # var c/eax: byte = *in->start
     8b/-> *(ebp+8) 0/r32/eax
     8b/-> *eax 0/r32/eax
@@ -17779,25 +17779,25 @@ is-identifier?:  # in: (addr slice) -> result/eax: boolean
     81 4/subop/and %eax 0xff/imm32
     # if (c == '$') return true
     3d/compare-eax-and 0x24/imm32/$
-    74/jump-if-= $is-identifier?:true/disp8
+    74/jump-if-= $identifier?:true/disp8
     # if (c == '_') return true
     3d/compare-eax-and 0x5f/imm32/_
-    74/jump-if-= $is-identifier?:true/disp8
+    74/jump-if-= $identifier?:true/disp8
     # drop case
     25/and-eax-with 0x5f/imm32
     # if (c < 'A') return false
     3d/compare-eax-and 0x41/imm32/A
-    7c/jump-if-< $is-identifier?:false/disp8
+    7c/jump-if-< $identifier?:false/disp8
     # if (c > 'Z') return false
     3d/compare-eax-and 0x5a/imm32/Z
-    7f/jump-if-> $is-identifier?:false/disp8
+    7f/jump-if-> $identifier?:false/disp8
     # otherwise return true
-$is-identifier?:true:
+$identifier?:true:
     b8/copy-to-eax 1/imm32/true
-    eb/jump $is-identifier?:end/disp8
-$is-identifier?:false:
+    eb/jump $identifier?:end/disp8
+$identifier?:false:
     b8/copy-to-eax 0/imm32/false
-$is-identifier?:end:
+$identifier?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -17817,7 +17817,7 @@ test-is-identifier-dollar:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 1 "F - test-is-identifier-dollar")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -17838,7 +17838,7 @@ test-is-identifier-underscore:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 1 "F - test-is-identifier-underscore")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -17859,7 +17859,7 @@ test-is-identifier-a:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 1 "F - test-is-identifier-a")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -17880,7 +17880,7 @@ test-is-identifier-z:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 1 "F - test-is-identifier-z")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -17901,7 +17901,7 @@ test-is-identifier-A:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 1 "F - test-is-identifier-A")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -17922,7 +17922,7 @@ test-is-identifier-Z:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 1 "F - test-is-identifier-Z")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -17944,7 +17944,7 @@ test-is-identifier-at:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 0 "F - test-is-identifier-@")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -17966,7 +17966,7 @@ test-is-identifier-square-bracket:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 0 "F - test-is-identifier-@")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -17988,7 +17988,7 @@ test-is-identifier-backtick:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 0 "F - test-is-identifier-backtick")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -18010,7 +18010,7 @@ test-is-identifier-curly-brace-open:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 0 "F - test-is-identifier-curly-brace-open")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -18031,7 +18031,7 @@ test-is-identifier-curly-brace-close:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 0 "F - test-is-identifier-curly-brace-close")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -18053,7 +18053,7 @@ test-is-identifier-hyphen:
     50/push-eax
     89/<- %ecx 4/r32/esp
     #
-    (is-identifier? %ecx)
+    (identifier? %ecx)
     (check-ints-equal %eax 0 "F - test-is-identifier-hyphen")
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -18516,7 +18516,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
       75/jump-if-!= break/disp8
       # if v-addr->type == byte, abort
       (lookup *(esi+8) *(esi+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 8)  # byte => eax
+      (simple-mu-type? %eax 8)  # byte => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $parse-mu-var-def:error-byte-on-stack/disp32
       # ensure that there's nothing else on this line
@@ -18534,7 +18534,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack live-var), out:
       # if v-addr->type == byte, check for unsupported registers
       {
         (lookup *(esi+8) *(esi+0xc))  # Var-type Var-type => eax
-        (is-simple-mu-type? %eax 8)  # byte => eax
+        (simple-mu-type? %eax 8)  # byte => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
         (lookup *(esi+0x18) *(esi+0x1c))  # => eax
@@ -18748,7 +18748,7 @@ parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack live-var), fn: (ad
     #     while true
     #       name = next-mu-token(line)
     #       if (name == '<-') break
-    #       assert(is-identifier?(name))
+    #       assert(identifier?(name))
     #       var v: (handle var) = lookup-var(name, vars)
     #       out-addr->outputs = append(v, out-addr->outputs)
     #   add-operation-and-inputs-to-stmt(out-addr, line, vars)
@@ -18802,8 +18802,8 @@ $parse-mu-stmt:read-outputs:
         81 4/subop/and %eax 0xff/imm32
         3d/compare-eax-and 0x2a/imm32/asterisk
         0f 84/jump-if-= $parse-mu-stmt:error-output-dereferenced/disp32
-        # assert(is-identifier?(name))
-        (is-identifier? %ecx)  # => eax
+        # assert(identifier?(name))
+        (identifier? %ecx)  # => eax
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= $parse-mu-stmt:abort/disp32
         #
@@ -18904,7 +18904,7 @@ $add-operation-and-inputs-to-stmt:read-inouts:
       (slice-equal? %ecx "<-")
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $add-operation-and-inputs-to-stmt:abort/disp32
-      # if (is-get? && second operand) lookup or create offset
+      # if (get? && second operand) lookup or create offset
       {
         81 7/subop/compare %ebx 0/imm32/false
         74/jump-if-= break/disp8
@@ -18938,7 +18938,7 @@ $add-operation-and-inputs-to-stmt:inout-is-deref:
         ba/copy-to-edx 1/imm32/true
       }
       (lookup-var-or-literal %ecx *(ebp+0x10) %esi *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c))
-      # if (is-deref?) some additional checks
+      # if (deref?) some additional checks
       81 7/subop/compare %edx 0/imm32/false
       {
         74/jump-if-= break/disp8
@@ -18948,7 +18948,7 @@ $add-operation-and-inputs-to-stmt:inout-is-deref:
         0f 84/jump-if-= $add-operation-and-inputs-to-stmt:error-deref-on-stack/disp32
         # if var is not an address, abort
         (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-        (is-mu-addr-type? %eax)  # => eax
+        (mu-addr-type? %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= $add-operation-and-inputs-to-stmt:error-deref-non-addr/disp32
       }
@@ -19085,11 +19085,11 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack live-var), out: 
     8b/-> *esi 1/r32/ecx
     8a/copy-byte *ecx 1/r32/CL
     81 4/subop/and %ecx 0xff/imm32
-    # if (is-decimal-digit?(c) || c == '-') return new var(name)
+    # if (decimal-digit?(c) || c == '-') return new var(name)
     {
       81 7/subop/compare %ecx 0x2d/imm32/dash
       74/jump-if-= $lookup-var-or-literal:literal/disp8
-      (is-decimal-digit? %ecx)  # => eax
+      (decimal-digit? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $lookup-var-or-literal:literal:
@@ -19748,7 +19748,7 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice), ou
     8b/-> *(ebp+0xc) 1/r32/ecx
     (next-token-from-slice *ecx *(ecx+4) 0x2f *(ebp+0xc))
     # if (!is-hex-int?(name)) abort
-    (is-hex-int? *(ebp+0xc))  # => eax
+    (hex-int? *(ebp+0xc))  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $new-literal-integer:abort/disp32
     # a little more error-checking
@@ -20222,7 +20222,7 @@ $container-type:end:
     5d/pop-to-ebp
     c3/return
 
-is-container?:  # t: type-id -> result/eax: boolean
+container?:  # t: type-id -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -20232,7 +20232,7 @@ is-container?:  # t: type-id -> result/eax: boolean
     3b/compare 0/r32/eax *Primitive-type-ids
     0f 9d/set-if->= %al
     81 4/subop/and %eax 0xff/imm32
-$is-container?:end:
+$container?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -20561,31 +20561,31 @@ $populate-mu-type:parse-element:
       # if v is an addr, abort
       (lookup *esi *(esi+4))  # => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-mu-addr-type? %eax)  # => eax
+      (mu-addr-type? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-type:error2/disp32
       # if v is an array, abort  (we could support it, but initialization gets complex)
       (lookup *esi *(esi+4))  # => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-mu-array-type? %eax)  # => eax
+      (mu-array-type? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-type:error3/disp32
       # if v is a byte, abort
       (lookup *esi *(esi+4))  # => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 8)  # byte => eax
+      (simple-mu-type? %eax 8)  # byte => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-type:error4/disp32
       # if v is a slice, abort
       (lookup *esi *(esi+4))  # => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 0xc)  # slice => eax
+      (simple-mu-type? %eax 0xc)  # slice => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-type:error5/disp32
       # if v is a stream, abort  (we could support it, but initialization gets even more complex)
       (lookup *esi *(esi+4))  # => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-mu-stream-type? %eax)  # => eax
+      (mu-stream-type? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-type:error6/disp32
       # var tmp/ecx
@@ -21838,13 +21838,13 @@ check-mu-numberlike-arg:  # v: (addr stmt-var), stmt: (addr stmt), fn: (addr fun
     89/<- %esi 0/r32/eax
 $check-mu-numberlike-arg:check-literal:
     # if t is an int, return
-    (is-simple-mu-type? %esi 0)  # literal => eax
+    (simple-mu-type? %esi 0)  # literal => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $check-mu-numberlike-arg:end/disp32
 $check-mu-numberlike-arg:check-addr:
     # if t is an addr and v is dereferenced, return whether t->payload is an addr
     {
-      (is-mu-addr-type? %esi)  # => eax
+      (mu-addr-type? %esi)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       8b/-> *(ebp+8) 0/r32/eax
@@ -21859,7 +21859,7 @@ $check-mu-numberlike-arg:check-addr:
           75/jump-if-!= break/disp8
           (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
         }
-        (is-mu-addr-type? %eax)  # => eax
+        (mu-addr-type? %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= $check-mu-numberlike-arg:end/disp8
       }
@@ -21882,7 +21882,7 @@ check-mu-numberlike-output:  # v: (addr stmt-var), stmt: (addr stmt), fn: (addr 
     # . save registers
     50/push-eax
     #
-    (is-mu-numberlike-output-var? *(ebp+8))  # => eax
+    (mu-numberlike-output-var? *(ebp+8))  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-numberlike-output:fail/disp32
 $check-mu-numberlike-output:end:
@@ -21913,7 +21913,7 @@ $check-mu-numberlike-output:fail:
     (stop *(ebp+0x18) 1)
     # never gets here
 
-is-mu-numberlike-output-var?:  # v: (addr stmt-var) -> result/eax: boolean
+mu-numberlike-output-var?:  # v: (addr stmt-var) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -21921,14 +21921,14 @@ is-mu-numberlike-output-var?:  # v: (addr stmt-var) -> result/eax: boolean
     8b/-> *(ebp+8) 0/r32/eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-    (is-mu-numberlike-output? %eax)  # => eax
-$is-mu-numberlike-output-var?:end:
+    (mu-numberlike-output? %eax)  # => eax
+$mu-numberlike-output-var?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-is-mu-numberlike-output?:  # v: (addr type-tree) -> result/eax: boolean
+mu-numberlike-output?:  # v: (addr type-tree) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -21936,42 +21936,42 @@ is-mu-numberlike-output?:  # v: (addr type-tree) -> result/eax: boolean
     56/push-esi
     # var t/esi: (addr type-tree) = lookup(v->value->type)
     8b/-> *(ebp+8) 6/r32/esi
-$is-mu-numberlike-output?:check-int:
+$mu-numberlike-output?:check-int:
     # if t is an int, return
-    (is-simple-mu-type? %esi 1)  # int => eax
+    (simple-mu-type? %esi 1)  # int => eax
     3d/compare-eax-and 0/imm32/false
-    0f 85/jump-if-!= $is-mu-numberlike-output?:return-true/disp32
-$is-mu-numberlike-output?:check-float:
+    0f 85/jump-if-!= $mu-numberlike-output?:return-true/disp32
+$mu-numberlike-output?:check-float:
     # if t is a float, return
-    (is-simple-mu-type? %esi 0xf)  # float => eax
+    (simple-mu-type? %esi 0xf)  # float => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
-$is-mu-numberlike-output?:check-boolean:
+    75/jump-if-!= $mu-numberlike-output?:return-true/disp8
+$mu-numberlike-output?:check-boolean:
     # if t is a boolean, return
-    (is-simple-mu-type? %esi 5)  # boolean => eax
+    (simple-mu-type? %esi 5)  # boolean => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
-$is-mu-numberlike-output?:check-byte:
+    75/jump-if-!= $mu-numberlike-output?:return-true/disp8
+$mu-numberlike-output?:check-byte:
     # if t is a byte, return
-    (is-simple-mu-type? %esi 8)  # byte => eax
+    (simple-mu-type? %esi 8)  # byte => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
-$is-mu-numberlike-output?:check-code-point:
+    75/jump-if-!= $mu-numberlike-output?:return-true/disp8
+$mu-numberlike-output?:check-code-point:
     # if t is a code-point, return
-    (is-simple-mu-type? %esi 0xd)  # code-point => eax
+    (simple-mu-type? %esi 0xd)  # code-point => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
-$is-mu-numberlike-output?:check-grapheme:
+    75/jump-if-!= $mu-numberlike-output?:return-true/disp8
+$mu-numberlike-output?:check-grapheme:
     # if t is a grapheme, return
-    (is-simple-mu-type? %esi 0xe)  # grapheme => eax
+    (simple-mu-type? %esi 0xe)  # grapheme => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $is-mu-numberlike-output?:return-true/disp8
-$is-mu-numberlike-output?:return-false:
+    75/jump-if-!= $mu-numberlike-output?:return-true/disp8
+$mu-numberlike-output?:return-false:
     b8/copy-to-eax 0/imm32/false
-    eb/jump $is-mu-numberlike-output?:end/disp8
-$is-mu-numberlike-output?:return-true:
+    eb/jump $mu-numberlike-output?:end/disp8
+$mu-numberlike-output?:return-true:
     b8/copy-to-eax 1/imm32/true
-$is-mu-numberlike-output?:end:
+$mu-numberlike-output?:end:
     # . restore registers
     5e/pop-to-esi
     # . epilogue
@@ -22059,7 +22059,7 @@ $check-mu-copy-stmt:types:
     {
       (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-mu-addr-type? %eax)  # => eax
+      (mu-addr-type? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22076,7 +22076,7 @@ $check-mu-copy-stmt:types:
       81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
       75/jump-if-!= break/disp8
       (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 7)  # offset => eax
+      (simple-mu-type? %eax 7)  # offset => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22090,12 +22090,12 @@ $check-mu-copy-stmt:types:
     {
       (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 8)  # byte => eax
+      (simple-mu-type? %eax 8)  # byte => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 0)  # literal => eax
+      (simple-mu-type? %eax 0)  # literal => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $check-mu-copy-stmt:error-non-literal-to-byte/disp32
       eb/jump $check-mu-copy-stmt:end/disp8
@@ -22255,7 +22255,7 @@ $check-mu-copy-to-stmt:types:
     {
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+0x8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 0)  # => eax
+      (simple-mu-type? %eax 0)  # => eax
       3d/compare-eax-and 0/imm32
       75/jump-if-!= break/disp8
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22288,10 +22288,10 @@ $check-mu-copy-to-stmt:dest-is-deref2:
     # if dest is a byte and src is not a literal, abort
     {
 $check-mu-copy-to-stmt:final-check-byte:
-      (is-simple-mu-type? %ebx 8)  # byte => eax
+      (simple-mu-type? %ebx 8)  # byte => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
-      (is-simple-mu-type? %ecx 0)  # literal => eax
+      (simple-mu-type? %ecx 0)  # literal => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $check-mu-copy-to-stmt:error-non-literal-to-byte/disp32
     }
@@ -22302,7 +22302,7 @@ $check-mu-copy-to-stmt:final-check-byte:
     # if dest is an addr and src is 0, return
     {
 $check-mu-copy-to-stmt:final-check-addr:
-      (is-mu-addr-type? %ebx)  # => eax
+      (mu-addr-type? %ebx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22318,7 +22318,7 @@ $check-mu-copy-to-stmt:final-check-offset:
       81 7/subop/compare *ebx 0/imm32/false  # Type-tree-is-atom
       75/jump-if-!= break/disp8
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 7)  # offset => eax
+      (simple-mu-type? %eax 7)  # offset => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22475,7 +22475,7 @@ $check-mu-copy-byte-stmt:inout-is-deref2:
     (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
     # if output is not of type byte, abort
-    (is-simple-mu-type? %eax 8)  # byte => eax
+    (simple-mu-type? %eax 8)  # byte => eax
     3d/compare-eax-and 0/imm32
     0f 84/jump-if-= $check-mu-copy-byte-stmt:error-invalid-output-type/disp32
 $check-mu-copy-byte-stmt:end:
@@ -22647,7 +22647,7 @@ $check-mu-copy-byte-to-stmt:dest-is-deref2:
       89/<- %ebx 0/r32/eax
     }
     # if dest is not a byte, abort
-    (is-simple-mu-type? %ebx 8)  # byte => eax
+    (simple-mu-type? %ebx 8)  # byte => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-copy-byte-to-stmt:error-invalid-dest-type/disp32
 $check-mu-copy-byte-to-stmt:end:
@@ -22769,7 +22769,7 @@ $check-mu-compare-stmt:get-right:
 $check-mu-compare-stmt:both-in-mem:
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+0x8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 0)  # => eax
+      (simple-mu-type? %eax 0)  # => eax
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-!= break/disp32
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22778,7 +22778,7 @@ $check-mu-compare-stmt:both-in-mem:
       75/jump-if-!= break/disp8
       (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+0x8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 0)  # => eax
+      (simple-mu-type? %eax 0)  # => eax
       3d/compare-eax-and 0/imm32
       75/jump-if-!= break/disp8
       (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22807,7 +22807,7 @@ $check-mu-compare-stmt:types:
       89/<- %ecx 0/r32/eax
     }
     # if right-type is a literal string, abort
-    (is-simple-mu-type? %ecx 0x10)  # string-literal => eax
+    (simple-mu-type? %ecx 0x10)  # string-literal => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $check-mu-compare-stmt:error-right-string-literal/disp32
     # if right is not a scalar, abort
@@ -22846,7 +22846,7 @@ $check-mu-compare-stmt:types:
     {
       (lookup *edi *(edi+4))  # Stmt-var-value Stmt-var-value => eax
       (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
-      (is-mu-addr-type? %eax)  # => eax
+      (mu-addr-type? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
@@ -22990,7 +22990,7 @@ $check-mu-address-stmt:types:
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
     89/<- %edx 0/r32/eax
     # if output-type not an addr, abort
-    (is-mu-addr-type? %edx)  # => eax
+    (mu-addr-type? %edx)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-address-stmt:error-output-not-address/disp32
     # output-type = output-type->right
@@ -23146,7 +23146,7 @@ type-equal-ignoring-capacity?:  # a: (addr type-tree), b: (addr type-tree) -> re
     0f 84/jump-if-= $type-equal-ignoring-capacity?:end/disp32  # eax switches meaning
     # if (curr-a->left == "array") curr-a = curr-a->element-type
     {
-      (is-mu-array? %edx)  # => eax
+      (mu-array? %edx)  # => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
 $type-equal-ignoring-capacity?:array:
@@ -23162,7 +23162,7 @@ $type-equal-ignoring-capacity?:array:
     }
     # if (curr-a->left == "stream") curr-a = curr-a->element-type
     {
-      (is-mu-stream? %edx)  # => eax
+      (mu-stream? %edx)  # => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
 $type-equal-ignoring-capacity?:stream:
@@ -23243,10 +23243,10 @@ check-mu-return-stmt:  # stmt: (addr stmt), fn: (addr function), err: (addr buff
       # if curr-type is literal and template-type is float, abort
       50/push-eax
       {
-        (is-simple-mu-type? %eax 0)  # literal => eax
+        (simple-mu-type? %eax 0)  # literal => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
-        (is-simple-mu-type? %ecx 0xf)  # float => eax
+        (simple-mu-type? %ecx 0xf)  # float => eax
         3d/compare-eax-and 0/imm32/false
         0f 85/jump-if-!= $check-mu-return-stmt:error-literal-to-float/disp32
       }
@@ -23697,7 +23697,7 @@ $check-mu-get-stmt:check-base:
 $check-mu-get-stmt:base-is-compound:
       # if (type->left != addr) break
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $check-mu-get-stmt:base-is-addr:
@@ -23723,7 +23723,7 @@ $check-mu-get-stmt:check-base-typeinfo:
     }
     # var base-type-id/ebx: type-id = base-type->value
     8b/-> *(ebx+4) 3/r32/ebx  # Type-tree-value
-    (is-container? %ebx)  # => eax
+    (container? %ebx)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-get-stmt:error-bad-base/disp32
     # var base-typeinfo/edx: (addr typeinfo) = find-typeinfo(base-type-id)
@@ -23776,7 +23776,7 @@ $check-mu-get-stmt:check-output-type:
     0f 85/jump-if-!= $check-mu-get-stmt:error-output-type-not-address/disp32
     # type must start with (addr ...)
     (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 2)  # => eax
+    (simple-mu-type? %eax 2)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-get-stmt:error-output-type-not-address/disp32
 $check-mu-get-stmt:check-output-type-match:
@@ -23989,7 +23989,7 @@ $check-mu-index-stmt:check-no-inouts:
     81 7/subop/compare *ebx 0/imm32/false  # Type-tree-is-atom
     {
       74/jump-if-= break/disp8
-      (is-simple-mu-type? %ebx 3)  # array => eax
+      (simple-mu-type? %ebx 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $check-mu-index-stmt:error-base-array-atom-type/disp32
       0f 84/jump-if-= $check-mu-index-stmt:error-base-non-array-type/disp32
@@ -23998,11 +23998,11 @@ $check-mu-index-stmt:base-is-compound:
     # if type->left not addr or array, abort
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
+      (simple-mu-type? %eax 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       e9/jump $check-mu-index-stmt:error-base-non-array-type/disp32
@@ -24010,13 +24010,13 @@ $check-mu-index-stmt:base-is-compound:
     # if (type->left == addr) ensure type->right->left == array and type->register exists
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $check-mu-index-stmt:base-is-addr:
       (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
       (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
+      (simple-mu-type? %eax 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $check-mu-index-stmt:error-base-non-array-type/disp32
 $check-mu-index-stmt:check-base-addr-is-register:
@@ -24026,7 +24026,7 @@ $check-mu-index-stmt:check-base-addr-is-register:
     # if (type->left == array) ensure type->register doesn't exist
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
+      (simple-mu-type? %eax 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $check-mu-index-stmt:base-is-array:
@@ -24036,7 +24036,7 @@ $check-mu-index-stmt:base-is-array:
     # if (base-type->left == addr) base-type = base-type->right
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
@@ -24060,13 +24060,13 @@ $check-mu-index-stmt:check-single-inout:
     {
       74/jump-if-= break/disp8
 $check-mu-index-stmt:index-type-is-atom:
-      (is-simple-mu-type? %edx 0)  # literal => eax
+      (simple-mu-type? %edx 0)  # literal => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= $check-mu-index-stmt:index-type-done/disp8
-      (is-simple-mu-type? %edx 1)  # int => eax
+      (simple-mu-type? %edx 1)  # int => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= $check-mu-index-stmt:index-type-done/disp8
-      (is-simple-mu-type? %edx 7)  # offset => eax
+      (simple-mu-type? %edx 7)  # offset => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $check-mu-index-stmt:error-index-offset-atom-type/disp32
       e9/jump $check-mu-index-stmt:error-invalid-index-type/disp32
@@ -24076,14 +24076,14 @@ $check-mu-index-stmt:index-type-is-atom:
       75/jump-if-!= break/disp8
 $check-mu-index-stmt:index-type-is-non-atom:
       (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 7)  # offset => eax
+      (simple-mu-type? %eax 7)  # offset => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $check-mu-index-stmt:error-invalid-index-type/disp32
     }
 $check-mu-index-stmt:index-type-done:
     # check index is either a literal or in a register
     {
-      (is-simple-mu-type? %edx 0)  # literal => eax
+      (simple-mu-type? %edx 0)  # literal => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
 $check-mu-index-stmt:check-index-in-register:
@@ -24092,7 +24092,7 @@ $check-mu-index-stmt:check-index-in-register:
     }
     # - if index is an 'int', check that element type of base has size 1, 2, 4 or 8 bytes.
     {
-      (is-simple-mu-type? %edx 1)  # int => eax
+      (simple-mu-type? %edx 1)  # int => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $check-mu-index-stmt:check-index-can-be-int:
@@ -24130,7 +24130,7 @@ $check-mu-index-stmt:check-index-can-be-int:
     0f 85/jump-if-!= $check-mu-index-stmt:error-output-type-not-address/disp32
     # type must start with (addr ...)
     (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 2)  # addr => eax
+    (simple-mu-type? %eax 2)  # addr => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-index-stmt:error-output-type-not-address/disp32
     # if tail(base-type) != tail(output-type) abort
@@ -24372,7 +24372,7 @@ $check-mu-length-stmt:check-no-inouts:
     81 7/subop/compare *ebx 0/imm32/false  # Type-tree-is-atom
     {
       74/jump-if-= break/disp8
-      (is-simple-mu-type? %ebx 3)  # array => eax
+      (simple-mu-type? %ebx 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $check-mu-length-stmt:error-base-array-atom-type/disp32
       0f 84/jump-if-= $check-mu-length-stmt:error-base-non-array-type/disp32
@@ -24381,11 +24381,11 @@ $check-mu-length-stmt:base-is-compound:
     # if type->left not addr or array, abort
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
+      (simple-mu-type? %eax 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       e9/jump $check-mu-length-stmt:error-base-non-array-type/disp32
@@ -24393,13 +24393,13 @@ $check-mu-length-stmt:base-is-compound:
     # if (type->left == addr) ensure type->right->left == array and type->register exists
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $check-mu-length-stmt:base-is-addr:
       (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
       (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
+      (simple-mu-type? %eax 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $check-mu-length-stmt:error-base-non-array-type/disp32
 $check-mu-length-stmt:check-base-addr-is-register:
@@ -24409,7 +24409,7 @@ $check-mu-length-stmt:check-base-addr-is-register:
     # if (type->left == array) ensure type->register doesn't exist
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
+      (simple-mu-type? %eax 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $check-mu-length-stmt:base-is-array:
@@ -24419,7 +24419,7 @@ $check-mu-length-stmt:base-is-array:
     # if (base-type->left == addr) base-type = base-type->right
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
@@ -24440,7 +24440,7 @@ $check-mu-length-stmt:base-is-array:
     # - check output type
     # must have a non-atomic type
     (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
-    (is-simple-mu-type? %eax 1)  # int => eax
+    (simple-mu-type? %eax 1)  # int => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-length-stmt:error-invalid-output-type/disp32
     # - check for too many outputs
@@ -24662,7 +24662,7 @@ $check-mu-compute-offset-stmt:check-no-inouts:
     81 7/subop/compare *ebx 0/imm32/false  # Type-tree-is-atom
     {
       74/jump-if-= break/disp8
-      (is-simple-mu-type? %ebx 3)  # array => eax
+      (simple-mu-type? %ebx 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $check-mu-compute-offset-stmt:error-base-array-atom-type/disp32
       0f 84/jump-if-= $check-mu-compute-offset-stmt:error-base-non-array-type/disp32
@@ -24671,11 +24671,11 @@ $check-mu-compute-offset-stmt:base-is-compound:
     # if type->left not addr or array, abort
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
+      (simple-mu-type? %eax 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       e9/jump $check-mu-compute-offset-stmt:error-base-non-array-type/disp32
@@ -24683,20 +24683,20 @@ $check-mu-compute-offset-stmt:base-is-compound:
     # if (type->left == addr) ensure type->right->left == array and type->register exists
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $check-mu-compute-offset-stmt:base-is-addr:
       (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
       (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
+      (simple-mu-type? %eax 3)  # array => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= $check-mu-compute-offset-stmt:error-base-non-array-type/disp32
     }
     # if (base-type->left == addr) base-type = base-type->right
     {
       (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (lookup *(ebx+0xc) *(ebx+0x10))  # Type-tree-right Type-tree-right => eax
@@ -24720,10 +24720,10 @@ $check-mu-compute-offset-stmt:check-single-inout:
     0f 84/jump-if-= $check-mu-compute-offset-stmt:error-invalid-index-type/disp32
     {
 $check-mu-compute-offset-stmt:index-type-is-atom:
-      (is-simple-mu-type? %edx 0)  # literal => eax
+      (simple-mu-type? %edx 0)  # literal => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
-      (is-simple-mu-type? %edx 1)  # int => eax
+      (simple-mu-type? %edx 1)  # int => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       e9/jump $check-mu-compute-offset-stmt:error-invalid-index-type/disp32
@@ -24749,7 +24749,7 @@ $check-mu-compute-offset-stmt:index-type-is-atom:
     0f 85/jump-if-!= $check-mu-compute-offset-stmt:error-output-type-not-offset/disp32
     # type must start with (offset ...)
     (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 7)  # offset => eax
+    (simple-mu-type? %eax 7)  # offset => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-compute-offset-stmt:error-output-type-not-offset/disp32
     # if tail(base-type) != tail(output-type) abort
@@ -24976,7 +24976,7 @@ $check-mu-copy-object-stmt:types:
       89/<- %ecx 0/r32/eax
     }
     # if src-type is not addr, abort
-    (is-mu-addr-type? %ecx)  # => eax
+    (mu-addr-type? %ecx)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-copy-object-stmt:error-invalid-types/disp32
     # var dest-type/ebx: (addr type-tree) = dest->value->type
@@ -25092,7 +25092,7 @@ $check-mu-clear-object-stmt:types:
       89/<- %ecx 0/r32/eax
     }
     # if src-type is not addr, abort
-    (is-mu-addr-type? %ecx)  # => eax
+    (mu-addr-type? %ecx)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-clear-object-stmt:error-invalid-type/disp32
 $check-mu-clear-object-stmt:end:
@@ -25184,7 +25184,7 @@ $check-mu-allocate-stmt:check-type:
       89/<- %ebx 0/r32/eax
     }
     # if target-type is not addr, abort
-    (is-mu-addr-type? %ebx)  # => eax
+    (mu-addr-type? %ebx)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-allocate-stmt:error-invalid-type/disp32
     # if target-type->right is an atom, abort
@@ -25193,7 +25193,7 @@ $check-mu-allocate-stmt:check-type:
     0f 85/jump-if-!= $check-mu-allocate-stmt:error-invalid-type/disp32
     # if target-type->right->left is not handle, abort
     (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 4)  # handle => eax
+    (simple-mu-type? %eax 4)  # handle => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-allocate-stmt:error-invalid-type/disp32
 $check-mu-allocate-stmt:end:
@@ -25297,7 +25297,7 @@ $check-mu-populate-stmt:check-target-type-deref:
     }
 $check-mu-populate-stmt:check-target-type-addr:
     # if target-type is not addr, abort
-    (is-mu-addr-type? %ebx)  # => eax
+    (mu-addr-type? %ebx)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-populate-stmt:error-invalid-target-type/disp32
     # if target-type->right is an atom, abort
@@ -25308,7 +25308,7 @@ $check-mu-populate-stmt:check-target-type-addr:
 $check-mu-populate-stmt:check-target-type-handle:
     # if target-type->right->left is not handle, abort
     (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 4)  # handle => eax
+    (simple-mu-type? %eax 4)  # handle => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-populate-stmt:error-invalid-target-type/disp32
     # if target-type->right->right is an atom, abort
@@ -25319,17 +25319,17 @@ $check-mu-populate-stmt:check-target-type-handle:
 $check-mu-populate-stmt:check-target-type-array:
     # if target-type->right->right->left is not array, abort
     (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 3)  # array => eax
+    (simple-mu-type? %eax 3)  # array => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-populate-stmt:error-invalid-target-type/disp32
 $check-mu-populate-stmt:check-length-type:
     (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
     89/<- %ebx 0/r32/eax
-    (is-simple-mu-type? %ebx 0)  # literal => eax
+    (simple-mu-type? %ebx 0)  # literal => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= $check-mu-populate-stmt:end/disp8
-    (is-simple-mu-type? %ebx 1)  # int => eax
+    (simple-mu-type? %ebx 1)  # int => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-populate-stmt:error-invalid-length-type/disp32
 $check-mu-populate-stmt:end:
@@ -25447,7 +25447,7 @@ $check-mu-populate-stream-stmt:check-target-type-deref:
     }
 $check-mu-populate-stream-stmt:check-target-type-addr:
     # if target-type is not addr, abort
-    (is-mu-addr-type? %ebx)  # => eax
+    (mu-addr-type? %ebx)  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-populate-stream-stmt:error-invalid-target-type/disp32
     # if target-type->right is an atom, abort
@@ -25458,7 +25458,7 @@ $check-mu-populate-stream-stmt:check-target-type-addr:
 $check-mu-populate-stream-stmt:check-target-type-handle:
     # if target-type->right->left is not handle, abort
     (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 4)  # handle => eax
+    (simple-mu-type? %eax 4)  # handle => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-populate-stream-stmt:error-invalid-target-type/disp32
     # if target-type->right->right is an atom, abort
@@ -25469,17 +25469,17 @@ $check-mu-populate-stream-stmt:check-target-type-handle:
 $check-mu-populate-stream-stmt:check-target-type-stream:
     # if target-type->right->right->left is not stream, abort
     (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 0xb)  # stream => eax
+    (simple-mu-type? %eax 0xb)  # stream => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-populate-stream-stmt:error-invalid-target-type/disp32
 $check-mu-populate-stream-stmt:check-length-type:
     (lookup *esi *(esi+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
     89/<- %ebx 0/r32/eax
-    (is-simple-mu-type? %ebx 0)  # literal => eax
+    (simple-mu-type? %ebx 0)  # literal => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= $check-mu-populate-stream-stmt:end/disp8
-    (is-simple-mu-type? %ebx 1)  # int => eax
+    (simple-mu-type? %ebx 1)  # int => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-populate-stream-stmt:error-invalid-length-type/disp32
 $check-mu-populate-stream-stmt:end:
@@ -25573,7 +25573,7 @@ $check-mu-read-from-stream-stmt:check-base-is-compound:
 $check-mu-read-from-stream-stmt:check-base-is-addr:
     # if type->left not addr, abort
     (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 2)  # addr => eax
+    (simple-mu-type? %eax 2)  # addr => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-read-from-stream-stmt:error-invalid-base-type/disp32
 $check-mu-read-from-stream-stmt:check-base-is-addr-to-stream:
@@ -25582,7 +25582,7 @@ $check-mu-read-from-stream-stmt:check-base-is-addr-to-stream:
     89/<- %ebx 0/r32/eax
     # ensure base-type->left == stream
     (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 0xb)  # stream => eax
+    (simple-mu-type? %eax 0xb)  # stream => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-read-from-stream-stmt:error-invalid-base-type/disp32
     # - check target type is (addr T)
@@ -25604,7 +25604,7 @@ $check-mu-read-from-stream-stmt:check-target-is-compound:
 $check-mu-read-from-stream-stmt:check-target-type:
     # target type must start with (addr ...)
     (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 2)  # addr => eax
+    (simple-mu-type? %eax 2)  # addr => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-read-from-stream-stmt:error-target-type-not-address/disp32
     # if tail(base-type) != tail(target-type) abort
@@ -25740,7 +25740,7 @@ $check-mu-write-to-stream-stmt:check-base-is-compound:
 $check-mu-write-to-stream-stmt:check-base-is-addr:
     # if type->left not addr, abort
     (lookup *(ebx+4) *(ebx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 2)  # addr => eax
+    (simple-mu-type? %eax 2)  # addr => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-write-to-stream-stmt:error-invalid-base-type/disp32
 $check-mu-write-to-stream-stmt:check-base-is-addr-to-stream:
@@ -25749,7 +25749,7 @@ $check-mu-write-to-stream-stmt:check-base-is-addr-to-stream:
     89/<- %ebx 0/r32/eax
     # ensure base-type->left == stream
     (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 0xb)  # stream => eax
+    (simple-mu-type? %eax 0xb)  # stream => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-write-to-stream-stmt:error-invalid-base-type/disp32
     # - check target type is (addr T)
@@ -25771,7 +25771,7 @@ $check-mu-write-to-stream-stmt:check-target-is-compound:
 $check-mu-write-to-stream-stmt:check-target-type:
     # target type must start with (addr ...)
     (lookup *(edx+4) *(edx+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 2)  # addr => eax
+    (simple-mu-type? %eax 2)  # addr => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $check-mu-write-to-stream-stmt:error-target-type-not-address/disp32
     # if tail(base-type) != tail(target-type) abort
@@ -25930,10 +25930,10 @@ $check-mu-convert-stmt:types:
     }
     # if input is not int or float, abort
     {
-      (is-simple-mu-type? %ecx 1)  # int => eax
+      (simple-mu-type? %ecx 1)  # int => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
-      (is-simple-mu-type? %ecx 0xf)  # float => eax
+      (simple-mu-type? %ecx 0xf)  # float => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       e9/jump $check-mu-convert-stmt:error-invalid-inout-type/disp32
@@ -25949,30 +25949,30 @@ $check-mu-convert-stmt:types:
     89/<- %edx 0/r32/eax
     # if output is not int or float, abort
     {
-      (is-simple-mu-type? %edx 1)  # int => eax
+      (simple-mu-type? %edx 1)  # int => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
-      (is-simple-mu-type? %edx 0xf)  # float => eax
+      (simple-mu-type? %edx 0xf)  # float => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       e9/jump $check-mu-convert-stmt:error-invalid-output-type/disp32
     }
     # if both are ints, abort
     {
-      (is-simple-mu-type? %edx 1)  # int => eax
+      (simple-mu-type? %edx 1)  # int => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
-      (is-simple-mu-type? %ecx 1)  # int => eax
+      (simple-mu-type? %ecx 1)  # int => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       e9/jump $check-mu-convert-stmt:error-int-to-int/disp32
     }
     # if both are floats, abort
     {
-      (is-simple-mu-type? %edx 0xf)  # float => eax
+      (simple-mu-type? %edx 0xf)  # float => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
-      (is-simple-mu-type? %ecx 0xf)  # float => eax
+      (simple-mu-type? %ecx 0xf)  # float => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       e9/jump $check-mu-convert-stmt:error-float-to-float/disp32
@@ -26396,10 +26396,10 @@ type-match?:  # def: (addr type-tree), call: (addr type-tree), type-parameters: 
     # if (call is literal and def is numberlike) return true
     {
 $type-match?:check-literal-int:
-      (is-simple-mu-type? *(ebp+0xc) 0)  # literal => eax
+      (simple-mu-type? *(ebp+0xc) 0)  # literal => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
-      (is-mu-numberlike-output? *(ebp+8))  # => eax
+      (mu-numberlike-output? *(ebp+8))  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       b8/copy-to-eax 1/imm32/true
@@ -26408,10 +26408,10 @@ $type-match?:check-literal-int:
     # if (call is literal-string and def is string) return true
     {
 $type-match?:check-literal-string:
-      (is-simple-mu-type? *(ebp+0xc) 0x10)  # literal-string => eax
+      (simple-mu-type? *(ebp+0xc) 0x10)  # literal-string => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
-      (is-mu-string-type? *(ebp+8))  # => eax
+      (mu-string-type? *(ebp+8))  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       b8/copy-to-eax 1/imm32/true
@@ -26565,17 +26565,17 @@ size-of:  # v: (addr var) -> result/eax: int
 #?     (flush Stderr)
     (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
     89/<- %ecx 0/r32/eax
-    # if is-mu-array?(t) return size-of-array(t)
+    # if mu-array?(t) return size-of-array(t)
     {
-      (is-mu-array? %ecx)  # => eax
+      (mu-array? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (size-of-array %ecx)  # => eax
       eb/jump $size-of:end/disp8
     }
-    # if is-mu-stream?(t) return size-of-stream(t)
+    # if mu-stream?(t) return size-of-stream(t)
     {
-      (is-mu-stream? %ecx)  # => eax
+      (mu-stream? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (size-of-stream %ecx)  # => eax
@@ -26612,17 +26612,17 @@ size-of-deref:  # v: (addr var) -> result/eax: int
     # t = lookup(t->right)
     (lookup *(ecx+0xc) *(ecx+0x10))  # Type-tree-right Type-tree-right => eax
     89/<- %ecx 0/r32/eax
-    # if is-mu-array?(t) return size-of-array(t)
+    # if mu-array?(t) return size-of-array(t)
     {
-      (is-mu-array? %ecx)  # => eax
+      (mu-array? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (size-of-array %ecx)  # => eax
       eb/jump $size-of-deref:end/disp8
     }
-    # if is-mu-stream?(t) return size-of-stream(t)
+    # if mu-stream?(t) return size-of-stream(t)
     {
-      (is-mu-stream? %ecx)  # => eax
+      (mu-stream? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (size-of-stream %ecx)  # => eax
@@ -26645,7 +26645,7 @@ $size-of-deref:end:
     5d/pop-to-ebp
     c3/return
 
-is-mu-array?:  # t: (addr type-tree) -> result/eax: boolean
+mu-array?:  # t: (addr type-tree) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -26655,19 +26655,19 @@ is-mu-array?:  # t: (addr type-tree) -> result/eax: boolean
     8b/-> *(ebp+8) 1/r32/ecx
     # if t->is-atom?, return false
     81 7/subop/compare *ecx 0/imm32/false  # Type-tree-is-atom
-    75/jump-if-!= $is-mu-array?:return-false/disp8
+    75/jump-if-!= $mu-array?:return-false/disp8
     # if !t->left->is-atom?, return false
     (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
     81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
-    74/jump-if-= $is-mu-array?:return-false/disp8
+    74/jump-if-= $mu-array?:return-false/disp8
     # return t->left->value == array
     81 7/subop/compare *(eax+4) 3/imm32/array-type-id  # Type-tree-value
     0f 94/set-if-= %al
     81 4/subop/and %eax 0xff/imm32
-    eb/jump $is-mu-array?:end/disp8
-$is-mu-array?:return-false:
+    eb/jump $mu-array?:end/disp8
+$mu-array?:return-false:
     b8/copy-to-eax 0/imm32/false
-$is-mu-array?:end:
+$mu-array?:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -26710,7 +26710,7 @@ $size-of-array:end:
     5d/pop-to-ebp
     c3/return
 
-is-mu-stream?:  # t: (addr type-tree) -> result/eax: boolean
+mu-stream?:  # t: (addr type-tree) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -26720,19 +26720,19 @@ is-mu-stream?:  # t: (addr type-tree) -> result/eax: boolean
     8b/-> *(ebp+8) 1/r32/ecx
     # if t->is-atom?, return false
     81 7/subop/compare *ecx 0/imm32/false  # Type-tree-is-atom
-    75/jump-if-!= $is-mu-stream?:return-false/disp8
+    75/jump-if-!= $mu-stream?:return-false/disp8
     # if !t->left->is-atom?, return false
     (lookup *(ecx+4) *(ecx+8))  # Type-tree-left Type-tree-left => eax
     81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
-    74/jump-if-= $is-mu-stream?:return-false/disp8
+    74/jump-if-= $mu-stream?:return-false/disp8
     # return t->left->value == stream
     81 7/subop/compare *(eax+4) 0xb/imm32/stream-type-id  # Type-tree-value
     0f 94/set-if-= %al
     81 4/subop/and %eax 0xff/imm32
-    eb/jump $is-mu-stream?:end/disp8
-$is-mu-stream?:return-false:
+    eb/jump $mu-stream?:end/disp8
+$mu-stream?:return-false:
     b8/copy-to-eax 0/imm32/false
-$is-mu-stream?:end:
+$mu-stream?:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -26852,7 +26852,7 @@ $type-tail:check-array-capacity-1:
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
 $type-tail:check-array-capacity-2:
-      (is-simple-mu-type? %eax 9)  # array-capacity => eax
+      (simple-mu-type? %eax 9)  # array-capacity => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
 $type-tail:array-capacity:
@@ -27118,7 +27118,7 @@ $emit-subx-stmt-list:check-for-stmt:
         0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:stmt1:
         {
-          (is-mu-branch? %ecx)  # => eax
+          (mu-branch? %ecx)  # => eax
           3d/compare-eax-and 0/imm32/false
           0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:branch-stmt:
@@ -27478,7 +27478,7 @@ emit-int-output:  # out: (addr buffered-file), return-var: (addr stmt-var), dest
     89/<- %ecx 0/r32/eax
     # if curr-var is a literal, emit copy of a literal to the output
     (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
-    (is-simple-mu-type? %eax 0)  # literal => eax
+    (simple-mu-type? %eax 0)  # literal => eax
     {
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= break/disp32
@@ -27530,7 +27530,7 @@ $emit-float-output:end:
     5d/pop-to-ebp
     c3/return
 
-is-mu-branch?:  # stmt: (addr stmt1) -> result/eax: boolean
+mu-branch?:  # stmt: (addr stmt1) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -27543,14 +27543,14 @@ is-mu-branch?:  # stmt: (addr stmt1) -> result/eax: boolean
     # if (stmt->operation starts with "loop") return true
     (string-starts-with? %ecx "loop")  # => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-not-equal $is-mu-branch?:end/disp8
+    75/jump-if-not-equal $mu-branch?:end/disp8
     # if (stmt->operation starts with "break") return true
     (string-starts-with? %ecx "break")  # => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-not-equal $is-mu-branch?:end/disp8
+    75/jump-if-not-equal $mu-branch?:end/disp8
     # otherwise return (stmt->operation starts with "return")
     (string-starts-with? %ecx "return")  # => eax
-$is-mu-branch?:end:
+$mu-branch?:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -28513,7 +28513,7 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (addr stmt)
     # if v is an array, do something special to initialize it
     {
       (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
-      (is-mu-array? %eax)  # => eax
+      (mu-array? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= break/disp32
       # var array-size-without-size/edx: int = n-4
@@ -28526,7 +28526,7 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (addr stmt)
     # a stream is an array with 2 extra pointers
     {
       (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
-      (is-mu-stream? %eax)  # => eax
+      (mu-stream? %eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= break/disp32
       # var array-size-without-size/edx: int = n-12
@@ -28703,7 +28703,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
     }
     # - optimizations
     # if copy instruction has same register in source and destination, emit nothing
-    (is-redundant-copy? *(ebp+0xc))  # => eax
+    (redundant-copy? *(ebp+0xc))  # => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= $emit-subx-stmt:end/disp8
     # - if stmt matches a primitive, emit it
@@ -28730,7 +28730,7 @@ $emit-subx-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-is-redundant-copy?:  # stmt: (addr stmt) -> result/eax: boolean
+redundant-copy?:  # stmt: (addr stmt) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -28743,14 +28743,14 @@ is-redundant-copy?:  # stmt: (addr stmt) -> result/eax: boolean
     (lookup *(esi+4) *(esi+8))  # Stmt1-operation Stmt1-operation => eax
     (string-equal? %eax "copy")  # => eax
     3d/compare-eax-and 0/imm32/false
-    0f 84/jump-if-= $is-redundant-copy?:end/disp32
+    0f 84/jump-if-= $redundant-copy?:end/disp32
     # var output-reg/edi: (addr stmt-var) = stmt->outputs->value->register
     (lookup *(esi+0x14) *(esi+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
     # . if output-reg == null, return false
     3d/compare-eax-and 0/imm32
-    74/jump-if-= $is-redundant-copy?:end/disp8
+    74/jump-if-= $redundant-copy?:end/disp8
     89/<- %edi 0/r32/eax
     # return (inout->value->register == output->value->register)
     (lookup *(esi+0xc) *(esi+0x10))  # Stmt1-inouts Stmt1-inouts => eax
@@ -28759,15 +28759,15 @@ is-redundant-copy?:  # stmt: (addr stmt) -> result/eax: boolean
     {
       74/jump-if-= break/disp8
       b8/copy-to-eax 0/imm32/false
-      e9/jump $is-redundant-copy?:end/disp32
+      e9/jump $redundant-copy?:end/disp32
     }
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
     # . if inout-reg == null, return false
     3d/compare-eax-and 0/imm32
-    74/jump-if-= $is-redundant-copy?:end/disp8
+    74/jump-if-= $redundant-copy?:end/disp8
     (string-equal? %eax %edi)  # => eax
-$is-redundant-copy?:end:
+$redundant-copy?:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -28929,7 +28929,7 @@ array-element-type-id:  # v: (addr var), err: (addr buffered-file), ed: (addr ex
     {
       50/push-eax
       (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 2)  # addr => eax
+      (simple-mu-type? %eax 2)  # addr => eax
       3d/compare-eax-with 0/imm32/false
       58/pop-to-eax
       74/jump-if-= break/disp8
@@ -28946,7 +28946,7 @@ $array-element-type-id:skip-addr:
     {
       50/push-eax
       (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 3)  # array => eax
+      (simple-mu-type? %eax 3)  # array => eax
       3d/compare-eax-with 0/imm32/false
       58/pop-to-eax
 $array-element-type-id:no-array:
@@ -29232,7 +29232,7 @@ $emit-mu-index-bounds-check:emit-register-index:
     # otherwise if index is a literal, print it
 $emit-mu-index-bounds-check:emit-literal-index:
     (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
-    (is-simple-mu-type? %eax 0)  # => eax
+    (simple-mu-type? %eax 0)  # => eax
     3d/compare-eax-and 0/imm32/false
     {
       0f 84/jump-if-= break/disp32
@@ -29246,11 +29246,11 @@ $emit-mu-index-bounds-check:emit-element-size:
     {
       {
         (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
-        (is-simple-mu-type? %eax 0)  # literal => eax
+        (simple-mu-type? %eax 0)  # literal => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
         (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
-        (is-simple-mu-type? %eax 1)  # int => eax
+        (simple-mu-type? %eax 1)  # int => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
         eb/jump $emit-mu-index-bounds-check:emit-element-size-offset/disp8
@@ -29267,7 +29267,7 @@ $emit-mu-index-bounds-check:emit-element-size-offset:
     {
       75/jump-if-!= break/disp8
       (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 7)  # => eax
+      (simple-mu-type? %eax 7)  # => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
@@ -29349,7 +29349,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-base:
 $translate-mu-index-stmt-with-array-in-register:emit-register-index:
       # if index is an int
       (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 1)  # int => eax
+      (simple-mu-type? %eax 1)  # int => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
@@ -29372,7 +29372,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
       0f 85/jump-if-!= $translate-mu-index-stmt:error2/disp32
       # if index has type (offset ...)
       (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 7)  # => eax
+      (simple-mu-type? %eax 7)  # => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
@@ -29387,7 +29387,7 @@ $translate-mu-index-stmt-with-array-in-register:emit-register-index-done:
     }
     # otherwise if index is a literal
     (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
-    (is-simple-mu-type? %eax 0)  # => eax
+    (simple-mu-type? %eax 0)  # => eax
     3d/compare-eax-and 0/imm32/false
     {
       0f 84/jump-if-= break/disp32
@@ -29460,7 +29460,7 @@ translate-mu-index-stmt-with-array-on-stack:  # out: (addr buffered-file), stmt:
 $translate-mu-index-stmt-with-array-on-stack:emit-register-index:
       # if index is an int
       (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
-      (is-simple-mu-type? %eax 1)  # int => eax
+      (simple-mu-type? %eax 1)  # int => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
@@ -29489,7 +29489,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-int-register-index:
       0f 85/jump-if-!= $translate-mu-index-stmt:error2/disp32
       # if index has type (offset ...)
       (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-      (is-simple-mu-type? %eax 7)  # => eax
+      (simple-mu-type? %eax 7)  # => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
@@ -29504,7 +29504,7 @@ $translate-mu-index-stmt-with-array-on-stack:emit-register-index-done:
     }
     # otherwise if index is a literal
     (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
-    (is-simple-mu-type? %eax 0)  # => eax
+    (simple-mu-type? %eax 0)  # => eax
     3d/compare-eax-and 0/imm32/false
     {
       0f 84/jump-if-= break/disp32
@@ -35726,11 +35726,11 @@ type-category:  # a: (addr type-tree) -> result/eax: int
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var lit?/ecx: boolean = is-literal-type?(a)
-    (is-simple-mu-type? *(ebp+8) 0)  # literal => eax
+    # var lit?/ecx: boolean = literal-type?(a)
+    (simple-mu-type? *(ebp+8) 0)  # literal => eax
     89/<- %ecx 0/r32/eax
-    # var float?/eax: int = is-float?(a)
-    (is-simple-mu-type? *(ebp+8) 0xf)  # => eax
+    # var float?/eax: int = float?(a)
+    (simple-mu-type? *(ebp+8) 0xf)  # => eax
     # set bits for lit? and float?
     c1/shift 4/subop/left %ecx 1/imm8
     09/or %eax 1/r32/ecx
@@ -35742,7 +35742,7 @@ $type-category:end:
     5d/pop-to-ebp
     c3/return
 
-is-simple-mu-type?:  # a: (addr type-tree), n: type-id -> result/eax: boolean
+simple-mu-type?:  # a: (addr type-tree), n: type-id -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -35755,7 +35755,7 @@ is-simple-mu-type?:  # a: (addr type-tree), n: type-id -> result/eax: boolean
     39/compare *(eax+4) 1/r32/ecx  # Type-tree-value
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
-$is-simple-mu-type?:end:
+$simple-mu-type?:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -35763,7 +35763,7 @@ $is-simple-mu-type?:end:
     5d/pop-to-ebp
     c3/return
 
-is-mu-addr-type?:  # a: (addr type-tree) -> result/eax: boolean
+mu-addr-type?:  # a: (addr type-tree) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -35779,13 +35779,13 @@ is-mu-addr-type?:  # a: (addr type-tree) -> result/eax: boolean
     81 7/subop/compare *(eax+4) 2/imm32/addr  # Type-tree-value
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
-$is-mu-addr-type?:end:
+$mu-addr-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-is-mu-array-type?:  # a: (addr type-tree) -> result/eax: boolean
+mu-array-type?:  # a: (addr type-tree) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -35801,13 +35801,13 @@ is-mu-array-type?:  # a: (addr type-tree) -> result/eax: boolean
     81 7/subop/compare *(eax+4) 3/imm32/array  # Type-tree-value
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
-$is-mu-array-type?:end:
+$mu-array-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-is-mu-string-type?:  # a: (addr type-tree) -> result/eax: boolean
+mu-string-type?:  # a: (addr type-tree) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -35817,29 +35817,29 @@ is-mu-string-type?:  # a: (addr type-tree) -> result/eax: boolean
     8b/-> *(ebp+8) 6/r32/esi
     # if (a->is-atom?) return false
     81 7/subop/compare *esi 0/imm32/false  # Type-tree-is-atom
-    0f 85/jump-if-!= $is-mu-string-type?:return-false/disp32
+    0f 85/jump-if-!= $mu-string-type?:return-false/disp32
     # if a is not an addr, return false
-    (is-mu-addr-type? %esi)  # => eax
+    (mu-addr-type? %esi)  # => eax
     3d/compare-eax-with 0/imm32/false
-    0f 84/jump-if-= $is-mu-string-type?:end/disp32  # eax changes var
+    0f 84/jump-if-= $mu-string-type?:end/disp32  # eax changes var
     # if a is not an array, return false
     (lookup *(esi+0xc) *(esi+0x10))  # Type-tree-right Type-tree-right => eax
-    (is-mu-array-type? %eax)  # => eax
+    (mu-array-type? %eax)  # => eax
     3d/compare-eax-with 0/imm32/false
-    74/jump-if-= $is-mu-string-type?:end/disp8  # eax changes var
+    74/jump-if-= $mu-string-type?:end/disp8  # eax changes var
     # var p/eax: (addr type-tree) = payload of a
     (lookup *(esi+0xc) *(esi+0x10))  # Type-tree-right Type-tree-right => eax
     (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
     # if p is an atom, return false
     81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
-    75/jump-if-!= $is-mu-string-type?:return-false/disp8
+    75/jump-if-!= $mu-string-type?:return-false/disp8
     # return (p == byte)
     (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
-    (is-simple-mu-type? %eax 8)  # byte => eax
-    eb/jump $is-mu-string-type?:end/disp8
-$is-mu-string-type?:return-false:
+    (simple-mu-type? %eax 8)  # byte => eax
+    eb/jump $mu-string-type?:end/disp8
+$mu-string-type?:return-false:
     b8/copy-to-eax 0/imm32/false
-$is-mu-string-type?:end:
+$mu-string-type?:end:
     # . restore registers
     5e/pop-to-esi
     # . epilogue
@@ -35847,7 +35847,7 @@ $is-mu-string-type?:end:
     5d/pop-to-ebp
     c3/return
 
-is-mu-stream-type?:  # a: (addr type-tree) -> result/eax: boolean
+mu-stream-type?:  # a: (addr type-tree) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -35863,7 +35863,7 @@ is-mu-stream-type?:  # a: (addr type-tree) -> result/eax: boolean
     81 7/subop/compare *(eax+4) 0xb/imm32/stream  # Type-tree-value
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
-$is-mu-stream-type?:end:
+$mu-stream-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp

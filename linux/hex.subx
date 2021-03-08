@@ -479,7 +479,7 @@ scan-next-byte:  # in: (addr buffered-file), err: (addr buffered-file), ed: (add
     #   while true
     #     eax = read-byte-buffered(in)
     #     if (eax == Eof) return eax
-    #     if (is-hex-digit?(eax)) return eax
+    #     if (hex-digit?(eax)) return eax
     #     if (eax == ' ' or '\t' or '\n') continue
     #     if (eax == '#') skip-until-newline(in)
     #     else error-byte(ed, err, "invalid byte: " eax)
@@ -499,14 +499,14 @@ $scan-next-byte:loop:
     # if (eax == Eof) return eax
     3d/compare-with-eax  0xffffffff/imm32/Eof
     74/jump-if-=  $scan-next-byte:end/disp8
-    # if (is-hex-digit?(eax)) return eax
+    # if (hex-digit?(eax)) return eax
     # . save eax for now
     50/push-eax
-    # . is-hex-digit?(eax)
+    # . hex-digit?(eax)
     # . . push args
     50/push-eax
     # . . call
-    e8/call  is-hex-digit?/disp32
+    e8/call  hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . compare with 'false'

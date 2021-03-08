@@ -968,12 +968,12 @@ $emit-string-literal-data:emit:
     e8/call  append-byte-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # if (is-alphanumeric?(*curr)) print(out, "/#{*curr}")
-    # . var eax: boolean = is-alphanumeric?(CL)
+    # if (alphanumeric?(*curr)) print(out, "/#{*curr}")
+    # . var eax: boolean = alphanumeric?(CL)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-alphanumeric?/disp32
+    e8/call  alphanumeric?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) goto char-done
@@ -1035,7 +1035,7 @@ $emit-string-literal-data:end:
     5d/pop-to-ebp
     c3/return
 
-is-alphanumeric?:  # c: int -> eax: boolean
+alphanumeric?:  # c: int -> eax: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1043,29 +1043,29 @@ is-alphanumeric?:  # c: int -> eax: boolean
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
     # if (c < '0') return false
     3d/compare-eax-with  0x30/imm32/0
-    7c/jump-if-<  $is-alphanumeric?:false/disp8
+    7c/jump-if-<  $alphanumeric?:false/disp8
     # if (c <= '9') return true
     3d/compare-eax-with  0x39/imm32/9
-    7e/jump-if-<=  $is-alphanumeric?:true/disp8
+    7e/jump-if-<=  $alphanumeric?:true/disp8
     # if (c < 'A') return false
     3d/compare-eax-with  0x41/imm32/A
-    7c/jump-if-<  $is-alphanumeric?:false/disp8
+    7c/jump-if-<  $alphanumeric?:false/disp8
     # if (c <= 'Z') return true
     3d/compare-eax-with  0x5a/imm32/Z
-    7e/jump-if-<=  $is-alphanumeric?:true/disp8
+    7e/jump-if-<=  $alphanumeric?:true/disp8
     # if (c < 'a') return false
     3d/compare-eax-with  0x61/imm32/a
-    7c/jump-if-<  $is-alphanumeric?:false/disp8
+    7c/jump-if-<  $alphanumeric?:false/disp8
     # if (c <= 'z') return true
     3d/compare-eax-with  0x7a/imm32/z
-    7e/jump-if-<=  $is-alphanumeric?:true/disp8
+    7e/jump-if-<=  $alphanumeric?:true/disp8
     # return false
-$is-alphanumeric?:false:
+$alphanumeric?:false:
     b8/copy-to-eax  0/imm32/false
-    eb/jump  $is-alphanumeric?:end/disp8
-$is-alphanumeric?:true:
+    eb/jump  $alphanumeric?:end/disp8
+$alphanumeric?:true:
     b8/copy-to-eax  1/imm32/true
-$is-alphanumeric?:end:
+$alphanumeric?:end:
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp

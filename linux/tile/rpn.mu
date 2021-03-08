@@ -18,8 +18,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       ### if curr-stream is an operator, perform it
       ## numbers
       {
-        var is-add?/eax: boolean <- stream-data-equal? curr-stream, "+"
-        compare is-add?, 0
+        var add?/eax: boolean <- stream-data-equal? curr-stream, "+"
+        compare add?, 0
         break-if-=
         var _b/xmm0: float <- pop-number-from-value-stack out
         var b/xmm1: float <- copy _b
@@ -29,8 +29,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-sub?/eax: boolean <- stream-data-equal? curr-stream, "-"
-        compare is-sub?, 0
+        var sub?/eax: boolean <- stream-data-equal? curr-stream, "-"
+        compare sub?, 0
         break-if-=
         var _b/xmm0: float <- pop-number-from-value-stack out
         var b/xmm1: float <- copy _b
@@ -40,8 +40,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-mul?/eax: boolean <- stream-data-equal? curr-stream, "*"
-        compare is-mul?, 0
+        var mul?/eax: boolean <- stream-data-equal? curr-stream, "*"
+        compare mul?, 0
         break-if-=
         var _b/xmm0: float <- pop-number-from-value-stack out
         var b/xmm1: float <- copy _b
@@ -51,8 +51,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-div?/eax: boolean <- stream-data-equal? curr-stream, "/"
-        compare is-div?, 0
+        var div?/eax: boolean <- stream-data-equal? curr-stream, "/"
+        compare div?, 0
         break-if-=
         var _b/xmm0: float <- pop-number-from-value-stack out
         var b/xmm1: float <- copy _b
@@ -62,8 +62,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-sqrt?/eax: boolean <- stream-data-equal? curr-stream, "sqrt"
-        compare is-sqrt?, 0
+        var sqrt?/eax: boolean <- stream-data-equal? curr-stream, "sqrt"
+        compare sqrt?, 0
         break-if-=
         var a/xmm0: float <- pop-number-from-value-stack out
         a <- square-root a
@@ -72,8 +72,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       }
       ## strings/arrays
       {
-        var is-len?/eax: boolean <- stream-data-equal? curr-stream, "len"
-        compare is-len?, 0
+        var len?/eax: boolean <- stream-data-equal? curr-stream, "len"
+        compare len?, 0
         break-if-=
 #?         print-string 0, "is len\n"
         # pop target-val from out
@@ -127,8 +127,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       }
       ## files
       {
-        var is-open?/eax: boolean <- stream-data-equal? curr-stream, "open"
-        compare is-open?, 0
+        var open?/eax: boolean <- stream-data-equal? curr-stream, "open"
+        compare open?, 0
         break-if-=
         # pop target-val from out
         var out2/esi: (addr value-stack) <- copy out
@@ -160,8 +160,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-read?/eax: boolean <- stream-data-equal? curr-stream, "read"
-        compare is-read?, 0
+        var read?/eax: boolean <- stream-data-equal? curr-stream, "read"
+        compare read?, 0
         break-if-=
         # pop target-val from out
         var out2/esi: (addr value-stack) <- copy out
@@ -195,8 +195,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-slurp?/eax: boolean <- stream-data-equal? curr-stream, "slurp"
-        compare is-slurp?, 0
+        var slurp?/eax: boolean <- stream-data-equal? curr-stream, "slurp"
+        compare slurp?, 0
         break-if-=
         # pop target-val from out
         var out2/esi: (addr value-stack) <- copy out
@@ -230,8 +230,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-lines?/eax: boolean <- stream-data-equal? curr-stream, "lines"
-        compare is-lines?, 0
+        var lines?/eax: boolean <- stream-data-equal? curr-stream, "lines"
+        compare lines?, 0
         break-if-=
         # pop target-val from out
         var out2/esi: (addr value-stack) <- copy out
@@ -280,8 +280,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       }
       ## screens
       {
-        var is-fake-screen?/eax: boolean <- stream-data-equal? curr-stream, "fake-screen"
-        compare is-fake-screen?, 0
+        var fake-screen?/eax: boolean <- stream-data-equal? curr-stream, "fake-screen"
+        compare fake-screen?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
         var top-addr/ecx: (addr int) <- get out2, top
@@ -312,8 +312,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-print?/eax: boolean <- stream-data-equal? curr-stream, "print"
-        compare is-print?, 0
+        var print?/eax: boolean <- stream-data-equal? curr-stream, "print"
+        compare print?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
         var top-addr/ecx: (addr int) <- get out2, top
@@ -349,8 +349,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-move?/eax: boolean <- stream-data-equal? curr-stream, "move"
-        compare is-move?, 0
+        var move?/eax: boolean <- stream-data-equal? curr-stream, "move"
+        compare move?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
         # pop args
@@ -378,8 +378,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-up?/eax: boolean <- stream-data-equal? curr-stream, "up"
-        compare is-up?, 0
+        var up?/eax: boolean <- stream-data-equal? curr-stream, "up"
+        compare up?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
         var top-addr/ebx: (addr int) <- get out2, top
@@ -421,8 +421,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-down?/eax: boolean <- stream-data-equal? curr-stream, "down"
-        compare is-down?, 0
+        var down?/eax: boolean <- stream-data-equal? curr-stream, "down"
+        compare down?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
         var top-addr/ebx: (addr int) <- get out2, top
@@ -466,8 +466,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-left?/eax: boolean <- stream-data-equal? curr-stream, "left"
-        compare is-left?, 0
+        var left?/eax: boolean <- stream-data-equal? curr-stream, "left"
+        compare left?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
         var top-addr/ebx: (addr int) <- get out2, top
@@ -510,8 +510,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-right?/eax: boolean <- stream-data-equal? curr-stream, "right"
-        compare is-right?, 0
+        var right?/eax: boolean <- stream-data-equal? curr-stream, "right"
+        compare right?, 0
         break-if-=
         var out2/esi: (addr value-stack) <- copy out
         var top-addr/ebx: (addr int) <- get out2, top
@@ -556,8 +556,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
       }
       ## HACKS: we're trying to avoid turning this into Forth
       {
-        var is-dup?/eax: boolean <- stream-data-equal? curr-stream, "dup"
-        compare is-dup?, 0
+        var dup?/eax: boolean <- stream-data-equal? curr-stream, "dup"
+        compare dup?, 0
         break-if-=
         # read src-val from out
         var out2/esi: (addr value-stack) <- copy out
@@ -581,8 +581,8 @@ fn evaluate functions: (addr handle function), bindings: (addr table), scratch: 
         break $evaluate:process-word
       }
       {
-        var is-swap?/eax: boolean <- stream-data-equal? curr-stream, "swap"
-        compare is-swap?, 0
+        var swap?/eax: boolean <- stream-data-equal? curr-stream, "swap"
+        compare swap?, 0
         break-if-=
         # read top-val from out
         var out2/esi: (addr value-stack) <- copy out
@@ -869,22 +869,22 @@ fn max-stack-depth first-word: (addr word), final-word: (addr word) -> _/edi: in
     $max-stack-depth:process-word: {
       # handle operators
       {
-        var is-add?/eax: boolean <- word-equal? curr-word, "+"
-        compare is-add?, 0
+        var add?/eax: boolean <- word-equal? curr-word, "+"
+        compare add?, 0
         break-if-=
         curr-depth <- decrement
         break $max-stack-depth:process-word
       }
       {
-        var is-sub?/eax: boolean <- word-equal? curr-word, "-"
-        compare is-sub?, 0
+        var sub?/eax: boolean <- word-equal? curr-word, "-"
+        compare sub?, 0
         break-if-=
         curr-depth <- decrement
         break $max-stack-depth:process-word
       }
       {
-        var is-mul?/eax: boolean <- word-equal? curr-word, "*"
-        compare is-mul?, 0
+        var mul?/eax: boolean <- word-equal? curr-word, "*"
+        compare mul?, 0
         break-if-=
         curr-depth <- decrement
         break $max-stack-depth:process-word

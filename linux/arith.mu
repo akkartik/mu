@@ -73,7 +73,7 @@ fn expression _look: grapheme -> _/eax: int, _/esi: grapheme {
     # while next non-space char in ['+', '-']
     look <- skip-spaces look
     {
-      var continue?/eax: boolean <- is-add-or-sub? look
+      var continue?/eax: boolean <- add-or-sub? look
       compare continue?, 0/false
       break-if-= $expression:loop
     }
@@ -119,7 +119,7 @@ fn term _look: grapheme -> _/eax: int, _/esi: grapheme {
     # while next non-space char in ['*', '/']
     look <- skip-spaces look
     {
-      var continue?/eax: boolean <- is-mul-or-div? look
+      var continue?/eax: boolean <- mul-or-div? look
       compare continue?, 0/false
       break-if-= $term:loop
     }
@@ -174,7 +174,7 @@ fn factor _look: grapheme -> _/eax: int, _/esi: grapheme {
   return result, look
 }
 
-fn is-mul-or-div? c: grapheme -> _/eax: boolean {
+fn mul-or-div? c: grapheme -> _/eax: boolean {
   compare c, 0x2a/*
   {
     break-if-!=
@@ -188,7 +188,7 @@ fn is-mul-or-div? c: grapheme -> _/eax: boolean {
   return 0/false
 }
 
-fn is-add-or-sub? c: grapheme -> _/eax: boolean {
+fn add-or-sub? c: grapheme -> _/eax: boolean {
   compare c, 0x2b/+
   {
     break-if-!=
@@ -218,7 +218,7 @@ fn num _look: grapheme -> _/eax: int, _/esi: grapheme {
   {
     look <- get-char
     # done?
-    var digit?/eax: boolean <- is-decimal-digit? look
+    var digit?/eax: boolean <- decimal-digit? look
     compare digit?, 0/false
     break-if-=
     # result *= 10

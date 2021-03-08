@@ -181,7 +181,7 @@ fn grapheme-stack-is-decimal-integer? _self: (addr grapheme-stack) -> _/eax: boo
     compare i, *top-addr
     break-if->=
     var g/edx: (addr grapheme) <- index data, i
-    result <- is-decimal-digit? *g
+    result <- decimal-digit? *g
     compare result, 0/false
     break-if-=
     i <- increment
