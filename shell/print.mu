@@ -1,5 +1,5 @@
 fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr trace) {
-  trace-text trace, "print", "print-cell"
+  trace-text trace, "print", "print"
   trace-lower trace
   var in/eax: (addr handle cell) <- copy _in
   var in-addr/eax: (addr cell) <- lookup *in
