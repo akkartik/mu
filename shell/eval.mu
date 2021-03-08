@@ -17,8 +17,8 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   trace-lower trace
   var in-addr/eax: (addr cell) <- lookup *in
   {
-    var is-nil?/eax: boolean <- is-nil? in-addr
-    compare is-nil?, 0/false
+    var nil?/eax: boolean <- nil? in-addr
+    compare nil?, 0/false
     break-if-=
     # nil is a literal
     trace-text trace, "eval", "nil"
@@ -51,8 +51,8 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     # if its first elem is not "fn", break
     var first-ah/ecx: (addr handle cell) <- get in-addr, left
     var first/eax: (addr cell) <- lookup *first-ah
-    var is-fn?/eax: boolean <- is-fn? first
-    compare is-fn?, 0/false
+    var fn?/eax: boolean <- fn? first
+    compare fn?, 0/false
     break-if-=
     #
     trace-text trace, "eval", "anonymous function"
@@ -68,8 +68,8 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   var curr/ecx: (addr cell) <- copy in-addr
   $evaluate-list:loop: {
     allocate-pair curr-out-ah
-    var is-nil?/eax: boolean <- is-nil? curr
-    compare is-nil?, 0/false
+    var nil?/eax: boolean <- nil? curr
+    compare nil?, 0/false
     break-if-!=
     # eval left
     var curr-out/eax: (addr cell) <- lookup *curr-out-ah
@@ -133,8 +133,8 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     break-if-!=
     var first-ah/eax: (addr handle cell) <- get f, left
     var first/eax: (addr cell) <- lookup *first-ah
-    var is-fn?/eax: boolean <- is-fn? first
-    compare is-fn?, 0/false
+    var fn?/eax: boolean <- fn? first
+    compare fn?, 0/false
     break-if-=
     var rest-ah/esi: (addr handle cell) <- get f, right
     var rest/eax: (addr cell) <- lookup *rest-ah
@@ -158,8 +158,8 @@ fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _b
     var body/eax: (addr cell) <- lookup *body-ah
     # stop when body is nil
     {
-      var body-is-nil?/eax: boolean <- is-nil? body
-      compare body-is-nil?, 0/false
+      var body-nil?/eax: boolean <- nil? body
+      compare body-nil?, 0/false
       break-if-!= $apply-function:body
     }
     # evaluate each expression, writing result to `out`
@@ -191,8 +191,8 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   var _params/eax: (addr cell) <- lookup *params-ah
   var params/esi: (addr cell) <- copy _params
   {
-    var params-is-nil?/eax: boolean <- is-nil? params
-    compare params-is-nil?, 0/false
+    var params-nil?/eax: boolean <- nil? params
+    compare params-nil?, 0/false
     break-if-=
     # nil is a literal
     trace-text trace, "eval", "done with push-bindings"
@@ -278,7 +278,7 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), env-h: (hand
   var _env/eax: (addr cell) <- lookup env-h
   var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
-  var empty-args?/eax: boolean <- is-nil? args
+  var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
@@ -348,8 +348,8 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   }
   # if env is nil, look up in globals
   {
-    var env-is-nil?/eax: boolean <- is-nil? env
-    compare env-is-nil?, 0/false
+    var env-nil?/eax: boolean <- nil? env
+    compare env-nil?, 0/false
     break-if-=
     lookup-symbol-in-hardcoded-globals sym, out, trace
     trace-higher trace
@@ -446,8 +446,8 @@ fn lookup-symbol-in-hardcoded-globals _sym: (addr cell), out: (addr handle cell)
   var _sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
   var sym-data/esi: (addr stream byte) <- copy _sym-data
   {
-    var is-add?/eax: boolean <- stream-data-equal? sym-data, "+"
-    compare is-add?, 0/false
+    var add?/eax: boolean <- stream-data-equal? sym-data, "+"
+    compare add?, 0/false
     break-if-=
     new-primitive-function out, 1/add
     trace-text trace, "eval", "global +"
@@ -525,8 +525,8 @@ fn car _in: (addr cell), out: (addr handle cell), trace: (addr trace) {
   }
   # if in is nil, abort
   {
-    var in-is-nil?/eax: boolean <- is-nil? in
-    compare in-is-nil?, 0/false
+    var in-nil?/eax: boolean <- nil? in
+    compare in-nil?, 0/false
     break-if-=
     error trace, "car on nil"
     trace-higher trace
@@ -553,8 +553,8 @@ fn cdr _in: (addr cell), out: (addr handle cell), trace: (addr trace) {
   }
   # if in is nil, abort
   {
-    var in-is-nil?/eax: boolean <- is-nil? in
-    compare in-is-nil?, 0/false
+    var in-nil?/eax: boolean <- nil? in
+    compare in-nil?, 0/false
     break-if-=
     error trace, "car on nil"
     trace-higher trace
@@ -630,15 +630,15 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
   }
   # if a is nil, b should be nil
   {
-    # (assumes is-nil? returns 0 or 1)
-    var _b-is-nil?/eax: boolean <- is-nil? b
-    var b-is-nil?/ecx: boolean <- copy _b-is-nil?
-    var a-is-nil?/eax: boolean <- is-nil? a
+    # (assumes nil? returns 0 or 1)
+    var _b-nil?/eax: boolean <- nil? b
+    var b-nil?/ecx: boolean <- copy _b-nil?
+    var a-nil?/eax: boolean <- nil? a
     # a == nil and b == nil => return true
     {
-      compare a-is-nil?, 0/false
+      compare a-nil?, 0/false
       break-if-=
-      compare b-is-nil?, 0/false
+      compare b-nil?, 0/false
       break-if-=
       trace-higher trace
       trace-text trace, "eval", "=> true (nils)"
@@ -646,7 +646,7 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     }
     # a == nil => return false
     {
-      compare a-is-nil?, 0/false
+      compare a-nil?, 0/false
       break-if-=
       trace-higher trace
       trace-text trace, "eval", "=> false (b != nil)"
@@ -654,7 +654,7 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     }
     # b == nil => return false
     {
-      compare b-is-nil?, 0/false
+      compare b-nil?, 0/false
       break-if-=
       trace-higher trace
       trace-text trace, "eval", "=> false (a != nil)"
@@ -691,7 +691,7 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
   return result
 }
 
-fn is-fn? _x: (addr cell) -> _/eax: boolean {
+fn fn? _x: (addr cell) -> _/eax: boolean {
   var x/esi: (addr cell) <- copy _x
   var type/eax: (addr int) <- get x, type
   compare *type, 2/symbol

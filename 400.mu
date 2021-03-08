@@ -31,11 +31,11 @@ sig append-byte f: (addr stream byte), n: int
 sig append-byte-hex f: (addr stream byte), n: int
 sig write-int32-hex f: (addr stream byte), n: int
 sig write-int32-hex-bits f: (addr stream byte), n: int, bits: int
-sig is-hex-int? in: (addr slice) -> _/eax: boolean
+sig hex-int? in: (addr slice) -> _/eax: boolean
 sig parse-hex-int in: (addr array byte) -> _/eax: int
 sig parse-hex-int-from-slice in: (addr slice) -> _/eax: int
 #sig parse-hex-int-helper start: (addr byte), end: (addr byte) -> _/eax: int
-sig is-hex-digit? c: byte -> _/eax: boolean
+sig hex-digit? c: byte -> _/eax: boolean
 #sig from-hex-char in/eax: byte -> out/eax: nibble
 sig parse-decimal-int in: (addr array byte) -> _/eax: int
 sig parse-decimal-int-from-slice in: (addr slice) -> _/eax: int
@@ -58,7 +58,7 @@ sig write-slice out: (addr stream byte), s: (addr slice)
 # bad name alert
 sig slice-to-string ad: (addr allocation-descriptor), in: (addr slice), out: (addr handle array byte)
 sig write-int32-decimal out: (addr stream byte), n: int
-sig is-decimal-digit? c: grapheme -> _/eax: boolean
+sig decimal-digit? c: grapheme -> _/eax: boolean
 sig to-decimal-digit in: grapheme -> _/eax: int
 # bad name alert
 # next-word really tokenizes

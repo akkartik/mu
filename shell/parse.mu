@@ -38,16 +38,16 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
   read-from-stream tokens, curr-token
   $parse-sexpression:type-check: {
     # not bracket -> parse atom
-    var is-bracket-token?/eax: boolean <- is-bracket-token? curr-token
-    compare is-bracket-token?, 0/false
+    var bracket-token?/eax: boolean <- bracket-token? curr-token
+    compare bracket-token?, 0/false
     {
       break-if-!=
       parse-atom curr-token, _out, trace
       break $parse-sexpression:type-check
     }
     # open paren -> parse list
-    var is-open-paren?/eax: boolean <- is-open-paren-token? curr-token
-    compare is-open-paren?, 0/false
+    var open-paren?/eax: boolean <- open-paren-token? curr-token
+    compare open-paren?, 0/false
     {
       break-if-=
       var curr/esi: (addr handle cell) <- copy _out
@@ -56,8 +56,8 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
         var curr-addr/eax: (addr cell) <- lookup *curr
         var left/ecx: (addr handle cell) <- get curr-addr, left
         {
-          var is-close-paren?/eax: boolean <- parse-sexpression tokens, left, trace
-          compare is-close-paren?, 0/false
+          var close-paren?/eax: boolean <- parse-sexpression tokens, left, trace
+          compare close-paren?, 0/false
           break-if-!= $parse-sexpression:list-loop
         }
         #
@@ -67,8 +67,8 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       break $parse-sexpression:type-check
     }
     # close paren -> parse list
-    var is-close-paren?/eax: boolean <- is-close-paren-token? curr-token
-    compare is-close-paren?, 0/false
+    var close-paren?/eax: boolean <- close-paren-token? curr-token
+    compare close-paren?, 0/false
     {
       break-if-=
       trace-higher trace
@@ -96,8 +96,8 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
   var curr-token-data/esi: (addr stream byte) <- copy _curr-token-data
   trace trace, "read", curr-token-data
   # number
-  var is-number-token?/eax: boolean <- is-number-token? curr-token
-  compare is-number-token?, 0/false
+  var number-token?/eax: boolean <- number-token? curr-token
+  compare number-token?, 0/false
   {
     break-if-=
     rewind-stream curr-token-data

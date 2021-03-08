@@ -296,7 +296,7 @@ test-write-int32-decimal-negative-multiple-digits:
     # . end
     c3/return
 
-is-decimal-digit?:  # c: grapheme -> result/eax: boolean
+decimal-digit?:  # c: grapheme -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -308,13 +308,13 @@ is-decimal-digit?:  # c: grapheme -> result/eax: boolean
     b8/copy-to-eax  0/imm32/false
     # return false if c < '0'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x30/imm32        # compare ecx
-    7c/jump-if-<  $is-decimal-digit?:end/disp8
+    7c/jump-if-<  $decimal-digit?:end/disp8
     # return (c <= '9')
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x39/imm32        # compare ecx
-    7f/jump-if->  $is-decimal-digit?:end/disp8
-$is-decimal-digit?:true:
+    7f/jump-if->  $decimal-digit?:end/disp8
+$decimal-digit?:true:
     b8/copy-to-eax  1/imm32/true
-$is-decimal-digit?:end:
+$decimal-digit?:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -322,17 +322,17 @@ $is-decimal-digit?:end:
     5d/pop-to-ebp
     c3/return
 
-test-is-decimal-digit-below-0:
-    # eax = is-decimal-digit?(0x2f)
+test-decimal-digit-below-0:
+    # eax = decimal-digit?(0x2f)
     # . . push args
     68/push  0x2f/imm32
     # . . call
-    e8/call  is-decimal-digit?/disp32
+    e8/call  decimal-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 0, msg)
     # . . push args
-    68/push  "F - test-is-decimal-digit-below-0"/imm32
+    68/push  "F - test-decimal-digit-below-0"/imm32
     68/push  0/imm32/false
     50/push-eax
     # . . call
@@ -341,33 +341,33 @@ test-is-decimal-digit-below-0:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     c3/return
 
-test-is-decimal-digit-0-to-9:
-    # eax = is-decimal-digit?(0x30)
+test-decimal-digit-0-to-9:
+    # eax = decimal-digit?(0x30)
     # . . push args
     68/push  0x30/imm32
     # . . call
-    e8/call  is-decimal-digit?/disp32
+    e8/call  decimal-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
     # . . push args
-    68/push  "F - test-is-decimal-digit-at-0"/imm32
+    68/push  "F - test-decimal-digit-at-0"/imm32
     68/push  1/imm32/true
     50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # eax = is-decimal-digit?(0x39)
+    # eax = decimal-digit?(0x39)
     # . . push args
     68/push  0x39/imm32
     # . . call
-    e8/call  is-decimal-digit?/disp32
+    e8/call  decimal-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
     # . . push args
-    68/push  "F - test-is-decimal-digit-at-9"/imm32
+    68/push  "F - test-decimal-digit-at-9"/imm32
     68/push  1/imm32/true
     50/push-eax
     # . . call
@@ -376,17 +376,17 @@ test-is-decimal-digit-0-to-9:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     c3/return
 
-test-is-decimal-digit-above-9:
-    # eax = is-decimal-digit?(0x3a)
+test-decimal-digit-above-9:
+    # eax = decimal-digit?(0x3a)
     # . . push args
     68/push  0x3a/imm32
     # . . call
-    e8/call  is-decimal-digit?/disp32
+    e8/call  decimal-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 0, msg)
     # . . push args
-    68/push  "F - test-is-decimal-digit-above-9"/imm32
+    68/push  "F - test-decimal-digit-above-9"/imm32
     68/push  0/imm32/false
     50/push-eax
     # . . call

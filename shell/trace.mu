@@ -70,8 +70,8 @@ fn has-errors? _self: (addr trace) -> _/eax: boolean {
     var curr/eax: (addr trace-line) <- index trace, offset
     var curr-label-ah/eax: (addr handle array byte) <- get curr, label
     var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
-    var is-error?/eax: boolean <- string-equal? curr-label, "error"
-    compare is-error?, 0/false
+    var error?/eax: boolean <- string-equal? curr-label, "error"
+    compare error?, 0/false
     {
       break-if-=
       return 1/true
@@ -340,9 +340,9 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
         copy-to *cursor-line-index, i
       }
       # always display errors
-      var is-error?/eax: boolean <- string-equal? curr-label, "error"
+      var error?/eax: boolean <- string-equal? curr-label, "error"
       {
-        compare is-error?, 0/false
+        compare error?, 0/false
         break-if-=
         y <- render-trace-line screen, curr, xmin, y, xmax, ymax, 0xc/fg=trace-error, bg
         copy-to already-hiding-lines?, 0/false
@@ -383,8 +383,8 @@ fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int,
   var label-ah/eax: (addr handle array byte) <- get self, label
   var _label/eax: (addr array byte) <- lookup *label-ah
   var label/ebx: (addr array byte) <- copy _label
-  var is-error?/eax: boolean <- string-equal? label, "error"
-  compare is-error?, 0/false
+  var error?/eax: boolean <- string-equal? label, "error"
+  compare error?, 0/false
   {
     break-if-!=
     var x/eax: int <- copy xsave

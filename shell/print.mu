@@ -4,8 +4,8 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
   var in/eax: (addr handle cell) <- copy _in
   var in-addr/eax: (addr cell) <- lookup *in
   {
-    var is-nil?/eax: boolean <- is-nil? in-addr
-    compare is-nil?, 0/false
+    var nil?/eax: boolean <- nil? in-addr
+    compare nil?, 0/false
     break-if-=
     write out, "()"
     trace-higher trace
@@ -88,8 +88,8 @@ fn print-list _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
       abort "null encountered"
     }
     {
-      var right-is-nil?/eax: boolean <- is-nil? right-addr
-      compare right-is-nil?, 0/false
+      var right-nil?/eax: boolean <- nil? right-addr
+      compare right-nil?, 0/false
       {
         break-if-=
         trace-text trace, "print", "right is null"
@@ -113,7 +113,7 @@ fn print-list _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
 
 # Most lisps intern nil, but we don't really have globals yet, so we'll be
 # less efficient for now.
-fn is-nil? _in: (addr cell) -> _/eax: boolean {
+fn nil? _in: (addr cell) -> _/eax: boolean {
   var in/esi: (addr cell) <- copy _in
   # if type != pair, return false
   var type/eax: (addr int) <- get in, type

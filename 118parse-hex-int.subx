@@ -6,7 +6,7 @@
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-is-hex-int?:  # in: (addr slice) -> result/eax: boolean
+hex-int?:  # in: (addr slice) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -23,58 +23,58 @@ is-hex-int?:  # in: (addr slice) -> result/eax: boolean
     # if s is empty return false
     b8/copy-to-eax  0/imm32/false
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-addr>=  $is-hex-int?:end/disp8
+    73/jump-if-addr>=  $hex-int?:end/disp8
     # skip past leading '-'
     # . if (*curr == '-') ++curr
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           3/r32/BL    .               .                 # copy byte at *ecx to BL
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x2d/imm32/-      # compare ebx
-    75/jump-if-!=  $is-hex-int?:initial-0/disp8
+    75/jump-if-!=  $hex-int?:initial-0/disp8
     # . ++curr
     41/increment-ecx
     # skip past leading '0x'
-$is-hex-int?:initial-0:
+$hex-int?:initial-0:
     # . if (*curr != '0') jump to loop
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           3/r32/BL    .               .                 # copy byte at *ecx to BL
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x30/imm32/0      # compare ebx
-    75/jump-if-!=  $is-hex-int?:loop/disp8
+    75/jump-if-!=  $hex-int?:loop/disp8
     # . ++curr
     41/increment-ecx
-$is-hex-int?:initial-0x:
+$hex-int?:initial-0x:
     # . if (curr >= in->end) return true
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-addr>=  $is-hex-int?:true/disp8
+    73/jump-if-addr>=  $hex-int?:true/disp8
     # . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           3/r32/BL    .               .                 # copy byte at *ecx to BL
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x78/imm32/x      # compare ebx
-    75/jump-if-!=  $is-hex-int?:loop/disp8
+    75/jump-if-!=  $hex-int?:loop/disp8
     # . ++curr
     41/increment-ecx
-$is-hex-int?:loop:
+$hex-int?:loop:
     # if (curr >= in->end) return true
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-addr>=  $is-hex-int?:true/disp8
-    # var eax: boolean = is-hex-digit?(*curr)
+    73/jump-if-addr>=  $hex-int?:true/disp8
+    # var eax: boolean = hex-digit?(*curr)
     # . . push args
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     50/push-eax
     # . . call
-    e8/call  is-hex-digit?/disp32
+    e8/call  hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # if (eax == false) return false
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-=  $is-hex-int?:end/disp8
+    74/jump-if-=  $hex-int?:end/disp8
     # ++curr
     41/increment-ecx
     # loop
-    eb/jump  $is-hex-int?:loop/disp8
-$is-hex-int?:true:
+    eb/jump  $hex-int?:loop/disp8
+$hex-int?:true:
     # return true
     b8/copy-to-eax  1/imm32/true
-$is-hex-int?:end:
+$hex-int?:end:
     # . restore registers
     5b/pop-to-ebx
     5a/pop-to-edx
@@ -84,7 +84,7 @@ $is-hex-int?:end:
     5d/pop-to-ebp
     c3/return
 
-test-is-hex-int:
+test-hex-int:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -97,16 +97,16 @@ test-is-hex-int:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = is-hex-int?(slice)
+    # eax = hex-int?(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-hex-int?/disp32
+    e8/call  hex-int?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
     # . . push args
-    68/push  "F - test-is-hex-int"/imm32
+    68/push  "F - test-hex-int"/imm32
     68/push  1/imm32/true
     50/push-eax
     # . . call
@@ -118,7 +118,7 @@ test-is-hex-int:
     5d/pop-to-ebp
     c3/return
 
-test-is-hex-int-handles-letters:
+test-hex-int-handles-letters:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -131,16 +131,16 @@ test-is-hex-int-handles-letters:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = is-hex-int?(slice)
+    # eax = hex-int?(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-hex-int?/disp32
+    e8/call  hex-int?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
     # . . push args
-    68/push  "F - test-is-hex-int-handles-letters"/imm32
+    68/push  "F - test-hex-int-handles-letters"/imm32
     68/push  1/imm32/true
     50/push-eax
     # . . call
@@ -152,7 +152,7 @@ test-is-hex-int-handles-letters:
     5d/pop-to-ebp
     c3/return
 
-test-is-hex-int-with-trailing-char:
+test-hex-int-with-trailing-char:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -165,16 +165,16 @@ test-is-hex-int-with-trailing-char:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = is-hex-int?(slice)
+    # eax = hex-int?(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-hex-int?/disp32
+    e8/call  hex-int?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 0, msg)
     # . . push args
-    68/push  "F - test-is-hex-int-with-trailing-char"/imm32
+    68/push  "F - test-hex-int-with-trailing-char"/imm32
     68/push  0/imm32/false
     50/push-eax
     # . . call
@@ -186,7 +186,7 @@ test-is-hex-int-with-trailing-char:
     5d/pop-to-ebp
     c3/return
 
-test-is-hex-int-with-leading-char:
+test-hex-int-with-leading-char:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -199,16 +199,16 @@ test-is-hex-int-with-leading-char:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = is-hex-int?(slice)
+    # eax = hex-int?(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-hex-int?/disp32
+    e8/call  hex-int?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 0, msg)
     # . . push args
-    68/push  "F - test-is-hex-int-with-leading-char"/imm32
+    68/push  "F - test-hex-int-with-leading-char"/imm32
     68/push  0/imm32/false
     50/push-eax
     # . . call
@@ -220,7 +220,7 @@ test-is-hex-int-with-leading-char:
     5d/pop-to-ebp
     c3/return
 
-test-is-hex-int-empty:
+test-hex-int-empty:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -228,16 +228,16 @@ test-is-hex-int-empty:
     68/push  0/imm32
     68/push  0/imm32
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = is-hex-int?(slice)
+    # eax = hex-int?(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-hex-int?/disp32
+    e8/call  hex-int?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 0, msg)
     # . . push args
-    68/push  "F - test-is-hex-int-empty"/imm32
+    68/push  "F - test-hex-int-empty"/imm32
     68/push  0/imm32/false
     50/push-eax
     # . . call
@@ -249,7 +249,7 @@ test-is-hex-int-empty:
     5d/pop-to-ebp
     c3/return
 
-test-is-hex-int-handles-0x-prefix:
+test-hex-int-handles-0x-prefix:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -262,16 +262,16 @@ test-is-hex-int-handles-0x-prefix:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = is-hex-int?(slice)
+    # eax = hex-int?(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-hex-int?/disp32
+    e8/call  hex-int?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
     # . . push args
-    68/push  "F - test-is-hex-int-handles-0x-prefix"/imm32
+    68/push  "F - test-hex-int-handles-0x-prefix"/imm32
     68/push  1/imm32/true
     50/push-eax
     # . . call
@@ -283,7 +283,7 @@ test-is-hex-int-handles-0x-prefix:
     5d/pop-to-ebp
     c3/return
 
-test-is-hex-int-handles-negative:
+test-hex-int-handles-negative:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -296,16 +296,16 @@ test-is-hex-int-handles-negative:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = is-hex-int?(slice)
+    # eax = hex-int?(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-hex-int?/disp32
+    e8/call  hex-int?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
     # . . push args
-    68/push  "F - test-is-hex-int-handles-negative"/imm32
+    68/push  "F - test-hex-int-handles-negative"/imm32
     68/push  1/imm32/true
     50/push-eax
     # . . call
@@ -317,7 +317,7 @@ test-is-hex-int-handles-negative:
     5d/pop-to-ebp
     c3/return
 
-test-is-hex-int-handles-negative-0x-prefix:
+test-hex-int-handles-negative-0x-prefix:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -330,16 +330,16 @@ test-is-hex-int-handles-negative-0x-prefix:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = is-hex-int?(slice)
+    # eax = hex-int?(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  is-hex-int?/disp32
+    e8/call  hex-int?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
     # . . push args
-    68/push  "F - test-is-hex-int-handles-negative-0x-prefix"/imm32
+    68/push  "F - test-hex-int-handles-negative-0x-prefix"/imm32
     68/push  1/imm32/true
     50/push-eax
     # . . call
@@ -698,7 +698,7 @@ test-parse-hex-int-from-slice-negative:
     5d/pop-to-ebp
     c3/return
 
-is-hex-digit?:  # c: byte -> result/eax: boolean
+hex-digit?:  # c: byte -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -708,25 +708,25 @@ is-hex-digit?:  # c: byte -> result/eax: boolean
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
     # return false if c < '0'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x30/imm32        # compare ecx
-    7c/jump-if-<  $is-hex-digit?:false/disp8
+    7c/jump-if-<  $hex-digit?:false/disp8
     # return true if c <= '9'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x39/imm32        # compare ecx
-    7e/jump-if-<=  $is-hex-digit?:true/disp8
+    7e/jump-if-<=  $hex-digit?:true/disp8
     # drop case
     25/and-eax-with 0x5f/imm32
     # return false if c > 'f'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x66/imm32        # compare ecx
-    7f/jump-if->  $is-hex-digit?:false/disp8
+    7f/jump-if->  $hex-digit?:false/disp8
     # return true if c >= 'a'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x61/imm32        # compare ecx
-    7d/jump-if->=  $is-hex-digit?:true/disp8
+    7d/jump-if->=  $hex-digit?:true/disp8
     # otherwise return false
-$is-hex-digit?:false:
+$hex-digit?:false:
     b8/copy-to-eax  0/imm32/false
-    eb/jump $is-hex-digit?:end/disp8
-$is-hex-digit?:true:
+    eb/jump $hex-digit?:end/disp8
+$hex-digit?:true:
     b8/copy-to-eax  1/imm32/true
-$is-hex-digit?:end:
+$hex-digit?:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -735,11 +735,11 @@ $is-hex-digit?:end:
     c3/return
 
 test-hex-below-0:
-    # eax = is-hex-digit?(0x2f)
+    # eax = hex-digit?(0x2f)
     # . . push args
     68/push  0x2f/imm32
     # . . call
-    e8/call  is-hex-digit?/disp32
+    e8/call  hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 0, msg)
@@ -754,11 +754,11 @@ test-hex-below-0:
     c3/return
 
 test-hex-0-to-9:
-    # eax = is-hex-digit?(0x30)
+    # eax = hex-digit?(0x30)
     # . . push args
     68/push  0x30/imm32
     # . . call
-    e8/call  is-hex-digit?/disp32
+    e8/call  hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
@@ -770,11 +770,11 @@ test-hex-0-to-9:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # eax = is-hex-digit?(0x39)
+    # eax = hex-digit?(0x39)
     # . . push args
     68/push  0x39/imm32
     # . . call
-    e8/call  is-hex-digit?/disp32
+    e8/call  hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
@@ -789,11 +789,11 @@ test-hex-0-to-9:
     c3/return
 
 test-hex-above-9-to-a:
-    # eax = is-hex-digit?(0x3a)
+    # eax = hex-digit?(0x3a)
     # . . push args
     68/push  0x3a/imm32
     # . . call
-    e8/call  is-hex-digit?/disp32
+    e8/call  hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 0, msg)
@@ -808,11 +808,11 @@ test-hex-above-9-to-a:
     c3/return
 
 test-hex-a-to-f:
-    # eax = is-hex-digit?(0x61)
+    # eax = hex-digit?(0x61)
     # . . push args
     68/push  0x61/imm32
     # . . call
-    e8/call  is-hex-digit?/disp32
+    e8/call  hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
@@ -824,11 +824,11 @@ test-hex-a-to-f:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # eax = is-hex-digit?(0x66)
+    # eax = hex-digit?(0x66)
     # . . push args
     68/push  0x66/imm32
     # . . call
-    e8/call  is-hex-digit?/disp32
+    e8/call  hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 1, msg)
@@ -843,11 +843,11 @@ test-hex-a-to-f:
     c3/return
 
 test-hex-above-f:
-    # eax = is-hex-digit?(0x67)
+    # eax = hex-digit?(0x67)
     # . . push args
     68/push  0x67/imm32
     # . . call
-    e8/call  is-hex-digit?/disp32
+    e8/call  hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-ints-equal(eax, 0, msg)

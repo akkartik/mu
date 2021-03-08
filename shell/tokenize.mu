@@ -50,7 +50,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     }
     # digit
     {
-      var digit?/eax: boolean <- is-decimal-digit? g
+      var digit?/eax: boolean <- decimal-digit? g
       compare digit?, 0/false
       break-if-=
       next-number-token in, out, trace
@@ -58,7 +58,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     }
     # other symbol char
     {
-      var symbol?/eax: boolean <- is-symbol-grapheme? g
+      var symbol?/eax: boolean <- symbol-grapheme? g
       compare symbol?, 0/false
       break-if-=
       next-symbol-token in, out, trace
@@ -66,7 +66,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     }
     # brackets are always single-char tokens
     {
-      var bracket?/eax: boolean <- is-bracket-grapheme? g
+      var bracket?/eax: boolean <- bracket-grapheme? g
       compare bracket?, 0/false
       break-if-=
       var g/eax: grapheme <- read-from-gap-buffer in
@@ -75,7 +75,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     }
     # non-symbol operators
     {
-      var operator?/eax: boolean <- is-operator-grapheme? g
+      var operator?/eax: boolean <- operator-grapheme? g
       compare operator?, 0/false
       break-if-=
       next-operator-token in, out, trace
@@ -109,7 +109,7 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     }
     # if non-symbol, return
     {
-      var symbol-grapheme?/eax: boolean <- is-symbol-grapheme? g
+      var symbol-grapheme?/eax: boolean <- symbol-grapheme? g
       compare symbol-grapheme?, 0/false
       break-if-!=
       trace-text trace, "read", "stop"
@@ -146,7 +146,7 @@ fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (a
     }
     # if non-operator, return
     {
-      var operator-grapheme?/eax: boolean <- is-operator-grapheme? g
+      var operator-grapheme?/eax: boolean <- operator-grapheme? g
       compare operator-grapheme?, 0/false
       break-if-!=
       trace-text trace, "read", "stop"
@@ -183,7 +183,7 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     }
     # if not symbol grapheme, return
     {
-      var symbol-grapheme?/eax: boolean <- is-symbol-grapheme? g
+      var symbol-grapheme?/eax: boolean <- symbol-grapheme? g
       compare symbol-grapheme?, 0/false
       break-if-!=
       trace-text trace, "read", "stop"
@@ -191,7 +191,7 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     }
     # if not digit grapheme, abort
     {
-      var digit?/eax: boolean <- is-decimal-digit? g
+      var digit?/eax: boolean <- decimal-digit? g
       compare digit?, 0/false
       break-if-!=
       error trace, "invalid number"
@@ -216,7 +216,7 @@ fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) 
   trace trace, "read", stream
 }
 
-fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
+fn symbol-grapheme? g: grapheme -> _/eax: boolean {
   ## whitespace
   compare g, 9/tab
   {
@@ -383,7 +383,7 @@ fn is-symbol-grapheme? g: grapheme -> _/eax: boolean {
   return 1/true
 }
 
-fn is-bracket-grapheme? g: grapheme -> _/eax: boolean {
+fn bracket-grapheme? g: grapheme -> _/eax: boolean {
   compare g, 0x28/open-paren
   {
     break-if-!=
@@ -417,7 +417,7 @@ fn is-bracket-grapheme? g: grapheme -> _/eax: boolean {
   return 0/false
 }
 
-fn is-operator-grapheme? g: grapheme -> _/eax: boolean {
+fn operator-grapheme? g: grapheme -> _/eax: boolean {
   # '$' is a symbol char
   compare g, 0x25/percent
   {
@@ -519,27 +519,27 @@ fn is-operator-grapheme? g: grapheme -> _/eax: boolean {
   return 0/false
 }
 
-fn is-number-token? _in: (addr cell) -> _/eax: boolean {
+fn number-token? _in: (addr cell) -> _/eax: boolean {
   var in/eax: (addr cell) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
   var g/eax: grapheme <- read-grapheme in-data
-  var result/eax: boolean <- is-decimal-digit? g
+  var result/eax: boolean <- decimal-digit? g
   return result
 }
 
-fn is-bracket-token? _in: (addr cell) -> _/eax: boolean {
+fn bracket-token? _in: (addr cell) -> _/eax: boolean {
   var in/eax: (addr cell) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
   var g/eax: grapheme <- read-grapheme in-data
-  var result/eax: boolean <- is-bracket-grapheme? g
+  var result/eax: boolean <- bracket-grapheme? g
   return result
 }
 
-fn is-open-paren-token? _in: (addr cell) -> _/eax: boolean {
+fn open-paren-token? _in: (addr cell) -> _/eax: boolean {
   var in/eax: (addr cell) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
@@ -553,7 +553,7 @@ fn is-open-paren-token? _in: (addr cell) -> _/eax: boolean {
   return 0/false
 }
 
-fn is-close-paren-token? _in: (addr cell) -> _/eax: boolean {
+fn close-paren-token? _in: (addr cell) -> _/eax: boolean {
   var in/eax: (addr cell) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
