@@ -96,12 +96,12 @@ fn render-sandbox-menu screen: (addr screen) {
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ctrl-d ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " cursor down  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ctrl-u ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " cursor up  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 9/bg=blue
   draw-text-rightward-from-cursor screen, " move to trace  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl-d ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " down  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl-u ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " up  ", width, 7/fg, 0/bg
 }
 
 fn edit-sandbox _self: (addr sandbox), key: byte {

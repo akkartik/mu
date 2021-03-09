@@ -668,12 +668,12 @@ fn render-trace-menu screen: (addr screen) {
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ctrl-d ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " cursor down  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ctrl-u ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " cursor up  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 3/bg=cyan
   draw-text-rightward-from-cursor screen, " move to sandbox  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " j ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " down  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " k ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " up  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " enter ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " expand  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " backspace ", width, 0/fg, 7/bg=grey
@@ -684,26 +684,10 @@ fn edit-trace _self: (addr trace), key: grapheme {
   var self/esi: (addr trace) <- copy _self
   # cursor down
   {
-    compare key, 4/ctrl-d
-    break-if-!=
-    var cursor-y/eax: (addr int) <- get self, cursor-y
-    increment *cursor-y
-    return
-  }
-  # cursor down
-  {
     compare key, 0x6a/j
     break-if-!=
     var cursor-y/eax: (addr int) <- get self, cursor-y
     increment *cursor-y
-    return
-  }
-  # cursor up
-  {
-    compare key, 0x15/ctrl-u
-    break-if-!=
-    var cursor-y/eax: (addr int) <- get self, cursor-y
-    decrement *cursor-y
     return
   }
   # cursor up
@@ -905,7 +889,7 @@ fn test-cursor-down-and-up-within-trace {
   check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-and-up-within-trace/pre-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-and-up-within-trace/pre-2/cursor"
   # cursor down
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
   #
   check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-and-up-within-trace/down-0"
@@ -915,7 +899,7 @@ fn test-cursor-down-and-up-within-trace {
   check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-and-up-within-trace/down-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-and-up-within-trace/down-2/cursor"
   # cursor up
-  edit-trace t, 0x15/ctrl-u
+  edit-trace t, 0x6b/k
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
   #
   check-screen-row screen,                                  0/y, "...   ", "F - test-cursor-down-and-up-within-trace/up-0"
@@ -948,11 +932,11 @@ fn test-cursor-down-past-bottom-of-trace {
   check-screen-row screen,                                  2/y, "...   ", "F - test-cursor-down-past-bottom-of-trace/pre-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-cursor-down-past-bottom-of-trace/pre-2/cursor"
   # cursor down several times
-  edit-trace t, 4/ctrl-d
-  edit-trace t, 4/ctrl-d
-  edit-trace t, 4/ctrl-d
-  edit-trace t, 4/ctrl-d
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
+  edit-trace t, 0x6a/j
+  edit-trace t, 0x6a/j
+  edit-trace t, 0x6a/j
+  edit-trace t, 0x6a/j
   # hack: we do need to render to make this test pass; we're mixing state management with rendering
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
   # cursor clamps at bottom
@@ -1132,7 +1116,7 @@ fn test-trace-expand-twice {
   check-screen-row screen,                                  2/y, "0 line 2   ", "F - test-trace-expand-twice/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-expand-twice/expand-2/cursor"
   # cursor down
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   # hack: we need to render here to make this test pass; we're mixing state management with rendering
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1184,8 +1168,8 @@ fn test-trace-refresh-cursor {
   check-screen-row screen,                                  2/y, "0 line 3   ", "F - test-trace-refresh-cursor/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-refresh-cursor/expand-2/cursor"
   # cursor down
-  edit-trace t, 4/ctrl-d
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
   check-screen-row screen,                                  0/y, "0 line 1   ", "F - test-trace-refresh-cursor/down-0"
@@ -1239,8 +1223,8 @@ fn test-trace-preserve-cursor-on-refresh {
   check-screen-row screen,                                  2/y, "0 line 3   ", "F - test-trace-preserve-cursor-on-refresh/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-trace-preserve-cursor-on-refresh/expand-2/cursor"
   # cursor down
-  edit-trace t, 4/ctrl-d
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
   check-screen-row screen,                                  0/y, "0 line 1   ", "F - test-trace-preserve-cursor-on-refresh/down-0"
@@ -1294,8 +1278,8 @@ fn test-trace-keep-cursor-visible-on-refresh {
   check-screen-row screen,                                  2/y, "0 line 3   ", "F - test-trace-keep-cursor-visible-on-refresh/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "              ", "F - test-trace-keep-cursor-visible-on-refresh/expand-2/cursor"
   # cursor down
-  edit-trace t, 4/ctrl-d
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
   check-screen-row screen,                                  0/y, "0 line 1   ", "F - test-trace-keep-cursor-visible-on-refresh/down-0"
@@ -1392,7 +1376,7 @@ fn test-trace-collapse {
   check-screen-row screen,                                  1/y, "0 line 2   ", "F - test-trace-collapse/expand-1"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-collapse/expand-1/cursor"
   # cursor down
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   # collapse
   edit-trace t, 8/backspace
@@ -1438,9 +1422,9 @@ fn test-trace-collapse-skips-invisible-lines {
   check-screen-row screen,                                  2/y, "0 line 2   ", "F - test-trace-collapse-skips-invisible-lines/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-collapse-skips-invisible-lines/expand-2/cursor"
   # cursor down to second visible line
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   # collapse
   edit-trace t, 8/backspace
@@ -1488,7 +1472,7 @@ fn test-trace-collapse-two-levels {
   check-screen-row screen,                                  2/y, "0 line 2   ", "F - test-trace-collapse-two-levels/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-collapse-two-levels/expand-2/cursor"
   # cursor down to ellipses
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   # expand
   edit-trace t, 0xa/enter
@@ -1501,7 +1485,7 @@ fn test-trace-collapse-two-levels {
   check-screen-row screen,                                  2/y, "0 line 2   ", "F - test-trace-collapse-two-levels/expand2-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-collapse-two-levels/expand2-2/cursor"
   # cursor down to second visible line
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   # collapse
   edit-trace t, 8/backspace
@@ -1555,11 +1539,11 @@ fn test-trace-collapse-nested-level {
   check-screen-row screen,                                  3/y, "...        ", "F - test-trace-collapse-nested-level/expand-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-collapse-nested-level/expand-3/cursor"
   # cursor down to bottom
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 8/ymax, 1/show-cursor
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 8/ymax, 1/show-cursor
-  edit-trace t, 4/ctrl-d
+  edit-trace t, 0x6a/j
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 8/ymax, 1/show-cursor
   # expand
   edit-trace t, 0xa/enter
