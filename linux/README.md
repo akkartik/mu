@@ -32,7 +32,8 @@ The Mu compiler toolchain is also here in the following phases:
 
 * Bare SubX: `hex`, `survey_elf`, `pack`, `dquotes`, `assort`, `tests`
 * Syntax sugar for SubX: `sigils`, `calls`, `braces`
-* Mu-&gt;SubX compiler: `mu`
+* Mu-&gt;SubX compiler: `mu`. Compiles [most statements](http://akkartik.github.io/mu/html/mu_instructions.html)
+  to a single instruction of machine code.
 
 The toolchain includes binaries in the repo. At any commit, the binary should
 be identical bit for bit with the result of translating the corresponding

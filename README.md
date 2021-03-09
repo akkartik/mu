@@ -134,7 +134,12 @@ Here's an example program in Mu:
 
 <img alt='ex2.mu' src='html/ex2.mu.png' width='400px'>
 
-[More details on Mu syntax &rarr;](mu.md)
+More resources on Mu:
+
+* [Mu Syntax reference](mu.md)
+
+* [Library reference.](vocabulary.md) Mu programs can transparently call
+  low-level functions written in SubX.
 
 Here's an example program in SubX:
 
@@ -149,7 +154,17 @@ Entry:
   e8/call  syscall_exit/disp32
 ```
 
-[More details on SubX syntax &rarr;](subx.md)
+More resources on SubX:
+
+* [SubX syntax reference](subx.md)
+
+* [Some starter exercises for learning SubX](https://github.com/akkartik/mu/pulls)
+  (labelled `hello`). Feel free to [ping me](mailto:ak@akkartik.com) with any
+  questions.
+
+* The [list of x86 opcodes](subx_opcodes) supported in SubX: `linux/bootstrap/bootstrap help opcodes`.
+
+* [Some tips for debugging SubX programs.](subx_debugging.md)
 
 ## Forks
 
@@ -174,8 +189,7 @@ pull your changes into this repo!
 
 If you're still reading, here are some more things to check out:
 
-- The references on [Mu](mu.md) and [SubX](subx.md) syntax, and also [bare
-  SubX](subx_bare.md) without any syntax sugar.
+- [How to get your text editor set up for Mu and SubX programs.](editor/editor.md)
 
 - [Some 2-minute videos demonstrating Mu programs](https://archive.org/details/@kartik_agaram).
   Many of them involve this prototype live-updating programming environment
@@ -187,23 +201,11 @@ If you're still reading, here are some more things to check out:
   $ ./a.elf screen
   ```
 
-- [How to get your text editor set up for Mu and SubX programs.](editor/editor.md)
-
-- [Some tips for debugging SubX programs.](subx_debugging.md)
-
-- [Shared vocabulary of data types and functions shared by Mu programs.](vocabulary.md)
-  Mu programs can transparently call low-level functions written in SubX.
-
 - [A summary](mu_instructions) of how the Mu compiler translates statements
   to SubX. Most Mu statements map to a single x86 instruction.
   ([colorized version](http://akkartik.github.io/mu/html/mu_instructions.html))
 
-- [Some starter exercises for learning SubX](https://github.com/akkartik/mu/pulls)
-  (labelled `hello`). Feel free to [ping me](mailto:ak@akkartik.com) with any questions.
-
 - [Commandline reference for the bootstrap C++ program.](bootstrap.md)
-
-- The [list of x86 opcodes](subx_opcodes) supported in SubX: `linux/bootstrap/bootstrap help opcodes`.
 
 - [Some details on the unconventional organization of this project.](http://akkartik.name/post/four-repos)
 
