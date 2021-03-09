@@ -205,8 +205,6 @@ If you're still reading, here are some more things to check out:
   to SubX. Most Mu statements map to a single x86 instruction.
   ([colorized version](http://akkartik.github.io/mu/html/mu_instructions.html))
 
-- [Commandline reference for the bootstrap C++ program.](bootstrap.md)
-
 - [Some details on the unconventional organization of this project.](http://akkartik.name/post/four-repos)
 
 - Previous prototypes: [mu0](https://github.com/akkartik/mu0), [mu1](https://github.com/akkartik/mu1).
