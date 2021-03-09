@@ -2,9 +2,9 @@
 
 Currently runs a tiny subset of Lisp. To build and run it from the top-level:
 
-```
-./translate shell/*.mu
-qemu-system-i386 disk.img
+```sh
+$ ./translate shell/*.mu
+$ qemu-system-i386 disk.img
 ```
 
 You can type in expressions, hit `ctrl-s` to see their results, and hit `Tab`
