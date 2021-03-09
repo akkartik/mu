@@ -3,7 +3,7 @@
 Currently runs a tiny subset of Lisp. To build and run it from the top-level:
 
 ```sh
-$ ./translate shell/*.mu
+$ ./translate shell/*.mu      # generates disk.img
 $ qemu-system-i386 disk.img
 ```
 
