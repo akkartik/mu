@@ -9,6 +9,7 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
   var token-storage: cell
   var token/edx: (addr cell) <- address token-storage
   {
+    skip-whitespace-from-gap-buffer in
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=

@@ -210,6 +210,29 @@ fn test-run-integer {
   check-screen-row screen, 2/y, "=> 1 ", "F - test-run-integer/2"
 }
 
+fn test-run-with-spaces {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox
+  # type "1"
+  edit-sandbox sandbox, 0x20/space
+  edit-sandbox sandbox, 0x31/1
+  edit-sandbox sandbox, 0x20/space
+  edit-sandbox sandbox, 0xa/newline
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  check-screen-row screen, 0/y, " 1   ", "F - test-run-with-spaces/0"
+  check-screen-row screen, 1/y, "     ", "F - test-run-with-spaces/1"
+  check-screen-row screen, 2/y, "...  ", "F - test-run-with-spaces/2"
+  check-screen-row screen, 3/y, "=> 1 ", "F - test-run-with-spaces/3"
+}
+
 fn test-run-error-invalid-integer {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
