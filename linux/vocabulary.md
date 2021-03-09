@@ -49,14 +49,7 @@
 
 ### 'system calls'
 
-As I said at the top, a primary design goal of SubX (and Mu more broadly) is
-to explore ways to turn arbitrary manual tests into reproducible automated
-tests. SubX aims for this goal by baking testable interfaces deep into the
-stack, at the OS syscall level. The idea is that every syscall that interacts
-with hardware (and so the environment) should be *dependency injected* so that
-it's possible to insert fake hardware in tests.
-
-But those are big goals. Here are the syscalls I have so far:
+Low-level testable primitives for unsafe SubX code.
 
 - `write`: takes two arguments, a file `f` and an address to array `s`.
 
@@ -89,12 +82,6 @@ But those are big goals. Here are the syscalls I have so far:
   For more details on exit descriptors and how to create one, see [the
   comments before the implementation](http://akkartik.github.io/mu/html/059stop.subx.html).
 
-- `new-segment`
-
-  Allocates a whole new segment of memory for the program, discontiguous with
-  both existing code and data (heap) segments. Just a more opinionated form of
-  [`mmap`](http://man7.org/linux/man-pages/man2/mmap.2.html).
-
 - `allocate`: takes two arguments, an address to allocation-descriptor `ad`
   and an integer `n`
 
@@ -107,22 +94,6 @@ But those are big goals. Here are the syscalls I have so far:
   Explicitly passing in an allocation descriptor allows for nested memory
   management, where a sub-system gets a chunk of memory and further parcels it
   out to individual allocations. Particularly helpful for (surprise) tests.
-
-- `time`: returns the time in seconds since the epoch.
-
-- `ntime`: returns the number of nanoseconds since some arbitrary point.
-  Saturates at 32 bits. Useful for fine-grained measurements over relatively
-  short durations.
-
-- `sleep`: sleep for some number of whole seconds and some fraction of a
-  second expressed in nanoseconds. Not having decimal literals can be awkward
-  here.
-
-- ... _(to be continued)_
-
-I will continue to import syscalls over time from [the old Mu VM in the parent
-directory](https://github.com/akkartik/mu), which has experimented with
-interfaces for the screen, keyboard, mouse, disk and network.
 
 ### Functions
 
@@ -180,16 +151,14 @@ doesn't yet parse floating-point literals:
 #### arrays and strings
 
 - `populate`: allocates space for `n` objects of the appropriate type.
-- `copy-array`: allocates enough space and writes out a copy of an array of
-  some type.
+- `copy-array-object`: allocates enough space and writes out a copy of an
+  array of some type.
 - `slice-to-string`: allocates space for an array of bytes and copies the
   slice into it.
 
 - `array-equal?`
 - `substring`: string, start, length -> string
 - `split-string`: string, delimiter -> array of strings
-
-- `copy-array-object`
 
 #### predicates
 
@@ -363,6 +332,16 @@ from a slice:
 - `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `eax`)
 - `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `eax`)
 
-#### file system
+#### miscellaneous sensors and actuators
 
 - `open`: filename, write? -> buffered-file
+
+- `time`: returns the time in seconds since the epoch.
+
+- `ntime`: returns the number of nanoseconds since some arbitrary point.
+  Saturates at 32 bits. Useful for fine-grained measurements over relatively
+  short durations.
+
+- `sleep`: sleep for some number of whole seconds and some fraction of a
+  second expressed in nanoseconds. Not having decimal literals can be awkward
+  here.

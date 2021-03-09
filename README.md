@@ -31,14 +31,7 @@ compatibility with the past. ([More details.](http://akkartik.name/akkartik-conv
 Tests are a key mechanism here for creating a computer that others can make
 their own. I want to encourage a style of active and interactive reading with
 Mu. If something doesn't make sense, try changing it and see what tests break.
-Any breaking change should break some well-named test somewhere. This requirement
-implies that any manual test should be easy to turn into a reproducible
-automated test. Mu is a testbed for providing this guarantee. It exposes
-testable interfaces for hardware using dependency injection so that tests can
-run on -- and make assertions against -- fake hardware. It also is an experiment
-in [automated white-box testing](http://akkartik.name/post/tracing-tests)
-which promises robust tests for performance, concurrency, fault-tolerance,
-etc.
+Any breaking change should cause a failure in some well-named test somewhere.
 
 Currently Mu requires a 32-bit x86 processor.
 
@@ -60,6 +53,14 @@ In priority order:
     able to write an automated test for it.
   - Memory leaks over memory corruption.
 - Teach the computer bottom-up.
+
+Thorough test coverage in particular deserves some elaboration. It implies
+that any manual test should be easy to turn into a reproducible automated
+test. Mu has some unconventional methods for providing this guarantee. It
+exposes testable interfaces for hardware using dependency injection so that
+tests can run on -- and make assertions against -- fake hardware. It also
+performs [automated white-box testing](http://akkartik.name/post/tracing-tests)
+which enables robust tests for performance, concurrency, fault-tolerance, etc.
 
 ## Non-goals
 
@@ -102,13 +103,15 @@ Mu programs can be written for two very different environments:
   (under emulation; I haven't tested on native hardware yet). There's just a
   screen and a keyboard, and that's it. No mouse, no hardware acceleration, no
   virtual memory, no process separation, no multi-tasking, no persistent
-  storage, no network.
+  storage, no network. All tests run on boot. `main` only runs if all tests
+  pass.
 
 * The top-level is built using tools created under the `linux/` sub-directory.
   This sub-directory contains an entirely separate set of standard libraries
   intended for building programs that run with just a Linux kernel, reading
   from stdin and writing to stdout. The Mu compiler is such a program, at
-  `linux/mu.subx`.
+  `linux/mu.subx`. Individual programs typically run tests if given some
+  commandline argument like `test`.
 
 While I currently focus on programs without an OS, the `linux/` sub-directory
 is fairly ergonomic. There's a couple of dozen example programs to try out
