@@ -52,7 +52,7 @@ fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expecte
       draw-grapheme-at-cursor 0/screen, g, 3/cyan, 0/bg
       move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
-      move-cursor-to-start-of-next-line 0/screen
+      move-cursor-to-left-margin-of-next-line 0/screen
     }
     idx <- increment
     increment x
@@ -120,7 +120,7 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: in
         draw-grapheme-at-cursor 0/screen, g, 3/cyan, 0/bg
         move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
-        move-cursor-to-start-of-next-line 0/screen
+        move-cursor-to-left-margin-of-next-line 0/screen
       }
       $check-screen-row-in-color-from:compare-colors: {
         var color/eax: int <- screen-color-at-idx screen, idx
@@ -144,7 +144,7 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, y: in
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, fg, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed color ", 3/fg/cyan, 0/bg
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, color, 3/fg/cyan, 0/bg
-        move-cursor-to-start-of-next-line 0/screen
+        move-cursor-to-left-margin-of-next-line 0/screen
       }
     }
     idx <- increment
@@ -211,7 +211,7 @@ fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), bg:
         draw-grapheme-at-cursor 0/screen, g, 3/cyan, 0/bg
         move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
-        move-cursor-to-start-of-next-line 0/screen
+        move-cursor-to-left-margin-of-next-line 0/screen
         break $check-screen-row-in-background-color-from:compare-graphemes
       }
       $check-screen-row-in-background-color-from:compare-background-colors: {
@@ -236,7 +236,7 @@ fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), bg:
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, bg, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed background-color ", 3/fg/cyan, 0/bg
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, background-color, 3/fg/cyan, 0/bg
-        move-cursor-to-start-of-next-line 0/screen
+        move-cursor-to-left-margin-of-next-line 0/screen
       }
     }
     idx <- increment
@@ -281,7 +281,7 @@ fn check-background-color-in-screen-row-from screen-on-stack: (addr screen), bg:
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") to not be in background-color ", 3/fg/cyan, 0/bg
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, bg, 3/fg/cyan, 0/bg
-        move-cursor-to-start-of-next-line 0/screen
+        move-cursor-to-left-margin-of-next-line 0/screen
         break $check-background-color-in-screen-row-from:compare-cells
       }
       # otherwise assert that background IS bg
@@ -297,7 +297,7 @@ fn check-background-color-in-screen-row-from screen-on-stack: (addr screen), bg:
       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, bg, 3/fg/cyan, 0/bg
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed background-color ", 3/fg/cyan, 0/bg
       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, background-color, 3/fg/cyan, 0/bg
-      move-cursor-to-start-of-next-line 0/screen
+      move-cursor-to-left-margin-of-next-line 0/screen
     }
     idx <- increment
     increment x

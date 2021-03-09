@@ -6,18 +6,18 @@ fn test-stream {
   var s: (stream int 4)
   var s2/ecx: (addr stream int) <- address s
   var tmp/eax: boolean <- stream-empty? s2
-  check-true tmp, "F - test-stream/empty?/0"
+  check tmp, "F - test-stream/empty?/0"
   tmp <- stream-full? s2
-  check-false tmp, "F - test-stream/full?/0"
+  check-not tmp, "F - test-stream/full?/0"
   # step 2: write to stream
   var x: int
   copy-to x, 0x34
   var x2/edx: (addr int) <- address x
   write-to-stream s2, x2
   tmp <- stream-empty? s2
-  check-false tmp, "F - test-stream/empty?/1"
+  check-not tmp, "F - test-stream/empty?/1"
   tmp <- stream-full? s2
-  check-false tmp, "F - test-stream/full?/1"
+  check-not tmp, "F - test-stream/full?/1"
   # step 3: modify the value written (should make no difference)
   copy-to x, 0
   # step 4: read back
@@ -25,9 +25,9 @@ fn test-stream {
   var y2/ebx: (addr int) <- address y
   read-from-stream s2, y2
   tmp <- stream-empty? s2
-  check-true tmp, "F - test-stream/empty?/2"
+  check tmp, "F - test-stream/empty?/2"
   tmp <- stream-full? s2
-  check-false tmp, "F - test-stream/full?/2"
+  check-not tmp, "F - test-stream/full?/2"
   # we read back what was written
   check-ints-equal y, 0x34, "F - test-stream"
 }
@@ -37,12 +37,12 @@ fn test-stream-full {
   var s: (stream int 1)
   var s2/ecx: (addr stream int) <- address s
   var tmp/eax: boolean <- stream-full? s2
-  check-false tmp, "F - test-stream-full?/pre"
+  check-not tmp, "F - test-stream-full?/pre"
   var x: int
   var x2/edx: (addr int) <- address x
   write-to-stream s2, x2
   tmp <- stream-full? s2
-  check-true tmp, "F - test-stream-full?"
+  check tmp, "F - test-stream-full?"
 }
 
 fn test-fake-input-buffered-file {

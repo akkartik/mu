@@ -62,7 +62,7 @@ fn move-cursor-down screen: (addr screen) {
   set-cursor-position screen, cursor-x, cursor-y
 }
 
-fn move-cursor-to-start-of-next-line screen: (addr screen) {
+fn move-cursor-to-left-margin-of-next-line screen: (addr screen) {
   var dummy/eax: int <- copy 0
   var _height/ecx: int <- copy 0
   dummy, _height <- screen-size screen

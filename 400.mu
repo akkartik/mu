@@ -3,7 +3,7 @@ sig pixel-on-real-screen x: int, y: int, color: int
 sig draw-grapheme-on-real-screen g: grapheme, x: int, y: int, color: int, background-color: int
 sig cursor-position-on-real-screen -> _/eax: int, _/ecx: int
 sig set-cursor-position-on-real-screen x: int, y: int
-sig show-cursor-on-real-screen g: grapheme
+sig draw-cursor-on-real-screen g: grapheme
 
 # keyboard
 sig read-key kbd: (addr keyboard) -> _/eax: byte
@@ -26,9 +26,9 @@ sig check-next-stream-line-equal f: (addr stream byte), s: (addr array byte), ms
 sig write f: (addr stream byte), s: (addr array byte)
 sig write-stream f: (addr stream byte), s: (addr stream byte)
 sig read-byte s: (addr stream byte) -> _/eax: byte
-sig append-byte f: (addr stream byte), n: int
+sig append-byte f: (addr stream byte), n: int  # really just a byte, but I want to pass in literal numbers
 #sig to-hex-char in/eax: int -> out/eax: int
-sig append-byte-hex f: (addr stream byte), n: int
+sig append-byte-hex f: (addr stream byte), n: int  # really just a byte, but I want to pass in literal numbers
 sig write-int32-hex f: (addr stream byte), n: int
 sig write-int32-hex-bits f: (addr stream byte), n: int, bits: int
 sig hex-int? in: (addr slice) -> _/eax: boolean

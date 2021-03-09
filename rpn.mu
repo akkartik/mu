@@ -28,7 +28,7 @@ fn main {
     # read line from keyboard
     clear-stream in
     {
-      show-cursor 0/screen, space
+      draw-cursor 0/screen, space
       var key/eax: byte <- read-key 0/keyboard
       compare key, 0xa/newline
       break-if-=

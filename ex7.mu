@@ -14,7 +14,7 @@ fn main {
   var space/eax: grapheme <- copy 0x20
   set-cursor-position 0/screen, 0, 0
   {
-    show-cursor 0/screen, space
+    draw-cursor 0/screen, space
     var key/eax: byte <- read-key 0/keyboard
     {
       compare key, 0x68/h

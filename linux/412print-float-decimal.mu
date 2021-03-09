@@ -620,7 +620,7 @@ fn check-buffer-contains _buf: (addr array byte), _contents: (addr array byte), 
   var buf/esi: (addr array byte) <- copy _buf
   var contents/edi: (addr array byte) <- copy _contents
   var a/eax: boolean <- string-starts-with? buf, contents
-  check-true a, msg
+  check a, msg
   var len/ecx: int <- length contents
   var len2/eax: int <- length buf
   compare len, len2

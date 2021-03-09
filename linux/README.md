@@ -8,6 +8,10 @@ kernel. To run programs under this directory, you must first `cd` into it.
   Hello world!
   ```
 
+See the [shared vocabulary](vocabulary.md) of data types and functions shared
+by Mu programs running on Linux. Mu programs can transparently call low-level
+functions written in SubX.
+
 Some programs to try out:
 
 * `tile`: [An experimental live-updating postfix shell environment](https://mastodon.social/@akkartik/105108305362341204)

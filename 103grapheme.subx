@@ -125,13 +125,13 @@ $set-cursor-position-on-real-screen:end:
     5d/pop-to-ebp
     c3/return
 
-# Draw cursor at current location. But this is rickety:
+# Not a real `show-cursor` primitive:
 #   - does not clear previous location cursor was shown at.
 #   - does not preserve what was at the cursor. Caller is responsible for
 #     tracking what was on the screen at this position before and passing it
 #     in again.
 #   - does not stop showing the cursor at this location when the cursor moves
-show-cursor-on-real-screen:  # g: grapheme
+draw-cursor-on-real-screen:  # g: grapheme
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -141,7 +141,7 @@ show-cursor-on-real-screen:  # g: grapheme
     #
     (cursor-position-on-real-screen)  # => eax, ecx
     (draw-grapheme-on-real-screen *(ebp+8) %eax %ecx 0 7)
-$show-cursor-on-real-screen:end:
+$draw-cursor-on-real-screen:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
@@ -156,7 +156,7 @@ $show-cursor-on-real-screen:end:
 # 'draw*cursor*') print to by default.
 #
 # We don't bother displaying the cursor when drawing. It only becomes visible
-# on show-cursor, which is quite rickety (see above)
+# on draw-cursor, which is quite rickety (see above)
 #
 # It's up to applications to manage cursor display:
 #   - clean up where it used to be

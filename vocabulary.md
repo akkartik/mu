@@ -2,8 +2,15 @@
 
 ### Data Structures
 
-- Kernel strings: null-terminated regions of memory. Unsafe and to be avoided,
-  but needed for interacting with the kernel.
+- Handles: addresses to objects allocated on the heap. They're augmented with
+  book-keeping to guarantee memory-safety, and so cannot be stored in registers.
+  See [mu.md](mu.md) for details, but in brief:
+    - You need `addr` values to access data they point to.
+    - You can't store `addr` values in other types. They're temporary.
+    - You can store `handle` values in other types.
+    - To convert `handle` to `addr`, use `lookup`.
+    - Reclaiming memory (currently unimplemented) invalidates all `addr`
+      values.
 
 - Arrays: size-prefixed regions of memory containing multiple elements of a
   single type. Contents are preceded by 4 bytes (32 bits) containing the
@@ -24,185 +31,189 @@
 
   Invariant: 0 <= `read` <= `write` <= `size`
 
-- File descriptors (fd): Low-level 32-bit integers that the kernel uses to
-  track files opened by the program.
+  Writes to a stream abort if it's full. Reads to a stream abort if it's
+  empty.
 
-- File: 32-bit value containing either a fd or an address to a stream (fake
-  file).
+- Graphemes: 32-bit fragments of utf-8 that encode a single Unicode code-point.
+- Code-points: 32-bit integers representing a Unicode character.
 
-- Buffered files (buffered-file): Contain a file descriptor and a stream for
-  buffering reads/writes. Each `buffered-file` must exclusively perform either
-  reads or writes.
+### Functions
 
-### 'system calls'
+The most useful functions from 400.mu and later .mu files. Look for definitions
+(using `ctags`) to see type signatures.
 
-As I said at the top, a primary design goal of SubX (and Mu more broadly) is
-to explore ways to turn arbitrary manual tests into reproducible automated
-tests. SubX aims for this goal by baking testable interfaces deep into the
-stack, at the OS syscall level. The idea is that every syscall that interacts
-with hardware (and so the environment) should be *dependency injected* so that
-it's possible to insert fake hardware in tests.
-
-But those are big goals. Here are the syscalls I have so far:
-
-- `write`: takes two arguments, a file `f` and an address to array `s`.
-
-  Comparing this interface with the Unix `write()` syscall shows two benefits:
-
-  1. SubX can handle 'fake' file descriptors in tests.
-
-  1. `write()` accepts buffer and its size in separate arguments, which
-     requires callers to manage the two separately and so can be error-prone.
-     SubX's wrapper keeps the two together to increase the chances that we
-     never accidentally go out of array bounds.
-
-- `read`: takes two arguments, a file `f` and an address to stream `s`. Reads
-  as much data from `f` as can fit in (the free space of) `s`.
-
-  Like with `write()`, this wrapper around the Unix `read()` syscall adds the
-  ability to handle 'fake' file descriptors in tests, and reduces the chances
-  of clobbering outside array bounds.
-
-  One bit of weirdness here: in tests we do a redundant copy from one stream
-  to another. See [the comments before the implementation](http://akkartik.github.io/mu/html/060read.subx.html)
-  for a discussion of alternative interfaces.
-
-- `stop`: takes two arguments:
-  - `ed` is an address to an _exit descriptor_. Exit descriptors allow us to
-    `exit()` the program in production, but return to the test harness within
-    tests. That allows tests to make assertions about when `exit()` is called.
-  - `value` is the status code to `exit()` with.
-
-  For more details on exit descriptors and how to create one, see [the
-  comments before the implementation](http://akkartik.github.io/mu/html/059stop.subx.html).
-
-- `new-segment`
-
-  Allocates a whole new segment of memory for the program, discontiguous with
-  both existing code and data (heap) segments. Just a more opinionated form of
-  [`mmap`](http://man7.org/linux/man-pages/man2/mmap.2.html).
-
-- `allocate`: takes two arguments, an address to allocation-descriptor `ad`
-  and an integer `n`
-
-  Allocates a contiguous range of memory that is guaranteed to be exclusively
-  available to the caller. Returns the starting address to the range in `eax`.
-
-  An allocation descriptor tracks allocated vs available addresses in some
-  contiguous range of memory. The int specifies the number of bytes to allocate.
-
-  Explicitly passing in an allocation descriptor allows for nested memory
-  management, where a sub-system gets a chunk of memory and further parcels it
-  out to individual allocations. Particularly helpful for (surprise) tests.
-
-- ... _(to be continued)_
-
-I will continue to import syscalls over time from [the old Mu VM in the parent
-directory](https://github.com/akkartik/mu), which has experimented with
-interfaces for the screen, keyboard, mouse, disk and network.
-
-### primitives built atop system calls
-
-_(Compound arguments are usually passed in by reference. Where the results are
-compound objects that don't fit in a register, the caller usually passes in
-allocated memory for it.)_
+- `abort`: print a message in red on the bottom left of the screen and halt
 
 #### assertions for tests
-- `check-ints-equal`: fails current test if given ints aren't equal
-- `check-stream-equal`: fails current test if stream doesn't match string
+
+- `check`: fails current test if given boolean is false (`= 0`).
+- `check-not`: fails current test if given boolean isn't false (`!= 0`).
+- `check-ints-equal`: fails current test if given ints aren't equal.
+- `check-strings-equal`: fails current test if given strings have different bytes.
+- `check-stream-equal`: fails current test if stream's data doesn't match
+  string in its entirety. Ignores the stream's read index.
+- `check-array-equal`: fails if an array's elements don't match what's written
+  in a whitespace-separated string.
 - `check-next-stream-line-equal`: fails current test if next line of stream
-  until newline doesn't match string
-
-#### error handling
-- `error`: takes three arguments, an exit-descriptor, a file and a string (message)
-
-  Prints out the message to the file and then exits using the provided
-  exit-descriptor.
-
-- `error-byte`: like `error` but takes an extra byte value that it prints out
-  at the end of the message.
+  until newline doesn't match string.
 
 #### predicates
-- `kernel-string-equal?`: compares a kernel string with a string
-- `string-equal?`: compares two strings
-- `stream-data-equal?`: compares a stream with a string
+
+- `handle-equal?`: checks if two handles point at the identical address. Does
+  not compare payloads at their respective addresses.
+
+- `array-equal?`: checks if two arrays (of ints only for now) have identical
+  elements.
+
+- `string-equal?`: compares two strings.
+- `stream-data-equal?`: compares a stream with a string.
 - `next-stream-line-equal?`: compares with string the next line in a stream, from
-  `read` index to newline
+  `read` index to newline.
 
-- `slice-empty?`: checks if the `start` and `end` of a slice are equal
-- `slice-equal?`: compares a slice with a string
-- `slice-starts-with?`: compares the start of a slice with a string
-- `slice-ends-with?`: compares the end of a slice with a string
+- `slice-empty?`: checks if the `start` and `end` of a slice are equal.
+- `slice-equal?`: compares a slice with a string.
+- `slice-starts-with?`: compares the start of a slice with a string.
 
-#### writing to disk
-- `write`: string -> file
-  - Can also be used to cat a string into a stream.
-  - Will abort the entire program if destination is a stream and doesn't have
-    enough room.
-- `write-stream`: stream -> file
-  - Can also be used to cat one stream into another.
-  - Will abort the entire program if destination is a stream and doesn't have
-    enough room.
-- `write-slice`: slice -> stream
-  - Will abort the entire program if there isn't enough room in the
-    destination stream.
-- `append-byte`: int -> stream
-  - Will abort the entire program if there isn't enough room in the
-    destination stream.
-- `append-byte-hex`: int -> stream
-  - textual representation in hex, no '0x' prefix
-  - Will abort the entire program if there isn't enough room in the
-    destination stream.
-- `print-int32`: int -> stream
-  - textual representation in hex, including '0x' prefix
-  - Will abort the entire program if there isn't enough room in the
-    destination stream.
-- `write-buffered`: string -> buffered-file
-- `write-slice-buffered`: slice -> buffered-file
-- `flush`: buffered-file
-- `write-byte-buffered`: int -> buffered-file
-- `print-byte-buffered`: int -> buffered-file
-  - textual representation in hex, no '0x' prefix
-- `print-int32-buffered`: int -> buffered-file
-  - textual representation in hex, including '0x' prefix
+- `stream-full?`: checks if a write to a stream would abort.
+- `stream-empty?`: checks if a read from a stream would abort.
 
-#### reading from disk
-- `read`: file -> stream
-  - Can also be used to cat one stream into another.
-  - Will silently stop reading when destination runs out of space.
-- `read-byte-buffered`: buffered-file -> byte
-- `read-line-buffered`: buffered-file -> stream
-  - Will abort the entire program if there isn't enough room.
+#### arrays
 
-#### non-IO operations on streams
-- `new-stream`: allocates space for a stream of `n` elements, each occupying
-  `b` bytes.
-  - Will abort the entire program if `n*b` requires more than 32 bits.
+- `populate`: allocates space for `n` objects of the appropriate type.
+- `copy-array`: allocates enough space and writes out a copy of an array of
+  some type.
+- `slice-to-string`: allocates space for an array of bytes and copies the
+  slice into it.
+
+#### streams
+
+- `populate-stream`: allocates space in a stream for `n` objects of the
+  appropriate type.
+- `write-to-stream`: writes arbitrary objects to a stream of the appropriate
+  type.
+- `read-from-stream`: reads arbitrary objects from a stream of the appropriate
+  type.
+- `stream-to-array`: allocates just enough space and writes out a stream's
+  data between its read index (inclusive) and write index (exclusive).
+
 - `clear-stream`: resets everything in the stream to `0` (except its `size`).
 - `rewind-stream`: resets the read index of the stream to `0` without modifying
   its contents.
 
+- `write`: writes a string into a stream of bytes. Doesn't support streams of
+  other types.
+- `write-stream`: concatenates one stream into another.
+- `write-slice`: writes a slice into a stream of bytes.
+- `append-byte`: writes a single byte into a stream of bytes.
+- `append-byte-hex`: writes textual representation of lowest byte in hex to
+  a stream of bytes. Does not write a '0x' prefix.
+- `read-byte`: reads a single byte from a stream of bytes.
+
 #### reading/writing hex representations of integers
-- `is-hex-int?`: takes a slice argument, returns boolean result in `eax`
-- `parse-hex-int`: takes a slice argument, returns int result in `eax`
-- `is-hex-digit?`: takes a 32-bit word containing a single byte, returns
-  boolean result in `eax`.
-- `from-hex-char`: takes a hexadecimal digit character in `eax`, returns its
-  numeric value in `eax`
-- `to-hex-char`: takes a single-digit numeric value in `eax`, returns its
-  corresponding hexadecimal character in `eax`
 
-#### tokenization
+- `write-int32-hex`
+- `hex-int?`: checks if a slice contains an int in hex. Supports '0x' prefix.
+- `parse-hex-int`: reads int in hex from string
+- `parse-hex-int-from-slice`: reads int in hex from slice
+- `parse-array-of-ints`: reads in multiple ints in hex, separated by whitespace.
+- `hex-digit?`: checks if byte is in [0, 9] or [a, f] (lowercase only)
 
-from a stream:
-- `next-token`: stream, delimiter byte -> slice
-- `skip-chars-matching`: stream, delimiter byte
-- `skip-chars-not-matching`: stream, delimiter byte
+- `write-int32-decimal`
+- `parse-decimal-int`
+- `parse-decimal-int-from-slice`
+- `parse-decimal-int-from-stream`
+- `parse-array-of-decimal-ints`
+- `decimal-digit?`: checks if byte is in [0, 9]
 
-from a slice:
-- `next-token-from-slice`: start, end, delimiter byte -> slice
-  - Given a slice and a delimiter byte, returns a new slice inside the input
-    that ends at the delimiter byte.
+#### printing to screen
 
-- `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `eax`)
-- `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `eax`)
+All screen primitives require a screen object, which can be either the real
+screen on the computer or a fake screen for tests.
+
+The real screen on the Mu computer can currently display only ASCII characters,
+though it's easy to import more of the font. There is only one font. All
+graphemes are 8 pixels wide and 16 pixels tall. These constraints only apply
+to the real screen.
+
+- `draw-grapheme`: draws a single grapheme at a given coordinate, with given
+  foreground and background colors.
+- `render-grapheme`: like `draw-grapheme` and can also handle newlines
+  assuming text is printed left-to-right, top-to-bottom.
+- `draw-code-point`
+- `clear-screen`
+
+- `draw-text-rightward`: draws a single line of text, stopping when it reaches
+  either the provided bound or the right screen margin.
+- `draw-stream-rightward`
+- `draw-text-rightward-over-full-screen`: does not provide a bound.
+- `draw-text-wrapping-right-then-down`: draws multiple lines of text on screen
+  with simplistic word-wrap (no hyphenation) within (x, y) bounds.
+- `draw-stream-wrapping-right-then-down`
+- `draw-text-wrapping-right-then-down-over-full-screen`
+- `draw-int32-hex-wrapping-right-then-down`
+- `draw-int32-hex-wrapping-right-then-down-over-full-screen`
+- `draw-int32-decimal-wrapping-right-then-down`
+- `draw-int32-decimal-wrapping-right-then-down-over-full-screen`
+
+Similar primitives for writing text top-to-bottom, left-to-right.
+
+- `draw-text-downward`
+- `draw-stream-downward`
+- `draw-text-wrapping-down-then-right`
+- `draw-stream-wrapping-down-then-right`
+- `draw-text-wrapping-down-then-right-over-full-screen`
+- `draw-int32-hex-wrapping-down-then-right`
+- `draw-int32-hex-wrapping-down-then-right-over-full-screen`
+- `draw-int32-decimal-wrapping-down-then-right`
+- `draw-int32-decimal-wrapping-down-then-right-over-full-screen`
+
+Screens remember the current cursor position.
+
+- `cursor-position`
+- `set-cursor-position`
+- `draw-grapheme-at-cursor`
+- `draw-code-point-at-cursor`
+- `draw-cursor`: highlights the current position of the cursor. Programs must
+  pass in the grapheme to draw at the cursor position, and are responsible for
+  clearing the highlight when the cursor moves.
+- `move-cursor-left`, `move-cursor-right`, `move-cursor-up`, `move-cursor-down`.
+  These primitives always silently fail if the desired movement would go out
+  of screen bounds.
+- `move-cursor-to-left-margin-of-next-line`
+- `move-cursor-rightward-and-downward`: move cursor one grapheme to the right
+
+- `draw-text-rightward-from-cursor`
+- `draw-text-wrapping-right-then-down-from-cursor`
+- `draw-text-wrapping-right-then-down-from-cursor-over-full-screen`
+- `draw-int32-hex-wrapping-right-then-down-from-cursor`
+- `draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen`
+- `draw-int32-decimal-wrapping-right-then-down-from-cursor`
+- `draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen`
+
+- `draw-text-wrapping-down-then-right-from-cursor`
+- `draw-text-wrapping-down-then-right-from-cursor-over-full-screen`
+
+Assertions for tests:
+
+- `check-screen-row`: compare a screen from the left margin of a given row
+  index with a string. The row index counts downward from 0 at the top of the
+  screen. String can be smaller or larger than a single row, and defines the
+  region of interest. Strings longer than a row wrap around to the left margin
+  of the next screen row. Currently assumes text is printed left-to-right on
+  the screen.
+- `check-screen-row-from`: compare a fragment of a screen (left to write, top
+  to bottom) starting from a given (x, y) coordinate with an expected string.
+  Currently assumes text is printed left-to-right and top-to-bottom on the
+  screen.
+- `check-screen-row-in-color`: like `check-screen-row` but:
+  - also compares foreground color
+  - ignores screen locations where the expected string contains spaces
+- `check-screen-row-in-color-from`
+- `check-screen-row-in-background-color`
+- `check-screen-row-in-background-color-from`
+- `check-background-color-in-screen-row`: unlike previous functions, this
+  doesn't check screen contents, only background color. Ignores background
+  color where expected string contains spaces, and compares background color
+  where expected string does not contain spaces. Never compares the character
+  at any screen location.
+- `check-background-color-in-screen-row-from`

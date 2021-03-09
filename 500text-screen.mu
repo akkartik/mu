@@ -177,11 +177,11 @@ fn set-cursor-position screen: (addr screen), x: int, y: int {
   copy-to *dest, src
 }
 
-fn show-cursor screen: (addr screen), g: grapheme {
+fn draw-cursor screen: (addr screen), g: grapheme {
   {
     compare screen, 0
     break-if-!=
-    show-cursor-on-real-screen g
+    draw-cursor-on-real-screen g
     return
   }
   # fake screen
