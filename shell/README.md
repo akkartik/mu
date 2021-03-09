@@ -9,7 +9,7 @@ qemu-system-i386 disk.img
 
 You can type in expressions, hit `ctrl-s` to see their results, and hit `Tab`
 to focus on the `...` below and browse how the results were computed. [Here's
-a demo.](https://merveilles.town/@akkartik/105790894303047592) The bottom of
+a demo.](https://archive.org/details/akkartik-2min-2021-02-24) The bottom of
 the screen shows context-dependent keyboard shortcuts (there's no mouse in the
 Mu computer at the moment).
 
