@@ -1,8 +1,14 @@
-A set of standard libraries for building programs that run with just a Linux
-kernel. Most programs here read from stdin and write to stdout. One of these
-programs is the Mu compiler ([colorized sources](http://akkartik.github.io/mu/html/apps/mu.subx.html)).
+This directory contains Mu programs and infrastructure that require a Linux
+kernel. To run programs under this directory, you must first `cd` into it.
 
-Other apps beyond the Mu toolchain:
+  ```sh
+  $ cd linux/
+  $ ./translate hello.mu      # generates a.elf
+  $ ./a.elf
+  Hello world!
+  ```
+
+Some programs to try out:
 
 * `tile`: [An experimental live-updating postfix shell environment](https://mastodon.social/@akkartik/105108305362341204)
   that updates as you type. Prototype. Look at this to see what is currently
@@ -18,10 +24,11 @@ Other apps beyond the Mu toolchain:
 * `factorial*`: A simple program to compute factorials in 5 versions, showing
   all the different syntax sugars and what they expand to.
 
-The Mu toolchain is also here in the following phases:
-* Core SubX: `hex`, `survey_elf`, `pack`, `dquotes`, `assort`, `tests`
+The Mu compiler toolchain is also here in the following phases:
+
+* Bare SubX: `hex`, `survey_elf`, `pack`, `dquotes`, `assort`, `tests`
 * Syntax sugar for SubX: `sigils`, `calls`, `braces`
-* More ambitious translator for a memory-safe language (in progress): `mu`
+* Mu-&gt;SubX compiler: `mu`
 
 The toolchain includes binaries in the repo. At any commit, the binary should
 be identical bit for bit with the result of translating the corresponding

@@ -24,8 +24,7 @@ $ ./a.elf type
 
 ## hacking
 
-Unlike the top-level directory, this is just a prototype so far. There are no
-tests.
+This is just a prototype. There are no tests.
 
 To add a new primitive you'll need to hard-code it into the `evaluate`
 function (apps/tile/rpn.mu).
