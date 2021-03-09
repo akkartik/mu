@@ -214,7 +214,7 @@ fn test-run-with-spaces {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
-  # type "1"
+  # type input with whitespace before and after
   edit-sandbox sandbox, 0x20/space
   edit-sandbox sandbox, 0x31/1
   edit-sandbox sandbox, 0x20/space
