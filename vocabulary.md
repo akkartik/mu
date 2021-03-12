@@ -2,6 +2,10 @@
 
 ### Data Structures
 
+For memory safety, the following data structures are opaque and only modified
+using functions described further down. I still find it useful to understand
+how they work under the hood.
+
 - Handles: addresses to objects allocated on the heap. They're augmented with
   book-keeping to guarantee memory-safety, and so cannot be stored in registers.
   See [mu.md](mu.md) for details, but in brief:
