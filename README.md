@@ -73,8 +73,8 @@ which enables robust tests for performance, concurrency, fault-tolerance, etc.
 - Compatibility. The goal is to get off mainstream stacks, not to perpetuate
   them. Sometimes the right long-term solution is to [bump the major version number](http://akkartik.name/post/versioning).
 - Syntax. Mu code is meant to be comprehended by [running, not just reading](http://akkartik.name/post/comprehension).
-  For now it's a thin veneer over machine code. I'm working on memory safety
-  before expressive syntax.
+  For now it's a thin memory-safe veneer over machine code. I'm working on a
+  high-level "shell" for the Mu computer.
 
 ## Toolchain
 
