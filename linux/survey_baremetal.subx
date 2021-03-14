@@ -190,7 +190,6 @@ $subx-survey:end:
 test-subx-survey-computes-addresses:
     # input:
     #   == code
-    #   Entry:
     #   ab x/imm32
     #   == data
     #   x:
@@ -235,14 +234,6 @@ test-subx-survey-computes-addresses:
     # . write(_test-input-stream, "== code\n")
     # . . push args
     68/push  "== code\n"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . write(_test-input-stream, "Entry:\n")
-    # . . push args
-    68/push  "Entry:\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -429,15 +420,19 @@ $compute-offsets:line-loop:
 #?     # }}}
 $compute-offsets:word-loop:
     # next-word(line, word-slice)
+    # . . push args
     52/push-edx
     51/push-ecx
+    # . . call
     e8/call  next-word/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $compute-offsets:case-empty:
     # if slice-empty?(word-slice) break
     # . eax = slice-empty?(word-slice)
+    # . . push args
     52/push-edx
+    # . . call
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
@@ -446,8 +441,10 @@ $compute-offsets:case-empty:
     0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
 $compute-offsets:case-comment:
     # if slice-starts-with?(word-slice, "#") break
+    # . . push args
     68/push  "#"/imm32
     52/push-edx
+    # . . call
     e8/call  slice-starts-with?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
@@ -457,8 +454,10 @@ $compute-offsets:case-comment:
 $compute-offsets:case-segment-header:
     # if slice-equal?(word-slice, "==") break
     # . eax = slice-equal?(word-slice, "==")
+    # . . push args
     68/push  "=="/imm32
     52/push-edx
+    # . . call
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
@@ -570,20 +569,6 @@ $compute-offsets:end:
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
-
-$compute-offsets:abort:
-    # . _write(2/stderr, error)
-    # . . push args
-    68/push  "'==' must be followed by segment name and segment-start\n"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call  syscall_exit/disp32
-    # never gets here
 
 test-compute-offsets:
     # input:

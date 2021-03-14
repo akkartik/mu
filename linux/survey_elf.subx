@@ -494,15 +494,19 @@ compute-offsets:  # in: (addr stream byte), segments: (addr stream {(handle arra
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
 $compute-offsets:line-loop:
     # clear-stream(line)
+    # . . push args
     51/push-ecx
+    # . . call
     e8/call  clear-stream/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # read-line(in, line)
+    # . . push args
     51/push-ecx
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
     e8/call  read-line/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # if (line->write == 0) break
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
@@ -543,15 +547,19 @@ $compute-offsets:line-loop:
 #?     # }}}
 $compute-offsets:word-loop:
     # next-word(line, word-slice)
+    # . . push args
     52/push-edx
     51/push-ecx
+    # . . call
     e8/call  next-word/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $compute-offsets:case-empty:
     # if slice-empty?(word-slice) break
     # . eax = slice-empty?(word-slice)
+    # . . push args
     52/push-edx
+    # . . call
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
@@ -560,8 +568,10 @@ $compute-offsets:case-empty:
     0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
 $compute-offsets:case-comment:
     # if slice-starts-with?(word-slice, "#") continue
+    # . . push args
     68/push  "#"/imm32
     52/push-edx
+    # . . call
     e8/call  slice-starts-with?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
@@ -571,8 +581,10 @@ $compute-offsets:case-comment:
 $compute-offsets:case-segment-header:
     # if (!slice-equal?(word-slice, "==")) goto next case
     # . eax = slice-equal?(word-slice, "==")
+    # . . push args
     68/push  "=="/imm32
     52/push-edx
+    # . . call
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
@@ -630,10 +642,12 @@ $compute-offsets:case-segment-header:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
 $compute-offsets:construct-next-segment:
     # next-word(line, segment-tmp)
+    # . . push args
     68/push  compute-offsets:segment-tmp/imm32
     51/push-ecx
+    # . . call
     e8/call  next-word/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # if slice-empty?(segment-tmp) abort
     # . eax = slice-empty?(segment-tmp)
@@ -657,10 +671,12 @@ $compute-offsets:update-curr-segment-name:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # next-word(line, segment-tmp)
+    # . . push args
     68/push  compute-offsets:segment-tmp/imm32
     51/push-ecx
+    # . . call
     e8/call  next-word/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # if slice-empty?(segment-tmp) abort
     # . eax = slice-empty?(segment-tmp)
@@ -913,7 +929,7 @@ $compute-offsets:end:
 $compute-offsets:abort:
     # . _write(2/stderr, error)
     # . . push args
-    68/push  "'==' must be followed by segment name and segment-start\n"/imm32
+    68/push  "'==' must be followed by segment name and optionally an address\n"/imm32
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
