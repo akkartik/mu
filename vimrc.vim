@@ -68,7 +68,7 @@ else
 endif
 
 " useful for inspecting just the control flow in a trace
-" see https://github.com/akkartik/mu/blob/master/Readme.md#a-few-hints-for-debugging
+" see https://github.com/akkartik/mu/blob/main/linux/subx_debugging.md
 command! -nargs=0 L exec "%!grep label |grep -v clear-stream:loop"
 
 " show the call stack for the current line in the trace (by temporarily blowing away all earlier lines)

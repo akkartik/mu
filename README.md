@@ -88,7 +88,7 @@ binaries that run natively. The translators for most levels are built out of
 lower levels. The translator from Mu to SubX is written in SubX, and the
 translator from SubX to bare SubX is built in bare SubX. There is also an
 emulator for Mu's supported subset of x86, that's useful for [debugging SubX
-programs](subx_debugging.md).
+programs](linux/subx_debugging.md).
 
 Mu programs build natively either on Linux or on Windows using [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 For Macs and other Unix-like systems, use the (much slower) emulator:
@@ -164,7 +164,7 @@ More resources on SubX:
 
 * The [list of x86 opcodes](subx_opcodes) supported in SubX: `linux/bootstrap/bootstrap help opcodes`.
 
-* [Some tips for debugging SubX programs.](subx_debugging.md)
+* [Some tips for debugging SubX programs.](linux/subx_debugging.md)
 
 ## Forks
 
@@ -235,7 +235,7 @@ claims of completeness:
   including [a tiny sketch of an ELF loader](https://github.com/kragen/stoneknifeforth/blob/master/386.c).
 - [&ldquo;Creating tiny ELF executables&rdquo;](https://www.muppetlabs.com/~breadbox/software/tiny/teensy.html) by Brian Raiter.
 - [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
-  by Daniel Plohmann ([cached local copy](https://github.com/akkartik/mu/blob/master/cheatsheet.pdf))
+  by Daniel Plohmann ([cached local copy](https://github.com/akkartik/mu/blob/main/cheatsheet.pdf))
 - [Minimal Linux Live](http://minimal.linux-bg.org) for teaching how to create
   a bootable disk image using the syslinux bootloader.
 - [&ldquo;Writing a bootloader from scratch&rdquo;](https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf)
