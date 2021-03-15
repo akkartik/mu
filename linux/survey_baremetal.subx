@@ -982,7 +982,9 @@ emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr
     #       var datum: (addr slice) = next-token-from-slice(word-slice->start, word-slice->end, "/")
     #       var address: (addr int) = get-slice(labels, datum)
     #       if has-metadata?(word-slice, "imm8")
-    #         abort
+    #         emit(out, *address, 1)
+    #       else if has-metadata?(word-slice, "imm16")
+    #         emit(out, *address, 2)
     #       else if has-metadata?(word-slice, "imm32")
     #         emit(out, *address, 4)
     #       else if has-metadata?(word-slice, "disp8")
@@ -1418,7 +1420,7 @@ $emit-output:check-imm8:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) abort
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-=  $emit-output:check-imm32/disp8
+    74/jump-if-=  $emit-output:check-imm16/disp8
 $emit-output:emit-imm8:
     # emit-hex(out, *address, 1)
     # . . push args
@@ -1429,6 +1431,65 @@ $emit-output:emit-imm8:
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # continue
+    e9/jump  $emit-output:word-loop/disp32
+$emit-output:check-imm16:
+    # if (!has-metadata?(word-slice, "imm16")) goto next check
+    # . eax = has-metadata?(edx, "imm16")
+    # . . push args
+    68/push  "imm16"/imm32
+    52/push-edx
+    # . . call
+    e8/call  has-metadata?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax == false) goto next check
+    3d/compare-eax-and  0/imm32/false
+    74/jump-if-=  $emit-output:check-imm32/disp8
+#?     # dump *address {{{
+#?     # . write(2/stderr, "*address: ")
+#?     # . . push args
+#?     68/push  "*address: "/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write-int32-hex-buffered(Stderr, *address)
+#?     # . . push args
+#?     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
+#?     68/push  Stderr/imm32
+#?     # . . call
+#?     e8/call  write-int32-hex-buffered/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . flush(Stderr)
+#?     # . . push args
+#?     68/push  Stderr/imm32
+#?     # . . call
+#?     e8/call  flush/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # }}}
+$emit-output:emit-imm16:
+    # emit-hex(out, *address, 2)
+    # . . push args
+    68/push  2/imm32
+    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  emit-hex/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # TODO: ensure that the higher 2 bytes are zero
     # continue
     e9/jump  $emit-output:word-loop/disp32
 $emit-output:check-imm32:
@@ -1600,20 +1661,6 @@ $emit-output:end:
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
-
-$emit-output:imm8-abort:
-    # . _write(2/stderr, error)
-    # . . push args
-    68/push  "emit-output: cannot refer to code labels with /imm8"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    e8/call  syscall_exit/disp32
-    # never gets here
 
 $emit-output:abort:
     # print(stderr, "missing metadata in " word-slice)

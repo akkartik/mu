@@ -276,18 +276,17 @@ initialize_32bit_mode:
 55 aa
 
 ## sector 2 onwards loaded by load_disk, not automatically on boot
-== data
 
-# offset 200 (address 0x7e00):
-# null interrupt handler:
+null-interrupt-handler:
   cf  # iret
 
 # padding
 # 201:
    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# 210:
-# keyboard interrupt handler:
+== data
+
+keyboard-interrupt-handler:
   # prologue
   fa  # disable interrupts
   60  # push all registers to stack
@@ -557,18 +556,18 @@ idt_start:
 # https://wiki.osdev.org/index.php?title=Interrupts&oldid=25102#Default_PC_Interrupt_Vector_Assignment
 
 # entry 8: clock
-  00 7e  # target[0:16] = null interrupt handler [label]
+  null-interrupt-handler/imm16  # target[0:16]
   08 00  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
-  00 00  # target[16:32]
+  0/imm16  # target[16:32] -- null-interrupt-handler must be within address 0x10000
 
 # entry 9: keyboard
-  10 7e  # target[0:16] = keyboard interrupt handler [label]
+  keyboard-interrupt-handler/imm16  # target[0:16]
   08 00  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
-  00 00  # target[16:32]
+  0/imm16  # target[16:32] -- keyboard-interrupt-handler must be within address 0x10000
 
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
