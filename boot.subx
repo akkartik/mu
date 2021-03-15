@@ -150,13 +150,13 @@
 == code
   cd/syscall 0x10/imm8/bios-video-services
 
-  # switch to 32-bit mode
-  # . load global descriptor table
-  0f 01/lgdt 0/mod/indirect 2/subop/lgdt 6/rm32/use-disp16
-== data
-    f8 7c  # *gdt_descriptor [label]
-== code
-  # . enable paging
+  ## switch to 32-bit mode
+  # load global descriptor table
+  # We can't refer to the label directly because SubX doesn't do the right
+  # thing for lgdt, so rather than make errors worse in most places we instead
+  # pin gdt_descriptor below.
+  0f 01/lgdt 0/mod/indirect 2/subop/lgdt 6/rm32/use-disp16 0x7cf8/disp16/gdt_descriptor
+  # enable paging
   0f 20/cr-> 3/mod/direct 0/rm32/cr0 0/r32/eax
 == data
   # TODO: SubX doesn't understand 66 prefix
@@ -166,7 +166,7 @@
   0f 22/cr<- 3/mod/direct 0/rm32/cr0 0/r32/eax
   # far jump to initialize_32bit_mode that sets cs to offset 8 in the gdt in the process
   # We can't refer to the label directly because SubX doesn't have syntax for
-  # segment selectors. So we pin initialize_32bit_mode instead below.
+  # segment selectors. So we instead pin initialize_32bit_mode below.
   ea/jump-far-absolute 0x00087d00/disp32  # address 0x7d00 in offset 8 of the gdt
 
 == data
@@ -217,6 +217,7 @@ gdt_start:
   00  # base[24:32]
 # gdt_end:
 
+== data 0x7cf8
 gdt_descriptor:
   0x17/imm16  # final index of gdt = size of gdt - 1
   gdt_start/imm32/start
@@ -238,10 +239,10 @@ initialize_32bit_mode:
   bc/copy-to-esp 0x00070000/imm32
 
   # load interrupt handlers
-  0f 01/lidt 0/mod/indirect 3/subop/lidt 5/rm32/use-disp32
-== data
-    00 80 00 00  # *idt_descriptor [label]
-== code
+  # We can't refer to the label directly because SubX doesn't do the right
+  # thing for lidt, so rather than make errors worse in most places we instead
+  # pin idt_descriptor below.
+  0f 01/lidt 0/mod/indirect 3/subop/lidt 5/rm32/use-disp32 0x8000/disp32/idt_descriptor
 
 == data
 
@@ -488,10 +489,10 @@ initialize_32bit_mode:
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# offset 400 (address 0x8000): interrupt handler data
-# idt_descriptor:
-  ff 03  # idt_end - idt_start - 1
-  00 82 00 00  # start = idt_start [label]
+== data 0x8000
+idt_descriptor:
+  ff 03  # final index of idt = size of idt - 1
+  idt_start/imm32/start
 
 # padding
 # 406:
@@ -596,7 +597,7 @@ initialize_32bit_mode:
 # offset 600 (address 0x8200):
 # interrupt descriptor table {{{
 # 128 entries * 8 bytes each = 1024 bytes (0x400)
-# idt_start:
+idt_start:
 
 # entry 0
 00 00 00 00 00 00 00 00
