@@ -50,8 +50,7 @@
 #     to the address range [0x7c00, 0x7e00)
 #   - starts executing code at address 0x7c00
 
-  # disable interrupts for this initialization
-  fa/clear-interrupts
+  fa/disable-interrupts
 
   # initialize segment registers
   b8/copy-to-ax 0/imm16
@@ -277,18 +276,17 @@ initialize_32bit_mode:
 ## sector 2 onwards loaded by load_disk, not automatically on boot
 
 null-interrupt-handler:
-  cf  # iret
+  cf/return-from-interrupt
 
 # padding
 # 201:
    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-== data
-
 keyboard-interrupt-handler:
   # prologue
-  fa  # disable interrupts
-  60  # push all registers to stack
+  fa/disable-interrupts
+  60/push-all-registers
+== data
   # acknowledge interrupt
   b0 20  # al <- 0x20
   e6 20  # port 0x20 <- al
@@ -437,11 +435,11 @@ keyboard-interrupt-handler:
     25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
     28 80 00 00  # disp32 [label]
     0f  # imm8
-# 2d9:
+== code
   # epilogue
-  61  # pop all registers
-  fb  # enable interrupts
-  cf  # iret
+  61/pop-all-registers
+  fb/enable-interrupts
+  cf/return-from-interrupt
 
 ## the rest of this file is all data
 
