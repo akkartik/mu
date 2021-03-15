@@ -403,25 +403,23 @@ keyboard-interrupt-handler:
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
     00 86 00 00  # disp32 [label]
+== code
 $keyboard-interrupt-handler:select-map-done:
   # - if there's no character mapping, return
-  3c 00  # compare al, 0
-  74 13  # jump to epilogue if = [label]
-# 2c6:
-  # - store al in keyboard buffer
-  88  # copy r8 to m8 at r32
-    81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
-    30 80 00 00  # disp32 [label]
-  # increment index
-  fe  # increment byte
-    05  # 00/mod/indirect 000/subop/increment 101/rm32/use-disp32
-    28 80 00 00  # disp32 [label]
-  # clear top nibble of index (keyboard buffer is circular)
-  80  # and byte
-    25  # 00/mod/indirect 100/subop/and 101/rm32/use-disp32
-    28 80 00 00  # disp32 [label]
-    0f  # imm8
+  {
+    3c/compare-al-and 0/imm8
+    74/jump-if-= break/disp8
+    # - store al in keyboard buffer
+== data
+    88  # copy r8 to m8 at r32
+      81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
+      30 80 00 00  # disp32 [label]
 == code
+    # increment index
+    fe/increment-byte *Keyboard-buffer:write
+    # clear top nibble of index (keyboard buffer is circular)
+    80 4/subop/and-byte *Keyboard-buffer:write 0x0f/imm8
+  }
 $keyboard-interrupt-handler:epilogue:
   # epilogue
   61/pop-all-registers
