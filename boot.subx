@@ -164,7 +164,9 @@
   66 83 c8 01  # eax <- or 0x1
 == code
   0f 22/cr<- 3/mod/direct 0/rm32/cr0 0/r32/eax
-  # . far jump that sets cs to offset 8 in the gdt in the process
+  # far jump to initialize_32bit_mode that sets cs to offset 8 in the gdt in the process
+  # We can't refer to the label directly because SubX doesn't have syntax for
+  # segment selectors. So we pin initialize_32bit_mode instead below.
   ea/jump-far-absolute 0x00087d00/disp32  # address 0x7d00 in offset 8 of the gdt
 
 == data
@@ -219,20 +221,21 @@ gdt_descriptor:
   0x17/imm16  # final index of gdt = size of gdt - 1
   gdt_start/imm32/start
 
-# padding
-# fe:
-                                          00 00
+## 32-bit code from this point
 
-## 32-bit code from this point (still some instructions not in SubX)
-
-# offset 100 (address 0x7d00):
-# initialize_32bit_mode:
+== code 0x7d00
+initialize_32bit_mode:
+== data
+  # TODO: SubX doesn't understand 66 prefix
   66 b8 10 00  # ax <- offset 16 from gdt_start
-  8e d8  # ds <- ax
-  8e d0  # ss <- ax
-  8e c0  # es <- ax
-  8e e0  # fs <- ax
-  8e e8  # gs <- ax
+== code
+  8e/seg-> 3/mod/direct 0/rm32/ax 3/r32/ds
+  8e/seg-> 3/mod/direct 0/rm32/ax 2/r32/ss
+  8e/seg-> 3/mod/direct 0/rm32/ax 0/r32/es
+  8e/seg-> 3/mod/direct 0/rm32/ax 4/r32/fs
+  8e/seg-> 3/mod/direct 0/rm32/ax 5/r32/gs
+
+== data
 
 # 10e:
   bc 00 00 07 00  # esp <- 0x00070000
@@ -270,6 +273,8 @@ gdt_descriptor:
   0f 22  # copy rm32 to cr4
     e0  # 11/mod/direct 100/r32/CR4 000/rm32/eax
   e9 d0 16 00 00  # jump to 0x9400 [label]
+
+== data
 
 # padding
 # 130:
