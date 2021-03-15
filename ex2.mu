@@ -6,9 +6,6 @@
 #   qemu-system-i386 disk.img
 # Or:
 #   bochs -f baremetal/boot.bochsrc               # boot.bochsrc loads disk.img
-#
-# Expected output:
-#   html/baremetal.png
 
 fn main {
   var y/eax: int <- copy 0
