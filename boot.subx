@@ -97,22 +97,23 @@
   8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0x7e00/imm16
   cd/syscall 0x13/imm8/bios-disk-service
-
 == data
   0f 82 a3 00  # jump-if-carry disk_error [label]
+== code
 
   # load two more tracks of disk into addresses [0x17800, 0x27400)
-  b4 02  # ah <- 2  # read sectors from disk
+  b4/copy-to-ah 2/imm8  # read sectors from disk
   # dl comes conveniently initialized at boot time with the index of the device being booted
-  b5 00  # ch <- 0  # cylinder 0
-  b6 02  # dh <- 2  # track 2
-  b1 01  # cl <- 1  # first sector, 1-based
-  b0 7e  # al <- 126  # number of sectors to read = 2*63
-  # address to write sectors to = es:bx = 0x17800
-  bb 80 17  # bx <- 0x1780 [label]
-  8e c3  # es <- bx
-  bb 00 00  # bx <- 0
-  cd 13  # int 13h, BIOS disk service
+  b5/copy-to-ch 0/imm8  # cylinder 0
+  b6/copy-to-dh 2/imm8  # track 2
+  b1/copy-to-cl 1/imm8  # first sector, 1-based
+  b0/copy-to-al 0x7e/imm8  # number of sectors to read = 2*63 = 126
+  # address to write sectors to = es:bx = 0x17800, contiguous with boot segment
+  bb/copy-to-bx 0x1780/imm16
+  8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
+  bb/copy-to-bx 0/imm16
+  cd/syscall 0x13/imm8/bios-disk-service
+== data
   0f 82 9b 00  # jump-if-carry disk_error [label]
 
   # load two more tracks of disk into addresses [0x27400, 0x37000)
