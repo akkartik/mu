@@ -8,7 +8,7 @@
 # The expected input is a stream of bytes and some interspersed labels.
 # Comments and '==' segment headers are allowed, but names are ignored. The
 # emitted code will all lie in a single contiguous address range starting at
-# address 0x9400. Addresses in segment headers are optional. If provided, this
+# address 0x7c00. Addresses in segment headers are optional. If provided, this
 # program will insert padding in the output until the desired address is
 # reached.
 #
@@ -19,7 +19,7 @@
 #   cc dd l2/disp32
 #   l2:
 #   ee foo/imm32
-#   == data 0x9410
+#   == data 0x7c10
 #   foo:
 #     34
 #
@@ -27,13 +27,13 @@
 # and with label references replaced with numeric values/displacements.
 #
 #   $ cat x  |bootstrap/bootstrap run survey_baremetal
-#   # 0x9400
+#   # 0x7c00
 #   aa bb nn  # some computed address
 #   cc dd nn nn nn nn  # some computed displacement
 #   ee nn nn nn nn  # address right after this instruction
-#   # 0x940e
+#   # 0x7c0e
 #   00 00  # padding
-#   # 0x9410
+#   # 0x7c10
 #   34  # data segment interleaved with code
 
 == code
@@ -204,7 +204,7 @@ test-subx-survey-computes-addresses:
     #     01
     #
     # trace contains (in any order):
-    #   label x is at address 0x9405
+    #   label x is at address 0x7c05
     #
     # . prologue
     55/push-ebp
@@ -314,10 +314,10 @@ test-subx-survey-computes-addresses:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # . check-trace-contains("label 'x' is at address 0x00009405.", msg)
+    # . check-trace-contains("label 'x' is at address 0x00007c05.", msg)
     # . . push args
     68/push  "F - test-subx-survey-computes-addresses/0"/imm32
-    68/push  "label 'x' is at address 0x00009405."/imm32
+    68/push  "label 'x' is at address 0x00007c05."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
@@ -331,12 +331,12 @@ test-subx-survey-computes-addresses-with-padding:
     # input:
     #   == code
     #   ab x/imm32
-    #   == data 0x9410
+    #   == data 0x7c10
     #   x:
     #     01
     #
     # trace contains (in any order):
-    #   label x is at address 0x9410
+    #   label x is at address 0x7c10
     #
     # . prologue
     55/push-ebp
@@ -389,7 +389,7 @@ test-subx-survey-computes-addresses-with-padding:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "== data\n")
     # . . push args
-    68/push  "== data 0x9410\n"/imm32
+    68/push  "== data 0x7c10\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -446,10 +446,10 @@ test-subx-survey-computes-addresses-with-padding:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # . check-trace-contains("label 'x' is at address 0x00009410.", msg)
+    # . check-trace-contains("label 'x' is at address 0x00007c10.", msg)
     # . . push args
     68/push  "F - test-subx-survey-computes-addresses-with-padding/0"/imm32
-    68/push  "label 'x' is at address 0x00009410."/imm32
+    68/push  "label 'x' is at address 0x00007c10."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
@@ -461,7 +461,7 @@ test-subx-survey-computes-addresses-with-padding:
 
 compute-offsets:  # in: (addr stream byte), labels: (addr stream {(handle array byte), address})
     # pseudocode:
-    #   var current-address = 0x9400
+    #   var current-address = 0x7c00
     #   var line: (stream byte 512)
     #   while true                                  # line loop
     #     clear-stream(line)
@@ -502,8 +502,8 @@ compute-offsets:  # in: (addr stream byte), labels: (addr stream {(handle array 
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var current-address/esi: int = 0x9400
-    be/copy-to-esi  0x9400/imm32
+    # var current-address/esi: int = 0x7c00
+    be/copy-to-esi  0x7c00/imm32
     # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/size
@@ -809,7 +809,7 @@ test-compute-offsets:
     #     34
     #
     # trace contains (in any order):
-    #   label 'x' is at address 0x9406.
+    #   label 'x' is at address 0x7c06.
     #
     # . prologue
     55/push-ebp
@@ -911,10 +911,10 @@ test-compute-offsets:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # . check-trace-contains("label 'x' is at address 0x00009406.", msg)
+    # . check-trace-contains("label 'x' is at address 0x00007c06.", msg)
     # . . push args
     68/push  "F - test-compute-offsets"/imm32
-    68/push  "label 'x' is at address 0x00009406."/imm32
+    68/push  "label 'x' is at address 0x00007c06."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
@@ -946,7 +946,7 @@ emit-output:datum:  # slice
 
 emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr stream {(handle array byte), address})
     # pseudocode:
-    #   var address-of-next-instruction = 0x9400
+    #   var address-of-next-instruction = 0x7c00
     #   var line: (stream byte 512)
     #   line-loop:
     #   while true
@@ -1026,8 +1026,8 @@ emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-    # var address-of-next-instruction/ebx = 0x9400
-    bb/copy-to-ebx  0x9400/imm32
+    # var address-of-next-instruction/ebx = 0x7c00
+    bb/copy-to-ebx  0x7c00/imm32
 $emit-output:line-loop:
     # clear-stream(line)
     # . . push args
@@ -1803,10 +1803,10 @@ test-emit-output-non-far-control-flow:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
-    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009400", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00007c00", msg)
     # . . push args
     68/push  "F - test-emit-output-non-far-control-flow/0"/imm32
-    68/push  "# 0x00009400"/imm32
+    68/push  "# 0x00007c00"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -1830,10 +1830,10 @@ test-emit-output-non-far-control-flow:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009409", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00007c09", msg)
     # . . push args
     68/push  "F - test-emit-output-non-far-control-flow/3"/imm32
-    68/push  "# 0x00009409"/imm32
+    68/push  "# 0x00007c09"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -1869,15 +1869,15 @@ test-emit-output-with-padding:
     #   in:
     #     == code
     #     ab cd ef gh
-    #     == data 0x9410
+    #     == data 0x7c10
     #     34
     #
     # output:
     #   ab cd ef gh
-    #   # 0x9404
+    #   # 0x7c04
     #   00 00 00 00
     #   00 00 00 00 00 00 00 00
-    #   # 0x9410
+    #   # 0x7c10
     #   34
     #
     # . prologue
@@ -1932,9 +1932,9 @@ test-emit-output-with-padding:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . write(_test-input-stream, "== data 0x9410\n")
+    # . write(_test-input-stream, "== data 0x7c10\n")
     # . . push args
-    68/push  "== data 0x9410\n"/imm32
+    68/push  "== data 0x7c10\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -1999,10 +1999,10 @@ test-emit-output-with-padding:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
-    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009400", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00007c00", msg)
     # . . push args
     68/push  "F - test-emit-output-with-padding/0"/imm32
-    68/push  "# 0x00009400"/imm32
+    68/push  "# 0x00007c00"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -2017,10 +2017,10 @@ test-emit-output-with-padding:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009404", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00007c04", msg)
     # . . push args
     68/push  "F - test-emit-output-with-padding/0"/imm32
-    68/push  "# 0x00009404"/imm32
+    68/push  "# 0x00007c04"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -2044,10 +2044,10 @@ test-emit-output-with-padding:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009410", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00007c10", msg)
     # . . push args
     68/push  "F - test-emit-output-with-padding/0"/imm32
-    68/push  "# 0x00009410"/imm32
+    68/push  "# 0x00007c10"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -2077,12 +2077,12 @@ test-emit-output-code-label:
     #     ef gh
     #     e8 l1/disp32
     #   labels:
-    #     - 'l1': 0x9410
+    #     - 'l1': 0x7c10
     #
     # output:
     #   ab cd
     #   ef gh
-    #   e8 07 00 00 00  # 0x9410 - 0x9409 = 7
+    #   e8 07 00 00 00  # 0x7c10 - 0x7c09 = 7
     #
     # . prologue
     55/push-ebp
@@ -2152,8 +2152,8 @@ test-emit-output-code-label:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . stream-add2(labels, "l1", 0x9410)
-    68/push  0x9410/imm32/label-address
+    # . stream-add2(labels, "l1", 0x7c10)
+    68/push  0x7c10/imm32/label-address
     # . . push handle for "l1"
     53/push-ebx
     68/push  "l1"/imm32
@@ -2219,10 +2219,10 @@ test-emit-output-code-label:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
-    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009400", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00007c00", msg)
     # . . push args
     68/push  "F - test-emit-output-code-label/0"/imm32
-    68/push  "# 0x00009400"/imm32
+    68/push  "# 0x00007c00"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -2412,10 +2412,10 @@ test-emit-output-code-label-absolute:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
-    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009400", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00007c00", msg)
     # . . push args
     68/push  "F - test-emit-output-code-label-absolute/0"/imm32
-    68/push  "# 0x00009400"/imm32
+    68/push  "# 0x00007c00"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32

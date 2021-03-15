@@ -30,14 +30,12 @@ cat a.pack      |linux/survey_baremetal  > a.survey
 
 cat a.survey    |linux/hex               > a.bin
 
-# Create disk.img containing baremetal/boot.hex and a.bin
+# Create disk.img containing a.bin
 dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
-linux/hex < boot.hex  > boot.bin
-cat boot.bin a.bin > disk.bin
-dd if=disk.bin of=disk.img conv=notrunc
+dd if=a.bin of=disk.img conv=notrunc
 
-if [ `stat --printf="%s" disk.bin` -ge 193536 ]  # 6 tracks * 63 sectors per track * 512 bytes per sector (keep this sync'd with boot.hex)
+if [ `stat --printf="%s" a.bin` -ge 193536 ]  # 6 tracks * 63 sectors per track * 512 bytes per sector (keep this sync'd with boot.hex)
 then
-  echo "disk.bin won't all be loaded on boot"
+  echo "a.bin won't all be loaded on boot"
   exit 1
 fi
