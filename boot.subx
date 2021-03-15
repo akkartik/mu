@@ -96,7 +96,7 @@
   bb/copy-to-bx 0/imm16
   8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0x7e00/imm16
-  cd/syscall 0x13/imm8/bios-disk-service
+  cd/syscall 0x13/imm8/bios-disk-services
 == data
   0f 82 a3 00  # jump-if-carry disk_error [label]
 == code
@@ -112,7 +112,7 @@
   bb/copy-to-bx 0x1780/imm16
   8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0/imm16
-  cd/syscall 0x13/imm8/bios-disk-service
+  cd/syscall 0x13/imm8/bios-disk-services
 == data
   0f 82 9b 00  # jump-if-carry disk_error [label]
 == code
@@ -128,21 +128,25 @@
   bb/copy-to-bx 0x2740/imm16
   8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0/imm16
-  cd/syscall 0x13/imm8/bios-disk-service
+  cd/syscall 0x13/imm8/bios-disk-services
 == data
   0f 82 9b 00  # jump-if-carry disk_error [label]
+== code
 
   # reset es
-  bb 00 00  # bx <- 0
-  8e c3  # es <- bx
+  bb/copy-to-bx 0/imm16
+  8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
 
   # adjust video mode
-  b4 4f  # ah <- 4f (VBE)
-  b0 02  # al <- 02 (set video mode)
-  bb 05 41  # bx <- 0x0105 (graphics 1024x768x256
-            #               0x4000 bit = configure linear frame buffer in Bochs emulator; hopefully this doesn't hurt anything when running natively)
-            # fallback mode: 0x0101 (640x480x256)
-  cd 10  # int 10h, Vesa BIOS extensions
+  b4/copy-to-ah 0x4f/imm8  # VBE commands
+  b0/copy-to-al 2/imm8  # set video mode
+  bb/copy-to-bx 0x4105/imm16  # 0x0105 | 0x4000
+                              # 0x0105 = graphics mode 1024x768x256
+                              #  (alternative candidate: 0x0101 for 640x480x256)
+                              # 0x4000 bit = configure linear frame buffer in Bochs emulator; hopefully this doesn't hurt anything when running natively
+  cd/syscall 0x10/imm8/bios-video-services
+
+== data
 
   # load information for the (hopefully) current video mode
   # mostly just for the address to the linear frame buffer
