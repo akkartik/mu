@@ -19,7 +19,7 @@
 #            f8 (address 7ca0) <== gdt_descriptor
 # -- 32-bit mode code
 #   offset  100 (address 7d00): boot code
-#           1fe (address 7dfe) boot sector marker (2 bytes)
+#           1fe (address 7dfe) boot-sector-marker (2 bytes)
 #   offset  200 (address 7e00): interrupt handler code
 # -- 32-bit mode data
 #   offset  400 (address 8000): handler data
@@ -46,7 +46,7 @@
 
 # Upon reset, the IBM PC:
 #   - loads the first sector (512 bytes)
-#     from some bootable image (look for the boot sector marker further down this file)
+#     from some bootable image (look for the boot-sector-marker further down this file)
 #     to the address range [0x7c00, 0x7e00)
 #   - starts executing code at address 0x7c00
 
@@ -259,6 +259,7 @@ initialize_32bit_mode:
 
   fb/enable-interrupts
 == data
+  # TODO: SubX doesn't understand db prefix
   db e3/initialize-floating-point-coprocessor
 == code
   # eax <- cr4
@@ -270,27 +271,12 @@ initialize_32bit_mode:
 == data
   e9 d0 16 00 00  # jump to 0x9400 [label]
 
-# padding
-# 130:
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-# 1fe:
+== boot-sector-marker 0x7dfe
 # final 2 bytes of boot sector
 55 aa
 
 ## sector 2 onwards loaded by load_disk, not automatically on boot
+== data
 
 # offset 200 (address 0x7e00):
 # null interrupt handler:
