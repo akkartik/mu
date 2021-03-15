@@ -235,15 +235,15 @@ initialize_32bit_mode:
   8e/seg-> 3/mod/direct 0/rm32/ax 4/r32/fs
   8e/seg-> 3/mod/direct 0/rm32/ax 5/r32/gs
 
-== data
+  bc/copy-to-esp 0x00070000/imm32
 
-# 10e:
-  bc 00 00 07 00  # esp <- 0x00070000
-
-# 113:
   # load interrupt handlers
-  0f 01 1d  # lidt 00/mod/indirect 011/subop 101/rm32/use-disp32
+  0f 01/lidt 0/mod/indirect 3/subop/lidt 5/rm32/use-disp32
+== data
     00 80 00 00  # *idt_descriptor [label]
+== code
+
+== data
 
   # For now, not bothering reprogramming the IRQ to not conflict with software
   # exceptions.
