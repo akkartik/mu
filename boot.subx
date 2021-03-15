@@ -53,38 +53,39 @@
   # disable interrupts for this initialization
   fa/clear-interrupts
 
-== data
-
   # initialize segment registers
-  # this isn't always needed, but the recommendation is to not make assumptions
-  b8 00 00  # ax <- 0
-  8e d8  # ds <- ax
-  8e c0  # es <- ax
-  8e e0  # fs <- ax
-  8e e8  # gs <- ax
+  b8/copy-to-ax 0/imm16
+  8e/seg<- 3/mod/direct 3/rm32/ds 0/r32/ax
+  8e/seg<- 3/mod/direct 0/rm32/es 0/r32/ax
+  8e/seg<- 3/mod/direct 4/rm32/fs 0/r32/ax
+  8e/seg<- 3/mod/direct 5/rm32/gs 0/r32/ax
 
   # initialize stack to 0x00070000
   # We don't read or write the stack before we get to 32-bit mode, but BIOS
   # calls do. We need to move the stack in case BIOS initializes it to some
   # low address that we want to write code into.
-  b8 00 70  # ax <- 0x7000
-  8e d0  # ss <- ax
-  bc 00 00  # sp <- 0x0000
+  b8/copy-to-ax 0x7000/imm16
+  8e/seg<- 3/mod/direct 2/rm32/ss 0/r32/ax
+  bc/copy-to-esp 0/imm16
 
   # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
   # this is from https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S
-  # seta20.1:
-  e4 64  # al <- port 0x64
-  a8 02  # set zf if bit 1 (second-least significant) is not set
-  75 fa  # if zf not set, goto seta20.1 (-6)
-  b0 d1  # al <- 0xd1
-  e6 64  # port 0x64 <- al
-  # seta20.2:
-  e4 64  # al <- port 0x64
-  a8 02  # set zf if bit 1 (second-least significant) is not set
-  75 fa  # if zf not set, goto seta20.2 (-6)
-  b0 df  # al <- 0xdf
-  e6 64  # port 0x64 <- al
+  {
+    e4/read-port-into-al 0x64/imm8
+    a8/test-bits-in-al 0x02/imm8  # set zf if bit 1 (second-least significant) is not set
+    75/jump-if-!zero loop/imm8
+    b0/copy-to-al 0xd1/imm8
+    e6/write-al-into-port 0x64/imm8
+  }
+  {
+    e4/read-port-into-al 0x64/imm8
+    a8/test-bits-in-al 0x02/imm8  # set zf if bit 1 (second-least significant) is not set
+    75/jump-if-!zero loop/imm8
+    b0/copy-to-al 0xdf/imm8
+    e6/write-al-into-port 0x64/imm8
+  }
+
+== data
 
   # load remaining sectors from first two tracks of disk into addresses [0x7e00, 0x17800)
   b4 02  # ah <- 2  # read sectors from disk
