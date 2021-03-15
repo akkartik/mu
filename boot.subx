@@ -297,95 +297,79 @@ keyboard-interrupt-handler:
   e4/read-port-into-al 0x64/imm8
   a8/test-bits-in-al 0x01/imm8  # set zf if bit 0 (least significant) is not set
   74/jump-if-not-set $keyboard-interrupt-handler:epilogue/disp8
-== data
   # - if keyboard buffer is full, return
-  31 c9  # ecx <- xor ecx;  11/direct 001/r32/ecx 001/rm32/ecx
   # var index/ecx: byte
-  8a  # copy m8 at r32 to r8
-    0d  # 00/mod/indirect 001/r8/cl 101/rm32/use-disp32
-    28 80 00 00  # disp32 [label]
+  31/xor %ecx 1/r32/ecx
+  8a/byte-> *Keyboard-buffer:write 1/r32/cl
+== data
   # al = *(keyboard buffer + index)
+#?   8a/byte-> *(ecx+Keyboard-buffer:data) 0/r32/al
   8a  # copy m8 at r32 to r8
     81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
     30 80 00 00  # disp32 [label]
+== code
   # if (al != 0) return
-  3c 00  # compare al, 0
-  75 a9  # jump to epilogue if != [label]
-# 230:
+  3c/compare-al-and 0/imm8
+  75/jump-if-!= $keyboard-interrupt-handler:epilogue/disp8
   # - read keycode
-  e4 60  # al <- port 0x60
+  e4/read-port-into-al 0x60/imm8
   # - key released
   # if (al == 0xaa) shift = false  # left shift is being lifted
-  3c aa  # compare al, 0xaa
-  75 0a  # jump to $1 if != [label]
-  # *shift = 0
-  c7  # copy imm32 to rm32
-    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    10 80 00 00  # disp32 [label]
-    00 00 00 00  # imm32
-# 240:
-# $1:
+  {
+    3c/compare-al-and 0xaa/imm8
+    75/jump-if-!= break/disp8
+    # *shift = 0
+    c7 0/subop/copy *Keyboard-shift-pressed? 0/imm32
+  }
   # if (al == 0xb6) shift = false  # right shift is being lifted
-  3c b6  # compare al, 0xb6
-  75 0a  # jump to $2 if != [label]
-  # *shift = 0
-  c7  # copy imm32 to rm32
-    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    10 80 00 00  # disp32 [label]
-    00 00 00 00  # imm32
-# 24e:
-# $2:
+  {
+    3c/compare-al-and 0xb6/imm8
+    75/jump-if-!= break/disp8
+    # *shift = 0
+    c7 0/subop/copy *Keyboard-shift-pressed? 0/imm32
+  }
   # if (al == 0x9d) ctrl = false  # ctrl is being lifted
-  3c 9d  # compare al, 0x9d
-  75 0a  # jump to $3 if != [label]
-  # *ctrl = 0
-  c7  # copy imm32 to rm32
-    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    14 80 00 00  # disp32 [label]
-    00 00 00 00  # imm32
-# 25c:
-# $3:
+  {
+    3c/compare-al-and 0x9d/imm8
+    75/jump-if-!= break/disp8
+    # *ctrl = 0
+    c7 0/subop/copy *Keyboard-ctrl-pressed? 0/imm32
+  }
   # if (al & 0x80) a key is being lifted; return
-  50  # push eax
-  24 80  # al <- and 0x80
-  3c 00  # compare al, 0
-  58  # pop to eax (without touching flags)
-  75 75  # jump to epilogue if != [label]
-# 264:
+  50/push-eax
+  24/and-al-with 0x80/imm8
+  3c/compare-al-and 0/imm8
+  58/pop-to-eax
+  75/jump-if-!= $keyboard-interrupt-handler:epilogue/disp8
   # - key pressed
   # if (al == 0x2a) shift = true, return  # left shift pressed
-  3c 2a  # compare al, 0x2a
-  75 0c  # jump to $4 if != [label]
-  # *shift = 1
-  c7  # copy imm32 to rm32
-    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    10 80 00 00  # disp32 [label]
-    01 00 00 00  # imm32
-  eb 65 # jump to epilogue [label]
-# 274:
-# $4:
+  {
+    3c/compare-al-and 0x2a/imm8
+    75/jump-if-!= break/disp8
+    # *shift = 1
+    c7 0/subop/copy *Keyboard-shift-pressed? 1/imm32
+    # return
+    eb/jump $keyboard-interrupt-handler:epilogue/disp8
+  }
   # if (al == 0x36) shift = true, return  # right shift pressed
-  3c 36  # compare al, 0x36
-  75 0c  # jump to $5 if != [label]
-  # *shift = 1
-  c7  # copy imm32 to rm32
-    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    10 80 00 00  # disp32 [label]
-    01 00 00 00  # imm32
-  eb 55 # jump to epilogue [label]
-# 284:
-# $5:
+  {
+    3c/compare-al-and 0x36/imm8
+    75/jump-if-!= break/disp8
+    # *shift = 1
+    c7 0/subop/copy *Keyboard-shift-pressed? 1/imm32
+    # return
+    eb/jump $keyboard-interrupt-handler:epilogue/disp8
+  }
   # if (al == 0x1d) ctrl = true, return
-  3c 1d  # compare al, 0x36
-  75 0c  # jump to $6 if != [label]
-  # *shift = 1
-  c7  # copy imm32 to rm32
-    05  # 00/mod/indirect 000/subop/copy 101/rm32/use-disp32
-    14 80 00 00  # disp32 [label]
-    01 00 00 00  # imm32
-  eb 45 # jump to epilogue [label]
-# 294:
-# $6:
+  {
+    3c/compare-al-and 0x1d/imm8
+    75/jump-if-!= break/disp8
+    # *ctrl = 1
+    c7 0/subop/copy *Keyboard-ctrl-pressed? 1/imm32
+    # return
+    eb/jump $keyboard-interrupt-handler:epilogue/disp8
+  }
+== data
   # - convert key to character
   # if (shift) use keyboard shift map
   81  # operate on rm32 and imm32
@@ -455,12 +439,10 @@ idt_descriptor:
 # 406:
                   00 00 00 00 00 00 00 00 00 00
 
-# 410:
-# var shift: boolean
+Keyboard-shift-pressed?:  # boolean
   00 00 00 00
 
-# 414:
-# var ctrl: boolean
+Keyboard-ctrl-pressed?:  # boolean
   00 00 00 00
 
 # padding
@@ -468,17 +450,14 @@ idt_descriptor:
                         00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 
-# 428:
 # var keyboard circular buffer
-# write index: nibble
-# still take up 4 bytes so SubX can handle it
+Keyboard-buffer:write:  # nibble
+  # still take up 4 bytes so SubX can handle it
   00 00 00 00
-# 42c:
-# read index: nibble
-# still take up 4 bytes so SubX can handle it
+Keyboard-buffer:read:  # nibble
+  # still take up 4 bytes so SubX can handle it
   00 00 00 00
-# 430:
-# circular buffer: byte[16]
+Keyboard-buffer:data:  # byte[16]
   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 == data 0x8100
