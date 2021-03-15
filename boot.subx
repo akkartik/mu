@@ -145,9 +145,7 @@
   b4/copy-to-ah 0x4f/imm8  # VBE commands
   b0/copy-to-al 1/imm8  # get video mode info
   b9/copy-to-cx 0x0105/imm16  # mode we requested
-== data
-  bf 00 81  # di <- 0x8100 (video mode info) [label]
-== code
+  bf/copy-to-di Video-mode-info/imm16
   cd/syscall 0x10/imm8/bios-video-services
 
   ## switch to 32-bit mode
@@ -270,6 +268,7 @@ initialize_32bit_mode:
   0f 22/->cr 3/mod/direct 0/rm32/eax 4/r32/cr4
 == data
   e9 d0 16 00 00  # jump to 0x9400 [label]
+== code
 
 == boot-sector-marker 0x7dfe
 # final 2 bytes of boot sector
