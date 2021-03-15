@@ -146,15 +146,17 @@
                               # 0x4000 bit = configure linear frame buffer in Bochs emulator; hopefully this doesn't hurt anything when running natively
   cd/syscall 0x10/imm8/bios-video-services
 
-== data
-
   # load information for the (hopefully) current video mode
   # mostly just for the address to the linear frame buffer
-  b4 4f  # ah <- 4f (VBE)
-  b0 01  # al <- 01 (get video mode info)
-  b9 07 01  # cx <- 0x0107 (mode we requested)
+  b4/copy-to-ah 0x4f/imm8  # VBE commands
+  b0/copy-to-al 1/imm8  # get video mode info
+  b9/copy-to-cx 0x0107/imm16  # mode we requested TODO: incorrect
+== data
   bf 00 81  # di <- 0x8100 (video mode info) [label]
-  cd 10
+== code
+  cd/syscall 0x10/imm8/bios-video-services
+
+== data
 
   # switch to 32-bit mode
   0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
