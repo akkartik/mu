@@ -23,11 +23,12 @@
 # and with label references replaced with numeric values/displacements.
 #
 #   $ cat x  |bootstrap/bootstrap run survey_baremetal
+#   # 0x9400
 #   aa bb nn  # some computed address
 #   cc dd nn nn nn nn  # some computed displacement
 #   ee nn nn nn nn  # address right after this instruction
-#   # data segment interleaved with code
-#   00
+#   # 0x940e
+#   00  # data segment interleaved with code
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -736,6 +737,7 @@ emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr
     #       if label?(word-slice)                # no need for label declarations anymore
     #         goto line-loop                        # don't insert empty lines
     #       if slice-equal?(word-slice, "==")       # no need for segment header lines
+    #         write-buffered(out, "# " address-of-next-instruction "\n")
     #         goto line-loop                        # don't insert empty lines
     #       if length(word-slice) == 2
     #         write-slice-buffered(out, word-slice)
@@ -944,7 +946,7 @@ $emit-output:check-for-label:
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $emit-output:line-loop/disp32
 $emit-output:check-for-segment-header:
-    # if (slice-equal?(word-slice, "==")) break
+    # if !slice-equal?(word-slice, "==") goto next check
     # . eax = slice-equal?(word-slice, "==")
     # . . push args
     68/push  "=="/imm32
@@ -953,9 +955,36 @@ $emit-output:check-for-segment-header:
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != false) break
+    # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $emit-output:line-loop/disp32
+    0f 84/jump-if-=  $emit-output:2-character/disp32
+    # write-buffered(out, "# " address-of-next-instruction "\n")
+    # . write-buffered(out, "# ")
+    # . . push args
+    68/push  "# "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-int32-hex-buffered(out, address-of-next-instruction)
+    # . . push args
+    53/push-ebx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  write-int32-hex-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-buffered(out, "\n")
+    # . . push args
+    68/push  Newline/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    #
+    e9/jump  $emit-output:line-loop/disp32
 $emit-output:2-character:
     # if (size(word-slice) != 2) goto next check
     # . eax = size(word-slice)
@@ -1425,9 +1454,18 @@ test-emit-output-non-far-control-flow:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
-    # . check-next-stream-line-equal(_test-output-stream, "ab cd ef gh ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009400", msg)
     # . . push args
     68/push  "F - test-emit-output-non-far-control-flow/0"/imm32
+    68/push  "# 0x00009400"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "ab cd ef gh ", msg)
+    # . . push args
+    68/push  "F - test-emit-output-non-far-control-flow/1"/imm32
     68/push  "ab cd ef gh "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1436,8 +1474,17 @@ test-emit-output-non-far-control-flow:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "ij 44 33 22 11 ", msg)
     # . . push args
-    68/push  "F - test-emit-output-non-far-control-flow/1"/imm32
+    68/push  "F - test-emit-output-non-far-control-flow/2"/imm32
     68/push  "ij 44 33 22 11 "/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009409", msg)
+    # . . push args
+    68/push  "F - test-emit-output-non-far-control-flow/3"/imm32
+    68/push  "# 0x00009409"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -1445,7 +1492,7 @@ test-emit-output-non-far-control-flow:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "00 ", msg)
     # . . push args
-    68/push  "F - test-emit-output-non-far-control-flow/2"/imm32
+    68/push  "F - test-emit-output-non-far-control-flow/3"/imm32
     68/push  "00 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1454,7 +1501,7 @@ test-emit-output-non-far-control-flow:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "34 ", msg)
     # . . push args
-    68/push  "F - test-emit-output-non-far-control-flow/3"/imm32
+    68/push  "F - test-emit-output-non-far-control-flow/4"/imm32
     68/push  "34 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1618,9 +1665,18 @@ test-emit-output-code-label:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
-    # . check-next-stream-line-equal(_test-output-stream, "ab cd ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009400", msg)
     # . . push args
     68/push  "F - test-emit-output-code-label/0"/imm32
+    68/push  "# 0x00009400"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "ab cd ", msg)
+    # . . push args
+    68/push  "F - test-emit-output-code-label/1"/imm32
     68/push  "ab cd "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1629,7 +1685,7 @@ test-emit-output-code-label:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "ef gh ", msg)
     # . . push args
-    68/push  "F - test-emit-output-code-label/1"/imm32
+    68/push  "F - test-emit-output-code-label/2"/imm32
     68/push  "ef gh "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1638,7 +1694,7 @@ test-emit-output-code-label:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "e8 07 00 00 00 ", msg)
     # . . push args
-    68/push  "F - test-emit-output-code-label/2"/imm32
+    68/push  "F - test-emit-output-code-label/3"/imm32
     68/push  "e8 07 00 00 00 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1802,9 +1858,18 @@ test-emit-output-code-label-absolute:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
-    # . check-next-stream-line-equal(_test-output-stream, "ab cd ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009400", msg)
     # . . push args
     68/push  "F - test-emit-output-code-label-absolute/0"/imm32
+    68/push  "# 0x00009400"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "ab cd ", msg)
+    # . . push args
+    68/push  "F - test-emit-output-code-label-absolute/1"/imm32
     68/push  "ab cd "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1813,7 +1878,7 @@ test-emit-output-code-label-absolute:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "ef gh ", msg)
     # . . push args
-    68/push  "F - test-emit-output-code-label-absolute/1"/imm32
+    68/push  "F - test-emit-output-code-label-absolute/2"/imm32
     68/push  "ef gh "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1822,7 +1887,7 @@ test-emit-output-code-label-absolute:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "ij f9 ff ff ff ", msg)
     # . . push args
-    68/push  "F - test-emit-output-code-label-absolute/2"/imm32
+    68/push  "F - test-emit-output-code-label-absolute/3"/imm32
     68/push  "ij 56 10 00 00 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
