@@ -369,41 +369,41 @@ keyboard-interrupt-handler:
     # return
     eb/jump $keyboard-interrupt-handler:epilogue/disp8
   }
-== data
   # - convert key to character
   # if (shift) use keyboard shift map
-  81  # operate on rm32 and imm32
-    3d  # 00/mod/indirect 111/subop/compare 101/rm32/use-disp32
-    10 80 00 00  # disp32 = shift [label]
-    00 00 00 00  # imm32
-  74 08  # jump to $7 if = [label]
-  # al <- *(keyboard shift map + eax)
-  8a  # copy m8 at rm32 to r8
-    80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
-    00 87 00 00  # disp32 [label]
-  eb 1a  # jump to $8 [label]
-# 2a8:
-# $7:
+  {
+    81 7/subop/compare *Keyboard-shift-pressed? 0/imm32
+    74/jump-if-= break/disp8
+== data
+    # al <- *(keyboard shift map + eax)
+#?       8a/byte-> *(eax+Keyboard-shift-map) 0/r32/al
+    8a  # copy m8 at rm32 to r8
+      80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
+      00 87 00 00  # disp32 [label]
+== code
+    eb/jump $keyboard-interrupt-handler:select-map-done/disp8
+  }
   # if (ctrl) use keyboard ctrl map
-  81  # operate on rm32 and imm32
-    3d  # 00/mod/indirect 111/subop/compare 101/rm32/use-disp32
-    14 80 00 00  # disp32 = ctrl [label]
-    00 00 00 00  # imm32
-  74 08  # jump to $8 if = [label]
-  # al <- *(keyboard ctrl map + eax)
-  8a  # copy m8 at rm32 to r8
-    80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
-    00 88 00 00  # disp32 [label]
-  eb 06  # jump to $9 [label]
-# 2bc:
-# $8:
+  {
+    81 7/subop/compare *Keyboard-ctrl-pressed? 0/imm32
+    74/jump-if-= break/disp8
+== data
+    # al <- *(keyboard ctrl map + eax)
+#?     8a/byte-> *(eax+Keyboard-shift-map) 0/r32/al
+    8a  # copy m8 at rm32 to r8
+      80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
+      00 88 00 00  # disp32 [label]
+== code
+    eb/jump $keyboard-interrupt-handler:select-map-done/disp8
+  }
+== data
   # otherwise use keyboard normal map
   # al <- *(keyboard normal map + eax)
+#?   8a/byte-> *(eax+Keyboard-normal-map) 0/r32/al
   8a  # copy m8 at rm32 to r8
     80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
     00 86 00 00  # disp32 [label]
-# 2c2:
-# $9:
+$keyboard-interrupt-handler:select-map-done:
   # - if there's no character mapping, return
   3c 00  # compare al, 0
   74 13  # jump to epilogue if = [label]
