@@ -274,28 +274,30 @@ initialize_32bit_mode:
 55 aa
 
 ## sector 2 onwards loaded by load_disk, not automatically on boot
+== code
 
 null-interrupt-handler:
   cf/return-from-interrupt
 
+== data
 # padding
 # 201:
    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+== code
 
 keyboard-interrupt-handler:
   # prologue
   fa/disable-interrupts
   60/push-all-registers
-== data
   # acknowledge interrupt
-  b0 20  # al <- 0x20
-  e6 20  # port 0x20 <- al
-  31 c0  # eax <- xor eax;  11/direct 000/r32/eax 000/rm32/eax
+  b0/copy-to-al 0x20/imm8
+  e6/write-al-into-port 0x20/imm8
+  31/xor %eax 0/r32/eax
   # check output buffer of 8042 keyboard controller (https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)
-  e4 64  # al <- port 0x64
-  a8 01  # set zf if bit 0 (least significant) is not set
-  74 bb  # jump to epilogue if 0 bit is not set [label]
-# 21e:
+  e4/read-port-into-al 0x64/imm8
+  a8/test-bits-in-al 0x01/imm8  # set zf if bit 0 (least significant) is not set
+  74/jump-if-not-set $keyboard-interrupt-handler:epilogue/disp8
+== data
   # - if keyboard buffer is full, return
   31 c9  # ecx <- xor ecx;  11/direct 001/r32/ecx 001/rm32/ecx
   # var index/ecx: byte
@@ -436,6 +438,7 @@ keyboard-interrupt-handler:
     28 80 00 00  # disp32 [label]
     0f  # imm8
 == code
+$keyboard-interrupt-handler:epilogue:
   # epilogue
   61/pop-all-registers
   fb/enable-interrupts
