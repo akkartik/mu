@@ -55,17 +55,17 @@
 
   # initialize segment registers
   b8/copy-to-ax 0/imm16
-  8e/seg-> 3/mod/direct 0/rm32/ax 3/rm32/ds
-  8e/seg-> 3/mod/direct 0/rm32/ax 0/rm32/es
-  8e/seg-> 3/mod/direct 0/rm32/ax 4/rm32/fs
-  8e/seg-> 3/mod/direct 0/rm32/ax 5/rm32/gs
+  8e/->seg 3/mod/direct 0/rm32/ax 3/rm32/ds
+  8e/->seg 3/mod/direct 0/rm32/ax 0/rm32/es
+  8e/->seg 3/mod/direct 0/rm32/ax 4/rm32/fs
+  8e/->seg 3/mod/direct 0/rm32/ax 5/rm32/gs
 
   # initialize stack to 0x00070000
   # We don't read or write the stack before we get to 32-bit mode, but BIOS
   # calls do. We need to move the stack in case BIOS initializes it to some
   # low address that we want to write code into.
   b8/copy-to-ax 0x7000/imm16
-  8e/seg-> 3/mod/direct 0/rm32/ax 2/rm32/ss
+  8e/->seg 3/mod/direct 0/rm32/ax 2/rm32/ss
   bc/copy-to-esp 0/imm16
 
   # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
@@ -94,7 +94,7 @@
   b0/copy-to-al 0x7d/imm8  # number of sectors to read = 2*63 - 1 = 125
   # address to write sectors to = es:bx = 0x7e00, contiguous with boot segment
   bb/copy-to-bx 0/imm16
-  8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
+  8e/->seg 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0x7e00/imm16
   cd/syscall 0x13/imm8/bios-disk-services
   0f 82/jump-if-carry disk_error/disp16
@@ -108,7 +108,7 @@
   b0/copy-to-al 0x7e/imm8  # number of sectors to read = 2*63 = 126
   # address to write sectors to = es:bx = 0x17800, contiguous with boot segment
   bb/copy-to-bx 0x1780/imm16
-  8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
+  8e/->seg 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0/imm16
   cd/syscall 0x13/imm8/bios-disk-services
   0f 82/jump-if-carry disk_error/disp16
@@ -122,14 +122,14 @@
   b0/copy-to-al 0x7e/imm8  # number of sectors to read = 2*63 = 126
   # address to write sectors to = es:bx = 0x27400, contiguous with boot segment
   bb/copy-to-bx 0x2740/imm16
-  8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
+  8e/->seg 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0/imm16
   cd/syscall 0x13/imm8/bios-disk-services
   0f 82/jump-if-carry disk_error/disp16
 
   # reset es
   bb/copy-to-bx 0/imm16
-  8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
+  8e/->seg 3/mod/direct 3/rm32/bx 0/r32/es
 
   # adjust video mode
   b4/copy-to-ah 0x4f/imm8  # VBE commands
@@ -184,7 +184,7 @@ disk_error:
   # print 'D' to top-left of screen to indicate disk error
   # *0xb8000 <- 0x0f44
   bb/copy-to-bx 0xb800/imm16
-  8e/seg-> 3/mod/direct 3/rm32/bx 3/r32/ds
+  8e/->seg 3/mod/direct 3/rm32/bx 3/r32/ds
   b0/copy-to-al 0x44/imm8/D
   b4/copy-to-ah 0x0f/imm8/white-on-black
   bb/copy-to-bx 0/imm16
@@ -230,11 +230,11 @@ initialize_32bit_mode:
   # TODO: SubX doesn't understand 66 prefix
   66 b8 10 00  # ax <- offset 16 from gdt_start
 == code
-  8e/seg-> 3/mod/direct 0/rm32/ax 3/r32/ds
-  8e/seg-> 3/mod/direct 0/rm32/ax 2/r32/ss
-  8e/seg-> 3/mod/direct 0/rm32/ax 0/r32/es
-  8e/seg-> 3/mod/direct 0/rm32/ax 4/r32/fs
-  8e/seg-> 3/mod/direct 0/rm32/ax 5/r32/gs
+  8e/->seg 3/mod/direct 0/rm32/ax 3/r32/ds
+  8e/->seg 3/mod/direct 0/rm32/ax 2/r32/ss
+  8e/->seg 3/mod/direct 0/rm32/ax 0/r32/es
+  8e/->seg 3/mod/direct 0/rm32/ax 4/r32/fs
+  8e/->seg 3/mod/direct 0/rm32/ax 5/r32/gs
 
   bc/copy-to-esp 0x00070000/imm32
 
