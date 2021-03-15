@@ -97,9 +97,7 @@
   8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0x7e00/imm16
   cd/syscall 0x13/imm8/bios-disk-services
-== data
-  0f 82 a3 00  # jump-if-carry disk_error [label]
-== code
+  0f 82/jump-if-carry disk_error/disp16
 
   # load two more tracks of disk into addresses [0x17800, 0x27400)
   b4/copy-to-ah 2/imm8  # read sectors from disk
@@ -113,9 +111,7 @@
   8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0/imm16
   cd/syscall 0x13/imm8/bios-disk-services
-== data
-  0f 82 9b 00  # jump-if-carry disk_error [label]
-== code
+  0f 82/jump-if-carry disk_error/disp16
 
   # load two more tracks of disk into addresses [0x27400, 0x37000)
   b4/copy-to-ah 2/imm8  # read sectors from disk
@@ -129,9 +125,7 @@
   8e/seg-> 3/mod/direct 3/rm32/bx 0/r32/es
   bb/copy-to-bx 0/imm16
   cd/syscall 0x13/imm8/bios-disk-services
-== data
-  0f 82 9b 00  # jump-if-carry disk_error [label]
-== code
+  0f 82/jump-if-carry disk_error/disp16
 
   # reset es
   bb/copy-to-bx 0/imm16
@@ -150,7 +144,7 @@
   # mostly just for the address to the linear frame buffer
   b4/copy-to-ah 0x4f/imm8  # VBE commands
   b0/copy-to-al 1/imm8  # get video mode info
-  b9/copy-to-cx 0x0107/imm16  # mode we requested TODO: incorrect
+  b9/copy-to-cx 0x0105/imm16  # mode we requested
 == data
   bf 00 81  # di <- 0x8100 (video mode info) [label]
 == code
@@ -182,7 +176,7 @@
                                           00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 == code
 
@@ -197,7 +191,7 @@ disk_error:
   89/<- 0/mod/indirect 7/rm32/bx 0/r32/ax  # *ds:bx <- ax
   # loop forever
   {
-    e9/jump loop/disp16  # TODO: make this disp8
+    eb/jump loop/disp8
   }
 
 ## GDT: 3 records of 8 bytes each
