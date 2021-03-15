@@ -1501,11 +1501,38 @@ $emit-output:check-disp8:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-=  $emit-output:check-disp32/disp8
+    74/jump-if-=  $emit-output:check-disp16/disp8
 $emit-output:emit-disp8:
     # emit-hex(out, *address - address-of-next-instruction, 1)
     # . . push args
     68/push  1/imm32
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # subtract ebx from eax
+    50/push-eax
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  emit-hex/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # continue
+    e9/jump  $emit-output:word-loop/disp32
+$emit-output:check-disp16:
+    # if (!has-metadata?(word-slice, "disp16")) goto next check
+    # . eax = has-metadata?(edx, "disp16")
+    # . . push args
+    68/push  "disp16"/imm32
+    52/push-edx
+    # . . call
+    e8/call  has-metadata?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax == false) goto next check
+    3d/compare-eax-and  0/imm32/false
+    74/jump-if-=  $emit-output:check-disp32/disp8
+$emit-output:emit-disp16:
+    # emit-hex(out, *address - address-of-next-instruction, 2)
+    # . . push args
+    68/push  2/imm32
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
     29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # subtract ebx from eax
     50/push-eax

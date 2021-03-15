@@ -184,26 +184,24 @@
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-# cf:
-# disk_error:
+== code
+
+disk_error:
   # print 'D' to top-left of screen to indicate disk error
   # *0xb8000 <- 0x0f44
-  # bx <- 0xb800
-  bb 00 b8
-  # ds <- bx
-  8e db  # 11b/mod 011b/reg/ds 011b/rm/bx
-  # al <- 'D'
-  b0 44
-  # ah <- 0x0f  # white on black
-  b4 0f
-  # bx <- 0
-  bb 00 00
-  # *ds:bx <- ax
-  89 07  # 00b/mod/indirect 000b/reg/ax 111b/rm/bx
-
-e9 fd ff  # loop forever
+  bb/copy-to-bx 0xb800/imm16
+  8e/seg-> 3/mod/direct 3/rm32/bx 3/r32/ds
+  b0/copy-to-al 0x44/imm8/D
+  b4/copy-to-ah 0x0f/imm8/white-on-black
+  bb/copy-to-bx 0/imm16
+  89/<- 0/mod/indirect 7/rm32/bx 0/r32/ax  # *ds:bx <- ax
+  # loop forever
+  {
+    e9/jump loop/disp16  # TODO: make this disp8
+  }
 
 ## GDT: 3 records of 8 bytes each
+== data
 
 # e0:
 # gdt_start:
