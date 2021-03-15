@@ -54,17 +54,17 @@
 
   # initialize segment registers
   b8/copy-to-ax 0/imm16
-  8e/->seg 3/mod/direct 0/rm32/ax 3/rm32/ds
-  8e/->seg 3/mod/direct 0/rm32/ax 0/rm32/es
-  8e/->seg 3/mod/direct 0/rm32/ax 4/rm32/fs
-  8e/->seg 3/mod/direct 0/rm32/ax 5/rm32/gs
+  8e/->seg 3/mod/direct 0/rm32/ax 3/r32/ds
+  8e/->seg 3/mod/direct 0/rm32/ax 0/r32/es
+  8e/->seg 3/mod/direct 0/rm32/ax 4/r32/fs
+  8e/->seg 3/mod/direct 0/rm32/ax 5/r32/gs
 
   # initialize stack to 0x00070000
   # We don't read or write the stack before we get to 32-bit mode, but BIOS
   # calls do. We need to move the stack in case BIOS initializes it to some
   # low address that we want to write code into.
   b8/copy-to-ax 0x7000/imm16
-  8e/->seg 3/mod/direct 0/rm32/ax 2/rm32/ss
+  8e/->seg 3/mod/direct 0/rm32/ax 2/r32/ss
   bc/copy-to-esp 0/imm16
 
   # undo the A20 hack: https://en.wikipedia.org/wiki/A20_line
