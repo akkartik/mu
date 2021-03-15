@@ -6,8 +6,12 @@
 #   $ bootstrap/bootstrap translate [01]*.subx apps/subx-params.subx apps/survey_baremetal.subx  -o apps/survey_baremetal
 #
 # The expected input is a stream of bytes and some interspersed labels.
-# Comments and '==' segment headers are allowed, but ignored. The emitted code
-# will all lie in a single header, and start at address 0x9400.
+# Comments and '==' segment headers are allowed, but names are ignored. The
+# emitted code will all lie in a single contiguous address range starting at
+# address 0x9400. Addresses in segment headers are optional. If provided, this
+# program will insert padding in the output until the desired address is
+# reached.
+#
 #   $ cat x
 #   == code
 #   l1:
@@ -15,9 +19,9 @@
 #   cc dd l2/disp32
 #   l2:
 #   ee foo/imm32
-#   == data
+#   == data 0x9410
 #   foo:
-#     00
+#     34
 #
 # The output is the stream of bytes without segment headers or label definitions,
 # and with label references replaced with numeric values/displacements.
@@ -28,7 +32,9 @@
 #   cc dd nn nn nn nn  # some computed displacement
 #   ee nn nn nn nn  # address right after this instruction
 #   # 0x940e
-#   00  # data segment interleaved with code
+#   00 00  # padding
+#   # 0x9410
+#   34  # data segment interleaved with code
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -72,6 +78,7 @@ Entry:  # run tests if necessary, convert stdin if not
     3d/compare-eax-and  0/imm32/false
     74/jump-if-=  $subx-survey-main:interactive/disp8
     # run-tests()
+#?     e8/call  test-emit-output-with-padding/disp32
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
@@ -320,6 +327,138 @@ test-subx-survey-computes-addresses:
     5d/pop-to-ebp
     c3/return
 
+test-subx-survey-computes-addresses-with-padding:
+    # input:
+    #   == code
+    #   ab x/imm32
+    #   == data 0x9410
+    #   x:
+    #     01
+    #
+    # trace contains (in any order):
+    #   label x is at address 0x9410
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream($_test-input-buffered-file->buffer)
+    # . . push args
+    68/push  $_test-input-buffered-file->buffer/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream($_test-output-buffered-file->buffer)
+    # . . push args
+    68/push  $_test-output-buffered-file->buffer/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # initialize input
+    # . write(_test-input-stream, "== code\n")
+    # . . push args
+    68/push  "== code\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write(_test-input-stream, "ab x/imm32\n")
+    # . . push args
+    68/push  "ab x/imm32\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write(_test-input-stream, "== data\n")
+    # . . push args
+    68/push  "== data 0x9410\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write(_test-input-stream, "x:\n")
+    # . . push args
+    68/push  "x:\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write(_test-input-stream, "01\n")
+    # . . push args
+    68/push  "01\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # subx-survey(_test-input-buffered-file, _test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    68/push  _test-input-buffered-file/imm32
+    # . . call
+    e8/call  subx-survey/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check trace
+#?     # dump *Trace-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write-stream(2/stderr, *Trace-stream)
+#?     # . . push args
+#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # }}}
+    # . check-trace-contains("label 'x' is at address 0x00009410.", msg)
+    # . . push args
+    68/push  "F - test-subx-survey-computes-addresses-with-padding/0"/imm32
+    68/push  "label 'x' is at address 0x00009410."/imm32
+    # . . call
+    e8/call  check-trace-contains/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
 compute-offsets:  # in: (addr stream byte), labels: (addr stream {(handle array byte), address})
     # pseudocode:
     #   var current-address = 0x9400
@@ -334,8 +473,17 @@ compute-offsets:  # in: (addr stream byte), labels: (addr stream {(handle array 
     #         break
     #       else if slice-starts-with?(word-slice, "#")  # comment
     #         break                                 # end of line
-    #       else if slice-equal?(word-slice, "==")  # no need for segment header
-    #         break
+    #       else if slice-equal?(word-slice, "==")  # segment header
+    #         word-slice = next-word(line)
+    #         if slice-empty?(word-slice)
+    #           abort
+    #         word-slice = next-word(line)  # segment address
+    #         if slice-empty?(word-slice)
+    #           goto line-loop              # segment address is optional
+    #         new-address = parse-hex-int-from-slice(word-slice)
+    #         if new-address < current-address
+    #           abort
+    #         current-address = new-address
     #       else if label?(word-slice)
     #         strip trailing ':' from word-slice
     #         trace("label '" word-slice "' is at address " current-address ".")
@@ -453,7 +601,7 @@ $compute-offsets:case-comment:
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
 $compute-offsets:case-segment-header:
-    # if slice-equal?(word-slice, "==") break
+    # if !slice-equal?(word-slice, "==") goto next case
     # . eax = slice-equal?(word-slice, "==")
     # . . push args
     68/push  "=="/imm32
@@ -464,7 +612,59 @@ $compute-offsets:case-segment-header:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
+    0f 84/jump-if-=  $compute-offsets:case-label/disp32
+    # next-word(line, word-slice)
+    # . . push args
+    52/push-edx
+    51/push-ecx
+    # . . call
+    e8/call  next-word/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # if slice-empty?(word-slice) abort
+    # . eax = slice-empty?(word-slice)
+    # . . push args
+    52/push-edx
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . if (eax != false) abort
+    3d/compare-eax-and  0/imm32/false
+    0f 85/jump-if-!=  $compute-offsets:abort/disp32
+    # next-word(line, word-slice)
+    # . . push args
+    52/push-edx
+    51/push-ecx
+    # . . call
+    e8/call  next-word/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # if slice-empty?(word-slice) break
+    # . eax = slice-empty?(word-slice)
+    # . . push args
+    52/push-edx
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
+    # var new-address/eax: int = parse-hex-int-from-slice(word-slice)
+    # . . push args
+    52/push-edx
+    # . . call
+    e8/call  parse-hex-int-from-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # if (new-address < current-address) abort
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           6/r32/esi   .               .                 # compare eax with esi
+    0f 82/jump-if-addr<  $compute-offsets:error-bad-segment-address/disp32
+    # current-address = new-address
+    89/copy                         3/mod/direct    6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to esi
+    # break
+    e9/jump  $compute-offsets:line-loop/disp32
 $compute-offsets:case-label:
     # if (!label?(word-slice)) goto next case
     # . eax = label?(word-slice)
@@ -570,6 +770,34 @@ $compute-offsets:end:
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
+
+$compute-offsets:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "'==' must be followed by segment name and optionally an address\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
+$compute-offsets:error-bad-segment-address:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "'==' specifies an address that implies negative padding\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
 
 test-compute-offsets:
     # input:
@@ -737,8 +965,16 @@ emit-output:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr
     #       if label?(word-slice)                # no need for label declarations anymore
     #         goto line-loop                        # don't insert empty lines
     #       if slice-equal?(word-slice, "==")       # no need for segment header lines
-    #         write-buffered(out, "# " address-of-next-instruction "\n")
-    #         goto line-loop                        # don't insert empty lines
+    #         word-slice = next-word(line)          # skip segment name
+    #         word-slice = next-word(line)
+    #         if !slice-empty?(word-slice)
+    #           new-address = parse-hex-int-from-slice(word-slice)
+    #           write-buffered(out, "# " address-of-next-instruction "\n")
+    #           while address-of-next-instruction < new-address
+    #             write-buffered("00")
+    #             ++address-of-next-instruction
+    #           write-buffered(out, "# " address-of-next-instruction "\n")
+    #           goto line-loop                      # don't insert empty lines
     #       if length(word-slice) == 2
     #         write-slice-buffered(out, word-slice)
     #         write-buffered(out, " ")
@@ -958,6 +1194,107 @@ $emit-output:check-for-segment-header:
     # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32/false
     0f 84/jump-if-=  $emit-output:2-character/disp32
+    # skip segment name
+    # . next-word(line, word-slice)
+    # . . push args
+    52/push-edx
+    51/push-ecx
+    # . . call
+    e8/call  next-word/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # compute segment address if it exists
+    # . next-word(line, word-slice)
+    # . . push args
+    52/push-edx
+    51/push-ecx
+    # . . call
+    e8/call  next-word/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if slice-empty?(word-slice) goto padding-done
+    # . . push args
+    52/push-edx
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . .
+    3d/compare-eax-and  0/imm32/false
+    0f 85/jump-if-!=  $emit-output:padding-done/disp32
+    # . var new-address/eax: int = parse-hex-int-from-slice(word-slice)
+    # . . push args
+    52/push-edx
+    # . . call
+    e8/call  parse-hex-int-from-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write-buffered(out, "# " address-of-next-instruction "\n")
+    # . write-buffered(out, "# ")
+    # . . push args
+    68/push  "# "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-int32-hex-buffered(out, address-of-next-instruction)
+    # . . push args
+    53/push-ebx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  write-int32-hex-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-buffered(out, "\n")
+    # . . push args
+    68/push  Newline/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+$emit-output:padding-loop:
+    # if (address-of-next-instruction >= new-address) goto padding-loop-done
+    39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # compare ebx with eax
+    73/jump-if-addr>=  $emit-output:padding-loop-done/disp8
+    # if (address-of-next-instruction % 8 == 0) write-buffered("\n")
+    53/push-ebx
+    81          4/subop/and         3/mod/direct    3/rm32/ebx    .           .             .           .           .               7/imm32           # bitwise and of ebx
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
+    5b/pop-to-ebx
+    75/jump-if-!=  $emit-output:padding-core/disp8
+    # . write-buffered(out, "\n")
+    # . . push args
+    68/push  Newline/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+$emit-output:padding-core:
+    # write-buffered("00")
+    # . . push args
+    68/push  "00 "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # ++address-of-next-instruction
+    43/increment-ebx
+    # loop
+    eb/jump $emit-output:padding-loop/disp8
+$emit-output:padding-loop-done:
+    # . write-buffered(out, "\n")
+    # . . push args
+    68/push  Newline/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+$emit-output:padding-done:
     # write-buffered(out, "# " address-of-next-instruction "\n")
     # . write-buffered(out, "# ")
     # . . push args
@@ -1514,6 +1851,211 @@ test-emit-output-non-far-control-flow:
     # . check-next-stream-line-equal(_test-output-stream, "34 ", msg)
     # . . push args
     68/push  "F - test-emit-output-non-far-control-flow/4"/imm32
+    68/push  "34 "/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-emit-output-with-padding:
+    # labels turn into absolute addresses if opcodes are not far jumps or calls
+    #
+    # input:
+    #   in:
+    #     == code
+    #     ab cd ef gh
+    #     == data 0x9410
+    #     34
+    #
+    # output:
+    #   ab cd ef gh
+    #   # 0x9404
+    #   00 00 00 00
+    #   00 00 00 00 00 00 00 00
+    #   # 0x9410
+    #   34
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream($_test-output-buffered-file->buffer)
+    # . . push args
+    68/push  $_test-output-buffered-file->buffer/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . var labels/edx: (stream byte 8*24)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc0/imm32        # subtract from esp
+    68/push  0xc0/imm32/size
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # . var h/ebx: (handle array byte)
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
+    # initialize input
+    # . write(_test-input-stream, "== code\n")
+    # . . push args
+    68/push  "== code\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write(_test-input-stream, "ab cd ef gh\n")
+    # . . push args
+    68/push  "ab cd ef gh\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write(_test-input-stream, "== data 0x9410\n")
+    # . . push args
+    68/push  "== data 0x9410\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write(_test-input-stream, "34\n")
+    # . . push args
+    68/push  "34\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # component under test
+    # . emit-output(_test-input-stream, _test-output-buffered-file, labels)
+    # . . push args
+    52/push-edx
+    68/push  _test-output-buffered-file/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  emit-output/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # checks
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+#?     # dump output {{{
+#?     # . write(2/stderr, "result: ^")
+#?     # . . push args
+#?     68/push  "result: ^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . rewind-stream(_test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     # . . call
+#?     e8/call  rewind-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+#?     # }}}
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009400", msg)
+    # . . push args
+    68/push  "F - test-emit-output-with-padding/0"/imm32
+    68/push  "# 0x00009400"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "ab cd ef gh ", msg)
+    # . . push args
+    68/push  "F - test-emit-output-with-padding/1"/imm32
+    68/push  "ab cd ef gh "/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009404", msg)
+    # . . push args
+    68/push  "F - test-emit-output-with-padding/0"/imm32
+    68/push  "# 0x00009404"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "00 00 00 00 ", msg)
+    # . . push args
+    68/push  "F - test-emit-output-with-padding/2"/imm32
+    68/push  "00 00 00 00 "/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "00 00 00 00 ", msg)
+    # . . push args
+    68/push  "F - test-emit-output-with-padding/3"/imm32
+    68/push  "00 00 00 00 00 00 00 00 "/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "# 0x00009410", msg)
+    # . . push args
+    68/push  "F - test-emit-output-with-padding/0"/imm32
+    68/push  "# 0x00009410"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . check-next-stream-line-equal(_test-output-stream, "34 ", msg)
+    # . . push args
+    68/push  "F - test-emit-output-with-padding/4"/imm32
     68/push  "34 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
