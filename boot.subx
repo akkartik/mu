@@ -6,18 +6,13 @@
 #   - set up a handler for keyboard events
 #   - jump to start of program
 #
-# To convert to a disk image, first prepare a realistically sized disk image:
-#   dd if=/dev/zero of=disk.img count=20160  # 512-byte sectors, so 10MB
-# Create initial sectors from this file:
-#   bootstrap/bootstrap run hex < baremetal/boot.hex > boot.bin
-# Translate other sectors into a file called a.img
-# Load all sectors into the disk image:
-#   cat boot.bin a.img > disk.bin
-#   dd if=disk.bin of=disk.img conv=notrunc
+# When translating, put this file first, followed by any other SubX files:
+#   ./translate_subx boot.subx ...
+#
 # To run:
 #   qemu-system-i386 disk.img
 # Or:
-#   bochs -f baremetal/boot.bochsrc  # boot.bochsrc loads disk.img
+#   bochs -f boot.bochsrc  # boot.bochsrc loads disk.img
 #
 # Since we start out in 16-bit mode, we need instructions SubX doesn't
 # support.
@@ -69,7 +64,7 @@
 #   stack grows down from 0x00070000
 #     see below
 #   heap: [0x01000000, 0x02000000)
-#     see baremetal/120allocate.subx
+#     see 120allocate.subx
 # Consult https://wiki.osdev.org/Memory_Map_(x86) before modifying any of this.
 
 ## 16-bit entry point
