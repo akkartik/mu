@@ -164,10 +164,8 @@
   66 83 c8 01  # eax <- or 0x1
 == code
   0f 22/cr<- 3/mod/direct 0/rm32/cr0 0/r32/eax
-== data
   # . far jump that sets cs to offset 8 in the gdt in the process
-  ea 00 7d 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
-== code
+  ea/jump-far-absolute 0x00087d00/disp32  # address 0x7d00 in offset 8 of the gdt
 
 == data
 
@@ -197,11 +195,10 @@ disk_error:
 ## GDT: 3 records of 8 bytes each
 == data
 
-# e0:
-# gdt_start:
-# gdt_null:  mandatory null descriptor
+gdt_start:
+# offset 0: gdt_null:  mandatory null descriptor
   00 00 00 00 00 00 00 00
-# gdt_code:  (offset 8 from gdt_start)
+# offset 8: gdt_code
   ff ff  # limit[0:16]
   00 00 00  # base[0:24]
   9a  # 1/present 00/privilege 1/descriptor type = 1001b
@@ -209,7 +206,7 @@ disk_error:
   cf  # 1/granularity 1/32-bit 0/64-bit-segment 0/AVL = 1100b
       # limit[16:20] = 1111b
   00  # base[24:32]
-# gdt_data:  (offset 16 from gdt_start)
+# offset 16: gdt_data
   ff ff  # limit[0:16]
   00 00 00  # base[0:24]
   92  # 1/present 00/privilege 1/descriptor type = 1001b
@@ -218,10 +215,9 @@ disk_error:
   00  # base[24:32]
 # gdt_end:
 
-# f8:
-# gdt_descriptor:
-  17 00  # final index of gdt = gdt_end - gdt_start - 1
-  e0 7c 00 00  # start = gdt_start [label]
+gdt_descriptor:
+  0x17/imm16  # final index of gdt = size of gdt - 1
+  gdt_start/imm32/start
 
 # padding
 # fe:

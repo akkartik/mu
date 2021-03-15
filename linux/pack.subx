@@ -915,7 +915,8 @@ convert-data:  # line: (addr stream byte), out: (addr buffered-file)
     #       return
     #     if has-metadata?(word-slice, "imm32")
     #       emit(out, word-slice, 4)
-    #     # disp32 is not permitted in data segments, and anything else is only a byte long
+    #     else if has-metadata?(word-slice, "imm16")
+    #       emit(out, word-slice, 2)
     #     else
     #       emit(out, word-slice, 1)
     #   write-buffered(out, "\n")
@@ -1059,7 +1060,7 @@ $convert-data:label:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # return
-    75/jump-if-!=  $convert-data:end/disp8
+    0f 85/jump-if-!=  $convert-data:end/disp32
 $convert-data:check-for-imm32:
     # if (has-metadata?(word-slice, "imm32"))
     # . eax = has-metadata?(ecx, "imm32")
@@ -1072,11 +1073,35 @@ $convert-data:check-for-imm32:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) process as a single byte
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-=  $convert-data:single-byte/disp8
+    74/jump-if-=  $convert-data:check-for-imm16/disp8
 $convert-data:imm32:
     # emit(out, word-slice, 4)
     # . . push args
     68/push  4/imm32
+    51/push-ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  emit/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    e9/jump  $convert-data:loop/disp32
+$convert-data:check-for-imm16:
+    # if (has-metadata?(word-slice, "imm16"))
+    # . eax = has-metadata?(ecx, "imm16")
+    # . . push args
+    68/push  "imm16"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  has-metadata?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax == false) process as a single byte
+    3d/compare-eax-and  0/imm32/false
+    74/jump-if-=  $convert-data:single-byte/disp8
+$convert-data:imm16:
+    # emit(out, word-slice, 2)
+    # . . push args
+    68/push  2/imm32
     51/push-ecx
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
