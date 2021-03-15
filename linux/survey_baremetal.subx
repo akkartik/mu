@@ -1070,7 +1070,7 @@ $emit-output:check-metadata:
     # . esi = eax
     89/copy                         3/mod/direct    6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to esi
 $emit-output:check-imm8:
-    # if (has-metadata?(word-slice, "imm8")) abort
+    # if (!has-metadata?(word-slice, "imm8")) goto next check
     # . eax = has-metadata?(edx, "imm8")
     # . . push args
     68/push  "imm8"/imm32
@@ -1081,7 +1081,19 @@ $emit-output:check-imm8:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) abort
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $emit-output:imm8-abort/disp32
+    74/jump-if-=  $emit-output:check-imm32/disp8
+$emit-output:emit-imm8:
+    # emit-hex(out, *address, 1)
+    # . . push args
+    68/push  1/imm32
+    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  emit-hex/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # continue
+    e9/jump  $emit-output:word-loop/disp32
 $emit-output:check-imm32:
     # if (!has-metadata?(word-slice, "imm32")) goto next check
     # . eax = has-metadata?(edx, "imm32")
