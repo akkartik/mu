@@ -155,15 +155,15 @@
   # We can't refer to the label directly because SubX doesn't do the right
   # thing for lgdt, so rather than make errors worse in most places we instead
   # pin gdt_descriptor below.
-  0f 01/lgdt 0/mod/indirect 2/subop/lgdt 6/rm32/use-disp16 0x7cf8/disp16/gdt_descriptor
+  0f 01/lgdt 2/subop/lgdt 0/mod/indirect 6/rm32/use-disp16 0x7cf8/disp16/gdt_descriptor
   # enable paging
-  0f 20/cr-> 3/mod/direct 0/rm32/cr0 0/r32/eax
+  0f 20/<-cr 3/mod/direct 0/rm32/eax 0/r32/cr0
 == data
   # TODO: SubX doesn't understand 66 prefix
 #?   66 83/or 3/mod/direct 0/rm32/eax 1/r32/?? 1/imm8  # eax <- or 0x1
   66 83 c8 01  # eax <- or 0x1
 == code
-  0f 22/cr<- 3/mod/direct 0/rm32/cr0 0/r32/eax
+  0f 22/->cr 3/mod/direct 0/rm32/eax 0/r32/cr0
   # far jump to initialize_32bit_mode that sets cs to offset 8 in the gdt in the process
   # We can't refer to the label directly because SubX doesn't have syntax for
   # segment selectors. So we instead pin initialize_32bit_mode below.
@@ -242,9 +242,7 @@ initialize_32bit_mode:
   # We can't refer to the label directly because SubX doesn't do the right
   # thing for lidt, so rather than make errors worse in most places we instead
   # pin idt_descriptor below.
-  0f 01/lidt 0/mod/indirect 3/subop/lidt 5/rm32/use-disp32 0x8000/disp32/idt_descriptor
-
-== data
+  0f 01/lidt 3/subop/lidt 0/mod/indirect 5/rm32/use-disp32 0x8000/disp32/idt_descriptor
 
   # For now, not bothering reprogramming the IRQ to not conflict with software
   # exceptions.
@@ -255,27 +253,22 @@ initialize_32bit_mode:
   # Reference:
   #   https://wiki.osdev.org/Exceptions
 
-# 11a:
   # enable keyboard IRQ (1)
-  b0 fd  # al <- 0xfd  # disable mask for IRQ1
-  e6 21  # port 0x21 <- al
+  b0/copy-to-al 0xfd/imm8  # disable mask for IRQ1
+  e6/write-al-into-port 0x21/imm8
 
-# 11e:
-  fb  # enable interrupts
-  db e3  # initialize FPU
-  # eax <- cr4
-  0f 20  # copy cr4 to rm32
-    e0  # 11/mod/direct 100/r32/CR4 000/rm32/eax
-  # eax <- or bit 9
-  0f ba
-    e8  # 11/mod/direct 101/subop/bit-test-and-set 000/rm32/eax
-    09  # imm8
-  # cr4 <- eax
-  0f 22  # copy rm32 to cr4
-    e0  # 11/mod/direct 100/r32/CR4 000/rm32/eax
-  e9 d0 16 00 00  # jump to 0x9400 [label]
-
+  fb/enable-interrupts
 == data
+  db e3/initialize-floating-point-coprocessor
+== code
+  # eax <- cr4
+  0f 20/<-cr 3/mod/direct 0/rm32/eax 4/r32/cr4
+  # eax <- or bit 9
+  0f ba/bit-test 5/subop/bit-test-and-set 3/mod/direct 0/rm32/eax 9/imm8
+  # cr4 <- eax
+  0f 22/->cr 3/mod/direct 0/rm32/eax 4/r32/cr4
+== data
+  e9 d0 16 00 00  # jump to 0x9400 [label]
 
 # padding
 # 130:
