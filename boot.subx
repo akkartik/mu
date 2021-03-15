@@ -156,15 +156,26 @@
 == code
   cd/syscall 0x10/imm8/bios-video-services
 
-== data
-
   # switch to 32-bit mode
-  0f 01 16  # lgdt 00/mod/indirect 010/subop 110/rm/use-disp16
+  # . load global descriptor table
+  0f 01/lgdt 0/mod/indirect 2/subop/lgdt 6/rm32/use-disp16
+== data
     f8 7c  # *gdt_descriptor [label]
-  0f 20 c0  # eax <- cr0
+== code
+  # . enable paging
+  0f 20/cr-> 3/mod/direct 0/rm32/cr0 0/r32/eax
+== data
+  # TODO: SubX doesn't understand 66 prefix
+#?   66 83/or 3/mod/direct 0/rm32/eax 1/r32/?? 1/imm8  # eax <- or 0x1
   66 83 c8 01  # eax <- or 0x1
-  0f 22 c0  # cr0 <- eax
+== code
+  0f 22/cr<- 3/mod/direct 0/rm32/cr0 0/r32/eax
+== data
+  # . far jump that sets cs to offset 8 in the gdt in the process
   ea 00 7d 08 00  # far jump to initialize_32bit_mode after setting cs to the record at offset 8 in the gdt (gdt_code) [label]
+== code
+
+== data
 
 # padding
 # 8e:
