@@ -1977,6 +1977,8 @@ emit-opcodes:  # line: (addr stream byte), out: (addr buffered-file)
     #   f3 xx
     #   f2 0f xx
     #   f3 0f xx
+    #   66 xx (hacky support for boot.subx)
+    #   db xx (hacky support for boot.subx)
     #
     # pseudocode:
     #   rewind-stream(line)
@@ -1985,7 +1987,7 @@ emit-opcodes:  # line: (addr stream byte), out: (addr buffered-file)
     #   if (slice-empty?(op1) || slice-starts-with?(op1, "#")) return
     #   op1 = next-token-from-slice(op1->start, op1->end, "/")
     #   write-slice-buffered(out, op1)
-    #   if !slice-equal?(op1, "0f") && !slice-equal?(op1, "f2") && !slice-equal?(op1, "f3")
+    #   if !slice-equal?(op1, "0f") && !slice-equal?(op1, "f2") && !slice-equal?(op1, "f3") && !slice-equal?(op1, "66") && !slice-equal?(op1, "db")
     #     return
     #
     #   var op2 = next-word(line)
@@ -2108,6 +2110,30 @@ $emit-opcodes:op1:
     # . eax = slice-equal?(op1, "f3")
     # . . push args
     68/push  "f3"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != false) goto op2
+    3d/compare-eax-and  0/imm32/false
+    75/jump-if-!=  $emit-opcodes:op2/disp8
+    # if (slice-equal?(op1, "66")) goto op2
+    # . eax = slice-equal?(op1, "66")
+    # . . push args
+    68/push  "66"/imm32
+    51/push-ecx
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != false) goto op2
+    3d/compare-eax-and  0/imm32/false
+    75/jump-if-!=  $emit-opcodes:op2/disp8
+    # if (slice-equal?(op1, "db")) goto op2
+    # . eax = slice-equal?(op1, "db")
+    # . . push args
+    68/push  "db"/imm32
     51/push-ecx
     # . . call
     e8/call  slice-equal?/disp32
