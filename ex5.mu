@@ -2,11 +2,11 @@
 # Also demonstrates bounds-checking _before_ drawing.
 #
 # To build a disk image:
-#   ./translate ex5.mu                            # emits disk.img
+#   ./translate ex5.mu             # emits disk.img
 # To run:
 #   qemu-system-i386 disk.img
 # Or:
-#   bochs -f baremetal/boot.bochsrc               # boot.bochsrc loads disk.img
+#   bochs -f bochsrc               # bochsrc loads disk.img
 #
 # Expected output: text in green near the top-left corner of screen
 
