@@ -240,7 +240,7 @@ fn main {
     var key/eax: byte <- read-key 0/keyboard
     compare key, 0
 #?     loop-if-=  # press key to step
-    break-if-!=  # press key to quit
+    break-if-!=  # press key to quit  # comment this out to run under bochs; I'm not sure why there's a newline in the keyboard buffer
     # iter: grid1 -> grid2
     step grid1, grid2
     render grid2
