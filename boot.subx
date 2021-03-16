@@ -11,34 +11,16 @@
 #   - sigils only support 32-bit general-purpose registers, so don't work with segment registers or 16-bit or 8-bit registers
 #   - metadata like rm32 and r32 can sometimes misleadingly refer to only the bottom 16 bits of the register; pay attention to the register name
 
-# Outline of this file with offsets and the addresses they map to at run-time:
-# -- 16-bit mode code
-#   offset    0 (address 7c00): boot code
-# -- 16-bit mode data
-#            e0 (address 7c80) global descriptor table
-#            f8 (address 7ca0) <== gdt_descriptor
-# -- 32-bit mode code
-#   offset  100 (address 7d00): boot code
-#           1fe (address 7dfe) boot-sector-marker (2 bytes)
-#   offset  200 (address 7e00): interrupt handler code
-# -- 32-bit mode data
-#   offset  400 (address 8000): handler data
-#           410 (address 8010): keyboard handler data
-#           428 (address 8028) <== keyboard buffer
-#   offset  500 (address 8100): video mode data (256 bytes)
-#           528 (address 8128) <== start of video RAM stored here
-#   offset  600 (address 8200): interrupt descriptor table (1KB)
-#   offset  a00 (address 8600): keyboard mappings (1.5KB)
-#   offset 1000 (address 8c00): bitmap font (2KB)
-#   offset 1800 (address 9400): entrypoint for applications (don't forget to adjust survey_baremetal if this changes)
-
-# Other details of the current memory map:
+# Memory map of a Mu computer:
 #   code: 4 tracks of disk to [0x00007c00, 0x00027400)
 #   stack grows down from 0x00070000
 #     see below
 #   heap: [0x01000000, 0x02000000)
 #     see 120allocate.subx
 # Consult https://wiki.osdev.org/Memory_Map_(x86) before modifying any of this.
+
+# Magic addresses (TODO):
+#   0x9400: entrypoint for applications
 
 == code
 
@@ -298,16 +280,12 @@ keyboard-interrupt-handler:
   a8/test-bits-in-al 0x01/imm8  # set zf if bit 0 (least significant) is not set
   74/jump-if-not-set $keyboard-interrupt-handler:epilogue/disp8
   # - if keyboard buffer is full, return
-  # var index/ecx: byte
+  # var dest-addr/ecx: (addr byte) = (keyboard-buffer + *keyboard-buffer:write)
   31/xor %ecx 1/r32/ecx
   8a/byte-> *Keyboard-buffer:write 1/r32/cl
-== data
-  # al = *(keyboard buffer + index)
-#?   8a/byte-> *(ecx+Keyboard-buffer:data) 0/r32/al
-  8a  # copy m8 at r32 to r8
-    81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
-    30 80 00 00  # disp32 [label]
-== code
+  81 0/subop/add %ecx Keyboard-buffer:data/imm32
+  # al = *dest-addr
+  8a/byte-> *ecx 0/r32/al
   # if (al != 0) return
   3c/compare-al-and 0/imm8
   75/jump-if-!= $keyboard-interrupt-handler:epilogue/disp8
@@ -374,47 +352,29 @@ keyboard-interrupt-handler:
   {
     81 7/subop/compare *Keyboard-shift-pressed? 0/imm32
     74/jump-if-= break/disp8
-== data
-    # al <- *(keyboard shift map + eax)
-#?       8a/byte-> *(eax+Keyboard-shift-map) 0/r32/al
-    8a  # copy m8 at rm32 to r8
-      80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
-      00 87 00 00  # disp32 [label]
-== code
+    # sigils don't currently support labels inside *(eax+label)
+    05/add-to-eax Keyboard-shift-map/imm32
+    8a/byte-> *eax 0/r32/al
     eb/jump $keyboard-interrupt-handler:select-map-done/disp8
   }
-  # if (ctrl) use keyboard ctrl map
+  # if (ctrl) al = *(ctrl map + al)
   {
     81 7/subop/compare *Keyboard-ctrl-pressed? 0/imm32
     74/jump-if-= break/disp8
-== data
-    # al <- *(keyboard ctrl map + eax)
-#?     8a/byte-> *(eax+Keyboard-shift-map) 0/r32/al
-    8a  # copy m8 at rm32 to r8
-      80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
-      00 88 00 00  # disp32 [label]
-== code
+    05/add-to-eax Keyboard-ctrl-map/imm32
+    8a/byte-> *eax 0/r32/al
     eb/jump $keyboard-interrupt-handler:select-map-done/disp8
   }
-== data
-  # otherwise use keyboard normal map
-  # al <- *(keyboard normal map + eax)
-#?   8a/byte-> *(eax+Keyboard-normal-map) 0/r32/al
-  8a  # copy m8 at rm32 to r8
-    80  # 10/mod/*+disp32 000/r8/al 000/rm32/eax
-    00 86 00 00  # disp32 [label]
-== code
+  # otherwise al = *(normal map + al)
+  05/add-to-eax Keyboard-normal-map/imm32
+  8a/byte-> *eax 0/r32/al
 $keyboard-interrupt-handler:select-map-done:
   # - if there's no character mapping, return
   {
     3c/compare-al-and 0/imm8
     74/jump-if-= break/disp8
     # - store al in keyboard buffer
-== data
-    88  # copy r8 to m8 at r32
-      81  # 10/mod/*+disp32 000/r8/al 001/rm32/ecx
-      30 80 00 00  # disp32 [label]
-== code
+    88/<- *ecx 0/r32/al
     # increment index
     fe/increment-byte *Keyboard-buffer:write
     # clear top nibble of index (keyboard buffer is circular)
@@ -494,6 +454,7 @@ Video-mode-info:
   00 00  # rsv_mask rsv_position
   00  # directcolor_attributes
 # 28
+Video-memory-addr:
   00 00 00 00  # physbase <== linear frame buffer
 
 # 2c
