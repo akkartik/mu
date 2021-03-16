@@ -148,17 +148,6 @@
   # segment selectors. So we instead pin initialize_32bit_mode below.
   ea/jump-far-absolute 0x00087d00/disp32  # address 0x7d00 in offset 8 of the gdt
 
-== data
-
-# padding
-# 8e:
-                                          00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-== code
-
 disk_error:
   # print 'D' to top-left of screen to indicate disk error
   # *0xb8000 <- 0x0f44
@@ -260,12 +249,6 @@ initialize_32bit_mode:
 
 null-interrupt-handler:
   cf/return-from-interrupt
-
-== data
-# padding
-# 201:
-   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-== code
 
 keyboard-interrupt-handler:
   # prologue
@@ -393,20 +376,11 @@ idt_descriptor:
   ff 03  # final index of idt = size of idt - 1
   idt_start/imm32/start
 
-# padding
-# 406:
-                  00 00 00 00 00 00 00 00 00 00
-
 Keyboard-shift-pressed?:  # boolean
   00 00 00 00
 
 Keyboard-ctrl-pressed?:  # boolean
   00 00 00 00
-
-# padding
-# 418:
-                        00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
 
 # var keyboard circular buffer
 Keyboard-buffer:write:  # nibble
