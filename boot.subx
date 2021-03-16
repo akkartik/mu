@@ -196,7 +196,7 @@ initialize_32bit_mode:
 
   bc/copy-to-esp 0x00070000/imm32
 
-  # load interrupt handlers
+  ## load interrupt handlers
   # We can't refer to the label directly because SubX doesn't do the right
   # thing for lidt, so rather than make errors worse in most places we instead
   # pin idt_descriptor below.
@@ -216,6 +216,8 @@ initialize_32bit_mode:
   e6/write-al-into-port 0x21/imm8
 
   fb/enable-interrupts
+
+  ## enable floating point
   db/floating-point-coprocessor e3/initialize
   # eax <- cr4
   0f 20/<-cr 3/mod/direct 0/rm32/eax 4/r32/cr4
@@ -223,6 +225,7 @@ initialize_32bit_mode:
   0f ba/bit-test 5/subop/bit-test-and-set 3/mod/direct 0/rm32/eax 9/imm8
   # cr4 <- eax
   0f 22/->cr 3/mod/direct 0/rm32/eax 4/r32/cr4
+
   e9/jump Entry/disp32
 
 == boot-sector-marker 0x7dfe
