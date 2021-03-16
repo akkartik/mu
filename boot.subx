@@ -19,12 +19,9 @@
 #     see 120allocate.subx
 # Consult https://wiki.osdev.org/Memory_Map_(x86) before modifying any of this.
 
-# Magic addresses (TODO):
-#   0x9400: entrypoint for applications
-
 == code
 
-## 16-bit entry point
+## 16-bit entry point: 0x7c00
 
 # Upon reset, the IBM PC:
 #   - loads the first sector (512 bytes)
@@ -236,9 +233,7 @@ initialize_32bit_mode:
   0f ba/bit-test 5/subop/bit-test-and-set 3/mod/direct 0/rm32/eax 9/imm8
   # cr4 <- eax
   0f 22/->cr 3/mod/direct 0/rm32/eax 4/r32/cr4
-== data
-  e9 d0 16 00 00  # jump to 0x9400 [label]
-== code
+  e9/jump Entry/disp32
 
 == boot-sector-marker 0x7dfe
 # final 2 bytes of boot sector
