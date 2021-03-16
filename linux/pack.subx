@@ -1432,9 +1432,7 @@ test-convert-data-handles-imm32:
     5d/pop-to-ebp
     c3/return
 
-test-convert-data-handles-single-byte:
-    # Any metadata but /imm32 will emit a single byte.
-    # Data segments can't have /disp32, and SubX doesn't support 16-bit operands.
+test-convert-data-handles-imm16:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1477,7 +1475,72 @@ test-convert-data-handles-single-byte:
     e8/call  convert-data/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # check that a single byte was written (imm16 is not a valid operand type)
+    # check that a single byte was written
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . check-stream-equal(_test-output-stream, "30 00 \n", msg)
+    # . . push args
+    68/push  "F - test-convert-data-handles-imm16"/imm32
+    68/push  "30 00 \n"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-data-handles-imm8:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream($_test-output-buffered-file->buffer)
+    # . . push args
+    68/push  $_test-output-buffered-file->buffer/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # initialize input
+    # . write(_test-input-stream, "30/imm8")
+    # . . push args
+    68/push  "30/imm8"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # convert-data(_test-input-stream, _test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  convert-data/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check that a single byte was written
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -1487,7 +1550,7 @@ test-convert-data-handles-single-byte:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . check-stream-equal(_test-output-stream, "30 \n", msg)
     # . . push args
-    68/push  "F - test-convert-data-handles-single-byte"/imm32
+    68/push  "F - test-convert-data-handles-imm8"/imm32
     68/push  "30 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
