@@ -109,6 +109,20 @@
   bb/copy-to-bx 0/imm16
   8e/->seg 3/mod/direct 3/rm32/bx 0/r32/es
 
+  # write 1 sector of disk to disk 1
+  b4/copy-to-ah 3/imm8  # write sectors to disk
+  b2/copy-to-dl 0x81/imm8  # disk 1
+  b5/copy-to-ch 0/imm8  # cylinder 0
+  b6/copy-to-dh 0/imm8  # track 0
+  b1/copy-to-cl 1/imm8  # first sector, 1-based
+  b0/copy-to-al 1/imm8  # number of sectors to write
+  # address to read sectors from = es:bx = 0x7c00, contiguous with boot segment
+  bb/copy-to-bx 0/imm16
+  8e/->seg 3/mod/direct 3/rm32/bx 0/r32/es
+  bb/copy-to-bx 0x7c00/imm16
+  cd/syscall 0x13/imm8/bios-disk-services
+  0f 82/jump-if-carry disk_error/disp16
+
   # adjust video mode
   b4/copy-to-ah 0x4f/imm8  # VBE commands
   b0/copy-to-al 2/imm8  # set video mode
