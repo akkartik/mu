@@ -365,41 +365,41 @@ idt_descriptor:
   idt_start/imm32/start
 
 Keyboard-shift-pressed?:  # boolean
-  00 00 00 00
+  0/imm32
 
 Keyboard-ctrl-pressed?:  # boolean
-  00 00 00 00
+  0/imm32
 
 # var keyboard circular buffer
 Keyboard-buffer:write:  # nibble
-  # still take up 4 bytes so SubX can handle it
-  00 00 00 00
+  0/imm32
 Keyboard-buffer:read:  # nibble
-  # still take up 4 bytes so SubX can handle it
-  00 00 00 00
+  0/imm32
 Keyboard-buffer:data:  # byte[16]
-  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
 
 == data 0x8100
 Video-mode-info:
 # video mode info {{{
-  00 00  # attributes
+  0/imm16  # attributes
   00  # winA
   00  # winB
 # 04
-  00 00  # granularity
-  00 00  # winsize
+  0/imm16  # granularity
+  0/imm16  # winsize
 # 08
-  00 00  # segmentA
-  00 00  # segmentB
+  0/imm16  # segmentA
+  0/imm16  # segmentB
 # 0c
-  00 00 00 00  # realFctPtr (who knows)
+  0/imm32  # realFctPtr (who knows)
 # 10
-  00 00  # pitch
-  00 00  # Xres
-# 14
-  00 00  # Yres
-  00 00  # Wchar Ychar
+  0/imm16  # pitch
+  0/imm16  # Xres
+  0/imm16  # Yres
+  0/imm16  # Wchar Ychar
 # 18
   00  # planes
   00  # bpp
@@ -410,14 +410,14 @@ Video-mode-info:
   00  # image_pages
   00  # reserved
 # 1f
-  00 00  # red_mask red_position
-  00 00  # green_mask green_position
-  00 00  # blue_mask blue_position
-  00 00  # rsv_mask rsv_position
+  0/imm16  # red_mask red_position
+  0/imm16  # green_mask green_position
+  0/imm16  # blue_mask blue_position
+  0/imm16  # rsv_mask rsv_position
   00  # directcolor_attributes
 # 28
 Video-memory-addr:
-  00 00 00 00  # physbase <== linear frame buffer
+  0/imm32  # physbase
 
 # 2c
 # reserved for video mode info
@@ -457,14 +457,14 @@ idt_start:
 
 # entry 8: clock
   null-interrupt-handler/imm16  # target[0:16]
-  08 00  # segment selector (gdt_code)
+  8/imm16  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
   0/imm16  # target[16:32] -- null-interrupt-handler must be within address 0x10000
 
 # entry 9: keyboard
   keyboard-interrupt-handler/imm16  # target[0:16]
-  08 00  # segment selector (gdt_code)
+  8/imm16  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
   0/imm16  # target[16:32] -- keyboard-interrupt-handler must be within address 0x10000
