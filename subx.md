@@ -26,7 +26,7 @@ operation being performed) or _arguments_ (specifying the data the operation
 acts on). Any word can have extra _metadata_ attached to it after `/`. Some
 metadata is required (like the `/imm32` and `/imm8` above), but unrecognized
 metadata is silently skipped so you can attach comments to words (like the
-instruction name `/copy-to-eax` above, or the `/exit` argument).
+instruction name `/copy-to-ebx` above, or the `/exit` argument).
 
 What do all these numbers mean? SubX supports a small subset of the 32-bit x86
 instruction set that likely runs on your computer. (Think of the name as short
