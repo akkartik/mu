@@ -112,6 +112,8 @@ The most useful functions from 400.mu and later .mu files. Look for definitions
 - `append-byte-hex`: writes textual representation of lowest byte in hex to
   a stream of bytes. Does not write a '0x' prefix.
 - `read-byte`: reads a single byte from a stream of bytes.
+- `read-grapheme`: reads a single unicode grapheme (up to 4 bytes containing a
+  single code-point encoded in utf-8) from a stream of bytes.
 
 #### reading/writing hex representations of integers
 

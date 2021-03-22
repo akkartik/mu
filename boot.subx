@@ -916,20 +916,23 @@ Font:
 # offset 1800 (address 0x9400)
 == code 0x9400
 
-# Use 28-bit PIO mode to transfer one sector from the primary drive on the
-# primary bus.
+# Use 28-bit PIO mode to transfer a string spanning at most one sector (512
+# bytes) of data.
 # Inspired by https://colorforth.github.io/ide.html
 #
 # Resources:
 #   https://wiki.osdev.org/ATA_PIO_Mode
 #   https://forum.osdev.org/viewtopic.php?f=1&p=167798
 #   read-sector, according to https://www.scs.stanford.edu/11wi-cs140/pintos/specs/ata-3-std.pdf
-read-a-sector:
+#
+# Currently assumes top 4 bits of the 28-bit LBA coordinate are 0.
+load-sector-string-from-primary-bus-secondary-drive:  # LBAlo: byte, LBAmid: byte, LBAhi: byte, out: (addr stream byte)
   # . prologue
   55/push-ebp
   89/<- %ebp 4/r32/esp
   # . save registers
   50/push-eax
+  51/push-ecx
   52/push-edx
   # check for floating bus
   {
@@ -944,26 +947,35 @@ read-a-sector:
   (ata-drive-select 0xf0)  # primary bus, secondary drive; 4 LSBs contain 4 upper bits of LBA (here 0)
   (clear-ata-error)
   (ata-sector-count 1)
-  (ata-lba 0 0 0)  # lower 24 bits of LBA
+  (ata-lba *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # lower 24 bits of LBA
   (ata-command 0x20)  # read sectors with retries
   # poll for results
   (poll-ata-primary-bus-primary-drive-regular-status-word)
   # print out results
   ba/copy-to-edx 0x1f0/imm32
-  b9/copy-to-ecx 0x10/imm32
+  b9/copy-to-ecx 0x200/imm32  # 512 bytes per sector
   {
     81 7/subop/compare %ecx 0/imm32
     74/jump-if-= break/disp8
     ed/read-port-dx-into-eax
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax)
-    (move-cursor-to-left-margin-of-next-line 0)  # 0=screen
+    # write 4 bytes to stream one at a time
+    (append-byte *(ebp+0x14) %eax)
+    49/decrement-ecx
+    c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
+    (append-byte *(ebp+0x14) %eax)
+    49/decrement-ecx
+    c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
+    (append-byte *(ebp+0x14) %eax)
+    49/decrement-ecx
+    c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
+    (append-byte *(ebp+0x14) %eax)
     49/decrement-ecx
     eb/jump loop/disp8
   }
-  (abort "success")
-$read-256-sectors:end:
+$load-sector-string-from-primary-bus-secondary-drive:end:
   # . restore registers
   5a/pop-to-edx
+  59/pop-to-ecx
   58/pop-to-eax
   # . epilogue
   89/<- %esp 5/r32/ebp

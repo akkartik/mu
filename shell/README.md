@@ -1,9 +1,24 @@
 ### A prototype shell for the Mu computer
 
-Currently runs a tiny subset of Lisp. To build and run it from the top-level:
+Currently runs a tiny subset of Lisp. Steps to run it from the top-level:
 
+1. Build it:
 ```sh
 $ ./translate shell/*.mu      # generates disk.img
+```
+
+2. Create a data disk:
+```sh
+$ dd if=/dev/zero of=data.img count=20160
+```
+
+3. Optionally load an s-expression into the disk:
+```sh
+$ echo '(+ 1 1)' |dd of=data.img conv=notrunc
+```
+
+4. Run it:
+```sh
 $ qemu-system-i386 disk.img
 ```
 
