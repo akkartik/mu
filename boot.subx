@@ -942,7 +942,7 @@ read-a-sector:
   }
   # kick off read
   (ata-drive-select 0xf0)  # primary bus, secondary drive; 4 LSBs contain 4 upper bits of LBA (here 0)
-  (ata-error 0)
+  (clear-ata-error)
   (ata-sector-count 1)
   (ata-lba 0 0 0)  # lower 24 bits of LBA
   (ata-command 0x20)  # read sectors with retries
@@ -990,7 +990,7 @@ $ata-drive-select:end:
   5d/pop-to-ebp
   c3/return
 
-ata-error:  # n: byte
+clear-ata-error:
   # . prologue
   55/push-ebp
   89/<- %ebp 4/r32/esp
@@ -998,7 +998,7 @@ ata-error:  # n: byte
   50/push-eax
   52/push-edx
   #
-  8b/-> *(ebp+8) 0/r32/eax
+  b8/copy-to-eax 0/imm32
   ba/copy-to-edx 0x1f1/imm32
   ee/write-al-into-port-dx
 $ata-error:end:
