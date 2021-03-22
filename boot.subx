@@ -914,5 +914,219 @@ Font:
 # }}}
 
 # offset 1800 (address 0x9400)
+== code 0x9400
+
+# Use 28-bit PIO mode to transfer one sector from the primary drive on the
+# primary bus.
+# Inspired by https://colorforth.github.io/ide.html
+#
+# Resources:
+#   https://wiki.osdev.org/ATA_PIO_Mode
+#   https://forum.osdev.org/viewtopic.php?f=1&p=167798
+#   read-sector, according to https://www.scs.stanford.edu/11wi-cs140/pintos/specs/ata-3-std.pdf
+read-a-sector:
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  52/push-edx
+  # check for floating bus
+  {
+    31/xor %eax 0/r32/eax
+    ba/copy-to-edx 0x1f7/imm32
+    ec/read-port-dx-into-al
+    81 7/subop/compare %eax 0xff/imm32
+    75/jump-if-!= break/disp8
+    (abort "primary bus has no drives")
+  }
+  # kick off read
+  (ata-drive-select 0xe0)  # primary drive; 4 LSBs contain 4 upper bits of LBA (here 0)
+#?   (ata-drive-select 0xa0)  # primary drive in CHS + head number
+  (ata-error 0)
+  (ata-sector-count 1)
+  (ata-lba 0 0 0)  # lower 24 bits of LBA
+#?   (ata-cyl-sector 1 0 0)
+  (ata-command 0x20)  # read sectors with retries
+  # poll for results
+  (poll-ata-primary-bus-primary-drive-regular-status-word)
+  # print out results
+  ba/copy-to-edx 0x1f0/imm32
+  b9/copy-to-ecx 0x10/imm32
+  {
+    81 7/subop/compare %ecx 0/imm32
+    74/jump-if-= break/disp8
+    ed/read-port-dx-into-eax
+    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax)
+    (move-cursor-to-left-margin-of-next-line 0)  # 0=screen
+    49/decrement-ecx
+    eb/jump loop/disp8
+  }
+  (abort "success")
+$read-256-sectors:end:
+  # . restore registers
+  5a/pop-to-edx
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+ata-drive-select:  # n: byte
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  52/push-edx
+  #
+  8b/-> *(ebp+8) 0/r32/eax
+  ba/copy-to-edx 0x1f6/imm32
+  ee/write-al-into-port-dx
+$ata-drive-select:end:
+  # . restore registers
+  5a/pop-to-edx
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+ata-error:  # n: byte
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  52/push-edx
+  #
+  8b/-> *(ebp+8) 0/r32/eax
+  ba/copy-to-edx 0x1f1/imm32
+  ee/write-al-into-port-dx
+$ata-error:end:
+  # . restore registers
+  5a/pop-to-edx
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+ata-sector-count:  # n: byte
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  52/push-edx
+  #
+  8b/-> *(ebp+8) 0/r32/eax
+  ba/copy-to-edx 0x1f2/imm32
+  ee/write-al-into-port-dx
+$ata-sector-count:end:
+  # . restore registers
+  5a/pop-to-edx
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+ata-lba:  # lo: byte, mid: byte, hi: byte
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  52/push-edx
+  # lo
+  8b/-> *(ebp+8) 0/r32/eax
+  ba/copy-to-edx 0x1f3/imm32
+  ee/write-al-into-port-dx
+  # mid
+  8b/-> *(ebp+0xc) 0/r32/eax
+  ba/copy-to-edx 0x1f4/imm32
+  ee/write-al-into-port-dx
+  # hi
+  8b/-> *(ebp+0x10) 0/r32/eax
+  ba/copy-to-edx 0x1f5/imm32
+  ee/write-al-into-port-dx
+$ata-lba:end:
+  # . restore registers
+  5a/pop-to-edx
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+# sector: [1, 63]
+# cylinder: [0, 1023]
+ata-cyl-sector:  # sector: byte, cyl-lo: byte, cyl-hi: byte
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  52/push-edx
+  # sector
+  8b/-> *(ebp+8) 0/r32/eax
+  ba/copy-to-edx 0x1f3/imm32
+  ee/write-al-into-port-dx
+  # cyl-lo
+  8b/-> *(ebp+0xc) 0/r32/eax
+  ba/copy-to-edx 0x1f4/imm32
+  ee/write-al-into-port-dx
+  # cyl-hi
+  8b/-> *(ebp+0x10) 0/r32/eax
+  ba/copy-to-edx 0x1f5/imm32
+  ee/write-al-into-port-dx
+$ata-lba:end:
+  # . restore registers
+  5a/pop-to-edx
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+ata-command:  # cmd: byte
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  52/push-edx
+  #
+  8b/-> *(ebp+8) 0/r32/eax
+  ba/copy-to-edx 0x1f7/imm32
+  ee/write-al-into-port-dx
+$ata-command:end:
+  # . restore registers
+  5a/pop-to-edx
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+poll-ata-primary-bus-primary-drive-regular-status-word:
+  # . save registers
+  50/push-eax
+  52/push-edx
+  {
+    ba/copy-to-edx 0x1f7/imm32
+    ec/read-port-dx-into-al
+    a8/test-bits-in-al 0x80/imm8/bsy  # set zf if bit 7 (most significant) is not set
+    75/jump-if-zf-not-set-and-bit-7-set loop/disp8
+    a8/test-bits-in-al 8/imm8/drq  # set zf if bit 3 is not set
+    74/jump-if-zf-set-and-bit-3-not-set loop/disp8
+  }
+$poll-ata-primary-bus-primary-drive-regular-status-word:end:
+  # . restore registers
+  5a/pop-to-edx
+  58/pop-to-eax
+  # . epilogue
+  c3/return
 
 # vim:ft=subx
