@@ -941,12 +941,10 @@ read-a-sector:
     (abort "primary bus has no drives")
   }
   # kick off read
-  (ata-drive-select 0xe0)  # primary drive; 4 LSBs contain 4 upper bits of LBA (here 0)
-#?   (ata-drive-select 0xa0)  # primary drive in CHS + head number
+  (ata-drive-select 0xf0)  # primary bus, secondary drive; 4 LSBs contain 4 upper bits of LBA (here 0)
   (ata-error 0)
   (ata-sector-count 1)
   (ata-lba 0 0 0)  # lower 24 bits of LBA
-#?   (ata-cyl-sector 1 0 0)
   (ata-command 0x20)  # read sectors with retries
   # poll for results
   (poll-ata-primary-bus-primary-drive-regular-status-word)
