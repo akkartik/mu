@@ -28,7 +28,7 @@ fn load-sandbox-from-secondary-disk _self: (addr sandbox) {
   var self/esi: (addr sandbox) <- copy _self
   var s-storage: (stream byte 0x200)
   var s/ebx: (addr stream byte) <- address s-storage
-  load-sector-string-from-primary-bus-secondary-drive 0/lbalo, 0/lbamid, 0/lbahi, s
+  load-first-sector-from-primary-bus-secondary-drive s
   {
     var done?/eax: boolean <- stream-empty? s
     compare done?, 0/false

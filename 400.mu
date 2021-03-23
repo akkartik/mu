@@ -9,7 +9,7 @@ sig draw-cursor-on-real-screen g: grapheme
 sig read-key kbd: (addr keyboard) -> _/eax: byte
 
 # disk
-sig load-sector-string-from-primary-bus-secondary-drive LBAlo: byte, LBAmid: byte, LBAhi: byte, out: (addr stream byte)
+sig load-first-sector-from-primary-bus-secondary-drive out: (addr stream byte)
 
 # tests
 sig count-test-failure
