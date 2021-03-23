@@ -22,7 +22,7 @@ Load an s-expression into it:
 $ echo '(+ 1 1)' |dd of=data.img conv=notrunc
 ```
 
-4. Now run with both code and data disks:
+Now run with both code and data disks:
 ```sh
 $ qemu-system-i386 -hda disk.img -hdb data.img
 ```
