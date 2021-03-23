@@ -943,7 +943,8 @@ load-first-sector-from-primary-bus-secondary-drive:  # out: (addr stream byte)
   (ata-lba 0 0 0)  # lower 24 bits of LBA, all 0
   (ata-command 0x20)  # read sectors with retries
   # poll for results
-  (poll-ata-regular-status-word)
+  (while-ata-busy)
+  (until-ata-data-available)
   # emit results
   ba/copy-to-edx 0x1f0/imm32
   b9/copy-to-ecx 0x200/imm32  # 512 bytes per sector
@@ -1173,7 +1174,7 @@ $ata-command:end:
   5d/pop-to-ebp
   c3/return
 
-poll-ata-regular-status-word:
+while-ata-busy:
   # . save registers
   50/push-eax
   52/push-edx
@@ -1183,10 +1184,26 @@ poll-ata-regular-status-word:
     ec/read-port-dx-into-al
     a8/test-bits-in-al 0x80/imm8/bsy  # set zf if bit 7 (most significant) is not set
     75/jump-if-zf-not-set-and-bit-7-set loop/disp8
+  }
+$while-ata-busy:end:
+  # . restore registers
+  5a/pop-to-edx
+  58/pop-to-eax
+  # . epilogue
+  c3/return
+
+until-ata-data-available:
+  # . save registers
+  50/push-eax
+  52/push-edx
+  #
+  ba/copy-to-edx 0x1f7/imm32
+  {
+    ec/read-port-dx-into-al
     a8/test-bits-in-al 8/imm8/drq  # set zf if bit 3 is not set
     74/jump-if-zf-set-and-bit-3-not-set loop/disp8
   }
-$poll-ata-regular-status-word:end:
+$while-ata-busy:end:
   # . restore registers
   5a/pop-to-edx
   58/pop-to-eax
