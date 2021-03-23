@@ -7,19 +7,24 @@ Currently runs a tiny subset of Lisp. Steps to run it from the top-level:
 $ ./translate shell/*.mu      # generates disk.img
 ```
 
-2. Create a data disk:
+2. Run it:
+```sh
+$ qemu-system-i386 disk.img
+```
+
+To save typing in a large s-expression, create a secondary disk for data:
 ```sh
 $ dd if=/dev/zero of=data.img count=20160
 ```
 
-3. Optionally load an s-expression into the disk:
+Load an s-expression into it:
 ```sh
 $ echo '(+ 1 1)' |dd of=data.img conv=notrunc
 ```
 
-4. Run it:
+4. Now run with both code and data disks:
 ```sh
-$ qemu-system-i386 disk.img
+$ qemu-system-i386 -hda disk.img -hdb data.img
 ```
 
 You can type in expressions, hit `ctrl-s` to see their results, and hit `Tab`

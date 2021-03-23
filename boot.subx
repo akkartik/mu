@@ -934,15 +934,10 @@ load-sector-string-from-primary-bus-secondary-drive:  # LBAlo: byte, LBAmid: byt
   50/push-eax
   51/push-ecx
   52/push-edx
-  # check for floating bus
-  {
-    31/xor %eax 0/r32/eax
-    ba/copy-to-edx 0x1f7/imm32
-    ec/read-port-dx-into-al
-    81 7/subop/compare %eax 0xff/imm32
-    75/jump-if-!= break/disp8
-    (abort "primary bus has no drives")
-  }
+  # check for drive
+  (secondary-drive-exists?)  # => eax
+  3d/compare-eax-and 0/imm32/false
+  0f 84/jump-if-= $load-sector-string-from-primary-bus-secondary-drive:end/disp32
   # kick off read
   (ata-drive-select 0xf0)  # primary bus, secondary drive; 4 LSBs contain 4 upper bits of LBA (here 0)
   (clear-ata-error)
@@ -977,6 +972,66 @@ $load-sector-string-from-primary-bus-secondary-drive:end:
   5a/pop-to-edx
   59/pop-to-ecx
   58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+secondary-drive-exists?:  # -> _/eax: boolean
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  52/push-edx
+  # check for floating bus
+  {
+    31/xor %eax 0/r32/eax
+    ba/copy-to-edx 0x1f7/imm32
+    ec/read-port-dx-into-al
+    3d/compare-eax-and 0xff/imm32
+    # if eax is 0xff, primary bus has no drives
+    b8/copy-to-eax 0/imm32/false
+    74/jump-if-= $secondary-drive-exists?:end/disp8
+  }
+  # identify
+  (ata-drive-select 0xb0)  # primary bus, secondary drive
+  (ata-sector-count 0)
+  (ata-lba 0 0 0)
+  (ata-command 0xec)  # identify
+  # read status register
+  # TODO: might need to spin here for 400ns: https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&oldid=25664#400ns_delays
+  31/xor %eax 0/r32/eax
+  ba/copy-to-edx 0x1f7/imm32
+  ec/read-port-dx-into-al
+  # if eax is 0, secondary drive does not exist
+  3d/compare-eax-and 0/imm32
+  {
+    74/jump-if-= break/disp8
+    b8/copy-to-eax 1/imm32/true
+    eb/jump $secondary-drive-exists?:complete-identify/disp8
+  }
+  # TODO: might need to perform remaining steps at https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&oldid=25664#IDENTIFY_command
+  b8/copy-to-eax 0/imm32/false
+$secondary-drive-exists?:complete-identify:
+  50/push-eax
+  # clear FIFO from the drive
+  ba/copy-to-edx 0x1f0/imm32
+  b9/copy-to-ecx 0x200/imm32
+  {
+    81 7/subop/compare %ecx 0/imm32
+    74/jump-if-= break/disp8
+    # read 4 bytes
+    ed/read-port-dx-into-eax
+    49/decrement-ecx
+    49/decrement-ecx
+    49/decrement-ecx
+    49/decrement-ecx
+    eb/jump loop/disp8
+  }
+  58/pop-to-eax
+$secondary-drive-exists?:end:
+  # . restore registers
+  5a/pop-to-edx
   # . epilogue
   89/<- %esp 5/r32/ebp
   5d/pop-to-ebp
