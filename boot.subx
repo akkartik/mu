@@ -946,19 +946,14 @@ load-first-sector-from-primary-bus-secondary-drive:  # out: (addr stream byte)
   (while-ata-busy)
   (until-ata-data-available)
   # emit results
+  31/xor %eax 0/r32/eax
   ba/copy-to-edx 0x1f0/imm32
   b9/copy-to-ecx 0x200/imm32  # 512 bytes per sector
   {
     81 7/subop/compare %ecx 0/imm32
     74/jump-if-= break/disp8
-    ed/read-port-dx-into-eax
-    # write 4 bytes to stream one at a time
-    (append-byte *(ebp+8) %eax)
-    49/decrement-ecx
-    c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
-    (append-byte *(ebp+8) %eax)
-    49/decrement-ecx
-    c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
+    66 ed/read-port-dx-into-ax
+    # write 2 bytes to stream one at a time
     (append-byte *(ebp+8) %eax)
     49/decrement-ecx
     c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
