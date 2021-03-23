@@ -130,6 +130,9 @@ fn edit-sandbox _self: (addr sandbox), key: byte {
     var trace/eax: (addr trace) <- lookup *trace-ah
     clear-trace trace
     run data, value, trace
+    # testing write to disk
+#?     rewind-stream value
+#?     store-first-sector-to-primary-bus-secondary-drive value
     return
   }
   # tab

@@ -10,6 +10,7 @@ sig read-key kbd: (addr keyboard) -> _/eax: byte
 
 # disk
 sig load-first-sector-from-primary-bus-secondary-drive out: (addr stream byte)
+sig store-first-sector-to-primary-bus-secondary-drive out: (addr stream byte)
 
 # tests
 sig count-test-failure

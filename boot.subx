@@ -971,6 +971,91 @@ $load-first-sector-from-primary-bus-secondary-drive:end:
   5d/pop-to-ebp
   c3/return
 
+store-first-sector-to-primary-bus-secondary-drive:  # in: (addr stream byte)
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  51/push-ecx
+  52/push-edx
+  53/push-ebx
+  # check for drive
+  (secondary-drive-exists?)  # => eax
+  3d/compare-eax-and 0/imm32/false
+  0f 84/jump-if-= $store-first-sector-to-primary-bus-secondary-drive:end/disp32
+  # kick off write
+  (ata-drive-select 0xf0)  # primary bus, secondary drive; 4 LSBs contain 4 upper bits of LBA (here 0)
+  (clear-ata-error)
+  (ata-sector-count 1)
+  (ata-lba 0 0 0)  # lower 24 bits of LBA, all 0
+  (ata-command 0x30)  # write sectors with retries
+  # wait
+  (while-ata-busy)
+  (until-ata-ready-for-data)
+  # send data
+  ba/copy-to-edx 0x1f0/imm32
+  b9/copy-to-ecx 0x200/imm32  # 512 bytes per sector
+  # var first-byte/ebx: byte
+  # when it's more than 0xff, we're at an even-numbered byte
+  bb/copy-to-ebx 0xffff/imm32
+$store-first-sector-to-primary-bus-secondary-drive:loop:
+  {
+    81 7/subop/compare %ecx 0/imm32
+    74/jump-if-= break/disp8
+    # this loop is slow, but the ATA spec also requires a small delay
+    (stream-empty? *(ebp+8))  # => eax
+    3d/compare-eax-and 0/imm32/false
+    75/jump-if-!= break/disp8
+    # read byte from stream
+    (read-byte *(ebp+8))  # => eax
+    # if we're at an odd-numbered byte, save it to first-byte
+    81 7/subop/compare %ebx 0xff/imm32
+    {
+      7e/jump-if-<= break/disp8
+      89/<- %ebx 0/r32/eax
+      eb/jump $store-first-sector-to-primary-bus-secondary-drive:loop/disp8
+    }
+    # otherwise OR it with first-byte and write it out
+    c1/shift 4/subop/left %eax 8/imm8
+    09/or %eax 3/r32/ebx
+    66 ef/write-ax-into-port-dx
+    49/decrement-ecx
+    49/decrement-ecx
+    # reset first-byte
+    bb/copy-to-ebx 0xffff/imm32
+    eb/jump loop/disp8
+  }
+  # write out first-byte if necessary
+  81 7/subop/compare %ebx 0xff/imm32
+  {
+    7f/jump-if-> break/disp8
+    89/<- %eax 3/r32/ebx
+    66 ef/write-ax-into-port-dx
+    49/decrement-ecx
+    49/decrement-ecx
+  }
+  # pad zeroes
+  31/xor %eax 0/r32/eax
+  {
+    81 7/subop/compare %ecx 0/imm32
+    74/jump-if-= break/disp8
+    66 ef/write-ax-into-port-dx
+    49/decrement-ecx
+    49/decrement-ecx
+    eb/jump loop/disp8
+  }
+$store-first-sector-to-primary-bus-secondary-drive:end:
+  # . restore registers
+  5b/pop-to-ebx
+  5a/pop-to-edx
+  59/pop-to-ecx
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
 secondary-drive-exists?:  # -> _/eax: boolean
   # . prologue
   55/push-ebp
@@ -1203,6 +1288,10 @@ $while-ata-busy:end:
   5a/pop-to-edx
   58/pop-to-eax
   # . epilogue
+  c3/return
+
+until-ata-ready-for-data:
+  (until-ata-data-available)
   c3/return
 
 # vim:ft=subx
