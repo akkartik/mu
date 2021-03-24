@@ -133,7 +133,7 @@
   # We can't refer to the label directly because SubX doesn't do the right
   # thing for lgdt, so rather than make errors worse in most places we instead
   # pin gdt_descriptor below.
-  0f 01 2/subop/lgdt 0/mod/indirect 6/rm32/use-disp16 0x7cf8/disp16/gdt_descriptor
+  0f 01 2/subop/lgdt 0/mod/indirect 6/rm32/use-disp16 0x7cf0/disp16/gdt_descriptor
   # enable paging
   0f 20/<-cr 3/mod/direct 0/rm32/eax 0/r32/cr0
   66 83 1/subop/or 3/mod/direct 0/rm32/eax 1/imm8  # eax <- or 0x1
@@ -180,10 +180,15 @@ gdt_start:
   00  # base[24:32]
 # gdt_end:
 
-== data 0x7cf8
+== data 0x7cf0
 gdt_descriptor:
   0x17/imm16  # final index of gdt = size of gdt - 1
   gdt_start/imm32/start
+
+== data 0x7cf8
+idt_descriptor:
+  ff 03  # final index of idt = size of idt - 1
+  idt_start/imm32/start
 
 ## 32-bit code from this point
 
@@ -202,7 +207,7 @@ initialize_32bit_mode:
   # We can't refer to the label directly because SubX doesn't do the right
   # thing for lidt, so rather than make errors worse in most places we instead
   # pin idt_descriptor below.
-  0f 01 3/subop/lidt 0/mod/indirect 5/rm32/use-disp32 0x8000/disp32/idt_descriptor
+  0f 01 3/subop/lidt 0/mod/indirect 5/rm32/use-disp32 0x7cf8/disp32/idt_descriptor
 
   # For now, not bothering reprogramming the IRQ to not conflict with software
   # exceptions.
@@ -361,13 +366,7 @@ $keyboard-interrupt-handler:epilogue:
   fb/enable-interrupts
   cf/return-from-interrupt
 
-## the rest of this file is all data
-
-== data 0x8000
-idt_descriptor:
-  ff 03  # final index of idt = size of idt - 1
-  idt_start/imm32/start
-
+== data
 Keyboard-shift-pressed?:  # boolean
   0/imm32
 
