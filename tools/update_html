@@ -38,8 +38,8 @@ convert_html() {
   sed -i -e 's/┈/╌/g' -e 's/┊/╎/g' $1.html
 }
 
-ctags -x [0-9]*.subx [0-9]*.mu  > /tmp/tags
-for f in [0-9]*.subx [0-9]*.mu
+ctags -x boot.subx [0-9]*.subx [0-9]*.mu  > /tmp/tags
+for f in boot.subx [0-9]*.subx [0-9]*.mu
 do
   test $# -gt 0  &&  test $1 != $f  &&  continue
   process $f
@@ -48,6 +48,7 @@ done
 for f in [^0-9]*.subx [^0-9]*.mu
 do
   test $# -gt 0  &&  test $1 != $f  &&  continue
+  test $f = "boot.subx" && continue
   ctags -x [0-9]*.subx [0-9]*.mu $f > /tmp/tags
   process $f
 done
