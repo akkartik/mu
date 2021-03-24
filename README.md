@@ -100,24 +100,24 @@ $ ./translate_emulated ex2.mu  # ~2 mins to emit disk.img
 Mu programs can be written for two very different environments:
 
 * At the top-level, Mu programs emit a bootable image that runs without an OS
-  (under emulation; I haven't tested on native hardware yet). There's just a
-  screen and a keyboard, and that's it. No mouse, no hardware acceleration, no
-  virtual memory, no process separation, no multi-tasking, no persistent
-  storage, no network. All tests run on boot. `main` only runs if all tests
-  pass.
+  (under emulation; I haven't tested on native hardware yet). There's rudimentary
+  support for some core peripherals: a 1024x768 screen, a keyboard with some
+  key-combinations, a PS/2 mouse that must be polled, a slow ATA disk drive.
+  No hardware acceleration, no virtual memory, no process separation, no
+  multi-tasking, no network. Boot always runs all tests, and only gets to
+  `main` if all tests pass.
 
 * The top-level is built using tools created under the `linux/` sub-directory.
-  This sub-directory contains an entirely separate set of standard libraries
-  intended for building programs that run with just a Linux kernel, reading
-  from stdin and writing to stdout. The Mu compiler is such a program, at
-  `linux/mu.subx`. Individual programs typically run tests if given some
-  commandline argument like `test`.
+  This sub-directory contains an entirely separate set of libraries intended
+  for building programs that run with just a Linux kernel, reading from stdin
+  and writing to stdout. The Mu compiler is such a program, at `linux/mu.subx`.
+  Individual programs typically run tests if given some commandline argument
+  like `test`.
 
 While I currently focus on programs without an OS, the `linux/` sub-directory
 is fairly ergonomic. There's a couple of dozen example programs to try out
 there. It is likely to be the option for a network stack in the foreseeable
-future; I have no idea how to write to disk or interact on the network without
-Linux.
+future; I have no idea how to interact on the network without Linux.
 
 ## Syntax
 

@@ -12,6 +12,9 @@ sig read-key kbd: (addr keyboard) -> _/eax: byte
 sig load-first-sector-from-primary-bus-secondary-drive out: (addr stream byte)
 sig store-first-sector-to-primary-bus-secondary-drive out: (addr stream byte)
 
+# mouse
+sig read-mouse-event -> _/eax: int, _/ecx: int
+
 # tests
 sig count-test-failure
 sig num-test-failures -> _/eax: int

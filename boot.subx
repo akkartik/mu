@@ -219,6 +219,8 @@ initialize_32bit_mode:
 
   fb/enable-interrupts
 
+  (initialize-mouse)
+
   ## enable floating point
   db/floating-point-coprocessor e3/initialize
   # eax <- cr4
@@ -805,14 +807,15 @@ Font:
 
 == code
 
-# Use 28-bit PIO mode to read the first sector (512 bytes) from an IDE (ATA)
-# disk drive.
+## Controlling IDE (ATA) hard disks
+# Uses 28-bit PIO mode.
 # Inspired by https://colorforth.github.io/ide.html
 #
 # Resources:
 #   https://wiki.osdev.org/ATA_PIO_Mode
 #   https://forum.osdev.org/viewtopic.php?f=1&p=167798
 #   read-sector, according to https://www.scs.stanford.edu/11wi-cs140/pintos/specs/ata-3-std.pdf
+
 load-first-sector-from-primary-bus-secondary-drive:  # out: (addr stream byte)
   # . prologue
   55/push-ebp
@@ -1181,6 +1184,214 @@ $while-ata-busy:end:
 
 until-ata-ready-for-data:
   (until-ata-data-available)
+  c3/return
+
+## Controlling a PS/2 mouse
+# Uses no IRQs, just polling.
+# Thanks Dave Long: https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py
+#
+# Resources:
+#   https://wiki.osdev.org/Mouse_Input
+
+# results x/eax, y/ecx range from -256 to +255
+# See https://wiki.osdev.org/index.php?title=Mouse_Input&oldid=25663#Format_of_First_3_Packet_Bytes
+read-mouse-event:  # -> _/eax: int, _/ecx: int
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  52/push-edx
+  53/push-ebx
+  # if no event, return 0, 0
+  b8/copy-to-eax 0/imm32
+  b9/copy-to-ecx 0/imm32
+  (any-mouse-event?)  # => eax
+  3d/compare-eax-and 0/imm32/false
+  74/jump-if-= $read-mouse-event:end/disp8
+  # var f1/edx: byte = inb(0x60)
+  31/xor %eax 0/r32/eax
+  e4/read-port-into-al 0x60/imm8
+  89/<- %edx 0/r32/eax
+  (wait-for-mouse-event)
+  # var dx/ebx: byte = inb(0x60)
+  31/xor %eax 0/r32/eax
+  e4/read-port-into-al 0x60/imm8
+  89/<- %ebx 0/r32/eax
+  (wait-for-mouse-event)
+  # var dy/ecx: byte = inb(0x60)
+  31/xor %eax 0/r32/eax
+  e4/read-port-into-al 0x60/imm8
+  89/<- %ecx 0/r32/eax
+  # eax = dx
+  89/<- %eax 3/r32/ebx
+  # if (f1 & 0x10) dx = -dx
+  {
+    f6 0/subop/test-bits %dl 0x10/imm8
+    74/jump-if-zero break/disp8
+    0d/or-eax-with 0xffffff00/imm32
+  }
+  # if (f1 & 0x20) dy = -dy
+  {
+    f6 0/subop/test-bits %dl 0x20/imm8
+    74/jump-if-zero break/disp8
+    81 1/subop/or %ecx 0xffffff00/imm32
+  }
+$read-mouse-event:end:
+  # . restore registers
+  5b/pop-to-ebx
+  5a/pop-to-edx
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+wait-for-mouse-event:
+  # . save registers
+  50/push-eax
+  #
+  {
+    (any-mouse-event?)  # => eax
+    3d/compare-eax-and 0/imm32/false
+    74/jump-if-= loop/disp8
+  }
+$wait-for-mouse-event:end:
+  # . restore registers
+  58/pop-to-eax
+  # .
+  c3/return
+
+any-mouse-event?:  # -> _/eax: boolean
+  31/xor %eax 0/r32/eax
+  # 0x1 bit: there's data from the keyboard controller
+  # 0x20 bit: it's data from the aux port (the mouse)
+  e4/read-port-into-al 0x60/imm8
+  24/and-al-with 0x21/imm8
+  3c/compare-al-with 0x21/imm8
+  0f 94/set-byte-if-= %al
+  c3/return
+
+initialize-mouse:
+  (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "A" 7 0)
+  (enable-keyboard-controller-aux-device)
+  (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "B" 7 0)
+  # tell mouse to use default settings
+  (send-mouse-command 0xf6)
+  (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "P" 7 0)
+  # enable mouse
+  (send-mouse-command 0xf4)
+  (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "Z" 7 0)
+  c3/return
+
+enable-keyboard-controller-aux-device:
+  (command-keyboard-controller 0xa8)
+  c3/return
+
+send-mouse-command:  # command: byte
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  #
+  (command-keyboard-controller 0xd4)
+  (send-keyboard-controller-data *(ebp+8))
+  (wait-for-ack-from-mouse)
+$send-mouse-command:end:
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+wait-for-ack-from-mouse:
+  # . save registers
+  50/push-eax
+  {
+    (read-keyboard-controller-data)  # => eax
+    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)  # screen n fg bg
+    81 7/subop/compare %eax 0xfa/imm32
+    75/jump-if-!= loop/disp8
+  }
+$wait-for-ack-from-mouse:end:
+  # . restore registers
+  58/pop-eax
+  c3/return
+
+command-keyboard-controller:  # command: byte
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  #
+  (poll-keyboard-controller-to-write)
+  8b/-> *(ebp+8) 0/r32/eax
+  e6/write-al-into-port 0x64/imm8
+$command-keyboard-controller:end:
+  # . restore registers
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+send-keyboard-controller-data:  # data: byte
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  #
+  (poll-keyboard-controller-to-write)
+  8b/-> *(ebp+8) 0/r32/eax
+  e6/write-al-into-port 0x60/imm8
+$send-keyboard-controller-data:end:
+  # . restore registers
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+read-keyboard-controller-data:  # -> _/eax: byte
+  (poll-keyboard-controller-to-read-data-port)
+  31/xor %eax 0/r32/eax
+  e4/read-port-into-al 0x60/imm8
+  c3/return
+
+poll-keyboard-controller-to-write:
+  # . save registers
+  50/push-eax
+  # "All output to port 0x60 or 0x64 must be preceded by waiting for bit 1
+  # (value=2) of port 0x64 to become clear."
+  #   https://wiki.osdev.org/index.php?title=Mouse_Input&oldid=25663#Waiting_to_Send_Bytes_to_Port_0x60_and_0x64
+  {
+    e4/read-port-into-al 0x64/imm8
+    a8/test-bits-in-al 2/imm8  # set zf if bit 1 (second-least significant) is not set
+    75/jump-if-zf-not-set-and-bit-1-set loop/disp8
+  }
+$poll-keyboard-controller-to-write:end:
+  # . restore registers
+  58/pop-to-eax
+  # . epilogue
+  c3/return
+
+poll-keyboard-controller-to-read-data-port:
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  # "Bytes cannot be read from port 0x60 until bit 0 (value=1) of port 0x64 is set."
+  #   https://wiki.osdev.org/index.php?title=Mouse_Input&oldid=25663#Waiting_to_Send_Bytes_to_Port_0x60_and_0x64
+  {
+    e4/read-port-into-al 0x64/imm8
+    a8/test-bits-in-al 1/imm8  # set zf if bit 0 (least significant) is not set
+    74/jump-if-zf-set-and-bit-0-not-set loop/disp8
+  }
+$poll-keyboard-controller-to-read-data-port:end:
+  # . restore registers
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
   c3/return
 
 # vim:ft=subx
