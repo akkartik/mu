@@ -133,7 +133,7 @@
   # We can't refer to the label directly because SubX doesn't do the right
   # thing for lgdt, so rather than make errors worse in most places we instead
   # pin gdt_descriptor below.
-  0f 01 2/subop/lgdt 0/mod/indirect 6/rm32/use-disp16 0x7cf0/disp16/gdt_descriptor
+  0f 01 2/subop/lgdt 0/mod/indirect 6/rm32/use-disp16 0x7ce0/disp16/gdt_descriptor
   # enable paging
   0f 20/<-cr 3/mod/direct 0/rm32/eax 0/r32/cr0
   66 83 1/subop/or 3/mod/direct 0/rm32/eax 1/imm8  # eax <- or 0x1
@@ -158,7 +158,10 @@ disk_error:
   }
 
 ## GDT: 3 records of 8 bytes each
-== data
+== data 0x7ce0
+gdt_descriptor:
+  0x17/imm16  # final index of gdt = size of gdt - 1
+  gdt_start/imm32/start
 
 gdt_start:
 # offset 0: gdt_null:  mandatory null descriptor
@@ -180,16 +183,6 @@ gdt_start:
   00  # base[24:32]
 # gdt_end:
 
-== data 0x7cf0
-gdt_descriptor:
-  0x17/imm16  # final index of gdt = size of gdt - 1
-  gdt_start/imm32/start
-
-== data 0x7cf8
-idt_descriptor:
-  ff 03  # final index of idt = size of idt - 1
-  idt_start/imm32/start
-
 ## 32-bit code from this point
 
 == code 0x7d00
@@ -207,7 +200,7 @@ initialize_32bit_mode:
   # We can't refer to the label directly because SubX doesn't do the right
   # thing for lidt, so rather than make errors worse in most places we instead
   # pin idt_descriptor below.
-  0f 01 3/subop/lidt 0/mod/indirect 5/rm32/use-disp32 0x7cf8/disp32/idt_descriptor
+  0f 01 3/subop/lidt 0/mod/indirect 5/rm32/use-disp32 0x7e00/disp32/idt_descriptor
 
   # For now, not bothering reprogramming the IRQ to not conflict with software
   # exceptions.
@@ -242,6 +235,68 @@ initialize_32bit_mode:
 55 aa
 
 ## sector 2 onwards loaded by load_disk, not automatically on boot
+
+== data 0x7e00
+idt_descriptor:
+  ff 03  # final index of idt = size of idt - 1
+  idt_start/imm32/start
+
+# interrupt descriptor table {{{
+# 32 entries of 8 bytes each
+idt_start:
+
+# entry 0
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+
+# By default, BIOS maps IRQ0-7 to interrupt vectors 8-15.
+# https://wiki.osdev.org/index.php?title=Interrupts&oldid=25102#Default_PC_Interrupt_Vector_Assignment
+
+# entry 8: clock
+  null-interrupt-handler/imm16  # target[0:16]
+  8/imm16  # segment selector (gdt_code)
+  00  # unused
+  8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
+  0/imm16  # target[16:32] -- null-interrupt-handler must be within address 0x10000
+
+# entry 9: keyboard
+  keyboard-interrupt-handler/imm16  # target[0:16]
+  8/imm16  # segment selector (gdt_code)
+  00  # unused
+  8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
+  0/imm16  # target[16:32] -- keyboard-interrupt-handler must be within address 0x10000
+
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+# idt_end:
+# }}}
+
 == code
 
 null-interrupt-handler:
@@ -384,118 +439,7 @@ Keyboard-buffer:data:  # byte[16]
   00 00 00 00
   00 00 00 00
 
-Video-mode-info:
-# video mode info {{{
-  0/imm16  # attributes
-  00  # winA
-  00  # winB
-# 04
-  0/imm16  # granularity
-  0/imm16  # winsize
-# 08
-  0/imm16  # segmentA
-  0/imm16  # segmentB
-# 0c
-  0/imm32  # realFctPtr (who knows)
-# 10
-  0/imm16  # pitch
-  0/imm16  # Xres
-  0/imm16  # Yres
-  0/imm16  # Wchar Ychar
-# 18
-  00  # planes
-  00  # bpp
-  00  # banks
-  00  # memory_model
-# 1c
-  00  # bank_size
-  00  # image_pages
-  00  # reserved
-# 1f
-  0/imm16  # red_mask red_position
-  0/imm16  # green_mask green_position
-  0/imm16  # blue_mask blue_position
-  0/imm16  # rsv_mask rsv_position
-  00  # directcolor_attributes
-# 28
-Video-memory-addr:
-  0/imm32  # physbase
-
-# 2c
-# reserved for video mode info
-                                    00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-# }}}
-
-# interrupt descriptor table {{{
-# 32 entries of 8 bytes each
-idt_start:
-
-# entry 0
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-
-# By default, BIOS maps IRQ0-7 to interrupt vectors 8-15.
-# https://wiki.osdev.org/index.php?title=Interrupts&oldid=25102#Default_PC_Interrupt_Vector_Assignment
-
-# entry 8: clock
-  null-interrupt-handler/imm16  # target[0:16]
-  8/imm16  # segment selector (gdt_code)
-  00  # unused
-  8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
-  0/imm16  # target[16:32] -- null-interrupt-handler must be within address 0x10000
-
-# entry 9: keyboard
-  keyboard-interrupt-handler/imm16  # target[0:16]
-  8/imm16  # segment selector (gdt_code)
-  00  # unused
-  8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
-  0/imm16  # target[16:32] -- keyboard-interrupt-handler must be within address 0x10000
-
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00
-# idt_end:
-# }}}
-
-# translating keys to ASCII {{{
+# Keyboard maps for translating keys to ASCII {{{
 Keyboard-normal-map:
 00
 #  es
@@ -564,6 +508,61 @@ Keyboard-ctrl-map:
 # 2c
 #     ^z ^x ^c ^v ^b ^n ^m       ^/
       1a 18 03 16 02 0e 0d 00 00 1f 00 00
+# }}}
+
+Video-mode-info:
+# video mode info {{{
+  0/imm16  # attributes
+  00  # winA
+  00  # winB
+# 04
+  0/imm16  # granularity
+  0/imm16  # winsize
+# 08
+  0/imm16  # segmentA
+  0/imm16  # segmentB
+# 0c
+  0/imm32  # realFctPtr (who knows)
+# 10
+  0/imm16  # pitch
+  0/imm16  # Xres
+  0/imm16  # Yres
+  0/imm16  # Wchar Ychar
+# 18
+  00  # planes
+  00  # bpp
+  00  # banks
+  00  # memory_model
+# 1c
+  00  # bank_size
+  00  # image_pages
+  00  # reserved
+# 1f
+  0/imm16  # red_mask red_position
+  0/imm16  # green_mask green_position
+  0/imm16  # blue_mask blue_position
+  0/imm16  # rsv_mask rsv_position
+  00  # directcolor_attributes
+# 28
+Video-memory-addr:
+  0/imm32  # physbase
+
+# 2c
+# reserved for video mode info
+                                    00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 # }}}
 
 Font:
@@ -947,6 +946,8 @@ $store-first-sector-to-primary-bus-secondary-drive:end:
   5d/pop-to-ebp
   c3/return
 
+# disk helpers {{{
+
 secondary-drive-exists?:  # -> _/eax: boolean
   # . prologue
   55/push-ebp
@@ -1185,6 +1186,8 @@ until-ata-ready-for-data:
   (until-ata-data-available)
   c3/return
 
+# }}}
+
 ## Controlling a PS/2 mouse
 # Uses no IRQs, just polling.
 # Thanks Dave Long: https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py
@@ -1243,6 +1246,8 @@ $read-mouse-event:end:
   89/<- %esp 5/r32/ebp
   5d/pop-to-ebp
   c3/return
+
+# mouse helpers {{{
 
 wait-for-mouse-event:
   # . save registers
@@ -1392,5 +1397,7 @@ $poll-keyboard-controller-to-read-data-port:end:
   89/<- %esp 5/r32/ebp
   5d/pop-to-ebp
   c3/return
+
+# }}}
 
 # vim:ft=subx
