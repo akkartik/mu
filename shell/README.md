@@ -11,6 +11,10 @@ $ ./translate shell/*.mu      # generates disk.img
 ```sh
 $ qemu-system-i386 disk.img
 ```
+or:
+```
+$ bochs -f bochsrc
+```
 
 To save typing in a large s-expression, create a secondary disk for data:
 ```sh
@@ -25,6 +29,10 @@ $ echo '(+ 1 1)' |dd of=data.img conv=notrunc
 Now run with both code and data disks:
 ```sh
 $ qemu-system-i386 -hda disk.img -hdb data.img
+```
+or:
+```
+$ bochs -f bochsrc.2disks
 ```
 
 You can type in expressions, hit `ctrl-s` to see their results, and hit `Tab`
