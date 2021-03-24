@@ -1,6 +1,6 @@
 #!/bin/bash
 # Regenerate html files.
-# If given a single argument, regenerate just that file.
+# If given a single argument, try to regenerate just that file. Not supported everywhere.
 
 set -e
 
@@ -39,80 +39,69 @@ convert_html() {
   mv -i $1.html html/`dirname $1`
 }
 
-ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
-for f in *.cc
-do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  process $f
-done
-
 ctags -x [0-9]*.subx [0-9]*.mu  > /tmp/tags
-for f in *.subx *.mu
+for f in [0-9]*.subx [0-9]*.mu
 do
   test $# -gt 0  &&  test $1 != $f  &&  continue
   process $f
 done
 
-for f in apps/*.subx
+for f in [^0-9]*.subx [^0-9]*.mu
 do
   test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd apps
-    ctags -x ../[0-9]*.subx ../[0-9]*.mu `basename $f` > /tmp/tags
+  ctags -x [0-9]*.subx [0-9]*.mu $f > /tmp/tags
+  process $f
+done
+
+( cd shell
+  ctags -x ../[0-9]*.subx ../[0-9]*.mu *.mu > /tmp/tags
+)
+for f in shell/*.mu
+do
+  test $# -gt 0  &&  test $1 != shell/$f  &&  continue
+  process $f
+done
+
+( cd linux
+  ctags -x [0-9]*.subx [0-9]*.mu  > /tmp/tags
+)
+for f in linux/[0-9]*.subx linux/[0-9]*.mu
+do
+  process $f
+done
+
+for f in linux/[^0-9]*.subx linux/[^0-9]*.mu
+do
+  ( cd $(dirname $f)
+    ctags -x [0-9]*.subx [0-9]*.mu $(basename $f)  > /tmp/tags
   )
   process $f
 done
 
-for f in apps/*.mu
+for f in linux/advent2020/*.mu
 do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd apps
-    ctags -x ../[0-9]*.subx ../[0-9]*.mu `basename $f` > /tmp/tags
+  ( cd $(dirname $f)
+    ctags -x ../[0-9]*.subx ../[0-9]*.mu $(basename $f) > /tmp/tags
   )
   process $f
 done
 
-for f in apps/*/*.mu
+for dir in linux/raytracing linux/tile
 do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd `dirname $f`
-    ctags -x ../../[0-9]*.subx ../../[0-9]*.mu *.mu > /tmp/tags
+  ( cd $dir
+    ctags -x ../[0-9]*.subx ../[0-9]*.mu *.mu > /tmp/tags
   )
-  process $f
+  for f in $dir/*.mu
+  do
+    process $f
+  done
 done
 
-for f in baremetal/*.hex
+( cd linux/bootstrap
+  ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
+)
+for f in linux/bootstrap/*.cc
 do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd baremetal
-    ctags -x [0-9]*.subx [0-9]*.mu `basename $f` > /tmp/tags
-  )
-  process $f
-done
-
-for f in baremetal/*.subx
-do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd baremetal
-    ctags -x [0-9]*.subx [0-9]*.mu `basename $f` > /tmp/tags
-  )
-  process $f
-done
-
-for f in baremetal/*.mu
-do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd baremetal
-    ctags -x [0-9]*.subx [0-9]*.mu `basename $f` > /tmp/tags
-  )
-  process $f
-done
-
-for f in baremetal/*/*.mu
-do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd `dirname $f`
-    ctags -x ../../[0-9]*.subx ../../[0-9]*.mu *.mu > /tmp/tags
-  )
   process $f
 done
 

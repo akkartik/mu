@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - linux/104new-segment.subx</title>
+<meta name="Generator" content="Vim/8.1">
+<meta name="plugin-version" content="vim8.1_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal-light">
+<style type="text/css">
+<!--
+pre { font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.subxComment { color: #005faf; }
+.subxS1Comment { color: #0000af; }
+.subxS2Comment { color: #8a8a8a; }
+.LineNr { }
+.Constant { color: #008787; }
+.subxMinorFunction { color: #875f5f; }
+.SpecialChar { color: #d70000; }
+.Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/main/linux/104new-segment.subx'>https://github.com/akkartik/mu/blob/main/linux/104new-segment.subx</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span><span class="subxComment"># Create a new segment (pool of memory for allocating chunks from) in the form</span>
+<span id="L2" class="LineNr"> 2 </span><span class="subxComment"># of an *allocation descriptor* that can be passed to the memory allocator</span>
+<span id="L3" class="LineNr"> 3 </span><span class="subxComment"># (defined in a later layer).</span>
+<span id="L4" class="LineNr"> 4 </span><span class="subxComment">#</span>
+<span id="L5" class="LineNr"> 5 </span><span class="subxComment"># Currently an allocation descriptor consists of just the bounds of the pool of</span>
+<span id="L6" class="LineNr"> 6 </span><span class="subxComment"># available memory:</span>
+<span id="L7" class="LineNr"> 7 </span><span class="subxComment">#</span>
+<span id="L8" class="LineNr"> 8 </span><span class="subxComment">#   curr: address</span>
+<span id="L9" class="LineNr"> 9 </span><span class="subxComment">#   end: address</span>
+<span id="L10" class="LineNr">10 </span><span class="subxComment">#</span>
+<span id="L11" class="LineNr">11 </span><span class="subxComment"># This isn't enough information to reclaim individual allocations. We can't</span>
+<span id="L12" class="LineNr">12 </span><span class="subxComment"># support arbitrary reclamation yet.</span>
+<span id="L13" class="LineNr">13 </span>
+<span id="L14" class="LineNr">14 </span>== code
+<span id="L15" class="LineNr">15 </span><span class="subxComment">#   instruction                     effective address                                                   register    displacement    immediate</span>
+<span id="L16" class="LineNr">16 </span><span class="subxS1Comment"># . op          subop               mod             rm32          base        index         scale       r32</span>
+<span id="L17" class="LineNr">17 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
+<span id="L18" class="LineNr">18 </span>
+<span id="L19" class="LineNr">19 </span><span class="SpecialChar">Entry</span>:   <span class="subxComment"># manual test</span>
+<span id="L20" class="LineNr">20 </span>    <span class="subxComment"># var ad/ecx: allocation-descriptor</span>
+<span id="L21" class="LineNr">21 </span>    68/push  0/imm32/limit
+<span id="L22" class="LineNr">22 </span>    68/push  0/imm32/curr
+<span id="L23" class="LineNr">23 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
+<span id="L24" class="LineNr">24 </span>    <span class="subxComment"># new-segment(0x1000, ad)</span>
+<span id="L25" class="LineNr">25 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L26" class="LineNr">26 </span>    51/push-ecx
+<span id="L27" class="LineNr">27 </span>    68/push  0x1000/imm32
+<span id="L28" class="LineNr">28 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L29" class="LineNr">29 </span>    e8/call  <a href='104new-segment.subx.html#L40'>new-segment</a>/disp32
+<span id="L30" class="LineNr">30 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L31" class="LineNr">31 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L32" class="LineNr">32 </span>    <span class="subxComment"># var eax: (addr _) = ad-&gt;curr</span>
+<span id="L33" class="LineNr">33 </span>    8b/copy                         0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *ecx to eax</span>
+<span id="L34" class="LineNr">34 </span>    <span class="subxComment"># write to *eax to check that we have access to the newly-allocated segment</span>
+<span id="L35" class="LineNr">35 </span>    c7          0/subop/copy        0/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x34/imm32        <span class="subxComment"># copy to *eax</span>
+<span id="L36" class="LineNr">36 </span>    <span class="subxComment"># syscall(exit, eax)</span>
+<span id="L37" class="LineNr">37 </span>    89/copy                         3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to ebx</span>
+<span id="L38" class="LineNr">38 </span>    e8/call  <a href='000init.subx.html#L18'>syscall_exit</a>/disp32
+<span id="L39" class="LineNr">39 </span>
+<span id="L40" class="LineNr">40 </span><span class="subxFunction">new-segment</span>:  <span class="subxComment"># len: int, ad: (addr allocation-descriptor)</span>
+<span id="L41" class="LineNr">41 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L42" class="LineNr">42 </span>    55/push-ebp
+<span id="L43" class="LineNr">43 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
+<span id="L44" class="LineNr">44 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L45" class="LineNr">45 </span>    50/push-eax
+<span id="L46" class="LineNr">46 </span>    53/push-ebx
+<span id="L47" class="LineNr">47 </span>    <span class="subxComment"># copy len to _mmap-new-segment-&gt;len</span>
+<span id="L48" class="LineNr">48 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to eax</span>
+<span id="L49" class="LineNr">49 </span>    89/copy                         0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   $_mmap-new-segment:len/disp32     <span class="subxComment"># copy eax to *$_mmap-new-segment:len</span>
+<span id="L50" class="LineNr">50 </span>    <span class="subxComment"># mmap(_mmap-new-segment)</span>
+<span id="L51" class="LineNr">51 </span>    bb/copy-to-ebx  <a href='104new-segment.subx.html#L73'>_mmap-new-segment</a>/imm32
+<span id="L52" class="LineNr">52 </span>    e8/call  <a href='000init.subx.html#L71'>syscall_mmap</a>/disp32
+<span id="L53" class="LineNr">53 </span>    <span class="subxComment"># copy {eax, eax+len} to *ad</span>
+<span id="L54" class="LineNr">54 </span>    <span class="subxS1Comment"># . ebx = ad</span>
+<span id="L55" class="LineNr">55 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to ebx</span>
+<span id="L56" class="LineNr">56 </span>    <span class="subxS1Comment"># . ad-&gt;curr = eax</span>
+<span id="L57" class="LineNr">57 </span>    89/copy                         0/mod/indirect  3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to *ebx</span>
+<span id="L58" class="LineNr">58 </span>    <span class="subxS1Comment"># . ad-&gt;end = eax+len</span>
+<span id="L59" class="LineNr">59 </span>    03/add                          1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># add *(ebp+8) to eax</span>
+<span id="L60" class="LineNr">60 </span>    89/copy                         1/mod/*+disp8   3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy eax to *(ebx+4)</span>
+<span id="L61" class="LineNr">61 </span><span class="Constant">$new-segment:end</span>:
+<span id="L62" class="LineNr">62 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L63" class="LineNr">63 </span>    5b/pop-to-ebx
+<span id="L64" class="LineNr">64 </span>    58/pop-to-eax
+<span id="L65" class="LineNr">65 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L66" class="LineNr">66 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
+<span id="L67" class="LineNr">67 </span>    5d/pop-to-ebp
+<span id="L68" class="LineNr">68 </span>    c3/return
+<span id="L69" class="LineNr">69 </span>
+<span id="L70" class="LineNr">70 </span>== data
+<span id="L71" class="LineNr">71 </span>
+<span id="L72" class="LineNr">72 </span><span class="subxComment"># various constants used here were found in the Linux sources (search for file mman-common.h)</span>
+<span id="L73" class="LineNr">73 </span><span class="subxMinorFunction">_mmap-new-segment</span>:  <span class="subxComment"># mmap_arg_struct</span>
+<span id="L74" class="LineNr">74 </span>    <span class="subxComment"># addr</span>
+<span id="L75" class="LineNr">75 </span>    0/imm32
+<span id="L76" class="LineNr">76 </span><span class="Constant">$_mmap-new-segment:len</span>:
+<span id="L77" class="LineNr">77 </span>    <span class="subxComment"># len</span>
+<span id="L78" class="LineNr">78 </span>    0/imm32
+<span id="L79" class="LineNr">79 </span>    <span class="subxComment"># protection flags</span>
+<span id="L80" class="LineNr">80 </span>    3/imm32  <span class="subxComment"># PROT_READ | PROT_WRITE</span>
+<span id="L81" class="LineNr">81 </span>    <span class="subxComment"># sharing flags</span>
+<span id="L82" class="LineNr">82 </span>    0x22/imm32  <span class="subxComment"># MAP_PRIVATE | MAP_ANONYMOUS</span>
+<span id="L83" class="LineNr">83 </span>    <span class="subxComment"># fd</span>
+<span id="L84" class="LineNr">84 </span>    -1/imm32  <span class="subxComment"># since MAP_ANONYMOUS is specified</span>
+<span id="L85" class="LineNr">85 </span>    <span class="subxComment"># offset</span>
+<span id="L86" class="LineNr">86 </span>    0/imm32  <span class="subxComment"># since MAP_ANONYMOUS is specified</span>
+<span id="L87" class="LineNr">87 </span>
+<span id="L88" class="LineNr">88 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

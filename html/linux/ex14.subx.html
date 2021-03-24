@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - linux/ex14.subx</title>
+<meta name="Generator" content="Vim/8.1">
+<meta name="plugin-version" content="vim8.1_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal-light">
+<style type="text/css">
+<!--
+pre { font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.subxComment { color: #005faf; }
+.subxS1Comment { color: #0000af; }
+.subxS2Comment { color: #8a8a8a; }
+.LineNr { }
+.Constant { color: #008787; }
+.SpecialChar { color: #d70000; }
+.Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/main/linux/ex14.subx'>https://github.com/akkartik/mu/blob/main/linux/ex14.subx</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span><span class="subxComment"># Multiply 2 numbers.</span>
+<span id="L2" class="LineNr"> 2 </span><span class="subxComment">#</span>
+<span id="L3" class="LineNr"> 3 </span><span class="subxComment"># To run:</span>
+<span id="L4" class="LineNr"> 4 </span><span class="subxComment">#   $ bootstrap/bootstrap translate apps/ex14.subx -o apps/ex14</span>
+<span id="L5" class="LineNr"> 5 </span><span class="subxComment">#   $ bootstrap/bootstrap run ex14</span>
+<span id="L6" class="LineNr"> 6 </span><span class="subxComment"># Expected result:</span>
+<span id="L7" class="LineNr"> 7 </span><span class="subxComment">#   $ echo $?</span>
+<span id="L8" class="LineNr"> 8 </span><span class="subxComment">#   6</span>
+<span id="L9" class="LineNr"> 9 </span>
+<span id="L10" class="LineNr">10 </span>== code
+<span id="L11" class="LineNr">11 </span><span class="subxComment">#   instruction                     effective address                                                   register    displacement    immediate</span>
+<span id="L12" class="LineNr">12 </span><span class="subxS1Comment"># . op          subop               mod             rm32          base        index         scale       r32</span>
+<span id="L13" class="LineNr">13 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
+<span id="L14" class="LineNr">14 </span>
+<span id="L15" class="LineNr">15 </span><span class="SpecialChar">Entry</span>:
+<span id="L16" class="LineNr">16 </span>    b8/copy-to-eax  1/imm32
+<span id="L17" class="LineNr">17 </span>    b9/copy-to-ecx  2/imm32
+<span id="L18" class="LineNr">18 </span>    bb/copy-to-ebx  3/imm32
+<span id="L19" class="LineNr">19 </span>
+<span id="L20" class="LineNr">20 </span>    69/multiply                     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx                   3/imm32           <span class="subxComment"># ebx = ecx * 3</span>
+<span id="L21" class="LineNr">21 </span>
+<span id="L22" class="LineNr">22 </span><span class="Constant">$exit</span>:
+<span id="L23" class="LineNr">23 </span>    <span class="subxComment"># exit(ebx)</span>
+<span id="L24" class="LineNr">24 </span>    e8/call  <a href='000init.subx.html#L18'>syscall_exit</a>/disp32
+<span id="L25" class="LineNr">25 </span>
+<span id="L26" class="LineNr">26 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

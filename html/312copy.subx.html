@@ -14,10 +14,10 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.subxComment { color: #005faf; }
-.LineNr { }
 .SpecialChar { color: #d70000; }
+.subxComment { color: #005faf; }
 .subxS1Comment { color: #0000af; }
+.LineNr { }
 .subxFunction { color: #af5f00; text-decoration: underline; }
 .Constant { color: #008787; }
 -->
@@ -62,67 +62,12 @@ if ('onhashchange' in window) {
 <span id="L5" class="LineNr"> 5 </span>    55/push-ebp
 <span id="L6" class="LineNr"> 6 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L7" class="LineNr"> 7 </span>    <span class="subxComment">#</span>
-<span id="L8" class="LineNr"> 8 </span>    (<a href='120allocate.subx.html#L710'>copy-array</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> *(ebp+8) *(ebp+0xc))
+<span id="L8" class="LineNr"> 8 </span>    (<a href='120allocate.subx.html#L669'>copy-array</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> *(ebp+8) *(ebp+0xc))
 <span id="L9" class="LineNr"> 9 </span><span class="Constant">$copy-array-object:end</span>:
 <span id="L10" class="LineNr">10 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L11" class="LineNr">11 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L12" class="LineNr">12 </span>    5d/pop-to-ebp
 <span id="L13" class="LineNr">13 </span>    c3/return
-<span id="L14" class="LineNr">14 </span>
-<span id="L15" class="LineNr">15 </span><span class="subxComment"># create an independent copy of file src into dest</span>
-<span id="L16" class="LineNr">16 </span><span class="subxComment"># there's no way to do this without knowing the filename</span>
-<span id="L17" class="LineNr">17 </span><span class="subxFunction">copy-file</span>:  <span class="subxComment"># src: (addr buffered-file), dest-ah: (addr handle buffered-file), filename: (addr array byte)</span>
-<span id="L18" class="LineNr">18 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L19" class="LineNr">19 </span>    55/push-ebp
-<span id="L20" class="LineNr">20 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L21" class="LineNr">21 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L22" class="LineNr">22 </span>    50/push-eax
-<span id="L23" class="LineNr">23 </span>    51/push-ecx
-<span id="L24" class="LineNr">24 </span>    52/push-edx
-<span id="L25" class="LineNr">25 </span>    53/push-ebx
-<span id="L26" class="LineNr">26 </span>    56/push-esi
-<span id="L27" class="LineNr">27 </span>    57/push-edi
-<span id="L28" class="LineNr">28 </span>    <span class="subxComment"># esi = src</span>
-<span id="L29" class="LineNr">29 </span>    8b/-&gt; *(ebp+8) 6/r32/esi
-<span id="L30" class="LineNr">30 </span>    <span class="subxComment"># var n/ecx: int = src-&gt;buffer-&gt;size + 16</span>
-<span id="L31" class="LineNr">31 </span>    8b/-&gt; *(esi+0xc) 0/r32/eax
-<span id="L32" class="LineNr">32 </span>    05/add-to-eax 0x10/imm32  <span class="subxComment"># buffered-file fields before buffer contents</span>
-<span id="L33" class="LineNr">33 </span>    89/&lt;- %ecx 0/r32/eax
-<span id="L34" class="LineNr">34 </span>    <span class="subxComment">#</span>
-<span id="L35" class="LineNr">35 </span>    (<a href='120allocate.subx.html#L66'>allocate</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> %ecx *(ebp+0xc))
-<span id="L36" class="LineNr">36 </span>    <span class="subxComment"># var dest/edi: (addr buffered-file) = lookup(*dest-ah)</span>
-<span id="L37" class="LineNr">37 </span>    8b/-&gt; *(ebp+0xc) 0/r32/eax
-<span id="L38" class="LineNr">38 </span>    (<a href='120allocate.subx.html#L256'>lookup</a> *eax *(eax+4))  <span class="subxComment"># =&gt; eax</span>
-<span id="L39" class="LineNr">39 </span>    89/&lt;- %edi 0/r32/eax
-<span id="L40" class="LineNr">40 </span>    <span class="subxComment">#</span>
-<span id="L41" class="LineNr">41 </span>    (<a href='310copy-bytes.subx.html#L6'>copy-bytes</a> %esi %edi %ecx)
-<span id="L42" class="LineNr">42 </span>    <span class="subxComment"># var offset/ecx: int = lseek(src-&gt;fd, 0, SEEK_CUR)</span>
-<span id="L43" class="LineNr">43 </span>    8b/-&gt; *esi 3/r32/ebx
-<span id="L44" class="LineNr">44 </span>    b9/copy-to-ecx 0/imm32/offset
-<span id="L45" class="LineNr">45 </span>    ba/copy-to-edx 1/imm32/whence:SEEK_CUR
-<span id="L46" class="LineNr">46 </span>    (syscall_lseek)
-<span id="L47" class="LineNr">47 </span>    89/&lt;- %ecx 0/r32/eax
-<span id="L48" class="LineNr">48 </span>    <span class="subxComment"># at this point dest is identical to src, including file descriptor. Now</span>
-<span id="L49" class="LineNr">49 </span>    <span class="subxComment"># create an independent copy of the file descriptor</span>
-<span id="L50" class="LineNr">50 </span>    (<a href='306files.subx.html#L43'>open-fd</a> *(ebp+0x10) 0)  <span class="subxComment"># false =&gt; eax</span>
-<span id="L51" class="LineNr">51 </span>    89/&lt;- *edi 0/r32/eax
-<span id="L52" class="LineNr">52 </span>    <span class="subxComment"># replicate offset in the new fd</span>
-<span id="L53" class="LineNr">53 </span>    89/&lt;- %ebx 0/r32/eax  <span class="subxComment"># fd</span>
-<span id="L54" class="LineNr">54 </span>    51/push-ecx  <span class="subxComment"># offset</span>
-<span id="L55" class="LineNr">55 </span>    ba/copy-to-edx 0/imm32/whence:SEEK_SET
-<span id="L56" class="LineNr">56 </span>    (syscall_lseek)
-<span id="L57" class="LineNr">57 </span><span class="Constant">$copy-file:end</span>:
-<span id="L58" class="LineNr">58 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L59" class="LineNr">59 </span>    5f/pop-to-edi
-<span id="L60" class="LineNr">60 </span>    5e/pop-to-esi
-<span id="L61" class="LineNr">61 </span>    5b/pop-to-ebx
-<span id="L62" class="LineNr">62 </span>    5a/pop-to-edx
-<span id="L63" class="LineNr">63 </span>    59/pop-to-ecx
-<span id="L64" class="LineNr">64 </span>    58/pop-to-eax
-<span id="L65" class="LineNr">65 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L66" class="LineNr">66 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L67" class="LineNr">67 </span>    5d/pop-to-ebp
-<span id="L68" class="LineNr">68 </span>    c3/return
 </pre>
 </body>
 </html>
