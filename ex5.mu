@@ -11,6 +11,6 @@
 # Expected output: text in green near the top-left corner of screen
 
 fn main screen: (addr screen), keyboard: (addr keyboard) {
-  var dummy/eax: int <- draw-text-rightward screen, "hello from baremetal Mu!", 0x10/x, 0x400/xmax, 0x10/y, 0xa/color
-  dummy <- draw-text-rightward screen, "you shouldn't see this", 0x10/x, 0xa0/xmax, 0x30/y, 0x3/color  # xmax is too narrow
+  var dummy/eax: int <- draw-text-rightward screen, "hello from baremetal Mu!", 0x10/x, 0x400/xmax, 0x10/y, 0xa/fg, 0/bg
+  dummy <- draw-text-rightward screen, "you shouldn't see this", 0x10/x, 0xa0/xmax, 0x30/y, 3/fg, 0/bg  # xmax is too narrow
 }
