@@ -43,7 +43,9 @@ and [vocabulary.md](vocabulary.md).
 
 ## Functions and calls
 
-Zooming out from single statements, here's a complete sample program in Mu:
+Zooming out from single statements, here's a complete sample program in Mu
+that runs in Linux (Mu programs without an OS need `main` to have a different
+signature):
 
 <img alt='ex2.mu' src='html/ex2.mu.png' width='400px'>
 
@@ -81,17 +83,6 @@ fn g {
 You can exit a function at any time with the `return` instruction. Give it the
 right number of arguments, and it'll assign them respectively to the function's
 outputs before jumping back to the caller.
-
-The function `main` is special; it is where the program starts running. It
-must always return a single int in register `ebx` (as the exit status of the
-process). It can also optionally accept an array of strings as input (from the
-shell command-line). To be precise, `main` must have one of the following
-two signatures:
-
-- `fn main -> _/ebx: int`
-- `fn main args: (addr array (addr array byte)) -> _/ebx: int`
-
-(The name of the inout is flexible.)
 
 Mu encloses multi-word types in parentheses, and types can get quite expressive.
 For example, you read `main`'s inout type as "an address to an array of
