@@ -44,8 +44,7 @@ and [vocabulary.md](vocabulary.md).
 ## Functions and calls
 
 Zooming out from single statements, here's a complete sample program in Mu
-that runs in Linux (Mu programs without an OS need `main` to have a different
-signature):
+that runs in Linux:
 
 <img alt='ex2.mu' src='html/ex2.mu.png' width='400px'>
 
@@ -103,6 +102,30 @@ documentation).
 
 Variables can't currently accept unchecked metadata for documentation.
 (Perhaps this should change.)
+
+The function `main` is special. It's where Mu programs start executing. It has
+a different signature depending on whether a Mu program requires Linux or can
+run without an OS. On Linux, the signature looks like this:
+
+```
+fn main args: (addr array addr array byte) -> _/ebx: int
+```
+
+It takes an array of strings and returns a status code to Linux in register
+`ebx`.
+
+Without an OS, the signature looks like this:
+
+```
+fn main screen: (addr screen), keyboard: (addr keyboard)
+```
+
+A screen and keyboard are explicitly passed in. The goal is for all hardware
+dependencies to always be explicit. However there are currently gaps:
+  * The mouse is accessed implicitly
+  * The disk is accessed implicitly
+  * The screen argument only supports text-mode graphics. Pixel graphics rely
+    on implicit access to the screen.
 
 ## Blocks
 

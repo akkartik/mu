@@ -11,11 +11,11 @@
 # Expected output: a new green pixel starting from the top left corner of the
 # screen every time you press a key (letter or digit)
 
-fn main {
+fn main screen: (addr screen), keyboard: (addr keyboard) {
   var x/ecx: int <- copy 0
   var y/edx: int <- copy 0
   {
-    var key/eax: byte <- read-key 0/keyboard
+    var key/eax: byte <- read-key keyboard
     compare key, 0
     loop-if-=  # busy wait
     pixel-on-real-screen x, y, 0x31/green

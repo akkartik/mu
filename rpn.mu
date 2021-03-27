@@ -15,7 +15,7 @@
 #
 # Error handling is non-existent. This is just a prototype.
 
-fn main {
+fn main screen: (addr screen), keyboard: (addr keyboard) {
   var in-storage: (stream byte 0x80)
   var in/esi: (addr stream byte) <- address in-storage
   var y/ecx: int <- copy 0
@@ -23,13 +23,13 @@ fn main {
   # read-eval-print loop
   {
     # print prompt
-    var x/eax: int <- draw-text-rightward 0/screen, "> ", 0/x, 0x80/xmax, y, 3/fg/cyan, 0/bg
-    set-cursor-position 0/screen, x, y
+    var x/eax: int <- draw-text-rightward screen, "> ", 0/x, 0x80/xmax, y, 3/fg/cyan, 0/bg
+    set-cursor-position screen, x, y
     # read line from keyboard
     clear-stream in
     {
-      draw-cursor 0/screen, space
-      var key/eax: byte <- read-key 0/keyboard
+      draw-cursor screen, space
+      var key/eax: byte <- read-key keyboard
       compare key, 0xa/newline
       break-if-=
       compare key, 0
@@ -37,17 +37,17 @@ fn main {
       var key2/eax: int <- copy key
       append-byte in, key2
       var g/eax: grapheme <- copy key2
-      draw-grapheme-at-cursor 0/screen, g, 0xf/fg, 0/bg
+      draw-grapheme-at-cursor screen, g, 0xf/fg, 0/bg
       move-cursor-right 0
       loop
     }
     # clear cursor
-    draw-grapheme-at-cursor 0/screen, space, 3/fg/never-used, 0/bg
+    draw-grapheme-at-cursor screen, space, 3/fg/never-used, 0/bg
     # parse and eval
     var out/eax: int <- simplify in
     # print
     y <- increment
-    out, y <- draw-int32-decimal-wrapping-right-then-down 0/screen, out, 0/xmin, y, 0x80/xmax, 0x30/ymax, 0/x, y, 7/fg, 0/bg
+    out, y <- draw-int32-decimal-wrapping-right-then-down screen, out, 0/xmin, y, 0x80/xmax, 0x30/ymax, 0/x, y, 7/fg, 0/bg
     # newline
     y <- increment
     #

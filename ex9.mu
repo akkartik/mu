@@ -15,7 +15,7 @@
 #   6. Notice that the data disk now contains the word count of the original text.
 #       xxd data.img |head
 
-fn main {
+fn main screen: (addr screen), keyboard: (addr keyboard) {
   var text-storage: (stream byte 0x200)
   var text/esi: (addr stream byte) <- address text-storage
   load-first-sector-from-primary-bus-secondary-drive text

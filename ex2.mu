@@ -7,7 +7,7 @@
 # Or:
 #   bochs -f bochsrc               # bochsrc loads disk.img
 
-fn main {
+fn main screen: (addr screen), keyboard: (addr keyboard) {
   var y/eax: int <- copy 0
   {
     compare y, 0x300/screen-height=768

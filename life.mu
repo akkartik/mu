@@ -211,7 +211,7 @@ fn render grid: (addr array boolean) {
   }
 }
 
-fn main {
+fn main screen: (addr screen), keyboard: (addr keyboard) {
 #?   # allocate on the stack
 #?   var grid1-storage: (array boolean 0xc000)  # width * height
 #?   var grid1/esi: (addr array boolean) <- address grid1-storage
@@ -237,7 +237,7 @@ fn main {
   # render grid1
   render grid1
   {
-    var key/eax: byte <- read-key 0/keyboard
+    var key/eax: byte <- read-key keyboard
     compare key, 0
 #?     loop-if-=  # press key to step
     break-if-!=  # press key to quit  # comment this out to run under bochs; I'm not sure why there's a newline in the keyboard buffer
