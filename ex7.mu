@@ -10,7 +10,7 @@
 # Expected output: an interactive game a bit like "snakes". Try pressing h, j,
 # k, l.
 
-fn main screen: (addr screen), keyboard: (addr keyboard) {
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var space/eax: grapheme <- copy 0x20
   set-cursor-position screen, 0, 0
   {

@@ -9,6 +9,6 @@
 #
 # Expected output: letter 'A' in green near the top-left corner of screen
 
-fn main screen: (addr screen), keyboard: (addr keyboard) {
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   draw-code-point screen, 0x41/A, 2/row, 1/col, 0xa/fg, 0/bg
 }

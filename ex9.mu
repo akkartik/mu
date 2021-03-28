@@ -15,17 +15,17 @@
 #   6. Notice that the data disk now contains the word count of the original text.
 #       xxd data.img |head
 
-fn main screen: (addr screen), keyboard: (addr keyboard) {
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var text-storage: (stream byte 0x200)
   var text/esi: (addr stream byte) <- address text-storage
-  load-first-sector-from-primary-bus-secondary-drive text
+  load-sector data-disk, 0/lba, text
 
   var word-count/eax: int <- word-count text
 
   var result-storage: (stream byte 0x10)
   var result/edi: (addr stream byte) <- address result-storage
   write-int32-decimal result, word-count
-  store-first-sector-to-primary-bus-secondary-drive result
+  store-sector data-disk, 0/lba, result
 }
 
 fn word-count in: (addr stream byte) -> _/eax: int {

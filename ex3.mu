@@ -11,7 +11,7 @@
 # Expected output: a new green pixel starting from the top left corner of the
 # screen every time you press a key (letter or digit)
 
-fn main screen: (addr screen), keyboard: (addr keyboard) {
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var x/ecx: int <- copy 0
   var y/edx: int <- copy 0
   {

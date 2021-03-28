@@ -9,7 +9,7 @@
 #
 # Expected output: a box and text that doesn't overflow it
 
-fn main screen: (addr screen), keyboard: (addr keyboard) {
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   # drawing text within a bounding box
   draw-box-on-real-screen 0xf, 0x1f, 0x79, 0x51, 0x4
   var x/eax: int <- copy 0x20

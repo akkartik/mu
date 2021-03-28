@@ -15,7 +15,7 @@
 #
 # Error handling is non-existent. This is just a prototype.
 
-fn main screen: (addr screen), keyboard: (addr keyboard) {
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var in-storage: (stream byte 0x80)
   var in/esi: (addr stream byte) <- address in-storage
   var y/ecx: int <- copy 0

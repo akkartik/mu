@@ -211,7 +211,7 @@ fn render grid: (addr array boolean) {
   }
 }
 
-fn main screen: (addr screen), keyboard: (addr keyboard) {
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
 #?   # allocate on the stack
 #?   var grid1-storage: (array boolean 0xc000)  # width * height
 #?   var grid1/esi: (addr array boolean) <- address grid1-storage

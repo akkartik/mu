@@ -117,15 +117,16 @@ It takes an array of strings and returns a status code to Linux in register
 Without an OS, the signature looks like this:
 
 ```
-fn main screen: (addr screen), keyboard: (addr keyboard)
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 ```
 
 A screen and keyboard are explicitly passed in. The goal is for all hardware
 dependencies to always be explicit. However there are currently gaps:
   * The mouse is accessed implicitly
-  * The disk is accessed implicitly
   * The screen argument only supports text-mode graphics. Pixel graphics rely
     on implicit access to the screen.
+  * The Mu computer has two disks, and the disk containing Mu code is not
+    accessible.
 
 ## Blocks
 

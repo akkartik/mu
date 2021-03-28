@@ -11,7 +11,7 @@
 #   Values between -256 and +255 as you move the mouse over the window.
 #   You might need to click on the window once.
 
-fn main screen: (addr screen), keyboard: (addr keyboard) {
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   # repeatedly print out mouse driver results if non-zero
   $main:event-loop: {
     var dx/eax: int <- copy 0
