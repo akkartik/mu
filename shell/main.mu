@@ -1,11 +1,11 @@
 # Experimental Mu shell
 # A Lisp with indent-sensitivity and infix, no macros. Commas are ignored.
 
-fn main screen: (addr screen), keyboard: (addr keyboard) {
+fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
-  load-sandbox-from-secondary-disk sandbox
+  load-sandbox data-disk, sandbox
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
@@ -22,13 +22,13 @@ fn main screen: (addr screen), keyboard: (addr keyboard) {
   }
 }
 
-# Read a null-terminated sequence of keys from secondary disk and load them
-# into sandbox.
-fn load-sandbox-from-secondary-disk _self: (addr sandbox) {
+# Read a null-terminated sequence of keys from disk and load them into
+# sandbox.
+fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
   var self/esi: (addr sandbox) <- copy _self
   var s-storage: (stream byte 0x200)
   var s/ebx: (addr stream byte) <- address s-storage
-  load-first-sector-from-primary-bus-secondary-drive s
+  load-sector data-disk, 0/lba, s
   {
     var done?/eax: boolean <- stream-empty? s
     compare done?, 0/false
