@@ -1,4 +1,4 @@
-# Demo of mouse, showing deltas in x and y position for every event.
+# Demo of mouse support.
 #
 # To build a disk image:
 #   ./translate ex10.mu            # emits disk.img

@@ -1,4 +1,4 @@
-# Demo of floating-point
+# Demo of floating-point support.
 #
 # To build a disk image:
 #   ./translate ex8.mu             # emits disk.img
