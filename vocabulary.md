@@ -133,8 +133,10 @@ The most useful functions from 400.mu and later .mu files. Look for definitions
 
 #### printing to screen
 
-All screen primitives require a screen object, which can be either the real
-screen on the computer or a fake screen for tests.
+`pixel-on-real-screen` draws a single pixel in one of 256 colors.
+
+All text-mode screen primitives require a screen object, which can be either
+the real screen on the computer or a fake screen for tests.
 
 The real screen on the Mu computer can currently display only ASCII characters,
 though it's easy to import more of the font. There is only one font. All
@@ -223,3 +225,23 @@ Assertions for tests:
   where expected string does not contain spaces. Never compares the character
   at any screen location.
 - `check-background-color-in-screen-row-from`
+
+#### events
+
+`read-key` reads a single key from the keyboard and returns it if it exists.
+Returns 0 if no key has been pressed.
+
+`read-mouse-event` returns a recent change in x and y coordinate.
+
+Mu doesn't currently support interrupt-based mouse events.
+
+#### persistent storage
+
+`load-sector` synchronously reads a single _sector_ from a _disk_ of persistent
+storage. The disk must follow the ATA specification with a 28-bit sector
+address. Each sector is 512 bytes. Therefore, Mu currently supports ATA hard
+disks of up to 128GB capacity.
+
+Similarly, `store-sector` synchronously writes a single sector to disk.
+
+Mu doesn't currently support asynchronous transfers to or from a disk.
