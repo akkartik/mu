@@ -873,15 +873,6 @@ load-sector:  # disk: (addr disk), lba: int, out: (addr stream byte)
   # var data-port/edx = disk->data-port
   8b/-> *(ebp+8) 0/r32/eax
   8b/-> *(eax+0x24) 2/r32/edx
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "A: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   # emit results
   31/xor %eax 0/r32/eax
   b9/copy-to-ecx 0x200/imm32  # 512 bytes per sector
@@ -1006,15 +997,6 @@ drive-exists?:  # disk: (addr disk) -> _/eax: boolean
   {
     31/xor %eax 0/r32/eax
     ba/copy-to-edx 0x1f7/imm32
-    {
-      50/push-eax
-      51/push-ecx
-      (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "B: " 7 0)
-      (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-      (move-cursor-to-left-margin-of-next-line 0)
-      59/pop-to-ecx
-      58/pop-to-eax
-    }
     ec/read-port-dx-into-al
     3d/compare-eax-and 0xff/imm32
     # if eax is 0xff, primary bus has no drives
@@ -1032,15 +1014,6 @@ drive-exists?:  # disk: (addr disk) -> _/eax: boolean
   # read status port
   # TODO: might need to spin here for 400ns: https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&oldid=25664#400ns_delays
   31/xor %eax 0/r32/eax
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "C: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   ec/read-port-dx-into-al
   # if eax is 0, drive does not exist
   3d/compare-eax-and 0/imm32
@@ -1058,16 +1031,6 @@ $drive-exists?:complete-identify:
   8b/-> *(eax+0x24) 2/r32/edx  # 0x24 = data-port offset
   # clear FIFO from the drive
   b9/copy-to-ecx 0x200/imm32
-  {
-      50/push-eax
-      51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "D: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-      59/pop-to-ecx
-      58/pop-to-eax
-  }
   {
     81 7/subop/compare %ecx 0/imm32
     74/jump-if-= break/disp8
@@ -1106,23 +1069,6 @@ ata-drive-select:  # disk: (addr disk), lba: int
   09/or= %eax 2/r32/edx
   # var drive-and-head-port/edx: int
   8b/-> *(esi+0x10) 2/r32/edx  # 0x10 = drive-and-head-port offset
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "E: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 7 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   ee/write-al-into-port-dx
 $ata-drive-select:end:
   # . restore registers
@@ -1146,23 +1092,6 @@ clear-ata-error:  # disk: (addr disk)
   8b/-> *(eax+0xc) 2/r32/edx  # 0xc = error-port offset
   #
   b8/copy-to-eax 0/imm32
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "F: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 7 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   ee/write-al-into-port-dx
 $ata-error:end:
   # . restore registers
@@ -1185,23 +1114,6 @@ ata-sector-count:  # disk: (addr disk), n: byte
   8b/-> *(eax+0x14) 2/r32/edx  # 0x14 = sector-count-port offset
   #
   8b/-> *(ebp+0xc) 0/r32/eax
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "G: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 7 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   ee/write-al-into-port-dx
 $ata-sector-count:end:
   # . restore registers
@@ -1225,55 +1137,14 @@ ata-lba:  # disk: (addr disk), lba: int
   # eax = lba
   8b/-> *(ebp+0xc) 0/r32/eax
   # lo
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "H: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 7 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   ee/write-al-into-port-dx
   # mid
   42/increment-dx  # lba-mid-port
   c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
-  {
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "I: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-  }
   ee/write-al-into-port-dx
   # hi
   42/increment-dx  # lba-high-port
   c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "J: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 7 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   ee/write-al-into-port-dx
 $ata-lba:end:
   # . restore registers
@@ -1296,23 +1167,6 @@ ata-command:  # disk: (addr disk), cmd: byte
   8b/-> *(eax+0) 2/r32/edx  # 0 = command-port offset
   #
   8b/-> *(ebp+0xc) 0/r32/eax
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "K: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 7 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   ee/write-al-into-port-dx
 $ata-command:end:
   # . restore registers
@@ -1330,15 +1184,6 @@ while-ata-busy:  # disk: (addr disk)
   # var status-port/edx = disk->status-port
   8b/-> *(ebp+8) 0/r32/eax
   8b/-> *(eax+4) 2/r32/edx  # 4 = status-port offset
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "L: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   {
     ec/read-port-dx-into-al
     a8/test-bits-in-al 0x80/imm8/bsy  # set zf if bit 7 (most significant) is not set
@@ -1358,15 +1203,6 @@ until-ata-data-available:  # disk: (addr disk)
   # var status-port/edx = disk->status-port
   8b/-> *(ebp+8) 0/r32/eax
   8b/-> *(eax+4) 2/r32/edx  # 4 = status-port offset
-  {
-    50/push-eax
-    51/push-ecx
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "M: " 7 0)
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
-    (move-cursor-to-left-margin-of-next-line 0)
-    59/pop-to-ecx
-    58/pop-to-eax
-  }
   {
     ec/read-port-dx-into-al
     a8/test-bits-in-al 8/imm8/drq  # set zf if bit 3 is not set
@@ -1472,15 +1308,11 @@ any-mouse-event?:  # -> _/eax: boolean
   c3/return
 
 initialize-mouse:
-  (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "A" 7 0)
   (enable-keyboard-controller-aux-device)
-  (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "B" 7 0)
   # tell mouse to use default settings
   (send-mouse-command 0xf6)
-  (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "P" 7 0)
   # enable mouse
   (send-mouse-command 0xf4)
-  (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "Z" 7 0)
   c3/return
 
 enable-keyboard-controller-aux-device:
@@ -1506,7 +1338,6 @@ wait-for-ack-from-mouse:
   50/push-eax
   {
     (read-keyboard-controller-data)  # => eax
-    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)  # screen n fg bg
     81 7/subop/compare %eax 0xfa/imm32
     75/jump-if-!= loop/disp8
   }
