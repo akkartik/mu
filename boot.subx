@@ -211,8 +211,8 @@ initialize_32bit_mode:
   # Reference:
   #   https://wiki.osdev.org/Exceptions
 
-  # enable keyboard IRQ (1)
-  b0/copy-to-al 0xfd/imm8  # disable mask for IRQ1
+  # enable timer IRQ0 and keyboard IRQ1
+  b0/copy-to-al 0xfc/imm8  # disable mask for IRQ0 and IRQ1
   e6/write-al-into-port 0x21/imm8
 
   fb/enable-interrupts
@@ -300,6 +300,21 @@ idt_start:
 == code
 
 null-interrupt-handler:
+  # prologue
+  # Don't disable interrupts; the timer has the highest priority anyway,
+  # and this interrupt triggers extremely frequently.
+  fa/disable-interrupts
+  60/push-all-registers
+  9c/push-flags
+  # acknowledge interrupt
+  b0/copy-to-al 0x20/imm8
+  e6/write-al-into-port 0x20/imm8
+  31/xor %eax 0/r32/eax
+$null-interrupt-handler:epilogue:
+  # epilogue
+  9d/pop-flags
+  61/pop-all-registers
+  fb/enable-interrupts
   cf/return-from-interrupt
 
 keyboard-interrupt-handler:
