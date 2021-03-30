@@ -27,7 +27,7 @@ $ ./a.elf type
 This is just a prototype. There are no tests.
 
 To add a new primitive you'll need to hard-code it into the `evaluate`
-function (apps/tile/rpn.mu).
+function (linux/tile/rpn.mu).
 
 There's also a second place you'll want to teach about predefined primitives:
-`bound-function?` (apps/tile/environment.mu)
+`bound-function?` (linux/tile/environment.mu)

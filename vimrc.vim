@@ -27,32 +27,6 @@ augroup LocalVimrc
   autocmd BufRead,BufNewFile *.subx set ft=subx
 augroup END
 
-" Scenarios considered:
-"   opening or starting vim with a new or existing file without an extension (should interpret as C++)
-"   opening or starting vim with a new or existing file with a .mu extension
-"   starting vim or opening a buffer without a file name (ok to do nothing)
-"   opening a second file in a new or existing window (shouldn't mess up existing highlighting)
-"   reloading an existing file (shouldn't mess up existing highlighting)
-
-command! -nargs=1 E call EditMuFile("edit", <f-args>)
-if exists("&splitvertical")
-  command! -nargs=1 S call EditMuFile("vert split", <f-args>)
-  command! -nargs=1 H call EditMuFile("hor split", <f-args>)
-else
-  command! -nargs=1 S call EditMuFile("vert split", <f-args>)
-  command! -nargs=1 H call EditMuFile("split", <f-args>)
-endif
-
-function! EditMuFile(cmd, arg)
-  let l:full_path = "apps/" . a:arg
-  if filereadable(l:full_path . ".mu")
-    let l:full_path = l:full_path . ".mu"
-  else
-    let l:full_path = l:full_path . ".subx"
-  endif
-  exec "silent! " . a:cmd . " " . l:full_path
-endfunction
-
 " we often want to crib lines of machine code from other files
 function! GrepSubX(regex)
   " https://github.com/mtth/scratch.vim

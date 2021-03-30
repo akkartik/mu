@@ -1,6 +1,6 @@
 ## SubX
 
-SubX is a notation for a subset of x86 machine code. [The Mu translator](http://akkartik.github.io/mu/html/apps/mu.subx.html)
+SubX is a notation for a subset of x86 machine code. [The Mu translator](http://akkartik.github.io/mu/html/linux/mu.subx.html)
 is implemented in SubX and also emits SubX code.
 
 Here's an example program in SubX that adds 1 and 1 and returns the result to
@@ -158,8 +158,8 @@ string literal surrounded by quotes (`"`) in an `imm32` argument. SubX will
 transparently copy it to the `data` segment and replace it with its address.
 Strings are the only place where a SubX word is allowed to contain spaces.
 
-That should be enough information for writing SubX programs. The `apps/`
-directory provides some fodder for practice in the `apps/ex*.subx` files,
+That should be enough information for writing SubX programs. The `linux/`
+directory provides some fodder for practice in the `linux/ex*.subx` files,
 giving a more gradual introduction to SubX features. In particular, you should
-work through `apps/factorial4.subx`, which demonstrates all the above ideas in
+work through `linux/factorial4.subx`, which demonstrates all the above ideas in
 concert.

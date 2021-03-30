@@ -14,7 +14,7 @@
 # There's only one test in this file, but you'll also see tests running from
 # Mu's standard library.
 #
-# Compare apps/factorial4.subx
+# Compare factorial4.subx
 
 fn factorial n: int -> _/eax: int {
   compare n, 1

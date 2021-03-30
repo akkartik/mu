@@ -79,7 +79,7 @@ and digest it:
 
 Here's an example showing these arguments at work:
 
-<img alt='apps/ex3.subx' src='html/ex3.png'>
+<img alt='linux/ex3.subx' src='html/ex3.png'>
 
 This program sums the first 10 natural numbers. By convention I use horizontal
 tabstops to help read instructions, dots to help follow the long lines,
@@ -151,7 +151,8 @@ $ echo $?
 42
 
 # or, automating the above steps
-$ ./translate_subx init.linux apps/ex1.subx
+$ cd linux
+$ ./translate_subx 000init.linux ex1.subx
 $ ./a.elf
 $ echo $?
 42
@@ -160,7 +161,7 @@ $ echo $?
 Or, running in a VM on other platforms (much slower):
 
 ```sh
-$ ./translate_subx_emulated init.linux apps/ex1.subx  # generates identical a.elf to above
+$ ./translate_subx_emulated init.linux linux/ex1.subx  # generates identical a.elf to above
 $ bootstrap/bootstrap run a.elf
 $ echo $?
 42

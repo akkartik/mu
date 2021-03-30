@@ -27,7 +27,7 @@ put_new(Help, "syntax",
   "after a '/', but they can never contain whitespace. Metadata has no effect\n"
   "at runtime, but can be handy when rewriting macros.\n"
   "\n"
-  "Check out the example programs in the apps/ directory, particularly apps/ex*.\n"
+  "Check out the example programs linux/ex*.\n"
 );
 :(before "End Help Contents")
 cerr << "  syntax\n";
