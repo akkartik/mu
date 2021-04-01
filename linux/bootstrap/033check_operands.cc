@@ -145,6 +145,10 @@ void init_permitted_arguments() {
   put(Permitted_arguments, "99", 0x00);
   // return
   put(Permitted_arguments, "c3", 0x00);
+  // enable/disable interrupts
+  // not really part of SubX; just needed in low-level boot.subx
+  put(Permitted_arguments, "fa", 0x00);
+  put(Permitted_arguments, "fb", 0x00);
 
   //// Class B: just op and disp8
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm

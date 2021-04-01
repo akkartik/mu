@@ -1,0 +1,22 @@
+#!/bin/sh
+# Hackily check for certain kinds of errors.
+#
+# We still rely exclusively on linux/bootstrap/bootstrap for some static
+# checks on bare SubX code that aren't implemented yet in the self-hosted
+# translator phases.
+#
+# However, boot.subx uses instructions that bootstrap doesn't recognize. So we
+# won't check it.
+
+set -e
+
+cat $* [0-9]*.mu                                      |linux/mu      > a.subx
+
+cat misc_checks.subx mu-init.subx [0-9]*.subx a.subx  |linux/braces  > a.braces
+cat a.braces                                          |linux/calls   > a.calls
+cat a.calls                                           |linux/sigils  > a.sigils
+
+CXXFLAGS=-g linux/bootstrap/bootstrap --debug translate a.sigils -o a.elf
+# Translation will never succeed,
+# but if we get to "missing reference to global" errors, they're expected and
+# we've gotten to the end of what bootstrap can check for us.
