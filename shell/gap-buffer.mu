@@ -1,4 +1,4 @@
-# primitive for editing a single word
+# primitive for editing text
 
 type gap-buffer {
   left: grapheme-stack
