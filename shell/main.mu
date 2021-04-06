@@ -2,6 +2,9 @@
 # A Lisp with indent-sensitivity and infix, no macros.
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
+  var globals-storage: global-table
+  var globals/edi: (addr global-table) <- address globals-storage
+  initialize-globals globals
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
@@ -16,7 +19,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       compare key, 0
       loop-if-=
       # no way to quit right now; just reboot
-      edit-sandbox sandbox, key, screen, keyboard, data-disk
+      edit-sandbox sandbox, key, globals, screen, keyboard, data-disk
     }
     loop
   }
@@ -36,7 +39,7 @@ fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
     var key/eax: byte <- read-byte s
     compare key, 0/null
     break-if-=
-    edit-sandbox self, key, 0/no-screen, 0/no-keyboard, 0/no-disk
+    edit-sandbox self, key, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
     loop
   }
 }

@@ -100,7 +100,7 @@ fn render-sandbox-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " move to trace  ", width, 7/fg, 0/bg
 }
 
-fn edit-sandbox _self: (addr sandbox), key: byte, real-screen: (addr screen), real-keyboard: (addr keyboard), data-disk: (addr disk) {
+fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), real-screen: (addr screen), real-keyboard: (addr keyboard), data-disk: (addr disk) {
   var self/esi: (addr sandbox) <- copy _self
   var g/edx: grapheme <- copy key
   # ctrl-r
@@ -135,7 +135,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, real-screen: (addr screen), re
     var trace-ah/eax: (addr handle trace) <- get self, trace
     var trace/eax: (addr trace) <- lookup *trace-ah
     clear-trace trace
-    run data, value, trace
+    run data, value, globals, trace
     return
   }
   # tab
@@ -170,7 +170,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, real-screen: (addr screen), re
   return
 }
 
-fn run in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace) {
   var read-result-storage: (handle cell)
   var read-result/esi: (addr handle cell) <- address read-result-storage
   read-cell in, read-result, trace
@@ -185,7 +185,7 @@ fn run in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
   allocate-pair nil-ah
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
-  evaluate read-result, eval-result, *nil-ah, trace
+  evaluate read-result, eval-result, *nil-ah, globals, trace
   var error?/eax: boolean <- has-errors? trace
   {
     compare error?, 0/false
@@ -202,9 +202,9 @@ fn test-run-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
   # type "1"
-  edit-sandbox sandbox, 0x31/1, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -221,12 +221,12 @@ fn test-run-with-spaces {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
   # type input with whitespace before and after
-  edit-sandbox sandbox, 0x20/space, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x31/1, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0xa/newline, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -244,10 +244,10 @@ fn test-run-error-invalid-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
   # type "1a"
-  edit-sandbox sandbox, 0x31/1, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x61/a, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -264,10 +264,10 @@ fn test-run-move-cursor-into-trace {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
   # type "12"
-  edit-sandbox sandbox, 0x31/1, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x32/2, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x32/2, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -281,7 +281,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/pre-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/pre-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 9/tab, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/trace-0"
@@ -291,7 +291,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/trace-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/trace-2/cursor"
   # move cursor into input
-  edit-sandbox sandbox, 9/tab, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/input-0"
