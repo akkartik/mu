@@ -2,6 +2,12 @@
 # we never modify `in` or `env`
 fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace) {
   var in/esi: (addr handle cell) <- copy _in
+#?   dump-cell in
+#?   {
+#?     var foo/eax: byte <- read-key 0/keyboard
+#?     compare foo, 0
+#?     loop-if-=
+#?   }
   # trace "evaluate " in " in environment " env {{{
   {
     var stream-storage: (stream byte 0x40)
@@ -57,6 +63,28 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     #
     trace-text trace, "eval", "anonymous function"
     copy-object _in, out
+    trace-higher trace
+    return
+  }
+  # builtins with "special" evaluation rules
+  $evaluate:quote: {
+    # trees starting with single quote create literals
+    var expr/esi: (addr cell) <- copy in-addr
+    # if its first elem is not "'", break
+    var first-ah/ecx: (addr handle cell) <- get in-addr, left
+    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first/eax: (addr cell) <- lookup *first-ah
+    var first-type/ecx: (addr int) <- get first, type
+    compare *first-type, 2/symbol
+    break-if-!=
+    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
+    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
+    var quote?/eax: boolean <- stream-data-equal? sym-data, "'"
+    compare quote?, 0/false
+    break-if-=
+    #
+    trace-text trace, "eval", "quote"
+    copy-object rest-ah, out
     trace-higher trace
     return
   }

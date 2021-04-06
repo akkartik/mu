@@ -37,6 +37,20 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
   }
   read-from-stream tokens, curr-token
   $parse-sexpression:type-check: {
+    # single quote -> parse as list with a special car
+    var quote-token?/eax: boolean <- quote-token? curr-token
+    compare quote-token?, 0/false
+    {
+      break-if-=
+      var out/edi: (addr handle cell) <- copy _out
+      allocate-pair out
+      var out-addr/eax: (addr cell) <- lookup *out
+      var left-ah/ecx: (addr handle cell) <- get out-addr, left
+      new-symbol left-ah, "'"
+      var right-ah/ecx: (addr handle cell) <- get out-addr, right
+      var result/eax: boolean <- parse-sexpression tokens, right-ah, trace
+      return result
+    }
     # not bracket -> parse atom
     var bracket-token?/eax: boolean <- bracket-token? curr-token
     compare bracket-token?, 0/false

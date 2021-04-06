@@ -540,6 +540,20 @@ fn bracket-token? _in: (addr cell) -> _/eax: boolean {
   return result
 }
 
+fn quote-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  rewind-stream in-data
+  var g/eax: grapheme <- read-grapheme in-data
+  compare g, 0x27/single-quote
+  {
+    break-if-!=
+    return 1/true
+  }
+  return 0/false
+}
+
 fn open-paren-token? _in: (addr cell) -> _/eax: boolean {
   var in/eax: (addr cell) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data

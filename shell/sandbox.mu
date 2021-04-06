@@ -239,6 +239,26 @@ fn test-run-with-spaces {
   check-screen-row screen, 3/y, "=> 1 ", "F - test-run-with-spaces/3"
 }
 
+fn test-run-quote {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox
+  # type "'a"
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  check-screen-row screen, 0/y, "'a   ", "F - test-run-quote/0"
+  check-screen-row screen, 1/y, "...  ", "F - test-run-quote/1"
+  check-screen-row screen, 2/y, "=> a ", "F - test-run-quote/2"
+}
+
 fn test-run-error-invalid-integer {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
