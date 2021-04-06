@@ -1,5 +1,5 @@
 # Experimental Mu shell
-# A Lisp with indent-sensitivity and infix, no macros. Commas are ignored.
+# A Lisp with indent-sensitivity and infix, no macros.
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var sandbox-storage: sandbox
