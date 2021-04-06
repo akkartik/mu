@@ -33,6 +33,47 @@ fn append-primitive _self: (addr global-table), name: (addr array byte) {
   new-primitive-function curr-value-ah, curr-index
 }
 
+fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace) {
+  var sym/eax: (addr cell) <- copy _sym
+  var sym-data-ah/eax: (addr handle stream byte) <- get sym, text-data
+  var _sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
+  var sym-data/edx: (addr stream byte) <- copy _sym-data
+  var globals/esi: (addr global-table) <- copy _globals
+  {
+    compare globals, 0
+    break-if-=
+    var global-data-ah/eax: (addr handle array global) <- get globals, data
+    var global-data/eax: (addr array global) <- lookup *global-data-ah
+    var final-index/ecx: (addr int) <- get globals, final-index
+    var curr-index/ecx: int <- copy *final-index
+    {
+      compare curr-index, 0
+      break-if-<
+      var curr-offset/ebx: (offset global) <- compute-offset global-data, curr-index
+      var curr/ebx: (addr global) <- index global-data, curr-offset
+      var curr-name-ah/eax: (addr handle array byte) <- get curr, name
+      var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
+      var found?/eax: boolean <- stream-data-equal? sym-data, curr-name
+      {
+        compare found?, 0/false
+        break-if-=
+        var curr-value/eax: (addr handle cell) <- get curr, value
+        copy-object curr-value, out
+        return
+      }
+      curr-index <- decrement
+      loop
+    }
+  }
+  # otherwise error "unbound symbol: ", sym
+  var stream-storage: (stream byte 0x40)
+  var stream/ecx: (addr stream byte) <- address stream-storage
+  write stream, "unbound symbol: "
+  rewind-stream sym-data
+  write-stream stream, sym-data
+  trace trace, "error", stream
+}
+
 # a little strange; goes from value to name and selects primitive based on name
 fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), _globals: (addr global-table), trace: (addr trace) {
   var f/esi: (addr cell) <- copy _f

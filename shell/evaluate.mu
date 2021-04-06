@@ -40,7 +40,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   {
     break-if-!=
     trace-text trace, "eval", "symbol"
-    lookup-symbol in-addr, out, env-h, trace
+    lookup-symbol in-addr, out, env-h, globals, trace
     trace-higher trace
     return
   }
@@ -258,7 +258,7 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   trace-higher trace
 }
 
-fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace) {
   # trace sym
   {
     var stream-storage: (stream byte 0x40)
@@ -291,7 +291,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     var env-nil?/eax: boolean <- nil? env
     compare env-nil?, 0/false
     break-if-=
-    lookup-symbol-in-hardcoded-globals sym, out, trace
+    lookup-symbol-in-globals sym, out, globals, trace
     trace-higher trace
     # trace "=> " out " (global)" {{{
     {
@@ -363,7 +363,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   var env-tail-storage: (handle cell)
   var env-tail-ah/eax: (addr handle cell) <- address env-tail-storage
   cdr env, env-tail-ah, trace
-  lookup-symbol sym, out, *env-tail-ah, trace
+  lookup-symbol sym, out, *env-tail-ah, globals, trace
   trace-higher trace
     # trace "=> " out " (recurse)" {{{
     {
@@ -378,28 +378,6 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       trace trace, "eval", stream
     }
     # }}}
-}
-
-fn lookup-symbol-in-hardcoded-globals _sym: (addr cell), out: (addr handle cell), trace: (addr trace) {
-  var sym/eax: (addr cell) <- copy _sym
-  var sym-data-ah/eax: (addr handle stream byte) <- get sym, text-data
-  var _sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
-  var sym-data/esi: (addr stream byte) <- copy _sym-data
-  {
-    var add?/eax: boolean <- stream-data-equal? sym-data, "+"
-    compare add?, 0/false
-    break-if-=
-    new-primitive-function out, 1/add
-    trace-text trace, "eval", "global +"
-    return
-  }
-  # otherwise error "unbound symbol: ", sym
-  var stream-storage: (stream byte 0x40)
-  var stream/ecx: (addr stream byte) <- address stream-storage
-  write stream, "unbound symbol: "
-  rewind-stream sym-data
-  write-stream stream, sym-data
-  trace trace, "error", stream
 }
 
 fn test-lookup-symbol-in-env {
@@ -423,7 +401,7 @@ fn test-lookup-symbol-in-env {
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "a"
   var in/eax: (addr cell) <- lookup *tmp-ah
-  lookup-symbol in, tmp-ah, *env-ah, 0/no-trace
+  lookup-symbol in, tmp-ah, *env-ah, 0/no-globals, 0/no-trace
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 1/number, "F - test-lookup-symbol-in-env/0"
@@ -432,7 +410,10 @@ fn test-lookup-symbol-in-env {
   check-ints-equal result-value, 3, "F - test-lookup-symbol-in-env/1"
 }
 
-fn test-lookup-symbol-in-hardcoded-globals {
+fn test-lookup-symbol-in-globals {
+  var globals-storage: global-table
+  var globals/edi: (addr global-table) <- address globals-storage
+  initialize-globals globals
   # env = nil
   var nil-storage: (handle cell)
   var nil-ah/ecx: (addr handle cell) <- address nil-storage
@@ -442,12 +423,12 @@ fn test-lookup-symbol-in-hardcoded-globals {
   var tmp-ah/ebx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "+"
   var in/eax: (addr cell) <- lookup *tmp-ah
-  lookup-symbol in, tmp-ah, *nil-ah, 0/no-trace
+  lookup-symbol in, tmp-ah, *nil-ah, globals, 0/no-trace
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
-  check-ints-equal *result-type, 4/primitive-function, "F - test-lookup-symbol-in-hardcoded-globals/0"
+  check-ints-equal *result-type, 4/primitive-function, "F - test-lookup-symbol-in-globals/0"
   var result-value/eax: (addr int) <- get result, index-data
-  check-ints-equal *result-value, 1/add, "F - test-lookup-symbol-in-hardcoded-globals/1"
+  check-ints-equal *result-value, 1/add, "F - test-lookup-symbol-in-globals/1"
 }
 
 fn car _in: (addr cell), out: (addr handle cell), trace: (addr trace) {
