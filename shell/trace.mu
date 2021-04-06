@@ -690,9 +690,23 @@ fn edit-trace _self: (addr trace), key: grapheme {
     increment *cursor-y
     return
   }
+  {
+    compare key, 0x81/down-arrow
+    break-if-!=
+    var cursor-y/eax: (addr int) <- get self, cursor-y
+    increment *cursor-y
+    return
+  }
   # cursor up
   {
     compare key, 0x6b/k
+    break-if-!=
+    var cursor-y/eax: (addr int) <- get self, cursor-y
+    decrement *cursor-y
+    return
+  }
+  {
+    compare key, 0x82/up-arrow
     break-if-!=
     var cursor-y/eax: (addr int) <- get self, cursor-y
     decrement *cursor-y

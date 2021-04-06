@@ -759,6 +759,18 @@ fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
     delete-before-gap self
     return
   }
+  {
+    compare g, 0x80/left-arrow
+    break-if-!=
+    var dummy/eax: grapheme <- gap-left self
+    return
+  }
+  {
+    compare g, 0x83/right-arrow
+    break-if-!=
+    var dummy/eax: grapheme <- gap-right self
+    return
+  }
   # default: insert character
   add-grapheme-at-gap self, g
 }
