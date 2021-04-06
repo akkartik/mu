@@ -16,7 +16,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       compare key, 0
       loop-if-=
       # no way to quit right now; just reboot
-      edit-sandbox sandbox, key
+      edit-sandbox sandbox, key, screen, keyboard, data-disk
     }
     loop
   }
@@ -36,7 +36,7 @@ fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
     var key/eax: byte <- read-byte s
     compare key, 0/null
     break-if-=
-    edit-sandbox self, key
+    edit-sandbox self, key, 0/no-screen, 0/no-keyboard, 0/no-disk
     loop
   }
 }
