@@ -37,6 +37,21 @@ fn append-primitive _self: (addr global-table), name: (addr array byte) {
   new-primitive-function curr-value-ah, curr-index
 }
 
+fn append-global _self: (addr global-table), name: (addr array byte), value: (handle cell) {
+  var self/esi: (addr global-table) <- copy _self
+  var final-index-addr/ecx: (addr int) <- get self, final-index
+  increment *final-index-addr
+  var curr-index/ecx: int <- copy *final-index-addr
+  var data-ah/eax: (addr handle array global) <- get self, data
+  var data/eax: (addr array global) <- lookup *data-ah
+  var curr-offset/esi: (offset global) <- compute-offset data, curr-index
+  var curr/esi: (addr global) <- index data, curr-offset
+  var curr-name-ah/eax: (addr handle array byte) <- get curr, name
+  copy-array-object name, curr-name-ah
+  var curr-value-ah/eax: (addr handle cell) <- get curr, value
+  copy-handle value, curr-value-ah
+}
+
 fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace) {
   var sym/eax: (addr cell) <- copy _sym
   var sym-data-ah/eax: (addr handle stream byte) <- get sym, text-data

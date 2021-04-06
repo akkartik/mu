@@ -88,6 +88,53 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace-higher trace
     return
   }
+  $evaluate:set: {
+    # trees starting with "set" define globals
+    var expr/esi: (addr cell) <- copy in-addr
+    # if its first elem is not "set", break
+    var first-ah/ecx: (addr handle cell) <- get in-addr, left
+    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first/eax: (addr cell) <- lookup *first-ah
+    var first-type/ecx: (addr int) <- get first, type
+    compare *first-type, 2/symbol
+    break-if-!=
+    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
+    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
+    var set?/eax: boolean <- stream-data-equal? sym-data, "set"
+    compare set?, 0/false
+    break-if-=
+    #
+    trace-text trace, "eval", "set"
+    trace-text trace, "eval", "evaluating second arg"
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    var first-arg-ah/ecx: (addr handle cell) <- get rest, left
+    {
+      var first-arg/eax: (addr cell) <- lookup *first-arg-ah
+      var first-arg-type/eax: (addr int) <- get first-arg, type
+      compare *first-arg-type, 2/symbol
+      break-if-=
+      error trace, "first arg to set must be a symbol"
+      trace-higher trace
+      return
+    }
+    rest-ah <- get rest, right
+    rest <- lookup *rest-ah
+    var second-arg-ah/edx: (addr handle cell) <- get rest, left
+    evaluate second-arg-ah, out, env-h, globals, trace
+    trace-text trace, "eval", "saving global binding"
+    var first-arg/eax: (addr cell) <- lookup *first-arg-ah
+    var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
+    var first-arg-data/eax: (addr stream byte) <- lookup *first-arg-data-ah
+    var tmp-string: (handle array byte)
+    var tmp-ah/edx: (addr handle array byte) <- address tmp-string
+    rewind-stream first-arg-data
+    stream-to-array first-arg-data, tmp-ah
+    var first-arg-data-string/eax: (addr array byte) <- lookup *tmp-ah
+    var out2/edi: (addr handle cell) <- copy out
+    append-global globals, first-arg-data-string, *out2
+    trace-higher trace
+    return
+  }
   trace-text trace, "eval", "function call"
   trace-text trace, "eval", "evaluating list elements"
   var evaluated-list-storage: (handle cell)
