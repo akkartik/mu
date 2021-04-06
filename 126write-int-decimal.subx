@@ -43,24 +43,18 @@ write-int32-decimal:  # out: (addr stream byte), n: int
     51/push-ecx
     52/push-edx
     53/push-ebx
-    56/push-esi
     57/push-edi
-    be/copy-to-esi 3/imm32/x
     # const ten/ecx = 10
     b9/copy-to-ecx  0xa/imm32
     # push sentinel
     68/push  0/imm32/sentinel
     # var eax: int = abs(n)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
-    (draw-vertical-line-on-real-screen %eax 0x40 0x50 %eax)
-    81 0/subop/add %esi 3/imm32
     3d/compare-eax-with  0/imm32
     7d/jump-if->=  $write-int32-decimal:read-loop/disp8
 $write-int32-decimal:negative:
     f7          3/subop/negate      3/mod/direct    0/rm32/eax    .           .             .           .           .               .                 # negate eax
 $write-int32-decimal:read-loop:
-    (draw-vertical-line-on-real-screen %esi 0x80 0x90 %esi)
-    81 0/subop/add %esi 3/imm32
     # eax, edx = eax / 10, eax % 10
     99/sign-extend-eax-into-edx
     f7          7/subop/idiv        3/mod/direct    1/rm32/ecx    .           .             .           .           .               .                 # divide edx:eax by ecx, storing quotient in eax and remainder in edx
@@ -110,7 +104,6 @@ $write-int32-decimal:write-break:
 $write-int32-decimal:end:
     # . restore registers
     5f/pop-to-edi
-    5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx

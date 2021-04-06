@@ -105,15 +105,6 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
   return xcurr
 }
 
-fn draw-int32-decimal-rightward screen: (addr screen), n: int, x: int, xmax: int, y: int, color: int, background-color: int -> _/eax: int {
-  var stream-storage: (stream byte 0x100)
-  var stream/esi: (addr stream byte) <- address stream-storage
-  write-int32-decimal stream, n
-#?   write-int32-hex stream, n
-  var xcurr/eax: int <- draw-stream-rightward screen, stream, x, xmax, y, color, background-color
-  return xcurr
-}
-
 # draw a single-line stream from x, y to xmax
 # return the next 'x' coordinate
 # if there isn't enough space, truncate
@@ -253,9 +244,23 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
   write-int32-hex stream, n
-  var xcurr/eax: int <- copy x
+  var xcurr/edx: int <- copy x
   var ycurr/ecx: int <- copy y
-  xcurr, ycurr <- draw-stream-wrapping-right-then-down screen, stream, xmin, ymin, xmax, ymax, x, y, color, background-color
+  {
+    var g/eax: grapheme <- read-grapheme stream
+    compare g, 0xffffffff/end-of-file
+    break-if-=
+    draw-grapheme screen, g, xcurr, ycurr, color, background-color
+    xcurr <- increment
+    compare xcurr, xmax
+    {
+      break-if-<
+      xcurr <- copy xmin
+      ycurr <- increment
+    }
+    loop
+  }
+  set-cursor-position screen, xcurr, ycurr
   return xcurr, ycurr
 }
 
@@ -292,17 +297,24 @@ fn draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen screen: 
 fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var stream-storage: (stream byte 0x100)
   var stream/esi: (addr stream byte) <- address stream-storage
-#?   compare n, 0x48
-#?   {
-#?     break-if-!=
-#?     abort "aa"
-#?   }
   write-int32-decimal stream, n
-#?   write-int32-decimal stream, 0x48
-#?   write-int32-hex stream, n
-  var xcurr/eax: int <- copy 0
-  var ycurr/ecx: int <- copy 0
-  xcurr, ycurr <- draw-stream-wrapping-right-then-down screen, stream, xmin, ymin, xmax, ymax, x, y, color, background-color
+  var xcurr/edx: int <- copy x
+  var ycurr/ecx: int <- copy y
+  {
+    var g/eax: grapheme <- read-grapheme stream
+    compare g, 0xffffffff/end-of-file
+    break-if-=
+    draw-grapheme screen, g, xcurr, ycurr, color, background-color
+    xcurr <- increment
+    compare xcurr, xmax
+    {
+      break-if-<
+      xcurr <- copy xmin
+      ycurr <- increment
+    }
+    loop
+  }
+  set-cursor-position screen, xcurr, ycurr
   return xcurr, ycurr
 }
 
