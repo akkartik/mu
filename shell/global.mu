@@ -16,6 +16,10 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "-"
   append-primitive self, "*"
   append-primitive self, "/"
+  append-primitive self, "sqrt"
+  append-primitive self, "car"
+  append-primitive self, "cdr"
+  append-primitive self, "cons"
 }
 
 fn append-primitive _self: (addr global-table), name: (addr array byte) {
@@ -93,6 +97,55 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     apply-add args-ah, out, env-h, trace
     return
   }
+  {
+    var is-subtract?/eax: boolean <- string-equal? f-name, "-"
+    compare is-subtract?, 0/false
+    break-if-=
+    apply-subtract args-ah, out, env-h, trace
+    return
+  }
+  {
+    var is-multiply?/eax: boolean <- string-equal? f-name, "*"
+    compare is-multiply?, 0/false
+    break-if-=
+    apply-multiply args-ah, out, env-h, trace
+    return
+  }
+  {
+    var is-divide?/eax: boolean <- string-equal? f-name, "/"
+    compare is-divide?, 0/false
+    break-if-=
+    apply-divide args-ah, out, env-h, trace
+    return
+  }
+  {
+    var is-square-root?/eax: boolean <- string-equal? f-name, "sqrt"
+    compare is-square-root?, 0/false
+    break-if-=
+    apply-square-root args-ah, out, env-h, trace
+    return
+  }
+  {
+    var is-car?/eax: boolean <- string-equal? f-name, "car"
+    compare is-car?, 0/false
+    break-if-=
+    apply-car args-ah, out, env-h, trace
+    return
+  }
+  {
+    var is-cdr?/eax: boolean <- string-equal? f-name, "cdr"
+    compare is-cdr?, 0/false
+    break-if-=
+    apply-cdr args-ah, out, env-h, trace
+    return
+  }
+  {
+    var is-cons?/eax: boolean <- string-equal? f-name, "cons"
+    compare is-cons?, 0/false
+    break-if-=
+    apply-cons args-ah, out, env-h, trace
+    return
+  }
   abort "unknown primitive function"
 }
 
@@ -144,3 +197,257 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), env-h: (hand
   new-float out, result
 }
 
+fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply -"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "- needs 2 args but got 0"
+    return
+  }
+  # args->left->value
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for - is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  # args->right->left->value
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/eax: (addr handle cell) <- get right, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/edx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "second arg for - is not a number"
+    return
+  }
+  var second-value/edx: (addr float) <- get second, number-data
+  # subtract
+  var result/xmm0: float <- copy *first-value
+  result <- subtract *second-value
+  new-float out, result
+}
+
+fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply *"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "* needs 2 args but got 0"
+    return
+  }
+  # args->left->value
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for * is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  # args->right->left->value
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/eax: (addr handle cell) <- get right, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/edx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "second arg for * is not a number"
+    return
+  }
+  var second-value/edx: (addr float) <- get second, number-data
+  # multiply
+  var result/xmm0: float <- copy *first-value
+  result <- multiply *second-value
+  new-float out, result
+}
+
+fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply /"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "/ needs 2 args but got 0"
+    return
+  }
+  # args->left->value
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for / is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  # args->right->left->value
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/eax: (addr handle cell) <- get right, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/edx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "second arg for / is not a number"
+    return
+  }
+  var second-value/edx: (addr float) <- get second, number-data
+  # divide
+  var result/xmm0: float <- copy *first-value
+  result <- divide *second-value
+  new-float out, result
+}
+
+fn apply-square-root _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply sqrt"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "sqrt needs 1 args but got 0"
+    return
+  }
+  # args->left->value
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "arg for sqrt is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  # square-root
+  var result/xmm0: float <- square-root *first-value
+  new-float out, result
+}
+
+fn apply-car _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply car"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "car needs 1 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 0/pair
+  {
+    break-if-=
+    error trace, "arg for car is not a pair"
+    return
+  }
+  # car
+  var result/eax: (addr handle cell) <- get first, left
+  copy-object result, out
+}
+
+fn apply-cdr _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply cdr"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "cdr needs 1 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 0/pair
+  {
+    break-if-=
+    error trace, "arg for cdr is not a pair"
+    return
+  }
+  # cdr
+  var result/eax: (addr handle cell) <- get first, right
+  copy-object result, out
+}
+
+fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply cons"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "cons needs 2 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/ecx: (addr handle cell) <- get args, left
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/eax: (addr handle cell) <- get right, left
+  # cons
+  new-pair out, *first-ah, *second-ah
+}

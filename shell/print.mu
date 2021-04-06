@@ -4,6 +4,13 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
   var in/eax: (addr handle cell) <- copy _in
   var in-addr/eax: (addr cell) <- lookup *in
   {
+    compare in-addr, 0
+    break-if-!=
+    write out, "NULL"
+    trace-higher trace
+    return
+  }
+  {
     var nil?/eax: boolean <- nil? in-addr
     compare nil?, 0/false
     break-if-=
