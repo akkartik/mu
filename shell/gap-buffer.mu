@@ -16,6 +16,14 @@ fn initialize-gap-buffer _self: (addr gap-buffer), max-word-size: int {
   initialize-grapheme-stack right, max-word-size
 }
 
+fn clear-gap-buffer _self: (addr gap-buffer) {
+  var self/esi: (addr gap-buffer) <- copy _self
+  var left/eax: (addr grapheme-stack) <- get self, left
+  clear-grapheme-stack left
+  var right/eax: (addr grapheme-stack) <- get self, right
+  clear-grapheme-stack right
+}
+
 # just for tests
 fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
   initialize-gap-buffer self, 0x10/max-word-size
@@ -783,10 +791,12 @@ fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
     gap-to-end self
     return
   }
+  {
+    compare g, 0x15/ctrl-u
+    break-if-!=
+    clear-gap-buffer self
+    return
+  }
   # default: insert character
   add-grapheme-at-gap self, g
-}
-
-fn cursor-on-final-line? self: (addr gap-buffer) -> _/eax: boolean {
-  return 1/true
 }
