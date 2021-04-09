@@ -9,11 +9,9 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox
   load-sandbox data-disk, sandbox
-  var width/eax: int <- copy 0
-  var height/ecx: int <- copy 0
-  width, height <- screen-size screen
   {
-    render-sandbox screen, sandbox, 2/x, 2/y, width, height
+    render-globals screen, globals, 0/x, 0/y, 0x40/xmax, 0x30/screen-height
+    render-sandbox screen, sandbox, 0x40/x, 0/y, 0x80/screen-width, 0x30/screen-height
     {
       var key/eax: byte <- read-key keyboard
       compare key, 0

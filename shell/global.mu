@@ -22,6 +22,10 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "cons"
 }
 
+fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
+  clear-rect screen, xmin, ymin, xmax, ymax, 0x12/bg=grey
+}
+
 fn append-primitive _self: (addr global-table), name: (addr array byte) {
   var self/esi: (addr global-table) <- copy _self
   var final-index-addr/ecx: (addr int) <- get self, final-index

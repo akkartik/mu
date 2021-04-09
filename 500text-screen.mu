@@ -221,6 +221,36 @@ fn clear-screen screen: (addr screen) {
   set-cursor-position screen, 0, 0
 }
 
+fn clear-rect screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int, background-color: int {
+  {
+    compare screen, 0
+    break-if-!=
+    clear-rect-on-real-screen xmin, ymin, xmax, ymax, background-color
+    return
+  }
+  # fake screen
+  set-cursor-position screen, 0, 0
+  var screen-addr/esi: (addr screen) <- copy screen
+  var y/eax: int <- copy ymin
+  var ymax/ecx: int <- copy ymax
+  {
+    compare y, ymax
+    break-if->=
+    var x/edx: int <- copy xmin
+    var xmax/ebx: int <- copy xmax
+    {
+      compare x, xmax
+      break-if->=
+      draw-code-point screen, 0x20/space, x, y, 0/fg, background-color
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+  set-cursor-position screen, 0, 0
+}
+
 # there's no grapheme that guarantees to cover every pixel, so we'll bump down
 # to pixels for a real screen
 fn clear-real-screen {
@@ -233,6 +263,30 @@ fn clear-real-screen {
       compare x, 0x400/screen-width=1024
       break-if->=
       pixel-on-real-screen x, y, 0/color=black
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+}
+
+fn clear-rect-on-real-screen xmin: int, ymin: int, xmax: int, ymax: int, background-color: int {
+  var y/eax: int <- copy ymin
+  y <- shift-left 4/log-font-height
+  var ymax/ecx: int <- copy ymax
+  ymax <- shift-left 4/log-font-height
+  {
+    compare y, ymax
+    break-if->=
+    var x/edx: int <- copy xmin
+    x <- shift-left 3/log-font-width
+    var xmax/ebx: int <- copy xmax
+    xmax <- shift-left 3/log-font-width
+    {
+      compare x, xmax
+      break-if->=
+      pixel-on-real-screen x, y, background-color
       x <- increment
       loop
     }

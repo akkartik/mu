@@ -39,7 +39,7 @@ fn allocate-sandbox-with _out: (addr handle sandbox), s: (addr array byte) {
 ##
 
 fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int, xmax: int, ymax: int {
-  clear-screen screen
+  clear-rect screen, xmin, ymin, xmax, ymax, 0/bg=black
   var self/esi: (addr sandbox) <- copy _self
   # data
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
