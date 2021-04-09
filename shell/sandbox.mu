@@ -93,6 +93,9 @@ fn render-sandbox-menu screen: (addr screen) {
   width, height <- screen-size screen
   var y/ecx: int <- copy height
   y <- decrement
+  var height/edx: int <- copy y
+  height <- increment
+  clear-rect screen, 0/x, y, width, height, 0/bg=black
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
