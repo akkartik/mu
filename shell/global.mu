@@ -23,7 +23,37 @@ fn initialize-globals _self: (addr global-table) {
 }
 
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
-  clear-rect screen, xmin, ymin, xmax, ymax, 0x12/bg=grey
+  clear-rect screen, xmin, ymin, xmax, ymax, 0x12/bg=almost-black
+  var self/esi: (addr global-table) <- copy _self
+  var y/ecx: int <- copy ymin
+  var data-ah/eax: (addr handle array global) <- get self, data
+  var data/eax: (addr array global) <- lookup *data-ah
+  var final-index/edx: (addr int) <- get self, final-index
+  var curr-index/edx: int <- copy *final-index
+  {
+    compare curr-index, 0
+    break-if-<=
+    compare y, ymax
+    break-if->=
+    {
+      var curr-offset/ebx: (offset global) <- compute-offset data, curr-index
+      var curr/ebx: (addr global) <- index data, curr-offset
+      var curr-name-ah/eax: (addr handle array byte) <- get curr, name
+      var _curr-name/eax: (addr array byte) <- lookup *curr-name-ah
+      var curr-name/edx: (addr array byte) <- copy _curr-name
+      var x/eax: int <- copy xmin
+      x, y <- draw-text-wrapping-right-then-down screen, curr-name, xmin, ymin, xmax, ymax, x, y, 0x2a/fg=orange, 0x12/bg=almost-black
+      x, y <- draw-text-wrapping-right-then-down screen, " <- ", xmin, ymin, xmax, ymax, x, y, 7/fg=grey, 0x12/bg=almost-black
+      var curr-value/edx: (addr handle cell) <- get curr, value
+      var s-storage: (stream byte 0x100)
+      var s/ebx: (addr stream byte) <- address s-storage
+      print-cell curr-value, s, 0/no-trace
+      x, y <- draw-stream-wrapping-right-then-down screen, s, xmin, ymin, xmax, ymax, x, y, 0x3/fg=cyan, 0x12/bg=almost-black
+    }
+    curr-index <- decrement
+    y <- increment
+    loop
+  }
 }
 
 fn append-primitive _self: (addr global-table), name: (addr array byte) {

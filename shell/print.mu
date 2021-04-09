@@ -40,6 +40,13 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
     trace-higher trace
     return
   }
+  compare *in-type, 4/primitive
+  {
+    break-if-!=
+    write out, "[primitive]"
+    trace-higher trace
+    return
+  }
 }
 
 # debug helper
