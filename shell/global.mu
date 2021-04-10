@@ -21,6 +21,12 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "cdr"
   append-primitive self, "cons"
   append-primitive self, "="
+  append-primitive self, "print"
+  # TODO: isolate screens per-sandbox
+  var screen-storage: (handle cell)
+  var screen-ah/ecx: (addr handle cell) <- address screen-storage
+  new-screen screen-ah, 5/width, 4/height
+  append-global self, "screen", *screen-ah
 }
 
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
@@ -42,10 +48,15 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
     var curr-name-ah/eax: (addr handle array byte) <- get curr, name
     var _curr-name/eax: (addr array byte) <- lookup *curr-name-ah
     var curr-name/ebx: (addr array byte) <- copy _curr-name
-    var tmpx/eax: int <- copy x
-    tmpx <- draw-text-rightward screen, curr-name, tmpx, xmax, bottom-line, 0x2a/fg=orange, 0x12/bg=almost-black
-    tmpx <- draw-text-rightward screen, " ", tmpx, xmax, bottom-line, 7/fg=grey, 0x12/bg=almost-black
-    x <- copy tmpx
+    {
+      var skip?/eax: boolean <- string-equal? curr-name, "screen"
+      compare skip?, 0/false
+      break-if-!=
+      var tmpx/eax: int <- copy x
+      tmpx <- draw-text-rightward screen, curr-name, tmpx, xmax, bottom-line, 0x2a/fg=orange, 0x12/bg=almost-black
+      tmpx <- draw-text-rightward screen, " ", tmpx, xmax, bottom-line, 7/fg=grey, 0x12/bg=almost-black
+      x <- copy tmpx
+    }
     curr-index <- increment
     loop
   }
@@ -66,6 +77,9 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
       var curr-name-ah/eax: (addr handle array byte) <- get curr, name
       var _curr-name/eax: (addr array byte) <- lookup *curr-name-ah
       var curr-name/edx: (addr array byte) <- copy _curr-name
+      var skip?/eax: boolean <- string-equal? curr-name, "screen"
+      compare skip?, 0/false
+      break-if-!=
       var x/eax: int <- copy xmin
       x, y <- draw-text-wrapping-right-then-down screen, curr-name, xmin, ymin, xmax, ymax, x, y, 0x2a/fg=orange, 0x12/bg=almost-black
       x, y <- draw-text-wrapping-right-then-down screen, " <- ", xmin, ymin, xmax, ymax, x, y, 7/fg=grey, 0x12/bg=almost-black
@@ -243,6 +257,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare is-compare?, 0/false
     break-if-=
     apply-compare args-ah, out, env-h, trace
+    return
+  }
+  {
+    var is-print?/eax: boolean <- string-equal? f-name, "print"
+    compare is-print?, 0/false
+    break-if-=
+    apply-print args-ah, out, env-h, trace
     return
   }
   abort "unknown primitive function"
@@ -585,4 +606,45 @@ fn apply-compare _args-ah: (addr handle cell), out: (addr handle cell), env-h: (
     return
   }
   new-integer out, 1/true
+}
+
+fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply print"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "cons needs 2 args but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'print' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/ecx: (addr screen) <- copy _screen
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/eax: (addr handle cell) <- get right, left
+  var stream-storage: (stream byte 0x100)
+  var stream/edi: (addr stream byte) <- address stream-storage
+  print-cell second-ah, stream, trace
+  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, stream, 7/fg, 0/bg
+  # return what was printed
+  copy-object second-ah, out
 }

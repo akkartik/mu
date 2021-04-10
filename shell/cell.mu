@@ -10,6 +10,8 @@ type cell {
   text-data: (handle stream byte)
   # type 4: primitive function
   index-data: int
+  # type 5: screen
+  screen-data: (handle screen)
   # TODO: array, (associative) table, stream
 }
 
@@ -113,4 +115,21 @@ fn initialize-primitive-function _out: (addr handle cell), n: int {
 fn new-primitive-function out: (addr handle cell), n: int {
   allocate-primitive-function out
   initialize-primitive-function out, n
+}
+
+fn allocate-screen _out: (addr handle cell) {
+  var out/eax: (addr handle cell) <- copy _out
+  allocate out
+  var out-addr/eax: (addr cell) <- lookup *out
+  var type/ecx: (addr int) <- get out-addr, type
+  copy-to *type, 5/screen
+}
+
+fn new-screen _out: (addr handle cell), width: int, height: int {
+  var out/eax: (addr handle cell) <- copy _out
+  allocate-screen out
+  var out-addr/eax: (addr cell) <- lookup *out
+  var dest-ah/eax: (addr handle screen) <- get out-addr, screen-data
+  var dest-addr/eax: (addr screen) <- lookup *dest-ah
+  initialize-screen dest-addr, width, height
 }

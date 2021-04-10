@@ -38,7 +38,7 @@ fn allocate-sandbox-with _out: (addr handle sandbox), s: (addr array byte) {
 
 ##
 
-fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int, xmax: int, ymax: int {
+fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int, xmax: int, ymax: int, globals: (addr global-table) {
   clear-rect screen, xmin, ymin, xmax, ymax, 0/bg=black
   var self/esi: (addr sandbox) <- copy _self
   # data
@@ -76,6 +76,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     var x2/edx: int <- copy x
     var dummy/eax: int <- draw-stream-rightward screen, value, x2, xmax, y, 7/fg=grey, 0/bg
   }
+  y <- maybe-render-screen screen, globals, xmin, y, xmax, ymax
   # render menu
   var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
   compare *cursor-in-trace?, 0/false
@@ -85,6 +86,14 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     return
   }
   render-sandbox-menu screen
+}
+
+fn maybe-render-screen screen: (addr screen), globals: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int -> _/ecx: int {
+  var x/eax: int <- copy xmin
+  var y/ecx: int <- copy ymin
+  y <- add 2
+  x, y <- draw-text-wrapping-right-then-down screen, "abc", x, y, xmax, ymax, x, y, 7/fg, 0/bg
+  return y
 }
 
 fn render-sandbox-menu screen: (addr screen) {
@@ -213,7 +222,7 @@ fn test-run-integer {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "1    ", "F - test-run-integer/0"
   check-screen-row screen, 1/y, "...  ", "F - test-run-integer/1"
   check-screen-row screen, 2/y, "=> 1 ", "F - test-run-integer/2"
@@ -235,7 +244,7 @@ fn test-run-with-spaces {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, " 1   ", "F - test-run-with-spaces/0"
   check-screen-row screen, 1/y, "     ", "F - test-run-with-spaces/1"
   check-screen-row screen, 2/y, "...  ", "F - test-run-with-spaces/2"
@@ -256,7 +265,7 @@ fn test-run-quote {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "'a   ", "F - test-run-quote/0"
   check-screen-row screen, 1/y, "...  ", "F - test-run-quote/1"
   check-screen-row screen, 2/y, "=> a ", "F - test-run-quote/2"
@@ -276,7 +285,7 @@ fn test-run-error-invalid-integer {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "1a             ", "F - test-run-error-invalid-integer/0"
   check-screen-row screen, 1/y, "...            ", "F - test-run-error-invalid-integer/0"
   check-screen-row screen, 2/y, "invalid number ", "F - test-run-error-invalid-integer/2"
@@ -296,7 +305,7 @@ fn test-run-move-cursor-into-trace {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/pre-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "  |   ", "F - test-run-move-cursor-into-trace/pre-0/cursor"
   check-screen-row screen,                                  1/y, "...   ", "F - test-run-move-cursor-into-trace/pre-1"
@@ -306,7 +315,7 @@ fn test-run-move-cursor-into-trace {
   # move cursor into trace
   edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/trace-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "      ", "F - test-run-move-cursor-into-trace/trace-0/cursor"
   check-screen-row screen,                                  1/y, "...   ", "F - test-run-move-cursor-into-trace/trace-1"
@@ -316,7 +325,7 @@ fn test-run-move-cursor-into-trace {
   # move cursor into input
   edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/input-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "  |   ", "F - test-run-move-cursor-into-trace/input-0/cursor"
   check-screen-row screen,                                  1/y, "...   ", "F - test-run-move-cursor-into-trace/input-1"

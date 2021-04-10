@@ -196,6 +196,28 @@ fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr str
   return xcurr, ycurr
 }
 
+fn draw-stream-wrapping-right-then-down-from-cursor screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, color: int, background-color: int {
+  var cursor-x/eax: int <- copy 0
+  var cursor-y/ecx: int <- copy 0
+  cursor-x, cursor-y <- cursor-position screen
+  var end-x/edx: int <- copy cursor-x
+  end-x <- increment
+  compare end-x, xmax
+  {
+    break-if-<
+    cursor-x <- copy xmin
+    cursor-y <- increment
+  }
+  cursor-x, cursor-y <- draw-stream-wrapping-right-then-down screen, stream, xmin, ymin, xmax, ymax, cursor-x, cursor-y, color, background-color
+}
+
+fn draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen: (addr screen), stream: (addr stream byte), color: int, background-color: int {
+  var width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  width, height <- screen-size screen
+  draw-stream-wrapping-right-then-down-from-cursor screen, stream, 0/xmin, 0/ymin, width, height, color, background-color
+}
+
 fn move-cursor-rightward-and-downward screen: (addr screen), xmin: int, xmax: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
