@@ -135,6 +135,47 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace-higher trace
     return
   }
+  $evaluate:if: {
+    # trees starting with "if" are conditionals
+    var expr/esi: (addr cell) <- copy in-addr
+    # if its first elem is not "if", break
+    var first-ah/ecx: (addr handle cell) <- get in-addr, left
+    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first/eax: (addr cell) <- lookup *first-ah
+    var first-type/ecx: (addr int) <- get first, type
+    compare *first-type, 2/symbol
+    break-if-!=
+    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
+    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
+    var if?/eax: boolean <- stream-data-equal? sym-data, "if"
+    compare if?, 0/false
+    break-if-=
+    #
+    trace-text trace, "eval", "if"
+    trace-text trace, "eval", "evaluating first arg"
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    var first-arg-ah/ecx: (addr handle cell) <- get rest, left
+    var guard-h: (handle cell)
+    var guard-ah/esi: (addr handle cell) <- address guard-h
+    evaluate first-arg-ah, guard-ah, env-h, globals, trace
+    rest-ah <- get rest, right
+    rest <- lookup *rest-ah
+    var branch-ah/edi: (addr handle cell) <- get rest, left
+    var guard-a/eax: (addr cell) <- lookup *guard-ah
+    var skip-to-third-arg?/eax: boolean <- nil? guard-a
+    compare skip-to-third-arg?, 0/false
+    {
+      break-if-=
+      trace-text trace, "eval", "skipping to third arg"
+      var rest/eax: (addr cell) <- lookup *rest-ah
+      rest-ah <- get rest, right
+      rest <- lookup *rest-ah
+      branch-ah <- get rest, left
+    }
+    evaluate branch-ah, out, env-h, globals, trace
+    trace-higher trace
+    return
+  }
   trace-text trace, "eval", "function call"
   trace-text trace, "eval", "evaluating list elements"
   var evaluated-list-storage: (handle cell)
