@@ -20,6 +20,7 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "car"
   append-primitive self, "cdr"
   append-primitive self, "cons"
+  append-primitive self, "="
 }
 
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
@@ -235,6 +236,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare is-cons?, 0/false
     break-if-=
     apply-cons args-ah, out, env-h, trace
+    return
+  }
+  {
+    var is-compare?/eax: boolean <- string-equal? f-name, "="
+    compare is-compare?, 0/false
+    break-if-=
+    apply-compare args-ah, out, env-h, trace
     return
   }
   abort "unknown primitive function"
@@ -541,4 +549,40 @@ fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), env-h: (han
   var second-ah/eax: (addr handle cell) <- get right, left
   # cons
   new-pair out, *first-ah, *second-ah
+}
+
+fn apply-compare _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply ="
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "cons needs 2 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/ecx: (addr handle cell) <- get args, left
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/edx: (addr handle cell) <- get right, left
+  # compare
+  var _first/eax: (addr cell) <- lookup *first-ah
+  var first/ecx: (addr cell) <- copy _first
+  var second/eax: (addr cell) <- lookup *second-ah
+  var match?/eax: boolean <- cell-isomorphic? first, second, trace
+  compare match?, 0/false
+  {
+    break-if-!=
+    nil out
+    return
+  }
+  new-integer out, 1/true
 }

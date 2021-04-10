@@ -90,6 +90,10 @@ fn new-pair out: (addr handle cell), left: (handle cell), right: (handle cell) {
   initialize-pair out, left, right
 }
 
+fn nil out: (addr handle cell) {
+  allocate-pair out
+}
+
 fn allocate-primitive-function _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out

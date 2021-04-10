@@ -10,7 +10,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
 #?   }
   # trace "evaluate " in " in environment " env {{{
   {
-    var stream-storage: (stream byte 0x40)
+    var stream-storage: (stream byte 0x100)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "evaluate "
     print-cell in, stream, 0/no-trace
@@ -232,7 +232,7 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
   # if it's not a primitive function it must be an anonymous function
   # trace "apply anonymous function " f " in environment " env {{{
   {
-    var stream-storage: (stream byte 0x40)
+    var stream-storage: (stream byte 0x100)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "apply anonymous function "
     print-cell _f-ah, stream, 0/no-trace
@@ -318,7 +318,7 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   # Params can only be symbols or pairs. Args can be anything.
   # trace "pushing bindings from " params " to " args {{{
   {
-    var stream-storage: (stream byte 0x40)
+    var stream-storage: (stream byte 0x100)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "pushing bindings from "
     print-cell params-ah, stream, 0/no-trace
