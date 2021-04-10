@@ -582,6 +582,29 @@ fn test-render-gap-buffer-with-cursor-at-start {
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|   ", "F - test-render-gap-buffer-with-cursor-at-start: bg"
 }
 
+fn test-render-gap-buffer-highlight-matching-close-paren {
+  var gap-storage: gap-buffer
+  var gap/esi: (addr gap-buffer) <- address gap-storage
+  initialize-gap-buffer-with gap, "(a)"
+  gap-to-start gap
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  #
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
+  check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-close-paren"
+  check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-open-paren: result"
+  check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "|   ", "F - test-render-gap-buffer-highlight-matching-open-paren: cursor"
+  check-screen-row-in-color            screen, 0xf/fg=highlight, 0/y, "  ) ", "F - test-render-gap-buffer-highlight-matching-open-paren: matching paren"
+}
+
+fn test-render-gap-buffer-highlight-matching-open-paren {
+}
+
+fn test-render-gap-buffer-highlight-matching-open-paren-of-end {
+}
+
 ## some primitives for scanning through a gap buffer
 # don't modify the gap buffer while scanning
 # this includes moving the cursor around

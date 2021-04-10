@@ -128,6 +128,7 @@ fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: 
   var x/eax: int <- copy _x
   var y/ecx: int <- copy _y
   var top-addr/ebx: (addr int) <- get self, top
+  var matching-close-paren-index/edx: int <- get-matching-close-paren-index self, render-cursor?
   var i/ebx: int <- copy *top-addr
   i <- decrement
   # if render-cursor?, peel off first iteration
@@ -144,8 +145,17 @@ fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: 
   {
     compare i, 0
     break-if-<
+    # highlight matching paren if needed
+    var fg: int
+    copy-to fg, 3/cyan
+    compare i, matching-close-paren-index
+    {
+      break-if-!=
+      copy-to fg, 0xf/highlight
+    }
+    #
     var g/esi: (addr grapheme) <- index data, i
-    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, 3/fg=cyan, 0/bg=cursor
+    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, fg, 0/bg=cursor
     i <- decrement
     loop
   }
@@ -193,8 +203,87 @@ fn test-render-grapheme-stack {
   #
   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
   check-screen-row screen, 2/y, "cba ", "F - test-render-grapheme-stack from top with cursor"
-  check-ints-equal x, 3, "F - test-render-grapheme-stack from top without cursor: result"
+  check-ints-equal x, 3, "F - test-render-grapheme-stack from top with cursor: result"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|   ", "F - test-render-grapheme-stack from top with cursor: bg"
+}
+
+fn test-render-grapheme-stack-while-highlighting-matching-close-paren {
+  # setup: gs = "abc"
+  var gs-storage: grapheme-stack
+  var gs/edi: (addr grapheme-stack) <- address gs-storage
+  initialize-grapheme-stack gs, 5
+  var g/eax: grapheme <- copy 0x29/close-paren
+  push-grapheme-stack gs, g
+  g <- copy 0x62/b
+  push-grapheme-stack gs, g
+  g <- copy 0x28/open-paren
+  push-grapheme-stack gs, g
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/esi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  #
+  var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
+  check-screen-row screen, 2/y, "(b) ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren"
+  check-ints-equal x, 3, "F - test-render-grapheme-stack-while-highlighting-matching-close-paren: result"
+  check-background-color-in-screen-row screen, 7/bg=cursor,  2/y, "|   ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren: cursor"
+  check-screen-row-in-color            screen, 0xf/fg=white, 2/y, "  ) ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren: matching paren"
+}
+
+# return the index of the matching close-paren of the grapheme at cursor (top of stack)
+# or top index if there's no matching close-paren
+fn get-matching-close-paren-index _self: (addr grapheme-stack), render-cursor?: boolean -> _/edx: int {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var top-addr/edx: (addr int) <- get self, top
+  # if not rendering cursor, return
+  compare render-cursor?, 0/false
+  {
+    break-if-!=
+    return *top-addr
+  }
+  var data-ah/eax: (addr handle array grapheme) <- get self, data
+  var data/eax: (addr array grapheme) <- lookup *data-ah
+  var i/ecx: int <- copy *top-addr
+  # if stack is empty, return
+  compare i, 0
+  {
+    break-if->
+    return *top-addr
+  }
+  # if cursor is not '(' return
+  i <- decrement
+  var g/esi: (addr grapheme) <- index data, i
+  compare *g, 0x28/open-paren
+  {
+    break-if-=
+    return *top-addr
+  }
+  # otherwise scan to matching paren
+  var paren-count/ebx: int <- copy 1
+  i <- decrement
+  {
+    compare i, 0
+    break-if-<
+    var g/esi: (addr grapheme) <- index data, i
+    compare *g, 0x28/open-paren
+    {
+      break-if-!=
+      paren-count <- increment
+    }
+    compare *g, 0x29/close-paren
+    {
+      break-if-!=
+      compare paren-count, 1
+      {
+        break-if-!=
+        return i
+      }
+      paren-count <- decrement
+    }
+    i <- decrement
+    loop
+  }
+  return *top-addr
 }
 
 # compare from bottom
