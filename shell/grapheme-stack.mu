@@ -122,12 +122,12 @@ fn render-stack-from-bottom screen: (addr screen), self: (addr grapheme-stack), 
 # optionally render a 'cursor' with the top grapheme
 fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: (addr grapheme-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, render-cursor?: boolean -> _/eax: int, _/ecx: int {
   var self/esi: (addr grapheme-stack) <- copy _self
-  var data-ah/edi: (addr handle array grapheme) <- get self, data
+  var data-ah/eax: (addr handle array grapheme) <- get self, data
   var _data/eax: (addr array grapheme) <- lookup *data-ah
   var data/edi: (addr array grapheme) <- copy _data
   var x/eax: int <- copy _x
   var y/ecx: int <- copy _y
-  var top-addr/edx: (addr int) <- get self, top
+  var top-addr/ebx: (addr int) <- get self, top
   var i/ebx: int <- copy *top-addr
   i <- decrement
   # if render-cursor?, peel off first iteration
@@ -136,20 +136,16 @@ fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: 
     break-if-=
     compare i, 0
     break-if-<
-    {
-      var g/edx: (addr grapheme) <- index data, i
-      x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, 3/fg=cyan, 7/bg=cursor
-    }
+    var g/esi: (addr grapheme) <- index data, i
+    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, 3/fg=cyan, 7/bg=cursor
     i <- decrement
   }
   # remaining iterations
   {
     compare i, 0
     break-if-<
-    {
-      var g/edx: (addr grapheme) <- index data, i
-      x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, 3/fg=cyan, 0/bg=cursor
-    }
+    var g/esi: (addr grapheme) <- index data, i
+    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, 3/fg=cyan, 0/bg=cursor
     i <- decrement
     loop
   }
