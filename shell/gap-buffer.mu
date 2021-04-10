@@ -91,9 +91,12 @@ fn emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte) {
 fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, render-cursor?: boolean -> _/eax: int, _/ecx: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
   var left/edx: (addr grapheme-stack) <- get gap, left
+  var highlight-matching-open-paren?/ebx: boolean <- copy 0/false
+  var matching-open-paren-depth/edi: int <- copy 0
+  highlight-matching-open-paren?, matching-open-paren-depth <- highlight-matching-open-paren? gap, render-cursor?
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
-  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, left, xmin, ymin, xmax, ymax, xmin, ymin
+  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, left, xmin, ymin, xmax, ymax, xmin, ymin, highlight-matching-open-paren?, matching-open-paren-depth
   var right/edx: (addr grapheme-stack) <- get gap, right
   x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, right, xmin, ymin, xmax, ymax, x2, y2, render-cursor?
   # decide whether we still need to print a cursor
@@ -594,15 +597,115 @@ fn test-render-gap-buffer-highlight-matching-close-paren {
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-close-paren"
-  check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-open-paren: result"
-  check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "|   ", "F - test-render-gap-buffer-highlight-matching-open-paren: cursor"
-  check-screen-row-in-color            screen, 0xf/fg=highlight, 0/y, "  ) ", "F - test-render-gap-buffer-highlight-matching-open-paren: matching paren"
+  check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-close-paren: result"
+  check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "|   ", "F - test-render-gap-buffer-highlight-matching-close-paren: cursor"
+  check-screen-row-in-color            screen, 0xf/fg=highlight, 0/y, "  ) ", "F - test-render-gap-buffer-highlight-matching-close-paren: matching paren"
 }
 
 fn test-render-gap-buffer-highlight-matching-open-paren {
+  var gap-storage: gap-buffer
+  var gap/esi: (addr gap-buffer) <- address gap-storage
+  initialize-gap-buffer-with gap, "(a)"
+  gap-to-end gap
+  var dummy/eax: grapheme <- gap-left gap
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  #
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
+  check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-open-paren"
+  check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-open-paren: result"
+  check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "  | ", "F - test-render-gap-buffer-highlight-matching-open-paren: cursor"
+  check-screen-row-in-color            screen, 0xf/fg=highlight, 0/y, "(   ", "F - test-render-gap-buffer-highlight-matching-open-paren: matching paren"
 }
 
 fn test-render-gap-buffer-highlight-matching-open-paren-of-end {
+  var gap-storage: gap-buffer
+  var gap/esi: (addr gap-buffer) <- address gap-storage
+  initialize-gap-buffer-with gap, "(a)"
+  gap-to-end gap
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 5, 4
+  #
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
+  check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end"
+  check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-open-paren-of-end: result"
+  check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "   |", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end: cursor"
+  check-screen-row-in-color            screen, 0xf/fg=highlight, 0/y, "(   ", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end: matching paren"
+}
+
+# should I highlight a matching open paren? And if so, at what depth from top of left?
+# basically there are two cases to disambiguate here:
+#   Usually the cursor is at top of right. Highlight first '(' at depth 0 from top of left.
+#   If right is empty, match the ')' _before_ cursor. Highlight first '(' at depth _1_ from top of left.
+fn highlight-matching-open-paren? _gap: (addr gap-buffer), render-cursor?: boolean -> _/ebx: boolean, _/edi: int {
+  # if not rendering cursor, return
+  compare render-cursor?, 0/false
+  {
+    break-if-!=
+    return 0/false, 0
+  }
+  var gap/esi: (addr gap-buffer) <- copy _gap
+  var stack/edi: (addr grapheme-stack) <- get gap, right
+  var top-addr/eax: (addr int) <- get stack, top
+  var top-index/ecx: int <- copy *top-addr
+  compare top-index, 0
+  {
+    break-if->
+    # if cursor at end, return (char before cursor == ')', 1)
+    stack <- get gap, left
+    top-addr <- get stack, top
+    top-index <- copy *top-addr
+    compare top-index, 0
+    {
+      break-if->
+      return 0/false, 0
+    }
+    top-index <- decrement
+    var data-ah/eax: (addr handle array grapheme) <- get stack, data
+    var data/eax: (addr array grapheme) <- lookup *data-ah
+    var g/eax: (addr grapheme) <- index data, top-index
+    compare *g, 0x29/close-paren
+    {
+      break-if-=
+      return 0/false, 0
+    }
+    return 1/true, 1
+  }
+  # cursor is not at end; return (char at cursor == ')')
+  top-index <- decrement
+  var data-ah/eax: (addr handle array grapheme) <- get stack, data
+  var data/eax: (addr array grapheme) <- lookup *data-ah
+  var g/eax: (addr grapheme) <- index data, top-index
+  compare *g, 0x29/close-paren
+  {
+    break-if-=
+    return 0/false, 0
+  }
+  return 1/true, 0
+}
+
+fn test-highlight-matching-open-paren {
+  var gap-storage: gap-buffer
+  var gap/esi: (addr gap-buffer) <- address gap-storage
+  initialize-gap-buffer-with gap, "(a)"
+  gap-to-end gap
+  var highlight-matching-open-paren?/ebx: boolean <- copy 0/false
+  var open-paren-depth/edi: int <- copy 0
+  highlight-matching-open-paren?, open-paren-depth <- highlight-matching-open-paren? gap, 0/no-cursor
+  check-not highlight-matching-open-paren?, "F - test-highlight-matching-open-paren: no cursor"
+  highlight-matching-open-paren?, open-paren-depth <- highlight-matching-open-paren? gap, 1/render-cursor
+  check highlight-matching-open-paren?, "F - test-highlight-matching-open-paren: at end immediately after ')'"
+  check-ints-equal open-paren-depth, 1, "F - test-highlight-matching-open-paren: depth at end immediately after ')'"
+  var dummy/eax: grapheme <- gap-left gap
+  highlight-matching-open-paren?, open-paren-depth <- highlight-matching-open-paren? gap, 1/render-cursor
+  check highlight-matching-open-paren?, "F - test-highlight-matching-open-paren: on ')'"
+  dummy <- gap-left gap
+  highlight-matching-open-paren?, open-paren-depth <- highlight-matching-open-paren? gap, 1/render-cursor
+  check-not highlight-matching-open-paren?, "F - test-highlight-matching-open-paren: not on ')'"
 }
 
 ## some primitives for scanning through a gap buffer
