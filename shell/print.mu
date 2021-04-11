@@ -47,6 +47,18 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
     trace-higher trace
     return
   }
+  compare *in-type, 5/primitive
+  {
+    break-if-!=
+    write out, "[screen "
+    var screen-ah/eax: (addr handle screen) <- get in-addr, screen-data
+    var screen/eax: (addr screen) <- lookup *screen-ah
+    var screen-addr/eax: int <- copy screen
+    write-int32-decimal out, screen-addr
+    write out, "]"
+    trace-higher trace
+    return
+  }
 }
 
 # debug helper

@@ -121,6 +121,8 @@ fn allocate-screen _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out
   var out-addr/eax: (addr cell) <- lookup *out
+  var dest-ah/ecx: (addr handle screen) <- get out-addr, screen-data
+  allocate dest-ah
   var type/ecx: (addr int) <- get out-addr, type
   copy-to *type, 5/screen
 }
