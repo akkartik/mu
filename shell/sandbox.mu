@@ -47,6 +47,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   var data/edx: (addr gap-buffer) <- copy _data
   var x/eax: int <- copy xmin
   var y/ecx: int <- copy ymin
+  y <- maybe-render-empty-screen screen, globals, xmin, y
   var cursor-in-sandbox?/ebx: boolean <- copy 0/false
   {
     var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
@@ -76,6 +77,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     var x2/edx: int <- copy x
     var dummy/eax: int <- draw-stream-rightward screen, value, x2, xmax, y, 7/fg=grey, 0/bg
   }
+  y <- add 2  # padding
   y <- maybe-render-screen screen, globals, xmin, y
   # render menu
   var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
@@ -86,6 +88,39 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     return
   }
   render-sandbox-menu screen
+}
+
+fn maybe-render-empty-screen screen: (addr screen), _globals: (addr global-table), xmin: int, ymin: int -> _/ecx: int {
+  var globals/esi: (addr global-table) <- copy _globals
+  var screen-literal-storage: (stream byte 8)
+  var screen-literal/eax: (addr stream byte) <- address screen-literal-storage
+  write screen-literal, "screen"
+  var screen-obj-index/ecx: int <- find-symbol-in-globals globals, screen-literal
+  compare screen-obj-index, -1/not-found
+  {
+    break-if-!=
+    return ymin
+  }
+  var global-data-ah/eax: (addr handle array global) <- get globals, data
+  var global-data/eax: (addr array global) <- lookup *global-data-ah
+  var screen-obj-offset/ecx: (offset global) <- compute-offset global-data, screen-obj-index
+  var screen-global/eax: (addr global) <- index global-data, screen-obj-offset
+  var screen-obj-cell-ah/eax: (addr handle cell) <- get screen-global, value
+  var screen-obj-cell/eax: (addr cell) <- lookup *screen-obj-cell-ah
+  var screen-obj-cell-type/ecx: (addr int) <- get screen-obj-cell, type
+  compare *screen-obj-cell-type, 5/screen
+  {
+    break-if-=
+    return ymin  # silently give up on rendering the screen
+  }
+  var y/ecx: int <- copy ymin
+  var screen-obj-ah/eax: (addr handle screen) <- get screen-obj-cell, screen-data
+  var _screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
+  var screen-obj/edx: (addr screen) <- copy _screen-obj
+  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, y, 7/fg, 0/bg
+  y <- render-empty-screen screen, screen-obj, x, y
+  y <- increment  # padding
+  return y
 }
 
 fn maybe-render-screen screen: (addr screen), _globals: (addr global-table), xmin: int, ymin: int -> _/ecx: int {
@@ -112,24 +147,104 @@ fn maybe-render-screen screen: (addr screen), _globals: (addr global-table), xmi
     return ymin  # silently give up on rendering the screen
   }
   var screen-obj-ah/eax: (addr handle screen) <- get screen-obj-cell, screen-data
-  var screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
+  var _screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
+  var screen-obj/edx: (addr screen) <- copy _screen-obj
   {
     var screen-empty?/eax: boolean <- fake-screen-empty? screen-obj
     compare screen-empty?, 0/false
     break-if-=
     return ymin
   }
+  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, ymin, 7/fg, 0/bg
   var y/ecx: int <- copy ymin
-  y <- add 2
-  y <- render-screen screen, screen-obj, xmin, y
+  y <- render-screen screen, screen-obj, x, y
   return y
+}
+
+fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
+  var target-screen/esi: (addr screen) <- copy _target-screen
+  var screen-y/edi: int <- copy ymin
+  # top border
+  {
+    set-cursor-position screen, xmin, screen-y
+    move-cursor-right screen
+    var width/edx: (addr int) <- get target-screen, width
+    var x/ebx: int <- copy 0
+    {
+      compare x, *width
+      break-if->=
+      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      move-cursor-right screen
+      x <- increment
+      loop
+    }
+    screen-y <- increment
+  }
+  # screen
+  var height/edx: (addr int) <- get target-screen, height
+  var y/ecx: int <- copy 0
+  {
+    compare y, *height
+    break-if->=
+    set-cursor-position screen, xmin, screen-y
+    draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
+    move-cursor-right screen
+    var width/edx: (addr int) <- get target-screen, width
+    var x/ebx: int <- copy 0
+    {
+      compare x, *width
+      break-if->=
+      draw-code-point-at-cursor screen, 0x20/space, 0x18/fg, 0/bg
+      move-cursor-right screen
+      x <- increment
+      loop
+    }
+    draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
+    y <- increment
+    screen-y <- increment
+    loop
+  }
+  # bottom border
+  {
+    set-cursor-position screen, xmin, screen-y
+    move-cursor-right screen
+    var width/edx: (addr int) <- get target-screen, width
+    var x/ebx: int <- copy 0
+    {
+      compare x, *width
+      break-if->=
+      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      move-cursor-right screen
+      x <- increment
+      loop
+    }
+    screen-y <- increment
+  }
+  return screen-y
 }
 
 fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
   var target-screen/esi: (addr screen) <- copy _target-screen
+  var screen-y/edi: int <- copy ymin
+  # top border
+  {
+    set-cursor-position screen, xmin, screen-y
+    move-cursor-right screen
+    var width/edx: (addr int) <- get target-screen, width
+    var x/ebx: int <- copy 0
+    {
+      compare x, *width
+      break-if->=
+      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      move-cursor-right screen
+      x <- increment
+      loop
+    }
+    screen-y <- increment
+  }
+  # screen
   var height/edx: (addr int) <- get target-screen, height
   var y/ecx: int <- copy 0
-  var screen-y/edi: int <- copy ymin
   {
     compare y, *height
     break-if->=
@@ -151,7 +266,23 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
     screen-y <- increment
     loop
   }
-  return y
+  # bottom border
+  {
+    set-cursor-position screen, xmin, screen-y
+    move-cursor-right screen
+    var width/edx: (addr int) <- get target-screen, width
+    var x/ebx: int <- copy 0
+    {
+      compare x, *width
+      break-if->=
+      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      move-cursor-right screen
+      x <- increment
+      loop
+    }
+    screen-y <- increment
+  }
+  return screen-y
 }
 
 fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen), x: int, y: int {
@@ -218,6 +349,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     var trace-ah/eax: (addr handle trace) <- get self, trace
     var trace/eax: (addr trace) <- lookup *trace-ah
     clear-trace trace
+    clear-screen-var globals
     run data, value, globals, trace
     return
   }

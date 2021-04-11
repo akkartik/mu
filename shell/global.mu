@@ -668,3 +668,31 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), env-h: (ha
   # return what was printed
   copy-object second-ah, out
 }
+
+fn clear-screen-var _globals: (addr global-table) {
+  var globals/esi: (addr global-table) <- copy _globals
+  var screen-literal-storage: (stream byte 8)
+  var screen-literal/eax: (addr stream byte) <- address screen-literal-storage
+  write screen-literal, "screen"
+  var screen-index/ecx: int <- find-symbol-in-globals globals, screen-literal
+  compare screen-index, -1/not-found
+  {
+    break-if-!=
+    return
+  }
+  var global-data-ah/eax: (addr handle array global) <- get globals, data
+  var global-data/eax: (addr array global) <- lookup *global-data-ah
+  var screen-offset/ecx: (offset global) <- compute-offset global-data, screen-index
+  var screen-global/eax: (addr global) <- index global-data, screen-offset
+  var screen-cell-ah/eax: (addr handle cell) <- get screen-global, value
+  var screen-cell/eax: (addr cell) <- lookup *screen-cell-ah
+  var screen-cell-type/ecx: (addr int) <- get screen-cell, type
+  compare *screen-cell-type, 5/screen
+  {
+    break-if-=
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get screen-cell, screen-data
+  var screen/eax: (addr screen) <- lookup *screen-ah
+  clear-screen screen
+}
