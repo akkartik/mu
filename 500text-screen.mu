@@ -20,34 +20,35 @@ type screen-cell {
   background-color: int
 }
 
-fn initialize-screen screen: (addr screen), width: int, height: int {
-  var screen-addr/esi: (addr screen) <- copy screen
+fn initialize-screen _screen: (addr screen), width: int, height: int {
+  var screen/esi: (addr screen) <- copy _screen
   var tmp/eax: int <- copy 0
   var dest/edi: (addr int) <- copy 0
   # screen->width = width
-  dest <- get screen-addr, width
+  dest <- get screen, width
   tmp <- copy width
   copy-to *dest, tmp
   # screen->height = height
-  dest <- get screen-addr, height
+  dest <- get screen, height
   tmp <- copy height
   copy-to *dest, tmp
   # screen->data = new screen-cell[width*height]
   {
-    var data-addr/edi: (addr handle array screen-cell) <- get screen-addr, data
+    var data-addr/edi: (addr handle array screen-cell) <- get screen, data
     tmp <- multiply width
     populate data-addr, tmp
   }
   # screen->cursor-x = 0
-  dest <- get screen-addr, cursor-x
+  dest <- get screen, cursor-x
   copy-to *dest, 0
   # screen->cursor-y = 0
-  dest <- get screen-addr, cursor-y
+  dest <- get screen, cursor-y
   copy-to *dest, 0
 }
 
 # in graphemes
-fn screen-size screen: (addr screen) -> _/eax: int, _/ecx: int {
+fn screen-size _screen: (addr screen) -> _/eax: int, _/ecx: int {
+  var screen/esi: (addr screen) <- copy _screen
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   compare screen, 0
@@ -56,16 +57,16 @@ fn screen-size screen: (addr screen) -> _/eax: int, _/ecx: int {
     return 0x80/128, 0x30/48
   }
   # fake screen
-  var screen-addr/esi: (addr screen) <- copy screen
-  var tmp/edx: (addr int) <- get screen-addr, width
+  var tmp/edx: (addr int) <- get screen, width
   width <- copy *tmp
-  tmp <- get screen-addr, height
+  tmp <- get screen, height
   height <- copy *tmp
   return width, height
 }
 
 # testable screen primitive
-fn draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int, background-color: int {
+fn draw-grapheme _screen: (addr screen), g: grapheme, x: int, y: int, color: int, background-color: int {
+  var screen/esi: (addr screen) <- copy _screen
   {
     compare screen, 0
     break-if-!=
@@ -73,9 +74,8 @@ fn draw-grapheme screen: (addr screen), g: grapheme, x: int, y: int, color: int,
     return
   }
   # fake screen
-  var screen-addr/esi: (addr screen) <- copy screen
-  var idx/ecx: int <- screen-cell-index screen-addr, x, y
-  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+  var idx/ecx: int <- screen-cell-index screen, x, y
+  var data-ah/eax: (addr handle array screen-cell) <- get screen, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var dest-cell/ecx: (addr screen-cell) <- index data, offset
@@ -97,8 +97,8 @@ fn draw-code-point screen: (addr screen), c: code-point, x: int, y: int, color: 
 }
 
 # not really needed for a real screen, though it shouldn't do any harm
-fn screen-cell-index screen-on-stack: (addr screen), x: int, y: int -> _/ecx: int {
-  var screen/esi: (addr screen) <- copy screen-on-stack
+fn screen-cell-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
+  var screen/esi: (addr screen) <- copy _screen
   # only one bounds check isn't automatically handled
   {
     var xmax/eax: (addr int) <- get screen, width
@@ -114,7 +114,8 @@ fn screen-cell-index screen-on-stack: (addr screen), x: int, y: int -> _/ecx: in
   return result
 }
 
-fn cursor-position screen: (addr screen) -> _/eax: int, _/ecx: int {
+fn cursor-position _screen: (addr screen) -> _/eax: int, _/ecx: int {
+  var screen/esi: (addr screen) <- copy _screen
   {
     compare screen, 0
     break-if-!=
@@ -124,13 +125,13 @@ fn cursor-position screen: (addr screen) -> _/eax: int, _/ecx: int {
     return x, y
   }
   # fake screen
-  var screen-addr/esi: (addr screen) <- copy screen
-  var cursor-x-addr/eax: (addr int) <- get screen-addr, cursor-x
-  var cursor-y-addr/ecx: (addr int) <- get screen-addr, cursor-y
+  var cursor-x-addr/eax: (addr int) <- get screen, cursor-x
+  var cursor-y-addr/ecx: (addr int) <- get screen, cursor-y
   return *cursor-x-addr, *cursor-y-addr
 }
 
-fn set-cursor-position screen: (addr screen), x: int, y: int {
+fn set-cursor-position _screen: (addr screen), x: int, y: int {
+  var screen/esi: (addr screen) <- copy _screen
   {
     compare screen, 0
     break-if-!=
@@ -138,7 +139,6 @@ fn set-cursor-position screen: (addr screen), x: int, y: int {
     return
   }
   # fake screen
-  var screen-addr/esi: (addr screen) <- copy screen
   # ignore x < 0
   {
     compare x, 0
@@ -147,7 +147,7 @@ fn set-cursor-position screen: (addr screen), x: int, y: int {
   }
   # ignore x >= width
   {
-    var width-addr/eax: (addr int) <- get screen-addr, width
+    var width-addr/eax: (addr int) <- get screen, width
     var width/eax: int <- copy *width-addr
     compare x, width
     break-if-<=
@@ -161,18 +161,18 @@ fn set-cursor-position screen: (addr screen), x: int, y: int {
   }
   # ignore y >= height
   {
-    var height-addr/eax: (addr int) <- get screen-addr, height
+    var height-addr/eax: (addr int) <- get screen, height
     var height/eax: int <- copy *height-addr
     compare y, height
     break-if-<
     return
   }
   # screen->cursor-x = x
-  var dest/edi: (addr int) <- get screen-addr, cursor-x
+  var dest/edi: (addr int) <- get screen, cursor-x
   var src/eax: int <- copy x
   copy-to *dest, src
   # screen->cursor-y = y
-  dest <- get screen-addr, cursor-y
+  dest <- get screen, cursor-y
   src <- copy y
   copy-to *dest, src
 }
@@ -191,7 +191,8 @@ fn draw-cursor screen: (addr screen), g: grapheme {
   draw-grapheme screen, g, cursor-x, cursor-y, 0/fg, 7/bg
 }
 
-fn clear-screen screen: (addr screen) {
+fn clear-screen _screen: (addr screen) {
+  var screen/esi: (addr screen) <- copy _screen
   {
     compare screen, 0
     break-if-!=
@@ -200,14 +201,13 @@ fn clear-screen screen: (addr screen) {
   }
   # fake screen
   set-cursor-position screen, 0, 0
-  var screen-addr/esi: (addr screen) <- copy screen
   var y/eax: int <- copy 0
-  var height/ecx: (addr int) <- get screen-addr, height
+  var height/ecx: (addr int) <- get screen, height
   {
     compare y, *height
     break-if->=
     var x/edx: int <- copy 0
-    var width/ebx: (addr int) <- get screen-addr, width
+    var width/ebx: (addr int) <- get screen, width
     {
       compare x, *width
       break-if->=
@@ -250,7 +250,8 @@ fn fake-screen-empty? _screen: (addr screen) -> _/eax: boolean {
   return 1/true
 }
 
-fn clear-rect screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int, background-color: int {
+fn clear-rect _screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int, background-color: int {
+  var screen/esi: (addr screen) <- copy _screen
   {
     compare screen, 0
     break-if-!=
@@ -259,7 +260,6 @@ fn clear-rect screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int,
   }
   # fake screen
   set-cursor-position screen, 0, 0
-  var screen-addr/esi: (addr screen) <- copy screen
   var y/eax: int <- copy ymin
   var ymax/ecx: int <- copy ymax
   {
@@ -324,16 +324,16 @@ fn clear-rect-on-real-screen xmin: int, ymin: int, xmax: int, ymax: int, backgro
   }
 }
 
-fn screen-grapheme-at screen-on-stack: (addr screen), x: int, y: int -> _/eax: grapheme {
-  var screen-addr/esi: (addr screen) <- copy screen-on-stack
-  var idx/ecx: int <- screen-cell-index screen-addr, x, y
-  var result/eax: grapheme <- screen-grapheme-at-idx screen-addr, idx
+fn screen-grapheme-at _screen: (addr screen), x: int, y: int -> _/eax: grapheme {
+  var screen/esi: (addr screen) <- copy _screen
+  var idx/ecx: int <- screen-cell-index screen, x, y
+  var result/eax: grapheme <- screen-grapheme-at-idx screen, idx
   return result
 }
 
-fn screen-grapheme-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: grapheme {
-  var screen-addr/esi: (addr screen) <- copy screen-on-stack
-  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+fn screen-grapheme-at-idx _screen: (addr screen), idx-on-stack: int -> _/eax: grapheme {
+  var screen/esi: (addr screen) <- copy _screen
+  var data-ah/eax: (addr handle array screen-cell) <- get screen, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
   var idx/ecx: int <- copy idx-on-stack
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
@@ -342,16 +342,16 @@ fn screen-grapheme-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _
   return *src
 }
 
-fn screen-color-at screen-on-stack: (addr screen), x: int, y: int -> _/eax: int {
-  var screen-addr/esi: (addr screen) <- copy screen-on-stack
-  var idx/ecx: int <- screen-cell-index screen-addr, x, y
-  var result/eax: int <- screen-color-at-idx screen-addr, idx
+fn screen-color-at _screen: (addr screen), x: int, y: int -> _/eax: int {
+  var screen/esi: (addr screen) <- copy _screen
+  var idx/ecx: int <- screen-cell-index screen, x, y
+  var result/eax: int <- screen-color-at-idx screen, idx
   return result
 }
 
-fn screen-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: int {
-  var screen-addr/esi: (addr screen) <- copy screen-on-stack
-  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+fn screen-color-at-idx _screen: (addr screen), idx-on-stack: int -> _/eax: int {
+  var screen/esi: (addr screen) <- copy _screen
+  var data-ah/eax: (addr handle array screen-cell) <- get screen, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
   var idx/ecx: int <- copy idx-on-stack
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
@@ -361,16 +361,16 @@ fn screen-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/ea
   return result
 }
 
-fn screen-background-color-at screen-on-stack: (addr screen), x: int, y: int -> _/eax: int {
-  var screen-addr/esi: (addr screen) <- copy screen-on-stack
-  var idx/ecx: int <- screen-cell-index screen-addr, x, y
-  var result/eax: int <- screen-background-color-at-idx screen-addr, idx
+fn screen-background-color-at _screen: (addr screen), x: int, y: int -> _/eax: int {
+  var screen/esi: (addr screen) <- copy _screen
+  var idx/ecx: int <- screen-cell-index screen, x, y
+  var result/eax: int <- screen-background-color-at-idx screen, idx
   return result
 }
 
-fn screen-background-color-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: int {
-  var screen-addr/esi: (addr screen) <- copy screen-on-stack
-  var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
+fn screen-background-color-at-idx _screen: (addr screen), idx-on-stack: int -> _/eax: int {
+  var screen/esi: (addr screen) <- copy _screen
+  var data-ah/eax: (addr handle array screen-cell) <- get screen, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
   var idx/ecx: int <- copy idx-on-stack
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
