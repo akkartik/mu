@@ -76,7 +76,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     var x2/edx: int <- copy x
     var dummy/eax: int <- draw-stream-rightward screen, value, x2, xmax, y, 7/fg=grey, 0/bg
   }
-  y <- maybe-render-screen screen, globals, xmin, y, xmax, ymax
+  y <- maybe-render-screen screen, globals, xmin, y
   # render menu
   var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
   compare *cursor-in-trace?, 0/false
@@ -88,12 +88,83 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   render-sandbox-menu screen
 }
 
-fn maybe-render-screen screen: (addr screen), globals: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int -> _/ecx: int {
-  var x/eax: int <- copy xmin
+fn maybe-render-screen screen: (addr screen), _globals: (addr global-table), xmin: int, ymin: int -> _/ecx: int {
+  var globals/esi: (addr global-table) <- copy _globals
+  var screen-literal-storage: (stream byte 8)
+  var screen-literal/eax: (addr stream byte) <- address screen-literal-storage
+  write screen-literal, "screen"
+  var screen-obj-index/ecx: int <- find-symbol-in-globals globals, screen-literal
+  compare screen-obj-index, -1/not-found
+  {
+    break-if-!=
+    return ymin
+  }
+  var global-data-ah/eax: (addr handle array global) <- get globals, data
+  var global-data/eax: (addr array global) <- lookup *global-data-ah
+  var screen-obj-offset/ecx: (offset global) <- compute-offset global-data, screen-obj-index
+  var screen-global/eax: (addr global) <- index global-data, screen-obj-offset
+  var screen-obj-cell-ah/eax: (addr handle cell) <- get screen-global, value
+  var screen-obj-cell/eax: (addr cell) <- lookup *screen-obj-cell-ah
+  var screen-obj-cell-type/ecx: (addr int) <- get screen-obj-cell, type
+  compare *screen-obj-cell-type, 5/screen
+  {
+    break-if-=
+    return ymin  # silently give up on rendering the screen
+  }
+  var screen-obj-ah/eax: (addr handle screen) <- get screen-obj-cell, screen-data
+  var screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
+  {
+    var screen-empty?/eax: boolean <- fake-screen-empty? screen-obj
+    compare screen-empty?, 0/false
+    break-if-=
+    return ymin
+  }
   var y/ecx: int <- copy ymin
   y <- add 2
-  x, y <- draw-text-wrapping-right-then-down screen, "abc", x, y, xmax, ymax, x, y, 7/fg, 0/bg
+  y <- render-screen screen, screen-obj, xmin, y
   return y
+}
+
+fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
+  var target-screen/esi: (addr screen) <- copy _target-screen
+  var height/edx: (addr int) <- get target-screen, height
+  var y/ecx: int <- copy 0
+  var screen-y/edi: int <- copy ymin
+  {
+    compare y, *height
+    break-if->=
+    set-cursor-position screen, xmin, screen-y
+    draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
+    move-cursor-right screen
+    var width/edx: (addr int) <- get target-screen, width
+    var x/ebx: int <- copy 0
+    {
+      compare x, *width
+      break-if->=
+      print-screen-cell-of-fake-screen screen, target-screen, x, y
+      move-cursor-right screen
+      x <- increment
+      loop
+    }
+    draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
+    y <- increment
+    screen-y <- increment
+    loop
+  }
+  return y
+}
+
+fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen), x: int, y: int {
+  var target/ecx: (addr screen) <- copy _target
+  var data-ah/eax: (addr handle array screen-cell) <- get target, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var index/ecx: int <- screen-cell-index target, x, y
+  var offset/ecx: (offset screen-cell) <- compute-offset data, index
+  var src-cell/esi: (addr screen-cell) <- index data, offset
+  var src-grapheme/eax: (addr grapheme) <- get src-cell, data
+  var src-color/ecx: (addr int) <- get src-cell, color
+  var src-background-color/edx: (addr int) <- get src-cell, background-color
+  draw-grapheme-at-cursor screen, *src-grapheme, *src-color, *src-background-color
 }
 
 fn render-sandbox-menu screen: (addr screen) {

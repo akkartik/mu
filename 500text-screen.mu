@@ -221,6 +221,35 @@ fn clear-screen screen: (addr screen) {
   set-cursor-position screen, 0, 0
 }
 
+fn fake-screen-empty? _screen: (addr screen) -> _/eax: boolean {
+  var screen/esi: (addr screen) <- copy _screen
+  var y/eax: int <- copy 0
+  var height/ecx: (addr int) <- get screen, height
+  {
+    compare y, *height
+    break-if->=
+    var x/edx: int <- copy 0
+    var width/ebx: (addr int) <- get screen, width
+    {
+      compare x, *width
+      break-if->=
+      var g/eax: grapheme <- screen-grapheme-at screen, x, y
+      {
+        compare g, 0
+        break-if-=
+        compare g, 0x20/space
+        break-if-=
+        return 0/false
+      }
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+  return 1/true
+}
+
 fn clear-rect screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int, background-color: int {
   {
     compare screen, 0
