@@ -169,3 +169,16 @@ fn new-keyboard _out: (addr handle cell), capacity: int {
   var dest-addr/eax: (addr gap-buffer) <- lookup *dest-ah
   initialize-gap-buffer dest-addr, capacity
 }
+
+fn rewind-keyboard-cell _self-ah: (addr handle cell) {
+  var self-ah/eax: (addr handle cell) <- copy _self-ah
+  var self/eax: (addr cell) <- lookup *self-ah
+  compare self, 0
+  {
+    break-if-!=
+    return
+  }
+  var keyboard-ah/eax: (addr handle gap-buffer) <- get self, keyboard-data
+  var keyboard/eax: (addr gap-buffer) <- lookup *keyboard-ah
+  rewind-gap-buffer keyboard
+}

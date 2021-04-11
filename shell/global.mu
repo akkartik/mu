@@ -22,6 +22,7 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "cons"
   append-primitive self, "="
   append-primitive self, "print"
+  append-primitive self, "key"
 }
 
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
@@ -291,6 +292,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare is-print?, 0/false
     break-if-=
     apply-print args-ah, out, env-h, trace
+    return
+  }
+  {
+    var wait-for-key?/eax: boolean <- string-equal? f-name, "key"
+    compare wait-for-key?, 0/false
+    break-if-=
+    apply-wait-for-key args-ah, out, env-h, trace
     return
   }
   abort "unknown primitive function"
@@ -647,7 +655,7 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), env-h: (ha
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "cons needs 2 args but got 0"
+    error trace, "print needs 2 args but got 0"
     return
   }
   # screen = args->left
@@ -674,4 +682,52 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), env-h: (ha
   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, stream, 7/fg, 0/bg
   # return what was printed
   copy-object second-ah, out
+}
+
+fn apply-wait-for-key _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply key"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "key needs 1 arg but got 0"
+    return
+  }
+  # keyboard = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 6/keyboard
+  {
+    break-if-=
+    error trace, "first arg for 'key' is not a keyboard"
+    return
+  }
+  var keyboard-ah/eax: (addr handle gap-buffer) <- get first, keyboard-data
+  var _keyboard/eax: (addr gap-buffer) <- lookup *keyboard-ah
+  var keyboard/ecx: (addr gap-buffer) <- copy _keyboard
+  var result/eax: int <- wait-for-key keyboard
+  # return key typed
+  new-integer out, result
+}
+
+fn wait-for-key keyboard: (addr gap-buffer) -> _/eax: int {
+  # if keyboard is 0, use real keyboard
+  {
+    compare keyboard, 0/real-keyboard
+    break-if-!=
+    var key/eax: byte <- read-key 0/real-keyboard
+    var result/eax: int <- copy key
+    return result
+  }
+  # otherwise read from fake keyboard
+  var g/eax: grapheme <- read-from-gap-buffer keyboard
+  var result/eax: int <- copy g
+  return result
 }

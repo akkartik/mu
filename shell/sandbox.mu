@@ -489,7 +489,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     var screen-cell/eax: (addr handle cell) <- get self, screen-var
     clear-screen-cell screen-cell
     var keyboard-cell/esi: (addr handle cell) <- get self, keyboard-var
-    # don't clear
+    rewind-keyboard-cell keyboard-cell  # don't clear keys from before
     run data, value, globals, trace, screen-cell, keyboard-cell
     return
   }
