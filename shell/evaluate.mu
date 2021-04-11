@@ -205,7 +205,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   var args-ah/edx: (addr handle cell) <- get evaluated-list, right
 #?   dump-cell args-ah
 #?   abort "aaa"
-  apply function-ah, args-ah, out, env-h, globals, trace, screen-cell, keyboard-cell
+  apply function-ah, args-ah, out, globals, trace, screen-cell, keyboard-cell
   trace-higher trace
   # trace "=> " out {{{
   {
@@ -218,7 +218,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   # }}}
 }
 
-fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   var f-ah/eax: (addr handle cell) <- copy _f-ah
   var _f/eax: (addr cell) <- lookup *f-ah
   var f/esi: (addr cell) <- copy _f
@@ -237,9 +237,9 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "apply anonymous function "
     print-cell _f-ah, stream, 0/no-trace
-    write stream, " in environment "
-    var env-ah/eax: (addr handle cell) <- address env-h
-    print-cell env-ah, stream, 0/no-trace
+#?     write stream, " in environment "
+#?     var callee-env-ah/eax: (addr handle cell) <- address callee-env-h
+#?     print-cell callee-env-ah, stream, 0/no-trace
     trace trace, "eval", stream
   }
   # }}}
@@ -257,7 +257,10 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     var rest/eax: (addr cell) <- lookup *rest-ah
     var params-ah/ecx: (addr handle cell) <- get rest, left
     var body-ah/eax: (addr handle cell) <- get rest, right
-    apply-function params-ah, args-ah, body-ah, out, env-h, globals, trace, screen-cell, keyboard-cell
+    var nil-env-h: (handle cell)
+    var nil-env-ah/edx: (addr handle cell) <- address nil-env-h
+    allocate-pair nil-env-ah
+    apply-function params-ah, args-ah, body-ah, out, nil-env-h, globals, trace, screen-cell, keyboard-cell
     trace-higher trace
     return
   }
