@@ -40,6 +40,13 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
     trace-higher trace
     return
   }
+  compare *in-type, 3/stream
+  {
+    break-if-!=
+    print-stream in-addr, out, trace
+    trace-higher trace
+    return
+  }
   compare *in-type, 4/primitive
   {
     break-if-!=
@@ -84,6 +91,25 @@ fn print-symbol _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   var stream-storage: (stream byte 0x40)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, "=> symbol "
+  write-stream stream, data
+  trace trace, "print", stream
+}
+
+fn print-stream _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
+  trace-text trace, "print", "stream"
+  var in/esi: (addr cell) <- copy _in
+  var data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var _data/eax: (addr stream byte) <- lookup *data-ah
+  var data/esi: (addr stream byte) <- copy _data
+  rewind-stream data
+  write out, "["
+  write-stream out, data
+  write out, "]"
+  # trace
+  rewind-stream data
+  var stream-storage: (stream byte 0x40)
+  var stream/ecx: (addr stream byte) <- address stream-storage
+  write stream, "=> stream "
   write-stream stream, data
   trace trace, "print", stream
 }

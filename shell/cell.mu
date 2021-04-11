@@ -6,7 +6,7 @@ type cell {
   # type 1: number
   number-data: float
   # type 2: symbol
-  # type 3: string
+  # type 3: stream
   text-data: (handle stream byte)
   # type 4: primitive function
   index-data: int
@@ -14,7 +14,7 @@ type cell {
   screen-data: (handle screen)
   # type 6: keyboard
   keyboard-data: (handle gap-buffer)
-  # TODO: array, (associative) table, stream
+  # TODO: array, (associative) table
 }
 
 fn allocate-symbol _out: (addr handle cell) {
@@ -38,6 +38,16 @@ fn initialize-symbol _out: (addr handle cell), val: (addr array byte) {
 fn new-symbol out: (addr handle cell), val: (addr array byte) {
   allocate-symbol out
   initialize-symbol out, val
+}
+
+fn allocate-stream _out: (addr handle cell) {
+  var out/eax: (addr handle cell) <- copy _out
+  allocate out
+  var out-addr/eax: (addr cell) <- lookup *out
+  var type/ecx: (addr int) <- get out-addr, type
+  copy-to *type, 3/stream
+  var dest-ah/eax: (addr handle stream byte) <- get out-addr, text-data
+  populate-stream dest-ah, 0x40/max-stream-size
 }
 
 fn allocate-number _out: (addr handle cell) {

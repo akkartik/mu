@@ -28,6 +28,9 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "print"
   # for keyboards
   append-primitive self, "key"
+  # for streams
+  append-primitive self, "stream"
+  append-primitive self, "write"
 }
 
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
@@ -304,6 +307,20 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare wait-for-key?, 0/false
     break-if-=
     apply-wait-for-key args-ah, out, env-h, trace
+    return
+  }
+  {
+    var is-stream?/eax: boolean <- string-equal? f-name, "stream"
+    compare is-stream?, 0/false
+    break-if-=
+    apply-stream args-ah, out, env-h, trace
+    return
+  }
+  {
+    var write?/eax: boolean <- string-equal? f-name, "write"
+    compare write?, 0/false
+    break-if-=
+    apply-write args-ah, out, env-h, trace
     return
   }
   abort "unknown primitive function"
@@ -735,4 +752,59 @@ fn wait-for-key keyboard: (addr gap-buffer) -> _/eax: int {
   var g/eax: grapheme <- read-from-gap-buffer keyboard
   var result/eax: int <- copy g
   return result
+}
+
+fn apply-stream _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply stream"
+  allocate-stream out
+}
+
+fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply write"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/edi: (addr cell) <- copy _env
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "write needs 2 args but got 0"
+    return
+  }
+  # stream = args->left
+  var first-ah/edx: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 3/stream
+  {
+    break-if-=
+    error trace, "first arg for 'write' is not a stream"
+    return
+  }
+  var stream-data-ah/eax: (addr handle stream byte) <- get first, text-data
+  var _stream-data/eax: (addr stream byte) <- lookup *stream-data-ah
+  var stream-data/ebx: (addr stream byte) <- copy _stream-data
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/eax: (addr handle cell) <- get right, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/ecx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "second arg for stream is not a number/grapheme"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  var x-float/xmm0: float <- copy *second-value
+  var x/eax: int <- convert x-float
+  var x-grapheme/eax: grapheme <- copy x
+  write-grapheme stream-data, x-grapheme
+  # return the stream
+  copy-object first-ah, out
 }
