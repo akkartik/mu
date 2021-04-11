@@ -56,14 +56,19 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     # trees starting with "fn" are anonymous functions and therefore literals
     var expr/esi: (addr cell) <- copy in-addr
     # if its first elem is not "fn", break
+    var in-addr/edx: (addr cell) <- copy in-addr
     var first-ah/ecx: (addr handle cell) <- get in-addr, left
     var first/eax: (addr cell) <- lookup *first-ah
     var fn?/eax: boolean <- fn? first
     compare fn?, 0/false
     break-if-=
-    #
+    # turn (fn ...) into (fn env ...)
     trace-text trace, "eval", "anonymous function"
-    copy-object _in, out
+    var rest-ah/eax: (addr handle cell) <- get in-addr, right
+    var tmp: (handle cell)
+    var tmp-ah/edi: (addr handle cell) <- address tmp
+    new-pair tmp-ah, env-h, *rest-ah
+    new-pair out, *first-ah, *tmp-ah
     trace-higher trace
     return
   }
@@ -255,12 +260,12 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     break-if-=
     var rest-ah/esi: (addr handle cell) <- get f, right
     var rest/eax: (addr cell) <- lookup *rest-ah
+    var callee-env-ah/edx: (addr handle cell) <- get rest, left
+    rest-ah <- get rest, right
+    rest <- lookup *rest-ah
     var params-ah/ecx: (addr handle cell) <- get rest, left
     var body-ah/eax: (addr handle cell) <- get rest, right
-    var nil-env-h: (handle cell)
-    var nil-env-ah/edx: (addr handle cell) <- address nil-env-h
-    allocate-pair nil-env-ah
-    apply-function params-ah, args-ah, body-ah, out, nil-env-h, globals, trace, screen-cell, keyboard-cell
+    apply-function params-ah, args-ah, body-ah, out, *callee-env-ah, globals, trace, screen-cell, keyboard-cell
     trace-higher trace
     return
   }
