@@ -130,7 +130,7 @@ fn append-global _self: (addr global-table), name: (addr array byte), value: (ha
   copy-handle value, curr-value-ah
 }
 
-fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell) {
+fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   var sym/eax: (addr cell) <- copy _sym
   var sym-name-ah/eax: (addr handle stream byte) <- get sym, text-data
   var _sym-name/eax: (addr stream byte) <- lookup *sym-name-ah
@@ -158,6 +158,16 @@ fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals
     compare screen-cell, 0
     break-if-=
     copy-object screen-cell, out
+    return
+  }
+  # if sym is "keyboard" and keyboard-cell exists, return it
+  {
+    var sym-is-keyboard?/eax: boolean <- stream-data-equal? sym-name, "keyboard"
+    compare sym-is-keyboard?, 0/false
+    break-if-=
+    compare keyboard-cell, 0
+    break-if-=
+    copy-object keyboard-cell, out
     return
   }
   # otherwise error "unbound symbol: ", sym

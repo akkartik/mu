@@ -5,6 +5,7 @@ type sandbox {
   keyboard-var: (handle cell)
   trace: (handle trace)
   cursor-in-trace?: boolean
+  cursor-in-keyboard?: boolean
 }
 
 fn initialize-sandbox _self: (addr sandbox), screen-and-keyboard?: boolean {
@@ -23,7 +24,7 @@ fn initialize-sandbox _self: (addr sandbox), screen-and-keyboard?: boolean {
     var screen-ah/eax: (addr handle cell) <- get self, screen-var
     new-screen screen-ah, 5/width, 4/height
     var keyboard-ah/eax: (addr handle cell) <- get self, keyboard-var
-    allocate-keyboard keyboard-ah, 5/capacity
+    new-keyboard keyboard-ah, 0x10/keyboard-capacity
   }
   #
   var trace-ah/eax: (addr handle trace) <- get self, trace
@@ -61,6 +62,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   var x/eax: int <- copy xmin
   var y/ecx: int <- copy ymin
   y <- maybe-render-empty-screen screen, self, xmin, y
+  y <- maybe-render-keyboard screen, self, xmin, y
   var cursor-in-sandbox?/ebx: boolean <- copy 0/false
   {
     var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
@@ -282,6 +284,79 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
   return screen-y
 }
 
+fn maybe-render-keyboard screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int -> _/ecx: int {
+  var self/esi: (addr sandbox) <- copy _self
+  var keyboard-obj-cell-ah/eax: (addr handle cell) <- get self, keyboard-var
+  var keyboard-obj-cell/eax: (addr cell) <- lookup *keyboard-obj-cell-ah
+  compare keyboard-obj-cell, 0
+  {
+    break-if-!=
+    return ymin
+  }
+  var keyboard-obj-cell-type/ecx: (addr int) <- get keyboard-obj-cell, type
+  compare *keyboard-obj-cell-type, 6/keyboard
+  {
+    break-if-=
+    return ymin  # silently give up on rendering the keyboard
+  }
+  var keyboard-obj-ah/eax: (addr handle gap-buffer) <- get keyboard-obj-cell, keyboard-data
+  var _keyboard-obj/eax: (addr gap-buffer) <- lookup *keyboard-obj-ah
+  var keyboard-obj/edx: (addr gap-buffer) <- copy _keyboard-obj
+  var x/eax: int <- draw-text-rightward screen, "keyboard: ", xmin, 0x99/xmax, ymin, 7/fg, 0/bg
+  var y/ecx: int <- copy ymin
+  var cursor-in-keyboard?/esi: (addr boolean) <- get self, cursor-in-keyboard?
+  y <- render-keyboard screen, keyboard-obj, x, y, *cursor-in-keyboard?
+  return y
+}
+
+# draw an evocative shape
+fn render-keyboard screen: (addr screen), _keyboard: (addr gap-buffer), xmin: int, ymin: int, render-cursor?: boolean -> _/ecx: int {
+  var keyboard/esi: (addr gap-buffer) <- copy _keyboard
+  var width/edx: int <- copy 0x10/keyboard-capacity
+  var y/edi: int <- copy ymin
+  # top border
+  {
+    set-cursor-position screen, xmin, y
+    move-cursor-right screen
+    var x/ebx: int <- copy 0
+    {
+      compare x, width
+      break-if->=
+      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      move-cursor-right screen
+      x <- increment
+      loop
+    }
+    y <- increment
+  }
+  # keyboard
+  var x/eax: int <- copy xmin
+  draw-code-point screen, 0x7c/vertical-bar, x, y, 0x18/fg, 0/bg
+  x <- increment
+  x <- render-gap-buffer screen, keyboard, x, y, render-cursor?
+  x <- copy xmin
+  x <- add 1  # for left bar
+  x <- add 0x10/keyboard-capacity
+  draw-code-point screen, 0x7c/vertical-bar, x, y, 0x18/fg, 0/bg
+  y <- increment
+  # bottom border
+  {
+    set-cursor-position screen, xmin, y
+    move-cursor-right screen
+    var x/ebx: int <- copy 0
+    {
+      compare x, width
+      break-if->=
+      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      move-cursor-right screen
+      x <- increment
+      loop
+    }
+    y <- increment
+  }
+  return y
+}
+
 fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen), x: int, y: int {
   var target/ecx: (addr screen) <- copy _target
   var data-ah/eax: (addr handle array screen-cell) <- get target, data
@@ -349,7 +424,9 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     clear-trace trace
     var screen-cell/eax: (addr handle cell) <- get self, screen-var
     clear-screen-cell screen-cell
-    run data, value, globals, trace, screen-cell
+    var keyboard-cell/esi: (addr handle cell) <- get self, keyboard-var
+    # don't clear
+    run data, value, globals, trace, screen-cell, keyboard-cell
     return
   }
   # tab
@@ -384,7 +461,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
   return
 }
 
-fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell) {
+fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   var read-result-storage: (handle cell)
   var read-result/esi: (addr handle cell) <- address read-result-storage
   read-cell in, read-result, trace
@@ -399,7 +476,7 @@ fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-tab
   allocate-pair nil-ah
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
-  evaluate read-result, eval-result, *nil-ah, globals, trace, screen-cell
+  evaluate read-result, eval-result, *nil-ah, globals, trace, screen-cell, keyboard-cell
   var error?/eax: boolean <- has-errors? trace
   {
     compare error?, 0/false
@@ -414,7 +491,7 @@ fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-tab
 fn test-run-integer {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox, 0/no-screen
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "1"
   edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # eval
@@ -433,7 +510,7 @@ fn test-run-integer {
 fn test-run-with-spaces {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox, 0/no-screen
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type input with whitespace before and after
   edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
@@ -456,7 +533,7 @@ fn test-run-with-spaces {
 fn test-run-quote {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox, 0/no-screen
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "'a"
   edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
@@ -476,7 +553,7 @@ fn test-run-quote {
 fn test-run-error-invalid-integer {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox, 0/no-screen
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "1a"
   edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
@@ -496,7 +573,7 @@ fn test-run-error-invalid-integer {
 fn test-run-move-cursor-into-trace {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox, 0/no-screen
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "12"
   edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   edit-sandbox sandbox, 0x32/2, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk

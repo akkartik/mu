@@ -13,7 +13,7 @@ type cell {
   # type 5: screen
   screen-data: (handle screen)
   # type 6: keyboard
-  keyboard-data: (handle stream byte)
+  keyboard-data: (handle gap-buffer)
   # TODO: array, (associative) table, stream
 }
 
@@ -151,12 +151,21 @@ fn clear-screen-cell _self-ah: (addr handle cell) {
   clear-screen screen
 }
 
-fn allocate-keyboard _out: (addr handle cell), capacity: int {
+fn allocate-keyboard _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out
   var out-addr/eax: (addr cell) <- lookup *out
-  var dest-ah/ecx: (addr handle stream byte) <- get out-addr, keyboard-data
-  populate-stream dest-ah, capacity
+  var dest-ah/ecx: (addr handle gap-buffer) <- get out-addr, keyboard-data
+  allocate dest-ah
   var type/ecx: (addr int) <- get out-addr, type
   copy-to *type, 6/keyboard
+}
+
+fn new-keyboard _out: (addr handle cell), capacity: int {
+  var out/eax: (addr handle cell) <- copy _out
+  allocate-keyboard out
+  var out-addr/eax: (addr cell) <- lookup *out
+  var dest-ah/eax: (addr handle gap-buffer) <- get out-addr, keyboard-data
+  var dest-addr/eax: (addr gap-buffer) <- lookup *dest-ah
+  initialize-gap-buffer dest-addr, capacity
 }
