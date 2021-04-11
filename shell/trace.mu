@@ -668,8 +668,8 @@ fn render-trace-menu screen: (addr screen) {
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 3/bg=cyan
-  draw-text-rightward-from-cursor screen, " move to sandbox  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 0x18/bg=keyboard
+  draw-text-rightward-from-cursor screen, " move to keyboard  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " j ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " down  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " k ", width, 0/fg, 7/bg=grey

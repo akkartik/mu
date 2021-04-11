@@ -4,8 +4,9 @@ type sandbox {
   screen-var: (handle cell)
   keyboard-var: (handle cell)
   trace: (handle trace)
-  cursor-in-trace?: boolean
+  cursor-in-data?: boolean
   cursor-in-keyboard?: boolean
+  cursor-in-trace?: boolean
 }
 
 fn initialize-sandbox _self: (addr sandbox), screen-and-keyboard?: boolean {
@@ -31,6 +32,8 @@ fn initialize-sandbox _self: (addr sandbox), screen-and-keyboard?: boolean {
   allocate trace-ah
   var trace/eax: (addr trace) <- lookup *trace-ah
   initialize-trace trace, 0x1000/lines, 0x80/visible-lines
+  var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
+  copy-to *cursor-in-data?, 1/true
 }
 
 ## some helpers for tests
@@ -63,14 +66,8 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   var y/ecx: int <- copy ymin
   y <- maybe-render-empty-screen screen, self, xmin, y
   y <- maybe-render-keyboard screen, self, xmin, y
-  var cursor-in-sandbox?/ebx: boolean <- copy 0/false
-  {
-    var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
-    compare *cursor-in-trace?, 0/false
-    break-if-!=
-    cursor-in-sandbox? <- copy 1/true
-  }
-  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, cursor-in-sandbox?
+  var cursor-in-sandbox?/ebx: (addr boolean) <- get self, cursor-in-data?
+  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, *cursor-in-sandbox?
   y <- increment
   # trace
   var trace-ah/eax: (addr handle trace) <- get self, trace
@@ -95,6 +92,13 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   y <- add 2  # padding
   y <- maybe-render-screen screen, self, xmin, y
   # render menu
+  var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
+  compare *cursor-in-data?, 0/false
+  {
+    break-if-=
+    render-sandbox-menu screen, self
+    return
+  }
   var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
   compare *cursor-in-trace?, 0/false
   {
@@ -102,7 +106,13 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     render-trace-menu screen
     return
   }
-  render-sandbox-menu screen
+  var cursor-in-keyboard?/eax: (addr boolean) <- get self, cursor-in-keyboard?
+  compare *cursor-in-keyboard?, 0/false
+  {
+    break-if-=
+    render-keyboard-menu screen
+    return
+  }
 }
 
 fn maybe-render-empty-screen screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int -> _/ecx: int {
@@ -126,7 +136,6 @@ fn maybe-render-empty-screen screen: (addr screen), _self: (addr sandbox), xmin:
   var screen-obj/edx: (addr screen) <- copy _screen-obj
   var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, y, 7/fg, 0/bg
   y <- render-empty-screen screen, screen-obj, x, y
-  y <- increment  # padding
   return y
 }
 
@@ -284,6 +293,32 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
   return screen-y
 }
 
+fn has-keyboard? _self: (addr sandbox) -> _/eax: boolean {
+  var self/esi: (addr sandbox) <- copy _self
+  var keyboard-obj-cell-ah/eax: (addr handle cell) <- get self, keyboard-var
+  var keyboard-obj-cell/eax: (addr cell) <- lookup *keyboard-obj-cell-ah
+  compare keyboard-obj-cell, 0
+  {
+    break-if-!=
+    return 0/false
+  }
+  var keyboard-obj-cell-type/ecx: (addr int) <- get keyboard-obj-cell, type
+  compare *keyboard-obj-cell-type, 6/keyboard
+  {
+    break-if-=
+    return 0/false
+  }
+  var keyboard-obj-ah/eax: (addr handle gap-buffer) <- get keyboard-obj-cell, keyboard-data
+  var _keyboard-obj/eax: (addr gap-buffer) <- lookup *keyboard-obj-ah
+  var keyboard-obj/edx: (addr gap-buffer) <- copy _keyboard-obj
+  compare keyboard-obj, 0
+  {
+    break-if-!=
+    return 0/false
+  }
+  return 1/true
+}
+
 fn maybe-render-keyboard screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int -> _/ecx: int {
   var self/esi: (addr sandbox) <- copy _self
   var keyboard-obj-cell-ah/eax: (addr handle cell) <- get self, keyboard-var
@@ -306,6 +341,7 @@ fn maybe-render-keyboard screen: (addr screen), _self: (addr sandbox), xmin: int
   var y/ecx: int <- copy ymin
   var cursor-in-keyboard?/esi: (addr boolean) <- get self, cursor-in-keyboard?
   y <- render-keyboard screen, keyboard-obj, x, y, *cursor-in-keyboard?
+  y <- increment  # padding
   return y
 }
 
@@ -370,7 +406,35 @@ fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen
   draw-grapheme-at-cursor screen, *src-grapheme, *src-color, *src-background-color
 }
 
-fn render-sandbox-menu screen: (addr screen) {
+fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
+  var _width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  _width, height <- screen-size screen
+  var width/edx: int <- copy _width
+  var y/ecx: int <- copy height
+  y <- decrement
+  var height/ebx: int <- copy y
+  height <- increment
+  clear-rect screen, 0/x, y, width, height, 0/bg=black
+  set-cursor-position screen, 0/x, y
+  draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
+  $render-sandbox-menu:render-tab: {
+    var self/eax: (addr sandbox) <- copy _self
+    var has-trace?/eax: boolean <- has-trace? self
+    compare has-trace?, 0/false
+    {
+      break-if-=
+      draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 9/bg=blue
+      draw-text-rightward-from-cursor screen, " move to trace  ", width, 7/fg, 0/bg
+      break $render-sandbox-menu:render-tab
+    }
+    draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 0x18/bg=keyboard
+    draw-text-rightward-from-cursor screen, " move to keyboard  ", width, 7/fg, 0/bg
+  }
+}
+
+fn render-keyboard-menu screen: (addr screen) {
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   width, height <- screen-size screen
@@ -382,8 +446,8 @@ fn render-sandbox-menu screen: (addr screen) {
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 9/bg=blue
-  draw-text-rightward-from-cursor screen, " move to trace  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 3/bg=cyan
+  draw-text-rightward-from-cursor screen, " move to sandbox  ", width, 7/fg, 0/bg
 }
 
 fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), real-screen: (addr screen), real-keyboard: (addr keyboard), data-disk: (addr disk) {
@@ -430,23 +494,100 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     return
   }
   # tab
-  var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
   {
     compare g, 9/tab
     break-if-!=
-    # if cursor in input, switch to trace
+    # if cursor in data, switch to trace or fall through to keyboard
     {
-      compare *cursor-in-trace?, 0/false
-      break-if-!=
-      copy-to *cursor-in-trace?, 1/true
+      var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
+      compare *cursor-in-data?, 0/false
+      break-if-=
+      var has-trace?/eax: boolean <- has-trace? self
+      compare has-trace?, 0/false
+      {
+        break-if-=
+        var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
+        copy-to *cursor-in-data?, 0/false
+        var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
+        copy-to *cursor-in-trace?, 1/false
+        return
+      }
+      var has-keyboard?/eax: boolean <- has-keyboard? self
+      compare has-keyboard?, 0/false
+      {
+        break-if-=
+        var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
+        copy-to *cursor-in-data?, 0/false
+        var cursor-in-keyboard?/eax: (addr boolean) <- get self, cursor-in-keyboard?
+        copy-to *cursor-in-keyboard?, 1/false
+        return
+      }
       return
     }
-    # if cursor in trace, switch to input
-    copy-to *cursor-in-trace?, 0/false
+    # if cursor in trace, switch to keyboard or fall through to data
+    {
+      var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
+      compare *cursor-in-trace?, 0/false
+      break-if-=
+      copy-to *cursor-in-trace?, 0/false
+      var cursor-target/ecx: (addr boolean) <- get self, cursor-in-keyboard?
+      var has-keyboard?/eax: boolean <- has-keyboard? self
+      compare has-keyboard?, 0/false
+      {
+        break-if-!=
+        cursor-target <- get self, cursor-in-data?
+      }
+      copy-to *cursor-target, 1/true
+      return
+    }
+    # otherwise if cursor in keyboard, switch to data
+    {
+      var cursor-in-keyboard?/eax: (addr boolean) <- get self, cursor-in-keyboard?
+      compare *cursor-in-keyboard?, 0/false
+      break-if-=
+      copy-to *cursor-in-keyboard?, 0/false
+      var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
+      copy-to *cursor-in-data?, 1/true
+      return
+    }
     return
   }
-  # if cursor in trace, send cursor to trace
+  # if cursor in data, send key to data
   {
+    var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
+    compare *cursor-in-data?, 0/false
+    break-if-=
+    var data-ah/eax: (addr handle gap-buffer) <- get self, data
+    var data/eax: (addr gap-buffer) <- lookup *data-ah
+    edit-gap-buffer data, g
+    return
+  }
+  # if cursor in keyboard, send key to keyboard
+  {
+    var cursor-in-keyboard?/eax: (addr boolean) <- get self, cursor-in-keyboard?
+    compare *cursor-in-keyboard?, 0/false
+    break-if-=
+    var keyboard-cell-ah/eax: (addr handle cell) <- get self, keyboard-var
+    var keyboard-cell/eax: (addr cell) <- lookup *keyboard-cell-ah
+    compare keyboard-cell, 0
+    {
+      break-if-!=
+      return
+    }
+    var keyboard-cell-type/ecx: (addr int) <- get keyboard-cell, type
+    compare *keyboard-cell-type, 6/keyboard
+    {
+      break-if-=
+      return
+    }
+    var keyboard-ah/eax: (addr handle gap-buffer) <- get keyboard-cell, keyboard-data
+    var keyboard/eax: (addr gap-buffer) <- lookup *keyboard-ah
+    edit-gap-buffer keyboard, g
+    return
+  }
+  # if cursor in trace, send key to trace
+  {
+    var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
     compare *cursor-in-trace?, 0/false
     break-if-=
     var trace-ah/eax: (addr handle trace) <- get self, trace
@@ -454,11 +595,6 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     edit-trace trace, g
     return
   }
-  # otherwise send cursor to input
-  var data-ah/eax: (addr handle gap-buffer) <- get self, data
-  var data/eax: (addr gap-buffer) <- lookup *data-ah
-  edit-gap-buffer data, g
-  return
 }
 
 fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
@@ -611,4 +747,23 @@ fn test-run-move-cursor-into-trace {
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "      ", "F - test-run-move-cursor-into-trace/input-1/cursor"
   check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/input-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/input-2/cursor"
+}
+
+fn has-trace? _self: (addr sandbox) -> _/eax: boolean {
+  var self/esi: (addr sandbox) <- copy _self
+  var trace-ah/eax: (addr handle trace) <- get self, trace
+  var _trace/eax: (addr trace) <- lookup *trace-ah
+  var trace/edx: (addr trace) <- copy _trace
+  compare trace, 0
+  {
+    break-if-!=
+    return 0/false
+  }
+  var first-free/ebx: (addr int) <- get trace, first-free
+  compare *first-free, 0
+  {
+    break-if->
+    return 0/false
+  }
+  return 1/true
 }
