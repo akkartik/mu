@@ -1,5 +1,5 @@
 # Experimental Mu shell
-# A Lisp with indent-sensitivity and infix, no macros.
+# A Lisp with indent-sensitivity and infix.
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var globals-storage: global-table
