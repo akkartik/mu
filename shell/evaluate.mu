@@ -227,7 +227,7 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     var f-type/eax: (addr int) <- get f, type
     compare *f-type, 4/primitive-function
     break-if-!=
-    apply-primitive f, args-ah, out, env-h, globals, trace
+    apply-primitive f, args-ah, out, globals, trace
     return
   }
   # if it's not a primitive function it must be an anonymous function

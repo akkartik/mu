@@ -221,7 +221,7 @@ fn find-symbol-in-globals _globals: (addr global-table), sym-name: (addr stream 
 }
 
 # a little strange; goes from value to name and selects primitive based on name
-fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), _globals: (addr global-table), trace: (addr trace) {
+fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace) {
   var f/esi: (addr cell) <- copy _f
   var f-index-a/ecx: (addr int) <- get f, index-data
   var f-index/ecx: int <- copy *f-index-a
@@ -236,103 +236,101 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     var is-add?/eax: boolean <- string-equal? f-name, "+"
     compare is-add?, 0/false
     break-if-=
-    apply-add args-ah, out, env-h, trace
+    apply-add args-ah, out, trace
     return
   }
   {
     var is-subtract?/eax: boolean <- string-equal? f-name, "-"
     compare is-subtract?, 0/false
     break-if-=
-    apply-subtract args-ah, out, env-h, trace
+    apply-subtract args-ah, out, trace
     return
   }
   {
     var is-multiply?/eax: boolean <- string-equal? f-name, "*"
     compare is-multiply?, 0/false
     break-if-=
-    apply-multiply args-ah, out, env-h, trace
+    apply-multiply args-ah, out, trace
     return
   }
   {
     var is-divide?/eax: boolean <- string-equal? f-name, "/"
     compare is-divide?, 0/false
     break-if-=
-    apply-divide args-ah, out, env-h, trace
+    apply-divide args-ah, out, trace
     return
   }
   {
     var is-square-root?/eax: boolean <- string-equal? f-name, "sqrt"
     compare is-square-root?, 0/false
     break-if-=
-    apply-square-root args-ah, out, env-h, trace
+    apply-square-root args-ah, out, trace
     return
   }
   {
     var is-car?/eax: boolean <- string-equal? f-name, "car"
     compare is-car?, 0/false
     break-if-=
-    apply-car args-ah, out, env-h, trace
+    apply-car args-ah, out, trace
     return
   }
   {
     var is-cdr?/eax: boolean <- string-equal? f-name, "cdr"
     compare is-cdr?, 0/false
     break-if-=
-    apply-cdr args-ah, out, env-h, trace
+    apply-cdr args-ah, out, trace
     return
   }
   {
     var is-cons?/eax: boolean <- string-equal? f-name, "cons"
     compare is-cons?, 0/false
     break-if-=
-    apply-cons args-ah, out, env-h, trace
+    apply-cons args-ah, out, trace
     return
   }
   {
     var is-compare?/eax: boolean <- string-equal? f-name, "="
     compare is-compare?, 0/false
     break-if-=
-    apply-compare args-ah, out, env-h, trace
+    apply-compare args-ah, out, trace
     return
   }
   {
     var is-print?/eax: boolean <- string-equal? f-name, "print"
     compare is-print?, 0/false
     break-if-=
-    apply-print args-ah, out, env-h, trace
+    apply-print args-ah, out, trace
     return
   }
   {
     var wait-for-key?/eax: boolean <- string-equal? f-name, "key"
     compare wait-for-key?, 0/false
     break-if-=
-    apply-wait-for-key args-ah, out, env-h, trace
+    apply-wait-for-key args-ah, out, trace
     return
   }
   {
     var is-stream?/eax: boolean <- string-equal? f-name, "stream"
     compare is-stream?, 0/false
     break-if-=
-    apply-stream args-ah, out, env-h, trace
+    apply-stream args-ah, out, trace
     return
   }
   {
     var write?/eax: boolean <- string-equal? f-name, "write"
     compare write?, 0/false
     break-if-=
-    apply-write args-ah, out, env-h, trace
+    apply-write args-ah, out, trace
     return
   }
   abort "unknown primitive function"
 }
 
-fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply +"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -374,13 +372,11 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), env-h: (hand
   new-float out, result
 }
 
-fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply -"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -420,13 +416,11 @@ fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), env-h: 
   new-float out, result
 }
 
-fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply *"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -466,13 +460,11 @@ fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), env-h: 
   new-float out, result
 }
 
-fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply /"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -512,13 +504,11 @@ fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), env-h: (h
   new-float out, result
 }
 
-fn apply-square-root _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-square-root _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply sqrt"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -543,13 +533,11 @@ fn apply-square-root _args-ah: (addr handle cell), out: (addr handle cell), env-
   new-float out, result
 }
 
-fn apply-car _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-car _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply car"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -573,13 +561,11 @@ fn apply-car _args-ah: (addr handle cell), out: (addr handle cell), env-h: (hand
   copy-object result, out
 }
 
-fn apply-cdr _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-cdr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply cdr"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -603,13 +589,11 @@ fn apply-cdr _args-ah: (addr handle cell), out: (addr handle cell), env-h: (hand
   copy-object result, out
 }
 
-fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply cons"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -629,13 +613,11 @@ fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), env-h: (han
   new-pair out, *first-ah, *second-ah
 }
 
-fn apply-compare _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-compare _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply ="
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -665,13 +647,11 @@ fn apply-compare _args-ah: (addr handle cell), out: (addr handle cell), env-h: (
   new-integer out, 1/true
 }
 
-fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply print"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -706,13 +686,11 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), env-h: (ha
   copy-object second-ah, out
 }
 
-fn apply-wait-for-key _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-wait-for-key _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply key"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
@@ -754,18 +732,16 @@ fn wait-for-key keyboard: (addr gap-buffer) -> _/eax: int {
   return result
 }
 
-fn apply-stream _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-stream _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply stream"
   allocate-stream out
 }
 
-fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), trace: (addr trace) {
+fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply write"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  var _env/eax: (addr cell) <- lookup env-h
-  var env/edi: (addr cell) <- copy _env
   # TODO: check that args is a pair
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
