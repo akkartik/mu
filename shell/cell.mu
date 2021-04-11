@@ -12,6 +12,8 @@ type cell {
   index-data: int
   # type 5: screen
   screen-data: (handle screen)
+  # type 6: keyboard
+  keyboard-data: (handle stream byte)
   # TODO: array, (associative) table, stream
 }
 
@@ -147,4 +149,14 @@ fn clear-screen-cell _self-ah: (addr handle cell) {
   var screen-ah/eax: (addr handle screen) <- get self, screen-data
   var screen/eax: (addr screen) <- lookup *screen-ah
   clear-screen screen
+}
+
+fn allocate-keyboard _out: (addr handle cell), capacity: int {
+  var out/eax: (addr handle cell) <- copy _out
+  allocate out
+  var out-addr/eax: (addr cell) <- lookup *out
+  var dest-ah/ecx: (addr handle stream byte) <- get out-addr, keyboard-data
+  populate-stream dest-ah, capacity
+  var type/ecx: (addr int) <- get out-addr, type
+  copy-to *type, 6/keyboard
 }

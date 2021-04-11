@@ -2,11 +2,12 @@ type sandbox {
   data: (handle gap-buffer)
   value: (handle stream byte)
   screen-var: (handle cell)
+  keyboard-var: (handle cell)
   trace: (handle trace)
   cursor-in-trace?: boolean
 }
 
-fn initialize-sandbox _self: (addr sandbox), screen?: boolean {
+fn initialize-sandbox _self: (addr sandbox), screen-and-keyboard?: boolean {
   var self/esi: (addr sandbox) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
   allocate data-ah
@@ -17,10 +18,12 @@ fn initialize-sandbox _self: (addr sandbox), screen?: boolean {
   populate-stream value-ah, 0x1000/4KB
   #
   {
-    compare screen?, 0/false
+    compare screen-and-keyboard?, 0/false
     break-if-=
     var screen-ah/eax: (addr handle cell) <- get self, screen-var
     new-screen screen-ah, 5/width, 4/height
+    var keyboard-ah/eax: (addr handle cell) <- get self, keyboard-var
+    allocate-keyboard keyboard-ah, 5/capacity
   }
   #
   var trace-ah/eax: (addr handle trace) <- get self, trace
