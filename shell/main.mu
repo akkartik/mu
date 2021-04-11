@@ -7,7 +7,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   initialize-globals globals
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox
+  initialize-sandbox sandbox, 1/with-screen
   load-sandbox data-disk, sandbox
   {
     render-globals screen, globals, 0/x, 0/y, 0x40/xmax, 0x2f/screen-height-without-menu

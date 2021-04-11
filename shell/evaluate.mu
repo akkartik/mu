@@ -1,6 +1,7 @@
 # env is an alist of ((sym . val) (sym . val) ...)
 # we never modify `in` or `env`
-fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace) {
+# ignore 'screen-cell' on a first reading; it's a hack for sandboxes
+fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell) {
   var in/esi: (addr handle cell) <- copy _in
 #?   dump-cell in
 #?   {
@@ -46,7 +47,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   {
     break-if-!=
     trace-text trace, "eval", "symbol"
-    lookup-symbol in-addr, out, env-h, globals, trace
+    lookup-symbol in-addr, out, env-h, globals, trace, screen-cell
     trace-higher trace
     return
   }
@@ -120,7 +121,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
     var second-arg-ah/edx: (addr handle cell) <- get rest, left
-    evaluate second-arg-ah, out, env-h, globals, trace
+    evaluate second-arg-ah, out, env-h, globals, trace, screen-cell
     trace-text trace, "eval", "saving global binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
     var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
@@ -157,7 +158,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-arg-ah/ecx: (addr handle cell) <- get rest, left
     var guard-h: (handle cell)
     var guard-ah/esi: (addr handle cell) <- address guard-h
-    evaluate first-arg-ah, guard-ah, env-h, globals, trace
+    evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
     var branch-ah/edi: (addr handle cell) <- get rest, left
@@ -172,7 +173,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
       rest <- lookup *rest-ah
       branch-ah <- get rest, left
     }
-    evaluate branch-ah, out, env-h, globals, trace
+    evaluate branch-ah, out, env-h, globals, trace, screen-cell
     trace-higher trace
     return
   }
@@ -191,7 +192,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var curr-out/eax: (addr cell) <- lookup *curr-out-ah
     var left-out-ah/edi: (addr handle cell) <- get curr-out, left
     var left-ah/esi: (addr handle cell) <- get curr, left
-    evaluate left-ah, left-out-ah, env-h, globals, trace
+    evaluate left-ah, left-out-ah, env-h, globals, trace, screen-cell
     #
     curr-out-ah <- get curr-out, right
     var right-ah/eax: (addr handle cell) <- get curr, right
@@ -204,7 +205,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   var args-ah/edx: (addr handle cell) <- get evaluated-list, right
 #?   dump-cell args-ah
 #?   abort "aaa"
-  apply function-ah, args-ah, out, env-h, globals, trace
+  apply function-ah, args-ah, out, env-h, globals, trace, screen-cell
   trace-higher trace
   # trace "=> " out {{{
   {
@@ -217,7 +218,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   # }}}
 }
 
-fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace) {
+fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell) {
   var f-ah/eax: (addr handle cell) <- copy _f-ah
   var _f/eax: (addr cell) <- lookup *f-ah
   var f/esi: (addr cell) <- copy _f
@@ -256,14 +257,14 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     var rest/eax: (addr cell) <- lookup *rest-ah
     var params-ah/ecx: (addr handle cell) <- get rest, left
     var body-ah/eax: (addr handle cell) <- get rest, right
-    apply-function params-ah, args-ah, body-ah, out, env-h, globals, trace
+    apply-function params-ah, args-ah, body-ah, out, env-h, globals, trace, screen-cell
     trace-higher trace
     return
   }
   error trace, "unknown function"
 }
 
-fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace) {
+fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell) {
   # push bindings for params to env
   var new-env-storage: (handle cell)
   var new-env-ah/esi: (addr handle cell) <- address new-env-storage
@@ -281,7 +282,7 @@ fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _b
     # evaluate each expression, writing result to `out`
     {
       var curr-ah/eax: (addr handle cell) <- get body, left
-      evaluate curr-ah, out, *new-env-ah, globals, trace
+      evaluate curr-ah, out, *new-env-ah, globals, trace, screen-cell
     }
     #
     body-ah <- get body, right
@@ -374,7 +375,7 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   trace-higher trace
 }
 
-fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace) {
+fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell) {
   # trace sym
   {
     var stream-storage: (stream byte 0x40)
@@ -407,7 +408,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     var env-nil?/eax: boolean <- nil? env
     compare env-nil?, 0/false
     break-if-=
-    lookup-symbol-in-globals sym, out, globals, trace
+    lookup-symbol-in-globals sym, out, globals, trace, screen-cell
     trace-higher trace
     # trace "=> " out " (global)" {{{
     {
@@ -479,7 +480,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   var env-tail-storage: (handle cell)
   var env-tail-ah/eax: (addr handle cell) <- address env-tail-storage
   cdr env, env-tail-ah, trace
-  lookup-symbol sym, out, *env-tail-ah, globals, trace
+  lookup-symbol sym, out, *env-tail-ah, globals, trace, screen-cell
   trace-higher trace
     # trace "=> " out " (recurse)" {{{
     {
@@ -517,7 +518,7 @@ fn test-lookup-symbol-in-env {
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "a"
   var in/eax: (addr cell) <- lookup *tmp-ah
-  lookup-symbol in, tmp-ah, *env-ah, 0/no-globals, 0/no-trace
+  lookup-symbol in, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 1/number, "F - test-lookup-symbol-in-env/0"
@@ -539,7 +540,7 @@ fn test-lookup-symbol-in-globals {
   var tmp-ah/ebx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "+"
   var in/eax: (addr cell) <- lookup *tmp-ah
-  lookup-symbol in, tmp-ah, *nil-ah, globals, 0/no-trace
+  lookup-symbol in, tmp-ah, *nil-ah, globals, 0/no-trace, 0/no-screen
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 4/primitive-function, "F - test-lookup-symbol-in-globals/0"
@@ -754,7 +755,7 @@ fn test-evaluate-is-well-behaved {
   var tmp-storage: (handle cell)
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "a"
-  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, t
+  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, t, 0/no-screen
   # doesn't die
   check-trace-contains t, "error", "unbound symbol: a", "F - test-evaluate-is-well-behaved"
 }
@@ -768,7 +769,7 @@ fn test-evaluate-number {
   var tmp-storage: (handle cell)
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-integer tmp-ah, 3
-  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace
+  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen
   #
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
@@ -798,7 +799,7 @@ fn test-evaluate-symbol {
   var tmp-storage: (handle cell)
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "a"
-  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace
+  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 1/number, "F - test-evaluate-symbol/0"
@@ -820,7 +821,7 @@ fn test-evaluate-primitive-function {
   # eval +, nil env
   var tmp-storage: (handle cell)
   var tmp-ah/esi: (addr handle cell) <- address tmp-storage
-  evaluate add-ah, tmp-ah, *nil-ah, globals, 0/no-trace
+  evaluate add-ah, tmp-ah, *nil-ah, globals, 0/no-trace, 0/no-screen
   #
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
@@ -855,7 +856,7 @@ fn test-evaluate-primitive-function-call {
   var globals/edx: (addr global-table) <- address globals-storage
   initialize-globals globals
   #
-  evaluate tmp-ah, tmp-ah, *nil-ah, globals, t
+  evaluate tmp-ah, tmp-ah, *nil-ah, globals, t, 0/no-screen
 #?   dump-trace t
   #
   var result/eax: (addr cell) <- lookup *tmp-ah

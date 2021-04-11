@@ -22,11 +22,6 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "cons"
   append-primitive self, "="
   append-primitive self, "print"
-  # TODO: isolate screens per-sandbox
-  var screen-storage: (handle cell)
-  var screen-ah/ecx: (addr handle cell) <- address screen-storage
-  new-screen screen-ah, 5/width, 4/height
-  append-global self, "screen", *screen-ah
 }
 
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
@@ -48,15 +43,10 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
     var curr-name-ah/eax: (addr handle array byte) <- get curr, name
     var _curr-name/eax: (addr array byte) <- lookup *curr-name-ah
     var curr-name/ebx: (addr array byte) <- copy _curr-name
-    {
-      var skip?/eax: boolean <- string-equal? curr-name, "screen"
-      compare skip?, 0/false
-      break-if-!=
-      var tmpx/eax: int <- copy x
-      tmpx <- draw-text-rightward screen, curr-name, tmpx, xmax, bottom-line, 0x2a/fg=orange, 0x12/bg=almost-black
-      tmpx <- draw-text-rightward screen, " ", tmpx, xmax, bottom-line, 7/fg=grey, 0x12/bg=almost-black
-      x <- copy tmpx
-    }
+    var tmpx/eax: int <- copy x
+    tmpx <- draw-text-rightward screen, curr-name, tmpx, xmax, bottom-line, 0x2a/fg=orange, 0x12/bg=almost-black
+    tmpx <- draw-text-rightward screen, " ", tmpx, xmax, bottom-line, 7/fg=grey, 0x12/bg=almost-black
+    x <- copy tmpx
     curr-index <- increment
     loop
   }
@@ -77,9 +67,6 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
       var curr-name-ah/eax: (addr handle array byte) <- get curr, name
       var _curr-name/eax: (addr array byte) <- lookup *curr-name-ah
       var curr-name/edx: (addr array byte) <- copy _curr-name
-      var skip?/eax: boolean <- string-equal? curr-name, "screen"
-      compare skip?, 0/false
-      break-if-!=
       var x/eax: int <- copy xmin
       x, y <- draw-text-wrapping-right-then-down screen, curr-name, xmin, ymin, xmax, ymax, x, y, 0x2a/fg=orange, 0x12/bg=almost-black
       x, y <- draw-text-wrapping-right-then-down screen, " <- ", xmin, ymin, xmax, ymax, x, y, 7/fg=grey, 0x12/bg=almost-black
@@ -143,7 +130,7 @@ fn append-global _self: (addr global-table), name: (addr array byte), value: (ha
   copy-handle value, curr-value-ah
 }
 
-fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace) {
+fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell) {
   var sym/eax: (addr cell) <- copy _sym
   var sym-name-ah/eax: (addr handle stream byte) <- get sym, text-data
   var _sym-name/eax: (addr stream byte) <- lookup *sym-name-ah
@@ -161,6 +148,16 @@ fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals
     var curr/ebx: (addr global) <- index global-data, curr-offset
     var curr-value/eax: (addr handle cell) <- get curr, value
     copy-object curr-value, out
+    return
+  }
+  # if sym is "screen" and screen-cell exists, return it
+  {
+    var sym-is-screen?/eax: boolean <- stream-data-equal? sym-name, "screen"
+    compare sym-is-screen?, 0/false
+    break-if-=
+    compare screen-cell, 0
+    break-if-=
+    copy-object screen-cell, out
     return
   }
   # otherwise error "unbound symbol: ", sym
@@ -667,32 +664,4 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), env-h: (ha
   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, stream, 7/fg, 0/bg
   # return what was printed
   copy-object second-ah, out
-}
-
-fn clear-screen-var _globals: (addr global-table) {
-  var globals/esi: (addr global-table) <- copy _globals
-  var screen-literal-storage: (stream byte 8)
-  var screen-literal/eax: (addr stream byte) <- address screen-literal-storage
-  write screen-literal, "screen"
-  var screen-index/ecx: int <- find-symbol-in-globals globals, screen-literal
-  compare screen-index, -1/not-found
-  {
-    break-if-!=
-    return
-  }
-  var global-data-ah/eax: (addr handle array global) <- get globals, data
-  var global-data/eax: (addr array global) <- lookup *global-data-ah
-  var screen-offset/ecx: (offset global) <- compute-offset global-data, screen-index
-  var screen-global/eax: (addr global) <- index global-data, screen-offset
-  var screen-cell-ah/eax: (addr handle cell) <- get screen-global, value
-  var screen-cell/eax: (addr cell) <- lookup *screen-cell-ah
-  var screen-cell-type/ecx: (addr int) <- get screen-cell, type
-  compare *screen-cell-type, 5/screen
-  {
-    break-if-=
-    return
-  }
-  var screen-ah/eax: (addr handle screen) <- get screen-cell, screen-data
-  var screen/eax: (addr screen) <- lookup *screen-ah
-  clear-screen screen
 }

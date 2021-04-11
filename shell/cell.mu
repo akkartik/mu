@@ -135,3 +135,16 @@ fn new-screen _out: (addr handle cell), width: int, height: int {
   var dest-addr/eax: (addr screen) <- lookup *dest-ah
   initialize-screen dest-addr, width, height
 }
+
+fn clear-screen-cell _self-ah: (addr handle cell) {
+  var self-ah/eax: (addr handle cell) <- copy _self-ah
+  var self/eax: (addr cell) <- lookup *self-ah
+  compare self, 0
+  {
+    break-if-!=
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get self, screen-data
+  var screen/eax: (addr screen) <- lookup *screen-ah
+  clear-screen screen
+}

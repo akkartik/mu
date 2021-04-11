@@ -1,18 +1,28 @@
 type sandbox {
   data: (handle gap-buffer)
   value: (handle stream byte)
+  screen-var: (handle cell)
   trace: (handle trace)
   cursor-in-trace?: boolean
 }
 
-fn initialize-sandbox _self: (addr sandbox) {
+fn initialize-sandbox _self: (addr sandbox), screen?: boolean {
   var self/esi: (addr sandbox) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
   allocate data-ah
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   initialize-gap-buffer data, 0x1000/4KB
+  #
   var value-ah/eax: (addr handle stream byte) <- get self, value
   populate-stream value-ah, 0x1000/4KB
+  #
+  {
+    compare screen?, 0/false
+    break-if-=
+    var screen-ah/eax: (addr handle cell) <- get self, screen-var
+    new-screen screen-ah, 5/width, 4/height
+  }
+  #
   var trace-ah/eax: (addr handle trace) <- get self, trace
   allocate trace-ah
   var trace/eax: (addr trace) <- lookup *trace-ah
@@ -47,7 +57,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   var data/edx: (addr gap-buffer) <- copy _data
   var x/eax: int <- copy xmin
   var y/ecx: int <- copy ymin
-  y <- maybe-render-empty-screen screen, globals, xmin, y
+  y <- maybe-render-empty-screen screen, self, xmin, y
   var cursor-in-sandbox?/ebx: boolean <- copy 0/false
   {
     var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
@@ -78,7 +88,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     var dummy/eax: int <- draw-stream-rightward screen, value, x2, xmax, y, 7/fg=grey, 0/bg
   }
   y <- add 2  # padding
-  y <- maybe-render-screen screen, globals, xmin, y
+  y <- maybe-render-screen screen, self, xmin, y
   # render menu
   var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
   compare *cursor-in-trace?, 0/false
@@ -90,23 +100,15 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   render-sandbox-menu screen
 }
 
-fn maybe-render-empty-screen screen: (addr screen), _globals: (addr global-table), xmin: int, ymin: int -> _/ecx: int {
-  var globals/esi: (addr global-table) <- copy _globals
-  var screen-literal-storage: (stream byte 8)
-  var screen-literal/eax: (addr stream byte) <- address screen-literal-storage
-  write screen-literal, "screen"
-  var screen-obj-index/ecx: int <- find-symbol-in-globals globals, screen-literal
-  compare screen-obj-index, -1/not-found
+fn maybe-render-empty-screen screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int -> _/ecx: int {
+  var self/esi: (addr sandbox) <- copy _self
+  var screen-obj-cell-ah/eax: (addr handle cell) <- get self, screen-var
+  var screen-obj-cell/eax: (addr cell) <- lookup *screen-obj-cell-ah
+  compare screen-obj-cell, 0
   {
     break-if-!=
     return ymin
   }
-  var global-data-ah/eax: (addr handle array global) <- get globals, data
-  var global-data/eax: (addr array global) <- lookup *global-data-ah
-  var screen-obj-offset/ecx: (offset global) <- compute-offset global-data, screen-obj-index
-  var screen-global/eax: (addr global) <- index global-data, screen-obj-offset
-  var screen-obj-cell-ah/eax: (addr handle cell) <- get screen-global, value
-  var screen-obj-cell/eax: (addr cell) <- lookup *screen-obj-cell-ah
   var screen-obj-cell-type/ecx: (addr int) <- get screen-obj-cell, type
   compare *screen-obj-cell-type, 5/screen
   {
@@ -123,23 +125,15 @@ fn maybe-render-empty-screen screen: (addr screen), _globals: (addr global-table
   return y
 }
 
-fn maybe-render-screen screen: (addr screen), _globals: (addr global-table), xmin: int, ymin: int -> _/ecx: int {
-  var globals/esi: (addr global-table) <- copy _globals
-  var screen-literal-storage: (stream byte 8)
-  var screen-literal/eax: (addr stream byte) <- address screen-literal-storage
-  write screen-literal, "screen"
-  var screen-obj-index/ecx: int <- find-symbol-in-globals globals, screen-literal
-  compare screen-obj-index, -1/not-found
+fn maybe-render-screen screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int -> _/ecx: int {
+  var self/esi: (addr sandbox) <- copy _self
+  var screen-obj-cell-ah/eax: (addr handle cell) <- get self, screen-var
+  var screen-obj-cell/eax: (addr cell) <- lookup *screen-obj-cell-ah
+  compare screen-obj-cell, 0
   {
     break-if-!=
     return ymin
   }
-  var global-data-ah/eax: (addr handle array global) <- get globals, data
-  var global-data/eax: (addr array global) <- lookup *global-data-ah
-  var screen-obj-offset/ecx: (offset global) <- compute-offset global-data, screen-obj-index
-  var screen-global/eax: (addr global) <- index global-data, screen-obj-offset
-  var screen-obj-cell-ah/eax: (addr handle cell) <- get screen-global, value
-  var screen-obj-cell/eax: (addr cell) <- lookup *screen-obj-cell-ah
   var screen-obj-cell-type/ecx: (addr int) <- get screen-obj-cell, type
   compare *screen-obj-cell-type, 5/screen
   {
@@ -347,10 +341,12 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     var _value/eax: (addr stream byte) <- lookup *value-ah
     var value/edx: (addr stream byte) <- copy _value
     var trace-ah/eax: (addr handle trace) <- get self, trace
-    var trace/eax: (addr trace) <- lookup *trace-ah
+    var _trace/eax: (addr trace) <- lookup *trace-ah
+    var trace/ebx: (addr trace) <- copy _trace
     clear-trace trace
-    clear-screen-var globals
-    run data, value, globals, trace
+    var screen-cell/eax: (addr handle cell) <- get self, screen-var
+    clear-screen-cell screen-cell
+    run data, value, globals, trace, screen-cell
     return
   }
   # tab
@@ -385,7 +381,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
   return
 }
 
-fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace) {
+fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell) {
   var read-result-storage: (handle cell)
   var read-result/esi: (addr handle cell) <- address read-result-storage
   read-cell in, read-result, trace
@@ -400,7 +396,7 @@ fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-tab
   allocate-pair nil-ah
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
-  evaluate read-result, eval-result, *nil-ah, globals, trace
+  evaluate read-result, eval-result, *nil-ah, globals, trace, screen-cell
   var error?/eax: boolean <- has-errors? trace
   {
     compare error?, 0/false
@@ -415,7 +411,7 @@ fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-tab
 fn test-run-integer {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox
+  initialize-sandbox sandbox, 0/no-screen
   # type "1"
   edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   # eval
@@ -434,7 +430,7 @@ fn test-run-integer {
 fn test-run-with-spaces {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox
+  initialize-sandbox sandbox, 0/no-screen
   # type input with whitespace before and after
   edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
@@ -457,7 +453,7 @@ fn test-run-with-spaces {
 fn test-run-quote {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox
+  initialize-sandbox sandbox, 0/no-screen
   # type "'a"
   edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
@@ -477,7 +473,7 @@ fn test-run-quote {
 fn test-run-error-invalid-integer {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox
+  initialize-sandbox sandbox, 0/no-screen
   # type "1a"
   edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
@@ -497,7 +493,7 @@ fn test-run-error-invalid-integer {
 fn test-run-move-cursor-into-trace {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox sandbox
+  initialize-sandbox sandbox, 0/no-screen
   # type "12"
   edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
   edit-sandbox sandbox, 0x32/2, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
