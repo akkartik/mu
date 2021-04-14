@@ -8,12 +8,12 @@ type gap-buffer {
   right-read-index: int
 }
 
-fn initialize-gap-buffer _self: (addr gap-buffer), max-word-size: int {
+fn initialize-gap-buffer _self: (addr gap-buffer), capacity: int {
   var self/esi: (addr gap-buffer) <- copy _self
   var left/eax: (addr grapheme-stack) <- get self, left
-  initialize-grapheme-stack left, max-word-size
+  initialize-grapheme-stack left, capacity
   var right/eax: (addr grapheme-stack) <- get self, right
-  initialize-grapheme-stack right, max-word-size
+  initialize-grapheme-stack right, capacity
 }
 
 fn clear-gap-buffer _self: (addr gap-buffer) {
@@ -26,8 +26,8 @@ fn clear-gap-buffer _self: (addr gap-buffer) {
 
 # just for tests
 fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
-  initialize-gap-buffer self, 0x10/max-word-size
-  var stream-storage: (stream byte 0x10/max-word-size)
+  initialize-gap-buffer self, 0x10/capacity
+  var stream-storage: (stream byte 0x10/capacity)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, s
   {
@@ -278,7 +278,7 @@ fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> _/eax: bo
   # complication: graphemes may be multiple bytes
   # so don't rely on length
   # instead turn the expected result into a stream and arrange to read from it in order
-  var stream-storage: (stream byte 0x10/max-word-size)
+  var stream-storage: (stream byte 0x10/capacity)
   var expected-stream/ecx: (addr stream byte) <- address stream-storage
   write expected-stream, s
   # compare left
