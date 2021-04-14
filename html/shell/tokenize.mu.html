@@ -63,12 +63,12 @@ if ('onhashchange' in window) {
 <span id="L5" class="LineNr">  5 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='tokenize.mu.html#L5'>tokenize</a></span> in: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>), out: (addr stream <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
 <span id="L6" class="LineNr">  6 </span>  <a href='trace.mu.html#L101'>trace-text</a> trace, <span class="Constant">&quot;read&quot;</span>, <span class="Constant">&quot;tokenize&quot;</span>
 <span id="L7" class="LineNr">  7 </span>  <a href='trace.mu.html#L128'>trace-lower</a> trace
-<span id="L8" class="LineNr">  8 </span>  <a href='gap-buffer.mu.html#L582'>rewind-gap-buffer</a> in
+<span id="L8" class="LineNr">  8 </span>  <a href='gap-buffer.mu.html#L716'>rewind-gap-buffer</a> in
 <span id="L9" class="LineNr">  9 </span>  <span class="PreProc">var</span> token-storage: <a href='cell.mu.html#L1'>cell</a>
 <span id="L10" class="LineNr"> 10 </span>  <span class="PreProc">var</span> token/<span class="Constant">edx</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> address token-storage
 <span id="L11" class="LineNr"> 11 </span>  <span class="Delimiter">{</span>
-<span id="L12" class="LineNr"> 12 </span>    <a href='gap-buffer.mu.html#L738'>skip-whitespace-from-gap-buffer</a> in
-<span id="L13" class="LineNr"> 13 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L590'>gap-buffer-scan-done?</a> in
+<span id="L12" class="LineNr"> 12 </span>    <a href='gap-buffer.mu.html#L872'>skip-whitespace-from-gap-buffer</a> in
+<span id="L13" class="LineNr"> 13 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L724'>gap-buffer-scan-done?</a> in
 <span id="L14" class="LineNr"> 14 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L15" class="LineNr"> 15 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L16" class="LineNr"> 16 </span>    <span class="muComment"># initialize token data each iteration to avoid aliasing</span>
@@ -97,8 +97,8 @@ if ('onhashchange' in window) {
 <span id="L39" class="LineNr"> 39 </span>  <span class="PreProc">var</span> out/<span class="Constant">edi</span>: (addr stream byte) <span class="Special">&lt;-</span> copy _out
 <span id="L40" class="LineNr"> 40 </span>  $next-token:body: <span class="Delimiter">{</span>
 <span id="L41" class="LineNr"> 41 </span>    <a href='../106stream.subx.html#L20'>clear-stream</a> out
-<span id="L42" class="LineNr"> 42 </span>    <a href='gap-buffer.mu.html#L738'>skip-whitespace-from-gap-buffer</a> in
-<span id="L43" class="LineNr"> 43 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L614'>peek-from-gap-buffer</a> in
+<span id="L42" class="LineNr"> 42 </span>    <a href='gap-buffer.mu.html#L872'>skip-whitespace-from-gap-buffer</a> in
+<span id="L43" class="LineNr"> 43 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L748'>peek-from-gap-buffer</a> in
 <span id="L44" class="LineNr"> 44 </span>    <span class="Delimiter">{</span>
 <span id="L45" class="LineNr"> 45 </span>      <span class="PreProc">var</span> stream-storage: (stream byte <span class="Constant">0x40</span>)
 <span id="L46" class="LineNr"> 46 </span>      <span class="PreProc">var</span> stream/<span class="Constant">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> address stream-storage
@@ -128,7 +128,7 @@ if ('onhashchange' in window) {
 <span id="L70" class="LineNr"> 70 </span>      <span class="PreProc">var</span> bracket?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L387'>bracket-grapheme?</a> g
 <span id="L71" class="LineNr"> 71 </span>      compare bracket?, <span class="Constant">0</span>/false
 <span id="L72" class="LineNr"> 72 </span>      <span class="PreProc">break-if-=</span>
-<span id="L73" class="LineNr"> 73 </span>      <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L650'>read-from-gap-buffer</a> in
+<span id="L73" class="LineNr"> 73 </span>      <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L784'>read-from-gap-buffer</a> in
 <span id="L74" class="LineNr"> 74 </span>      <a href='tokenize.mu.html#L209'>next-bracket-token</a> g, out, trace
 <span id="L75" class="LineNr"> 75 </span>      <span class="PreProc">break</span> $next-token:body
 <span id="L76" class="LineNr"> 76 </span>    <span class="Delimiter">}</span>
@@ -154,10 +154,10 @@ if ('onhashchange' in window) {
 <span id="L96" class="LineNr"> 96 </span>  <a href='trace.mu.html#L101'>trace-text</a> trace, <span class="Constant">&quot;read&quot;</span>, <span class="Constant">&quot;looking for a symbol&quot;</span>
 <span id="L97" class="LineNr"> 97 </span>  <a href='trace.mu.html#L128'>trace-lower</a> trace
 <span id="L98" class="LineNr"> 98 </span>  $next-symbol-token:<span class="PreProc">loop</span>: <span class="Delimiter">{</span>
-<span id="L99" class="LineNr"> 99 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L590'>gap-buffer-scan-done?</a> in
+<span id="L99" class="LineNr"> 99 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L724'>gap-buffer-scan-done?</a> in
 <span id="L100" class="LineNr">100 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L101" class="LineNr">101 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L102" class="LineNr">102 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L614'>peek-from-gap-buffer</a> in
+<span id="L102" class="LineNr">102 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L748'>peek-from-gap-buffer</a> in
 <span id="L103" class="LineNr">103 </span>    <span class="Delimiter">{</span>
 <span id="L104" class="LineNr">104 </span>      <span class="PreProc">var</span> stream-storage: (stream byte <span class="Constant">0x40</span>)
 <span id="L105" class="LineNr">105 </span>      <span class="PreProc">var</span> stream/<span class="Constant">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> address stream-storage
@@ -174,7 +174,7 @@ if ('onhashchange' in window) {
 <span id="L116" class="LineNr">116 </span>      <a href='trace.mu.html#L101'>trace-text</a> trace, <span class="Constant">&quot;read&quot;</span>, <span class="Constant">&quot;stop&quot;</span>
 <span id="L117" class="LineNr">117 </span>      <span class="PreProc">break</span> $next-symbol-token:<span class="PreProc">loop</span>
 <span id="L118" class="LineNr">118 </span>    <span class="Delimiter">}</span>
-<span id="L119" class="LineNr">119 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L650'>read-from-gap-buffer</a> in
+<span id="L119" class="LineNr">119 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L784'>read-from-gap-buffer</a> in
 <span id="L120" class="LineNr">120 </span>    <a href='../403unicode.mu.html#L176'>write-grapheme</a> out, g
 <span id="L121" class="LineNr">121 </span>    <span class="PreProc">loop</span>
 <span id="L122" class="LineNr">122 </span>  <span class="Delimiter">}</span>
@@ -191,10 +191,10 @@ if ('onhashchange' in window) {
 <span id="L133" class="LineNr">133 </span>  <a href='trace.mu.html#L101'>trace-text</a> trace, <span class="Constant">&quot;read&quot;</span>, <span class="Constant">&quot;looking for a operator&quot;</span>
 <span id="L134" class="LineNr">134 </span>  <a href='trace.mu.html#L128'>trace-lower</a> trace
 <span id="L135" class="LineNr">135 </span>  $next-operator-token:<span class="PreProc">loop</span>: <span class="Delimiter">{</span>
-<span id="L136" class="LineNr">136 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L590'>gap-buffer-scan-done?</a> in
+<span id="L136" class="LineNr">136 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L724'>gap-buffer-scan-done?</a> in
 <span id="L137" class="LineNr">137 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L138" class="LineNr">138 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L139" class="LineNr">139 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L614'>peek-from-gap-buffer</a> in
+<span id="L139" class="LineNr">139 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L748'>peek-from-gap-buffer</a> in
 <span id="L140" class="LineNr">140 </span>    <span class="Delimiter">{</span>
 <span id="L141" class="LineNr">141 </span>      <span class="PreProc">var</span> stream-storage: (stream byte <span class="Constant">0x40</span>)
 <span id="L142" class="LineNr">142 </span>      <span class="PreProc">var</span> stream/<span class="Constant">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> address stream-storage
@@ -211,7 +211,7 @@ if ('onhashchange' in window) {
 <span id="L153" class="LineNr">153 </span>      <a href='trace.mu.html#L101'>trace-text</a> trace, <span class="Constant">&quot;read&quot;</span>, <span class="Constant">&quot;stop&quot;</span>
 <span id="L154" class="LineNr">154 </span>      <span class="PreProc">break</span> $next-operator-token:<span class="PreProc">loop</span>
 <span id="L155" class="LineNr">155 </span>    <span class="Delimiter">}</span>
-<span id="L156" class="LineNr">156 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L650'>read-from-gap-buffer</a> in
+<span id="L156" class="LineNr">156 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L784'>read-from-gap-buffer</a> in
 <span id="L157" class="LineNr">157 </span>    <a href='../403unicode.mu.html#L176'>write-grapheme</a> out, g
 <span id="L158" class="LineNr">158 </span>    <span class="PreProc">loop</span>
 <span id="L159" class="LineNr">159 </span>  <span class="Delimiter">}</span>
@@ -228,10 +228,10 @@ if ('onhashchange' in window) {
 <span id="L170" class="LineNr">170 </span>  <a href='trace.mu.html#L101'>trace-text</a> trace, <span class="Constant">&quot;read&quot;</span>, <span class="Constant">&quot;looking for a number&quot;</span>
 <span id="L171" class="LineNr">171 </span>  <a href='trace.mu.html#L128'>trace-lower</a> trace
 <span id="L172" class="LineNr">172 </span>  $next-number-token:<span class="PreProc">loop</span>: <span class="Delimiter">{</span>
-<span id="L173" class="LineNr">173 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L590'>gap-buffer-scan-done?</a> in
+<span id="L173" class="LineNr">173 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L724'>gap-buffer-scan-done?</a> in
 <span id="L174" class="LineNr">174 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L175" class="LineNr">175 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L176" class="LineNr">176 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L614'>peek-from-gap-buffer</a> in
+<span id="L176" class="LineNr">176 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L748'>peek-from-gap-buffer</a> in
 <span id="L177" class="LineNr">177 </span>    <span class="Delimiter">{</span>
 <span id="L178" class="LineNr">178 </span>      <span class="PreProc">var</span> stream-storage: (stream byte <span class="Constant">0x40</span>)
 <span id="L179" class="LineNr">179 </span>      <span class="PreProc">var</span> stream/<span class="Constant">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> address stream-storage
@@ -257,7 +257,7 @@ if ('onhashchange' in window) {
 <span id="L199" class="LineNr">199 </span>      <span class="PreProc">return</span>
 <span id="L200" class="LineNr">200 </span>    <span class="Delimiter">}</span>
 <span id="L201" class="LineNr">201 </span>    <a href='trace.mu.html#L101'>trace-text</a> trace, <span class="Constant">&quot;read&quot;</span>, <span class="Constant">&quot;append&quot;</span>
-<span id="L202" class="LineNr">202 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L650'>read-from-gap-buffer</a> in
+<span id="L202" class="LineNr">202 </span>    <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L784'>read-from-gap-buffer</a> in
 <span id="L203" class="LineNr">203 </span>    <a href='../403unicode.mu.html#L176'>write-grapheme</a> out, g
 <span id="L204" class="LineNr">204 </span>    <span class="PreProc">loop</span>
 <span id="L205" class="LineNr">205 </span>  <span class="Delimiter">}</span>
@@ -598,13 +598,13 @@ if ('onhashchange' in window) {
 <span id="L540" class="LineNr">540 </span>  <span class="PreProc">return</span> result
 <span id="L541" class="LineNr">541 </span><span class="Delimiter">}</span>
 <span id="L542" class="LineNr">542 </span>
-<span id="L543" class="LineNr">543 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='tokenize.mu.html#L543'>open-paren-token?</a></span> _in: (addr <a href='cell.mu.html#L1'>cell</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L543" class="LineNr">543 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='tokenize.mu.html#L543'>quote-token?</a></span> _in: (addr <a href='cell.mu.html#L1'>cell</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
 <span id="L544" class="LineNr">544 </span>  <span class="PreProc">var</span> in/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _in
 <span id="L545" class="LineNr">545 </span>  <span class="PreProc">var</span> in-data-ah/<span class="Constant">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get in, text-data
 <span id="L546" class="LineNr">546 </span>  <span class="PreProc">var</span> in-data/<span class="Constant">eax</span>: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *in-data-ah
 <span id="L547" class="LineNr">547 </span>  <a href='../106stream.subx.html#L59'>rewind-stream</a> in-data
 <span id="L548" class="LineNr">548 </span>  <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> in-data
-<span id="L549" class="LineNr">549 </span>  compare g, <span class="Constant">0x28</span>/open-paren
+<span id="L549" class="LineNr">549 </span>  compare g, <span class="Constant">0x27</span>/single-quote
 <span id="L550" class="LineNr">550 </span>  <span class="Delimiter">{</span>
 <span id="L551" class="LineNr">551 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L552" class="LineNr">552 </span>    <span class="PreProc">return</span> <span class="Constant">1</span>/true
@@ -612,19 +612,33 @@ if ('onhashchange' in window) {
 <span id="L554" class="LineNr">554 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>/false
 <span id="L555" class="LineNr">555 </span><span class="Delimiter">}</span>
 <span id="L556" class="LineNr">556 </span>
-<span id="L557" class="LineNr">557 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='tokenize.mu.html#L557'>close-paren-token?</a></span> _in: (addr <a href='cell.mu.html#L1'>cell</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L557" class="LineNr">557 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='tokenize.mu.html#L557'>open-paren-token?</a></span> _in: (addr <a href='cell.mu.html#L1'>cell</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
 <span id="L558" class="LineNr">558 </span>  <span class="PreProc">var</span> in/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _in
 <span id="L559" class="LineNr">559 </span>  <span class="PreProc">var</span> in-data-ah/<span class="Constant">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get in, text-data
 <span id="L560" class="LineNr">560 </span>  <span class="PreProc">var</span> in-data/<span class="Constant">eax</span>: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *in-data-ah
 <span id="L561" class="LineNr">561 </span>  <a href='../106stream.subx.html#L59'>rewind-stream</a> in-data
 <span id="L562" class="LineNr">562 </span>  <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> in-data
-<span id="L563" class="LineNr">563 </span>  compare g, <span class="Constant">0x29</span>/open-paren
+<span id="L563" class="LineNr">563 </span>  compare g, <span class="Constant">0x28</span>/open-paren
 <span id="L564" class="LineNr">564 </span>  <span class="Delimiter">{</span>
 <span id="L565" class="LineNr">565 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L566" class="LineNr">566 </span>    <span class="PreProc">return</span> <span class="Constant">1</span>/true
 <span id="L567" class="LineNr">567 </span>  <span class="Delimiter">}</span>
 <span id="L568" class="LineNr">568 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>/false
 <span id="L569" class="LineNr">569 </span><span class="Delimiter">}</span>
+<span id="L570" class="LineNr">570 </span>
+<span id="L571" class="LineNr">571 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='tokenize.mu.html#L571'>close-paren-token?</a></span> _in: (addr <a href='cell.mu.html#L1'>cell</a>)<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L572" class="LineNr">572 </span>  <span class="PreProc">var</span> in/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _in
+<span id="L573" class="LineNr">573 </span>  <span class="PreProc">var</span> in-data-ah/<span class="Constant">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get in, text-data
+<span id="L574" class="LineNr">574 </span>  <span class="PreProc">var</span> in-data/<span class="Constant">eax</span>: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *in-data-ah
+<span id="L575" class="LineNr">575 </span>  <a href='../106stream.subx.html#L59'>rewind-stream</a> in-data
+<span id="L576" class="LineNr">576 </span>  <span class="PreProc">var</span> g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> in-data
+<span id="L577" class="LineNr">577 </span>  compare g, <span class="Constant">0x29</span>/open-paren
+<span id="L578" class="LineNr">578 </span>  <span class="Delimiter">{</span>
+<span id="L579" class="LineNr">579 </span>    <span class="PreProc">break-if-!=</span>
+<span id="L580" class="LineNr">580 </span>    <span class="PreProc">return</span> <span class="Constant">1</span>/true
+<span id="L581" class="LineNr">581 </span>  <span class="Delimiter">}</span>
+<span id="L582" class="LineNr">582 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>/false
+<span id="L583" class="LineNr">583 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
