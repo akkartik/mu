@@ -250,29 +250,61 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
     }
     screen-y <- increment
   }
-  # screen
-  var height/edx: (addr int) <- get target-screen, height
-  var y/ecx: int <- copy 0
+  # text data
   {
-    compare y, *height
-    break-if->=
-    set-cursor-position screen, xmin, screen-y
-    draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
-    move-cursor-right screen
-    var width/edx: (addr int) <- get target-screen, width
-    var x/ebx: int <- copy 0
+    var height/edx: (addr int) <- get target-screen, height
+    var y/ecx: int <- copy 0
     {
-      compare x, *width
+      compare y, *height
       break-if->=
-      print-screen-cell-of-fake-screen screen, target-screen, x, y
+      set-cursor-position screen, xmin, screen-y
+      draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
       move-cursor-right screen
-      x <- increment
+      var width/edx: (addr int) <- get target-screen, width
+      var x/ebx: int <- copy 0
+      {
+        compare x, *width
+        break-if->=
+        print-screen-cell-of-fake-screen screen, target-screen, x, y
+        move-cursor-right screen
+        x <- increment
+        loop
+      }
+      draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
+      y <- increment
+      screen-y <- increment
       loop
     }
-    draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
-    y <- increment
-    screen-y <- increment
-    loop
+  }
+  # pixel data
+  {
+    var left/ebx: int <- copy xmin
+    left <- add 1/margin-left
+    left <- shift-left 3/log-font-width
+    var top/edx: int <- copy ymin
+    top <- add 1/margin-top
+    top <- shift-left 4/log-font-height
+    var pixels-ah/esi: (addr handle stream pixel) <- get target-screen, pixels
+    var _pixels/eax: (addr stream pixel) <- lookup *pixels-ah
+    var pixels/esi: (addr stream pixel) <- copy _pixels
+    rewind-stream pixels
+    {
+      var done?/eax: boolean <- stream-empty? pixels
+      compare done?, 0/false
+      break-if-!=
+      var curr-pixel: pixel
+      var curr-pixel-addr/eax: (addr pixel) <- address curr-pixel
+      read-from-stream pixels, curr-pixel-addr
+      var curr-x/eax: (addr int) <- get curr-pixel, x
+      var x/eax: int <- copy *curr-x
+      x <- add left
+      var curr-y/ecx: (addr int) <- get curr-pixel, y
+      var y/ecx: int <- copy *curr-y
+      y <- add top
+      var curr-color/edx: (addr int) <- get curr-pixel, color
+      pixel screen, x, y, *curr-color
+      loop
+    }
   }
   # bottom border
   {

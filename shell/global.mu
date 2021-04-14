@@ -26,6 +26,7 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "cons"
   # for screens
   append-primitive self, "print"
+  append-primitive self, "pixel"
   # for keyboards
   append-primitive self, "key"
   # for streams
@@ -300,6 +301,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare is-print?, 0/false
     break-if-=
     apply-print args-ah, out, trace
+    return
+  }
+  {
+    var is-pixel?/eax: boolean <- string-equal? f-name, "pixel"
+    compare is-pixel?, 0/false
+    break-if-=
+    apply-pixel args-ah, out, trace
     return
   }
   {
@@ -684,6 +692,84 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, stream, 7/fg, 0/bg
   # return what was printed
   copy-object second-ah, out
+}
+
+fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply pixel"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "pixel needs 4 args but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'pixel' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  # x = args->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get args, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  var rest/esi: (addr cell) <- copy _rest
+  # TODO: check that rest is a pair
+  var second-ah/eax: (addr handle cell) <- get rest, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/ecx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "second arg for 'pixel' is not an int (x coordinate)"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  var x/edx: int <- convert *second-value
+  # y = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  # TODO: check that rest is a pair
+  var third-ah/eax: (addr handle cell) <- get rest, left
+  var third/eax: (addr cell) <- lookup *third-ah
+  var third-type/ecx: (addr int) <- get third, type
+  compare *third-type, 1/number
+  {
+    break-if-=
+    error trace, "third arg for 'pixel' is not an int (y coordinate)"
+    return
+  }
+  var third-value/eax: (addr float) <- get third, number-data
+  var y/ebx: int <- convert *third-value
+  # color = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  # TODO: check that rest is a pair
+  var fourth-ah/eax: (addr handle cell) <- get rest, left
+  var fourth/eax: (addr cell) <- lookup *fourth-ah
+  var fourth-type/ecx: (addr int) <- get fourth, type
+  compare *fourth-type, 1/number
+  {
+    break-if-=
+    error trace, "fourth arg for 'pixel' is not an int (color; 0..0xff)"
+    return
+  }
+  var fourth-value/eax: (addr float) <- get fourth, number-data
+  var color/eax: int <- convert *fourth-value
+  pixel screen, x, y, color
+  # return nothing
 }
 
 fn apply-wait-for-key _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {

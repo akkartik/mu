@@ -1,23 +1,37 @@
-# Testable primitives for writing text to screen.
-# (Mu doesn't yet have testable primitives for graphics.)
+# Testable primitives for writing to screen.
 #
-# Unlike the top-level, this text mode has no scrolling.
+# Mu mostly uses the screen for text, but it builds it out of pixel graphics
+# and a bitmap font. There is no support for a blinking cursor, scrolling and
+# so on.
+#
+# Fake screens are primarily for testing text-mode prints. However, they do
+# support some rudimentary pixel operations as well. Caveats:
+#
+# - Drawing pixels atop text or vice versa is not supported. Results in a fake
+#   screen will not mimic real screens in these situations.
+# - Fake screens currently also assume a fixed-width 8x16 font.
 
-# coordinates here don't match top-level
-# Here we're consistent with graphics mode. Top-level is consistent with
-# terminal emulators.
 type screen {
+  # text mode
   width: int
   height: int
   data: (handle array screen-cell)
-  cursor-x: int
-  cursor-y: int
+  cursor-x: int  # [0..width)
+  cursor-y: int  # [0..height)
+  # pixel graphics
+  pixels: (handle stream pixel)  # sparse representation
 }
 
 type screen-cell {
   data: grapheme
   color: int
   background-color: int
+}
+
+type pixel {
+  x: int  # [0..width*font-width)
+  y: int  # [0..height*font-height)
+  color: int  # [0..256)
 }
 
 fn initialize-screen _screen: (addr screen), width: int, height: int {
@@ -38,6 +52,9 @@ fn initialize-screen _screen: (addr screen), width: int, height: int {
     tmp <- multiply width
     populate data-addr, tmp
   }
+  # pixels
+  var pixels-ah/ecx: (addr handle stream pixel) <- get screen, pixels
+  populate-stream pixels-ah, tmp
   # screen->cursor-x = 0
   dest <- get screen, cursor-x
   copy-to *dest, 0
@@ -62,6 +79,33 @@ fn screen-size _screen: (addr screen) -> _/eax: int, _/ecx: int {
   tmp <- get screen, height
   height <- copy *tmp
   return width, height
+}
+
+fn pixel screen: (addr screen), x: int, y: int, color: int {
+  {
+    compare screen, 0
+    break-if-!=
+    pixel-on-real-screen x, y, color
+    return
+  }
+  # fake screen
+  # prepare a pixel
+  var pixel-storage: pixel
+  var src/ecx: int <- copy x
+  var dest/edx: (addr int) <- get pixel-storage, x
+  copy-to *dest, src
+  src <- copy y
+  dest <- get pixel-storage, y
+  copy-to *dest, src
+  src <- copy color
+  dest <- get pixel-storage, color
+  copy-to *dest, src
+  # save it
+  var src/ecx: (addr pixel) <- address pixel-storage
+  var screen/eax: (addr screen) <- copy screen
+  var dest-stream-ah/eax: (addr handle stream pixel) <- get screen, pixels
+  var dest-stream/eax: (addr stream pixel) <- lookup *dest-stream-ah
+  write-to-stream dest-stream, src
 }
 
 # testable screen primitive
@@ -219,6 +263,9 @@ fn clear-screen _screen: (addr screen) {
     loop
   }
   set-cursor-position screen, 0, 0
+  var dest-stream-ah/eax: (addr handle stream pixel) <- get screen, pixels
+  var dest-stream/eax: (addr stream pixel) <- lookup *dest-stream-ah
+  clear-stream dest-stream
 }
 
 fn fake-screen-empty? _screen: (addr screen) -> _/eax: boolean {
@@ -247,7 +294,10 @@ fn fake-screen-empty? _screen: (addr screen) -> _/eax: boolean {
     y <- increment
     loop
   }
-  return 1/true
+  var pixels-ah/eax: (addr handle stream pixel) <- get screen, pixels
+  var pixels/eax: (addr stream pixel) <- lookup *pixels-ah
+  var result/eax: boolean <- stream-empty? pixels
+  return result
 }
 
 fn clear-rect _screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int, background-color: int {
