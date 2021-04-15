@@ -26,10 +26,15 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 # Read a null-terminated sequence of keys from disk and load them into
 # sandbox.
 fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
-  var self/esi: (addr sandbox) <- copy _self
+  var self/eax: (addr sandbox) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, data
+  var _data/eax: (addr gap-buffer) <- lookup *data-ah
+  var data/esi: (addr gap-buffer) <- copy _data
+  # data-disk -> stream
   var s-storage: (stream byte 0x200)
   var s/ebx: (addr stream byte) <- address s-storage
   load-sector data-disk, 0/lba, s
+  # stream -> gap-buffer
   {
     var done?/eax: boolean <- stream-empty? s
     compare done?, 0/false
@@ -37,7 +42,8 @@ fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
     var key/eax: byte <- read-byte s
     compare key, 0/null
     break-if-=
-    edit-sandbox self, key, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+    var g/eax: grapheme <- copy key
+    edit-gap-buffer data, g
     loop
   }
 }
