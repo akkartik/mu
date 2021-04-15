@@ -32,38 +32,28 @@ fn initialize-globals _self: (addr global-table) {
   # for streams
   append-primitive self, "stream"
   append-primitive self, "write"
+  # keep sync'd with render-primitives
 }
 
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
   clear-rect screen, xmin, ymin, xmax, ymax, 0x12/bg=almost-black
   var self/esi: (addr global-table) <- copy _self
   # render primitives
-  var bottom-line/ecx: int <- copy ymax
-  bottom-line <- decrement
+  render-primitives screen, xmin, ymin, xmax, ymax
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
   var curr-index/edx: int <- copy 1
-  var x/edi: int <- copy xmin
   {
     var curr-offset/ebx: (offset global) <- compute-offset data, curr-index
     var curr/ebx: (addr global) <- index data, curr-offset
     var continue?/eax: boolean <- primitive-global? curr
     compare continue?, 0/false
     break-if-=
-    var curr-name-ah/eax: (addr handle array byte) <- get curr, name
-    var _curr-name/eax: (addr array byte) <- lookup *curr-name-ah
-    var curr-name/ebx: (addr array byte) <- copy _curr-name
-    var tmpx/eax: int <- copy x
-    tmpx <- draw-text-rightward screen, curr-name, tmpx, xmax, bottom-line, 0x2a/fg=orange, 0x12/bg=almost-black
-    tmpx <- draw-text-rightward screen, " ", tmpx, xmax, bottom-line, 7/fg=grey, 0x12/bg=almost-black
-    x <- copy tmpx
     curr-index <- increment
     loop
   }
   var lowest-index/edi: int <- copy curr-index
   var y/ecx: int <- copy ymin
-  var data-ah/eax: (addr handle array global) <- get self, data
-  var data/eax: (addr array global) <- lookup *data-ah
   var final-index/edx: (addr int) <- get self, final-index
   var curr-index/edx: int <- copy *final-index
   {
@@ -90,6 +80,48 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
     y <- increment
     loop
   }
+}
+
+fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int {
+  var y/ecx: int <- copy ymax
+  y <- subtract 0xa
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "cursor graphics", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  print", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen a -> a", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "pixel graphics", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  pixel", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen x y color", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "keyboard", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  key", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": () -> grapheme?", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "streams", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  stream", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": () -> stream ", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  write", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": stream grapheme -> stream", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "numbers: ", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "+ - * / sqrt  ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "pairs: ", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "car cdr cons", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
 }
 
 fn primitive-global? _x: (addr global) -> _/eax: boolean {
