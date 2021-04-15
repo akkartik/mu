@@ -30,6 +30,39 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
   trace-higher trace
 }
 
+fn test-tokenize-dotted-list {
+  # in: "(a . b)"
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer in, 0x10
+  add-code-point-at-gap in, 0x28/open-paren
+  add-code-point-at-gap in, 0x61/a
+  add-code-point-at-gap in, 0x20/space
+  add-code-point-at-gap in, 0x2e/dot
+  add-code-point-at-gap in, 0x20/space
+  add-code-point-at-gap in, 0x62/b
+  add-code-point-at-gap in, 0x29/close-paren
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  tokenize in, stream, 0/no-trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var open-paren?/eax: boolean <- open-paren-token? curr-token
+  check open-paren?, "F - test-tokenize-dotted-list: open paren"
+  read-from-stream stream, curr-token  # skip a
+  read-from-stream stream, curr-token
+  var dot?/eax: boolean <- dot-token? curr-token
+  check dot?, "F - test-tokenize-dotted-list: dot"
+  read-from-stream stream, curr-token  # skip b
+  read-from-stream stream, curr-token
+  var close-paren?/eax: boolean <- close-paren-token? curr-token
+  check close-paren?, "F - test-tokenize-dotted-list: close paren"
+}
+
 fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace) {
   trace-text trace, "read", "next-token"
   trace-lower trace
@@ -584,4 +617,29 @@ fn close-paren-token? _in: (addr cell) -> _/eax: boolean {
     return result
   }
   return 0/false
+}
+
+fn dot-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  var in-data/ecx: (addr stream byte) <- copy _in-data
+  rewind-stream in-data
+  var g/eax: grapheme <- read-grapheme in-data
+  compare g, 0x2e/dot
+  {
+    break-if-!=
+    var result/eax: boolean <- stream-empty? in-data
+    return result
+  }
+  return 0/false
+}
+
+fn test-dot-token {
+  var tmp-storage: (handle cell)
+  var tmp-ah/eax: (addr handle cell) <- address tmp-storage
+  new-symbol tmp-ah, "."
+  var tmp/eax: (addr cell) <- lookup *tmp-ah
+  var result/eax: boolean <- dot-token? tmp
+  check result, "F - test-dot-token"
 }
