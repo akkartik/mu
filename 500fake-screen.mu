@@ -296,6 +296,7 @@ fn fake-screen-empty? _screen: (addr screen) -> _/eax: boolean {
   }
   var pixels-ah/eax: (addr handle stream pixel) <- get screen, pixels
   var pixels/eax: (addr stream pixel) <- lookup *pixels-ah
+  rewind-stream pixels
   var result/eax: boolean <- stream-empty? pixels
   return result
 }
