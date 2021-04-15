@@ -23,8 +23,9 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   }
 }
 
-# Read a null-terminated sequence of keys from disk and load them into
-# sandbox.
+# Read an s-expression from data-disk to sandbox.
+# Gotcha: saved state with syntax errors may not load, and may need to be
+# edited as a disk image to get it to load.
 fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
   var self/eax: (addr sandbox) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
@@ -35,17 +36,17 @@ fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
   var s/ebx: (addr stream byte) <- address s-storage
   load-sector data-disk, 0/lba, s
   # stream -> gap-buffer
-  {
-    var done?/eax: boolean <- stream-empty? s
-    compare done?, 0/false
-    break-if-!=
-    var key/eax: byte <- read-byte s
-    compare key, 0/null
-    break-if-=
-    var g/eax: grapheme <- copy key
-    edit-gap-buffer data, g
-    loop
-  }
+  load-gap-buffer-from-stream data, s
+  clear-stream s
+  # read: gap-buffer -> cell
+  var initial-root-storage: (handle cell)
+  var initial-root/ecx: (addr handle cell) <- address initial-root-storage
+  read-cell data, initial-root, 0/no-trace
+  clear-gap-buffer data
+  # print: cell -> stream
+  print-cell initial-root, s, 0/no-trace
+  # stream -> gap-buffer
+  load-gap-buffer-from-stream data, s
 }
 
 fn store-sandbox data-disk: (addr disk), _self: (addr sandbox) {

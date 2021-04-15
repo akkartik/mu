@@ -40,6 +40,21 @@ fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
   }
 }
 
+fn load-gap-buffer-from-stream self: (addr gap-buffer), in: (addr stream byte) {
+  rewind-stream in
+  {
+    var done?/eax: boolean <- stream-empty? in
+    compare done?, 0/false
+    break-if-!=
+    var key/eax: byte <- read-byte in
+    compare key, 0/null
+    break-if-=
+    var g/eax: grapheme <- copy key
+    edit-gap-buffer self, g
+    loop
+  }
+}
+
 fn emit-gap-buffer _self: (addr gap-buffer), out: (addr stream byte) {
   var self/esi: (addr gap-buffer) <- copy _self
   clear-stream out
