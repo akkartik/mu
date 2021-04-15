@@ -11,7 +11,7 @@ type global-table {
 fn initialize-globals _self: (addr global-table) {
   var self/esi: (addr global-table) <- copy _self
   var data-ah/eax: (addr handle array global) <- get self, data
-  populate data-ah, 0x10
+  populate data-ah, 0x40
   # generic
   append-primitive self, "="
   # for numbers
@@ -20,13 +20,21 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "*"
   append-primitive self, "/"
   append-primitive self, "sqrt"
+  append-primitive self, "<"
+  append-primitive self, ">"
+  append-primitive self, "<="
+  append-primitive self, ">="
   # for pairs
   append-primitive self, "car"
   append-primitive self, "cdr"
   append-primitive self, "cons"
   # for screens
   append-primitive self, "print"
-  append-primitive self, "pixel"
+  append-primitive self, "up"
+  append-primitive self, "down"
+  append-primitive self, "left"
+  append-primitive self, "right"
+  append-primitive self, "cr"
   # for keyboards
   append-primitive self, "key"
   # for streams
@@ -84,13 +92,21 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
 
 fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int {
   var y/ecx: int <- copy ymax
-  y <- subtract 0xa
+  y <- subtract 0xc
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "cursor graphics", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  print", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, ": screen a -> a", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  up down left right", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  cr", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen   # move cursor down and to left margin", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "pixel graphics", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
@@ -119,7 +135,7 @@ fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, yma
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "numbers: ", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, "+ - * / sqrt  ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "+ - * / sqrt = < > <= >=   ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "pairs: ", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "car cdr cons", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
 }
@@ -322,10 +338,38 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     return
   }
   {
-    var is-compare?/eax: boolean <- string-equal? f-name, "="
-    compare is-compare?, 0/false
+    var is-structurally-equal?/eax: boolean <- string-equal? f-name, "="
+    compare is-structurally-equal?, 0/false
     break-if-=
-    apply-compare args-ah, out, trace
+    apply-structurally-equal args-ah, out, trace
+    return
+  }
+  {
+    var is-lesser?/eax: boolean <- string-equal? f-name, "<"
+    compare is-lesser?, 0/false
+    break-if-=
+    apply-< args-ah, out, trace
+    return
+  }
+  {
+    var is-greater?/eax: boolean <- string-equal? f-name, ">"
+    compare is-greater?, 0/false
+    break-if-=
+    apply-> args-ah, out, trace
+    return
+  }
+  {
+    var is-lesser-or-equal?/eax: boolean <- string-equal? f-name, "<="
+    compare is-lesser-or-equal?, 0/false
+    break-if-=
+    apply-<= args-ah, out, trace
+    return
+  }
+  {
+    var is-greater-or-equal?/eax: boolean <- string-equal? f-name, ">="
+    compare is-greater-or-equal?, 0/false
+    break-if-=
+    apply->= args-ah, out, trace
     return
   }
   {
@@ -333,6 +377,41 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare is-print?, 0/false
     break-if-=
     apply-print args-ah, out, trace
+    return
+  }
+  {
+    var is-up?/eax: boolean <- string-equal? f-name, "up"
+    compare is-up?, 0/false
+    break-if-=
+    apply-up args-ah, out, trace
+    return
+  }
+  {
+    var is-down?/eax: boolean <- string-equal? f-name, "down"
+    compare is-down?, 0/false
+    break-if-=
+    apply-down args-ah, out, trace
+    return
+  }
+  {
+    var is-left?/eax: boolean <- string-equal? f-name, "left"
+    compare is-left?, 0/false
+    break-if-=
+    apply-left args-ah, out, trace
+    return
+  }
+  {
+    var is-right?/eax: boolean <- string-equal? f-name, "right"
+    compare is-right?, 0/false
+    break-if-=
+    apply-right args-ah, out, trace
+    return
+  }
+  {
+    var is-cr?/eax: boolean <- string-equal? f-name, "cr"
+    compare is-cr?, 0/false
+    break-if-=
+    apply-cr args-ah, out, trace
     return
   }
   {
@@ -653,8 +732,8 @@ fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   new-pair out, *first-ah, *second-ah
 }
 
-fn apply-compare _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply ="
+fn apply-structurally-equal _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply '='"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
@@ -663,7 +742,7 @@ fn apply-compare _args-ah: (addr handle cell), out: (addr handle cell), trace: (
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "cons needs 2 args but got 0"
+    error trace, "'=' needs 2 args but got 0"
     return
   }
   # args->left
@@ -681,6 +760,206 @@ fn apply-compare _args-ah: (addr handle cell), out: (addr handle cell), trace: (
   compare match?, 0/false
   {
     break-if-!=
+    nil out
+    return
+  }
+  new-integer out, 1/true
+}
+
+fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply '<'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'<' needs 2 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/ecx: (addr handle cell) <- get args, left
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/edx: (addr handle cell) <- get right, left
+  # compare
+  var _first/eax: (addr cell) <- lookup *first-ah
+  var first/ecx: (addr cell) <- copy _first
+  var first-type/eax: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for '<' is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  var first-float/xmm0: float <- copy *first-value
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/edx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for '<' is not a number"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  compare first-float, *second-value
+  {
+    break-if-float<
+    nil out
+    return
+  }
+  new-integer out, 1/true
+}
+
+fn apply-> _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply '>'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'>' needs 2 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/ecx: (addr handle cell) <- get args, left
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/edx: (addr handle cell) <- get right, left
+  # compare
+  var _first/eax: (addr cell) <- lookup *first-ah
+  var first/ecx: (addr cell) <- copy _first
+  var first-type/eax: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for '>' is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  var first-float/xmm0: float <- copy *first-value
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/edx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for '>' is not a number"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  compare first-float, *second-value
+  {
+    break-if-float>
+    nil out
+    return
+  }
+  new-integer out, 1/true
+}
+
+fn apply-<= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply '<='"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'<=' needs 2 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/ecx: (addr handle cell) <- get args, left
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/edx: (addr handle cell) <- get right, left
+  # compare
+  var _first/eax: (addr cell) <- lookup *first-ah
+  var first/ecx: (addr cell) <- copy _first
+  var first-type/eax: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for '<=' is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  var first-float/xmm0: float <- copy *first-value
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/edx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for '<=' is not a number"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  compare first-float, *second-value
+  {
+    break-if-float<=
+    nil out
+    return
+  }
+  new-integer out, 1/true
+}
+
+fn apply->= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply '>='"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'>=' needs 2 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/ecx: (addr handle cell) <- get args, left
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/edx: (addr handle cell) <- get right, left
+  # compare
+  var _first/eax: (addr cell) <- lookup *first-ah
+  var first/ecx: (addr cell) <- copy _first
+  var first-type/eax: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for '>=' is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  var first-float/xmm0: float <- copy *first-value
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/edx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for '>=' is not a number"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  compare first-float, *second-value
+  {
+    break-if-float>=
     nil out
     return
   }
@@ -724,6 +1003,156 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, stream, 7/fg, 0/bg
   # return what was printed
   copy-object second-ah, out
+}
+
+fn apply-up _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply up"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'up' needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'up' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/ecx: (addr screen) <- copy _screen
+  #
+  move-cursor-up screen
+}
+
+fn apply-down _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'down'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'down' needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'down' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/ecx: (addr screen) <- copy _screen
+  #
+  move-cursor-down screen
+}
+
+fn apply-left _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'left'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'left' needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'left' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/ecx: (addr screen) <- copy _screen
+  #
+  move-cursor-left screen
+}
+
+fn apply-right _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'right'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'right' needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'right' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/ecx: (addr screen) <- copy _screen
+  #
+  move-cursor-right screen
+}
+
+fn apply-cr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'cr'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'cr' needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'cr' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/ecx: (addr screen) <- copy _screen
+  #
+  move-cursor-to-left-margin-of-next-line screen
 }
 
 fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
