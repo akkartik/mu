@@ -161,6 +161,11 @@ fn add-grapheme-at-gap _self: (addr gap-buffer), g: grapheme {
   push-grapheme-stack left, g
 }
 
+fn add-code-point-at-gap self: (addr gap-buffer), c: code-point {
+  var g/eax: grapheme <- copy c
+  add-grapheme-at-gap self, g
+}
+
 fn gap-to-start self: (addr gap-buffer) {
   {
     var curr/eax: grapheme <- gap-left self
@@ -322,10 +327,9 @@ fn test-gap-buffer-equal-from-end {
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g, 0x10
   #
-  var c/eax: grapheme <- copy 0x61/a
-  add-grapheme-at-gap g, c
-  add-grapheme-at-gap g, c
-  add-grapheme-at-gap g, c
+  add-code-point-at-gap g, 0x61/a
+  add-code-point-at-gap g, 0x61/a
+  add-code-point-at-gap g, 0x61/a
   # gap is at end (right is empty)
   var result/eax: boolean <- gap-buffer-equal? g, "aaa"
   check result, "F - test-gap-buffer-equal-from-end"
@@ -336,10 +340,9 @@ fn test-gap-buffer-equal-from-middle {
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g, 0x10
   #
-  var c/eax: grapheme <- copy 0x61/a
-  add-grapheme-at-gap g, c
-  add-grapheme-at-gap g, c
-  add-grapheme-at-gap g, c
+  add-code-point-at-gap g, 0x61/a
+  add-code-point-at-gap g, 0x61/a
+  add-code-point-at-gap g, 0x61/a
   var dummy/eax: grapheme <- gap-left g
   # gap is in the middle
   var result/eax: boolean <- gap-buffer-equal? g, "aaa"
@@ -351,10 +354,9 @@ fn test-gap-buffer-equal-from-start {
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g, 0x10
   #
-  var c/eax: grapheme <- copy 0x61/a
-  add-grapheme-at-gap g, c
-  add-grapheme-at-gap g, c
-  add-grapheme-at-gap g, c
+  add-code-point-at-gap g, 0x61/a
+  add-code-point-at-gap g, 0x61/a
+  add-code-point-at-gap g, 0x61/a
   var dummy/eax: grapheme <- gap-left g
   dummy <- gap-left g
   dummy <- gap-left g
@@ -368,10 +370,9 @@ fn test-gap-buffer-equal-fails {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer g, 0x10
-  var c/eax: grapheme <- copy 0x61/a
-  add-grapheme-at-gap g, c
-  add-grapheme-at-gap g, c
-  add-grapheme-at-gap g, c
+  add-code-point-at-gap g, 0x61/a
+  add-code-point-at-gap g, 0x61/a
+  add-code-point-at-gap g, 0x61/a
   #
   var result/eax: boolean <- gap-buffer-equal? g, "aa"
   check-not result, "F - test-gap-buffer-equal-fails"
