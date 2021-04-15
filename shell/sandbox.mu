@@ -506,19 +506,12 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
   {
     compare g, 0x13/ctrl-s
     break-if-!=
-    # save to disk
+    #
+    store-sandbox data-disk, self
+    # run sandbox
     var data-ah/eax: (addr handle gap-buffer) <- get self, data
     var _data/eax: (addr gap-buffer) <- lookup *data-ah
     var data/ecx: (addr gap-buffer) <- copy _data
-    {
-      compare data-disk, 0/no-disk
-      break-if-=
-      var stream-storage: (stream byte 0x200)
-      var stream/esi: (addr stream byte) <- address stream-storage
-      emit-gap-buffer data, stream
-      store-sector data-disk, 0/lba, stream
-    }
-    # run sandbox
     var value-ah/eax: (addr handle stream byte) <- get self, value
     var _value/eax: (addr stream byte) <- lookup *value-ah
     var value/edx: (addr stream byte) <- copy _value

@@ -41,3 +41,18 @@ fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
     loop
   }
 }
+
+fn store-sandbox data-disk: (addr disk), _self: (addr sandbox) {
+  compare data-disk, 0/no-disk
+  {
+    break-if-!=
+    return
+  }
+  var self/eax: (addr sandbox) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  var stream-storage: (stream byte 0x200)
+  var stream/edi: (addr stream byte) <- address stream-storage
+  emit-gap-buffer data, stream
+  store-sector data-disk, 0/lba, stream
+}
