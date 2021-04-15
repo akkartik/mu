@@ -906,15 +906,39 @@ fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
     return
   }
   {
+    compare g, 6/ctrl-f
+    break-if-!=
+    gap-to-start-of-next-word self
+    return
+  }
+  {
+    compare g, 2/ctrl-b
+    break-if-!=
+    gap-to-end-of-previous-word self
+    return
+  }
+  {
     compare g, 1/ctrl-a
     break-if-!=
-    gap-to-start self
+    gap-to-previous-start-of-line self
     return
   }
   {
     compare g, 5/ctrl-e
     break-if-!=
-    gap-to-end self
+    gap-to-next-end-of-line self
+    return
+  }
+  {
+    compare g, 0x81/down-arrow
+    break-if-!=
+    gap-down self
+    return
+  }
+  {
+    compare g, 0x82/up-arrow
+    break-if-!=
+    gap-up self
     return
   }
   {
@@ -925,4 +949,198 @@ fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
   }
   # default: insert character
   add-grapheme-at-gap self, g
+}
+
+fn gap-to-start-of-next-word self: (addr gap-buffer) {
+  var curr/eax: grapheme <- copy 0
+  # skip to next space
+  {
+    curr <- gap-right self
+    compare curr, -1
+    break-if-=
+    compare curr, 0x20/space
+    break-if-=
+    compare curr, 0xa/newline
+    break-if-=
+    loop
+  }
+  # skip past spaces
+  {
+    curr <- gap-right self
+    compare curr, -1
+    break-if-=
+    compare curr, 0x20/space
+    loop-if-=
+    compare curr, 0xa/space
+    loop-if-=
+    curr <- gap-left self
+    break
+  }
+}
+
+fn gap-to-end-of-previous-word self: (addr gap-buffer) {
+  var curr/eax: grapheme <- copy 0
+  # skip to previous space
+  {
+    curr <- gap-left self
+    compare curr, -1
+    break-if-=
+    compare curr, 0x20/space
+    break-if-=
+    compare curr, 0xa/newline
+    break-if-=
+    loop
+  }
+  # skip past all spaces but one
+  {
+    curr <- gap-left self
+    compare curr, -1
+    break-if-=
+    compare curr, 0x20/space
+    loop-if-=
+    compare curr, 0xa/space
+    loop-if-=
+    curr <- gap-right self
+    break
+  }
+}
+
+fn gap-to-previous-start-of-line self: (addr gap-buffer) {
+  # skip past immediate newline
+  var dummy/eax: grapheme <- gap-left self
+  # skip to previous newline
+  {
+    dummy <- gap-left self
+    {
+      compare dummy, -1
+      break-if-!=
+      return
+    }
+    {
+      compare dummy, 0xa/newline
+      break-if-!=
+      dummy <- gap-right self
+      return
+    }
+    loop
+  }
+}
+
+fn gap-to-next-end-of-line self: (addr gap-buffer) {
+  # skip past immediate newline
+  var dummy/eax: grapheme <- gap-right self
+  # skip to next newline
+  {
+    dummy <- gap-right self
+    {
+      compare dummy, -1
+      break-if-!=
+      return
+    }
+    {
+      compare dummy, 0xa/newline
+      break-if-!=
+      dummy <- gap-left self
+      return
+    }
+    loop
+  }
+}
+
+fn gap-up self: (addr gap-buffer) {
+  # compute column
+  var col/edx: int <- count-columns-to-start-of-line self
+  #
+  gap-to-previous-start-of-line self
+  # skip ahead by up to col on previous line
+  var i/ecx: int <- copy 0
+  {
+    compare i, col
+    break-if->=
+    var curr/eax: grapheme <- gap-right self
+    {
+      compare curr, -1
+      break-if-!=
+      return
+    }
+    compare curr, 0xa/newline
+    {
+      break-if-!=
+      curr <- gap-left self
+      return
+    }
+    i <- increment
+    loop
+  }
+}
+
+fn gap-down self: (addr gap-buffer) {
+  # compute column
+  var col/edx: int <- count-columns-to-start-of-line self
+  # skip to start of next line
+  gap-to-end-of-line self
+  var dummy/eax: grapheme <- gap-right self
+  # skip ahead by up to col on previous line
+  var i/ecx: int <- copy 0
+  {
+    compare i, col
+    break-if->=
+    var curr/eax: grapheme <- gap-right self
+    {
+      compare curr, -1
+      break-if-!=
+      return
+    }
+    compare curr, 0xa/newline
+    {
+      break-if-!=
+      curr <- gap-left self
+      return
+    }
+    i <- increment
+    loop
+  }
+}
+
+fn count-columns-to-start-of-line self: (addr gap-buffer) -> _/edx: int {
+  var count/edx: int <- copy 0
+  var dummy/eax: grapheme <- copy 0
+  # skip to previous newline
+  {
+    dummy <- gap-left self
+    {
+      compare dummy, -1
+      break-if-!=
+      return count
+    }
+    {
+      compare dummy, 0xa/newline
+      break-if-!=
+      dummy <- gap-right self
+      return count
+    }
+    count <- increment
+    loop
+  }
+  return count
+}
+
+fn gap-to-end-of-line self: (addr gap-buffer) {
+  var dummy/eax: grapheme <- copy 0
+  # skip to next newline
+  {
+    dummy <- gap-right self
+    {
+      compare dummy, -1
+      break-if-!=
+      return
+    }
+    {
+      compare dummy, 0xa/newline
+      break-if-!=
+      dummy <- gap-left self
+      return
+    }
+    loop
+  }
 }

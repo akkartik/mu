@@ -464,6 +464,14 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
     draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 0x18/bg=keyboard
     draw-text-rightward-from-cursor screen, " move to keyboard  ", width, 7/fg, 0/bg
   }
+  draw-text-rightward-from-cursor screen, " ctrl-a ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " <<  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl-b ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " <word  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl-f ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " word>  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl-e ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " >>  ", width, 7/fg, 0/bg
 }
 
 fn render-keyboard-menu screen: (addr screen) {
