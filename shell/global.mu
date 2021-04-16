@@ -30,12 +30,16 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "cons"
   # for screens
   append-primitive self, "print"
-  append-primitive self, "pixel"
+  append-primitive self, "lines"
+  append-primitive self, "columns"
   append-primitive self, "up"
   append-primitive self, "down"
   append-primitive self, "left"
   append-primitive self, "right"
   append-primitive self, "cr"
+  append-primitive self, "pixel"
+  append-primitive self, "width"
+  append-primitive self, "height"
   # for keyboards
   append-primitive self, "key"
   # for streams
@@ -152,13 +156,17 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
 
 fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int {
   var y/ecx: int <- copy ymax
-  y <- subtract 0xc
+  y <- subtract 0xe
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "cursor graphics", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  print", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, ": screen a -> a", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  lines columns", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen -> number", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  up down left right", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
@@ -170,6 +178,10 @@ fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, yma
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "pixel graphics", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  width height", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen -> number", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  pixel", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
@@ -456,6 +468,20 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     return
   }
   {
+    var is-lines?/eax: boolean <- string-equal? f-name, "lines"
+    compare is-lines?, 0/false
+    break-if-=
+    apply-lines args-ah, out, trace
+    return
+  }
+  {
+    var is-columns?/eax: boolean <- string-equal? f-name, "columns"
+    compare is-columns?, 0/false
+    break-if-=
+    apply-columns args-ah, out, trace
+    return
+  }
+  {
     var is-up?/eax: boolean <- string-equal? f-name, "up"
     compare is-up?, 0/false
     break-if-=
@@ -495,6 +521,20 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare is-pixel?, 0/false
     break-if-=
     apply-pixel args-ah, out, trace
+    return
+  }
+  {
+    var is-width?/eax: boolean <- string-equal? f-name, "width"
+    compare is-width?, 0/false
+    break-if-=
+    apply-width args-ah, out, trace
+    return
+  }
+  {
+    var is-height?/eax: boolean <- string-equal? f-name, "height"
+    compare is-height?, 0/false
+    break-if-=
+    apply-height args-ah, out, trace
     return
   }
   {
@@ -1406,4 +1446,142 @@ fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   write-grapheme stream-data, x-grapheme
   # return the stream
   copy-object first-ah, out
+}
+
+fn apply-lines _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply lines"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "lines needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'lines' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edx: (addr screen) <- copy _screen
+  # compute dimensions
+  var dummy/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  dummy, height <- screen-size screen
+  var result/xmm0: float <- convert height
+  new-float out, result
+}
+
+fn apply-columns _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply columns"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "columns needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'columns' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edx: (addr screen) <- copy _screen
+  # compute dimensions
+  var width/eax: int <- copy 0
+  var dummy/ecx: int <- copy 0
+  width, dummy <- screen-size screen
+  var result/xmm0: float <- convert width
+  new-float out, result
+}
+
+fn apply-width _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply width"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "width needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'width' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edx: (addr screen) <- copy _screen
+  # compute dimensions
+  var width/eax: int <- copy 0
+  var dummy/ecx: int <- copy 0
+  width, dummy <- screen-size screen
+  width <- shift-left 3/log2-font-width
+  var result/xmm0: float <- convert width
+  new-float out, result
+}
+
+fn apply-height _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply height"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "height needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'height' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edx: (addr screen) <- copy _screen
+  # compute dimensions
+  var dummy/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  dummy, height <- screen-size screen
+  height <- shift-left 4/log2-font-height
+  var result/xmm0: float <- convert height
+  new-float out, result
 }
