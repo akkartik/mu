@@ -156,7 +156,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
 
 fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int {
   var y/ecx: int <- copy ymax
-  y <- subtract 0xe
+  y <- subtract 0xf
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "cursor graphics", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
   y <- increment
@@ -189,7 +189,11 @@ fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, yma
   tmpx <- draw-text-rightward screen, ": screen x y color", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "keyboard", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "screen/keyboard", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  clear", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  key", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
