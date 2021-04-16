@@ -146,7 +146,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
       var s-storage: (stream byte 0x100)
       var s/ebx: (addr stream byte) <- address s-storage
       print-cell curr-value, s, 0/no-trace
-      x, y <- draw-stream-wrapping-right-then-down screen, s, xmin, ymin, xmax, ymax, x, y, 0x3/fg=cyan, 0x12/bg=almost-black
+      x, y <- draw-stream-wrapping-right-then-down screen, s, xmin, ymin, xmax, ymax, x, y, 3/fg=cyan, 0x12/bg=almost-black
     }
     curr-index <- decrement
     y <- increment
@@ -158,62 +158,62 @@ fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, yma
   var y/ecx: int <- copy ymax
   y <- subtract 0xf
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "cursor graphics", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "cursor graphics", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  print", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": screen a -> a", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen a -> a", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  lines columns", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": screen -> number", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen -> number", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  up down left right", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": screen", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  cr", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": screen   ", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen   ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "# move cursor down and to left margin", tmpx, xmax, y, 9/fg=blue, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "pixel graphics", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "pixel graphics", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  width height", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": screen -> number", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen -> number", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  pixel", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": screen x y color", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen x y color", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "screen/keyboard", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "screen/keyboard", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  clear", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": screen", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": screen", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  key", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": () -> grapheme?", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": () -> grapheme?", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "streams", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "streams", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  stream", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": () -> stream ", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": () -> stream ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  write", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, ": stream grapheme -> stream", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, ": stream grapheme -> stream", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "numbers: ", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "numbers: ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "+ - * / sqrt = < > <= >=   ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, "pairs: ", tmpx, xmax, y, 0x7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "pairs: ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "car cdr cons", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
 }
 
