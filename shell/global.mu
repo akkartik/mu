@@ -30,6 +30,7 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "cons"
   # for screens
   append-primitive self, "print"
+  append-primitive self, "pixel"
   append-primitive self, "up"
   append-primitive self, "down"
   append-primitive self, "left"
