@@ -44,6 +44,27 @@ fn initialize-globals _self: (addr global-table) {
   # keep sync'd with render-primitives
 }
 
+fn load-globals in: (addr handle cell), self: (addr global-table) {
+  var remaining-ah/esi: (addr handle cell) <- copy in
+  {
+    var _remaining/eax: (addr cell) <- lookup *remaining-ah
+    var remaining/ecx: (addr cell) <- copy _remaining
+    var done?/eax: boolean <- nil? remaining
+    compare done?, 0/false
+    break-if-!=
+    var curr-ah/eax: (addr handle cell) <- get remaining, left
+    var curr/eax: (addr cell) <- lookup *curr-ah
+    remaining-ah <- get remaining, right
+    var name-ah/ecx: (addr handle cell) <- get curr, left
+    var value-ah/ebx: (addr handle cell) <- get curr, right
+    var name/eax: (addr cell) <- lookup *name-ah
+    var name-data-ah/eax: (addr handle stream byte) <- get name, text-data
+    var name-data/eax: (addr stream byte) <- lookup *name-data-ah
+    append-global-binding-of-stream self, name-data, *value-ah
+    loop
+  }
+}
+
 fn write-globals out: (addr stream byte), _self: (addr global-table) {
   var self/esi: (addr global-table) <- copy _self
   write out, "  (globals . (\n"
@@ -223,6 +244,22 @@ fn append-global _self: (addr global-table), name: (addr array byte), value: (ha
   var curr/esi: (addr global) <- index data, curr-offset
   var curr-name-ah/eax: (addr handle array byte) <- get curr, name
   copy-array-object name, curr-name-ah
+  var curr-value-ah/eax: (addr handle cell) <- get curr, value
+  copy-handle value, curr-value-ah
+}
+
+fn append-global-binding-of-stream _self: (addr global-table), name: (addr stream byte), value: (handle cell) {
+  var self/esi: (addr global-table) <- copy _self
+  var final-index-addr/ecx: (addr int) <- get self, final-index
+  increment *final-index-addr
+  var curr-index/ecx: int <- copy *final-index-addr
+  var data-ah/eax: (addr handle array global) <- get self, data
+  var data/eax: (addr array global) <- lookup *data-ah
+  var curr-offset/esi: (offset global) <- compute-offset data, curr-index
+  var curr/esi: (addr global) <- index data, curr-offset
+  var curr-name-ah/eax: (addr handle array byte) <- get curr, name
+  rewind-stream name
+  stream-to-array name, curr-name-ah
   var curr-value-ah/eax: (addr handle cell) <- get curr, value
   copy-handle value, curr-value-ah
 }

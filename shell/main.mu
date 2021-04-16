@@ -48,6 +48,21 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
     break-if-!=
     return
   }
+  # load globals from assoc(initial-root, 'globals)
+  var globals-literal-storage: (handle cell)
+  var globals-literal-ah/eax: (addr handle cell) <- address globals-literal-storage
+  new-symbol globals-literal-ah, "globals"
+  var globals-literal/eax: (addr cell) <- lookup *globals-literal-ah
+  var globals-cell-storage: (handle cell)
+  var globals-cell-ah/edx: (addr handle cell) <- address globals-cell-storage
+  lookup-symbol globals-literal, globals-cell-ah, *initial-root, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
+  var globals-cell/eax: (addr cell) <- lookup *globals-cell-ah
+  compare globals-cell, 0
+  {
+    break-if-!=
+    return
+  }
+  load-globals globals-cell-ah, globals
   # sandbox = assoc(initial-root, 'sandbox)
   var sandbox-literal-storage: (handle cell)
   var sandbox-literal-ah/eax: (addr handle cell) <- address sandbox-literal-storage
