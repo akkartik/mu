@@ -57,7 +57,15 @@ fn write-sandbox out: (addr stream byte), _self: (addr sandbox) {
   var self/eax: (addr sandbox) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
+  {
+    var len/eax: int <- gap-buffer-length data
+    compare len, 0
+    break-if-!=
+    return
+  }
+  write out, "  (sandbox . "
   append-gap-buffer data, out
+  write out, ")\n"
 }
 
 ##

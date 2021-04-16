@@ -56,6 +56,12 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
   var sandbox-cell-storage: (handle cell)
   var sandbox-cell-ah/edx: (addr handle cell) <- address sandbox-cell-storage
   lookup-symbol sandbox-literal, sandbox-cell-ah, *initial-root, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
+  var sandbox-cell/eax: (addr cell) <- lookup *sandbox-cell-ah
+  compare sandbox-cell, 0
+  {
+    break-if-!=
+    return
+  }
   # print: cell -> stream
   print-cell sandbox-cell-ah, s, 0/no-trace
   # stream -> gap-buffer
@@ -74,11 +80,9 @@ fn store-state data-disk: (addr disk), sandbox: (addr sandbox), globals: (addr g
   }
   var stream-storage: (stream byte 0x200)
   var stream/edi: (addr stream byte) <- address stream-storage
-  write stream, "((globals . "
+  write stream, "(\n"
   write-globals stream, globals
-  write stream, " )\n"
-  write stream, " (sandbox . "
   write-sandbox stream, sandbox
-  write stream, "))"
+  write stream, ")\n"
   store-sector data-disk, 0/lba, stream
 }

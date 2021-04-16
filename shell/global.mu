@@ -45,7 +45,7 @@ fn initialize-globals _self: (addr global-table) {
 }
 
 fn write-globals out: (addr stream byte), _self: (addr global-table) {
-  write out, "()\n"
+  write out, "  (globals . ())\n"
 }
 
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
