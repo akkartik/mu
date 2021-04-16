@@ -50,12 +50,24 @@ fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
     break-if-!=
     return
   }
+  # sandbox = assoc(initial-root, 'sandbox)
+  var sandbox-literal-storage: (handle cell)
+  var sandbox-literal-ah/eax: (addr handle cell) <- address sandbox-literal-storage
+  new-symbol sandbox-literal-ah, "sandbox"
+  var sandbox-literal/eax: (addr cell) <- lookup *sandbox-literal-ah
+  var sandbox-cell-storage: (handle cell)
+  var sandbox-cell-ah/edx: (addr handle cell) <- address sandbox-cell-storage
+  lookup-symbol sandbox-literal, sandbox-cell-ah, *initial-root, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
   # print: cell -> stream
-  print-cell initial-root, s, 0/no-trace
+  print-cell sandbox-cell-ah, s, 0/no-trace
   # stream -> gap-buffer
   load-gap-buffer-from-stream data, s
 }
 
+# Save state as an alist of alists:
+#   ((globals . ((a . (fn ...))
+#                ...))
+#    (sandbox . ...))
 fn store-sandbox data-disk: (addr disk), _self: (addr sandbox) {
   compare data-disk, 0/no-disk
   {
@@ -67,6 +79,8 @@ fn store-sandbox data-disk: (addr disk), _self: (addr sandbox) {
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   var stream-storage: (stream byte 0x200)
   var stream/edi: (addr stream byte) <- address stream-storage
-  emit-gap-buffer data, stream
+  write stream, "((sandbox . "
+  append-gap-buffer data, stream
+  write stream, "))"
   store-sector data-disk, 0/lba, stream
 }

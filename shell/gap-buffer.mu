@@ -64,6 +64,14 @@ fn emit-gap-buffer _self: (addr gap-buffer), out: (addr stream byte) {
   emit-stack-from-top right, out
 }
 
+fn append-gap-buffer _self: (addr gap-buffer), out: (addr stream byte) {
+  var self/esi: (addr gap-buffer) <- copy _self
+  var left/eax: (addr grapheme-stack) <- get self, left
+  emit-stack-from-bottom left, out
+  var right/eax: (addr grapheme-stack) <- get self, right
+  emit-stack-from-top right, out
+}
+
 # dump stack from bottom to top
 fn emit-stack-from-bottom _self: (addr grapheme-stack), out: (addr stream byte) {
   var self/esi: (addr grapheme-stack) <- copy _self
