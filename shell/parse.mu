@@ -77,12 +77,10 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
         var tmp-storage: (handle cell)
         var tmp/edx: (addr handle cell) <- address tmp-storage
         $parse-sexpression:list-loop: {
-          {
-            var close-paren?/eax: boolean <- parse-sexpression tokens, tmp, trace
-            allocate-pair curr
-            compare close-paren?, 0/false
-            break-if-!= $parse-sexpression:list-loop
-          }
+          var close-paren?/eax: boolean <- parse-sexpression tokens, tmp, trace
+          allocate-pair curr
+          compare close-paren?, 0/false
+          break-if-!=
           var curr-addr/eax: (addr cell) <- lookup *curr
           var left/ecx: (addr handle cell) <- get curr-addr, left
           copy-object tmp, left
