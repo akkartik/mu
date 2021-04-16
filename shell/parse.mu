@@ -65,18 +65,28 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
     {
       break-if-=
       var curr/esi: (addr handle cell) <- copy _out
-      $parse-sexpression:list-loop: {
-        allocate-pair curr
+      allocate-pair curr
+      var curr-addr/eax: (addr cell) <- lookup *curr
+      var left/ecx: (addr handle cell) <- get curr-addr, left
+      {
+        var close-paren?/eax: boolean <- parse-sexpression tokens, left, trace
+        compare close-paren?, 0/false
+        break-if-!=
         var curr-addr/eax: (addr cell) <- lookup *curr
-        var left/ecx: (addr handle cell) <- get curr-addr, left
-        {
-          var close-paren?/eax: boolean <- parse-sexpression tokens, left, trace
-          compare close-paren?, 0/false
-          break-if-!= $parse-sexpression:list-loop
-        }
-        #
         curr <- get curr-addr, right
-        loop
+        $parse-sexpression:list-loop: {
+          allocate-pair curr
+          var curr-addr/eax: (addr cell) <- lookup *curr
+          var left/ecx: (addr handle cell) <- get curr-addr, left
+          {
+            var close-paren?/eax: boolean <- parse-sexpression tokens, left, trace
+            compare close-paren?, 0/false
+            break-if-!= $parse-sexpression:list-loop
+          }
+          #
+          curr <- get curr-addr, right
+          loop
+        }
       }
       break $parse-sexpression:type-check
     }
