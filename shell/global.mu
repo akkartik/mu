@@ -45,7 +45,41 @@ fn initialize-globals _self: (addr global-table) {
 }
 
 fn write-globals out: (addr stream byte), _self: (addr global-table) {
-  write out, "  (globals . ())\n"
+  var self/esi: (addr global-table) <- copy _self
+  write out, "  (globals . (\n"
+  var data-ah/eax: (addr handle array global) <- get self, data
+  var data/eax: (addr array global) <- lookup *data-ah
+  var final-index/edx: (addr int) <- get self, final-index
+  var curr-index/ecx: int <- copy 1/skip-0
+  {
+    compare curr-index, *final-index
+    break-if->
+    var curr-offset/ebx: (offset global) <- compute-offset data, curr-index
+    var curr/ebx: (addr global) <- index data, curr-offset
+    var curr-value-ah/edx: (addr handle cell) <- get curr, value
+    var curr-value/eax: (addr cell) <- lookup *curr-value-ah
+    var curr-type/eax: (addr int) <- get curr-value, type
+    {
+      compare *curr-type, 4/primitive-function
+      break-if-=
+      compare *curr-type, 5/screen
+      break-if-=
+      compare *curr-type, 6/keyboard
+      break-if-=
+      compare *curr-type, 3/stream  # not implemented yet
+      break-if-=
+      write out, "    ("
+      var curr-name-ah/eax: (addr handle array byte) <- get curr, name
+      var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
+      write out, curr-name
+      write out, " . "
+      print-cell curr-value-ah, out, 0/no-trace
+      write out, ")\n"
+    }
+    curr-index <- increment
+    loop
+  }
+  write out, "  ))\n"
 }
 
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
