@@ -57,6 +57,14 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
       return close-paren?, dot?
     }
+    # dot -> return
+    var dot?/eax: boolean <- dot-token? curr-token
+    compare dot?, 0/false
+    {
+      break-if-=
+      trace-higher trace
+      return 0/false, 1/true
+    }
     # not bracket -> parse atom
     var bracket-token?/eax: boolean <- bracket-token? curr-token
     compare bracket-token?, 0/false
@@ -78,6 +86,12 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
         var close-paren?/eax: boolean <- copy 0/false
         var dot?/ecx: boolean <- copy 0/false
         close-paren?, dot? <- parse-sexpression tokens, left, trace
+        {
+          compare dot?, 0/false
+          break-if-=
+          error trace, "'.' cannot be at the start of a list"
+          return 1/true, dot?
+        }
         compare close-paren?, 0/false
         break-if-!=
         var curr-addr/eax: (addr cell) <- lookup *curr
@@ -88,6 +102,13 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
           var close-paren?/eax: boolean <- copy 0/false
           var dot?/ecx: boolean <- copy 0/false
           close-paren?, dot? <- parse-sexpression tokens, tmp, trace
+          # '.' -> clean up right here and return
+          compare dot?, 0/false
+          {
+            break-if-=
+            parse-dot-tail tokens, curr, trace
+            return 0/false, 0/false
+          }
           allocate-pair curr
           # ')' -> return
           compare close-paren?, 0/false
@@ -168,5 +189,40 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
     write stream, "=> symbol "
     print-symbol out-addr, stream, 0/no-trace
     trace trace, "read", stream
+  }
+}
+
+fn parse-dot-tail tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) {
+  var out/edi: (addr handle cell) <- copy _out
+  var close-paren?/eax: boolean <- copy 0/false
+  var dot?/ecx: boolean <- copy 0/false
+  close-paren?, dot? <- parse-sexpression tokens, out, trace
+  compare close-paren?, 0/false
+  {
+    break-if-=
+    error trace, "'. )' makes no sense"
+    return
+  }
+  compare dot?, 0/false
+  {
+    break-if-=
+    error trace, "'. .' makes no sense"
+    return
+  }
+  #
+  var dummy: (handle cell)
+  var dummy-ah/edi: (addr handle cell) <- address dummy
+  close-paren?, dot? <- parse-sexpression tokens, dummy-ah, trace
+  compare close-paren?, 0/false
+  {
+    break-if-!=
+    error trace, "cannot have multiple expressions between '.' and ')'"
+    return
+  }
+  compare dot?, 0/false
+  {
+    break-if-=
+    error trace, "cannot have two dots in a single list"
+    return
   }
 }

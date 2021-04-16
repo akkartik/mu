@@ -719,6 +719,141 @@ fn test-run-quote {
   check-screen-row screen, 2/y, "=> a ", "F - test-run-quote/2"
 }
 
+fn test-run-dotted-list {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
+  # type "'(a . b)"
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x62/b, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
+  check-screen-row screen, 0/y, "'(a . b)   ", "F - test-run-dotted-list/0"
+  check-screen-row screen, 1/y, "...        ", "F - test-run-dotted-list/1"
+  check-screen-row screen, 2/y, "=> (a . b) ", "F - test-run-dotted-list/2"
+}
+
+fn test-run-dot-and-list {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
+  # type "'(a . (b))"
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x62/b, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
+  check-screen-row screen, 0/y, "'(a . (b)) ", "F - test-run-dot-and-list/0"
+  check-screen-row screen, 1/y, "...        ", "F - test-run-dot-and-list/1"
+  check-screen-row screen, 2/y, "=> (a b)   ", "F - test-run-dot-and-list/2"
+}
+
+fn test-run-final-dot {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
+  # type "'(a .)"
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
+  check-screen-row screen, 0/y, "'(a .)               ", "F - test-run-final-dot/0"
+  check-screen-row screen, 1/y, "...                  ", "F - test-run-final-dot/1"
+  check-screen-row screen, 2/y, "'. )' makes no sense ", "F - test-run-final-dot/2"
+  # further errors may occur
+}
+
+fn test-run-double-dot {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
+  # type "'(a . .)"
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
+  check-screen-row screen, 0/y, "'(a . .)             ", "F - test-run-double-dot/0"
+  check-screen-row screen, 1/y, "...                  ", "F - test-run-double-dot/1"
+  check-screen-row screen, 2/y, "'. .' makes no sense ", "F - test-run-double-dot/2"
+  # further errors may occur
+}
+
+fn test-run-multiple-expressions-after-dot {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox sandbox, 0/no-screen-or-keyboard
+  # type "'(a . b c)"
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x62/b, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x63/c, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
+  check-screen-row screen, 0/y, "'(a . b c)                                           ", "F - test-run-multiple-expressions-after-dot/0"
+  check-screen-row screen, 1/y, "...                                                  ", "F - test-run-multiple-expressions-after-dot/1"
+  check-screen-row screen, 2/y, "cannot have multiple expressions between '.' and ')' ", "F - test-run-multiple-expressions-after-dot/2"
+  # further errors may occur
+}
+
 fn test-run-error-invalid-integer {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
