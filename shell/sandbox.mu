@@ -507,7 +507,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     compare g, 0x13/ctrl-s
     break-if-!=
     #
-    store-sandbox data-disk, self
+    store-state data-disk, self, globals
     # run sandbox
     var data-ah/eax: (addr handle gap-buffer) <- get self, data
     var _data/eax: (addr gap-buffer) <- lookup *data-ah

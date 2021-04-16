@@ -8,7 +8,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 1/with-screen
-  load-sandbox data-disk, sandbox
+  load-state data-disk, sandbox, globals
   {
     render-globals screen, globals, 0/x, 0/y, 0x40/xmax, 0x2f/screen-height-without-menu
     render-sandbox screen, sandbox, 0x40/x, 0/y, 0x80/screen-width, 0x2f/screen-height-without-menu, globals
@@ -23,12 +23,10 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   }
 }
 
-# Read an s-expression from data-disk to sandbox.
-# Gotcha: saved state with syntax errors may not load, and may need to be
-# edited as a disk image to get it to load.
-fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
-  var self/eax: (addr sandbox) <- copy _self
-  var data-ah/eax: (addr handle gap-buffer) <- get self, data
+# Gotcha: some saved state may not load.
+fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr global-table) {
+  var sandbox/eax: (addr sandbox) <- copy _sandbox
+  var data-ah/eax: (addr handle gap-buffer) <- get sandbox, data
   var _data/eax: (addr gap-buffer) <- lookup *data-ah
   var data/esi: (addr gap-buffer) <- copy _data
   # data-disk -> stream
@@ -68,14 +66,14 @@ fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
 #   ((globals . ((a . (fn ...))
 #                ...))
 #    (sandbox . ...))
-fn store-sandbox data-disk: (addr disk), _self: (addr sandbox) {
+fn store-state data-disk: (addr disk), _sandbox: (addr sandbox), _globals: (addr global-table) {
   compare data-disk, 0/no-disk
   {
     break-if-!=
     return
   }
-  var self/eax: (addr sandbox) <- copy _self
-  var data-ah/eax: (addr handle gap-buffer) <- get self, data
+  var sandbox/eax: (addr sandbox) <- copy _sandbox
+  var data-ah/eax: (addr handle gap-buffer) <- get sandbox, data
   var data/eax: (addr gap-buffer) <- lookup *data-ah
   var stream-storage: (stream byte 0x200)
   var stream/edi: (addr stream byte) <- address stream-storage
