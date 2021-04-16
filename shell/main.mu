@@ -74,7 +74,10 @@ fn store-state data-disk: (addr disk), sandbox: (addr sandbox), globals: (addr g
   }
   var stream-storage: (stream byte 0x200)
   var stream/edi: (addr stream byte) <- address stream-storage
-  write stream, "((sandbox . "
+  write stream, "((globals . "
+  write-globals stream, globals
+  write stream, " )\n"
+  write stream, " (sandbox . "
   write-sandbox stream, sandbox
   write stream, "))"
   store-sector data-disk, 0/lba, stream

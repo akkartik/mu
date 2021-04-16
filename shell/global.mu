@@ -44,6 +44,10 @@ fn initialize-globals _self: (addr global-table) {
   # keep sync'd with render-primitives
 }
 
+fn write-globals out: (addr stream byte), _self: (addr global-table) {
+  write out, "()\n"
+}
+
 fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
   clear-rect screen, xmin, ymin, xmax, ymax, 0x12/bg=almost-black
   var self/esi: (addr global-table) <- copy _self
