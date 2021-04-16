@@ -43,6 +43,13 @@ fn load-sandbox data-disk: (addr disk), _self: (addr sandbox) {
   var initial-root/ecx: (addr handle cell) <- address initial-root-storage
   read-cell data, initial-root, 0/no-trace
   clear-gap-buffer data
+  #
+  {
+    var initial-root-addr/eax: (addr cell) <- lookup *initial-root
+    compare initial-root-addr, 0
+    break-if-!=
+    return
+  }
   # print: cell -> stream
   print-cell initial-root, s, 0/no-trace
   # stream -> gap-buffer
