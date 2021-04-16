@@ -53,6 +53,13 @@ fn allocate-sandbox-with _out: (addr handle sandbox), s: (addr array byte) {
   initialize-sandbox-with out-addr, s
 }
 
+fn write-sandbox out: (addr stream byte), _self: (addr sandbox) {
+  var self/eax: (addr sandbox) <- copy _self
+  var data-ah/eax: (addr handle gap-buffer) <- get self, data
+  var data/eax: (addr gap-buffer) <- lookup *data-ah
+  append-gap-buffer data, out
+}
+
 ##
 
 fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int, xmax: int, ymax: int, globals: (addr global-table) {

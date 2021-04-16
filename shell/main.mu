@@ -66,19 +66,16 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
 #   ((globals . ((a . (fn ...))
 #                ...))
 #    (sandbox . ...))
-fn store-state data-disk: (addr disk), _sandbox: (addr sandbox), _globals: (addr global-table) {
+fn store-state data-disk: (addr disk), sandbox: (addr sandbox), globals: (addr global-table) {
   compare data-disk, 0/no-disk
   {
     break-if-!=
     return
   }
-  var sandbox/eax: (addr sandbox) <- copy _sandbox
-  var data-ah/eax: (addr handle gap-buffer) <- get sandbox, data
-  var data/eax: (addr gap-buffer) <- lookup *data-ah
   var stream-storage: (stream byte 0x200)
   var stream/edi: (addr stream byte) <- address stream-storage
   write stream, "((sandbox . "
-  append-gap-buffer data, stream
+  write-sandbox stream, sandbox
   write stream, "))"
   store-sector data-disk, 0/lba, stream
 }
