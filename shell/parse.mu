@@ -7,7 +7,9 @@ fn parse-input tokens: (addr stream cell), out: (addr handle cell), trace: (addr
     error trace, "nothing to parse"
     return
   }
-  var close-paren?/eax: boolean <- parse-sexpression tokens, out, trace
+  var close-paren?/eax: boolean <- copy 0/false
+  var dummy?/ecx: boolean <- copy 0/false
+  close-paren?, dummy? <- parse-sexpression tokens, out, trace
   {
     compare close-paren?, 0/false
     break-if-=
@@ -22,8 +24,10 @@ fn parse-input tokens: (addr stream cell), out: (addr handle cell), trace: (addr
   }
 }
 
-# return value: true if close-paren was encountered
-fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) -> _/eax: boolean {
+# return values:
+#   unmatched close-paren encountered?
+#   dot encountered? (only used internally by recursive calls)
+fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) -> _/eax: boolean, _/ecx: boolean {
   trace-text trace, "read", "parse"
   trace-lower trace
   var curr-token-storage: cell
@@ -33,7 +37,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
   {
     break-if-=
     error trace, "end of stream; never found a balancing ')'"
-    return 1/true
+    return 1/true, 0/false
   }
   read-from-stream tokens, curr-token
   $parse-sexpression:type-check: {
@@ -45,11 +49,13 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       var out/edi: (addr handle cell) <- copy _out
       allocate-pair out
       var out-addr/eax: (addr cell) <- lookup *out
-      var left-ah/ecx: (addr handle cell) <- get out-addr, left
+      var left-ah/edx: (addr handle cell) <- get out-addr, left
       new-symbol left-ah, "'"
-      var right-ah/ecx: (addr handle cell) <- get out-addr, right
-      var result/eax: boolean <- parse-sexpression tokens, right-ah, trace
-      return result
+      var right-ah/edx: (addr handle cell) <- get out-addr, right
+      var close-paren?/eax: boolean <- copy 0/false
+      var dot?/ecx: boolean <- copy 0/false
+      close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
+      return close-paren?, dot?
     }
     # not bracket -> parse atom
     var bracket-token?/eax: boolean <- bracket-token? curr-token
@@ -67,9 +73,11 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       var curr/esi: (addr handle cell) <- copy _out
       allocate-pair curr
       var curr-addr/eax: (addr cell) <- lookup *curr
-      var left/ecx: (addr handle cell) <- get curr-addr, left
+      var left/edx: (addr handle cell) <- get curr-addr, left
       {
-        var close-paren?/eax: boolean <- parse-sexpression tokens, left, trace
+        var close-paren?/eax: boolean <- copy 0/false
+        var dot?/ecx: boolean <- copy 0/false
+        close-paren?, dot? <- parse-sexpression tokens, left, trace
         compare close-paren?, 0/false
         break-if-!=
         var curr-addr/eax: (addr cell) <- lookup *curr
@@ -77,8 +85,11 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
         var tmp-storage: (handle cell)
         var tmp/edx: (addr handle cell) <- address tmp-storage
         $parse-sexpression:list-loop: {
-          var close-paren?/eax: boolean <- parse-sexpression tokens, tmp, trace
+          var close-paren?/eax: boolean <- copy 0/false
+          var dot?/ecx: boolean <- copy 0/false
+          close-paren?, dot? <- parse-sexpression tokens, tmp, trace
           allocate-pair curr
+          # ')' -> return
           compare close-paren?, 0/false
           break-if-!=
           var curr-addr/eax: (addr cell) <- lookup *curr
@@ -91,13 +102,13 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       }
       break $parse-sexpression:type-check
     }
-    # close paren -> parse list
+    # close paren -> return
     var close-paren?/eax: boolean <- close-paren-token? curr-token
     compare close-paren?, 0/false
     {
       break-if-=
       trace-higher trace
-      return 1/true
+      return 1/true, 0/false
     }
     # otherwise abort
     var stream-storage: (stream byte 0x40)
@@ -110,7 +121,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
     trace trace, "error", stream
   }
   trace-higher trace
-  return 0/false
+  return 0/false, 0/false
 }
 
 fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr trace) {
