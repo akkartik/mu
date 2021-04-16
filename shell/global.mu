@@ -30,6 +30,7 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "cons"
   # for screens
   append-primitive self, "print"
+  append-primitive self, "clear"
   append-primitive self, "lines"
   append-primitive self, "columns"
   append-primitive self, "up"
@@ -470,6 +471,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare is-print?, 0/false
     break-if-=
     apply-print args-ah, out, trace
+    return
+  }
+  {
+    var is-clear?/eax: boolean <- string-equal? f-name, "clear"
+    compare is-clear?, 0/false
+    break-if-=
+    apply-clear args-ah, out, trace
     return
   }
   {
@@ -1124,6 +1132,36 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, stream, 7/fg, 0/bg
   # return what was printed
   copy-object second-ah, out
+}
+
+fn apply-clear _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply clear"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'clear' needs 1 arg but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 5/screen
+  {
+    break-if-=
+    error trace, "first arg for 'clear' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/ecx: (addr screen) <- copy _screen
+  #
+  clear-screen screen
 }
 
 fn apply-up _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
