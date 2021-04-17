@@ -18,14 +18,14 @@
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var text-storage: (stream byte 0x200)
   var text/esi: (addr stream byte) <- address text-storage
-  load-sector data-disk, 0/lba, text
+  load-sectors data-disk, 0/lba, 1/num-sectors, text
 
   var word-count/eax: int <- word-count text
 
   var result-storage: (stream byte 0x10)
   var result/edi: (addr stream byte) <- address result-storage
   write-int32-decimal result, word-count
-  store-sector data-disk, 0/lba, result
+  store-sectors data-disk, 0/lba, 1/num-sectors, result
 }
 
 fn word-count in: (addr stream byte) -> _/eax: int {

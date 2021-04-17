@@ -9,8 +9,8 @@ sig draw-cursor-on-real-screen g: grapheme
 sig read-key kbd: (addr keyboard) -> _/eax: byte
 
 # disk
-sig load-sector disk: (addr disk), lba: int, out: (addr stream byte)
-sig store-sector disk: (addr disk), lba: int, out: (addr stream byte)
+sig load-sectors disk: (addr disk), lba: int, n: int, out: (addr stream byte)
+sig store-sectors disk: (addr disk), lba: int, n: int, out: (addr stream byte)
 
 # mouse
 sig read-mouse-event -> _/eax: int, _/ecx: int

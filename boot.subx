@@ -907,7 +907,7 @@ Primary-bus-secondary-drive:
 
 == code
 
-load-sector:  # disk: (addr disk), lba: int, out: (addr stream byte)
+load-sectors:  # disk: (addr disk), lba: int, n: int, out: (addr stream byte)
   # . prologue
   55/push-ebp
   89/<- %ebp 4/r32/esp
@@ -918,35 +918,47 @@ load-sector:  # disk: (addr disk), lba: int, out: (addr stream byte)
   # check for drive
   (drive-exists? *(ebp+8))  # => eax
   3d/compare-eax-and 0/imm32/false
-  0f 84/jump-if-= $load-sector:end/disp32
+  0f 84/jump-if-= $load-sectors:end/disp32
   # kick off read
   (ata-drive-select *(ebp+8) *(ebp+0xc))
   (clear-ata-error *(ebp+8))
-  (ata-sector-count *(ebp+8) 1)
+  (ata-sector-count *(ebp+8) *(ebp+0x10))
   (ata-lba *(ebp+8) *(ebp+0xc))
   (ata-command *(ebp+8) 0x20)  # read sectors with retries
-  # poll for results
-  (while-ata-busy *(ebp+8))
-  (until-ata-data-available *(ebp+8))
-  # var data-port/edx = disk->data-port
-  8b/-> *(ebp+8) 0/r32/eax
-  8b/-> *(eax+0x24) 2/r32/edx
-  # emit results
-  31/xor %eax 0/r32/eax
-  b9/copy-to-ecx 0x200/imm32  # 512 bytes per sector
+  # for each sector
   {
-    81 7/subop/compare %ecx 0/imm32
-    74/jump-if-= break/disp8
-    66 ed/read-port-dx-into-ax
-    # write 2 bytes to stream one at a time
-    (append-byte *(ebp+0x10) %eax)
-    49/decrement-ecx
-    c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
-    (append-byte *(ebp+0x10) %eax)
-    49/decrement-ecx
-    eb/jump loop/disp8
+    # poll for results
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "waiting for sector.." 7 0)
+    (while-ata-busy *(ebp+8))
+    (until-ata-data-available *(ebp+8))
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "reading\n" 7 0)
+    # var data-port/edx = disk->data-port
+    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *(eax+0x24) 2/r32/edx
+    # emit results
+    31/xor %eax 0/r32/eax
+    b9/copy-to-ecx 0x200/imm32  # 512 bytes per sector
+    {
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      66 ed/read-port-dx-into-ax
+      # write 2 bytes to stream one at a time
+      (append-byte *(ebp+0x14) %eax)
+      49/decrement-ecx
+      c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
+      (append-byte *(ebp+0x14) %eax)
+      49/decrement-ecx
+      eb/jump loop/disp8
+    }
+    ff 1/subop/decrement *(ebp+0x10)
+#?     (draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0x10) 0xc 0)
+    81 7/subop/compare *(ebp+0x10) 0/imm32
+    7e/jump-if-<= break/disp8
+    (wait-400ns *(ebp+8))
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "next sector\n" 7 0)
+    e9/jump loop/disp32
   }
-$load-sector:end:
+$load-sectors:end:
   # . restore registers
   5a/pop-to-edx
   59/pop-to-ecx
@@ -956,7 +968,7 @@ $load-sector:end:
   5d/pop-to-ebp
   c3/return
 
-store-sector:  # disk: (addr disk), lba: int, in: (addr stream byte)
+store-sectors:  # disk: (addr disk), lba: int, n: int, in: (addr stream byte)
   # . prologue
   55/push-ebp
   89/<- %ebp 4/r32/esp
@@ -968,11 +980,11 @@ store-sector:  # disk: (addr disk), lba: int, in: (addr stream byte)
   # check for drive
   (drive-exists? *(ebp+8))  # => eax
   3d/compare-eax-and 0/imm32/false
-  0f 84/jump-if-= $store-sector:end/disp32
+  0f 84/jump-if-= $store-sectors:end/disp32
   # kick off write
   (ata-drive-select *(ebp+8) *(ebp+0xc))
   (clear-ata-error *(ebp+8))
-  (ata-sector-count *(ebp+8) 1)
+  (ata-sector-count *(ebp+8) *(ebp+0x10))
   (ata-lba *(ebp+8) *(ebp+0xc))
   (ata-command *(ebp+8) 0x30)  # write sectors with retries
   # wait
@@ -986,22 +998,22 @@ store-sector:  # disk: (addr disk), lba: int, in: (addr stream byte)
   # . var first-byte/ebx: byte
   # . when it's more than 0xff, we're at an even-numbered byte
   bb/copy-to-ebx 0xffff/imm32
-$store-sector:loop:
+$store-sectors:loop:
   {
     81 7/subop/compare %ecx 0/imm32
     74/jump-if-= break/disp8
     # this loop is slow, but the ATA spec also requires a small delay
-    (stream-empty? *(ebp+0x10))  # => eax
+    (stream-empty? *(ebp+0x14))  # => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= break/disp8
     # read byte from stream
-    (read-byte *(ebp+0x10))  # => eax
+    (read-byte *(ebp+0x14))  # => eax
     # if we're at an odd-numbered byte, save it to first-byte
     81 7/subop/compare %ebx 0xff/imm32
     {
       7e/jump-if-<= break/disp8
       89/<- %ebx 0/r32/eax
-      eb/jump $store-sector:loop/disp8
+      eb/jump $store-sectors:loop/disp8
     }
     # otherwise OR it with first-byte and write it out
     c1/shift 4/subop/left %eax 8/imm8
@@ -1032,7 +1044,7 @@ $store-sector:loop:
     49/decrement-ecx
     eb/jump loop/disp8
   }
-$store-sector:end:
+$store-sectors:end:
   # . restore registers
   5b/pop-to-ebx
   5a/pop-to-edx
@@ -1059,7 +1071,7 @@ drive-exists?:  # disk: (addr disk) -> _/eax: boolean
     3d/compare-eax-and 0xff/imm32
     # if eax is 0xff, primary bus has no drives
     b8/copy-to-eax 0/imm32/false
-    74/jump-if-= $drive-exists?:end/disp8
+    0f 84/jump-if-= $drive-exists?:end/disp32
   }
   # identify
   (ata-drive-select *(ebp+8) 0)
@@ -1266,7 +1278,7 @@ until-ata-data-available:  # disk: (addr disk)
     a8/test-bits-in-al 8/imm8/drq  # set zf if bit 3 is not set
     74/jump-if-zf-set-and-bit-3-not-set loop/disp8
   }
-$while-ata-busy:end:
+$until-ata-data-available:end:
   # . restore registers
   5a/pop-to-edx
   58/pop-to-eax
@@ -1275,6 +1287,39 @@ $while-ata-busy:end:
 
 until-ata-ready-for-data:
   (until-ata-data-available)
+  c3/return
+
+# https://wiki.osdev.org/index.php?title=ATA_PIO_Mode&oldid=25664#400ns_delays
+wait-400ns:  # disk: (addr disk)
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  # . save registers
+  50/push-eax
+  51/push-ecx
+  52/push-edx
+#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "waiting 400ns\n" 7 0)
+  # var status-port/edx = disk->status-port
+  8b/-> *(ebp+8) 0/r32/eax
+  8b/-> *(eax+4) 2/r32/edx  # 4 = status-port offset
+  #
+  b9/copy-to-ecx 0x10/imm32
+  {
+    81 7/subop/compare %ecx 0/imm32
+    74/jump-if-= break/disp8
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "." 7 0)
+    ec/read-port-dx-into-al
+    49/decrement-ecx
+    eb/jump loop/disp8
+  }
+$wait-400ns:end:
+  # . restore registers
+  5a/pop-to-edx
+  59/pop-to-ecx
+  58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
   c3/return
 
 # }}}

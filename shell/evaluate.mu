@@ -394,7 +394,7 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
 fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   # trace sym
   {
-    var stream-storage: (stream byte 0x100)
+    var stream-storage: (stream byte 0x200)  # pessimistically sized just for the large alist loaded from disk in `main`
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "look up "
     var sym2/eax: (addr cell) <- copy sym
