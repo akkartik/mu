@@ -335,7 +335,7 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   # Params can only be symbols or pairs. Args can be anything.
   # trace "pushing bindings from " params " to " args {{{
   {
-    var stream-storage: (stream byte 0x100)
+    var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "pushing bindings from "
     print-cell params-ah, stream, 0/no-trace
@@ -394,7 +394,7 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
 fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   # trace sym
   {
-    var stream-storage: (stream byte 0x200)  # pessimistically sized just for the large alist loaded from disk in `main`
+    var stream-storage: (stream byte 0x800)  # pessimistically sized just for the large alist loaded from disk in `main`
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "look up "
     var sym2/eax: (addr cell) <- copy sym
@@ -481,7 +481,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-!=
-      var stream-storage: (stream byte 0x200)
+      var stream-storage: (stream byte 0x800)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> "
       print-cell out, stream, 0/no-trace

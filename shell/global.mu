@@ -48,6 +48,7 @@ fn initialize-globals _self: (addr global-table) {
   # for streams
   append-primitive self, "stream"
   append-primitive self, "write"
+  append-primitive self, "abort"
   # keep sync'd with render-primitives
 }
 
@@ -146,7 +147,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
       x, y <- draw-text-wrapping-right-then-down screen, curr-name, xmin, ymin, xmax, ymax, x, y, 0x2a/fg=orange, 0x12/bg=almost-black
       x, y <- draw-text-wrapping-right-then-down screen, " <- ", xmin, ymin, xmax, ymax, x, y, 7/fg=grey, 0x12/bg=almost-black
       var curr-value/edx: (addr handle cell) <- get curr, value
-      var s-storage: (stream byte 0x100)
+      var s-storage: (stream byte 0x400)
       var s/ebx: (addr stream byte) <- address s-storage
       print-cell curr-value, s, 0/no-trace
       x, y <- draw-stream-wrapping-right-then-down screen, s, xmin, ymin, xmax, ymax, x, y, 3/fg=cyan, 0x12/bg=almost-black
@@ -585,6 +586,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare write?, 0/false
     break-if-=
     apply-write args-ah, out, trace
+    return
+  }
+  {
+    var abort?/eax: boolean <- string-equal? f-name, "abort"
+    compare abort?, 0/false
+    break-if-=
+    apply-abort args-ah, out, trace
     return
   }
   abort "unknown primitive function"
@@ -1622,6 +1630,10 @@ fn apply-lines _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   dummy, height <- screen-size screen
   var result/xmm0: float <- convert height
   new-float out, result
+}
+
+fn apply-abort _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  abort "aa"
 }
 
 fn apply-columns _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
