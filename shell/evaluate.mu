@@ -11,6 +11,8 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
 #?   }
   # trace "evaluate " in " in environment " env {{{
   {
+    compare trace, 0
+    break-if-=
     var stream-storage: (stream byte 0x100)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "evaluate "
@@ -220,6 +222,8 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   trace-higher trace
   # trace "=> " out {{{
   {
+    compare trace, 0
+    break-if-=
     var stream-storage: (stream byte 0x100)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "=> "
@@ -244,6 +248,8 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
   # if it's not a primitive function it must be an anonymous function
   # trace "apply anonymous function " f " in environment " env {{{
   {
+    compare trace, 0
+    break-if-=
     var stream-storage: (stream byte 0x100)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "apply anonymous function "
@@ -335,6 +341,8 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   # Params can only be symbols or pairs. Args can be anything.
   # trace "pushing bindings from " params " to " args {{{
   {
+    compare trace, 0
+    break-if-=
     var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "pushing bindings from "
@@ -394,6 +402,8 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
 fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   # trace sym
   {
+    compare trace, 0
+    break-if-=
     var stream-storage: (stream byte 0x800)  # pessimistically sized just for the large alist loaded from disk in `main`
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "look up "
@@ -428,6 +438,8 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     trace-higher trace
     # trace "=> " out " (global)" {{{
     {
+      compare trace, 0
+      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-!=
@@ -478,6 +490,8 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     cdr env-head, out, 0/no-trace
     # trace "=> " out " (match)" {{{
     {
+      compare trace, 0
+      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-!=
@@ -500,6 +514,8 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   trace-higher trace
     # trace "=> " out " (recurse)" {{{
     {
+      compare trace, 0
+      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-!=
