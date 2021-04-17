@@ -30,9 +30,9 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
   var _data/eax: (addr gap-buffer) <- lookup *data-ah
   var data/esi: (addr gap-buffer) <- copy _data
   # data-disk -> stream
-  var s-storage: (stream byte 0x800)  # space for 4/sectors
+  var s-storage: (stream byte 0x1000)  # space for 8/sectors
   var s/ebx: (addr stream byte) <- address s-storage
-  load-sectors data-disk, 0/lba, 4/sectors, s
+  load-sectors data-disk, 0/lba, 8/sectors, s
 #?   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, s, 7/fg, 0/bg
   # stream -> gap-buffer
   load-gap-buffer-from-stream data, s
@@ -94,11 +94,11 @@ fn store-state data-disk: (addr disk), sandbox: (addr sandbox), globals: (addr g
     break-if-!=
     return
   }
-  var stream-storage: (stream byte 0x800)  # space enough for 4/sectors
+  var stream-storage: (stream byte 0x1000)  # space enough for 8/sectors
   var stream/edi: (addr stream byte) <- address stream-storage
   write stream, "(\n"
   write-globals stream, globals
   write-sandbox stream, sandbox
   write stream, ")\n"
-  store-sectors data-disk, 0/lba, 4/sectors, stream
+  store-sectors data-disk, 0/lba, 8/sectors, stream
 }
