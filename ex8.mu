@@ -1,9 +1,9 @@
 # Demo of floating-point support.
 #
 # To build a disk image:
-#   ./translate ex8.mu             # emits disk.img
+#   ./translate ex8.mu             # emits code.img
 # To run:
-#   bochs -f bochsrc               # bochsrc loads disk.img
+#   bochs -f bochsrc               # bochsrc loads code.img
 # Set a breakpoint at 0x7c00 and start stepping.
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {

@@ -12,8 +12,8 @@ Here's the Mu computer running [Conway's Game of Life](https://en.wikipedia.org/
 ```sh
 $ git clone https://github.com/akkartik/mu
 $ cd mu
-$ ./translate life.mu  # emit a bootable disk.img
-$ qemu-system-i386 disk.img
+$ ./translate life.mu  # emit a bootable code.img
+$ qemu-system-i386 code.img
 ```
 
 <img alt='screenshot of Game of Life running on the Mu computer' src='html/baremetal-life.png'>
@@ -94,7 +94,7 @@ Mu programs build natively either on Linux or on Windows using [WSL 2](https://d
 For Macs and other Unix-like systems, use the (much slower) emulator:
 
 ```sh
-$ ./translate_emulated ex2.mu  # ~2 mins to emit disk.img
+$ ./translate_emulated ex2.mu  # ~2 mins to emit code.img
 ```
 
 Mu programs can be written for two very different environments:

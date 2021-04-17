@@ -1,11 +1,11 @@
 # Demo of mouse support.
 #
 # To build a disk image:
-#   ./translate ex10.mu            # emits disk.img
+#   ./translate ex10.mu            # emits code.img
 # To run:
-#   qemu-system-i386 disk.img
+#   qemu-system-i386 code.img
 # Or:
-#   bochs -f bochsrc               # bochsrc loads disk.img
+#   bochs -f bochsrc               # bochsrc loads code.img
 #
 # Expected output:
 #   Values between -256 and +255 as you move the mouse over the window.

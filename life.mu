@@ -3,7 +3,7 @@
 # To build:
 #   $ ./translate life.mu
 # To run:
-#   $ qemu-system-i386 disk.img
+#   $ qemu-system-i386 code.img
 
 fn state _grid: (addr array boolean), x: int, y: int -> _/eax: boolean {
   # clip at the edge

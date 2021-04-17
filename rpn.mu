@@ -7,7 +7,7 @@
 #   $ ./translate rpn.mu
 #
 # Example session:
-#   $ qemu-system-i386 disk.img
+#   $ qemu-system-i386 code.img
 #   > 4
 #   4
 #   > 5 3 -

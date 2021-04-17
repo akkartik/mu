@@ -1,11 +1,11 @@
 # Draw a character using the built-in font (GNU unifont)
 #
 # To build a disk image:
-#   ./translate ex4.mu             # emits disk.img
+#   ./translate ex4.mu             # emits code.img
 # To run:
-#   qemu-system-i386 disk.img
+#   qemu-system-i386 code.img
 # Or:
-#   bochs -f bochsrc               # bochsrc loads disk.img
+#   bochs -f bochsrc               # bochsrc loads code.img
 #
 # Expected output: letter 'A' in green near the top-left corner of screen
 

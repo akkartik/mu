@@ -2,11 +2,11 @@
 # and in raster order.
 #
 # To build a disk image:
-#   ./translate ex3.mu             # emits disk.img
+#   ./translate ex3.mu             # emits code.img
 # To run:
-#   qemu-system-i386 disk.img
+#   qemu-system-i386 code.img
 # Or:
-#   bochs -f bochsrc               # bochsrc loads disk.img
+#   bochs -f bochsrc               # bochsrc loads code.img
 #
 # Expected output: a new green pixel starting from the top left corner of the
 # screen every time you press a key (letter or digit)

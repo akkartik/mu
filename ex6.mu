@@ -1,11 +1,11 @@
 # Drawing ASCII text incrementally.
 #
 # To build a disk image:
-#   ./translate ex6.mu             # emits disk.img
+#   ./translate ex6.mu             # emits code.img
 # To run:
-#   qemu-system-i386 disk.img
+#   qemu-system-i386 code.img
 # Or:
-#   bochs -f bochsrc               # bochsrc loads disk.img
+#   bochs -f bochsrc               # bochsrc loads code.img
 #
 # Expected output: a box and text that doesn't overflow it
 

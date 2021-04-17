@@ -1,11 +1,11 @@
 # Test out the video mode by filling in the screen with pixels.
 #
 # To build a disk image:
-#   ./translate ex2.mu             # emits disk.img
+#   ./translate ex2.mu             # emits code.img
 # To run:
-#   qemu-system-i386 disk.img
+#   qemu-system-i386 code.img
 # Or:
-#   bochs -f bochsrc               # bochsrc loads disk.img
+#   bochs -f bochsrc               # bochsrc loads code.img
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var y/eax: int <- copy 0

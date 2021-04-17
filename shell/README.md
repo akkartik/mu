@@ -4,12 +4,12 @@ Currently runs a tiny subset of Lisp. Steps to run it from the top-level:
 
 1. Build it:
 ```sh
-$ ./translate shell/*.mu      # generates disk.img
+$ ./translate shell/*.mu      # generates code.img
 ```
 
 2. Run it:
 ```sh
-$ qemu-system-i386 disk.img
+$ qemu-system-i386 code.img
 ```
 or:
 ```
@@ -28,7 +28,7 @@ $ echo '(+ 1 1)' |dd of=data.img conv=notrunc
 
 Now run with both code and data disks:
 ```sh
-$ qemu-system-i386 -hda disk.img -hdb data.img
+$ qemu-system-i386 -hda code.img -hdb data.img
 ```
 or:
 ```

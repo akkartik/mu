@@ -1,11 +1,11 @@
 # Cursor-based motions.
 #
 # To build a disk image:
-#   ./translate ex7.mu             # emits disk.img
+#   ./translate ex7.mu             # emits code.img
 # To run:
-#   qemu-system-i386 disk.img
+#   qemu-system-i386 code.img
 # Or:
-#   bochs -f bochsrc               # bochsrc loads disk.img
+#   bochs -f bochsrc               # bochsrc loads code.img
 #
 # Expected output: an interactive game a bit like "snakes". Try pressing h, j,
 # k, l.

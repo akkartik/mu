@@ -1,7 +1,7 @@
 # Demo of reading and writing to disk.
 #
 # Steps for trying it out:
-#   1. Translate this example into a disk image disk.img.
+#   1. Translate this example into a disk image code.img.
 #       ./translate ex9.mu
 #   2. Build a second disk image data.img containing some text.
 #       dd if=/dev/zero of=data.img count=20160
@@ -9,7 +9,7 @@
 #   3. Familiarize yourself with how the data disk looks within xxd:
 #       xxd data.img |head
 #   4. Run in an emulator, either Qemu or Bochs.
-#       qemu-system-i386 -hda disk.img -hdb data.img
+#       qemu-system-i386 -hda code.img -hdb data.img
 #       bochs -f bochsrc.2disks
 #   5. Exit the emulator.
 #   6. Notice that the data disk now contains the word count of the original text.
