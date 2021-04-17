@@ -144,7 +144,7 @@ fn print-list _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
       compare right-nil?, 0/false
       {
         break-if-=
-        trace-text trace, "print", "right is null"
+        trace-text trace, "print", "right is nil"
         break $print-list:loop
       }
     }
