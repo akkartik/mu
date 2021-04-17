@@ -20,6 +20,8 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "*"
   append-primitive self, "/"
   append-primitive self, "sqrt"
+  append-primitive self, "abs"
+  append-primitive self, "sgn"
   append-primitive self, "<"
   append-primitive self, ">"
   append-primitive self, "<="
@@ -213,7 +215,7 @@ fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, yma
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "numbers: ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, "+ - * / sqrt = < > <= >=   ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "+ - * / sqrt abs sgn = < > <= >=   ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "pairs: ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "car cdr cons", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
 }
@@ -408,6 +410,20 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare is-square-root?, 0/false
     break-if-=
     apply-square-root args-ah, out, trace
+    return
+  }
+  {
+    var is-abs?/eax: boolean <- string-equal? f-name, "abs"
+    compare is-abs?, 0/false
+    break-if-=
+    apply-abs args-ah, out, trace
+    return
+  }
+  {
+    var is-sgn?/eax: boolean <- string-equal? f-name, "sgn"
+    compare is-sgn?, 0/false
+    break-if-=
+    apply-sgn args-ah, out, trace
     return
   }
   {
@@ -778,6 +794,89 @@ fn apply-square-root _args-ah: (addr handle cell), out: (addr handle cell), trac
   var first-value/ecx: (addr float) <- get first, number-data
   # square-root
   var result/xmm0: float <- square-root *first-value
+  new-float out, result
+}
+
+fn apply-abs _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply abs"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "abs needs 1 args but got 0"
+    return
+  }
+  # args->left->value
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "arg for abs is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  #
+  var result/xmm0: float <- copy *first-value
+  var zero: float
+  compare result, zero
+  {
+    break-if-float>=
+    var neg1/eax: int <- copy -1
+    var neg1-f/xmm1: float <- convert neg1
+    result <- multiply neg1-f
+  }
+  new-float out, result
+}
+
+fn apply-sgn _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply sgn"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "sgn needs 1 args but got 0"
+    return
+  }
+  # args->left->value
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "arg for sgn is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  #
+  var result/xmm0: float <- copy *first-value
+  var zero: float
+  $apply-sgn:core: {
+    compare result, zero
+    break-if-=
+    {
+      break-if-float>
+      var neg1/eax: int <- copy -1
+      result <- convert neg1
+      break $apply-sgn:core
+    }
+    {
+      break-if-float<
+      var one/eax: int <- copy 1
+      result <- convert one
+      break $apply-sgn:core
+    }
+  }
   new-float out, result
 }
 
