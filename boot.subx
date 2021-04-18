@@ -1047,6 +1047,7 @@ $store-sectors:store-sector:
       eb/jump loop/disp8
     }
   }
+  (flush-ata-cache *(ebp+8))
 $store-sectors:end:
   # . restore registers
   5b/pop-to-ebx
@@ -1320,6 +1321,23 @@ $wait-400ns:end:
   5a/pop-to-edx
   59/pop-to-ecx
   58/pop-to-eax
+  # . epilogue
+  89/<- %esp 5/r32/ebp
+  5d/pop-to-ebp
+  c3/return
+
+# Flush cache isn't in ATA 3, but it shows up by the ATA 5 spec:
+#   http://hddguru.com/download/documentation/ATA-ATAPI-standard-5/ATA-ATAPI-5.pdf
+flush-ata-cache:  # disk: (addr disk)
+  # . prologue
+  55/push-ebp
+  89/<- %ebp 4/r32/esp
+  #
+  (ata-drive-select *(ebp+8) 0)
+  (ata-command *(ebp+8) 0xe7)  # flush cache
+  (while-ata-busy *(ebp+8))
+  (until-ata-ready-for-data *(ebp+8))
+$flush-ata-cache:end:
   # . epilogue
   89/<- %esp 5/r32/ebp
   5d/pop-to-ebp
