@@ -84,8 +84,7 @@ fn new-float out: (addr handle cell), n: float {
   initialize-float out, n
 }
 
-fn allocate-pair _out: (addr handle cell) {
-  var out/eax: (addr handle cell) <- copy _out
+fn allocate-pair out: (addr handle cell) {
   allocate out
   # new cells have type pair by default
 }
@@ -133,8 +132,6 @@ fn allocate-screen _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out
   var out-addr/eax: (addr cell) <- lookup *out
-  var dest-ah/ecx: (addr handle screen) <- get out-addr, screen-data
-  allocate dest-ah
   var type/ecx: (addr int) <- get out-addr, type
   copy-to *type, 5/screen
 }
@@ -144,6 +141,7 @@ fn new-fake-screen _out: (addr handle cell), width: int, height: int {
   allocate-screen out
   var out-addr/eax: (addr cell) <- lookup *out
   var dest-ah/eax: (addr handle screen) <- get out-addr, screen-data
+  allocate dest-ah
   var dest-addr/eax: (addr screen) <- lookup *dest-ah
   initialize-screen dest-addr, width, height
 }
@@ -165,8 +163,6 @@ fn allocate-keyboard _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out
   var out-addr/eax: (addr cell) <- lookup *out
-  var dest-ah/ecx: (addr handle gap-buffer) <- get out-addr, keyboard-data
-  allocate dest-ah
   var type/ecx: (addr int) <- get out-addr, type
   copy-to *type, 6/keyboard
 }
@@ -176,6 +172,7 @@ fn new-fake-keyboard _out: (addr handle cell), capacity: int {
   allocate-keyboard out
   var out-addr/eax: (addr cell) <- lookup *out
   var dest-ah/eax: (addr handle gap-buffer) <- get out-addr, keyboard-data
+  allocate dest-ah
   var dest-addr/eax: (addr gap-buffer) <- lookup *dest-ah
   initialize-gap-buffer dest-addr, capacity
 }

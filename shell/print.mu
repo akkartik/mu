@@ -54,14 +54,26 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
     trace-higher trace
     return
   }
-  compare *in-type, 5/primitive
+  compare *in-type, 5/screen
   {
     break-if-!=
     write out, "[screen "
     var screen-ah/eax: (addr handle screen) <- get in-addr, screen-data
     var screen/eax: (addr screen) <- lookup *screen-ah
     var screen-addr/eax: int <- copy screen
-    write-int32-decimal out, screen-addr
+    write-int32-hex out, screen-addr
+    write out, "]"
+    trace-higher trace
+    return
+  }
+  compare *in-type, 6/keyboard
+  {
+    break-if-!=
+    write out, "[keyboard "
+    var keyboard-ah/eax: (addr handle gap-buffer) <- get in-addr, keyboard-data
+    var keyboard/eax: (addr gap-buffer) <- lookup *keyboard-ah
+    var keyboard-addr/eax: int <- copy keyboard
+    write-int32-hex out, keyboard-addr
     write out, "]"
     trace-higher trace
     return

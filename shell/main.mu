@@ -9,13 +9,59 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 1/with-screen
   load-state data-disk, sandbox, globals
-  {
+  $main:loop: {
     render-globals screen, globals, 0/x, 0/y, 0x40/xmax, 0x2f/screen-height-without-menu
     render-sandbox screen, sandbox, 0x40/x, 0/y, 0x80/screen-width, 0x2f/screen-height-without-menu, globals
     {
       var key/eax: byte <- read-key keyboard
       compare key, 0
       loop-if-=
+      # ctrl-r
+      {
+        compare key, 0x12/ctrl-r
+        break-if-!=
+        var tmp/eax: (addr handle cell) <- copy 0
+        var nil: (handle cell)
+        tmp <- address nil
+        allocate-pair tmp
+        # (main 0/real-screen 0/real-keyboard)
+        # We're using the fact that 'screen' and 'keyboard' in this function are always 0.
+        var real-keyboard: (handle cell)
+        tmp <- address real-keyboard
+        allocate-keyboard tmp
+        # args = cons(real-keyboard, nil)
+        var args: (handle cell)
+        tmp <- address args
+        new-pair tmp, real-keyboard, nil
+        #
+        var real-screen: (handle cell)
+        tmp <- address real-screen
+        allocate-screen tmp
+        #  args = cons(real-screen, args)
+        tmp <- address args
+        new-pair tmp, real-screen, *tmp
+        #
+        var main: (handle cell)
+        tmp <- address main
+        new-symbol tmp, "main"
+        # args = cons(main, args)
+        tmp <- address args
+        new-pair tmp, main, *tmp
+        # clear real screen
+        clear-screen screen
+        set-cursor-position screen, 0, 0
+        # run
+        var out: (handle cell)
+        var out-ah/ecx: (addr handle cell) <- address out
+        evaluate tmp, out-ah, nil, globals, 0/trace, 0/no-fake-screen, 0/no-fake-keyboard
+        {
+          var tmp/eax: byte <- read-key keyboard
+          compare tmp, 0
+          loop-if-=
+        }
+        #
+        loop $main:loop
+      }
       # no way to quit right now; just reboot
       edit-sandbox sandbox, key, globals, screen, keyboard, data-disk
     }

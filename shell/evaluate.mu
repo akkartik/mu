@@ -66,6 +66,22 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace-higher trace
     return
   }
+  compare *in-type, 5/screen
+  {
+    break-if-!=
+    trace-text trace, "eval", "screen"
+    copy-object _in, out
+    trace-higher trace
+    return
+  }
+  compare *in-type, 6/keyboard
+  {
+    break-if-!=
+    trace-text trace, "eval", "keyboard"
+    copy-object _in, out
+    trace-higher trace
+    return
+  }
   # in-addr is a syntax tree
   $evaluate:anonymous-function: {
     # trees starting with "fn" are anonymous functions
@@ -225,8 +241,6 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   var evaluated-list/eax: (addr cell) <- lookup *evaluated-list-ah
   var function-ah/ecx: (addr handle cell) <- get evaluated-list, left
   var args-ah/edx: (addr handle cell) <- get evaluated-list, right
-#?   set-cursor-position 0/screen, 0, 0
-#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "a", 7/fg, 0/bg
   apply function-ah, args-ah, out, globals, trace, screen-cell, keyboard-cell
   trace-higher trace
   # trace "=> " out {{{

@@ -464,6 +464,8 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
   height <- increment
   clear-rect screen, 0/x, y, width, height, 0/bg=black
   set-cursor-position screen, 0/x, y
+  draw-text-rightward-from-cursor screen, " ctrl-r ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
   $render-sandbox-menu:render-tab: {
@@ -473,11 +475,11 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
     {
       break-if-=
       draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 9/bg=blue
-      draw-text-rightward-from-cursor screen, " move to trace  ", width, 7/fg, 0/bg
+      draw-text-rightward-from-cursor screen, " to trace  ", width, 7/fg, 0/bg
       break $render-sandbox-menu:render-tab
     }
     draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 0x18/bg=keyboard
-    draw-text-rightward-from-cursor screen, " move to keyboard  ", width, 7/fg, 0/bg
+    draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0/bg
   }
   draw-text-rightward-from-cursor screen, " ctrl-a ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " <<  ", width, 7/fg, 0/bg
@@ -499,24 +501,17 @@ fn render-keyboard-menu screen: (addr screen) {
   height <- increment
   clear-rect screen, 0/x, y, width, height, 0/bg=black
   set-cursor-position screen, 0/x, y
+  draw-text-rightward-from-cursor screen, " ctrl-r ", width, 0/fg, 7/bg=grey
+  draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 3/bg=cyan
-  draw-text-rightward-from-cursor screen, " move to sandbox  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0/bg
 }
 
 fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), real-screen: (addr screen), real-keyboard: (addr keyboard), data-disk: (addr disk) {
   var self/esi: (addr sandbox) <- copy _self
   var g/edx: grapheme <- copy key
-  # ctrl-r
-  {
-    compare g, 0x12/ctrl-r
-    break-if-!=
-    # run function outside sandbox
-    # required: fn (addr screen), (addr keyboard)
-    # Mu will pass in the real screen and keyboard.
-    return
-  }
   # ctrl-s
   {
     compare g, 0x13/ctrl-s
