@@ -59,7 +59,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   }
   # in-addr is a syntax tree
   $evaluate:anonymous-function: {
-    # trees starting with "fn" are anonymous functions and therefore literals
+    # trees starting with "fn" are anonymous functions
     var expr/esi: (addr cell) <- copy in-addr
     # if its first elem is not "fn", break
     var in-addr/edx: (addr cell) <- copy in-addr
