@@ -987,62 +987,65 @@ store-sectors:  # disk: (addr disk), lba: int, n: int, in: (addr stream byte)
   (ata-sector-count *(ebp+8) *(ebp+0x10))
   (ata-lba *(ebp+8) *(ebp+0xc))
   (ata-command *(ebp+8) 0x30)  # write sectors with retries
-  # wait
-  (while-ata-busy *(ebp+8))
-  (until-ata-ready-for-data *(ebp+8))
-  # var data-port/edx = disk->data-port
-  8b/-> *(ebp+8) 0/r32/eax
-  8b/-> *(eax+0x24) 2/r32/edx
-  # send data
-  b9/copy-to-ecx 0x200/imm32  # 512 bytes per sector
-  # . var first-byte/ebx: byte
-  # . when it's more than 0xff, we're at an even-numbered byte
-  bb/copy-to-ebx 0xffff/imm32
-$store-sectors:loop:
+  # for each sector
   {
-    81 7/subop/compare %ecx 0/imm32
-    74/jump-if-= break/disp8
-    # this loop is slow, but the ATA spec also requires a small delay
-    (stream-empty? *(ebp+0x14))  # => eax
-    3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= break/disp8
-    # read byte from stream
-    (read-byte *(ebp+0x14))  # => eax
-    # if we're at an odd-numbered byte, save it to first-byte
+    # wait
+    (while-ata-busy *(ebp+8))
+    (until-ata-ready-for-data *(ebp+8))
+    # var data-port/edx = disk->data-port
+    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *(eax+0x24) 2/r32/edx
+    # send data
+    b9/copy-to-ecx 0x200/imm32  # 512 bytes per sector
+    # . var first-byte/ebx: byte
+    # . when it's more than 0xff, we're at an even-numbered byte
+    bb/copy-to-ebx 0xffff/imm32
+$store-sectors:store-sector:
+    {
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      # this loop is slow, but the ATA spec also requires a small delay
+      (stream-empty? *(ebp+0x14))  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= break/disp8
+      # read byte from stream
+      (read-byte *(ebp+0x14))  # => eax
+      # if we're at an odd-numbered byte, save it to first-byte
+      81 7/subop/compare %ebx 0xff/imm32
+      {
+        7e/jump-if-<= break/disp8
+        89/<- %ebx 0/r32/eax
+        eb/jump $store-sectors:store-sector/disp8
+      }
+      # otherwise OR it with first-byte and write it out
+      c1/shift 4/subop/left %eax 8/imm8
+      09/or %eax 3/r32/ebx
+      66 ef/write-ax-into-port-dx
+      49/decrement-ecx
+      49/decrement-ecx
+      # reset first-byte
+      bb/copy-to-ebx 0xffff/imm32
+      eb/jump loop/disp8
+    }
+    # write out final first-byte if necessary
     81 7/subop/compare %ebx 0xff/imm32
     {
-      7e/jump-if-<= break/disp8
-      89/<- %ebx 0/r32/eax
-      eb/jump $store-sectors:loop/disp8
+      7f/jump-if-> break/disp8
+      89/<- %eax 3/r32/ebx
+      66 ef/write-ax-into-port-dx
+      49/decrement-ecx
+      49/decrement-ecx
     }
-    # otherwise OR it with first-byte and write it out
-    c1/shift 4/subop/left %eax 8/imm8
-    09/or %eax 3/r32/ebx
-    66 ef/write-ax-into-port-dx
-    49/decrement-ecx
-    49/decrement-ecx
-    # reset first-byte
-    bb/copy-to-ebx 0xffff/imm32
-    eb/jump loop/disp8
-  }
-  # write out first-byte if necessary
-  81 7/subop/compare %ebx 0xff/imm32
-  {
-    7f/jump-if-> break/disp8
-    89/<- %eax 3/r32/ebx
-    66 ef/write-ax-into-port-dx
-    49/decrement-ecx
-    49/decrement-ecx
-  }
-  # pad zeroes
-  31/xor %eax 0/r32/eax
-  {
-    81 7/subop/compare %ecx 0/imm32
-    74/jump-if-= break/disp8
-    66 ef/write-ax-into-port-dx
-    49/decrement-ecx
-    49/decrement-ecx
-    eb/jump loop/disp8
+    # pad zeroes
+    31/xor %eax 0/r32/eax
+    {
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      66 ef/write-ax-into-port-dx
+      49/decrement-ecx
+      49/decrement-ecx
+      eb/jump loop/disp8
+    }
   }
 $store-sectors:end:
   # . restore registers
