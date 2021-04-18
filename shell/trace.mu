@@ -89,11 +89,23 @@ fn trace _self: (addr trace), label: (addr array byte), message: (addr stream by
   var data-ah/eax: (addr handle array trace-line) <- get self, data
   var data/eax: (addr array trace-line) <- lookup *data-ah
   var index-addr/edi: (addr int) <- get self, first-free
+  {
+    compare *index-addr, 0x8000/lines
+    break-if-<
+    return
+  }
   var index/ecx: int <- copy *index-addr
   var offset/ecx: (offset trace-line) <- compute-offset data, index
   var dest/eax: (addr trace-line) <- index data, offset
   var depth/ecx: (addr int) <- get self, curr-depth
   rewind-stream message
+  {
+    compare *index-addr, 0x7ffe/lines
+    break-if-<
+    initialize-trace-line 0/depth, "error", message, dest
+    increment *index-addr
+    return
+  }
   initialize-trace-line *depth, label, message, dest
   increment *index-addr
 }

@@ -29,7 +29,7 @@ fn initialize-sandbox _self: (addr sandbox), screen-and-keyboard?: boolean {
   }
   #
   var trace-ah/eax: (addr handle trace) <- get self, trace
-#?   allocate trace-ah
+  allocate trace-ah
   var trace/eax: (addr trace) <- lookup *trace-ah
   initialize-trace trace, 0x8000/lines, 0x80/visible-lines
   var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?

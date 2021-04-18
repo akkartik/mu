@@ -2,6 +2,15 @@
 # we never modify `in` or `env`
 # ignore 'screen-cell' on a first reading; it's a hack for sandboxes
 fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+  # errors? skip
+  {
+    compare trace, 0
+    break-if-=
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-=
+    return
+  }
   var in/esi: (addr handle cell) <- copy _in
 #?   dump-cell in
 #?   {
