@@ -2,6 +2,9 @@
 # we never modify `in` or `env`
 # ignore 'screen-cell' on a first reading; it's a hack for sandboxes
 fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+  # stack overflow?
+  check-stack
+  show-stack-state
   # errors? skip
   {
     compare trace, 0

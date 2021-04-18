@@ -23,6 +23,10 @@ sig string-equal? s: (addr array byte), benchmark: (addr array byte) -> _/eax: b
 sig string-starts-with? s: (addr array byte), benchmark: (addr array byte) -> _/eax: boolean
 sig check-strings-equal s: (addr array byte), expected: (addr array byte), msg: (addr array byte)
 
+# debugging
+sig check-stack
+sig show-stack-state
+
 # streams
 sig clear-stream f: (addr stream _)
 sig rewind-stream f: (addr stream _)

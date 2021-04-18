@@ -1,0 +1,51 @@
+# The stack shouldn't grow into the code area.
+
+== code
+
+check-stack:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    #
+    89/<- %eax 4/r32/esp
+    81 7/subop/compare %eax 0x48600/imm32
+    {
+      7f/jump-if-> break/disp8
+      (abort "stack overflow")
+    }
+$check-stack:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+show-stack-state:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    #
+    89/<- %edx 4/r32/esp
+    # save old cursor position
+    (cursor-position 0)  # => eax, ecx
+    # print at top-right
+    (set-cursor-position 0 0x70 0)
+    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 0xf 0xc)
+    # restore cursor position
+    (set-cursor-position %eax %ecx)
+$check-stack:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
