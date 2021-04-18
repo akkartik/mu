@@ -58,12 +58,11 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
   var globals-cell-ah/edx: (addr handle cell) <- address globals-cell-storage
   lookup-symbol globals-literal, globals-cell-ah, *initial-root, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
   var globals-cell/eax: (addr cell) <- lookup *globals-cell-ah
-  compare globals-cell, 0
   {
-    break-if-!=
-    return
+    compare globals-cell, 0
+    break-if-=
+    load-globals globals-cell-ah, globals
   }
-  load-globals globals-cell-ah, globals
   # sandbox = assoc(initial-root, 'sandbox)
   var sandbox-literal-storage: (handle cell)
   var sandbox-literal-ah/eax: (addr handle cell) <- address sandbox-literal-storage
@@ -73,15 +72,14 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
   var sandbox-cell-ah/edx: (addr handle cell) <- address sandbox-cell-storage
   lookup-symbol sandbox-literal, sandbox-cell-ah, *initial-root, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
   var sandbox-cell/eax: (addr cell) <- lookup *sandbox-cell-ah
-  compare sandbox-cell, 0
   {
-    break-if-!=
-    return
+    compare sandbox-cell, 0
+    break-if-=
+    # print: cell -> stream
+    print-cell sandbox-cell-ah, s, 0/no-trace
+    # stream -> gap-buffer
+    load-gap-buffer-from-stream data, s
   }
-  # print: cell -> stream
-  print-cell sandbox-cell-ah, s, 0/no-trace
-  # stream -> gap-buffer
-  load-gap-buffer-from-stream data, s
 }
 
 # Save state as an alist of alists:
