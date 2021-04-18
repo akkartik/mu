@@ -139,7 +139,7 @@ fn allocate-screen _out: (addr handle cell) {
   copy-to *type, 5/screen
 }
 
-fn new-screen _out: (addr handle cell), width: int, height: int {
+fn new-fake-screen _out: (addr handle cell), width: int, height: int {
   var out/eax: (addr handle cell) <- copy _out
   allocate-screen out
   var out-addr/eax: (addr cell) <- lookup *out
@@ -171,7 +171,7 @@ fn allocate-keyboard _out: (addr handle cell) {
   copy-to *type, 6/keyboard
 }
 
-fn new-keyboard _out: (addr handle cell), capacity: int {
+fn new-fake-keyboard _out: (addr handle cell), capacity: int {
   var out/eax: (addr handle cell) <- copy _out
   allocate-keyboard out
   var out-addr/eax: (addr cell) <- lookup *out
