@@ -347,7 +347,7 @@ keyboard-interrupt-handler:
   # check output buffer of 8042 keyboard controller (https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)
   e4/read-port-into-al 0x64/imm8
   a8/test-bits-in-al 0x01/imm8  # set zf if bit 0 (least significant) is not set
-  74/jump-if-not-set $keyboard-interrupt-handler:epilogue/disp8
+  0f 84/jump-if-not-set $keyboard-interrupt-handler:epilogue/disp32
   # - if keyboard buffer is full, return
   # var dest-addr/ecx: (addr byte) = (keyboard-buffer + *keyboard-buffer:write)
   31/xor %ecx 1/r32/ecx
@@ -357,7 +357,7 @@ keyboard-interrupt-handler:
   8a/byte-> *ecx 0/r32/al
   # if (al != 0) return
   3c/compare-al-and 0/imm8
-  75/jump-if-!= $keyboard-interrupt-handler:epilogue/disp8
+  0f 85/jump-if-!= $keyboard-interrupt-handler:epilogue/disp32
   # - read keycode
   e4/read-port-into-al 0x60/imm8
   # - key released
@@ -950,6 +950,7 @@ load-sectors:  # disk: (addr disk), lba: int, n: int, out: (addr stream byte)
       49/decrement-ecx
       eb/jump loop/disp8
     }
+    # next sector
     ff 1/subop/decrement *(ebp+0x10)
 #?     (draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0x10) 0xc 0)
     81 7/subop/compare *(ebp+0x10) 0/imm32
@@ -988,6 +989,8 @@ store-sectors:  # disk: (addr disk), lba: int, n: int, in: (addr stream byte)
   (ata-lba *(ebp+8) *(ebp+0xc))
   (ata-command *(ebp+8) 0x30)  # write sectors with retries
   # for each sector
+#?   (set-cursor-position 0 0 0)
+#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "0" 7 0)
   {
     # wait
     (while-ata-busy *(ebp+8))
@@ -1000,6 +1003,7 @@ store-sectors:  # disk: (addr disk), lba: int, n: int, in: (addr stream byte)
     # . var first-byte/ebx: byte
     # . when it's more than 0xff, we're at an even-numbered byte
     bb/copy-to-ebx 0xffff/imm32
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "D" 7 0)
 $store-sectors:store-sector:
     {
       81 7/subop/compare %ecx 0/imm32
@@ -1028,6 +1032,7 @@ $store-sectors:store-sector:
       eb/jump loop/disp8
     }
     # write out final first-byte if necessary
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "I" 7 0)
     81 7/subop/compare %ebx 0xff/imm32
     {
       7f/jump-if-> break/disp8
@@ -1037,6 +1042,7 @@ $store-sectors:store-sector:
       49/decrement-ecx
     }
     # pad zeroes
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "P" 7 0)
     31/xor %eax 0/r32/eax
     {
       81 7/subop/compare %ecx 0/imm32
@@ -1046,8 +1052,19 @@ $store-sectors:store-sector:
       49/decrement-ecx
       eb/jump loop/disp8
     }
+    # next sector
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "N" 7 0)
+    ff 1/subop/decrement *(ebp+0x10)
+    81 7/subop/compare *(ebp+0x10) 0/imm32
+    7e/jump-if-<= break/disp8
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "W" 7 0)
+    (wait-400ns *(ebp+8))
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "L" 7 0)
+    e9/jump loop/disp32
   }
+#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "F" 7 0)
   (flush-ata-cache *(ebp+8))
+#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "Y" 7 0)
 $store-sectors:end:
   # . restore registers
   5b/pop-to-ebx
@@ -1335,8 +1352,12 @@ flush-ata-cache:  # disk: (addr disk)
   #
   (ata-drive-select *(ebp+8) 0)
   (ata-command *(ebp+8) 0xe7)  # flush cache
+#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "W" 7 0)
   (while-ata-busy *(ebp+8))
-  (until-ata-ready-for-data *(ebp+8))
+#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "X" 7 0)
+  # TODO: seems unneeded? works for a single sector but Qemu hangs with multiple
+  # sectors. Data is still written.
+#?   (until-ata-ready-for-data *(ebp+8))
 $flush-ata-cache:end:
   # . epilogue
   89/<- %esp 5/r32/ebp
