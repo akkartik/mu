@@ -1,4 +1,5 @@
 fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr trace) {
+  check-stack
   trace-text trace, "print", "print"
   trace-lower trace
   var in/eax: (addr handle cell) <- copy _in
@@ -99,6 +100,8 @@ fn print-symbol _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   rewind-stream data
   write-stream out, data
   # trace
+  compare trace, 0
+  break-if-=
   rewind-stream data
   var stream-storage: (stream byte 0x40)
   var stream/ecx: (addr stream byte) <- address stream-storage
@@ -118,6 +121,8 @@ fn print-stream _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   write-stream out, data
   write out, "]"
   # trace
+  compare trace, 0
+  break-if-=
   rewind-stream data
   var stream-storage: (stream byte 0x40)
   var stream/ecx: (addr stream byte) <- address stream-storage
@@ -131,6 +136,8 @@ fn print-number _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   var val/eax: (addr float) <- get in, number-data
   write-float-decimal-approximate out, *val, 3/precision
   # trace
+  compare trace, 0
+  break-if-=
   var stream-storage: (stream byte 0x40)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, "=> number "
