@@ -197,7 +197,7 @@ fn test-render-grapheme-stack {
   # setup: screen
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 0/y, 0/no-highlight-matching-open-paren, 0/open-paren-depth
   check-screen-row screen, 0/y, "abc ", "F - test-render-grapheme-stack from bottom"
@@ -229,7 +229,7 @@ fn test-render-grapheme-stack-while-highlighting-matching-close-paren {
   # setup: screen
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
   check-screen-row                      screen,               2/y, "(b) ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren"
@@ -263,7 +263,7 @@ fn test-render-grapheme-stack-while-highlighting-matching-close-paren-2 {
   # setup: screen
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
   check-screen-row                      screen,               2/y, "(a (b)) c ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren-2"
@@ -285,7 +285,7 @@ fn test-render-grapheme-stack-while-highlighting-matching-open-paren-with-close-
   # setup: screen
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 2/y, 1/highlight-matching-open-paren, 1/open-paren-depth
   check-screen-row          screen,               2/y, "(b) ", "F - test-render-grapheme-stack-while-highlighting-matching-open-paren-with-close-paren-at-end"
@@ -312,7 +312,7 @@ fn test-render-grapheme-stack-while-highlighting-matching-open-paren-with-close-
   # setup: screen
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 2/y, 1/highlight-matching-open-paren, 1/open-paren-depth
   check-screen-row          screen,               2/y, "a((b)) ", "F - test-render-grapheme-stack-while-highlighting-matching-open-paren-with-close-paren-at-end-2"
@@ -331,7 +331,7 @@ fn test-render-grapheme-stack-while-highlighting-matching-open-paren {
   # setup: screen
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 2/y, 1/highlight-matching-open-paren, 0/open-paren-depth
   check-screen-row          screen,               2/y, "(b ", "F - test-render-grapheme-stack-while-highlighting-matching-open-paren"
@@ -356,7 +356,7 @@ fn test-render-grapheme-stack-while-highlighting-matching-open-paren-2 {
   # setup: screen
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 2/y, 1/highlight-matching-open-paren, 0/open-paren-depth
   check-screen-row          screen,               2/y, "a((b) ", "F - test-render-grapheme-stack-while-highlighting-matching-open-paren-2"

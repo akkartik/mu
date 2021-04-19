@@ -514,7 +514,7 @@ fn test-render-trace-empty {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5/width, 4/height
+  initialize-screen screen, 5/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 5/xmax, 4/ymax, 0/no-cursor
   #
@@ -530,7 +530,7 @@ fn test-render-trace-empty-2 {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5/width, 4/height
+  initialize-screen screen, 5/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 2/ymin, 5/xmax, 4/ymax, 0/no-cursor  # cursor below top row
   #
@@ -546,7 +546,7 @@ fn test-render-trace-empty-3 {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5/width, 4/height
+  initialize-screen screen, 5/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 2/ymin, 5/xmax, 4/ymax, 1/show-cursor  # try show cursor
   # still no cursor to show
@@ -565,7 +565,7 @@ fn test-render-trace-collapsed-by-default {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5/width, 4/height
+  initialize-screen screen, 5/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 5/xmax, 4/ymax, 0/no-cursor
   #
@@ -581,7 +581,7 @@ fn test-render-trace-error {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa/width, 4/height
+  initialize-screen screen, 0xa/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
@@ -599,7 +599,7 @@ fn test-render-trace-error-at-start {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa/width, 4/height
+  initialize-screen screen, 0xa/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
@@ -618,7 +618,7 @@ fn test-render-trace-error-at-end {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa/width, 4/height
+  initialize-screen screen, 0xa/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
@@ -638,7 +638,7 @@ fn test-render-trace-error-in-the-middle {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa/width, 4/height
+  initialize-screen screen, 0xa/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 0/no-cursor
   #
@@ -659,7 +659,7 @@ fn test-render-trace-cursor-in-single-line {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa/width, 4/height
+  initialize-screen screen, 0xa/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
   #
@@ -906,7 +906,7 @@ fn test-cursor-down-and-up-within-trace {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa/width, 4/height
+  initialize-screen screen, 0xa/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
   #
@@ -949,7 +949,7 @@ fn test-cursor-down-past-bottom-of-trace {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0xa/width, 4/height
+  initialize-screen screen, 0xa/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0xa/xmax, 4/ymax, 1/show-cursor
   #
@@ -986,7 +986,7 @@ fn test-expand-within-trace {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1017,7 +1017,7 @@ fn test-trace-expand-skips-lower-depth {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1050,7 +1050,7 @@ fn test-trace-expand-continues-past-lower-depth {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1088,7 +1088,7 @@ fn test-trace-expand-stops-at-higher-depth {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 8/height
+  initialize-screen screen, 0x10/width, 8/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 8/ymax, 1/show-cursor
   #
@@ -1125,7 +1125,7 @@ fn test-trace-expand-twice {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1177,7 +1177,7 @@ fn test-trace-refresh-cursor {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1232,7 +1232,7 @@ fn test-trace-preserve-cursor-on-refresh {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1287,7 +1287,7 @@ fn test-trace-keep-cursor-visible-on-refresh {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1346,7 +1346,7 @@ fn test-trace-collapse-at-top {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1387,7 +1387,7 @@ fn test-trace-collapse {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1431,7 +1431,7 @@ fn test-trace-collapse-skips-invisible-lines {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1481,7 +1481,7 @@ fn test-trace-collapse-two-levels {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 4/height
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
@@ -1546,7 +1546,7 @@ fn test-trace-collapse-nested-level {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/width, 8/height
+  initialize-screen screen, 0x10/width, 8/height, 0/no-pixel-graphics
   #
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 8/ymax, 1/show-cursor
   #

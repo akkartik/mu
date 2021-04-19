@@ -308,7 +308,7 @@ fn check-background-color-in-screen-row-from screen-on-stack: (addr screen), bg:
 fn test-draw-single-grapheme {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   draw-code-point screen, 0x61/a, 0/x, 0/y, 1/fg, 2/bg
   check-screen-row screen, 0/y, "a", "F - test-draw-single-grapheme"  # top-left corner of the screen
   check-screen-row-in-color screen, 1/fg, 0/y, "a", "F - test-draw-single-grapheme-fg"
@@ -319,7 +319,7 @@ fn test-draw-single-grapheme {
 fn test-draw-multiple-graphemes {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x10/rows, 4/cols
+  initialize-screen screen, 0x10/rows, 4/cols, 0/no-pixel-graphics
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "Hello, 世界", 1/fg, 2/bg
   check-screen-row screen, 0/y, "Hello, 世界", "F - test-draw-multiple-graphemes"
   check-screen-row-in-color screen, 1/fg, 0/y, "Hello, 世界", "F - test-draw-multiple-graphemes-fg"

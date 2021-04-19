@@ -23,7 +23,7 @@ fn initialize-sandbox _self: (addr sandbox), fake-screen-and-keyboard?: boolean 
     compare fake-screen-and-keyboard?, 0/false
     break-if-=
     var screen-ah/eax: (addr handle cell) <- get self, screen-var
-    new-fake-screen screen-ah, 5/width, 4/height
+    new-fake-screen screen-ah, 5/width, 4/height, 1/enable-pixel-graphics
     var keyboard-ah/eax: (addr handle cell) <- get self, keyboard-var
     new-fake-keyboard keyboard-ah, 0x10/keyboard-capacity
   }
@@ -681,7 +681,7 @@ fn test-run-integer {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "1    ", "F - test-run-integer/0"
@@ -703,7 +703,7 @@ fn test-run-with-spaces {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, " 1   ", "F - test-run-with-spaces/0"
@@ -724,7 +724,7 @@ fn test-run-quote {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "'a   ", "F - test-run-quote/0"
@@ -750,7 +750,7 @@ fn test-run-dotted-list {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "'(a . b)   ", "F - test-run-dotted-list/0"
@@ -778,7 +778,7 @@ fn test-run-dot-and-list {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "'(a . (b)) ", "F - test-run-dot-and-list/0"
@@ -802,7 +802,7 @@ fn test-run-final-dot {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "'(a .)               ", "F - test-run-final-dot/0"
@@ -829,7 +829,7 @@ fn test-run-double-dot {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "'(a . .)             ", "F - test-run-double-dot/0"
@@ -858,7 +858,7 @@ fn test-run-multiple-expressions-after-dot {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "'(a . b c)                                           ", "F - test-run-multiple-expressions-after-dot/0"
@@ -879,7 +879,7 @@ fn test-run-error-invalid-integer {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen, 0/y, "1a             ", "F - test-run-error-invalid-integer/0"
@@ -899,7 +899,7 @@ fn test-run-move-cursor-into-trace {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/pre-0"

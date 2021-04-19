@@ -136,14 +136,14 @@ fn allocate-screen _out: (addr handle cell) {
   copy-to *type, 5/screen
 }
 
-fn new-fake-screen _out: (addr handle cell), width: int, height: int {
+fn new-fake-screen _out: (addr handle cell), width: int, height: int, pixel-graphics?: boolean {
   var out/eax: (addr handle cell) <- copy _out
   allocate-screen out
   var out-addr/eax: (addr cell) <- lookup *out
   var dest-ah/eax: (addr handle screen) <- get out-addr, screen-data
   allocate dest-ah
   var dest-addr/eax: (addr screen) <- lookup *dest-ah
-  initialize-screen dest-addr, width, height
+  initialize-screen dest-addr, width, height, pixel-graphics?
 }
 
 fn clear-screen-cell _self-ah: (addr handle cell) {

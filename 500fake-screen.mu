@@ -34,7 +34,7 @@ type pixel {
   color: int  # [0..256)
 }
 
-fn initialize-screen _screen: (addr screen), width: int, height: int {
+fn initialize-screen _screen: (addr screen), width: int, height: int, pixel-graphics?: boolean {
   var screen/esi: (addr screen) <- copy _screen
   var tmp/eax: int <- copy 0
   var dest/edi: (addr int) <- copy 0

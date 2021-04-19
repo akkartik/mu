@@ -545,7 +545,7 @@ fn test-render-gap-buffer-without-cursor {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 0/no-cursor
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-without-cursor"
@@ -563,7 +563,7 @@ fn test-render-gap-buffer-with-cursor-at-end {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-at-end"
@@ -583,7 +583,7 @@ fn test-render-gap-buffer-with-cursor-in-middle {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-in-middle"
@@ -600,7 +600,7 @@ fn test-render-gap-buffer-with-cursor-at-start {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-at-start"
@@ -617,7 +617,7 @@ fn test-render-gap-buffer-highlight-matching-close-paren {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-close-paren"
@@ -635,7 +635,7 @@ fn test-render-gap-buffer-highlight-matching-open-paren {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-open-paren"
@@ -652,7 +652,7 @@ fn test-render-gap-buffer-highlight-matching-open-paren-of-end {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 5, 4
+  initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end"
