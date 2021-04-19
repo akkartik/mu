@@ -151,13 +151,29 @@ fn draw-code-point screen: (addr screen), c: code-point, x: int, y: int, color: 
 # not really needed for a real screen, though it shouldn't do any harm
 fn screen-cell-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
   var screen/esi: (addr screen) <- copy _screen
-  # only one bounds check isn't automatically handled
+  {
+    compare x, 0
+    break-if->=
+    abort "screen-cell-index: negative x"
+  }
   {
     var xmax/eax: (addr int) <- get screen, width
     var xcurr/ecx: int <- copy x
     compare xcurr, *xmax
     break-if-<
-    abort "tried to print out of screen bounds"
+    abort "screen-cell-index: x too high"
+  }
+  {
+    compare y, 0
+    break-if->=
+    abort "screen-cell-index: negative y"
+  }
+  {
+    var ymax/eax: (addr int) <- get screen, width
+    var ycurr/ecx: int <- copy y
+    compare ycurr, *ymax
+    break-if-<
+    abort "screen-cell-index: y too high"
   }
   var width-addr/eax: (addr int) <- get screen, width
   var result/ecx: int <- copy y
