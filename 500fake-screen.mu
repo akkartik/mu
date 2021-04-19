@@ -52,9 +52,10 @@ fn initialize-screen _screen: (addr screen), width: int, height: int {
     tmp <- multiply width
     populate data-addr, tmp
   }
+  # allocate space for 16 pixels per 16x8 character. So one column of pixels
+  # per character.
   var pixels-ah/ecx: (addr handle stream pixel) <- get screen, pixels
-  tmp <- shift-left 3/log2-font-width
-  tmp <- shift-left 4/log2-font-height
+  tmp <- shift-left 4
   populate-stream pixels-ah, tmp
   # screen->cursor-x = 0
   dest <- get screen, cursor-x
