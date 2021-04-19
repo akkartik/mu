@@ -83,39 +83,6 @@ fn screen-size _screen: (addr screen) -> _/eax: int, _/ecx: int {
   return width, height
 }
 
-fn pixel screen: (addr screen), x: int, y: int, color: int {
-  {
-    compare screen, 0
-    break-if-!=
-    pixel-on-real-screen x, y, color
-    return
-  }
-  # fake screen
-  # prepare a pixel
-  var pixel-storage: pixel
-  var src/ecx: int <- copy x
-  var dest/edx: (addr int) <- get pixel-storage, x
-  copy-to *dest, src
-  src <- copy y
-  dest <- get pixel-storage, y
-  copy-to *dest, src
-  src <- copy color
-  dest <- get pixel-storage, color
-  copy-to *dest, src
-  # save it
-  var src/ecx: (addr pixel) <- address pixel-storage
-  var screen/eax: (addr screen) <- copy screen
-  var dest-stream-ah/eax: (addr handle stream pixel) <- get screen, pixels
-  var dest-stream/eax: (addr stream pixel) <- lookup *dest-stream-ah
-  {
-    var full?/eax: boolean <- stream-full? dest-stream
-    compare full?, 0/false
-    break-if-=
-    abort "tried to draw too many pixels on the fake screen; adjust initialize-screen"
-  }
-  write-to-stream dest-stream, src
-}
-
 # testable screen primitive
 fn draw-grapheme _screen: (addr screen), g: grapheme, x: int, y: int, color: int, background-color: int {
   var screen/esi: (addr screen) <- copy _screen
@@ -453,4 +420,37 @@ fn screen-background-color-at-idx _screen: (addr screen), idx-on-stack: int -> _
   var src/eax: (addr int) <- get cell, background-color
   var result/eax: int <- copy *src
   return result
+}
+
+fn pixel screen: (addr screen), x: int, y: int, color: int {
+  {
+    compare screen, 0
+    break-if-!=
+    pixel-on-real-screen x, y, color
+    return
+  }
+  # fake screen
+  # prepare a pixel
+  var pixel-storage: pixel
+  var src/ecx: int <- copy x
+  var dest/edx: (addr int) <- get pixel-storage, x
+  copy-to *dest, src
+  src <- copy y
+  dest <- get pixel-storage, y
+  copy-to *dest, src
+  src <- copy color
+  dest <- get pixel-storage, color
+  copy-to *dest, src
+  # save it
+  var src/ecx: (addr pixel) <- address pixel-storage
+  var screen/eax: (addr screen) <- copy screen
+  var dest-stream-ah/eax: (addr handle stream pixel) <- get screen, pixels
+  var dest-stream/eax: (addr stream pixel) <- lookup *dest-stream-ah
+  {
+    var full?/eax: boolean <- stream-full? dest-stream
+    compare full?, 0/false
+    break-if-=
+    abort "tried to draw too many pixels on the fake screen; adjust initialize-screen"
+  }
+  write-to-stream dest-stream, src
 }
