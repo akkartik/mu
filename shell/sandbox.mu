@@ -293,31 +293,53 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
   }
   # pixel data
   {
-    var left/ebx: int <- copy xmin
-    left <- add 1/margin-left
-    left <- shift-left 3/log-font-width
-    var top/edx: int <- copy ymin
-    top <- add 1/margin-top
-    top <- shift-left 4/log-font-height
-    var pixels-ah/esi: (addr handle stream pixel) <- get target-screen, pixels
-    var _pixels/eax: (addr stream pixel) <- lookup *pixels-ah
-    var pixels/esi: (addr stream pixel) <- copy _pixels
-    rewind-stream pixels
+    # screen top left pixels x y width height
+    var tmp/eax: int <- copy xmin
+    tmp <- add 1/margin-left
+    tmp <- shift-left 3/log2-font-width
+    var left: int
+    copy-to left, tmp
+    tmp <- copy ymin
+    tmp <- add 1/margin-top
+    tmp <- shift-left 4/log2-font-height
+    var top: int
+    copy-to top, tmp
+    var pixels-ah/eax: (addr handle array byte) <- get target-screen, pixels
+    var _pixels/eax: (addr array byte) <- lookup *pixels-ah
+    var pixels/edi: (addr array byte) <- copy _pixels
+    compare pixels, 0
+    break-if-=
+    var y/ebx: int <- copy 0
+    var height-addr/edx: (addr int) <- get target-screen, height
+    var height/edx: int <- copy *height-addr
+    height <- shift-left 4/log2-font-height
     {
-      var done?/eax: boolean <- stream-empty? pixels
-      compare done?, 0/false
-      break-if-!=
-      var curr-pixel: pixel
-      var curr-pixel-addr/eax: (addr pixel) <- address curr-pixel
-      read-from-stream pixels, curr-pixel-addr
-      var curr-x/eax: (addr int) <- get curr-pixel, x
-      var x/eax: int <- copy *curr-x
-      x <- add left
-      var curr-y/ecx: (addr int) <- get curr-pixel, y
-      var y/ecx: int <- copy *curr-y
-      y <- add top
-      var curr-color/edx: (addr int) <- get curr-pixel, color
-      pixel screen, x, y, *curr-color
+      compare y, height
+      break-if->=
+      var width-addr/edx: (addr int) <- get target-screen, width
+      var width/edx: int <- copy *width-addr
+      width <- shift-left 3/log2-font-width
+      var x/eax: int <- copy 0
+      {
+        compare x, width
+        break-if->=
+        {
+          var idx/ecx: int <- pixel-index target-screen, x, y
+          var color-addr/ecx: (addr byte) <- index pixels, idx
+          var color/ecx: byte <- copy-byte *color-addr
+          var color2/ecx: int <- copy color
+          compare color2, 0
+          break-if-=
+          var x2/eax: int <- copy x
+          x2 <- add left
+          var y2/ebx: int <- copy y
+          y2 <- add top
+          pixel screen, x2, y2, color2
+        }
+        x <- increment
+        loop
+      }
+      y <- increment
       loop
     }
   }

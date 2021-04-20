@@ -19,19 +19,13 @@ type screen {
   cursor-x: int  # [0..width)
   cursor-y: int  # [0..height)
   # pixel graphics
-  pixels: (handle stream pixel)  # sparse representation
+  pixels: (handle array byte)
 }
 
 type screen-cell {
   data: grapheme
   color: int
   background-color: int
-}
-
-type pixel {
-  x: int  # [0..width*font-width)
-  y: int  # [0..height*font-height)
-  color: int  # [0..256)
 }
 
 fn initialize-screen _screen: (addr screen), width: int, height: int, pixel-graphics?: boolean {
@@ -46,17 +40,24 @@ fn initialize-screen _screen: (addr screen), width: int, height: int, pixel-grap
   dest <- get screen, height
   tmp <- copy height
   copy-to *dest, tmp
-  # screen->data = new screen-cell[width*height]
+  # populate screen->data
   {
-    var data-addr/edi: (addr handle array screen-cell) <- get screen, data
-    tmp <- multiply width
-    populate data-addr, tmp
+    var data-ah/edi: (addr handle array screen-cell) <- get screen, data
+    var capacity/eax: int <- copy width
+    capacity <- multiply height
+    populate data-ah, capacity
   }
-  # allocate space for 16 pixels per 16x8 character. So one column of pixels
-  # per character.
-  var pixels-ah/ecx: (addr handle stream pixel) <- get screen, pixels
-  tmp <- shift-left 4
-  populate-stream pixels-ah, tmp
+  # if necessary, populate screen->pixels
+  {
+    compare pixel-graphics?, 0/false
+    break-if-=
+    var pixels-ah/edi: (addr handle array byte) <- get screen, pixels
+    var capacity/eax: int <- copy width
+    capacity <- shift-left 3/log2-font-width
+    capacity <- multiply height
+    capacity <- shift-left 4/log2-font-height
+    populate pixels-ah, capacity
+  }
   # screen->cursor-x = 0
   dest <- get screen, cursor-x
   copy-to *dest, 0
@@ -136,7 +137,7 @@ fn screen-cell-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
     abort "screen-cell-index: negative y"
   }
   {
-    var ymax/eax: (addr int) <- get screen, width
+    var ymax/eax: (addr int) <- get screen, height
     var ycurr/ecx: int <- copy y
     compare ycurr, *ymax
     break-if-<
@@ -254,9 +255,8 @@ fn clear-screen _screen: (addr screen) {
     loop
   }
   set-cursor-position screen, 0, 0
-  var dest-stream-ah/eax: (addr handle stream pixel) <- get screen, pixels
-  var dest-stream/eax: (addr stream pixel) <- lookup *dest-stream-ah
-  clear-stream dest-stream
+  var pixels-ah/eax: (addr handle array byte) <- get screen, pixels
+  var pixels/eax: (addr array byte) <- lookup *pixels-ah
 }
 
 fn fake-screen-empty? _screen: (addr screen) -> _/eax: boolean {
@@ -285,11 +285,37 @@ fn fake-screen-empty? _screen: (addr screen) -> _/eax: boolean {
     y <- increment
     loop
   }
-  var pixels-ah/eax: (addr handle stream pixel) <- get screen, pixels
-  var pixels/eax: (addr stream pixel) <- lookup *pixels-ah
-  rewind-stream pixels
-  var result/eax: boolean <- stream-empty? pixels
-  return result
+  var pixels-ah/eax: (addr handle array byte) <- get screen, pixels
+  var pixels/eax: (addr array byte) <- lookup *pixels-ah
+  var y/ebx: int <- copy 0
+  var height-addr/edx: (addr int) <- get screen, height
+  var height/edx: int <- copy *height-addr
+  height <- shift-left 4/log2-font-height
+  {
+    compare y, height
+    break-if->=
+    var width-addr/edx: (addr int) <- get screen, width
+    var width/edx: int <- copy *width-addr
+    width <- shift-left 3/log2-font-width
+    var x/edi: int <- copy 0
+    {
+      compare x, width
+      break-if->=
+      var idx/ecx: int <- pixel-index screen, x, y
+      var color-addr/ecx: (addr byte) <- index pixels, idx
+      var color/ecx: byte <- copy-byte *color-addr
+      compare color, 0
+      {
+        break-if-=
+        return 0/false
+      }
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+  return 1/true
 }
 
 fn clear-rect _screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int, background-color: int {
@@ -344,16 +370,16 @@ fn clear-real-screen {
 
 fn clear-rect-on-real-screen xmin: int, ymin: int, xmax: int, ymax: int, background-color: int {
   var y/eax: int <- copy ymin
-  y <- shift-left 4/log-font-height
+  y <- shift-left 4/log2-font-height
   var ymax/ecx: int <- copy ymax
-  ymax <- shift-left 4/log-font-height
+  ymax <- shift-left 4/log2-font-height
   {
     compare y, ymax
     break-if->=
     var x/edx: int <- copy xmin
-    x <- shift-left 3/log-font-width
+    x <- shift-left 3/log2-font-width
     var xmax/ebx: int <- copy xmax
-    xmax <- shift-left 3/log-font-width
+    xmax <- shift-left 3/log2-font-width
     {
       compare x, xmax
       break-if->=
@@ -430,27 +456,52 @@ fn pixel screen: (addr screen), x: int, y: int, color: int {
     return
   }
   # fake screen
-  # prepare a pixel
-  var pixel-storage: pixel
-  var src/ecx: int <- copy x
-  var dest/edx: (addr int) <- get pixel-storage, x
-  copy-to *dest, src
-  src <- copy y
-  dest <- get pixel-storage, y
-  copy-to *dest, src
-  src <- copy color
-  dest <- get pixel-storage, color
-  copy-to *dest, src
-  # save it
-  var src/ecx: (addr pixel) <- address pixel-storage
-  var screen/eax: (addr screen) <- copy screen
-  var dest-stream-ah/eax: (addr handle stream pixel) <- get screen, pixels
-  var dest-stream/eax: (addr stream pixel) <- lookup *dest-stream-ah
+  var screen/esi: (addr screen) <- copy screen
+  var pixels-ah/eax: (addr handle array byte) <- get screen, pixels
+  var pixels/eax: (addr array byte) <- lookup *pixels-ah
   {
-    var full?/eax: boolean <- stream-full? dest-stream
-    compare full?, 0/false
-    break-if-=
-    abort "tried to draw too many pixels on the fake screen; adjust initialize-screen"
+    compare pixels, 0
+    break-if-!=
+    abort "pixel graphics not enabled for this screen"
   }
-  write-to-stream dest-stream, src
+  var idx/ecx: int <- pixel-index screen, x, y
+  var dest/ecx: (addr byte) <- index pixels, idx
+  var src/eax: byte <- copy-byte color
+  copy-byte-to *dest, src
+}
+
+fn pixel-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
+  var screen/esi: (addr screen) <- copy _screen
+  {
+    compare x, 0
+    break-if->=
+    abort "screen-cell-index: negative x"
+  }
+  {
+    var xmax-a/eax: (addr int) <- get screen, width
+    var xmax/eax: int <- copy *xmax-a
+    xmax <- shift-left 3/log2-font-width
+    compare x, xmax
+    break-if-<
+    abort "screen-cell-index: x too high"
+  }
+  {
+    compare y, 0
+    break-if->=
+    abort "screen-cell-index: negative y"
+  }
+  {
+    var ymax-a/eax: (addr int) <- get screen, height
+    var ymax/eax: int <- copy *ymax-a
+    ymax <- shift-left 4/log2-font-height
+    compare y, ymax
+    break-if-<
+    abort "screen-cell-index: y too high"
+  }
+  var width-addr/eax: (addr int) <- get screen, width
+  var result/ecx: int <- copy y
+  result <- multiply *width-addr
+  result <- shift-left 3/log2-font-width
+  result <- add x
+  return result
 }
