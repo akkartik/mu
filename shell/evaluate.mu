@@ -220,6 +220,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   }
   trace-text trace, "eval", "function call"
   trace-text trace, "eval", "evaluating list elements"
+  trace-lower trace
   var evaluated-list-storage: (handle cell)
   var evaluated-list-ah/esi: (addr handle cell) <- address evaluated-list-storage
   var curr-out-ah/edx: (addr handle cell) <- copy evaluated-list-ah
@@ -241,6 +242,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     curr <- copy right
     loop
   }
+  trace-higher trace
   var evaluated-list/eax: (addr cell) <- lookup *evaluated-list-ah
   var function-ah/ecx: (addr handle cell) <- get evaluated-list, left
   var args-ah/edx: (addr handle cell) <- get evaluated-list, right
