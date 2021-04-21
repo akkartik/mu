@@ -257,6 +257,17 @@ fn clear-screen _screen: (addr screen) {
   set-cursor-position screen, 0, 0
   var pixels-ah/eax: (addr handle array byte) <- get screen, pixels
   var pixels/eax: (addr array byte) <- lookup *pixels-ah
+  var i/ecx: int <- copy 0
+  var max/edx: int <- length pixels
+  {
+    compare i, max
+    break-if->=
+    var curr/eax: (addr byte) <- index pixels, i
+    var zero/ebx: byte <- copy 0
+    copy-byte-to *curr, zero
+    i <- increment
+    loop
+  }
 }
 
 fn fake-screen-empty? _screen: (addr screen) -> _/eax: boolean {
