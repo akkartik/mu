@@ -3,8 +3,8 @@
 # ignore 'screen-cell' on a first reading; it's a hack for sandboxes
 fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   # stack overflow?
-  check-stack
-  show-stack-state
+#?   check-stack
+#?   show-stack-state
   # errors? skip
   {
     compare trace, 0
@@ -25,7 +25,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   {
     compare trace, 0
     break-if-=
-    var stream-storage: (stream byte 0x100)
+    var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "evaluate "
     print-cell in, stream, 0/no-trace
@@ -63,9 +63,9 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   {
     break-if-!=
     trace-text trace, "eval", "symbol"
-#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "syma|", 7/fg, 0/bg
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "a", 7/fg, 0/bg
     lookup-symbol in-addr, out, env-h, globals, trace, screen-cell, keyboard-cell
-#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "symz|", 7/fg, 0/bg
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "z", 7/fg, 0/bg
     trace-higher trace
     return
   }
@@ -163,6 +163,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     rest <- lookup *rest-ah
     var second-arg-ah/edx: (addr handle cell) <- get rest, left
     evaluate second-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "Q", 4/fg, 0/bg
     trace-text trace, "eval", "saving global binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
     var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
@@ -200,6 +201,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var guard-h: (handle cell)
     var guard-ah/esi: (addr handle cell) <- address guard-h
     evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "R", 4/fg, 0/bg
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
     var branch-ah/edi: (addr handle cell) <- get rest, left
@@ -215,6 +217,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
       branch-ah <- get rest, left
     }
     evaluate branch-ah, out, env-h, globals, trace, screen-cell, keyboard-cell
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "S", 4/fg, 0/bg
     trace-higher trace
     return
   }
@@ -234,7 +237,9 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var curr-out/eax: (addr cell) <- lookup *curr-out-ah
     var left-out-ah/edi: (addr handle cell) <- get curr-out, left
     var left-ah/esi: (addr handle cell) <- get curr, left
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "A", 4/fg, 0/bg
     evaluate left-ah, left-out-ah, env-h, globals, trace, screen-cell, keyboard-cell
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "B", 4/fg, 0/bg
     #
     curr-out-ah <- get curr-out, right
     var right-ah/eax: (addr handle cell) <- get curr, right
@@ -246,18 +251,21 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   var evaluated-list/eax: (addr cell) <- lookup *evaluated-list-ah
   var function-ah/ecx: (addr handle cell) <- get evaluated-list, left
   var args-ah/edx: (addr handle cell) <- get evaluated-list, right
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "C", 4/fg, 0/bg
   apply function-ah, args-ah, out, globals, trace, screen-cell, keyboard-cell
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "Y", 4/fg, 0/bg
   trace-higher trace
   # trace "=> " out {{{
   {
     compare trace, 0
     break-if-=
-    var stream-storage: (stream byte 0x100)
+    var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "=> "
     print-cell out, stream, 0/no-trace
     trace trace, "eval", stream
   }
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "Z", 4/fg, 0/bg
   # }}}
 }
 
@@ -278,7 +286,7 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
   {
     compare trace, 0
     break-if-=
-    var stream-storage: (stream byte 0x100)
+    var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "apply anonymous function "
     print-cell _f-ah, stream, 0/no-trace
@@ -305,7 +313,9 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     rest <- lookup *rest-ah
     var params-ah/ecx: (addr handle cell) <- get rest, left
     var body-ah/eax: (addr handle cell) <- get rest, right
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "t", 7/fg, 0/bg
     apply-function params-ah, args-ah, body-ah, out, *callee-env-ah, globals, trace, screen-cell, keyboard-cell
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "U", 7/fg, 0/bg
     trace-higher trace
     return
   }
@@ -330,9 +340,9 @@ fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _b
     # evaluate each expression, writing result to `out`
     {
       var curr-ah/eax: (addr handle cell) <- get body, left
-#?       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "before call|", 7/fg, 0/bg
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "before call|", 7/fg, 0/bg
       evaluate curr-ah, out, *new-env-ah, globals, trace, screen-cell, keyboard-cell
-#?       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y", 7/fg, 0/bg
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "T", 7/fg, 0/bg
     }
     #
     body-ah <- get body, right
@@ -462,7 +472,9 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     var env-nil?/eax: boolean <- nil? env
     compare env-nil?, 0/false
     break-if-=
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "b", 7/fg, 0/bg
     lookup-symbol-in-globals sym, out, globals, trace, screen-cell, keyboard-cell
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y", 7/fg, 0/bg
     trace-higher trace
     # trace "=> " out " (global)" {{{
     {
@@ -471,13 +483,14 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-!=
-      var stream-storage: (stream byte 0x100)
+      var stream-storage: (stream byte 0x200)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> "
       print-cell out, stream, 0/no-trace
       write stream, " (global)"
       trace trace, "eval", stream
     }
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "(y)", 7/fg, 0/bg
     # }}}
     return
   }
@@ -547,7 +560,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-!=
-      var stream-storage: (stream byte 0x100)
+      var stream-storage: (stream byte 0x200)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> "
       print-cell out, stream, 0/no-trace
