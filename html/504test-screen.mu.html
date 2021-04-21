@@ -7,11 +7,11 @@
 <meta name="plugin-version" content="vim8.1_v1">
 <meta name="syntax" content="none">
 <meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
-<meta name="colorscheme" content="minimal-light">
+<meta name="colorscheme" content="minimal-dark">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #c6c6c6; }
-body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #a8a8a8; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #a8a8a8; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .PreProc { color: #c000c0; }
@@ -63,13 +63,13 @@ if ('onhashchange' in window) {
 <span id="L4" class="LineNr">  4 </span><span class="muComment"># Mu doesn't have multi-line strings, so we provide functions for rows or portions of rows.</span>
 <span id="L5" class="LineNr">  5 </span><span class="muComment"># Tab characters (that translate into multiple screen cells) not supported.</span>
 <span id="L6" class="LineNr">  6 </span>
-<span id="L7" class="LineNr">  7 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L7'>check-screen-row</a></span> <a href='500text-screen.mu.html#L9'>screen</a>: (addr <a href='500text-screen.mu.html#L9'>screen</a>), y: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
-<span id="L8" class="LineNr">  8 </span>  <a href='504test-screen.mu.html#L11'>check-screen-row-from</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/x, y, expected, msg
+<span id="L7" class="LineNr">  7 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L7'>check-screen-row</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), y: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
+<span id="L8" class="LineNr">  8 </span>  <a href='504test-screen.mu.html#L11'>check-screen-row-from</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>/x, y, expected, msg
 <span id="L9" class="LineNr">  9 </span><span class="Delimiter">}</span>
 <span id="L10" class="LineNr"> 10 </span>
-<span id="L11" class="LineNr"> 11 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L11'>check-screen-row-from</a></span> screen-on-stack: (addr <a href='500text-screen.mu.html#L9'>screen</a>), x: int, y: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
-<span id="L12" class="LineNr"> 12 </span>  <span class="PreProc">var</span> <a href='500text-screen.mu.html#L9'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500text-screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
-<span id="L13" class="LineNr"> 13 </span>  <span class="PreProc">var</span> idx/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L100'>screen-cell-index</a> <a href='500text-screen.mu.html#L9'>screen</a>, x, y
+<span id="L11" class="LineNr"> 11 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L11'>check-screen-row-from</a></span> screen-on-stack: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), x: int, y: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
+<span id="L12" class="LineNr"> 12 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
+<span id="L13" class="LineNr"> 13 </span>  <span class="PreProc">var</span> idx/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L120'>screen-cell-index</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
 <span id="L14" class="LineNr"> 14 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
 <span id="L15" class="LineNr"> 15 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L16" class="LineNr"> 16 </span>  <span class="PreProc">var</span> e-addr/<span class="Constant">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
@@ -78,7 +78,7 @@ if ('onhashchange' in window) {
 <span id="L19" class="LineNr"> 19 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L20" class="LineNr"> 20 </span>    compare done?, <span class="Constant">0</span>
 <span id="L21" class="LineNr"> 21 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L22" class="LineNr"> 22 </span>    <span class="PreProc">var</span> _g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L334'>screen-grapheme-at-idx</a> <a href='500text-screen.mu.html#L9'>screen</a>, idx
+<span id="L22" class="LineNr"> 22 </span>    <span class="PreProc">var</span> _g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L413'>screen-grapheme-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L23" class="LineNr"> 23 </span>    <span class="PreProc">var</span> g/<span class="Constant">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
 <span id="L24" class="LineNr"> 24 </span>    <span class="PreProc">var</span> expected-grapheme/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L92'>read-grapheme</a> e-addr
 <span id="L25" class="LineNr"> 25 </span>    <span class="muComment"># compare graphemes</span>
@@ -121,13 +121,13 @@ if ('onhashchange' in window) {
 <span id="L62" class="LineNr"> 62 </span>
 <span id="L63" class="LineNr"> 63 </span><span class="muComment"># various variants by screen-cell attribute; spaces in the 'expected' data should not match the attribute</span>
 <span id="L64" class="LineNr"> 64 </span>
-<span id="L65" class="LineNr"> 65 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L65'>check-screen-row-in-color</a></span> <a href='500text-screen.mu.html#L9'>screen</a>: (addr <a href='500text-screen.mu.html#L9'>screen</a>), fg: int, y: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
-<span id="L66" class="LineNr"> 66 </span>  <a href='504test-screen.mu.html#L69'>check-screen-row-in-color-from</a> <a href='500text-screen.mu.html#L9'>screen</a>, fg, y, <span class="Constant">0</span>/x, expected, msg
+<span id="L65" class="LineNr"> 65 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L65'>check-screen-row-in-color</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), fg: int, y: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
+<span id="L66" class="LineNr"> 66 </span>  <a href='504test-screen.mu.html#L69'>check-screen-row-in-color-from</a> <a href='500fake-screen.mu.html#L14'>screen</a>, fg, y, <span class="Constant">0</span>/x, expected, msg
 <span id="L67" class="LineNr"> 67 </span><span class="Delimiter">}</span>
 <span id="L68" class="LineNr"> 68 </span>
-<span id="L69" class="LineNr"> 69 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L69'>check-screen-row-in-color-from</a></span> screen-on-stack: (addr <a href='500text-screen.mu.html#L9'>screen</a>), fg: int, y: int, x: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
-<span id="L70" class="LineNr"> 70 </span>  <span class="PreProc">var</span> <a href='500text-screen.mu.html#L9'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500text-screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
-<span id="L71" class="LineNr"> 71 </span>  <span class="PreProc">var</span> idx/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L100'>screen-cell-index</a> <a href='500text-screen.mu.html#L9'>screen</a>, x, y
+<span id="L69" class="LineNr"> 69 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L69'>check-screen-row-in-color-from</a></span> screen-on-stack: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), fg: int, y: int, x: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
+<span id="L70" class="LineNr"> 70 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
+<span id="L71" class="LineNr"> 71 </span>  <span class="PreProc">var</span> idx/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L120'>screen-cell-index</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
 <span id="L72" class="LineNr"> 72 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
 <span id="L73" class="LineNr"> 73 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L74" class="LineNr"> 74 </span>  <span class="PreProc">var</span> e-addr/<span class="Constant">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
@@ -136,7 +136,7 @@ if ('onhashchange' in window) {
 <span id="L77" class="LineNr"> 77 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L78" class="LineNr"> 78 </span>    compare done?, <span class="Constant">0</span>
 <span id="L79" class="LineNr"> 79 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L80" class="LineNr"> 80 </span>    <span class="PreProc">var</span> _g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L334'>screen-grapheme-at-idx</a> <a href='500text-screen.mu.html#L9'>screen</a>, idx
+<span id="L80" class="LineNr"> 80 </span>    <span class="PreProc">var</span> _g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L413'>screen-grapheme-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L81" class="LineNr"> 81 </span>    <span class="PreProc">var</span> g/<span class="Constant">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
 <span id="L82" class="LineNr"> 82 </span>    <span class="PreProc">var</span> _expected-grapheme/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L92'>read-grapheme</a> e-addr
 <span id="L83" class="LineNr"> 83 </span>    <span class="PreProc">var</span> expected-grapheme/<span class="Constant">edi</span>: grapheme <span class="Special">&lt;-</span> copy _expected-grapheme
@@ -152,7 +152,7 @@ if ('onhashchange' in window) {
 <span id="L93" class="LineNr"> 93 </span>      <span class="Delimiter">{</span>
 <span id="L94" class="LineNr"> 94 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
 <span id="L95" class="LineNr"> 95 </span>        <span class="PreProc">break-if-!=</span>
-<span id="L96" class="LineNr"> 96 </span>        <span class="PreProc">var</span> color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L352'>screen-color-at-idx</a> <a href='500text-screen.mu.html#L9'>screen</a>, idx
+<span id="L96" class="LineNr"> 96 </span>        <span class="PreProc">var</span> color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L431'>screen-color-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L97" class="LineNr"> 97 </span>        compare color, fg
 <span id="L98" class="LineNr"> 98 </span>        <span class="PreProc">break-if-!=</span> $check-screen-row-in-color-from:compare-cells
 <span id="L99" class="LineNr"> 99 </span>      <span class="Delimiter">}</span>
@@ -182,7 +182,7 @@ if ('onhashchange' in window) {
 <span id="L123" class="LineNr">123 </span>        <a href='501draw-text.mu.html#L65'>move-cursor-to-left-margin-of-next-line</a> <span class="Constant">0</span>/screen
 <span id="L124" class="LineNr">124 </span>      <span class="Delimiter">}</span>
 <span id="L125" class="LineNr">125 </span>      $check-screen-row-in-color-from:compare-colors: <span class="Delimiter">{</span>
-<span id="L126" class="LineNr">126 </span>        <span class="PreProc">var</span> color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L352'>screen-color-at-idx</a> <a href='500text-screen.mu.html#L9'>screen</a>, idx
+<span id="L126" class="LineNr">126 </span>        <span class="PreProc">var</span> color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L431'>screen-color-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L127" class="LineNr">127 </span>        compare fg, color
 <span id="L128" class="LineNr">128 </span>        <span class="Delimiter">{</span>
 <span id="L129" class="LineNr">129 </span>          <span class="PreProc">break-if-!=</span>
@@ -212,13 +212,13 @@ if ('onhashchange' in window) {
 <span id="L153" class="LineNr">153 </span>  <span class="Delimiter">}</span>
 <span id="L154" class="LineNr">154 </span><span class="Delimiter">}</span>
 <span id="L155" class="LineNr">155 </span>
-<span id="L156" class="LineNr">156 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L156'>check-screen-row-in-background-color</a></span> <a href='500text-screen.mu.html#L9'>screen</a>: (addr <a href='500text-screen.mu.html#L9'>screen</a>), bg: int, y: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
-<span id="L157" class="LineNr">157 </span>  <a href='504test-screen.mu.html#L160'>check-screen-row-in-background-color-from</a> <a href='500text-screen.mu.html#L9'>screen</a>, bg, y, <span class="Constant">0</span>/x, expected, msg
+<span id="L156" class="LineNr">156 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L156'>check-screen-row-in-background-color</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), bg: int, y: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
+<span id="L157" class="LineNr">157 </span>  <a href='504test-screen.mu.html#L160'>check-screen-row-in-background-color-from</a> <a href='500fake-screen.mu.html#L14'>screen</a>, bg, y, <span class="Constant">0</span>/x, expected, msg
 <span id="L158" class="LineNr">158 </span><span class="Delimiter">}</span>
 <span id="L159" class="LineNr">159 </span>
-<span id="L160" class="LineNr">160 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L160'>check-screen-row-in-background-color-from</a></span> screen-on-stack: (addr <a href='500text-screen.mu.html#L9'>screen</a>), bg: int, y: int, x: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
-<span id="L161" class="LineNr">161 </span>  <span class="PreProc">var</span> <a href='500text-screen.mu.html#L9'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500text-screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
-<span id="L162" class="LineNr">162 </span>  <span class="PreProc">var</span> idx/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L100'>screen-cell-index</a> <a href='500text-screen.mu.html#L9'>screen</a>, x, y
+<span id="L160" class="LineNr">160 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L160'>check-screen-row-in-background-color-from</a></span> screen-on-stack: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), bg: int, y: int, x: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
+<span id="L161" class="LineNr">161 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
+<span id="L162" class="LineNr">162 </span>  <span class="PreProc">var</span> idx/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L120'>screen-cell-index</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
 <span id="L163" class="LineNr">163 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
 <span id="L164" class="LineNr">164 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L165" class="LineNr">165 </span>  <span class="PreProc">var</span> e-addr/<span class="Constant">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
@@ -227,7 +227,7 @@ if ('onhashchange' in window) {
 <span id="L168" class="LineNr">168 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L169" class="LineNr">169 </span>    compare done?, <span class="Constant">0</span>
 <span id="L170" class="LineNr">170 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L171" class="LineNr">171 </span>    <span class="PreProc">var</span> _g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L334'>screen-grapheme-at-idx</a> <a href='500text-screen.mu.html#L9'>screen</a>, idx
+<span id="L171" class="LineNr">171 </span>    <span class="PreProc">var</span> _g/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L413'>screen-grapheme-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L172" class="LineNr">172 </span>    <span class="PreProc">var</span> g/<span class="Constant">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
 <span id="L173" class="LineNr">173 </span>    <span class="PreProc">var</span> _expected-grapheme/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L92'>read-grapheme</a> e-addr
 <span id="L174" class="LineNr">174 </span>    <span class="PreProc">var</span> expected-grapheme/<span class="Constant">edi</span>: grapheme <span class="Special">&lt;-</span> copy _expected-grapheme
@@ -243,7 +243,7 @@ if ('onhashchange' in window) {
 <span id="L184" class="LineNr">184 </span>      <span class="Delimiter">{</span>
 <span id="L185" class="LineNr">185 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
 <span id="L186" class="LineNr">186 </span>        <span class="PreProc">break-if-!=</span>
-<span id="L187" class="LineNr">187 </span>        <span class="PreProc">var</span> background-color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L371'>screen-background-color-at-idx</a> <a href='500text-screen.mu.html#L9'>screen</a>, idx
+<span id="L187" class="LineNr">187 </span>        <span class="PreProc">var</span> background-color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L450'>screen-background-color-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L188" class="LineNr">188 </span>        compare background-color, bg
 <span id="L189" class="LineNr">189 </span>        <span class="PreProc">break-if-!=</span> $check-screen-row-in-background-color-from:compare-cells
 <span id="L190" class="LineNr">190 </span>      <span class="Delimiter">}</span>
@@ -274,7 +274,7 @@ if ('onhashchange' in window) {
 <span id="L215" class="LineNr">215 </span>        <span class="PreProc">break</span> $check-screen-row-in-background-color-from:compare-graphemes
 <span id="L216" class="LineNr">216 </span>      <span class="Delimiter">}</span>
 <span id="L217" class="LineNr">217 </span>      $check-screen-row-in-background-color-from:compare-background-colors: <span class="Delimiter">{</span>
-<span id="L218" class="LineNr">218 </span>        <span class="PreProc">var</span> background-color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L371'>screen-background-color-at-idx</a> <a href='500text-screen.mu.html#L9'>screen</a>, idx
+<span id="L218" class="LineNr">218 </span>        <span class="PreProc">var</span> background-color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L450'>screen-background-color-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L219" class="LineNr">219 </span>        compare bg, background-color
 <span id="L220" class="LineNr">220 </span>        <span class="Delimiter">{</span>
 <span id="L221" class="LineNr">221 </span>          <span class="PreProc">break-if-!=</span>
@@ -307,13 +307,13 @@ if ('onhashchange' in window) {
 <span id="L248" class="LineNr">248 </span><span class="muComment"># helpers for checking just background color, not screen contents</span>
 <span id="L249" class="LineNr">249 </span><span class="muComment"># these can validate bg for spaces</span>
 <span id="L250" class="LineNr">250 </span>
-<span id="L251" class="LineNr">251 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L251'>check-background-color-in-screen-row</a></span> <a href='500text-screen.mu.html#L9'>screen</a>: (addr <a href='500text-screen.mu.html#L9'>screen</a>), bg: int, y: int, expected-bitmap: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
-<span id="L252" class="LineNr">252 </span>  <a href='504test-screen.mu.html#L255'>check-background-color-in-screen-row-from</a> <a href='500text-screen.mu.html#L9'>screen</a>, bg, y, <span class="Constant">0</span>/x, expected-bitmap, msg
+<span id="L251" class="LineNr">251 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L251'>check-background-color-in-screen-row</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), bg: int, y: int, expected-bitmap: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
+<span id="L252" class="LineNr">252 </span>  <a href='504test-screen.mu.html#L255'>check-background-color-in-screen-row-from</a> <a href='500fake-screen.mu.html#L14'>screen</a>, bg, y, <span class="Constant">0</span>/x, expected-bitmap, msg
 <span id="L253" class="LineNr">253 </span><span class="Delimiter">}</span>
 <span id="L254" class="LineNr">254 </span>
-<span id="L255" class="LineNr">255 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L255'>check-background-color-in-screen-row-from</a></span> screen-on-stack: (addr <a href='500text-screen.mu.html#L9'>screen</a>), bg: int, y: int, x: int, expected-bitmap: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
-<span id="L256" class="LineNr">256 </span>  <span class="PreProc">var</span> <a href='500text-screen.mu.html#L9'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500text-screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
-<span id="L257" class="LineNr">257 </span>  <span class="PreProc">var</span> idx/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L100'>screen-cell-index</a> <a href='500text-screen.mu.html#L9'>screen</a>, x, y
+<span id="L255" class="LineNr">255 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='504test-screen.mu.html#L255'>check-background-color-in-screen-row-from</a></span> screen-on-stack: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), bg: int, y: int, x: int, expected-bitmap: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
+<span id="L256" class="LineNr">256 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
+<span id="L257" class="LineNr">257 </span>  <span class="PreProc">var</span> idx/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L120'>screen-cell-index</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
 <span id="L258" class="LineNr">258 </span>  <span class="muComment"># compare background color where 'expected-bitmap' is a non-space</span>
 <span id="L259" class="LineNr">259 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L260" class="LineNr">260 </span>  <span class="PreProc">var</span> e-addr/<span class="Constant">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
@@ -325,7 +325,7 @@ if ('onhashchange' in window) {
 <span id="L266" class="LineNr">266 </span>    <span class="PreProc">var</span> _expected-bit/<span class="Constant">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L92'>read-grapheme</a> e-addr
 <span id="L267" class="LineNr">267 </span>    <span class="PreProc">var</span> expected-bit/<span class="Constant">edi</span>: grapheme <span class="Special">&lt;-</span> copy _expected-bit
 <span id="L268" class="LineNr">268 </span>    $check-background-color-in-screen-row-from:compare-cells: <span class="Delimiter">{</span>
-<span id="L269" class="LineNr">269 </span>      <span class="PreProc">var</span> background-color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500text-screen.mu.html#L371'>screen-background-color-at-idx</a> <a href='500text-screen.mu.html#L9'>screen</a>, idx
+<span id="L269" class="LineNr">269 </span>      <span class="PreProc">var</span> background-color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L450'>screen-background-color-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L270" class="LineNr">270 </span>      <span class="muComment"># if expected-bit is space, assert that background is NOT bg</span>
 <span id="L271" class="LineNr">271 </span>      compare expected-bit, <span class="Constant">0x20</span>
 <span id="L272" class="LineNr">272 </span>      <span class="Delimiter">{</span>
@@ -365,24 +365,24 @@ if ('onhashchange' in window) {
 <span id="L306" class="LineNr">306 </span><span class="Delimiter">}</span>
 <span id="L307" class="LineNr">307 </span>
 <span id="L308" class="LineNr">308 </span><span class="PreProc">fn</span> <span class="muTest"><a href='504test-screen.mu.html#L308'>test-draw-single-grapheme</a></span> <span class="Delimiter">{</span>
-<span id="L309" class="LineNr">309 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='500text-screen.mu.html#L9'>screen</a>
-<span id="L310" class="LineNr">310 </span>  <span class="PreProc">var</span> <a href='500text-screen.mu.html#L9'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500text-screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
-<span id="L311" class="LineNr">311 </span>  <a href='500text-screen.mu.html#L23'>initialize-screen</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>, <span class="Constant">4</span>
-<span id="L312" class="LineNr">312 </span>  <a href='500text-screen.mu.html#L94'>draw-code-point</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">0x61</span>/a, <span class="Constant">0</span>/x, <span class="Constant">0</span>/y, <span class="Constant">1</span>/fg, <span class="Constant">2</span>/bg
-<span id="L313" class="LineNr">313 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/y, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-draw-single-grapheme&quot;</span>  <span class="muComment"># top-left corner of the screen</span>
-<span id="L314" class="LineNr">314 </span>  <a href='504test-screen.mu.html#L65'>check-screen-row-in-color</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/fg, <span class="Constant">0</span>/y, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-draw-single-grapheme-fg&quot;</span>
-<span id="L315" class="LineNr">315 </span>  <a href='504test-screen.mu.html#L156'>check-screen-row-in-background-color</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">2</span>/bg, <span class="Constant">0</span>/y, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-draw-single-grapheme-bg&quot;</span>
-<span id="L316" class="LineNr">316 </span>  <a href='504test-screen.mu.html#L251'>check-background-color-in-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">2</span>/bg, <span class="Constant">0</span>/y, <span class="Constant">&quot;x &quot;</span>, <span class="Constant">&quot;F - test-draw-single-grapheme-bg2&quot;</span>
+<span id="L309" class="LineNr">309 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='500fake-screen.mu.html#L14'>screen</a>
+<span id="L310" class="LineNr">310 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
+<span id="L311" class="LineNr">311 </span>  <a href='500fake-screen.mu.html#L31'>initialize-screen</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">5</span>, <span class="Constant">4</span>, <span class="Constant">0</span>/no-pixel-graphics
+<span id="L312" class="LineNr">312 </span>  <a href='500fake-screen.mu.html#L114'>draw-code-point</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x61</span>/a, <span class="Constant">0</span>/x, <span class="Constant">0</span>/y, <span class="Constant">1</span>/fg, <span class="Constant">2</span>/bg
+<span id="L313" class="LineNr">313 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>/y, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-draw-single-grapheme&quot;</span>  <span class="muComment"># top-left corner of the screen</span>
+<span id="L314" class="LineNr">314 </span>  <a href='504test-screen.mu.html#L65'>check-screen-row-in-color</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">1</span>/fg, <span class="Constant">0</span>/y, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-draw-single-grapheme-fg&quot;</span>
+<span id="L315" class="LineNr">315 </span>  <a href='504test-screen.mu.html#L156'>check-screen-row-in-background-color</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">2</span>/bg, <span class="Constant">0</span>/y, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-draw-single-grapheme-bg&quot;</span>
+<span id="L316" class="LineNr">316 </span>  <a href='504test-screen.mu.html#L251'>check-background-color-in-screen-row</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">2</span>/bg, <span class="Constant">0</span>/y, <span class="Constant">&quot;x &quot;</span>, <span class="Constant">&quot;F - test-draw-single-grapheme-bg2&quot;</span>
 <span id="L317" class="LineNr">317 </span><span class="Delimiter">}</span>
 <span id="L318" class="LineNr">318 </span>
 <span id="L319" class="LineNr">319 </span><span class="PreProc">fn</span> <span class="muTest"><a href='504test-screen.mu.html#L319'>test-draw-multiple-graphemes</a></span> <span class="Delimiter">{</span>
-<span id="L320" class="LineNr">320 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='500text-screen.mu.html#L9'>screen</a>
-<span id="L321" class="LineNr">321 </span>  <span class="PreProc">var</span> <a href='500text-screen.mu.html#L9'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500text-screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
-<span id="L322" class="LineNr">322 </span>  <a href='500text-screen.mu.html#L23'>initialize-screen</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">0x10</span>/rows, <span class="Constant">4</span>/cols
-<span id="L323" class="LineNr">323 </span>  <a href='501draw-text.mu.html#L258'>draw-text-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">&quot;Hello, 世界&quot;</span>, <span class="Constant">1</span>/fg, <span class="Constant">2</span>/bg
-<span id="L324" class="LineNr">324 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/y, <span class="Constant">&quot;Hello, 世界&quot;</span>, <span class="Constant">&quot;F - test-draw-multiple-graphemes&quot;</span>
-<span id="L325" class="LineNr">325 </span>  <a href='504test-screen.mu.html#L65'>check-screen-row-in-color</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/fg, <span class="Constant">0</span>/y, <span class="Constant">&quot;Hello, 世界&quot;</span>, <span class="Constant">&quot;F - test-draw-multiple-graphemes-fg&quot;</span>
-<span id="L326" class="LineNr">326 </span>  <a href='504test-screen.mu.html#L251'>check-background-color-in-screen-row</a> <a href='500text-screen.mu.html#L9'>screen</a>, <span class="Constant">2</span>/bg, <span class="Constant">0</span>/y, <span class="Constant">&quot;xxxxxxxxx &quot;</span>, <span class="Constant">&quot;F - test-draw-multiple-graphemes-bg2&quot;</span>
+<span id="L320" class="LineNr">320 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='500fake-screen.mu.html#L14'>screen</a>
+<span id="L321" class="LineNr">321 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="Constant">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
+<span id="L322" class="LineNr">322 </span>  <a href='500fake-screen.mu.html#L31'>initialize-screen</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x10</span>/rows, <span class="Constant">4</span>/cols, <span class="Constant">0</span>/no-pixel-graphics
+<span id="L323" class="LineNr">323 </span>  <a href='501draw-text.mu.html#L258'>draw-text-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;Hello, 世界&quot;</span>, <span class="Constant">1</span>/fg, <span class="Constant">2</span>/bg
+<span id="L324" class="LineNr">324 </span>  <a href='504test-screen.mu.html#L7'>check-screen-row</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>/y, <span class="Constant">&quot;Hello, 世界&quot;</span>, <span class="Constant">&quot;F - test-draw-multiple-graphemes&quot;</span>
+<span id="L325" class="LineNr">325 </span>  <a href='504test-screen.mu.html#L65'>check-screen-row-in-color</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">1</span>/fg, <span class="Constant">0</span>/y, <span class="Constant">&quot;Hello, 世界&quot;</span>, <span class="Constant">&quot;F - test-draw-multiple-graphemes-fg&quot;</span>
+<span id="L326" class="LineNr">326 </span>  <a href='504test-screen.mu.html#L251'>check-background-color-in-screen-row</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">2</span>/bg, <span class="Constant">0</span>/y, <span class="Constant">&quot;xxxxxxxxx &quot;</span>, <span class="Constant">&quot;F - test-draw-multiple-graphemes-bg2&quot;</span>
 <span id="L327" class="LineNr">327 </span><span class="Delimiter">}</span>
 </pre>
 </body>

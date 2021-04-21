@@ -7,17 +7,18 @@
 <meta name="plugin-version" content="vim8.1_v1">
 <meta name="syntax" content="none">
 <meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
-<meta name="colorscheme" content="minimal-light">
+<meta name="colorscheme" content="minimal-dark">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #c6c6c6; }
-body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #a8a8a8; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #a8a8a8; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .subxH1Comment { color: #005faf; text-decoration: underline; }
 .subxComment { color: #005faf; }
 .subxFunction { color: #af5f00; text-decoration: underline; }
 .LineNr { }
+.CommentedCode { color: #8a8a8a; }
 .SpecialChar { color: #d70000; }
 .Constant { color: #008787; }
 .Folded { color: #080808; background-color: #949494; }
@@ -74,663 +75,711 @@ if ('onhashchange' in window) {
 <span id="L15" class="LineNr">  15 </span><span class="subxComment"># understand hardware interfaces well enough to explain to others.</span>
 <span id="L16" class="LineNr">  16 </span>
 <span id="L17" class="LineNr">  17 </span><span class="subxComment"># Memory map of a Mu computer:</span>
-<span id="L18" class="LineNr">  18 </span><span class="subxComment">#   code: currently 4 tracks loaded from the primary disk to [0x00007c00, 0x00027400)</span>
+<span id="L18" class="LineNr">  18 </span><span class="subxComment">#   code: currently 4 tracks loaded from the primary disk to [0x00007c00, 0x00048600)</span>
 <span id="L19" class="LineNr">  19 </span><span class="subxComment">#   stack: grows down from 0x00070000</span>
 <span id="L20" class="LineNr">  20 </span><span class="subxComment">#   heap: [0x01000000, 0x02000000)</span>
 <span id="L21" class="LineNr">  21 </span><span class="subxComment">#     see 120allocate.subx</span>
-<span id="L22" class="LineNr">  22 </span><span class="subxComment"># Consult <a href="https://wiki.osdev.org/Memory_Map_(x86)">https://wiki.osdev.org/Memory_Map_(x86)</a> before modifying any of this.</span>
-<span id="L23" class="LineNr">  23 </span>
-<span id="L24" class="LineNr">  24 </span>== code
-<span id="L25" class="LineNr">  25 </span>
-<span id="L26" class="LineNr">  26 </span><span class="subxComment">## 16-bit entry point: 0x7c00</span>
-<span id="L27" class="LineNr">  27 </span>
-<span id="L28" class="LineNr">  28 </span><span class="subxComment"># Upon reset, the IBM PC:</span>
-<span id="L29" class="LineNr">  29 </span><span class="subxComment">#   - loads the first sector (512 bytes)</span>
-<span id="L30" class="LineNr">  30 </span><span class="subxComment">#     from some bootable image (look for the boot-sector-marker further down this file)</span>
-<span id="L31" class="LineNr">  31 </span><span class="subxComment">#     to the address range [0x7c00, 0x7e00)</span>
-<span id="L32" class="LineNr">  32 </span><span class="subxComment">#   - starts executing code at address 0x7c00</span>
-<span id="L33" class="LineNr">  33 </span>
-<span id="L34" class="LineNr">  34 </span>  fa/disable-interrupts
-<span id="L35" class="LineNr">  35 </span>
-<span id="L36" class="LineNr">  36 </span>  <span class="subxComment"># initialize segment registers</span>
-<span id="L37" class="LineNr">  37 </span>  b8/copy-to-ax 0/imm16
-<span id="L38" class="LineNr">  38 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 3/r32/ds
-<span id="L39" class="LineNr">  39 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 0/r32/es
-<span id="L40" class="LineNr">  40 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 4/r32/fs
-<span id="L41" class="LineNr">  41 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 5/r32/gs
-<span id="L42" class="LineNr">  42 </span>
-<span id="L43" class="LineNr">  43 </span>  <span class="subxComment"># initialize stack to 0x00070000</span>
-<span id="L44" class="LineNr">  44 </span>  <span class="subxComment"># We don't read or write the stack before we get to 32-bit mode, but BIOS</span>
-<span id="L45" class="LineNr">  45 </span>  <span class="subxComment"># calls do. We need to move the stack in case BIOS initializes it to some</span>
-<span id="L46" class="LineNr">  46 </span>  <span class="subxComment"># low address that we want to write code into.</span>
-<span id="L47" class="LineNr">  47 </span>  b8/copy-to-ax 0x7000/imm16
-<span id="L48" class="LineNr">  48 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 2/r32/ss
-<span id="L49" class="LineNr">  49 </span>  bc/copy-to-esp 0/imm16
-<span id="L50" class="LineNr">  50 </span>
-<span id="L51" class="LineNr">  51 </span>  <span class="subxComment"># undo the A20 hack: <a href="https://en.wikipedia.org/wiki/A20_line">https://en.wikipedia.org/wiki/A20_line</a></span>
-<span id="L52" class="LineNr">  52 </span>  <span class="subxComment"># this is from <a href="https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S">https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S</a></span>
-<span id="L53" class="LineNr">  53 </span>  {
-<span id="L54" class="LineNr">  54 </span>    e4/read-port-into-al 0x64/imm8
-<span id="L55" class="LineNr">  55 </span>    a8/test-bits-in-al 0x02/imm8  <span class="subxComment"># set zf if bit 1 (second-least significant) is not set</span>
-<span id="L56" class="LineNr">  56 </span>    75/jump-if-!zero <span class="Constant">loop</span>/disp8
-<span id="L57" class="LineNr">  57 </span>    b0/copy-to-al 0xd1/imm8
-<span id="L58" class="LineNr">  58 </span>    e6/write-al-into-port 0x64/imm8
-<span id="L59" class="LineNr">  59 </span>  }
-<span id="L60" class="LineNr">  60 </span>  {
-<span id="L61" class="LineNr">  61 </span>    e4/read-port-into-al 0x64/imm8
-<span id="L62" class="LineNr">  62 </span>    a8/test-bits-in-al 0x02/imm8  <span class="subxComment"># set zf if bit 1 (second-least significant) is not set</span>
-<span id="L63" class="LineNr">  63 </span>    75/jump-if-!zero <span class="Constant">loop</span>/disp8
-<span id="L64" class="LineNr">  64 </span>    b0/copy-to-al 0xdf/imm8
-<span id="L65" class="LineNr">  65 </span>    e6/write-al-into-port 0x64/imm8
-<span id="L66" class="LineNr">  66 </span>  }
-<span id="L67" class="LineNr">  67 </span>
-<span id="L68" class="LineNr">  68 </span>  <span class="subxComment"># load remaining sectors from first two tracks of disk into addresses [0x7e00, 0x17800)</span>
-<span id="L69" class="LineNr">  69 </span>  b4/copy-to-ah 2/imm8/read-drive
-<span id="L70" class="LineNr">  70 </span>  <span class="subxComment"># dl comes conveniently initialized at boot time with the index of the device being booted</span>
-<span id="L71" class="LineNr">  71 </span>  b5/copy-to-ch 0/imm8/cylinder
-<span id="L72" class="LineNr">  72 </span>  b6/copy-to-dh 0/imm8/head
-<span id="L73" class="LineNr">  73 </span>  b1/copy-to-cl 2/imm8/sector  <span class="subxComment"># 1-based</span>
-<span id="L74" class="LineNr">  74 </span>  b0/copy-to-al 0x7d/imm8/num-sectors  <span class="subxComment"># 2*63 - 1 = 125</span>
-<span id="L75" class="LineNr">  75 </span>  <span class="subxComment"># address to write sectors to = es:bx = 0x7e00, contiguous with boot segment</span>
-<span id="L76" class="LineNr">  76 </span>  bb/copy-to-bx 0/imm16
-<span id="L77" class="LineNr">  77 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 0/r32/es
-<span id="L78" class="LineNr">  78 </span>  bb/copy-to-bx 0x7e00/imm16
-<span id="L79" class="LineNr">  79 </span>  cd/syscall 0x13/imm8/bios-disk-services
-<span id="L80" class="LineNr">  80 </span>  0f 82/jump-if-carry <a href='boot.subx.html#L146'>disk_error</a>/disp16
-<span id="L81" class="LineNr">  81 </span>
-<span id="L82" class="LineNr">  82 </span>  <span class="subxComment"># load two more tracks of disk into addresses [0x17800, 0x27400)</span>
-<span id="L83" class="LineNr">  83 </span>  b4/copy-to-ah 2/imm8/read-drive
-<span id="L84" class="LineNr">  84 </span>  <span class="subxComment"># dl comes conveniently initialized at boot time with the index of the device being booted</span>
-<span id="L85" class="LineNr">  85 </span>  b5/copy-to-ch 0/imm8/cylinder
-<span id="L86" class="LineNr">  86 </span>  b6/copy-to-dh 2/imm8/head
-<span id="L87" class="LineNr">  87 </span>  b1/copy-to-cl 1/imm8/sector  <span class="subxComment"># 1-based</span>
-<span id="L88" class="LineNr">  88 </span>  b0/copy-to-al 0x7e/imm8/num-sectors  <span class="subxComment"># 2*63 = 126</span>
-<span id="L89" class="LineNr">  89 </span>  <span class="subxComment"># address to write sectors to = es:bx = 0x17800, contiguous with boot segment</span>
-<span id="L90" class="LineNr">  90 </span>  bb/copy-to-bx 0x1780/imm16
-<span id="L91" class="LineNr">  91 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 0/r32/es
-<span id="L92" class="LineNr">  92 </span>  bb/copy-to-bx 0/imm16
-<span id="L93" class="LineNr">  93 </span>  cd/syscall 0x13/imm8/bios-disk-services
-<span id="L94" class="LineNr">  94 </span>  0f 82/jump-if-carry <a href='boot.subx.html#L146'>disk_error</a>/disp16
-<span id="L95" class="LineNr">  95 </span>
-<span id="L96" class="LineNr">  96 </span>  <span class="subxComment"># load two more tracks of disk into addresses [0x27400, 0x37000)</span>
-<span id="L97" class="LineNr">  97 </span>  b4/copy-to-ah 2/imm8/read-drive
-<span id="L98" class="LineNr">  98 </span>  <span class="subxComment"># dl comes conveniently initialized at boot time with the index of the device being booted</span>
-<span id="L99" class="LineNr">  99 </span>  b5/copy-to-ch 0/imm8/cylinder
-<span id="L100" class="LineNr"> 100 </span>  b6/copy-to-dh 4/imm8/head
-<span id="L101" class="LineNr"> 101 </span>  b1/copy-to-cl 1/imm8/sector  <span class="subxComment"># 1-based</span>
-<span id="L102" class="LineNr"> 102 </span>  b0/copy-to-al 0x7e/imm8/num-sectors  <span class="subxComment"># 2*63 = 126</span>
-<span id="L103" class="LineNr"> 103 </span>  <span class="subxComment"># address to write sectors to = es:bx = 0x27400, contiguous with boot segment</span>
-<span id="L104" class="LineNr"> 104 </span>  bb/copy-to-bx 0x2740/imm16
-<span id="L105" class="LineNr"> 105 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 0/r32/es
-<span id="L106" class="LineNr"> 106 </span>  bb/copy-to-bx 0/imm16
-<span id="L107" class="LineNr"> 107 </span>  cd/syscall 0x13/imm8/bios-disk-services
-<span id="L108" class="LineNr"> 108 </span>  0f 82/jump-if-carry <a href='boot.subx.html#L146'>disk_error</a>/disp16
-<span id="L109" class="LineNr"> 109 </span>
-<span id="L110" class="LineNr"> 110 </span>  <span class="subxComment"># reset es</span>
-<span id="L111" class="LineNr"> 111 </span>  bb/copy-to-bx 0/imm16
-<span id="L112" class="LineNr"> 112 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 0/r32/es
-<span id="L113" class="LineNr"> 113 </span>
-<span id="L114" class="LineNr"> 114 </span>  <span class="subxComment"># adjust video mode</span>
-<span id="L115" class="LineNr"> 115 </span>  b4/copy-to-ah 0x4f/imm8  <span class="subxComment"># VBE commands</span>
-<span id="L116" class="LineNr"> 116 </span>  b0/copy-to-al 2/imm8  <span class="subxComment"># set video mode</span>
-<span id="L117" class="LineNr"> 117 </span>  bb/copy-to-bx 0x4105/imm16  <span class="subxComment"># 0x0105 | 0x4000</span>
-<span id="L118" class="LineNr"> 118 </span>                              <span class="subxComment"># 0x0105 = graphics mode 1024x768x256</span>
-<span id="L119" class="LineNr"> 119 </span>                              <span class="subxComment">#  (alternative candidate: 0x0101 for 640x480x256)</span>
-<span id="L120" class="LineNr"> 120 </span>                              <span class="subxComment"># 0x4000 bit = configure linear frame buffer in Bochs emulator; hopefully this doesn't hurt anything when running natively</span>
-<span id="L121" class="LineNr"> 121 </span>  cd/syscall 0x10/imm8/bios-video-services
-<span id="L122" class="LineNr"> 122 </span>
-<span id="L123" class="LineNr"> 123 </span>  <span class="subxComment"># load information for the (hopefully) current video mode</span>
-<span id="L124" class="LineNr"> 124 </span>  <span class="subxComment"># mostly just for the address to the linear frame buffer</span>
-<span id="L125" class="LineNr"> 125 </span>  b4/copy-to-ah 0x4f/imm8  <span class="subxComment"># VBE commands</span>
-<span id="L126" class="LineNr"> 126 </span>  b0/copy-to-al 1/imm8  <span class="subxComment"># get video mode info</span>
-<span id="L127" class="LineNr"> 127 </span>  b9/copy-to-cx 0x0105/imm16  <span class="subxComment"># mode we requested</span>
-<span id="L128" class="LineNr"> 128 </span>  bf/copy-to-di <span class="SpecialChar"><a href='boot.subx.html#L573'>Video-mode-info</a></span>/imm16
-<span id="L129" class="LineNr"> 129 </span>  cd/syscall 0x10/imm8/bios-video-services
-<span id="L130" class="LineNr"> 130 </span>
-<span id="L131" class="LineNr"> 131 </span>  <span class="subxComment">## switch to 32-bit mode</span>
-<span id="L132" class="LineNr"> 132 </span>  <span class="subxComment"># load global descriptor table</span>
-<span id="L133" class="LineNr"> 133 </span>  <span class="subxComment"># We can't refer to the label directly because SubX doesn't do the right</span>
-<span id="L134" class="LineNr"> 134 </span>  <span class="subxComment"># thing for lgdt, so rather than make errors worse in most places we instead</span>
-<span id="L135" class="LineNr"> 135 </span>  <span class="subxComment"># pin gdt_descriptor below.</span>
-<span id="L136" class="LineNr"> 136 </span>  0f 01 2/subop/lgdt 0/mod/indirect 6/rm32/use-disp16 0x7ce0/disp16/gdt_descriptor
-<span id="L137" class="LineNr"> 137 </span>  <span class="subxComment"># enable paging</span>
-<span id="L138" class="LineNr"> 138 </span>  0f 20/&lt;-cr 3/mod/direct 0/rm32/eax 0/r32/cr0
-<span id="L139" class="LineNr"> 139 </span>  66 83 1/subop/or 3/mod/direct 0/rm32/eax 1/imm8  <span class="subxComment"># eax &lt;- or 0x1</span>
-<span id="L140" class="LineNr"> 140 </span>  0f 22/-&gt;cr 3/mod/direct 0/rm32/eax 0/r32/cr0
-<span id="L141" class="LineNr"> 141 </span>  <span class="subxComment"># far jump to initialize_32bit_mode that sets cs to offset 8 in the gdt in the process</span>
-<span id="L142" class="LineNr"> 142 </span>  <span class="subxComment"># We can't refer to the label directly because SubX doesn't have syntax for</span>
-<span id="L143" class="LineNr"> 143 </span>  <span class="subxComment"># segment selectors. So we instead pin initialize_32bit_mode below.</span>
-<span id="L144" class="LineNr"> 144 </span>  ea/jump-far-absolute 0x00087d00/disp32  <span class="subxComment"># address 0x7d00 in offset 8 of the gdt</span>
+<span id="L22" class="LineNr">  22 </span><span class="subxComment"># Consult <a href="https://wiki.osdev.org/Memory_Map_(x86)">https://wiki.osdev.org/Memory_Map_(x86)</a> before modifying any of</span>
+<span id="L23" class="LineNr">  23 </span><span class="subxComment"># this. And don't forget to keep *stack-debug.subx in sync.</span>
+<span id="L24" class="LineNr">  24 </span>
+<span id="L25" class="LineNr">  25 </span>== code
+<span id="L26" class="LineNr">  26 </span>
+<span id="L27" class="LineNr">  27 </span><span class="subxComment">## 16-bit entry point: 0x7c00</span>
+<span id="L28" class="LineNr">  28 </span>
+<span id="L29" class="LineNr">  29 </span><span class="subxComment"># Upon reset, the IBM PC:</span>
+<span id="L30" class="LineNr">  30 </span><span class="subxComment">#   - loads the first sector (512 bytes)</span>
+<span id="L31" class="LineNr">  31 </span><span class="subxComment">#     from some bootable image (look for the boot-sector-marker further down this file)</span>
+<span id="L32" class="LineNr">  32 </span><span class="subxComment">#     to the address range [0x7c00, 0x7e00)</span>
+<span id="L33" class="LineNr">  33 </span><span class="subxComment">#   - starts executing code at address 0x7c00</span>
+<span id="L34" class="LineNr">  34 </span>
+<span id="L35" class="LineNr">  35 </span>  fa/disable-interrupts
+<span id="L36" class="LineNr">  36 </span>
+<span id="L37" class="LineNr">  37 </span>  <span class="subxComment"># initialize segment registers</span>
+<span id="L38" class="LineNr">  38 </span>  b8/copy-to-ax 0/imm16
+<span id="L39" class="LineNr">  39 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 3/r32/ds
+<span id="L40" class="LineNr">  40 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 0/r32/es
+<span id="L41" class="LineNr">  41 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 4/r32/fs
+<span id="L42" class="LineNr">  42 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 5/r32/gs
+<span id="L43" class="LineNr">  43 </span>
+<span id="L44" class="LineNr">  44 </span>  <span class="subxComment"># initialize stack to 0x00070000</span>
+<span id="L45" class="LineNr">  45 </span>  <span class="subxComment"># We don't read or write the stack before we get to 32-bit mode, but BIOS</span>
+<span id="L46" class="LineNr">  46 </span>  <span class="subxComment"># calls do. We need to move the stack in case BIOS initializes it to some</span>
+<span id="L47" class="LineNr">  47 </span>  <span class="subxComment"># low address that we want to write code into.</span>
+<span id="L48" class="LineNr">  48 </span>  b8/copy-to-ax 0x7000/imm16
+<span id="L49" class="LineNr">  49 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 2/r32/ss
+<span id="L50" class="LineNr">  50 </span>  bc/copy-to-esp 0/imm16
+<span id="L51" class="LineNr">  51 </span>
+<span id="L52" class="LineNr">  52 </span>  <span class="subxComment"># undo the A20 hack: <a href="https://en.wikipedia.org/wiki/A20_line">https://en.wikipedia.org/wiki/A20_line</a></span>
+<span id="L53" class="LineNr">  53 </span>  <span class="subxComment"># this is from <a href="https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S">https://github.com/mit-pdos/xv6-public/blob/master/bootasm.S</a></span>
+<span id="L54" class="LineNr">  54 </span>  {
+<span id="L55" class="LineNr">  55 </span>    e4/read-port-into-al 0x64/imm8
+<span id="L56" class="LineNr">  56 </span>    a8/test-bits-in-al 0x02/imm8  <span class="subxComment"># set zf if bit 1 (second-least significant) is not set</span>
+<span id="L57" class="LineNr">  57 </span>    75/jump-if-!zero <span class="Constant">loop</span>/disp8
+<span id="L58" class="LineNr">  58 </span>    b0/copy-to-al 0xd1/imm8
+<span id="L59" class="LineNr">  59 </span>    e6/write-al-into-port 0x64/imm8
+<span id="L60" class="LineNr">  60 </span>  }
+<span id="L61" class="LineNr">  61 </span>  {
+<span id="L62" class="LineNr">  62 </span>    e4/read-port-into-al 0x64/imm8
+<span id="L63" class="LineNr">  63 </span>    a8/test-bits-in-al 0x02/imm8  <span class="subxComment"># set zf if bit 1 (second-least significant) is not set</span>
+<span id="L64" class="LineNr">  64 </span>    75/jump-if-!zero <span class="Constant">loop</span>/disp8
+<span id="L65" class="LineNr">  65 </span>    b0/copy-to-al 0xdf/imm8
+<span id="L66" class="LineNr">  66 </span>    e6/write-al-into-port 0x64/imm8
+<span id="L67" class="LineNr">  67 </span>  }
+<span id="L68" class="LineNr">  68 </span>
+<span id="L69" class="LineNr">  69 </span>  <span class="subxComment"># load remaining sectors from first two tracks of disk into addresses [0x7e00, 0x17800)</span>
+<span id="L70" class="LineNr">  70 </span>  b4/copy-to-ah 2/imm8/read-drive
+<span id="L71" class="LineNr">  71 </span>  <span class="subxComment"># dl comes conveniently initialized at boot time with the index of the device being booted</span>
+<span id="L72" class="LineNr">  72 </span>  b5/copy-to-ch 0/imm8/cylinder
+<span id="L73" class="LineNr">  73 </span>  b6/copy-to-dh 0/imm8/head
+<span id="L74" class="LineNr">  74 </span>  b1/copy-to-cl 2/imm8/sector  <span class="subxComment"># 1-based</span>
+<span id="L75" class="LineNr">  75 </span>  b0/copy-to-al 0x7d/imm8/num-sectors  <span class="subxComment"># 2*63 - 1 = 125</span>
+<span id="L76" class="LineNr">  76 </span>  <span class="subxComment"># address to write sectors to = es:bx = 0x7e00, contiguous with boot segment</span>
+<span id="L77" class="LineNr">  77 </span>  bb/copy-to-bx 0/imm16
+<span id="L78" class="LineNr">  78 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 0/r32/es
+<span id="L79" class="LineNr">  79 </span>  bb/copy-to-bx 0x7e00/imm16
+<span id="L80" class="LineNr">  80 </span>  cd/syscall 0x13/imm8/bios-disk-services
+<span id="L81" class="LineNr">  81 </span>  0f 82/jump-if-carry <a href='boot.subx.html#L161'>disk_error</a>/disp16
+<span id="L82" class="LineNr">  82 </span>
+<span id="L83" class="LineNr">  83 </span>  <span class="subxComment"># load two more tracks of disk into addresses [0x17800, 0x27400)</span>
+<span id="L84" class="LineNr">  84 </span>  b4/copy-to-ah 2/imm8/read-drive
+<span id="L85" class="LineNr">  85 </span>  <span class="subxComment"># dl comes conveniently initialized at boot time with the index of the device being booted</span>
+<span id="L86" class="LineNr">  86 </span>  b5/copy-to-ch 0/imm8/cylinder
+<span id="L87" class="LineNr">  87 </span>  b6/copy-to-dh 2/imm8/head
+<span id="L88" class="LineNr">  88 </span>  b1/copy-to-cl 1/imm8/sector  <span class="subxComment"># 1-based</span>
+<span id="L89" class="LineNr">  89 </span>  b0/copy-to-al 0x7e/imm8/num-sectors  <span class="subxComment"># 2*63 = 126</span>
+<span id="L90" class="LineNr">  90 </span>  <span class="subxComment"># address to write sectors to = es:bx = 0x17800, contiguous with boot segment</span>
+<span id="L91" class="LineNr">  91 </span>  bb/copy-to-bx 0x1780/imm16
+<span id="L92" class="LineNr">  92 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 0/r32/es
+<span id="L93" class="LineNr">  93 </span>  bb/copy-to-bx 0/imm16
+<span id="L94" class="LineNr">  94 </span>  cd/syscall 0x13/imm8/bios-disk-services
+<span id="L95" class="LineNr">  95 </span>  0f 82/jump-if-carry <a href='boot.subx.html#L161'>disk_error</a>/disp16
+<span id="L96" class="LineNr">  96 </span>
+<span id="L97" class="LineNr">  97 </span>  <span class="subxComment"># load two more tracks of disk into addresses [0x27400, 0x37000)</span>
+<span id="L98" class="LineNr">  98 </span>  b4/copy-to-ah 2/imm8/read-drive
+<span id="L99" class="LineNr">  99 </span>  <span class="subxComment"># dl comes conveniently initialized at boot time with the index of the device being booted</span>
+<span id="L100" class="LineNr"> 100 </span>  b5/copy-to-ch 0/imm8/cylinder
+<span id="L101" class="LineNr"> 101 </span>  b6/copy-to-dh 4/imm8/head
+<span id="L102" class="LineNr"> 102 </span>  b1/copy-to-cl 1/imm8/sector  <span class="subxComment"># 1-based</span>
+<span id="L103" class="LineNr"> 103 </span>  b0/copy-to-al 0x7e/imm8/num-sectors  <span class="subxComment"># 2*63 = 126</span>
+<span id="L104" class="LineNr"> 104 </span>  <span class="subxComment"># address to write sectors to = es:bx = 0x27400, contiguous with boot segment</span>
+<span id="L105" class="LineNr"> 105 </span>  bb/copy-to-bx 0x2740/imm16
+<span id="L106" class="LineNr"> 106 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 0/r32/es
+<span id="L107" class="LineNr"> 107 </span>  bb/copy-to-bx 0/imm16
+<span id="L108" class="LineNr"> 108 </span>  cd/syscall 0x13/imm8/bios-disk-services
+<span id="L109" class="LineNr"> 109 </span>  0f 82/jump-if-carry <a href='boot.subx.html#L161'>disk_error</a>/disp16
+<span id="L110" class="LineNr"> 110 </span>
+<span id="L111" class="LineNr"> 111 </span>  <span class="subxComment"># load two more tracks of disk into addresses [0x37000, 0x46c00)</span>
+<span id="L112" class="LineNr"> 112 </span>  b4/copy-to-ah 2/imm8/read-drive
+<span id="L113" class="LineNr"> 113 </span>  <span class="subxComment"># dl comes conveniently initialized at boot time with the index of the device being booted</span>
+<span id="L114" class="LineNr"> 114 </span>  b5/copy-to-ch 0/imm8/cylinder
+<span id="L115" class="LineNr"> 115 </span>  b6/copy-to-dh 6/imm8/head
+<span id="L116" class="LineNr"> 116 </span>  b1/copy-to-cl 1/imm8/sector  <span class="subxComment"># 1-based</span>
+<span id="L117" class="LineNr"> 117 </span>  b0/copy-to-al 0x7e/imm8/num-sectors  <span class="subxComment"># 2*63 = 126</span>
+<span id="L118" class="LineNr"> 118 </span>  <span class="subxComment"># address to write sectors to = es:bx = 0x37000, contiguous with boot segment</span>
+<span id="L119" class="LineNr"> 119 </span>  bb/copy-to-bx 0x3700/imm16
+<span id="L120" class="LineNr"> 120 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 0/r32/es
+<span id="L121" class="LineNr"> 121 </span>  bb/copy-to-bx 0/imm16
+<span id="L122" class="LineNr"> 122 </span>  cd/syscall 0x13/imm8/bios-disk-services
+<span id="L123" class="LineNr"> 123 </span>  0f 82/jump-if-carry <a href='boot.subx.html#L161'>disk_error</a>/disp16
+<span id="L124" class="LineNr"> 124 </span>
+<span id="L125" class="LineNr"> 125 </span>  <span class="subxComment"># reset es</span>
+<span id="L126" class="LineNr"> 126 </span>  bb/copy-to-bx 0/imm16
+<span id="L127" class="LineNr"> 127 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 0/r32/es
+<span id="L128" class="LineNr"> 128 </span>
+<span id="L129" class="LineNr"> 129 </span>  <span class="subxComment"># adjust video mode</span>
+<span id="L130" class="LineNr"> 130 </span>  b4/copy-to-ah 0x4f/imm8  <span class="subxComment"># VBE commands</span>
+<span id="L131" class="LineNr"> 131 </span>  b0/copy-to-al 2/imm8  <span class="subxComment"># set video mode</span>
+<span id="L132" class="LineNr"> 132 </span>  bb/copy-to-bx 0x4105/imm16  <span class="subxComment"># 0x0105 | 0x4000</span>
+<span id="L133" class="LineNr"> 133 </span>                              <span class="subxComment"># 0x0105 = graphics mode 1024x768x256</span>
+<span id="L134" class="LineNr"> 134 </span>                              <span class="subxComment">#  (alternative candidate: 0x0101 for 640x480x256)</span>
+<span id="L135" class="LineNr"> 135 </span>                              <span class="subxComment"># 0x4000 bit = configure linear frame buffer in Bochs emulator; hopefully this doesn't hurt anything when running natively</span>
+<span id="L136" class="LineNr"> 136 </span>  cd/syscall 0x10/imm8/bios-video-services
+<span id="L137" class="LineNr"> 137 </span>
+<span id="L138" class="LineNr"> 138 </span>  <span class="subxComment"># load information for the (hopefully) current video mode</span>
+<span id="L139" class="LineNr"> 139 </span>  <span class="subxComment"># mostly just for the address to the linear frame buffer</span>
+<span id="L140" class="LineNr"> 140 </span>  b4/copy-to-ah 0x4f/imm8  <span class="subxComment"># VBE commands</span>
+<span id="L141" class="LineNr"> 141 </span>  b0/copy-to-al 1/imm8  <span class="subxComment"># get video mode info</span>
+<span id="L142" class="LineNr"> 142 </span>  b9/copy-to-cx 0x0105/imm16  <span class="subxComment"># mode we requested</span>
+<span id="L143" class="LineNr"> 143 </span>  bf/copy-to-di <span class="SpecialChar"><a href='boot.subx.html#L588'>Video-mode-info</a></span>/imm16
+<span id="L144" class="LineNr"> 144 </span>  cd/syscall 0x10/imm8/bios-video-services
 <span id="L145" class="LineNr"> 145 </span>
-<span id="L146" class="LineNr"> 146 </span><span class="subxFunction">disk_error</span>:
-<span id="L147" class="LineNr"> 147 </span>  <span class="subxComment"># print 'D' to top-left of screen to indicate disk error</span>
-<span id="L148" class="LineNr"> 148 </span>  <span class="subxComment"># *0xb8000 &lt;- 0x0f44</span>
-<span id="L149" class="LineNr"> 149 </span>  bb/copy-to-bx 0xb800/imm16
-<span id="L150" class="LineNr"> 150 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 3/r32/ds
-<span id="L151" class="LineNr"> 151 </span>  b0/copy-to-al 0x44/imm8/D
-<span id="L152" class="LineNr"> 152 </span>  b4/copy-to-ah 0x0f/imm8/white-on-black
-<span id="L153" class="LineNr"> 153 </span>  bb/copy-to-bx 0/imm16
-<span id="L154" class="LineNr"> 154 </span>  89/&lt;- 0/mod/indirect 7/rm32/bx 0/r32/ax  <span class="subxComment"># *ds:bx &lt;- ax</span>
-<span id="L155" class="LineNr"> 155 </span>  <span class="subxComment"># loop forever</span>
-<span id="L156" class="LineNr"> 156 </span>  {
-<span id="L157" class="LineNr"> 157 </span>    eb/jump <span class="Constant">loop</span>/disp8
-<span id="L158" class="LineNr"> 158 </span>  }
-<span id="L159" class="LineNr"> 159 </span>
-<span id="L160" class="LineNr"> 160 </span><span class="subxComment">## GDT: 3 records of 8 bytes each</span>
-<span id="L161" class="LineNr"> 161 </span>== data 0x7ce0
-<span id="L162" class="LineNr"> 162 </span><span class="subxFunction">gdt_descriptor</span>:
-<span id="L163" class="LineNr"> 163 </span>  0x17/imm16  <span class="subxComment"># final index of gdt = size of gdt - 1</span>
-<span id="L164" class="LineNr"> 164 </span>  <a href='boot.subx.html#L166'>gdt_start</a>/imm32/start
-<span id="L165" class="LineNr"> 165 </span>
-<span id="L166" class="LineNr"> 166 </span><span class="subxFunction">gdt_start</span>:
-<span id="L167" class="LineNr"> 167 </span><span class="subxComment"># offset 0: gdt_null:  mandatory null descriptor</span>
-<span id="L168" class="LineNr"> 168 </span>  00 00 00 00 00 00 00 00
-<span id="L169" class="LineNr"> 169 </span><span class="subxComment"># offset 8: gdt_code</span>
-<span id="L170" class="LineNr"> 170 </span>  ff ff  <span class="subxComment"># limit[0:16]</span>
-<span id="L171" class="LineNr"> 171 </span>  00 00 00  <span class="subxComment"># base[0:24]</span>
-<span id="L172" class="LineNr"> 172 </span>  9a  <span class="subxComment"># 1/present 00/privilege 1/descriptor type = 1001b</span>
-<span id="L173" class="LineNr"> 173 </span>      <span class="subxComment"># 1/code 0/conforming 1/readable 0/accessed = 1010b</span>
-<span id="L174" class="LineNr"> 174 </span>  cf  <span class="subxComment"># 1/granularity 1/32-bit 0/64-bit-segment 0/AVL = 1100b</span>
-<span id="L175" class="LineNr"> 175 </span>      <span class="subxComment"># limit[16:20] = 1111b</span>
-<span id="L176" class="LineNr"> 176 </span>  00  <span class="subxComment"># base[24:32]</span>
-<span id="L177" class="LineNr"> 177 </span><span class="subxComment"># offset 16: gdt_data</span>
-<span id="L178" class="LineNr"> 178 </span>  ff ff  <span class="subxComment"># limit[0:16]</span>
-<span id="L179" class="LineNr"> 179 </span>  00 00 00  <span class="subxComment"># base[0:24]</span>
-<span id="L180" class="LineNr"> 180 </span>  92  <span class="subxComment"># 1/present 00/privilege 1/descriptor type = 1001b</span>
-<span id="L181" class="LineNr"> 181 </span>      <span class="subxComment"># 0/data 0/conforming 1/readable 0/accessed = 0010b</span>
-<span id="L182" class="LineNr"> 182 </span>  cf  <span class="subxComment"># same as gdt_code</span>
-<span id="L183" class="LineNr"> 183 </span>  00  <span class="subxComment"># base[24:32]</span>
-<span id="L184" class="LineNr"> 184 </span><span class="subxComment"># gdt_end:</span>
-<span id="L185" class="LineNr"> 185 </span>
-<span id="L186" class="LineNr"> 186 </span><span class="subxComment">## 32-bit code from this point</span>
-<span id="L187" class="LineNr"> 187 </span>
-<span id="L188" class="LineNr"> 188 </span>== code 0x7d00
-<span id="L189" class="LineNr"> 189 </span><span class="subxFunction">initialize_32bit_mode</span>:
-<span id="L190" class="LineNr"> 190 </span>  66 b8/copy-to-ax 0x10/imm16  <span class="subxComment"># offset 16 from gdt_start</span>
-<span id="L191" class="LineNr"> 191 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 3/r32/ds
-<span id="L192" class="LineNr"> 192 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 2/r32/ss
-<span id="L193" class="LineNr"> 193 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 0/r32/es
-<span id="L194" class="LineNr"> 194 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 4/r32/fs
-<span id="L195" class="LineNr"> 195 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 5/r32/gs
-<span id="L196" class="LineNr"> 196 </span>
-<span id="L197" class="LineNr"> 197 </span>  bc/copy-to-esp 0x00070000/imm32
-<span id="L198" class="LineNr"> 198 </span>
-<span id="L199" class="LineNr"> 199 </span>  <span class="subxComment">## load interrupt handlers</span>
-<span id="L200" class="LineNr"> 200 </span>  <span class="subxComment"># We can't refer to the label directly because SubX doesn't do the right</span>
-<span id="L201" class="LineNr"> 201 </span>  <span class="subxComment"># thing for lidt, so rather than make errors worse in most places we instead</span>
-<span id="L202" class="LineNr"> 202 </span>  <span class="subxComment"># pin idt_descriptor below.</span>
-<span id="L203" class="LineNr"> 203 </span>  0f 01 3/subop/lidt 0/mod/indirect 5/rm32/use-disp32 0x7e00/disp32/idt_descriptor
-<span id="L204" class="LineNr"> 204 </span>
-<span id="L205" class="LineNr"> 205 </span>  <span class="subxComment"># For now, not bothering reprogramming the IRQ to not conflict with software</span>
-<span id="L206" class="LineNr"> 206 </span>  <span class="subxComment"># exceptions.</span>
-<span id="L207" class="LineNr"> 207 </span>  <span class="subxComment">#   <a href="https://wiki.osdev.org/index.php?title=8259_PIC&amp;oldid=24650#Protected_Mode">https://wiki.osdev.org/index.php?title=8259_PIC&amp;oldid=24650#Protected_Mode</a></span>
-<span id="L208" class="LineNr"> 208 </span>  <span class="subxComment">#</span>
-<span id="L209" class="LineNr"> 209 </span>  <span class="subxComment"># Interrupt 1 (keyboard) conflicts with debugger faults. We don't use a</span>
-<span id="L210" class="LineNr"> 210 </span>  <span class="subxComment"># debugger.</span>
-<span id="L211" class="LineNr"> 211 </span>  <span class="subxComment"># Reference:</span>
-<span id="L212" class="LineNr"> 212 </span>  <span class="subxComment">#   <a href="https://wiki.osdev.org/Exceptions">https://wiki.osdev.org/Exceptions</a></span>
+<span id="L146" class="LineNr"> 146 </span>  <span class="subxComment">## switch to 32-bit mode</span>
+<span id="L147" class="LineNr"> 147 </span>  <span class="subxComment"># load global descriptor table</span>
+<span id="L148" class="LineNr"> 148 </span>  <span class="subxComment"># We can't refer to the label directly because SubX doesn't do the right</span>
+<span id="L149" class="LineNr"> 149 </span>  <span class="subxComment"># thing for lgdt, so rather than make errors worse in most places we instead</span>
+<span id="L150" class="LineNr"> 150 </span>  <span class="subxComment"># pin gdt_descriptor below.</span>
+<span id="L151" class="LineNr"> 151 </span>  0f 01 2/subop/lgdt 0/mod/indirect 6/rm32/use-disp16 0x7ce0/disp16/gdt_descriptor
+<span id="L152" class="LineNr"> 152 </span>  <span class="subxComment"># enable paging</span>
+<span id="L153" class="LineNr"> 153 </span>  0f 20/&lt;-cr 3/mod/direct 0/rm32/eax 0/r32/cr0
+<span id="L154" class="LineNr"> 154 </span>  66 83 1/subop/or 3/mod/direct 0/rm32/eax 1/imm8  <span class="subxComment"># eax &lt;- or 0x1</span>
+<span id="L155" class="LineNr"> 155 </span>  0f 22/-&gt;cr 3/mod/direct 0/rm32/eax 0/r32/cr0
+<span id="L156" class="LineNr"> 156 </span>  <span class="subxComment"># far jump to initialize_32bit_mode that sets cs to offset 8 in the gdt in the process</span>
+<span id="L157" class="LineNr"> 157 </span>  <span class="subxComment"># We can't refer to the label directly because SubX doesn't have syntax for</span>
+<span id="L158" class="LineNr"> 158 </span>  <span class="subxComment"># segment selectors. So we instead pin initialize_32bit_mode below.</span>
+<span id="L159" class="LineNr"> 159 </span>  ea/jump-far-absolute 0x00087d00/disp32  <span class="subxComment"># address 0x7d00 in offset 8 of the gdt</span>
+<span id="L160" class="LineNr"> 160 </span>
+<span id="L161" class="LineNr"> 161 </span><span class="subxFunction">disk_error</span>:
+<span id="L162" class="LineNr"> 162 </span>  <span class="subxComment"># print 'D' to top-left of screen to indicate disk error</span>
+<span id="L163" class="LineNr"> 163 </span>  <span class="subxComment"># *0xb8000 &lt;- 0x0f44</span>
+<span id="L164" class="LineNr"> 164 </span>  bb/copy-to-bx 0xb800/imm16
+<span id="L165" class="LineNr"> 165 </span>  8e/-&gt;seg 3/mod/direct 3/rm32/bx 3/r32/ds
+<span id="L166" class="LineNr"> 166 </span>  b0/copy-to-al 0x44/imm8/D
+<span id="L167" class="LineNr"> 167 </span>  b4/copy-to-ah 0x0f/imm8/white-on-black
+<span id="L168" class="LineNr"> 168 </span>  bb/copy-to-bx 0/imm16
+<span id="L169" class="LineNr"> 169 </span>  89/&lt;- 0/mod/indirect 7/rm32/bx 0/r32/ax  <span class="subxComment"># *ds:bx &lt;- ax</span>
+<span id="L170" class="LineNr"> 170 </span>  <span class="subxComment"># loop forever</span>
+<span id="L171" class="LineNr"> 171 </span>  {
+<span id="L172" class="LineNr"> 172 </span>    eb/jump <span class="Constant">loop</span>/disp8
+<span id="L173" class="LineNr"> 173 </span>  }
+<span id="L174" class="LineNr"> 174 </span>
+<span id="L175" class="LineNr"> 175 </span><span class="subxComment">## GDT: 3 records of 8 bytes each</span>
+<span id="L176" class="LineNr"> 176 </span>== data 0x7ce0
+<span id="L177" class="LineNr"> 177 </span><span class="subxFunction">gdt_descriptor</span>:
+<span id="L178" class="LineNr"> 178 </span>  0x17/imm16  <span class="subxComment"># final index of gdt = size of gdt - 1</span>
+<span id="L179" class="LineNr"> 179 </span>  <a href='boot.subx.html#L181'>gdt_start</a>/imm32/start
+<span id="L180" class="LineNr"> 180 </span>
+<span id="L181" class="LineNr"> 181 </span><span class="subxFunction">gdt_start</span>:
+<span id="L182" class="LineNr"> 182 </span><span class="subxComment"># offset 0: gdt_null:  mandatory null descriptor</span>
+<span id="L183" class="LineNr"> 183 </span>  00 00 00 00 00 00 00 00
+<span id="L184" class="LineNr"> 184 </span><span class="subxComment"># offset 8: gdt_code</span>
+<span id="L185" class="LineNr"> 185 </span>  ff ff  <span class="subxComment"># limit[0:16]</span>
+<span id="L186" class="LineNr"> 186 </span>  00 00 00  <span class="subxComment"># base[0:24]</span>
+<span id="L187" class="LineNr"> 187 </span>  9a  <span class="subxComment"># 1/present 00/privilege 1/descriptor type = 1001b</span>
+<span id="L188" class="LineNr"> 188 </span>      <span class="subxComment"># 1/code 0/conforming 1/readable 0/accessed = 1010b</span>
+<span id="L189" class="LineNr"> 189 </span>  cf  <span class="subxComment"># 1/granularity 1/32-bit 0/64-bit-segment 0/AVL = 1100b</span>
+<span id="L190" class="LineNr"> 190 </span>      <span class="subxComment"># limit[16:20] = 1111b</span>
+<span id="L191" class="LineNr"> 191 </span>  00  <span class="subxComment"># base[24:32]</span>
+<span id="L192" class="LineNr"> 192 </span><span class="subxComment"># offset 16: gdt_data</span>
+<span id="L193" class="LineNr"> 193 </span>  ff ff  <span class="subxComment"># limit[0:16]</span>
+<span id="L194" class="LineNr"> 194 </span>  00 00 00  <span class="subxComment"># base[0:24]</span>
+<span id="L195" class="LineNr"> 195 </span>  92  <span class="subxComment"># 1/present 00/privilege 1/descriptor type = 1001b</span>
+<span id="L196" class="LineNr"> 196 </span>      <span class="subxComment"># 0/data 0/conforming 1/readable 0/accessed = 0010b</span>
+<span id="L197" class="LineNr"> 197 </span>  cf  <span class="subxComment"># same as gdt_code</span>
+<span id="L198" class="LineNr"> 198 </span>  00  <span class="subxComment"># base[24:32]</span>
+<span id="L199" class="LineNr"> 199 </span><span class="subxComment"># gdt_end:</span>
+<span id="L200" class="LineNr"> 200 </span>
+<span id="L201" class="LineNr"> 201 </span><span class="subxComment">## 32-bit code from this point</span>
+<span id="L202" class="LineNr"> 202 </span>
+<span id="L203" class="LineNr"> 203 </span>== code 0x7d00
+<span id="L204" class="LineNr"> 204 </span><span class="subxFunction">initialize_32bit_mode</span>:
+<span id="L205" class="LineNr"> 205 </span>  66 b8/copy-to-ax 0x10/imm16  <span class="subxComment"># offset 16 from gdt_start</span>
+<span id="L206" class="LineNr"> 206 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 3/r32/ds
+<span id="L207" class="LineNr"> 207 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 2/r32/ss
+<span id="L208" class="LineNr"> 208 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 0/r32/es
+<span id="L209" class="LineNr"> 209 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 4/r32/fs
+<span id="L210" class="LineNr"> 210 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 5/r32/gs
+<span id="L211" class="LineNr"> 211 </span>
+<span id="L212" class="LineNr"> 212 </span>  bc/copy-to-esp 0x00070000/imm32
 <span id="L213" class="LineNr"> 213 </span>
-<span id="L214" class="LineNr"> 214 </span>  <span class="subxComment"># enable timer IRQ0 and keyboard IRQ1</span>
-<span id="L215" class="LineNr"> 215 </span>  b0/copy-to-al 0xfc/imm8  <span class="subxComment"># disable mask for IRQ0 and IRQ1</span>
-<span id="L216" class="LineNr"> 216 </span>  e6/write-al-into-port 0x21/imm8
-<span id="L217" class="LineNr"> 217 </span>
-<span id="L218" class="LineNr"> 218 </span>  fb/enable-interrupts
+<span id="L214" class="LineNr"> 214 </span>  <span class="subxComment">## load interrupt handlers</span>
+<span id="L215" class="LineNr"> 215 </span>  <span class="subxComment"># We can't refer to the label directly because SubX doesn't do the right</span>
+<span id="L216" class="LineNr"> 216 </span>  <span class="subxComment"># thing for lidt, so rather than make errors worse in most places we instead</span>
+<span id="L217" class="LineNr"> 217 </span>  <span class="subxComment"># pin idt_descriptor below.</span>
+<span id="L218" class="LineNr"> 218 </span>  0f 01 3/subop/lidt 0/mod/indirect 5/rm32/use-disp32 0x7e00/disp32/idt_descriptor
 <span id="L219" class="LineNr"> 219 </span>
-<span id="L220" class="LineNr"> 220 </span>  (<a href='boot.subx.html#L1368'>initialize-mouse</a>)
-<span id="L221" class="LineNr"> 221 </span>
-<span id="L222" class="LineNr"> 222 </span>  <span class="subxComment">## enable floating point</span>
-<span id="L223" class="LineNr"> 223 </span>  db/floating-point-coprocessor e3/initialize
-<span id="L224" class="LineNr"> 224 </span>  <span class="subxComment"># eax &lt;- cr4</span>
-<span id="L225" class="LineNr"> 225 </span>  0f 20/&lt;-cr 3/mod/direct 0/rm32/eax 4/r32/cr4
-<span id="L226" class="LineNr"> 226 </span>  <span class="subxComment"># eax &lt;- or bit 9</span>
-<span id="L227" class="LineNr"> 227 </span>  0f ba/bit-test 5/subop/bit-test-and-set 3/mod/direct 0/rm32/eax 9/imm8
-<span id="L228" class="LineNr"> 228 </span>  <span class="subxComment"># cr4 &lt;- eax</span>
-<span id="L229" class="LineNr"> 229 </span>  0f 22/-&gt;cr 3/mod/direct 0/rm32/eax 4/r32/cr4
-<span id="L230" class="LineNr"> 230 </span>
-<span id="L231" class="LineNr"> 231 </span>  e9/jump <span class="SpecialChar">Entry</span>/disp32
+<span id="L220" class="LineNr"> 220 </span>  <span class="subxComment"># For now, not bothering reprogramming the IRQ to not conflict with software</span>
+<span id="L221" class="LineNr"> 221 </span>  <span class="subxComment"># exceptions.</span>
+<span id="L222" class="LineNr"> 222 </span>  <span class="subxComment">#   <a href="https://wiki.osdev.org/index.php?title=8259_PIC&amp;oldid=24650#Protected_Mode">https://wiki.osdev.org/index.php?title=8259_PIC&amp;oldid=24650#Protected_Mode</a></span>
+<span id="L223" class="LineNr"> 223 </span>  <span class="subxComment">#</span>
+<span id="L224" class="LineNr"> 224 </span>  <span class="subxComment"># Interrupt 1 (keyboard) conflicts with debugger faults. We don't use a</span>
+<span id="L225" class="LineNr"> 225 </span>  <span class="subxComment"># debugger.</span>
+<span id="L226" class="LineNr"> 226 </span>  <span class="subxComment"># Reference:</span>
+<span id="L227" class="LineNr"> 227 </span>  <span class="subxComment">#   <a href="https://wiki.osdev.org/Exceptions">https://wiki.osdev.org/Exceptions</a></span>
+<span id="L228" class="LineNr"> 228 </span>
+<span id="L229" class="LineNr"> 229 </span>  <span class="subxComment"># enable timer IRQ0 and keyboard IRQ1</span>
+<span id="L230" class="LineNr"> 230 </span>  b0/copy-to-al 0xfc/imm8  <span class="subxComment"># disable mask for IRQ0 and IRQ1</span>
+<span id="L231" class="LineNr"> 231 </span>  e6/write-al-into-port 0x21/imm8
 <span id="L232" class="LineNr"> 232 </span>
-<span id="L233" class="LineNr"> 233 </span>== boot-sector-marker 0x7dfe
-<span id="L234" class="LineNr"> 234 </span><span class="subxComment"># final 2 bytes of boot sector</span>
-<span id="L235" class="LineNr"> 235 </span>55 aa
+<span id="L233" class="LineNr"> 233 </span>  fb/enable-interrupts
+<span id="L234" class="LineNr"> 234 </span>
+<span id="L235" class="LineNr"> 235 </span>  (<a href='boot.subx.html#L1470'>initialize-mouse</a>)
 <span id="L236" class="LineNr"> 236 </span>
-<span id="L237" class="LineNr"> 237 </span><span class="subxComment">## sector 2 onwards loaded by load_disk, not automatically on boot</span>
-<span id="L238" class="LineNr"> 238 </span>
-<span id="L239" class="LineNr"> 239 </span>== data 0x7e00
-<span id="L240" class="LineNr"> 240 </span><span class="subxFunction">idt_descriptor</span>:
-<span id="L241" class="LineNr"> 241 </span>  ff 03  <span class="subxComment"># final index of idt = size of idt - 1</span>
-<span id="L242" class="LineNr"> 242 </span>  <a href='boot.subx.html#L246'>idt_start</a>/imm32/start
-<span id="L243" class="LineNr"> 243 </span>
-<span id="L244" class="Folded"> 244 </span><span class="Folded">+-- 55 lines: # interrupt descriptor table ----------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L299" class="LineNr"> 299 </span>
-<span id="L300" class="LineNr"> 300 </span>== code
-<span id="L301" class="LineNr"> 301 </span>
-<span id="L302" class="LineNr"> 302 </span><span class="subxFunction">null-interrupt-handler</span>:
-<span id="L303" class="LineNr"> 303 </span>  <span class="subxComment"># prologue</span>
-<span id="L304" class="LineNr"> 304 </span>  <span class="subxComment"># Don't disable interrupts; the timer has the highest priority anyway,</span>
-<span id="L305" class="LineNr"> 305 </span>  <span class="subxComment"># and this interrupt triggers extremely frequently.</span>
-<span id="L306" class="LineNr"> 306 </span>  fa/disable-interrupts
-<span id="L307" class="LineNr"> 307 </span>  60/push-all-registers
-<span id="L308" class="LineNr"> 308 </span>  9c/push-flags
-<span id="L309" class="LineNr"> 309 </span>  <span class="subxComment"># acknowledge interrupt</span>
-<span id="L310" class="LineNr"> 310 </span>  b0/copy-to-al 0x20/imm8
-<span id="L311" class="LineNr"> 311 </span>  e6/write-al-into-port 0x20/imm8
-<span id="L312" class="LineNr"> 312 </span>  31/xor %eax 0/r32/eax
-<span id="L313" class="LineNr"> 313 </span><span class="Constant">$null-interrupt-handler:epilogue</span>:
-<span id="L314" class="LineNr"> 314 </span>  <span class="subxComment"># epilogue</span>
-<span id="L315" class="LineNr"> 315 </span>  9d/pop-flags
-<span id="L316" class="LineNr"> 316 </span>  61/pop-all-registers
-<span id="L317" class="LineNr"> 317 </span>  fb/enable-interrupts
-<span id="L318" class="LineNr"> 318 </span>  cf/return-from-interrupt
-<span id="L319" class="LineNr"> 319 </span>
-<span id="L320" class="LineNr"> 320 </span><span class="subxFunction">timer-interrupt-handler</span>:
-<span id="L321" class="LineNr"> 321 </span>  <span class="subxComment"># prologue</span>
-<span id="L322" class="LineNr"> 322 </span>  <span class="subxComment"># Don't disable interrupts; the timer has the highest priority anyway,</span>
-<span id="L323" class="LineNr"> 323 </span>  <span class="subxComment"># and this interrupt triggers extremely frequently.</span>
-<span id="L324" class="LineNr"> 324 </span>  fa/disable-interrupts
-<span id="L325" class="LineNr"> 325 </span>  60/push-all-registers
-<span id="L326" class="LineNr"> 326 </span>  9c/push-flags
-<span id="L327" class="LineNr"> 327 </span>  <span class="subxComment"># acknowledge interrupt</span>
-<span id="L328" class="LineNr"> 328 </span>  b0/copy-to-al 0x20/imm8
-<span id="L329" class="LineNr"> 329 </span>  e6/write-al-into-port 0x20/imm8
-<span id="L330" class="LineNr"> 330 </span>  31/xor %eax 0/r32/eax
-<span id="L331" class="LineNr"> 331 </span><span class="Constant">$timer-interrupt-handler:epilogue</span>:
-<span id="L332" class="LineNr"> 332 </span>  <span class="subxComment"># epilogue</span>
-<span id="L333" class="LineNr"> 333 </span>  9d/pop-flags
-<span id="L334" class="LineNr"> 334 </span>  61/pop-all-registers
-<span id="L335" class="LineNr"> 335 </span>  fb/enable-interrupts
-<span id="L336" class="LineNr"> 336 </span>  cf/return-from-interrupt
-<span id="L337" class="LineNr"> 337 </span>
-<span id="L338" class="LineNr"> 338 </span><span class="subxFunction">keyboard-interrupt-handler</span>:
-<span id="L339" class="LineNr"> 339 </span>  <span class="subxComment"># prologue</span>
-<span id="L340" class="LineNr"> 340 </span>  fa/disable-interrupts
-<span id="L341" class="LineNr"> 341 </span>  60/push-all-registers
-<span id="L342" class="LineNr"> 342 </span>  9c/push-flags
-<span id="L343" class="LineNr"> 343 </span>  <span class="subxComment"># acknowledge interrupt</span>
-<span id="L344" class="LineNr"> 344 </span>  b0/copy-to-al 0x20/imm8
-<span id="L345" class="LineNr"> 345 </span>  e6/write-al-into-port 0x20/imm8
-<span id="L346" class="LineNr"> 346 </span>  31/xor %eax 0/r32/eax
-<span id="L347" class="LineNr"> 347 </span>  <span class="subxComment"># check output buffer of 8042 keyboard controller (<a href="https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)">https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)</a></span>
-<span id="L348" class="LineNr"> 348 </span>  e4/read-port-into-al 0x64/imm8
-<span id="L349" class="LineNr"> 349 </span>  a8/test-bits-in-al 0x01/imm8  <span class="subxComment"># set zf if bit 0 (least significant) is not set</span>
-<span id="L350" class="LineNr"> 350 </span>  74/jump-if-not-set $keyboard-interrupt-handler:epilogue/disp8
-<span id="L351" class="LineNr"> 351 </span>  <span class="subxH1Comment"># - if keyboard buffer is full, return</span>
-<span id="L352" class="LineNr"> 352 </span>  <span class="subxComment"># var dest-addr/ecx: (addr byte) = (keyboard-buffer + *keyboard-buffer:write)</span>
-<span id="L353" class="LineNr"> 353 </span>  31/xor %ecx 1/r32/ecx
-<span id="L354" class="LineNr"> 354 </span>  8a/byte-&gt; *<span class="SpecialChar">Keyboard-buffer</span>:<a href='108write.subx.html#L11'>write</a> 1/r32/cl
-<span id="L355" class="LineNr"> 355 </span>  81 0/subop/add %ecx <span class="SpecialChar">Keyboard-buffer</span>:data/imm32
-<span id="L356" class="LineNr"> 356 </span>  <span class="subxComment"># al = *dest-addr</span>
-<span id="L357" class="LineNr"> 357 </span>  8a/byte-&gt; *ecx 0/r32/al
-<span id="L358" class="LineNr"> 358 </span>  <span class="subxComment"># if (al != 0) return</span>
-<span id="L359" class="LineNr"> 359 </span>  3c/compare-al-and 0/imm8
-<span id="L360" class="LineNr"> 360 </span>  75/jump-if-!= $keyboard-interrupt-handler:epilogue/disp8
-<span id="L361" class="LineNr"> 361 </span>  <span class="subxH1Comment"># - read keycode</span>
-<span id="L362" class="LineNr"> 362 </span>  e4/read-port-into-al 0x60/imm8
-<span id="L363" class="LineNr"> 363 </span>  <span class="subxH1Comment"># - key released</span>
-<span id="L364" class="LineNr"> 364 </span>  <span class="subxComment"># if (al == 0xaa) shift = false  # left shift is being lifted</span>
-<span id="L365" class="LineNr"> 365 </span>  {
-<span id="L366" class="LineNr"> 366 </span>    3c/compare-al-and 0xaa/imm8
-<span id="L367" class="LineNr"> 367 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
-<span id="L368" class="LineNr"> 368 </span>    <span class="subxComment"># *shift = 0</span>
-<span id="L369" class="LineNr"> 369 </span>    c7 0/subop/copy *Keyboard-shift-pressed? 0/imm32
-<span id="L370" class="LineNr"> 370 </span>  }
-<span id="L371" class="LineNr"> 371 </span>  <span class="subxComment"># if (al == 0xb6) shift = false  # right shift is being lifted</span>
-<span id="L372" class="LineNr"> 372 </span>  {
-<span id="L373" class="LineNr"> 373 </span>    3c/compare-al-and 0xb6/imm8
-<span id="L374" class="LineNr"> 374 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
-<span id="L375" class="LineNr"> 375 </span>    <span class="subxComment"># *shift = 0</span>
-<span id="L376" class="LineNr"> 376 </span>    c7 0/subop/copy *Keyboard-shift-pressed? 0/imm32
-<span id="L377" class="LineNr"> 377 </span>  }
-<span id="L378" class="LineNr"> 378 </span>  <span class="subxComment"># if (al == 0x9d) ctrl = false  # ctrl is being lifted</span>
-<span id="L379" class="LineNr"> 379 </span>  {
-<span id="L380" class="LineNr"> 380 </span>    3c/compare-al-and 0x9d/imm8
-<span id="L381" class="LineNr"> 381 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
-<span id="L382" class="LineNr"> 382 </span>    <span class="subxComment"># *ctrl = 0</span>
-<span id="L383" class="LineNr"> 383 </span>    c7 0/subop/copy *Keyboard-ctrl-pressed? 0/imm32
-<span id="L384" class="LineNr"> 384 </span>  }
-<span id="L385" class="LineNr"> 385 </span>  <span class="subxComment"># if (al &amp; 0x80) a key is being lifted; return</span>
-<span id="L386" class="LineNr"> 386 </span>  50/push-eax
-<span id="L387" class="LineNr"> 387 </span>  24/and-al-with 0x80/imm8
-<span id="L388" class="LineNr"> 388 </span>  3c/compare-al-and 0/imm8
-<span id="L389" class="LineNr"> 389 </span>  58/pop-to-eax
-<span id="L390" class="LineNr"> 390 </span>  75/jump-if-!= $keyboard-interrupt-handler:epilogue/disp8
-<span id="L391" class="LineNr"> 391 </span>  <span class="subxH1Comment"># - key pressed</span>
-<span id="L392" class="LineNr"> 392 </span>  <span class="subxComment"># if (al == 0x2a) shift = true, return  # left shift pressed</span>
-<span id="L393" class="LineNr"> 393 </span>  {
-<span id="L394" class="LineNr"> 394 </span>    3c/compare-al-and 0x2a/imm8
-<span id="L395" class="LineNr"> 395 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
-<span id="L396" class="LineNr"> 396 </span>    <span class="subxComment"># *shift = 1</span>
-<span id="L397" class="LineNr"> 397 </span>    c7 0/subop/copy *Keyboard-shift-pressed? 1/imm32
-<span id="L398" class="LineNr"> 398 </span>    <span class="subxComment"># return</span>
-<span id="L399" class="LineNr"> 399 </span>    eb/jump $keyboard-interrupt-handler:epilogue/disp8
-<span id="L400" class="LineNr"> 400 </span>  }
-<span id="L401" class="LineNr"> 401 </span>  <span class="subxComment"># if (al == 0x36) shift = true, return  # right shift pressed</span>
-<span id="L402" class="LineNr"> 402 </span>  {
-<span id="L403" class="LineNr"> 403 </span>    3c/compare-al-and 0x36/imm8
-<span id="L404" class="LineNr"> 404 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
-<span id="L405" class="LineNr"> 405 </span>    <span class="subxComment"># *shift = 1</span>
-<span id="L406" class="LineNr"> 406 </span>    c7 0/subop/copy *Keyboard-shift-pressed? 1/imm32
-<span id="L407" class="LineNr"> 407 </span>    <span class="subxComment"># return</span>
-<span id="L408" class="LineNr"> 408 </span>    eb/jump $keyboard-interrupt-handler:epilogue/disp8
-<span id="L409" class="LineNr"> 409 </span>  }
-<span id="L410" class="LineNr"> 410 </span>  <span class="subxComment"># if (al == 0x1d) ctrl = true, return</span>
-<span id="L411" class="LineNr"> 411 </span>  {
-<span id="L412" class="LineNr"> 412 </span>    3c/compare-al-and 0x1d/imm8
-<span id="L413" class="LineNr"> 413 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
-<span id="L414" class="LineNr"> 414 </span>    <span class="subxComment"># *ctrl = 1</span>
-<span id="L415" class="LineNr"> 415 </span>    c7 0/subop/copy *Keyboard-ctrl-pressed? 1/imm32
-<span id="L416" class="LineNr"> 416 </span>    <span class="subxComment"># return</span>
-<span id="L417" class="LineNr"> 417 </span>    eb/jump $keyboard-interrupt-handler:epilogue/disp8
-<span id="L418" class="LineNr"> 418 </span>  }
-<span id="L419" class="LineNr"> 419 </span>  <span class="subxH1Comment"># - convert key to character</span>
-<span id="L420" class="LineNr"> 420 </span>  <span class="subxComment"># if (shift) use keyboard shift map</span>
-<span id="L421" class="LineNr"> 421 </span>  {
-<span id="L422" class="LineNr"> 422 </span>    81 7/subop/compare *Keyboard-shift-pressed? 0/imm32
-<span id="L423" class="LineNr"> 423 </span>    74/jump-if-= <span class="Constant">break</span>/disp8
-<span id="L424" class="LineNr"> 424 </span>    <span class="subxComment"># sigils don't currently support labels inside *(eax+label)</span>
-<span id="L425" class="LineNr"> 425 </span>    05/add-to-eax <span class="SpecialChar"><a href='boot.subx.html#L512'>Keyboard-shift-map</a></span>/imm32
-<span id="L426" class="LineNr"> 426 </span>    8a/byte-&gt; *eax 0/r32/al
-<span id="L427" class="LineNr"> 427 </span>    eb/jump $keyboard-interrupt-handler:select-map-done/disp8
-<span id="L428" class="LineNr"> 428 </span>  }
-<span id="L429" class="LineNr"> 429 </span>  <span class="subxComment"># if (ctrl) al = *(ctrl map + al)</span>
-<span id="L430" class="LineNr"> 430 </span>  {
-<span id="L431" class="LineNr"> 431 </span>    81 7/subop/compare *Keyboard-ctrl-pressed? 0/imm32
-<span id="L432" class="LineNr"> 432 </span>    74/jump-if-= <span class="Constant">break</span>/disp8
-<span id="L433" class="LineNr"> 433 </span>    05/add-to-eax <span class="SpecialChar"><a href='boot.subx.html#L544'>Keyboard-ctrl-map</a></span>/imm32
-<span id="L434" class="LineNr"> 434 </span>    8a/byte-&gt; *eax 0/r32/al
-<span id="L435" class="LineNr"> 435 </span>    eb/jump $keyboard-interrupt-handler:select-map-done/disp8
-<span id="L436" class="LineNr"> 436 </span>  }
-<span id="L437" class="LineNr"> 437 </span>  <span class="subxComment"># otherwise al = *(normal map + al)</span>
-<span id="L438" class="LineNr"> 438 </span>  05/add-to-eax <span class="SpecialChar"><a href='boot.subx.html#L478'>Keyboard-normal-map</a></span>/imm32
-<span id="L439" class="LineNr"> 439 </span>  8a/byte-&gt; *eax 0/r32/al
-<span id="L440" class="LineNr"> 440 </span><span class="Constant">$keyboard-interrupt-handler:select-map-done</span>:
-<span id="L441" class="LineNr"> 441 </span>  <span class="subxH1Comment"># - if there's no character mapping, return</span>
-<span id="L442" class="LineNr"> 442 </span>  {
-<span id="L443" class="LineNr"> 443 </span>    3c/compare-al-and 0/imm8
-<span id="L444" class="LineNr"> 444 </span>    74/jump-if-= <span class="Constant">break</span>/disp8
-<span id="L445" class="LineNr"> 445 </span>    <span class="subxH1Comment"># - store al in keyboard buffer</span>
-<span id="L446" class="LineNr"> 446 </span>    88/&lt;- *ecx 0/r32/al
-<span id="L447" class="LineNr"> 447 </span>    <span class="subxComment"># increment index</span>
-<span id="L448" class="LineNr"> 448 </span>    fe/increment-byte *<span class="SpecialChar">Keyboard-buffer</span>:<a href='108write.subx.html#L11'>write</a>
-<span id="L449" class="LineNr"> 449 </span>    <span class="subxComment"># clear top nibble of index (keyboard buffer is circular)</span>
-<span id="L450" class="LineNr"> 450 </span>    80 4/subop/and-byte *<span class="SpecialChar">Keyboard-buffer</span>:<a href='108write.subx.html#L11'>write</a> 0x0f/imm8
+<span id="L237" class="LineNr"> 237 </span>  <span class="subxComment">## enable floating point</span>
+<span id="L238" class="LineNr"> 238 </span>  db/floating-point-coprocessor e3/initialize
+<span id="L239" class="LineNr"> 239 </span>  <span class="subxComment"># eax &lt;- cr4</span>
+<span id="L240" class="LineNr"> 240 </span>  0f 20/&lt;-cr 3/mod/direct 0/rm32/eax 4/r32/cr4
+<span id="L241" class="LineNr"> 241 </span>  <span class="subxComment"># eax &lt;- or bit 9</span>
+<span id="L242" class="LineNr"> 242 </span>  0f ba/bit-test 5/subop/bit-test-and-set 3/mod/direct 0/rm32/eax 9/imm8
+<span id="L243" class="LineNr"> 243 </span>  <span class="subxComment"># cr4 &lt;- eax</span>
+<span id="L244" class="LineNr"> 244 </span>  0f 22/-&gt;cr 3/mod/direct 0/rm32/eax 4/r32/cr4
+<span id="L245" class="LineNr"> 245 </span>
+<span id="L246" class="LineNr"> 246 </span>  e9/jump <span class="SpecialChar">Entry</span>/disp32
+<span id="L247" class="LineNr"> 247 </span>
+<span id="L248" class="LineNr"> 248 </span>== boot-sector-marker 0x7dfe
+<span id="L249" class="LineNr"> 249 </span><span class="subxComment"># final 2 bytes of boot sector</span>
+<span id="L250" class="LineNr"> 250 </span>55 aa
+<span id="L251" class="LineNr"> 251 </span>
+<span id="L252" class="LineNr"> 252 </span><span class="subxComment">## sector 2 onwards loaded by load_disk, not automatically on boot</span>
+<span id="L253" class="LineNr"> 253 </span>
+<span id="L254" class="LineNr"> 254 </span>== data 0x7e00
+<span id="L255" class="LineNr"> 255 </span><span class="subxFunction">idt_descriptor</span>:
+<span id="L256" class="LineNr"> 256 </span>  ff 03  <span class="subxComment"># final index of idt = size of idt - 1</span>
+<span id="L257" class="LineNr"> 257 </span>  <a href='boot.subx.html#L261'>idt_start</a>/imm32/start
+<span id="L258" class="LineNr"> 258 </span>
+<span id="L259" class="Folded"> 259 </span><span class="Folded">+-- 55 lines: # interrupt descriptor table ----------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L314" class="LineNr"> 314 </span>
+<span id="L315" class="LineNr"> 315 </span>== code
+<span id="L316" class="LineNr"> 316 </span>
+<span id="L317" class="LineNr"> 317 </span><span class="subxFunction">null-interrupt-handler</span>:
+<span id="L318" class="LineNr"> 318 </span>  <span class="subxComment"># prologue</span>
+<span id="L319" class="LineNr"> 319 </span>  <span class="subxComment"># Don't disable interrupts; the timer has the highest priority anyway,</span>
+<span id="L320" class="LineNr"> 320 </span>  <span class="subxComment"># and this interrupt triggers extremely frequently.</span>
+<span id="L321" class="LineNr"> 321 </span>  fa/disable-interrupts
+<span id="L322" class="LineNr"> 322 </span>  60/push-all-registers
+<span id="L323" class="LineNr"> 323 </span>  9c/push-flags
+<span id="L324" class="LineNr"> 324 </span>  <span class="subxComment"># acknowledge interrupt</span>
+<span id="L325" class="LineNr"> 325 </span>  b0/copy-to-al 0x20/imm8
+<span id="L326" class="LineNr"> 326 </span>  e6/write-al-into-port 0x20/imm8
+<span id="L327" class="LineNr"> 327 </span>  31/xor %eax 0/r32/eax
+<span id="L328" class="LineNr"> 328 </span><span class="Constant">$null-interrupt-handler:epilogue</span>:
+<span id="L329" class="LineNr"> 329 </span>  <span class="subxComment"># epilogue</span>
+<span id="L330" class="LineNr"> 330 </span>  9d/pop-flags
+<span id="L331" class="LineNr"> 331 </span>  61/pop-all-registers
+<span id="L332" class="LineNr"> 332 </span>  fb/enable-interrupts
+<span id="L333" class="LineNr"> 333 </span>  cf/return-from-interrupt
+<span id="L334" class="LineNr"> 334 </span>
+<span id="L335" class="LineNr"> 335 </span><span class="subxFunction">timer-interrupt-handler</span>:
+<span id="L336" class="LineNr"> 336 </span>  <span class="subxComment"># prologue</span>
+<span id="L337" class="LineNr"> 337 </span>  <span class="subxComment"># Don't disable interrupts; the timer has the highest priority anyway,</span>
+<span id="L338" class="LineNr"> 338 </span>  <span class="subxComment"># and this interrupt triggers extremely frequently.</span>
+<span id="L339" class="LineNr"> 339 </span>  fa/disable-interrupts
+<span id="L340" class="LineNr"> 340 </span>  60/push-all-registers
+<span id="L341" class="LineNr"> 341 </span>  9c/push-flags
+<span id="L342" class="LineNr"> 342 </span>  <span class="subxComment"># acknowledge interrupt</span>
+<span id="L343" class="LineNr"> 343 </span>  b0/copy-to-al 0x20/imm8
+<span id="L344" class="LineNr"> 344 </span>  e6/write-al-into-port 0x20/imm8
+<span id="L345" class="LineNr"> 345 </span>  31/xor %eax 0/r32/eax
+<span id="L346" class="LineNr"> 346 </span><span class="Constant">$timer-interrupt-handler:epilogue</span>:
+<span id="L347" class="LineNr"> 347 </span>  <span class="subxComment"># epilogue</span>
+<span id="L348" class="LineNr"> 348 </span>  9d/pop-flags
+<span id="L349" class="LineNr"> 349 </span>  61/pop-all-registers
+<span id="L350" class="LineNr"> 350 </span>  fb/enable-interrupts
+<span id="L351" class="LineNr"> 351 </span>  cf/return-from-interrupt
+<span id="L352" class="LineNr"> 352 </span>
+<span id="L353" class="LineNr"> 353 </span><span class="subxFunction">keyboard-interrupt-handler</span>:
+<span id="L354" class="LineNr"> 354 </span>  <span class="subxComment"># prologue</span>
+<span id="L355" class="LineNr"> 355 </span>  fa/disable-interrupts
+<span id="L356" class="LineNr"> 356 </span>  60/push-all-registers
+<span id="L357" class="LineNr"> 357 </span>  9c/push-flags
+<span id="L358" class="LineNr"> 358 </span>  <span class="subxComment"># acknowledge interrupt</span>
+<span id="L359" class="LineNr"> 359 </span>  b0/copy-to-al 0x20/imm8
+<span id="L360" class="LineNr"> 360 </span>  e6/write-al-into-port 0x20/imm8
+<span id="L361" class="LineNr"> 361 </span>  31/xor %eax 0/r32/eax
+<span id="L362" class="LineNr"> 362 </span>  <span class="subxComment"># check output buffer of 8042 keyboard controller (<a href="https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)">https://web.archive.org/web/20040604041507/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html)</a></span>
+<span id="L363" class="LineNr"> 363 </span>  e4/read-port-into-al 0x64/imm8
+<span id="L364" class="LineNr"> 364 </span>  a8/test-bits-in-al 0x01/imm8  <span class="subxComment"># set zf if bit 0 (least significant) is not set</span>
+<span id="L365" class="LineNr"> 365 </span>  0f 84/jump-if-not-set $keyboard-interrupt-handler:epilogue/disp32
+<span id="L366" class="LineNr"> 366 </span>  <span class="subxH1Comment"># - if keyboard buffer is full, return</span>
+<span id="L367" class="LineNr"> 367 </span>  <span class="subxComment"># var dest-addr/ecx: (addr byte) = (keyboard-buffer + *keyboard-buffer:write)</span>
+<span id="L368" class="LineNr"> 368 </span>  31/xor %ecx 1/r32/ecx
+<span id="L369" class="LineNr"> 369 </span>  8a/byte-&gt; *<span class="SpecialChar">Keyboard-buffer</span>:<a href='108write.subx.html#L11'>write</a> 1/r32/cl
+<span id="L370" class="LineNr"> 370 </span>  81 0/subop/add %ecx <span class="SpecialChar">Keyboard-buffer</span>:data/imm32
+<span id="L371" class="LineNr"> 371 </span>  <span class="subxComment"># al = *dest-addr</span>
+<span id="L372" class="LineNr"> 372 </span>  8a/byte-&gt; *ecx 0/r32/al
+<span id="L373" class="LineNr"> 373 </span>  <span class="subxComment"># if (al != 0) return</span>
+<span id="L374" class="LineNr"> 374 </span>  3c/compare-al-and 0/imm8
+<span id="L375" class="LineNr"> 375 </span>  0f 85/jump-if-!= $keyboard-interrupt-handler:epilogue/disp32
+<span id="L376" class="LineNr"> 376 </span>  <span class="subxH1Comment"># - read keycode</span>
+<span id="L377" class="LineNr"> 377 </span>  e4/read-port-into-al 0x60/imm8
+<span id="L378" class="LineNr"> 378 </span>  <span class="subxH1Comment"># - key released</span>
+<span id="L379" class="LineNr"> 379 </span>  <span class="subxComment"># if (al == 0xaa) shift = false  # left shift is being lifted</span>
+<span id="L380" class="LineNr"> 380 </span>  {
+<span id="L381" class="LineNr"> 381 </span>    3c/compare-al-and 0xaa/imm8
+<span id="L382" class="LineNr"> 382 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
+<span id="L383" class="LineNr"> 383 </span>    <span class="subxComment"># *shift = 0</span>
+<span id="L384" class="LineNr"> 384 </span>    c7 0/subop/copy *Keyboard-shift-pressed? 0/imm32
+<span id="L385" class="LineNr"> 385 </span>  }
+<span id="L386" class="LineNr"> 386 </span>  <span class="subxComment"># if (al == 0xb6) shift = false  # right shift is being lifted</span>
+<span id="L387" class="LineNr"> 387 </span>  {
+<span id="L388" class="LineNr"> 388 </span>    3c/compare-al-and 0xb6/imm8
+<span id="L389" class="LineNr"> 389 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
+<span id="L390" class="LineNr"> 390 </span>    <span class="subxComment"># *shift = 0</span>
+<span id="L391" class="LineNr"> 391 </span>    c7 0/subop/copy *Keyboard-shift-pressed? 0/imm32
+<span id="L392" class="LineNr"> 392 </span>  }
+<span id="L393" class="LineNr"> 393 </span>  <span class="subxComment"># if (al == 0x9d) ctrl = false  # ctrl is being lifted</span>
+<span id="L394" class="LineNr"> 394 </span>  {
+<span id="L395" class="LineNr"> 395 </span>    3c/compare-al-and 0x9d/imm8
+<span id="L396" class="LineNr"> 396 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
+<span id="L397" class="LineNr"> 397 </span>    <span class="subxComment"># *ctrl = 0</span>
+<span id="L398" class="LineNr"> 398 </span>    c7 0/subop/copy *Keyboard-ctrl-pressed? 0/imm32
+<span id="L399" class="LineNr"> 399 </span>  }
+<span id="L400" class="LineNr"> 400 </span>  <span class="subxComment"># if (al &amp; 0x80) a key is being lifted; return</span>
+<span id="L401" class="LineNr"> 401 </span>  50/push-eax
+<span id="L402" class="LineNr"> 402 </span>  24/and-al-with 0x80/imm8
+<span id="L403" class="LineNr"> 403 </span>  3c/compare-al-and 0/imm8
+<span id="L404" class="LineNr"> 404 </span>  58/pop-to-eax
+<span id="L405" class="LineNr"> 405 </span>  75/jump-if-!= $keyboard-interrupt-handler:epilogue/disp8
+<span id="L406" class="LineNr"> 406 </span>  <span class="subxH1Comment"># - key pressed</span>
+<span id="L407" class="LineNr"> 407 </span>  <span class="subxComment"># if (al == 0x2a) shift = true, return  # left shift pressed</span>
+<span id="L408" class="LineNr"> 408 </span>  {
+<span id="L409" class="LineNr"> 409 </span>    3c/compare-al-and 0x2a/imm8
+<span id="L410" class="LineNr"> 410 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
+<span id="L411" class="LineNr"> 411 </span>    <span class="subxComment"># *shift = 1</span>
+<span id="L412" class="LineNr"> 412 </span>    c7 0/subop/copy *Keyboard-shift-pressed? 1/imm32
+<span id="L413" class="LineNr"> 413 </span>    <span class="subxComment"># return</span>
+<span id="L414" class="LineNr"> 414 </span>    eb/jump $keyboard-interrupt-handler:epilogue/disp8
+<span id="L415" class="LineNr"> 415 </span>  }
+<span id="L416" class="LineNr"> 416 </span>  <span class="subxComment"># if (al == 0x36) shift = true, return  # right shift pressed</span>
+<span id="L417" class="LineNr"> 417 </span>  {
+<span id="L418" class="LineNr"> 418 </span>    3c/compare-al-and 0x36/imm8
+<span id="L419" class="LineNr"> 419 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
+<span id="L420" class="LineNr"> 420 </span>    <span class="subxComment"># *shift = 1</span>
+<span id="L421" class="LineNr"> 421 </span>    c7 0/subop/copy *Keyboard-shift-pressed? 1/imm32
+<span id="L422" class="LineNr"> 422 </span>    <span class="subxComment"># return</span>
+<span id="L423" class="LineNr"> 423 </span>    eb/jump $keyboard-interrupt-handler:epilogue/disp8
+<span id="L424" class="LineNr"> 424 </span>  }
+<span id="L425" class="LineNr"> 425 </span>  <span class="subxComment"># if (al == 0x1d) ctrl = true, return</span>
+<span id="L426" class="LineNr"> 426 </span>  {
+<span id="L427" class="LineNr"> 427 </span>    3c/compare-al-and 0x1d/imm8
+<span id="L428" class="LineNr"> 428 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
+<span id="L429" class="LineNr"> 429 </span>    <span class="subxComment"># *ctrl = 1</span>
+<span id="L430" class="LineNr"> 430 </span>    c7 0/subop/copy *Keyboard-ctrl-pressed? 1/imm32
+<span id="L431" class="LineNr"> 431 </span>    <span class="subxComment"># return</span>
+<span id="L432" class="LineNr"> 432 </span>    eb/jump $keyboard-interrupt-handler:epilogue/disp8
+<span id="L433" class="LineNr"> 433 </span>  }
+<span id="L434" class="LineNr"> 434 </span>  <span class="subxH1Comment"># - convert key to character</span>
+<span id="L435" class="LineNr"> 435 </span>  <span class="subxComment"># if (shift) use keyboard shift map</span>
+<span id="L436" class="LineNr"> 436 </span>  {
+<span id="L437" class="LineNr"> 437 </span>    81 7/subop/compare *Keyboard-shift-pressed? 0/imm32
+<span id="L438" class="LineNr"> 438 </span>    74/jump-if-= <span class="Constant">break</span>/disp8
+<span id="L439" class="LineNr"> 439 </span>    <span class="subxComment"># sigils don't currently support labels inside *(eax+label)</span>
+<span id="L440" class="LineNr"> 440 </span>    05/add-to-eax <span class="SpecialChar"><a href='boot.subx.html#L527'>Keyboard-shift-map</a></span>/imm32
+<span id="L441" class="LineNr"> 441 </span>    8a/byte-&gt; *eax 0/r32/al
+<span id="L442" class="LineNr"> 442 </span>    eb/jump $keyboard-interrupt-handler:select-map-done/disp8
+<span id="L443" class="LineNr"> 443 </span>  }
+<span id="L444" class="LineNr"> 444 </span>  <span class="subxComment"># if (ctrl) al = *(ctrl map + al)</span>
+<span id="L445" class="LineNr"> 445 </span>  {
+<span id="L446" class="LineNr"> 446 </span>    81 7/subop/compare *Keyboard-ctrl-pressed? 0/imm32
+<span id="L447" class="LineNr"> 447 </span>    74/jump-if-= <span class="Constant">break</span>/disp8
+<span id="L448" class="LineNr"> 448 </span>    05/add-to-eax <span class="SpecialChar"><a href='boot.subx.html#L559'>Keyboard-ctrl-map</a></span>/imm32
+<span id="L449" class="LineNr"> 449 </span>    8a/byte-&gt; *eax 0/r32/al
+<span id="L450" class="LineNr"> 450 </span>    eb/jump $keyboard-interrupt-handler:select-map-done/disp8
 <span id="L451" class="LineNr"> 451 </span>  }
-<span id="L452" class="LineNr"> 452 </span><span class="Constant">$keyboard-interrupt-handler:epilogue</span>:
-<span id="L453" class="LineNr"> 453 </span>  <span class="subxComment"># epilogue</span>
-<span id="L454" class="LineNr"> 454 </span>  9d/pop-flags
-<span id="L455" class="LineNr"> 455 </span>  61/pop-all-registers
-<span id="L456" class="LineNr"> 456 </span>  fb/enable-interrupts
-<span id="L457" class="LineNr"> 457 </span>  cf/return-from-interrupt
-<span id="L458" class="LineNr"> 458 </span>
-<span id="L459" class="LineNr"> 459 </span>== data
-<span id="L460" class="LineNr"> 460 </span>Keyboard-shift-pressed?:  <span class="subxComment"># boolean</span>
-<span id="L461" class="LineNr"> 461 </span>  0/imm32
-<span id="L462" class="LineNr"> 462 </span>
-<span id="L463" class="LineNr"> 463 </span>Keyboard-ctrl-pressed?:  <span class="subxComment"># boolean</span>
-<span id="L464" class="LineNr"> 464 </span>  0/imm32
-<span id="L465" class="LineNr"> 465 </span>
-<span id="L466" class="LineNr"> 466 </span><span class="subxComment"># var keyboard circular buffer</span>
-<span id="L467" class="LineNr"> 467 </span><span class="SpecialChar">Keyboard-buffer</span>:<a href='108write.subx.html#L11'>write</a>:  <span class="subxComment"># nibble</span>
-<span id="L468" class="LineNr"> 468 </span>  0/imm32
-<span id="L469" class="LineNr"> 469 </span><span class="SpecialChar">Keyboard-buffer</span>:read:  <span class="subxComment"># nibble</span>
-<span id="L470" class="LineNr"> 470 </span>  0/imm32
-<span id="L471" class="LineNr"> 471 </span><span class="SpecialChar">Keyboard-buffer</span>:data:  <span class="subxComment"># byte[16]</span>
-<span id="L472" class="LineNr"> 472 </span>  00 00 00 00
-<span id="L473" class="LineNr"> 473 </span>  00 00 00 00
-<span id="L474" class="LineNr"> 474 </span>  00 00 00 00
-<span id="L475" class="LineNr"> 475 </span>  00 00 00 00
-<span id="L476" class="LineNr"> 476 </span>
-<span id="L477" class="Folded"> 477 </span><span class="Folded">+-- 95 lines: # Keyboard maps for translating keys to ASCII -----------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L572" class="LineNr"> 572 </span>
-<span id="L573" class="LineNr"> 573 </span><span class="SpecialChar">Video-mode-info</span>:
-<span id="L574" class="Folded"> 574 </span><span class="Folded">+-- 53 lines: # video mode info ---------------------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L627" class="LineNr"> 627 </span>
-<span id="L628" class="LineNr"> 628 </span><span class="SpecialChar">Font</span>:
-<span id="L629" class="Folded"> 629 </span><span class="Folded">+--236 lines: # Bitmaps for some ASCII characters (soon Unicode) ------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L865" class="LineNr"> 865 </span>
-<span id="L866" class="LineNr"> 866 </span><span class="subxComment">## Controlling IDE (ATA) hard disks</span>
-<span id="L867" class="LineNr"> 867 </span><span class="subxComment"># Uses 28-bit PIO mode.</span>
-<span id="L868" class="LineNr"> 868 </span><span class="subxComment"># Inspired by <a href="https://colorforth.github.io/ide.html">https://colorforth.github.io/ide.html</a></span>
-<span id="L869" class="LineNr"> 869 </span><span class="subxComment">#</span>
-<span id="L870" class="LineNr"> 870 </span><span class="subxComment"># Resources:</span>
-<span id="L871" class="LineNr"> 871 </span><span class="subxComment">#   <a href="https://wiki.osdev.org/ATA_PIO_Mode">https://wiki.osdev.org/ATA_PIO_Mode</a></span>
-<span id="L872" class="LineNr"> 872 </span><span class="subxComment">#   <a href="https://forum.osdev.org/viewtopic.php?f=1&amp;p=167798">https://forum.osdev.org/viewtopic.php?f=1&amp;p=167798</a></span>
-<span id="L873" class="LineNr"> 873 </span><span class="subxComment">#   read-sector, according to <a href="https://www.scs.stanford.edu/11wi-cs140/pintos/specs/ata-3-std.pdf">https://www.scs.stanford.edu/11wi-cs140/pintos/specs/ata-3-std.pdf</a></span>
-<span id="L874" class="LineNr"> 874 </span>
-<span id="L875" class="LineNr"> 875 </span>== data
-<span id="L876" class="LineNr"> 876 </span>
-<span id="L877" class="LineNr"> 877 </span><span class="subxComment"># We'll be gaining access just to the secondary drive on the primary bus for</span>
-<span id="L878" class="LineNr"> 878 </span><span class="subxComment"># now. It will have the designated 'data' disk so we don't mess with the code</span>
-<span id="L879" class="LineNr"> 879 </span><span class="subxComment"># disk.</span>
-<span id="L880" class="LineNr"> 880 </span><span class="subxComment">#</span>
-<span id="L881" class="LineNr"> 881 </span><span class="subxComment"># The type definition for this variable is in safe Mu (rather than unsafe</span>
-<span id="L882" class="LineNr"> 882 </span><span class="subxComment"># SubX) code.</span>
-<span id="L883" class="LineNr"> 883 </span><span class="subxComment"># All ports are 8-bit except data-port, which is 16-bit.</span>
-<span id="L884" class="LineNr"> 884 </span><span class="SpecialChar">Primary-bus-secondary-drive</span>:
-<span id="L885" class="LineNr"> 885 </span>  <span class="subxComment"># command-port: int (write)</span>
-<span id="L886" class="LineNr"> 886 </span>  0x1f7/imm32
-<span id="L887" class="LineNr"> 887 </span>  <span class="subxComment"># status-port: int (read)</span>
-<span id="L888" class="LineNr"> 888 </span>  0x1f7/imm32
-<span id="L889" class="LineNr"> 889 </span>  <span class="subxComment"># alternative-status-port: int (read)</span>
-<span id="L890" class="LineNr"> 890 </span>  0x3f6/imm32
-<span id="L891" class="LineNr"> 891 </span>  <span class="subxComment"># error-port: int (read)</span>
-<span id="L892" class="LineNr"> 892 </span>  0x1f1/imm32
-<span id="L893" class="LineNr"> 893 </span>  <span class="subxComment"># drive-and-head-port: int</span>
-<span id="L894" class="LineNr"> 894 </span>  0x1f6/imm32
-<span id="L895" class="LineNr"> 895 </span>  <span class="subxComment"># sector-count-port: int</span>
-<span id="L896" class="LineNr"> 896 </span>  0x1f2/imm32
-<span id="L897" class="LineNr"> 897 </span>  <span class="subxComment"># lba-low-port: int</span>
-<span id="L898" class="LineNr"> 898 </span>  0x1f3/imm32
-<span id="L899" class="LineNr"> 899 </span>  <span class="subxComment"># lba-mid-port: int</span>
-<span id="L900" class="LineNr"> 900 </span>  0x1f4/imm32
-<span id="L901" class="LineNr"> 901 </span>  <span class="subxComment"># lba-high-port: int</span>
-<span id="L902" class="LineNr"> 902 </span>  0x1f5/imm32
-<span id="L903" class="LineNr"> 903 </span>  <span class="subxComment"># data-port: int</span>
-<span id="L904" class="LineNr"> 904 </span>  0x1f0/imm32
-<span id="L905" class="LineNr"> 905 </span>  <span class="subxComment"># drive-code: byte                # only drive-specific field</span>
-<span id="L906" class="LineNr"> 906 </span>  0xf0/imm32  <span class="subxComment"># LBA mode also enabled</span>
-<span id="L907" class="LineNr"> 907 </span>
-<span id="L908" class="LineNr"> 908 </span>== code
-<span id="L909" class="LineNr"> 909 </span>
-<span id="L910" class="LineNr"> 910 </span><span class="subxFunction">load-sector</span>:  <span class="subxComment"># disk: (addr disk), lba: int, out: (addr stream byte)</span>
-<span id="L911" class="LineNr"> 911 </span>  <span class="subxS1Comment"># . prologue</span>
-<span id="L912" class="LineNr"> 912 </span>  55/push-ebp
-<span id="L913" class="LineNr"> 913 </span>  89/&lt;- %ebp 4/r32/esp
-<span id="L914" class="LineNr"> 914 </span>  <span class="subxS1Comment"># . save registers</span>
-<span id="L915" class="LineNr"> 915 </span>  50/push-eax
-<span id="L916" class="LineNr"> 916 </span>  51/push-ecx
-<span id="L917" class="LineNr"> 917 </span>  52/push-edx
-<span id="L918" class="LineNr"> 918 </span>  <span class="subxComment"># check for drive</span>
-<span id="L919" class="LineNr"> 919 </span>  (<a href='boot.subx.html#L1048'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
-<span id="L920" class="LineNr"> 920 </span>  3d/compare-eax-and 0/imm32/false
-<span id="L921" class="LineNr"> 921 </span>  0f 84/jump-if-= $load-sector:end/disp32
-<span id="L922" class="LineNr"> 922 </span>  <span class="subxComment"># kick off read</span>
-<span id="L923" class="LineNr"> 923 </span>  (<a href='boot.subx.html#L1112'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
-<span id="L924" class="LineNr"> 924 </span>  (<a href='boot.subx.html#L1141'>clear-ata-error</a> *(ebp+8))
-<span id="L925" class="LineNr"> 925 </span>  (<a href='boot.subx.html#L1163'>ata-sector-count</a> *(ebp+8) 1)
-<span id="L926" class="LineNr"> 926 </span>  (<a href='boot.subx.html#L1185'>ata-lba</a> *(ebp+8) *(ebp+0xc))
-<span id="L927" class="LineNr"> 927 </span>  (<a href='boot.subx.html#L1216'>ata-command</a> *(ebp+8) 0x20)  <span class="subxComment"># read sectors with retries</span>
-<span id="L928" class="LineNr"> 928 </span>  <span class="subxComment"># poll for results</span>
-<span id="L929" class="LineNr"> 929 </span>  (<a href='boot.subx.html#L1238'>while-ata-busy</a> *(ebp+8))
-<span id="L930" class="LineNr"> 930 </span>  (<a href='boot.subx.html#L1257'>until-ata-data-available</a> *(ebp+8))
-<span id="L931" class="LineNr"> 931 </span>  <span class="subxComment"># var data-port/edx = disk-&gt;data-port</span>
-<span id="L932" class="LineNr"> 932 </span>  8b/-&gt; *(ebp+8) 0/r32/eax
-<span id="L933" class="LineNr"> 933 </span>  8b/-&gt; *(eax+0x24) 2/r32/edx
-<span id="L934" class="LineNr"> 934 </span>  <span class="subxComment"># emit results</span>
-<span id="L935" class="LineNr"> 935 </span>  31/xor %eax 0/r32/eax
-<span id="L936" class="LineNr"> 936 </span>  b9/copy-to-ecx 0x200/imm32  <span class="subxComment"># 512 bytes per sector</span>
-<span id="L937" class="LineNr"> 937 </span>  {
-<span id="L938" class="LineNr"> 938 </span>    81 7/subop/compare %ecx 0/imm32
-<span id="L939" class="LineNr"> 939 </span>    74/jump-if-= <span class="Constant">break</span>/disp8
-<span id="L940" class="LineNr"> 940 </span>    66 ed/read-port-dx-into-ax
-<span id="L941" class="LineNr"> 941 </span>    <span class="subxComment"># write 2 bytes to stream one at a time</span>
-<span id="L942" class="LineNr"> 942 </span>    (<a href='115write-byte.subx.html#L12'>append-byte</a> *(ebp+0x10) %eax)
-<span id="L943" class="LineNr"> 943 </span>    49/decrement-ecx
-<span id="L944" class="LineNr"> 944 </span>    c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
-<span id="L945" class="LineNr"> 945 </span>    (<a href='115write-byte.subx.html#L12'>append-byte</a> *(ebp+0x10) %eax)
-<span id="L946" class="LineNr"> 946 </span>    49/decrement-ecx
-<span id="L947" class="LineNr"> 947 </span>    eb/jump <span class="Constant">loop</span>/disp8
-<span id="L948" class="LineNr"> 948 </span>  }
-<span id="L949" class="LineNr"> 949 </span><span class="Constant">$load-sector:end</span>:
-<span id="L950" class="LineNr"> 950 </span>  <span class="subxS1Comment"># . restore registers</span>
-<span id="L951" class="LineNr"> 951 </span>  5a/pop-to-edx
-<span id="L952" class="LineNr"> 952 </span>  59/pop-to-ecx
-<span id="L953" class="LineNr"> 953 </span>  58/pop-to-eax
-<span id="L954" class="LineNr"> 954 </span>  <span class="subxS1Comment"># . epilogue</span>
-<span id="L955" class="LineNr"> 955 </span>  89/&lt;- %esp 5/r32/ebp
-<span id="L956" class="LineNr"> 956 </span>  5d/pop-to-ebp
-<span id="L957" class="LineNr"> 957 </span>  c3/return
-<span id="L958" class="LineNr"> 958 </span>
-<span id="L959" class="LineNr"> 959 </span><span class="subxFunction">store-sector</span>:  <span class="subxComment"># disk: (addr disk), lba: int, in: (addr stream byte)</span>
-<span id="L960" class="LineNr"> 960 </span>  <span class="subxS1Comment"># . prologue</span>
-<span id="L961" class="LineNr"> 961 </span>  55/push-ebp
-<span id="L962" class="LineNr"> 962 </span>  89/&lt;- %ebp 4/r32/esp
-<span id="L963" class="LineNr"> 963 </span>  <span class="subxS1Comment"># . save registers</span>
-<span id="L964" class="LineNr"> 964 </span>  50/push-eax
-<span id="L965" class="LineNr"> 965 </span>  51/push-ecx
-<span id="L966" class="LineNr"> 966 </span>  52/push-edx
-<span id="L967" class="LineNr"> 967 </span>  53/push-ebx
-<span id="L968" class="LineNr"> 968 </span>  <span class="subxComment"># check for drive</span>
-<span id="L969" class="LineNr"> 969 </span>  (<a href='boot.subx.html#L1048'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
-<span id="L970" class="LineNr"> 970 </span>  3d/compare-eax-and 0/imm32/false
-<span id="L971" class="LineNr"> 971 </span>  0f 84/jump-if-= $store-sector:end/disp32
-<span id="L972" class="LineNr"> 972 </span>  <span class="subxComment"># kick off write</span>
-<span id="L973" class="LineNr"> 973 </span>  (<a href='boot.subx.html#L1112'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
-<span id="L974" class="LineNr"> 974 </span>  (<a href='boot.subx.html#L1141'>clear-ata-error</a> *(ebp+8))
-<span id="L975" class="LineNr"> 975 </span>  (<a href='boot.subx.html#L1163'>ata-sector-count</a> *(ebp+8) 1)
-<span id="L976" class="LineNr"> 976 </span>  (<a href='boot.subx.html#L1185'>ata-lba</a> *(ebp+8) *(ebp+0xc))
-<span id="L977" class="LineNr"> 977 </span>  (<a href='boot.subx.html#L1216'>ata-command</a> *(ebp+8) 0x30)  <span class="subxComment"># write sectors with retries</span>
-<span id="L978" class="LineNr"> 978 </span>  <span class="subxComment"># wait</span>
-<span id="L979" class="LineNr"> 979 </span>  (<a href='boot.subx.html#L1238'>while-ata-busy</a> *(ebp+8))
-<span id="L980" class="LineNr"> 980 </span>  (<a href='boot.subx.html#L1276'>until-ata-ready-for-data</a> *(ebp+8))
-<span id="L981" class="LineNr"> 981 </span>  <span class="subxComment"># var data-port/edx = disk-&gt;data-port</span>
-<span id="L982" class="LineNr"> 982 </span>  8b/-&gt; *(ebp+8) 0/r32/eax
-<span id="L983" class="LineNr"> 983 </span>  8b/-&gt; *(eax+0x24) 2/r32/edx
-<span id="L984" class="LineNr"> 984 </span>  <span class="subxComment"># send data</span>
-<span id="L985" class="LineNr"> 985 </span>  b9/copy-to-ecx 0x200/imm32  <span class="subxComment"># 512 bytes per sector</span>
-<span id="L986" class="LineNr"> 986 </span>  <span class="subxS1Comment"># . var first-byte/ebx: byte</span>
-<span id="L987" class="LineNr"> 987 </span>  <span class="subxS1Comment"># . when it's more than 0xff, we're at an even-numbered byte</span>
-<span id="L988" class="LineNr"> 988 </span>  bb/copy-to-ebx 0xffff/imm32
-<span id="L989" class="LineNr"> 989 </span><span class="Constant">$store-sector:loop</span>:
-<span id="L990" class="LineNr"> 990 </span>  {
-<span id="L991" class="LineNr"> 991 </span>    81 7/subop/compare %ecx 0/imm32
-<span id="L992" class="LineNr"> 992 </span>    74/jump-if-= <span class="Constant">break</span>/disp8
-<span id="L993" class="LineNr"> 993 </span>    <span class="subxComment"># this loop is slow, but the ATA spec also requires a small delay</span>
-<span id="L994" class="LineNr"> 994 </span>    (<a href='309stream.subx.html#L6'>stream-empty?</a> *(ebp+0x10))  <span class="subxComment"># =&gt; eax</span>
-<span id="L995" class="LineNr"> 995 </span>    3d/compare-eax-and 0/imm32/false
-<span id="L996" class="LineNr"> 996 </span>    75/jump-if-!= <span class="Constant">break</span>/disp8
-<span id="L997" class="LineNr"> 997 </span>    <span class="subxComment"># read byte from stream</span>
-<span id="L998" class="LineNr"> 998 </span>    (<a href='112read-byte.subx.html#L13'>read-byte</a> *(ebp+0x10))  <span class="subxComment"># =&gt; eax</span>
-<span id="L999" class="LineNr"> 999 </span>    <span class="subxComment"># if we're at an odd-numbered byte, save it to first-byte</span>
-<span id="L1000" class="LineNr">1000 </span>    81 7/subop/compare %ebx 0xff/imm32
-<span id="L1001" class="LineNr">1001 </span>    {
-<span id="L1002" class="LineNr">1002 </span>      7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
-<span id="L1003" class="LineNr">1003 </span>      89/&lt;- %ebx 0/r32/eax
-<span id="L1004" class="LineNr">1004 </span>      eb/jump $store-sector:<span class="Constant">loop</span>/disp8
-<span id="L1005" class="LineNr">1005 </span>    }
-<span id="L1006" class="LineNr">1006 </span>    <span class="subxComment"># otherwise OR it with first-byte and write it out</span>
-<span id="L1007" class="LineNr">1007 </span>    c1/shift 4/subop/left %eax 8/imm8
-<span id="L1008" class="LineNr">1008 </span>    09/or %eax 3/r32/ebx
-<span id="L1009" class="LineNr">1009 </span>    66 ef/write-ax-into-port-dx
-<span id="L1010" class="LineNr">1010 </span>    49/decrement-ecx
-<span id="L1011" class="LineNr">1011 </span>    49/decrement-ecx
-<span id="L1012" class="LineNr">1012 </span>    <span class="subxComment"># reset first-byte</span>
-<span id="L1013" class="LineNr">1013 </span>    bb/copy-to-ebx 0xffff/imm32
-<span id="L1014" class="LineNr">1014 </span>    eb/jump <span class="Constant">loop</span>/disp8
-<span id="L1015" class="LineNr">1015 </span>  }
-<span id="L1016" class="LineNr">1016 </span>  <span class="subxComment"># write out first-byte if necessary</span>
-<span id="L1017" class="LineNr">1017 </span>  81 7/subop/compare %ebx 0xff/imm32
-<span id="L1018" class="LineNr">1018 </span>  {
-<span id="L1019" class="LineNr">1019 </span>    7f/jump-if-&gt; <span class="Constant">break</span>/disp8
-<span id="L1020" class="LineNr">1020 </span>    89/&lt;- %eax 3/r32/ebx
-<span id="L1021" class="LineNr">1021 </span>    66 ef/write-ax-into-port-dx
-<span id="L1022" class="LineNr">1022 </span>    49/decrement-ecx
-<span id="L1023" class="LineNr">1023 </span>    49/decrement-ecx
-<span id="L1024" class="LineNr">1024 </span>  }
-<span id="L1025" class="LineNr">1025 </span>  <span class="subxComment"># pad zeroes</span>
-<span id="L1026" class="LineNr">1026 </span>  31/xor %eax 0/r32/eax
-<span id="L1027" class="LineNr">1027 </span>  {
-<span id="L1028" class="LineNr">1028 </span>    81 7/subop/compare %ecx 0/imm32
-<span id="L1029" class="LineNr">1029 </span>    74/jump-if-= <span class="Constant">break</span>/disp8
-<span id="L1030" class="LineNr">1030 </span>    66 ef/write-ax-into-port-dx
-<span id="L1031" class="LineNr">1031 </span>    49/decrement-ecx
-<span id="L1032" class="LineNr">1032 </span>    49/decrement-ecx
-<span id="L1033" class="LineNr">1033 </span>    eb/jump <span class="Constant">loop</span>/disp8
-<span id="L1034" class="LineNr">1034 </span>  }
-<span id="L1035" class="LineNr">1035 </span><span class="Constant">$store-sector:end</span>:
-<span id="L1036" class="LineNr">1036 </span>  <span class="subxS1Comment"># . restore registers</span>
-<span id="L1037" class="LineNr">1037 </span>  5b/pop-to-ebx
-<span id="L1038" class="LineNr">1038 </span>  5a/pop-to-edx
-<span id="L1039" class="LineNr">1039 </span>  59/pop-to-ecx
-<span id="L1040" class="LineNr">1040 </span>  58/pop-to-eax
-<span id="L1041" class="LineNr">1041 </span>  <span class="subxS1Comment"># . epilogue</span>
-<span id="L1042" class="LineNr">1042 </span>  89/&lt;- %esp 5/r32/ebp
-<span id="L1043" class="LineNr">1043 </span>  5d/pop-to-ebp
-<span id="L1044" class="LineNr">1044 </span>  c3/return
-<span id="L1045" class="LineNr">1045 </span>
-<span id="L1046" class="Folded">1046 </span><span class="Folded">+--235 lines: # disk helpers ------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L1281" class="LineNr">1281 </span>
-<span id="L1282" class="LineNr">1282 </span><span class="subxComment">## Controlling a PS/2 mouse</span>
-<span id="L1283" class="LineNr">1283 </span><span class="subxComment"># Uses no IRQs, just polling.</span>
-<span id="L1284" class="LineNr">1284 </span><span class="subxComment"># Thanks Dave Long: <a href="https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py">https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py</a></span>
-<span id="L1285" class="LineNr">1285 </span><span class="subxComment">#</span>
-<span id="L1286" class="LineNr">1286 </span><span class="subxComment"># Resources:</span>
-<span id="L1287" class="LineNr">1287 </span><span class="subxComment">#   <a href="https://wiki.osdev.org/Mouse_Input">https://wiki.osdev.org/Mouse_Input</a></span>
-<span id="L1288" class="LineNr">1288 </span>
-<span id="L1289" class="LineNr">1289 </span><span class="subxComment"># results x/eax, y/ecx range from -256 to +255</span>
-<span id="L1290" class="LineNr">1290 </span><span class="subxComment"># See <a href="https://wiki.osdev.org/index.php?title=Mouse_Input&amp;oldid=25663#Format_of_First_3_Packet_Bytes">https://wiki.osdev.org/index.php?title=Mouse_Input&amp;oldid=25663#Format_of_First_3_Packet_Bytes</a></span>
-<span id="L1291" class="LineNr">1291 </span><span class="subxFunction">read-mouse-event</span>:  <span class="subxComment"># -&gt; _/eax: int, _/ecx: int</span>
-<span id="L1292" class="LineNr">1292 </span>  <span class="subxS1Comment"># . prologue</span>
-<span id="L1293" class="LineNr">1293 </span>  55/push-ebp
-<span id="L1294" class="LineNr">1294 </span>  89/&lt;- %ebp 4/r32/esp
-<span id="L1295" class="LineNr">1295 </span>  <span class="subxS1Comment"># . save registers</span>
-<span id="L1296" class="LineNr">1296 </span>  52/push-edx
-<span id="L1297" class="LineNr">1297 </span>  53/push-ebx
-<span id="L1298" class="LineNr">1298 </span>  <span class="subxComment"># if no event, return 0, 0</span>
-<span id="L1299" class="LineNr">1299 </span>  b8/copy-to-eax 0/imm32
-<span id="L1300" class="LineNr">1300 </span>  b9/copy-to-ecx 0/imm32
-<span id="L1301" class="LineNr">1301 </span>  (<a href='boot.subx.html#L1358'>any-mouse-event?</a>)  <span class="subxComment"># =&gt; eax</span>
-<span id="L1302" class="LineNr">1302 </span>  3d/compare-eax-and 0/imm32/false
-<span id="L1303" class="LineNr">1303 </span>  74/jump-if-= $read-mouse-event:end/disp8
-<span id="L1304" class="LineNr">1304 </span>  <span class="subxComment"># var f1/edx: byte = inb(0x60)</span>
-<span id="L1305" class="LineNr">1305 </span>  31/xor %eax 0/r32/eax
-<span id="L1306" class="LineNr">1306 </span>  e4/read-port-into-al 0x60/imm8
-<span id="L1307" class="LineNr">1307 </span>  89/&lt;- %edx 0/r32/eax
-<span id="L1308" class="LineNr">1308 </span>  (<a href='boot.subx.html#L1343'>wait-for-mouse-event</a>)
-<span id="L1309" class="LineNr">1309 </span>  <span class="subxComment"># var dx/ebx: byte = inb(0x60)</span>
-<span id="L1310" class="LineNr">1310 </span>  31/xor %eax 0/r32/eax
-<span id="L1311" class="LineNr">1311 </span>  e4/read-port-into-al 0x60/imm8
-<span id="L1312" class="LineNr">1312 </span>  89/&lt;- %ebx 0/r32/eax
-<span id="L1313" class="LineNr">1313 </span>  (<a href='boot.subx.html#L1343'>wait-for-mouse-event</a>)
-<span id="L1314" class="LineNr">1314 </span>  <span class="subxComment"># var dy/ecx: byte = inb(0x60)</span>
-<span id="L1315" class="LineNr">1315 </span>  31/xor %eax 0/r32/eax
-<span id="L1316" class="LineNr">1316 </span>  e4/read-port-into-al 0x60/imm8
-<span id="L1317" class="LineNr">1317 </span>  89/&lt;- %ecx 0/r32/eax
-<span id="L1318" class="LineNr">1318 </span>  <span class="subxComment"># eax = dx</span>
-<span id="L1319" class="LineNr">1319 </span>  89/&lt;- %eax 3/r32/ebx
-<span id="L1320" class="LineNr">1320 </span>  <span class="subxComment"># if (f1 &amp; 0x10) dx = -dx</span>
-<span id="L1321" class="LineNr">1321 </span>  {
-<span id="L1322" class="LineNr">1322 </span>    f6 0/subop/test-bits %dl 0x10/imm8
-<span id="L1323" class="LineNr">1323 </span>    74/jump-if-zero <span class="Constant">break</span>/disp8
-<span id="L1324" class="LineNr">1324 </span>    0d/or-eax-with 0xffffff00/imm32
-<span id="L1325" class="LineNr">1325 </span>  }
-<span id="L1326" class="LineNr">1326 </span>  <span class="subxComment"># if (f1 &amp; 0x20) dy = -dy</span>
-<span id="L1327" class="LineNr">1327 </span>  {
-<span id="L1328" class="LineNr">1328 </span>    f6 0/subop/test-bits %dl 0x20/imm8
-<span id="L1329" class="LineNr">1329 </span>    74/jump-if-zero <span class="Constant">break</span>/disp8
-<span id="L1330" class="LineNr">1330 </span>    81 1/subop/or %ecx 0xffffff00/imm32
-<span id="L1331" class="LineNr">1331 </span>  }
-<span id="L1332" class="LineNr">1332 </span><span class="Constant">$read-mouse-event:end</span>:
-<span id="L1333" class="LineNr">1333 </span>  <span class="subxS1Comment"># . restore registers</span>
-<span id="L1334" class="LineNr">1334 </span>  5b/pop-to-ebx
-<span id="L1335" class="LineNr">1335 </span>  5a/pop-to-edx
-<span id="L1336" class="LineNr">1336 </span>  <span class="subxS1Comment"># . epilogue</span>
-<span id="L1337" class="LineNr">1337 </span>  89/&lt;- %esp 5/r32/ebp
-<span id="L1338" class="LineNr">1338 </span>  5d/pop-to-ebp
-<span id="L1339" class="LineNr">1339 </span>  c3/return
-<span id="L1340" class="LineNr">1340 </span>
-<span id="L1341" class="Folded">1341 </span><span class="Folded">+--147 lines: # mouse helpers -----------------------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L1488" class="LineNr">1488 </span>
-<span id="L1489" class="LineNr">1489 </span><span class="subxComment"># vim&#0058;ft=subx</span>
+<span id="L452" class="LineNr"> 452 </span>  <span class="subxComment"># otherwise al = *(normal map + al)</span>
+<span id="L453" class="LineNr"> 453 </span>  05/add-to-eax <span class="SpecialChar"><a href='boot.subx.html#L493'>Keyboard-normal-map</a></span>/imm32
+<span id="L454" class="LineNr"> 454 </span>  8a/byte-&gt; *eax 0/r32/al
+<span id="L455" class="LineNr"> 455 </span><span class="Constant">$keyboard-interrupt-handler:select-map-done</span>:
+<span id="L456" class="LineNr"> 456 </span>  <span class="subxH1Comment"># - if there's no character mapping, return</span>
+<span id="L457" class="LineNr"> 457 </span>  {
+<span id="L458" class="LineNr"> 458 </span>    3c/compare-al-and 0/imm8
+<span id="L459" class="LineNr"> 459 </span>    74/jump-if-= <span class="Constant">break</span>/disp8
+<span id="L460" class="LineNr"> 460 </span>    <span class="subxH1Comment"># - store al in keyboard buffer</span>
+<span id="L461" class="LineNr"> 461 </span>    88/&lt;- *ecx 0/r32/al
+<span id="L462" class="LineNr"> 462 </span>    <span class="subxComment"># increment index</span>
+<span id="L463" class="LineNr"> 463 </span>    fe/increment-byte *<span class="SpecialChar">Keyboard-buffer</span>:<a href='108write.subx.html#L11'>write</a>
+<span id="L464" class="LineNr"> 464 </span>    <span class="subxComment"># clear top nibble of index (keyboard buffer is circular)</span>
+<span id="L465" class="LineNr"> 465 </span>    80 4/subop/and-byte *<span class="SpecialChar">Keyboard-buffer</span>:<a href='108write.subx.html#L11'>write</a> 0x0f/imm8
+<span id="L466" class="LineNr"> 466 </span>  }
+<span id="L467" class="LineNr"> 467 </span><span class="Constant">$keyboard-interrupt-handler:epilogue</span>:
+<span id="L468" class="LineNr"> 468 </span>  <span class="subxComment"># epilogue</span>
+<span id="L469" class="LineNr"> 469 </span>  9d/pop-flags
+<span id="L470" class="LineNr"> 470 </span>  61/pop-all-registers
+<span id="L471" class="LineNr"> 471 </span>  fb/enable-interrupts
+<span id="L472" class="LineNr"> 472 </span>  cf/return-from-interrupt
+<span id="L473" class="LineNr"> 473 </span>
+<span id="L474" class="LineNr"> 474 </span>== data
+<span id="L475" class="LineNr"> 475 </span>Keyboard-shift-pressed?:  <span class="subxComment"># boolean</span>
+<span id="L476" class="LineNr"> 476 </span>  0/imm32
+<span id="L477" class="LineNr"> 477 </span>
+<span id="L478" class="LineNr"> 478 </span>Keyboard-ctrl-pressed?:  <span class="subxComment"># boolean</span>
+<span id="L479" class="LineNr"> 479 </span>  0/imm32
+<span id="L480" class="LineNr"> 480 </span>
+<span id="L481" class="LineNr"> 481 </span><span class="subxComment"># var keyboard circular buffer</span>
+<span id="L482" class="LineNr"> 482 </span><span class="SpecialChar">Keyboard-buffer</span>:<a href='108write.subx.html#L11'>write</a>:  <span class="subxComment"># nibble</span>
+<span id="L483" class="LineNr"> 483 </span>  0/imm32
+<span id="L484" class="LineNr"> 484 </span><span class="SpecialChar">Keyboard-buffer</span>:read:  <span class="subxComment"># nibble</span>
+<span id="L485" class="LineNr"> 485 </span>  0/imm32
+<span id="L486" class="LineNr"> 486 </span><span class="SpecialChar">Keyboard-buffer</span>:data:  <span class="subxComment"># byte[16]</span>
+<span id="L487" class="LineNr"> 487 </span>  00 00 00 00
+<span id="L488" class="LineNr"> 488 </span>  00 00 00 00
+<span id="L489" class="LineNr"> 489 </span>  00 00 00 00
+<span id="L490" class="LineNr"> 490 </span>  00 00 00 00
+<span id="L491" class="LineNr"> 491 </span>
+<span id="L492" class="Folded"> 492 </span><span class="Folded">+-- 95 lines: # Keyboard maps for translating keys to ASCII -----------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L587" class="LineNr"> 587 </span>
+<span id="L588" class="LineNr"> 588 </span><span class="SpecialChar">Video-mode-info</span>:
+<span id="L589" class="Folded"> 589 </span><span class="Folded">+-- 53 lines: # video mode info ---------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L642" class="LineNr"> 642 </span>
+<span id="L643" class="LineNr"> 643 </span><span class="SpecialChar">Font</span>:
+<span id="L644" class="Folded"> 644 </span><span class="Folded">+--236 lines: # Bitmaps for some ASCII characters (soon Unicode) ------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L880" class="LineNr"> 880 </span>
+<span id="L881" class="LineNr"> 881 </span><span class="subxComment">## Controlling IDE (ATA) hard disks</span>
+<span id="L882" class="LineNr"> 882 </span><span class="subxComment"># Uses 28-bit PIO mode.</span>
+<span id="L883" class="LineNr"> 883 </span><span class="subxComment"># Inspired by <a href="https://colorforth.github.io/ide.html">https://colorforth.github.io/ide.html</a></span>
+<span id="L884" class="LineNr"> 884 </span><span class="subxComment">#</span>
+<span id="L885" class="LineNr"> 885 </span><span class="subxComment"># Resources:</span>
+<span id="L886" class="LineNr"> 886 </span><span class="subxComment">#   <a href="https://wiki.osdev.org/ATA_PIO_Mode">https://wiki.osdev.org/ATA_PIO_Mode</a></span>
+<span id="L887" class="LineNr"> 887 </span><span class="subxComment">#   <a href="https://forum.osdev.org/viewtopic.php?f=1&amp;p=167798">https://forum.osdev.org/viewtopic.php?f=1&amp;p=167798</a></span>
+<span id="L888" class="LineNr"> 888 </span><span class="subxComment">#   read-sector, according to <a href="https://www.scs.stanford.edu/11wi-cs140/pintos/specs/ata-3-std.pdf">https://www.scs.stanford.edu/11wi-cs140/pintos/specs/ata-3-std.pdf</a></span>
+<span id="L889" class="LineNr"> 889 </span>
+<span id="L890" class="LineNr"> 890 </span>== data
+<span id="L891" class="LineNr"> 891 </span>
+<span id="L892" class="LineNr"> 892 </span><span class="subxComment"># We'll be gaining access just to the secondary drive on the primary bus for</span>
+<span id="L893" class="LineNr"> 893 </span><span class="subxComment"># now. It will have the designated 'data' disk so we don't mess with the code</span>
+<span id="L894" class="LineNr"> 894 </span><span class="subxComment"># disk.</span>
+<span id="L895" class="LineNr"> 895 </span><span class="subxComment">#</span>
+<span id="L896" class="LineNr"> 896 </span><span class="subxComment"># The type definition for this variable is in safe Mu (rather than unsafe</span>
+<span id="L897" class="LineNr"> 897 </span><span class="subxComment"># SubX) code.</span>
+<span id="L898" class="LineNr"> 898 </span><span class="subxComment"># All ports are 8-bit except data-port, which is 16-bit.</span>
+<span id="L899" class="LineNr"> 899 </span><span class="SpecialChar">Primary-bus-secondary-drive</span>:
+<span id="L900" class="LineNr"> 900 </span>  <span class="subxComment"># command-port: int (write)</span>
+<span id="L901" class="LineNr"> 901 </span>  0x1f7/imm32
+<span id="L902" class="LineNr"> 902 </span>  <span class="subxComment"># status-port: int (read)</span>
+<span id="L903" class="LineNr"> 903 </span>  0x1f7/imm32
+<span id="L904" class="LineNr"> 904 </span>  <span class="subxComment"># alternative-status-port: int (read)</span>
+<span id="L905" class="LineNr"> 905 </span>  0x3f6/imm32
+<span id="L906" class="LineNr"> 906 </span>  <span class="subxComment"># error-port: int (read)</span>
+<span id="L907" class="LineNr"> 907 </span>  0x1f1/imm32
+<span id="L908" class="LineNr"> 908 </span>  <span class="subxComment"># drive-and-head-port: int</span>
+<span id="L909" class="LineNr"> 909 </span>  0x1f6/imm32
+<span id="L910" class="LineNr"> 910 </span>  <span class="subxComment"># sector-count-port: int</span>
+<span id="L911" class="LineNr"> 911 </span>  0x1f2/imm32
+<span id="L912" class="LineNr"> 912 </span>  <span class="subxComment"># lba-low-port: int</span>
+<span id="L913" class="LineNr"> 913 </span>  0x1f3/imm32
+<span id="L914" class="LineNr"> 914 </span>  <span class="subxComment"># lba-mid-port: int</span>
+<span id="L915" class="LineNr"> 915 </span>  0x1f4/imm32
+<span id="L916" class="LineNr"> 916 </span>  <span class="subxComment"># lba-high-port: int</span>
+<span id="L917" class="LineNr"> 917 </span>  0x1f5/imm32
+<span id="L918" class="LineNr"> 918 </span>  <span class="subxComment"># data-port: int</span>
+<span id="L919" class="LineNr"> 919 </span>  0x1f0/imm32
+<span id="L920" class="LineNr"> 920 </span>  <span class="subxComment"># drive-code: byte                # only drive-specific field</span>
+<span id="L921" class="LineNr"> 921 </span>  0xf0/imm32  <span class="subxComment"># LBA mode also enabled</span>
+<span id="L922" class="LineNr"> 922 </span>
+<span id="L923" class="LineNr"> 923 </span>== code
+<span id="L924" class="LineNr"> 924 </span>
+<span id="L925" class="LineNr"> 925 </span><span class="subxFunction">load-sectors</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, out: (addr stream byte)</span>
+<span id="L926" class="LineNr"> 926 </span>  <span class="subxS1Comment"># . prologue</span>
+<span id="L927" class="LineNr"> 927 </span>  55/push-ebp
+<span id="L928" class="LineNr"> 928 </span>  89/&lt;- %ebp 4/r32/esp
+<span id="L929" class="LineNr"> 929 </span>  <span class="subxS1Comment"># . save registers</span>
+<span id="L930" class="LineNr"> 930 </span>  50/push-eax
+<span id="L931" class="LineNr"> 931 </span>  51/push-ecx
+<span id="L932" class="LineNr"> 932 </span>  52/push-edx
+<span id="L933" class="LineNr"> 933 </span>  <span class="subxComment"># check for drive</span>
+<span id="L934" class="LineNr"> 934 </span>  (<a href='boot.subx.html#L1096'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
+<span id="L935" class="LineNr"> 935 </span>  3d/compare-eax-and 0/imm32/false
+<span id="L936" class="LineNr"> 936 </span>  0f 84/jump-if-= $load-sectors:end/disp32
+<span id="L937" class="LineNr"> 937 </span>  <span class="subxComment"># kick off read</span>
+<span id="L938" class="LineNr"> 938 </span>  (<a href='boot.subx.html#L1160'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
+<span id="L939" class="LineNr"> 939 </span>  (<a href='boot.subx.html#L1189'>clear-ata-error</a> *(ebp+8))
+<span id="L940" class="LineNr"> 940 </span>  (<a href='boot.subx.html#L1211'>ata-sector-count</a> *(ebp+8) *(ebp+0x10))
+<span id="L941" class="LineNr"> 941 </span>  (<a href='boot.subx.html#L1233'>ata-lba</a> *(ebp+8) *(ebp+0xc))
+<span id="L942" class="LineNr"> 942 </span>  (<a href='boot.subx.html#L1264'>ata-command</a> *(ebp+8) 0x20)  <span class="subxComment"># read sectors with retries</span>
+<span id="L943" class="LineNr"> 943 </span>  <span class="subxComment"># for each sector</span>
+<span id="L944" class="LineNr"> 944 </span>  {
+<span id="L945" class="LineNr"> 945 </span>    <span class="subxComment"># poll for results</span>
+<span id="L946" class="LineNr"> 946 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;waiting for sector..&quot; 7 0)</span>
+<span id="L947" class="LineNr"> 947 </span>    (<a href='boot.subx.html#L1286'>while-ata-busy</a> *(ebp+8))
+<span id="L948" class="LineNr"> 948 </span>    (<a href='boot.subx.html#L1305'>until-ata-data-available</a> *(ebp+8))
+<span id="L949" class="LineNr"> 949 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;reading\n&quot; 7 0)</span>
+<span id="L950" class="LineNr"> 950 </span>    <span class="subxComment"># var data-port/edx = disk-&gt;data-port</span>
+<span id="L951" class="LineNr"> 951 </span>    8b/-&gt; *(ebp+8) 0/r32/eax
+<span id="L952" class="LineNr"> 952 </span>    8b/-&gt; *(eax+0x24) 2/r32/edx
+<span id="L953" class="LineNr"> 953 </span>    <span class="subxComment"># emit results</span>
+<span id="L954" class="LineNr"> 954 </span>    31/xor %eax 0/r32/eax
+<span id="L955" class="LineNr"> 955 </span>    b9/copy-to-ecx 0x200/imm32  <span class="subxComment"># 512 bytes per sector</span>
+<span id="L956" class="LineNr"> 956 </span>    {
+<span id="L957" class="LineNr"> 957 </span>      81 7/subop/compare %ecx 0/imm32
+<span id="L958" class="LineNr"> 958 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
+<span id="L959" class="LineNr"> 959 </span>      66 ed/read-port-dx-into-ax
+<span id="L960" class="LineNr"> 960 </span>      <span class="subxComment"># write 2 bytes to stream one at a time</span>
+<span id="L961" class="LineNr"> 961 </span>      (<a href='115write-byte.subx.html#L12'>append-byte</a> *(ebp+0x14) %eax)
+<span id="L962" class="LineNr"> 962 </span>      49/decrement-ecx
+<span id="L963" class="LineNr"> 963 </span>      c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
+<span id="L964" class="LineNr"> 964 </span>      (<a href='115write-byte.subx.html#L12'>append-byte</a> *(ebp+0x14) %eax)
+<span id="L965" class="LineNr"> 965 </span>      49/decrement-ecx
+<span id="L966" class="LineNr"> 966 </span>      eb/jump <span class="Constant">loop</span>/disp8
+<span id="L967" class="LineNr"> 967 </span>    }
+<span id="L968" class="LineNr"> 968 </span>    <span class="subxComment"># next sector</span>
+<span id="L969" class="LineNr"> 969 </span>    ff 1/subop/decrement *(ebp+0x10)
+<span id="L970" class="LineNr"> 970 </span><span class="CommentedCode">#?     (draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0x10) 0xc 0)</span>
+<span id="L971" class="LineNr"> 971 </span>    81 7/subop/compare *(ebp+0x10) 0/imm32
+<span id="L972" class="LineNr"> 972 </span>    7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
+<span id="L973" class="LineNr"> 973 </span>    (<a href='boot.subx.html#L1329'>wait-400ns</a> *(ebp+8))
+<span id="L974" class="LineNr"> 974 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;next sector\n&quot; 7 0)</span>
+<span id="L975" class="LineNr"> 975 </span>    e9/jump <span class="Constant">loop</span>/disp32
+<span id="L976" class="LineNr"> 976 </span>  }
+<span id="L977" class="LineNr"> 977 </span><span class="Constant">$load-sectors:end</span>:
+<span id="L978" class="LineNr"> 978 </span>  <span class="subxS1Comment"># . restore registers</span>
+<span id="L979" class="LineNr"> 979 </span>  5a/pop-to-edx
+<span id="L980" class="LineNr"> 980 </span>  59/pop-to-ecx
+<span id="L981" class="LineNr"> 981 </span>  58/pop-to-eax
+<span id="L982" class="LineNr"> 982 </span>  <span class="subxS1Comment"># . epilogue</span>
+<span id="L983" class="LineNr"> 983 </span>  89/&lt;- %esp 5/r32/ebp
+<span id="L984" class="LineNr"> 984 </span>  5d/pop-to-ebp
+<span id="L985" class="LineNr"> 985 </span>  c3/return
+<span id="L986" class="LineNr"> 986 </span>
+<span id="L987" class="LineNr"> 987 </span><span class="subxFunction">store-sectors</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, in: (addr stream byte)</span>
+<span id="L988" class="LineNr"> 988 </span>  <span class="subxS1Comment"># . prologue</span>
+<span id="L989" class="LineNr"> 989 </span>  55/push-ebp
+<span id="L990" class="LineNr"> 990 </span>  89/&lt;- %ebp 4/r32/esp
+<span id="L991" class="LineNr"> 991 </span>  <span class="subxS1Comment"># . save registers</span>
+<span id="L992" class="LineNr"> 992 </span>  50/push-eax
+<span id="L993" class="LineNr"> 993 </span>  51/push-ecx
+<span id="L994" class="LineNr"> 994 </span>  52/push-edx
+<span id="L995" class="LineNr"> 995 </span>  53/push-ebx
+<span id="L996" class="LineNr"> 996 </span>  <span class="subxComment"># check for drive</span>
+<span id="L997" class="LineNr"> 997 </span>  (<a href='boot.subx.html#L1096'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
+<span id="L998" class="LineNr"> 998 </span>  3d/compare-eax-and 0/imm32/false
+<span id="L999" class="LineNr"> 999 </span>  0f 84/jump-if-= $store-sectors:end/disp32
+<span id="L1000" class="LineNr">1000 </span>  <span class="subxComment"># kick off write</span>
+<span id="L1001" class="LineNr">1001 </span>  (<a href='boot.subx.html#L1160'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
+<span id="L1002" class="LineNr">1002 </span>  (<a href='boot.subx.html#L1189'>clear-ata-error</a> *(ebp+8))
+<span id="L1003" class="LineNr">1003 </span>  (<a href='boot.subx.html#L1211'>ata-sector-count</a> *(ebp+8) *(ebp+0x10))
+<span id="L1004" class="LineNr">1004 </span>  (<a href='boot.subx.html#L1233'>ata-lba</a> *(ebp+8) *(ebp+0xc))
+<span id="L1005" class="LineNr">1005 </span>  (<a href='boot.subx.html#L1264'>ata-command</a> *(ebp+8) 0x30)  <span class="subxComment"># write sectors with retries</span>
+<span id="L1006" class="LineNr">1006 </span>  <span class="subxComment"># for each sector</span>
+<span id="L1007" class="LineNr">1007 </span><span class="CommentedCode">#?   (set-cursor-position 0 0 0)</span>
+<span id="L1008" class="LineNr">1008 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;0&quot; 7 0)</span>
+<span id="L1009" class="LineNr">1009 </span>  {
+<span id="L1010" class="LineNr">1010 </span>    <span class="subxComment"># wait</span>
+<span id="L1011" class="LineNr">1011 </span>    (<a href='boot.subx.html#L1286'>while-ata-busy</a> *(ebp+8))
+<span id="L1012" class="LineNr">1012 </span>    (<a href='boot.subx.html#L1324'>until-ata-ready-for-data</a> *(ebp+8))
+<span id="L1013" class="LineNr">1013 </span>    <span class="subxComment"># var data-port/edx = disk-&gt;data-port</span>
+<span id="L1014" class="LineNr">1014 </span>    8b/-&gt; *(ebp+8) 0/r32/eax
+<span id="L1015" class="LineNr">1015 </span>    8b/-&gt; *(eax+0x24) 2/r32/edx
+<span id="L1016" class="LineNr">1016 </span>    <span class="subxComment"># send data</span>
+<span id="L1017" class="LineNr">1017 </span>    b9/copy-to-ecx 0x200/imm32  <span class="subxComment"># 512 bytes per sector</span>
+<span id="L1018" class="LineNr">1018 </span>    <span class="subxS1Comment"># . var first-byte/ebx: byte</span>
+<span id="L1019" class="LineNr">1019 </span>    <span class="subxS1Comment"># . when it's more than 0xff, we're at an even-numbered byte</span>
+<span id="L1020" class="LineNr">1020 </span>    bb/copy-to-ebx 0xffff/imm32
+<span id="L1021" class="LineNr">1021 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;D&quot; 7 0)</span>
+<span id="L1022" class="LineNr">1022 </span><span class="Constant">$store-sectors:store-sector</span>:
+<span id="L1023" class="LineNr">1023 </span>    {
+<span id="L1024" class="LineNr">1024 </span>      81 7/subop/compare %ecx 0/imm32
+<span id="L1025" class="LineNr">1025 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
+<span id="L1026" class="LineNr">1026 </span>      <span class="subxComment"># this loop is slow, but the ATA spec also requires a small delay</span>
+<span id="L1027" class="LineNr">1027 </span>      (<a href='309stream.subx.html#L6'>stream-empty?</a> *(ebp+0x14))  <span class="subxComment"># =&gt; eax</span>
+<span id="L1028" class="LineNr">1028 </span>      3d/compare-eax-and 0/imm32/false
+<span id="L1029" class="LineNr">1029 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
+<span id="L1030" class="LineNr">1030 </span>      <span class="subxComment"># read byte from stream</span>
+<span id="L1031" class="LineNr">1031 </span>      (<a href='112read-byte.subx.html#L13'>read-byte</a> *(ebp+0x14))  <span class="subxComment"># =&gt; eax</span>
+<span id="L1032" class="LineNr">1032 </span>      <span class="subxComment"># if we're at an odd-numbered byte, save it to first-byte</span>
+<span id="L1033" class="LineNr">1033 </span>      81 7/subop/compare %ebx 0xff/imm32
+<span id="L1034" class="LineNr">1034 </span>      {
+<span id="L1035" class="LineNr">1035 </span>        7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
+<span id="L1036" class="LineNr">1036 </span>        89/&lt;- %ebx 0/r32/eax
+<span id="L1037" class="LineNr">1037 </span>        eb/jump $store-sectors:store-sector/disp8
+<span id="L1038" class="LineNr">1038 </span>      }
+<span id="L1039" class="LineNr">1039 </span>      <span class="subxComment"># otherwise OR it with first-byte and write it out</span>
+<span id="L1040" class="LineNr">1040 </span>      c1/shift 4/subop/left %eax 8/imm8
+<span id="L1041" class="LineNr">1041 </span>      09/or %eax 3/r32/ebx
+<span id="L1042" class="LineNr">1042 </span>      66 ef/write-ax-into-port-dx
+<span id="L1043" class="LineNr">1043 </span>      49/decrement-ecx
+<span id="L1044" class="LineNr">1044 </span>      49/decrement-ecx
+<span id="L1045" class="LineNr">1045 </span>      <span class="subxComment"># reset first-byte</span>
+<span id="L1046" class="LineNr">1046 </span>      bb/copy-to-ebx 0xffff/imm32
+<span id="L1047" class="LineNr">1047 </span>      eb/jump <span class="Constant">loop</span>/disp8
+<span id="L1048" class="LineNr">1048 </span>    }
+<span id="L1049" class="LineNr">1049 </span>    <span class="subxComment"># write out final first-byte if necessary</span>
+<span id="L1050" class="LineNr">1050 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;I&quot; 7 0)</span>
+<span id="L1051" class="LineNr">1051 </span>    81 7/subop/compare %ebx 0xff/imm32
+<span id="L1052" class="LineNr">1052 </span>    {
+<span id="L1053" class="LineNr">1053 </span>      7f/jump-if-&gt; <span class="Constant">break</span>/disp8
+<span id="L1054" class="LineNr">1054 </span>      89/&lt;- %eax 3/r32/ebx
+<span id="L1055" class="LineNr">1055 </span>      66 ef/write-ax-into-port-dx
+<span id="L1056" class="LineNr">1056 </span>      49/decrement-ecx
+<span id="L1057" class="LineNr">1057 </span>      49/decrement-ecx
+<span id="L1058" class="LineNr">1058 </span>    }
+<span id="L1059" class="LineNr">1059 </span>    <span class="subxComment"># pad zeroes</span>
+<span id="L1060" class="LineNr">1060 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;P&quot; 7 0)</span>
+<span id="L1061" class="LineNr">1061 </span>    31/xor %eax 0/r32/eax
+<span id="L1062" class="LineNr">1062 </span>    {
+<span id="L1063" class="LineNr">1063 </span>      81 7/subop/compare %ecx 0/imm32
+<span id="L1064" class="LineNr">1064 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
+<span id="L1065" class="LineNr">1065 </span>      66 ef/write-ax-into-port-dx
+<span id="L1066" class="LineNr">1066 </span>      49/decrement-ecx
+<span id="L1067" class="LineNr">1067 </span>      49/decrement-ecx
+<span id="L1068" class="LineNr">1068 </span>      eb/jump <span class="Constant">loop</span>/disp8
+<span id="L1069" class="LineNr">1069 </span>    }
+<span id="L1070" class="LineNr">1070 </span>    <span class="subxComment"># next sector</span>
+<span id="L1071" class="LineNr">1071 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;N&quot; 7 0)</span>
+<span id="L1072" class="LineNr">1072 </span>    ff 1/subop/decrement *(ebp+0x10)
+<span id="L1073" class="LineNr">1073 </span>    81 7/subop/compare *(ebp+0x10) 0/imm32
+<span id="L1074" class="LineNr">1074 </span>    7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
+<span id="L1075" class="LineNr">1075 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;W&quot; 7 0)</span>
+<span id="L1076" class="LineNr">1076 </span>    (<a href='boot.subx.html#L1329'>wait-400ns</a> *(ebp+8))
+<span id="L1077" class="LineNr">1077 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;L&quot; 7 0)</span>
+<span id="L1078" class="LineNr">1078 </span>    e9/jump <span class="Constant">loop</span>/disp32
+<span id="L1079" class="LineNr">1079 </span>  }
+<span id="L1080" class="LineNr">1080 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;F&quot; 7 0)</span>
+<span id="L1081" class="LineNr">1081 </span>  (<a href='boot.subx.html#L1363'>flush-ata-cache</a> *(ebp+8))
+<span id="L1082" class="LineNr">1082 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;Y&quot; 7 0)</span>
+<span id="L1083" class="LineNr">1083 </span><span class="Constant">$store-sectors:end</span>:
+<span id="L1084" class="LineNr">1084 </span>  <span class="subxS1Comment"># . restore registers</span>
+<span id="L1085" class="LineNr">1085 </span>  5b/pop-to-ebx
+<span id="L1086" class="LineNr">1086 </span>  5a/pop-to-edx
+<span id="L1087" class="LineNr">1087 </span>  59/pop-to-ecx
+<span id="L1088" class="LineNr">1088 </span>  58/pop-to-eax
+<span id="L1089" class="LineNr">1089 </span>  <span class="subxS1Comment"># . epilogue</span>
+<span id="L1090" class="LineNr">1090 </span>  89/&lt;- %esp 5/r32/ebp
+<span id="L1091" class="LineNr">1091 </span>  5d/pop-to-ebp
+<span id="L1092" class="LineNr">1092 </span>  c3/return
+<span id="L1093" class="LineNr">1093 </span>
+<span id="L1094" class="Folded">1094 </span><span class="Folded">+--289 lines: # disk helpers ------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L1383" class="LineNr">1383 </span>
+<span id="L1384" class="LineNr">1384 </span><span class="subxComment">## Controlling a PS/2 mouse</span>
+<span id="L1385" class="LineNr">1385 </span><span class="subxComment"># Uses no IRQs, just polling.</span>
+<span id="L1386" class="LineNr">1386 </span><span class="subxComment"># Thanks Dave Long: <a href="https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py">https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py</a></span>
+<span id="L1387" class="LineNr">1387 </span><span class="subxComment">#</span>
+<span id="L1388" class="LineNr">1388 </span><span class="subxComment"># Resources:</span>
+<span id="L1389" class="LineNr">1389 </span><span class="subxComment">#   <a href="https://wiki.osdev.org/Mouse_Input">https://wiki.osdev.org/Mouse_Input</a></span>
+<span id="L1390" class="LineNr">1390 </span>
+<span id="L1391" class="LineNr">1391 </span><span class="subxComment"># results x/eax, y/ecx range from -256 to +255</span>
+<span id="L1392" class="LineNr">1392 </span><span class="subxComment"># See <a href="https://wiki.osdev.org/index.php?title=Mouse_Input&amp;oldid=25663#Format_of_First_3_Packet_Bytes">https://wiki.osdev.org/index.php?title=Mouse_Input&amp;oldid=25663#Format_of_First_3_Packet_Bytes</a></span>
+<span id="L1393" class="LineNr">1393 </span><span class="subxFunction">read-mouse-event</span>:  <span class="subxComment"># -&gt; _/eax: int, _/ecx: int</span>
+<span id="L1394" class="LineNr">1394 </span>  <span class="subxS1Comment"># . prologue</span>
+<span id="L1395" class="LineNr">1395 </span>  55/push-ebp
+<span id="L1396" class="LineNr">1396 </span>  89/&lt;- %ebp 4/r32/esp
+<span id="L1397" class="LineNr">1397 </span>  <span class="subxS1Comment"># . save registers</span>
+<span id="L1398" class="LineNr">1398 </span>  52/push-edx
+<span id="L1399" class="LineNr">1399 </span>  53/push-ebx
+<span id="L1400" class="LineNr">1400 </span>  <span class="subxComment"># if no event, return 0, 0</span>
+<span id="L1401" class="LineNr">1401 </span>  b8/copy-to-eax 0/imm32
+<span id="L1402" class="LineNr">1402 </span>  b9/copy-to-ecx 0/imm32
+<span id="L1403" class="LineNr">1403 </span>  (<a href='boot.subx.html#L1460'>any-mouse-event?</a>)  <span class="subxComment"># =&gt; eax</span>
+<span id="L1404" class="LineNr">1404 </span>  3d/compare-eax-and 0/imm32/false
+<span id="L1405" class="LineNr">1405 </span>  74/jump-if-= $read-mouse-event:end/disp8
+<span id="L1406" class="LineNr">1406 </span>  <span class="subxComment"># var f1/edx: byte = inb(0x60)</span>
+<span id="L1407" class="LineNr">1407 </span>  31/xor %eax 0/r32/eax
+<span id="L1408" class="LineNr">1408 </span>  e4/read-port-into-al 0x60/imm8
+<span id="L1409" class="LineNr">1409 </span>  89/&lt;- %edx 0/r32/eax
+<span id="L1410" class="LineNr">1410 </span>  (<a href='boot.subx.html#L1445'>wait-for-mouse-event</a>)
+<span id="L1411" class="LineNr">1411 </span>  <span class="subxComment"># var dx/ebx: byte = inb(0x60)</span>
+<span id="L1412" class="LineNr">1412 </span>  31/xor %eax 0/r32/eax
+<span id="L1413" class="LineNr">1413 </span>  e4/read-port-into-al 0x60/imm8
+<span id="L1414" class="LineNr">1414 </span>  89/&lt;- %ebx 0/r32/eax
+<span id="L1415" class="LineNr">1415 </span>  (<a href='boot.subx.html#L1445'>wait-for-mouse-event</a>)
+<span id="L1416" class="LineNr">1416 </span>  <span class="subxComment"># var dy/ecx: byte = inb(0x60)</span>
+<span id="L1417" class="LineNr">1417 </span>  31/xor %eax 0/r32/eax
+<span id="L1418" class="LineNr">1418 </span>  e4/read-port-into-al 0x60/imm8
+<span id="L1419" class="LineNr">1419 </span>  89/&lt;- %ecx 0/r32/eax
+<span id="L1420" class="LineNr">1420 </span>  <span class="subxComment"># eax = dx</span>
+<span id="L1421" class="LineNr">1421 </span>  89/&lt;- %eax 3/r32/ebx
+<span id="L1422" class="LineNr">1422 </span>  <span class="subxComment"># if (f1 &amp; 0x10) dx = -dx</span>
+<span id="L1423" class="LineNr">1423 </span>  {
+<span id="L1424" class="LineNr">1424 </span>    f6 0/subop/test-bits %dl 0x10/imm8
+<span id="L1425" class="LineNr">1425 </span>    74/jump-if-zero <span class="Constant">break</span>/disp8
+<span id="L1426" class="LineNr">1426 </span>    0d/or-eax-with 0xffffff00/imm32
+<span id="L1427" class="LineNr">1427 </span>  }
+<span id="L1428" class="LineNr">1428 </span>  <span class="subxComment"># if (f1 &amp; 0x20) dy = -dy</span>
+<span id="L1429" class="LineNr">1429 </span>  {
+<span id="L1430" class="LineNr">1430 </span>    f6 0/subop/test-bits %dl 0x20/imm8
+<span id="L1431" class="LineNr">1431 </span>    74/jump-if-zero <span class="Constant">break</span>/disp8
+<span id="L1432" class="LineNr">1432 </span>    81 1/subop/or %ecx 0xffffff00/imm32
+<span id="L1433" class="LineNr">1433 </span>  }
+<span id="L1434" class="LineNr">1434 </span><span class="Constant">$read-mouse-event:end</span>:
+<span id="L1435" class="LineNr">1435 </span>  <span class="subxS1Comment"># . restore registers</span>
+<span id="L1436" class="LineNr">1436 </span>  5b/pop-to-ebx
+<span id="L1437" class="LineNr">1437 </span>  5a/pop-to-edx
+<span id="L1438" class="LineNr">1438 </span>  <span class="subxS1Comment"># . epilogue</span>
+<span id="L1439" class="LineNr">1439 </span>  89/&lt;- %esp 5/r32/ebp
+<span id="L1440" class="LineNr">1440 </span>  5d/pop-to-ebp
+<span id="L1441" class="LineNr">1441 </span>  c3/return
+<span id="L1442" class="LineNr">1442 </span>
+<span id="L1443" class="Folded">1443 </span><span class="Folded">+--147 lines: # mouse helpers -----------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L1590" class="LineNr">1590 </span>
+<span id="L1591" class="LineNr">1591 </span><span class="subxComment"># vim&#0058;ft=subx</span>
 </pre>
 </body>
 </html>
