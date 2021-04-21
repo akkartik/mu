@@ -1,7 +1,8 @@
 # env is an alist of ((sym . val) (sym . val) ...)
 # we never modify `in` or `env`
 # ignore 'screen-cell' on a first reading; it's a hack for sandboxes
-fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+# 'call-number' is just for showing intermediate progress; this is a _slow_ interpreter
+fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # stack overflow?   # disable when enabling Really-debug-print
   check-stack
   show-stack-state
@@ -15,6 +16,24 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     return
   }
   var in/esi: (addr handle cell) <- copy _in
+  # show intermediate progress on screen if necessary
+  {
+    compare screen-cell, 0
+    break-if-=
+    var tmp/eax: int <- copy call-number
+    tmp <- and 0x3f  # every 64 calls to evaluate
+    compare tmp, 0
+    break-if-!=
+    var screen-cell/eax: (addr handle cell) <- copy screen-cell
+    var screen-cell-addr/eax: (addr cell) <- lookup *screen-cell
+    compare screen-cell-addr, 0
+    break-if-=
+    var screen-obj-ah/eax: (addr handle screen) <- get screen-cell-addr, screen-data
+    var screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
+    compare screen-obj, 0
+    break-if-=
+    var y/ecx: int <- render-screen 0/screen, screen-obj, 0x70/xmin, 2/ymin
+  }
 #?   dump-cell in
 #?   {
 #?     var foo/eax: byte <- read-key 0/keyboard
@@ -159,7 +178,8 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     rest <- lookup *rest-ah
     var second-arg-ah/edx: (addr handle cell) <- get rest, left
     debug-print "P", 4/fg, 0/bg
-    evaluate second-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell
+    increment call-number
+    evaluate second-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "Q", 4/fg, 0/bg
     trace-text trace, "eval", "saving global binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
@@ -198,7 +218,8 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var guard-h: (handle cell)
     var guard-ah/esi: (addr handle cell) <- address guard-h
     debug-print "R", 4/fg, 0/bg
-    evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell
+    increment call-number
+    evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "S", 4/fg, 0/bg
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
@@ -215,7 +236,8 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
       branch-ah <- get rest, left
     }
     debug-print "T", 4/fg, 0/bg
-    evaluate branch-ah, out, env-h, globals, trace, screen-cell, keyboard-cell
+    increment call-number
+    evaluate branch-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "U", 4/fg, 0/bg
     trace-higher trace
     return
@@ -237,7 +259,8 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var left-out-ah/edi: (addr handle cell) <- get curr-out, left
     var left-ah/esi: (addr handle cell) <- get curr, left
     debug-print "A", 4/fg, 0/bg
-    evaluate left-ah, left-out-ah, env-h, globals, trace, screen-cell, keyboard-cell
+    increment call-number
+    evaluate left-ah, left-out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "B", 4/fg, 0/bg
     #
     curr-out-ah <- get curr-out, right
@@ -251,7 +274,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   var function-ah/ecx: (addr handle cell) <- get evaluated-list, left
   var args-ah/edx: (addr handle cell) <- get evaluated-list, right
   debug-print "C", 4/fg, 0/bg
-  apply function-ah, args-ah, out, globals, trace, screen-cell, keyboard-cell
+  apply function-ah, args-ah, out, globals, trace, screen-cell, keyboard-cell, call-number
   debug-print "Y", 4/fg, 0/bg
   trace-higher trace
   # trace "=> " out {{{
@@ -268,7 +291,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   debug-print "Z", 4/fg, 0/bg
 }
 
-fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   var f-ah/eax: (addr handle cell) <- copy _f-ah
   var _f/eax: (addr cell) <- lookup *f-ah
   var f/esi: (addr cell) <- copy _f
@@ -313,7 +336,7 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     var params-ah/ecx: (addr handle cell) <- get rest, left
     var body-ah/eax: (addr handle cell) <- get rest, right
     debug-print "D", 7/fg, 0/bg
-    apply-function params-ah, args-ah, body-ah, out, *callee-env-ah, globals, trace, screen-cell, keyboard-cell
+    apply-function params-ah, args-ah, body-ah, out, *callee-env-ah, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "Y", 7/fg, 0/bg
     trace-higher trace
     return
@@ -321,7 +344,7 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
   error trace, "unknown function"
 }
 
-fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # push bindings for params to env
   var new-env-storage: (handle cell)
   var new-env-ah/esi: (addr handle cell) <- address new-env-storage
@@ -340,7 +363,8 @@ fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _b
     {
       var curr-ah/eax: (addr handle cell) <- get body, left
       debug-print "E", 7/fg, 0/bg
-      evaluate curr-ah, out, *new-env-ah, globals, trace, screen-cell, keyboard-cell
+      increment call-number
+      evaluate curr-ah, out, *new-env-ah, globals, trace, screen-cell, keyboard-cell, call-number
       debug-print "X", 7/fg, 0/bg
     }
     #
@@ -827,7 +851,7 @@ fn test-evaluate-is-well-behaved {
   var tmp-storage: (handle cell)
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "a"
-  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, t, 0/no-screen, 0/no-keyboard
+  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, t, 0/no-screen, 0/no-keyboard, 0/call-number
   # doesn't die
   check-trace-contains t, "error", "unbound symbol: a", "F - test-evaluate-is-well-behaved"
 }
@@ -841,7 +865,7 @@ fn test-evaluate-number {
   var tmp-storage: (handle cell)
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-integer tmp-ah, 3
-  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
+  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
   #
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
@@ -871,7 +895,7 @@ fn test-evaluate-symbol {
   var tmp-storage: (handle cell)
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "a"
-  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
+  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 1/number, "F - test-evaluate-symbol/0"
@@ -893,7 +917,7 @@ fn test-evaluate-primitive-function {
   # eval +, nil env
   var tmp-storage: (handle cell)
   var tmp-ah/esi: (addr handle cell) <- address tmp-storage
-  evaluate add-ah, tmp-ah, *nil-ah, globals, 0/no-trace, 0/no-screen, 0/no-keyboard
+  evaluate add-ah, tmp-ah, *nil-ah, globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
   #
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
@@ -928,7 +952,7 @@ fn test-evaluate-primitive-function-call {
   var globals/edx: (addr global-table) <- address globals-storage
   initialize-globals globals
   #
-  evaluate tmp-ah, tmp-ah, *nil-ah, globals, t, 0/no-screen, 0/no-keyboard
+  evaluate tmp-ah, tmp-ah, *nil-ah, globals, t, 0/no-screen, 0/no-keyboard, 0/call-number
 #?   dump-trace t
   #
   var result/eax: (addr cell) <- lookup *tmp-ah

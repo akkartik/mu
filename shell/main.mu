@@ -53,7 +53,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
         # run
         var out: (handle cell)
         var out-ah/ecx: (addr handle cell) <- address out
-        evaluate tmp, out-ah, nil, globals, 0/trace, 0/no-fake-screen, 0/no-fake-keyboard
+        evaluate tmp, out-ah, nil, globals, 0/trace, 0/no-fake-screen, 0/no-fake-keyboard, 0/call-number
         {
           var tmp/eax: byte <- read-key keyboard
           compare tmp, 0

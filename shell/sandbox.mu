@@ -682,7 +682,7 @@ fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-tab
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
   debug-print "^", 4/fg, 0/bg
-  evaluate read-result, eval-result, *nil-ah, globals, trace, screen-cell, keyboard-cell
+  evaluate read-result, eval-result, *nil-ah, globals, trace, screen-cell, keyboard-cell, 1/call-number
   debug-print "$", 4/fg, 0/bg
   var error?/eax: boolean <- has-errors? trace
   {
