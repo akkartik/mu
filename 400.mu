@@ -26,6 +26,7 @@ sig check-strings-equal s: (addr array byte), expected: (addr array byte), msg: 
 # debugging
 sig check-stack
 sig show-stack-state
+sig debug-print x: (addr array byte), fg: int, bg: int
 
 # streams
 sig clear-stream f: (addr stream _)

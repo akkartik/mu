@@ -49,3 +49,26 @@ $check-stack:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+# Helper for debugging deeply recursive calls without logs or traces.
+# Turn it on, insert calls in the right places, and you get a terse sense of
+# important parts of the call stack. A poor sophont's stack trace.
+debug-print:  # x: (addr array byte), fg: int, bg: int    # x is very short; usually a single character
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    {
+      81 7/subop/compare *Really-debug-print 0/imm32/false
+      74/jump-if-= break/disp8
+      (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+8) *(ebp+0xc) *(ebp+0x10))
+    }
+$debug-print:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+== data
+Really-debug-print:
+  0/imm32/false

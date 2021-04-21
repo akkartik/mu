@@ -558,7 +558,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     clear-screen-cell screen-cell
     var keyboard-cell/esi: (addr handle cell) <- get self, keyboard-var
     rewind-keyboard-cell keyboard-cell  # don't clear keys from before
-    set-cursor-position 0, 0, 0
+    set-cursor-position 0, 0, 0  # for any debug prints during evaluation
     run data, value, globals, trace, screen-cell, keyboard-cell
     return
   }
@@ -681,9 +681,9 @@ fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-tab
   allocate-pair nil-ah
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "O", 4/fg, 0/bg
+  debug-print "^", 4/fg, 0/bg
   evaluate read-result, eval-result, *nil-ah, globals, trace, screen-cell, keyboard-cell
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "P", 4/fg, 0/bg
+  debug-print "$", 4/fg, 0/bg
   var error?/eax: boolean <- has-errors? trace
   {
     compare error?, 0/false
