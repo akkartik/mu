@@ -4,9 +4,8 @@
 # 'call-number' is just for showing intermediate progress; this is a _slow_ interpreter
 fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # stack overflow?   # disable when enabling Really-debug-print
-#?   check-stack
-#?   show-stack-state
-  debug-print "^", 7/fg, 0/bg
+  check-stack
+  show-stack-state
   # errors? skip
   {
     compare trace, 0
@@ -55,7 +54,6 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace trace, "eval", stream
   }
   # }}}
-  debug-print "!", 7/fg, 0/bg
   trace-lower trace
   var in-addr/eax: (addr cell) <- lookup *in
   {
@@ -68,7 +66,6 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace-higher trace
     return
   }
-  debug-print "@", 7/fg, 0/bg
   var in-type/ecx: (addr int) <- get in-addr, type
   compare *in-type, 1/number
   {
@@ -214,12 +211,6 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     compare set?, 0/false
     break-if-=
     #
-    {
-      var foo/eax: boolean <- debug-print?
-      compare foo, 0/false
-      break-if-=
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "set|", 7/fg, 0/bg
-    }
     trace-text trace, "eval", "set"
     trace-text trace, "eval", "evaluating second arg"
     var rest/eax: (addr cell) <- lookup *rest-ah
@@ -317,60 +308,24 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     rest-ah <- get rest, right
     var guard-h: (handle cell)
     var guard-ah/esi: (addr handle cell) <- address guard-h
-    # skip first 201 iterations without debug
-    var i/ebx: int <- copy 0
-    {
-      trace-text trace, "eval", "loop termination check"
-      debug-print "V", 4/fg, 0/bg
-      increment call-number
-      evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-      debug-print "W", 4/fg, 0/bg
-      var guard-a/eax: (addr cell) <- lookup *guard-ah
-      var done?/eax: boolean <- nil? guard-a
-      compare done?, 0/false
-      break-if-!=
-      evaluate-exprs rest-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-      i <- increment
-      compare i, 0xc9/201
-      break-if->
-      loop
-    }
-    turn-on-debug-print
-    i <- copy 0
-    {
-      trace-text trace, "eval", "loop termination check"
-  {
-    compare trace, 0
-    break-if-=
-    var error?/eax: boolean <- has-errors? trace
-    compare error?, 0/false
-    break-if-=
-    return
-  }
-      set-cursor-position 0/screen, 0/x, i
-      i <- increment
-      compare i, 0x20
+    $evaluate:while:loop-execution: {
       {
-        break-if-<
-        clear-screen 0/screen
-        i <- copy 0
-        set-cursor-position 0/screen, 0/x, i
+        compare trace, 0
+        break-if-=
+        var error?/eax: boolean <- has-errors? trace
+        compare error?, 0/false
+        break-if-!= $evaluate:while:loop-execution
       }
+      trace-text trace, "eval", "loop termination check"
       debug-print "V", 4/fg, 0/bg
       increment call-number
-      dump-cell-from-cursor-over-full-screen first-arg-ah
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "|", 7/fg, 0/bg
       evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
       debug-print "W", 4/fg, 0/bg
-      dump-cell-from-cursor-over-full-screen guard-ah
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "|", 7/fg, 0/bg
       var guard-a/eax: (addr cell) <- lookup *guard-ah
       var done?/eax: boolean <- nil? guard-a
       compare done?, 0/false
       break-if-!=
-      dump-cell-from-cursor-over-full-screen rest-ah
       evaluate-exprs rest-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "]", 7/fg, 0/bg
       loop
     }
     trace-text trace, "eval", "loop terminated"
@@ -505,13 +460,6 @@ fn evaluate-exprs _exprs-ah: (addr handle cell), out: (addr handle cell), env-h:
       debug-print "E", 7/fg, 0/bg
       increment call-number
       evaluate curr-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-      {
-        var foo/eax: boolean <- debug-print?
-        compare foo, 0/false
-        break-if-=
-        dump-cell-from-cursor-over-full-screen out
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "|", 7/fg, 0/bg
-      }
       debug-print "X", 7/fg, 0/bg
     }
     #
