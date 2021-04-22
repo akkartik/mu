@@ -286,6 +286,45 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace-higher trace
     return
   }
+  $evaluate:while: {
+    # trees starting with "while" are loops
+    var expr/esi: (addr cell) <- copy in-addr
+    # if its first elem is not "while", break
+    var first-ah/ecx: (addr handle cell) <- get in-addr, left
+    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first/eax: (addr cell) <- lookup *first-ah
+    var first-type/ecx: (addr int) <- get first, type
+    compare *first-type, 2/symbol
+    break-if-!=
+    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
+    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
+    var while?/eax: boolean <- stream-data-equal? sym-data, "while"
+    compare while?, 0/false
+    break-if-=
+    #
+    trace-text trace, "eval", "while"
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    var first-arg-ah/ecx: (addr handle cell) <- get rest, left
+    rest-ah <- get rest, right
+    var guard-h: (handle cell)
+    var guard-ah/esi: (addr handle cell) <- address guard-h
+    {
+      trace-text trace, "eval", "loop termination check"
+      debug-print "V", 4/fg, 0/bg
+      increment call-number
+      evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+      debug-print "W", 4/fg, 0/bg
+      var guard-a/eax: (addr cell) <- lookup *guard-ah
+      var done?/eax: boolean <- nil? guard-a
+      compare done?, 0/false
+      break-if-!=
+      evaluate-exprs rest-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+      loop
+    }
+    trace-text trace, "eval", "loop terminated"
+    trace-higher trace
+    return
+  }
   trace-text trace, "eval", "function call"
   trace-text trace, "eval", "evaluating list elements"
   trace-lower trace
@@ -388,31 +427,36 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
   error trace, "unknown function"
 }
 
-fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), _body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
+fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # push bindings for params to env
-  var new-env-storage: (handle cell)
-  var new-env-ah/esi: (addr handle cell) <- address new-env-storage
+  var new-env-h: (handle cell)
+  var new-env-ah/esi: (addr handle cell) <- address new-env-h
   push-bindings params-ah, args-ah, env-h, new-env-ah, trace
-  # eval all expressions in body, writing result to `out` each time
-  var body-ah/ecx: (addr handle cell) <- copy _body-ah
-  $apply-function:body: {
-    var body/eax: (addr cell) <- lookup *body-ah
-    # stop when body is nil
+  #
+  evaluate-exprs body-ah, out, new-env-h, globals, trace, screen-cell, keyboard-cell, call-number
+}
+
+fn evaluate-exprs _exprs-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
+  # eval all exprs, writing result to `out` each time
+  var exprs-ah/ecx: (addr handle cell) <- copy _exprs-ah
+  $evaluate-exprs:loop: {
+    var exprs/eax: (addr cell) <- lookup *exprs-ah
+    # stop when exprs is nil
     {
-      var body-nil?/eax: boolean <- nil? body
-      compare body-nil?, 0/false
-      break-if-!= $apply-function:body
+      var exprs-nil?/eax: boolean <- nil? exprs
+      compare exprs-nil?, 0/false
+      break-if-!= $evaluate-exprs:loop
     }
     # evaluate each expression, writing result to `out`
     {
-      var curr-ah/eax: (addr handle cell) <- get body, left
+      var curr-ah/eax: (addr handle cell) <- get exprs, left
       debug-print "E", 7/fg, 0/bg
       increment call-number
-      evaluate curr-ah, out, *new-env-ah, globals, trace, screen-cell, keyboard-cell, call-number
+      evaluate curr-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
       debug-print "X", 7/fg, 0/bg
     }
     #
-    body-ah <- get body, right
+    exprs-ah <- get exprs, right
     loop
   }
   # `out` contains result of evaluating final expression
