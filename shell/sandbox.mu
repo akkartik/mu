@@ -558,7 +558,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     clear-screen-cell screen-cell
     var keyboard-cell/esi: (addr handle cell) <- get self, keyboard-var
     rewind-keyboard-cell keyboard-cell  # don't clear keys from before
-    set-cursor-position 0, 0, 0  # for any debug prints during evaluation
+    set-cursor-position real-screen, 0/x, 0/y  # for any debug prints during evaluation
     run data, value, globals, trace, screen-cell, keyboard-cell
     return
   }
