@@ -212,3 +212,92 @@ $stream-final:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+# compare all the data in two streams (ignoring the read pointer)
+streams-data-equal?:  # f: (addr stream byte), s: (addr array byte) -> result/eax: boolean
+    # pseudocode:
+    #   awrite = a->write
+    #   if (awrite != b->write) return false
+    #   i = 0
+    #   curra = a->data
+    #   currb = b->data
+    #   while i < awrite
+    #     i1 = *curra
+    #     i2 = *currb
+    #     if (c1 != c2) return false
+    #     i+=4, curra+=4, currb+=4
+    #   return true
+    #
+    # registers:
+    #   i: ecx
+    #   awrite: edx
+    #   curra: esi
+    #   currb: edi
+    #   i1: eax
+    #   i2: ebx
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = a
+    8b/-> *(ebp+8) 6/r32/esi
+    # edi = b
+    8b/-> *(ebp+0xc) 7/r32/edi
+    # var awrite/edx: int = a->write
+    8b/-> *esi 2/r32/edx
+$streams-data-equal?:sizes:
+    # if (awrite != b->write) return false
+    39/compare *edi 2/r32/edx
+    75/jump-if-!= $streams-data-equal?:false/disp8
+    # var curra/esi: (addr byte) = a->data
+    81 0/subop/add %esi 0xc/imm32
+    # var currb/edi: (addr byte) = b->data
+    81 0/subop/add %edi 0xc/imm32
+    # var i/ecx: int = 0
+    31/xor-with %ecx 1/r32/ecx
+    # var vala/eax: int
+    31/xor-with %eax 0/r32/eax
+    # var valb/ebx: int
+    31/xor-with %ebx 3/r32/ebx
+$streams-data-equal?:loop:
+    {
+      # if (i >= awrite) return true
+      39/compare %ecx 2/r32/edx
+      7d/jump-if->= $streams-data-equal?:true/disp8
+      # var vala/eax: int = *curra
+      8a/byte-> *esi 0/r32/eax
+      # var valb/ebx: int = *currb
+      8a/byte-> *edi 3/r32/ebx
+      # if (vala != valb) return false
+      39/compare %eax 3/r32/ebx
+      75/jump-if-!= $streams-data-equal?:false/disp8
+      # i++
+      41/increment-ecx
+      # curra++
+      46/increment-esi
+      # currb++
+      47/increment-edi
+      eb/jump loop/disp8
+    }
+$streams-data-equal?:true:
+    b8/copy-to-eax 1/imm32
+    eb/jump $streams-data-equal?:end/disp8
+$streams-data-equal?:false:
+    b8/copy-to-eax 0/imm32
+$streams-data-equal?:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return

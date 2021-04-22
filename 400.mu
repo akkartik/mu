@@ -32,6 +32,7 @@ sig debug-print x: (addr array byte), fg: int, bg: int
 sig clear-stream f: (addr stream _)
 sig rewind-stream f: (addr stream _)
 sig stream-data-equal? f: (addr stream byte), s: (addr array byte) -> _/eax: boolean
+sig streams-data-equal? f: (addr stream byte), s: (addr stream byte) -> _/eax: boolean
 sig check-stream-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
 sig next-stream-line-equal? f: (addr stream byte), s: (addr array byte) -> _/eax: boolean
 sig check-next-stream-line-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)

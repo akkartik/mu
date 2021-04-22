@@ -145,8 +145,58 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace-higher trace
     return
   }
+  $evaluate:def: {
+    # trees starting with "def" define globals
+    var expr/esi: (addr cell) <- copy in-addr
+    # if its first elem is not "def", break
+    var first-ah/ecx: (addr handle cell) <- get in-addr, left
+    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first/eax: (addr cell) <- lookup *first-ah
+    var first-type/ecx: (addr int) <- get first, type
+    compare *first-type, 2/symbol
+    break-if-!=
+    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
+    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
+    var def?/eax: boolean <- stream-data-equal? sym-data, "def"
+    compare def?, 0/false
+    break-if-=
+    #
+    trace-text trace, "eval", "def"
+    trace-text trace, "eval", "evaluating second arg"
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    var first-arg-ah/ecx: (addr handle cell) <- get rest, left
+    {
+      var first-arg/eax: (addr cell) <- lookup *first-arg-ah
+      var first-arg-type/eax: (addr int) <- get first-arg, type
+      compare *first-arg-type, 2/symbol
+      break-if-=
+      error trace, "first arg to def must be a symbol"
+      trace-higher trace
+      return
+    }
+    rest-ah <- get rest, right
+    rest <- lookup *rest-ah
+    var second-arg-ah/edx: (addr handle cell) <- get rest, left
+    debug-print "P", 4/fg, 0/bg
+    increment call-number
+    evaluate second-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    debug-print "Q", 4/fg, 0/bg
+    trace-text trace, "eval", "saving global binding"
+    var first-arg/eax: (addr cell) <- lookup *first-arg-ah
+    var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
+    var first-arg-data/eax: (addr stream byte) <- lookup *first-arg-data-ah
+    var tmp-string: (handle array byte)
+    var tmp-ah/edx: (addr handle array byte) <- address tmp-string
+    rewind-stream first-arg-data
+    stream-to-array first-arg-data, tmp-ah
+    var first-arg-data-string/eax: (addr array byte) <- lookup *tmp-ah
+    var out2/edi: (addr handle cell) <- copy out
+    append-global globals, first-arg-data-string, *out2
+    trace-higher trace
+    return
+  }
   $evaluate:set: {
-    # trees starting with "set" define globals
+    # trees starting with "set" mutate bindings
     var expr/esi: (addr cell) <- copy in-addr
     # if its first elem is not "set", break
     var first-ah/ecx: (addr handle cell) <- get in-addr, left
@@ -181,17 +231,11 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     increment call-number
     evaluate second-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "Q", 4/fg, 0/bg
-    trace-text trace, "eval", "saving global binding"
+    trace-text trace, "eval", "mutating binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
     var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
     var first-arg-data/eax: (addr stream byte) <- lookup *first-arg-data-ah
-    var tmp-string: (handle array byte)
-    var tmp-ah/edx: (addr handle array byte) <- address tmp-string
-    rewind-stream first-arg-data
-    stream-to-array first-arg-data, tmp-ah
-    var first-arg-data-string/eax: (addr array byte) <- lookup *tmp-ah
-    var out2/edi: (addr handle cell) <- copy out
-    append-global globals, first-arg-data-string, *out2
+    mutate-binding first-arg-data, out, env-h, globals, trace
     trace-higher trace
     return
   }
@@ -642,6 +686,112 @@ fn test-lookup-symbol-in-globals {
   check-ints-equal *result-type, 4/primitive-function, "F - test-lookup-symbol-in-globals/0"
   var result-value/eax: (addr int) <- get result, index-data
   check-ints-equal *result-value, 2/add, "F - test-lookup-symbol-in-globals/1"
+}
+
+fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace) {
+  # trace name
+  {
+    compare trace, 0
+    break-if-=
+    var stream-storage: (stream byte 0x800)  # pessimistically sized just for the large alist loaded from disk in `main`
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    write stream, "bind "
+    rewind-stream name
+    write-stream stream, name
+    write stream, " to "
+    print-cell val, stream, 0/no-trace
+    write stream, " in "
+    var env-ah/eax: (addr handle cell) <- address env-h
+    print-cell env-ah, stream, 0/no-trace
+    trace trace, "eval", stream
+  }
+  trace-lower trace
+  var _env/eax: (addr cell) <- lookup env-h
+  var env/ebx: (addr cell) <- copy _env
+  # if env is not a list, abort
+  {
+    var env-type/ecx: (addr int) <- get env, type
+    compare *env-type, 0/pair
+    break-if-=
+    error trace, "eval found a non-list environment"
+    trace-higher trace
+    return
+  }
+  # if env is nil, look in globals
+  {
+    var env-nil?/eax: boolean <- nil? env
+    compare env-nil?, 0/false
+    break-if-=
+    debug-print "b", 3/fg, 0/bg
+    mutate-binding-in-globals name, val, globals, trace
+    debug-print "x", 3/fg, 0/bg
+    trace-higher trace
+    # trace "=> " val " (global)" {{{
+    {
+      compare trace, 0
+      break-if-=
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-!=
+      var stream-storage: (stream byte 0x200)
+      var stream/ecx: (addr stream byte) <- address stream-storage
+      write stream, "=> "
+      print-cell val, stream, 0/no-trace
+      write stream, " (global)"
+      trace trace, "eval", stream
+    }
+    # }}}
+    debug-print "y", 3/fg, 0/bg
+    return
+  }
+  # check car
+  var env-head-storage: (handle cell)
+  var env-head-ah/eax: (addr handle cell) <- address env-head-storage
+  car env, env-head-ah, 0/no-trace
+  var _env-head/eax: (addr cell) <- lookup *env-head-ah
+  var env-head/ecx: (addr cell) <- copy _env-head
+  # if car is not a list, abort
+  {
+    var env-head-type/eax: (addr int) <- get env-head, type
+    compare *env-head-type, 0/pair
+    break-if-=
+    error trace, "environment is not a list of (key . value) pairs"
+    trace-higher trace
+    return
+  }
+  # check key
+  var curr-key-storage: (handle cell)
+  var curr-key-ah/eax: (addr handle cell) <- address curr-key-storage
+  car env-head, curr-key-ah, trace
+  var curr-key/eax: (addr cell) <- lookup *curr-key-ah
+  # if key is not a symbol, abort
+  {
+    var curr-key-type/eax: (addr int) <- get curr-key, type
+    compare *curr-key-type, 2/symbol
+    break-if-=
+    error trace, "environment contains a binding for a non-symbol"
+    trace-higher trace
+    return
+  }
+  # if key matches name, return val
+  var curr-key-data-ah/eax: (addr handle stream byte) <- get curr-key, text-data
+  var curr-key-data/eax: (addr stream byte) <- lookup *curr-key-data-ah
+  var match?/eax: boolean <- streams-data-equal? curr-key-data, name
+  compare match?, 0/false
+  {
+    break-if-=
+    var dest/eax: (addr handle cell) <- get env-head, right
+    copy-object val, dest
+    trace-text trace, "eval", "=> done"
+    trace-higher trace
+    return
+  }
+  # otherwise recurse
+  var env-tail-storage: (handle cell)
+  var env-tail-ah/eax: (addr handle cell) <- address env-tail-storage
+  cdr env, env-tail-ah, trace
+  mutate-binding name, val, *env-tail-ah, globals, trace
+  trace-higher trace
 }
 
 fn car _in: (addr cell), out: (addr handle cell), trace: (addr trace) {

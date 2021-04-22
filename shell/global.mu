@@ -368,6 +368,31 @@ fn find-symbol-in-globals _globals: (addr global-table), sym-name: (addr stream 
   return -1/not-found
 }
 
+fn mutate-binding-in-globals name: (addr stream byte), val: (addr handle cell), _globals: (addr global-table), trace: (addr trace) {
+  var globals/esi: (addr global-table) <- copy _globals
+  {
+    compare globals, 0
+    break-if-=
+    var curr-index/ecx: int <- find-symbol-in-globals globals, name
+    compare curr-index, -1/not-found
+    break-if-=
+    var global-data-ah/eax: (addr handle array global) <- get globals, data
+    var global-data/eax: (addr array global) <- lookup *global-data-ah
+    var curr-offset/ebx: (offset global) <- compute-offset global-data, curr-index
+    var curr/ebx: (addr global) <- index global-data, curr-offset
+    var dest/eax: (addr handle cell) <- get curr, value
+    copy-object val, dest
+    return
+  }
+  # otherwise error "unbound symbol: ", sym
+  var stream-storage: (stream byte 0x40)
+  var stream/ecx: (addr stream byte) <- address stream-storage
+  write stream, "unbound symbol: "
+  rewind-stream name
+  write-stream stream, name
+  trace trace, "error", stream
+}
+
 # a little strange; goes from value to name and selects primitive based on name
 fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace) {
   var f/esi: (addr cell) <- copy _f
