@@ -531,7 +531,7 @@ fn render-keyboard-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0/bg
 }
 
-fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), real-screen: (addr screen), real-keyboard: (addr keyboard), data-disk: (addr disk) {
+fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), real-screen: (addr screen), data-disk: (addr disk) {
   var self/esi: (addr sandbox) <- copy _self
   var g/edx: grapheme <- copy key
   # ctrl-s
@@ -700,9 +700,9 @@ fn test-run-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "1"
-  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -719,12 +719,12 @@ fn test-run-with-spaces {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type input with whitespace before and after
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -742,10 +742,10 @@ fn test-run-quote {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "'a"
-  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -762,16 +762,16 @@ fn test-run-dotted-list {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "'(a . b)"
-  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x62/b, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x62/b, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -788,18 +788,18 @@ fn test-run-dot-and-list {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "'(a . (b))"
-  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x62/b, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x62/b, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -816,14 +816,14 @@ fn test-run-final-dot {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "'(a .)"
-  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -841,16 +841,16 @@ fn test-run-double-dot {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "'(a . .)"
-  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -868,18 +868,18 @@ fn test-run-multiple-expressions-after-dot {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "'(a . b c)"
-  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x62/b, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x63/c, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x27/quote, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x28/open-paren, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x2e/dot, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x62/b, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x20/space, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x63/c, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x29/close-paren, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -897,10 +897,10 @@ fn test-run-error-invalid-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "1a"
-  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x61/a, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -917,10 +917,10 @@ fn test-run-move-cursor-into-trace {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox sandbox, 0/no-screen-or-keyboard
   # type "12"
-  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
-  edit-sandbox sandbox, 0x32/2, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x31/1, 0/no-globals, 0/no-screen, 0/no-disk
+  edit-sandbox sandbox, 0x32/2, 0/no-globals, 0/no-screen, 0/no-disk
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-screen, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -934,7 +934,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/pre-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/pre-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-screen, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/trace-0"
@@ -944,7 +944,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/trace-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/trace-2/cursor"
   # move cursor into input
-  edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-screen, 0/no-keyboard, 0/no-disk
+  edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-screen, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 0/no-globals
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/input-0"

@@ -63,7 +63,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
         loop $main:loop
       }
       # no way to quit right now; just reboot
-      edit-sandbox sandbox, key, globals, screen, keyboard, data-disk
+      edit-sandbox sandbox, key, globals, screen, data-disk
     }
     loop
   }
