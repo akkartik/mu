@@ -82,13 +82,20 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
 }
 
 # debug helper
-fn dump-cell in-ah: (addr handle cell) {
-  var stream-storage: (stream byte 0x40)
+fn dump-cell-at-top-right in-ah: (addr handle cell) {
+  var stream-storage: (stream byte 0x200)
   var stream/edx: (addr stream byte) <- address stream-storage
   print-cell in-ah, stream, 0/no-trace
   var d1/eax: int <- copy 0
   var d2/ecx: int <- copy 0
   d1, d2 <- draw-stream-wrapping-right-then-down 0/screen, stream, 0/xmin, 0/ymin, 0x80/xmax, 0x30/ymax, 0/x, 0/y, 7/fg, 0/bg
+}
+
+fn dump-cell-from-cursor-over-full-screen in-ah: (addr handle cell) {
+  var stream-storage: (stream byte 0x200)
+  var stream/edx: (addr stream byte) <- address stream-storage
+  print-cell in-ah, stream, 0/no-trace
+  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, stream, 7/fg, 0/bg
 }
 
 fn print-symbol _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
