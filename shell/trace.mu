@@ -100,8 +100,15 @@ fn trace _self: (addr trace), label: (addr array byte), message: (addr stream by
   var depth/ecx: (addr int) <- get self, curr-depth
   rewind-stream message
   {
-    compare *index-addr, 0x7ffe/lines
+    compare *index-addr, 0x7fff/lines
     break-if-<
+    clear-stream message
+    write message, "No space left in trace\n"
+    write message, "Please either:\n"
+    write message, "  - find a smaller sub-computation to test,\n"
+    write message, "  - allocate more space to the trace in initialize-sandbox\n"
+    write message, "    (shell/sandbox.mu), or\n"
+    write message, "  - move the computation to 'main' and run it using ctrl-s"
     initialize-trace-line 0/depth, "error", message, dest
     increment *index-addr
     return
