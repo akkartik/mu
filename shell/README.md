@@ -9,7 +9,7 @@ $ ./translate shell/*.mu      # generates code.img
 
 2. Run it:
 ```sh
-$ qemu-system-i386 code.img
+$ qemu-system-i386 -enable-kvm code.img
 ```
 or:
 ```
@@ -28,7 +28,7 @@ $ echo '(+ 1 1)' |dd of=data.img conv=notrunc
 
 Now run with both code and data disks:
 ```sh
-$ qemu-system-i386 -hda code.img -hdb data.img
+$ qemu-system-i386 -enable-kvm -hda code.img -hdb data.img
 ```
 or:
 ```
