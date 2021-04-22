@@ -481,6 +481,7 @@ Entry:
     # . prologue
     89/<- %ebp 4/r32/esp
     (new-segment *Heap-size Heap)
+#?     (test-address-with-right-type-for-stream)
     # if (argv[1] == "test') run-tests()
     {
       # if (argc <= 1) break
@@ -27258,7 +27259,7 @@ $emit-subx-stmt-list:check-for-var-def:
         81 7/subop/compare *ecx 2/imm32/var-def  # Stmt-tag
         75/jump-if-!= break/disp8
 $emit-subx-stmt-list:var-def:
-        (emit-subx-var-def *(ebp+8) %ecx)
+        (emit-subx-var-def *(ebp+8) %ecx *(ebp+0x18) *(ebp+0x1c))
         (push *(ebp+0x10) *(ecx+4))  # Vardef-var
         (push *(ebp+0x10) *(ecx+8))  # Vardef-var
         (push *(ebp+0x10) 0)  # Live-var-register-spilled = 0 for vars on the stack
@@ -28487,7 +28488,7 @@ $reg-in-function-outputs?:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-var-def:  # out: (addr buffered-file), stmt: (addr stmt)
+emit-subx-var-def:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -28532,7 +28533,8 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (addr stmt)
       0f 84/jump-if-= break/disp32
       # var array-size-without-size/edx: int = n-12
       81 5/subop/subtract %edx 0xc/imm32
-      (emit-array-data-initialization *(ebp+8) %edx)
+      (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
+      (emit-stream-data-initialization *(ebp+8) %edx %eax *(ebp+0x10) *(ebp+0x14))
       # emit read and write pointers
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "68/push 0/imm32\n")
@@ -28576,6 +28578,50 @@ emit-array-data-initialization:  # out: (addr buffered-file), n: int
     (write-int32-hex-buffered *(ebp+8) *(ebp+0xc))
     (write-buffered *(ebp+8) "/imm32\n")
 $emit-array-data-initialization:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-stream-data-initialization:  # out: (addr buffered-file), n: int, type: (addr type-tree), err: (addr buffered-file), ed: (addr exit-descriptor)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # Optimization: if it's a stream of bytes, don't initialize.
+    #
+    # We often construct large temporary streams on the stack for 'trace'
+    # statements. Initializing such streams can significantly slow programs
+    # down.
+    #
+    # Mu doesn't really depend on initializing stream contents for type- or
+    # memory-safety; we're mostly doing so to make it easy to debug unsafe
+    # SubX code that misuses stream objects by manipulating read/write
+    # pointers. But you can't _really_ protect from unsafe SubX, so I think we
+    # don't give up much safety or security here.
+    {
+      (stream-element-type-id *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))  # => eax
+      3d/compare-eax-and 8/imm32/byte
+      75/jump-if-!= break/disp8
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "81 5/subop/subtract %esp ")
+      (write-int32-hex-buffered *(ebp+8) *(ebp+0xc))
+      (write-buffered *(ebp+8) "/imm32\n")
+      eb/jump $emit-stream-data-initialization:emit-length/disp8
+    }
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(push-n-zero-bytes ")
+    (write-int32-hex-buffered *(ebp+8) *(ebp+0xc))
+    (write-buffered *(ebp+8) ")\n")
+$emit-stream-data-initialization:emit-length:
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "68/push ")
+    (write-int32-hex-buffered *(ebp+8) *(ebp+0xc))
+    (write-buffered *(ebp+8) "/imm32\n")
+$emit-stream-data-initialization:end:
+    # . restore registers
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -29037,6 +29083,109 @@ $size-of-type-id-as-array-element:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+stream-element-type-id:  # type: (addr type-tree), err: (addr buffered-file), ed: (addr exit-descriptor) -> result/eax: type-id
+    # precondition: n is positive
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax = type
+    8b/-> *(ebp+8) 0/r32/eax
+    # if type == 0 abort
+    3d/compare-eax-with 0/imm32
+    0f 84/jump-if-== $stream-element-type-id:error0/disp32
+    # if type->is-atom? abort
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $stream-element-type-id:error1/disp32
+    # if (type->left == addr) type = type->right
+    {
+      50/push-eax
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      (simple-mu-type? %eax 2)  # addr => eax
+      3d/compare-eax-with 0/imm32/false
+      58/pop-to-eax
+      74/jump-if-= break/disp8
+$stream-element-type-id:skip-addr:
+      (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    }
+    # if type == 0 abort
+    3d/compare-eax-with 0/imm32
+    0f 84/jump-if-= $stream-element-type-id:error2/disp32
+    # if type->is-atom? abort
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $stream-element-type-id:error2/disp32
+    # if type->left != stream abort
+    {
+      50/push-eax
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+      (simple-mu-type? %eax 0xb)  # stream => eax
+      3d/compare-eax-with 0/imm32/false
+      58/pop-to-eax
+$stream-element-type-id:no-stream:
+      0f 84/jump-if-= $stream-element-type-id:error2/disp32
+    }
+$stream-element-type-id:skip-stream:
+    # type = type->right
+    (lookup *(eax+0xc) *(eax+0x10))  # Type-tree-right Type-tree-right => eax
+    # if type == 0 abort
+    3d/compare-eax-with 0/imm32
+    0f 84/jump-if-= $stream-element-type-id:error2/disp32
+    # if type->is-atom? abort
+    81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+    0f 85/jump-if-!= $stream-element-type-id:error2/disp32
+    # t = type->left
+    (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    # if (!type->is-atom?) type = type->left     # TODO: assumes stream element size can be determined from just first word of stream element type
+    {
+      81 7/subop/compare *eax 0/imm32/false  # Type-tree-is-atom
+      75/jump-if-!= break/disp8
+      (lookup *(eax+4) *(eax+8))  # Type-tree-left Type-tree-left => eax
+    }
+    # return type->value
+    8b/-> *(eax+4) 0/r32/eax  # Type-tree-value
+$stream-element-type-id:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$stream-element-type-id:error0:
+    (write-buffered *(ebp+0xc) "stream-element-type-id: var '")
+    50/push-eax
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0xc) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0xc) "' has no type\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
+    # never gets here
+
+$stream-element-type-id:error1:
+    (write-buffered *(ebp+0xc) "stream-element-type-id: var '")
+    50/push-eax
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0xc) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0xc) "' has atomic type ")
+    (write-int32-hex-buffered *(ebp+0xc) *(eax+4))  # Type-tree-value
+    (write-buffered *(ebp+0xc) Newline)
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
+    # never gets here
+
+$stream-element-type-id:error2:
+    (write-buffered *(ebp+0xc) "stream-element-type-id: var '")
+    50/push-eax
+    8b/-> *(ebp+8) 0/r32/eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    (write-buffered *(ebp+0xc) %eax)
+    58/pop-to-eax
+    (write-buffered *(ebp+0xc) "' has non-stream type\n")
+    (flush *(ebp+0xc))
+    (stop *(ebp+0x10) 1)
+    # never gets here
 
 emit-save-size-to:  # out: (addr buffered-file), base: (addr var), outreg: (addr array byte)
     # . prologue
