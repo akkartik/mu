@@ -256,8 +256,20 @@ fn append-primitive _self: (addr global-table), name: (addr array byte) {
   new-primitive-function curr-value-ah, curr-index
 }
 
-fn append-global _self: (addr global-table), name: (addr array byte), value: (handle cell) {
+fn append-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {
   var self/esi: (addr global-table) <- copy _self
+  {
+    var curr-index/ecx: int <- find-symbol-name-in-globals self, name
+    compare curr-index, -1/not-found
+    break-if-=
+    # otherwise error "global already exists: ", sym
+    var stream-storage: (stream byte 0x40)
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    write stream, "global already exists: "
+    write stream, name
+    trace trace, "error", stream
+    return
+  }
   var final-index-addr/ecx: (addr int) <- get self, final-index
   increment *final-index-addr
   var curr-index/ecx: int <- copy *final-index-addr
@@ -357,6 +369,38 @@ fn find-symbol-in-globals _globals: (addr global-table), sym-name: (addr stream 
     var curr-name-ah/eax: (addr handle array byte) <- get curr, name
     var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
     var found?/eax: boolean <- stream-data-equal? sym-name, curr-name
+    compare found?, 0/false
+    {
+      break-if-=
+      return curr-index
+    }
+    curr-index <- decrement
+    loop
+  }
+  return -1/not-found
+}
+
+# return the index in globals containing 'sym'
+# or -1 if not found
+fn find-symbol-name-in-globals _globals: (addr global-table), sym-name: (addr array byte) -> _/ecx: int {
+  var globals/esi: (addr global-table) <- copy _globals
+  compare globals, 0
+  {
+    break-if-!=
+    return -1/not-found
+  }
+  var global-data-ah/eax: (addr handle array global) <- get globals, data
+  var global-data/eax: (addr array global) <- lookup *global-data-ah
+  var final-index/ecx: (addr int) <- get globals, final-index
+  var curr-index/ecx: int <- copy *final-index
+  {
+    compare curr-index, 0
+    break-if-<
+    var curr-offset/ebx: (offset global) <- compute-offset global-data, curr-index
+    var curr/ebx: (addr global) <- index global-data, curr-offset
+    var curr-name-ah/eax: (addr handle array byte) <- get curr, name
+    var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
+    var found?/eax: boolean <- string-equal? sym-name, curr-name
     compare found?, 0/false
     {
       break-if-=
