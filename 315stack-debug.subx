@@ -57,13 +57,25 @@ debug-print:  # x: (addr array byte), fg: int, bg: int    # x is very short; usu
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
     #
     {
       81 7/subop/compare *Really-debug-print 0/imm32/false
       74/jump-if-= break/disp8
       (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+8) *(ebp+0xc) *(ebp+0x10))
+      # clear the screen and continue if we got too close to the bottom
+      (cursor-position 0)  # => eax, ecx
+      81 7/subop/compare %ecx 0x28/imm32
+      75/jump-if-!= break/disp8
+      (clear-screen 0)
+      (set-cursor-position 0 0 0)
     }
 $debug-print:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -72,3 +84,4 @@ $debug-print:end:
 == data
 Really-debug-print:
   0/imm32/false
+#?   1/imm32/true
