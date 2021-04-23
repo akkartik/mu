@@ -70,7 +70,7 @@ if ('onhashchange' in window) {
 <span id="L11" class="LineNr"> 11 </span>  <a href='main.mu.html#L73'>load-state</a> data-disk, <a href='sandbox.mu.html#L1'>sandbox</a>, globals
 <span id="L12" class="LineNr"> 12 </span>  $main:<span class="PreProc">loop</span>: <span class="Delimiter">{</span>
 <span id="L13" class="LineNr"> 13 </span>    <a href='global.mu.html#L116'>render-globals</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, globals, <span class="Constant">0</span>/x, <span class="Constant">0</span>/y, <span class="Constant">0x40</span>/xmax, <span class="Constant">0x2f</span>/screen-height-without-menu
-<span id="L14" class="LineNr"> 14 </span>    <a href='sandbox.mu.html#L73'>render-sandbox</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <a href='sandbox.mu.html#L1'>sandbox</a>, <span class="Constant">0x40</span>/x, <span class="Constant">0</span>/y, <span class="Constant">0x80</span>/screen-width, <span class="Constant">0x2f</span>/screen-height-without-menu, globals
+<span id="L14" class="LineNr"> 14 </span>    <a href='sandbox.mu.html#L73'>render-sandbox</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <a href='sandbox.mu.html#L1'>sandbox</a>, <span class="Constant">0x40</span>/sandbox-left-margin, <span class="Constant">0</span>/y, <span class="Constant">0x80</span>/screen-width, <span class="Constant">0x2f</span>/screen-height-without-menu
 <span id="L15" class="LineNr"> 15 </span>    <span class="Delimiter">{</span>
 <span id="L16" class="LineNr"> 16 </span>      <span class="PreProc">var</span> key/<span class="Constant">eax</span>: byte <span class="Special">&lt;-</span> <a href='../102keyboard.subx.html#L21'>read-key</a> keyboard
 <span id="L17" class="LineNr"> 17 </span>      compare key, <span class="Constant">0</span>
@@ -122,7 +122,7 @@ if ('onhashchange' in window) {
 <span id="L63" class="LineNr"> 63 </span>        <span class="PreProc">loop</span> $main:<span class="PreProc">loop</span>
 <span id="L64" class="LineNr"> 64 </span>      <span class="Delimiter">}</span>
 <span id="L65" class="LineNr"> 65 </span>      <span class="muComment"># no way to quit right now; just reboot</span>
-<span id="L66" class="LineNr"> 66 </span>      <a href='sandbox.mu.html#L534'>edit-sandbox</a> <a href='sandbox.mu.html#L1'>sandbox</a>, key, globals, <a href='../500fake-screen.mu.html#L14'>screen</a>, keyboard, data-disk
+<span id="L66" class="LineNr"> 66 </span>      <a href='sandbox.mu.html#L550'>edit-sandbox</a> <a href='sandbox.mu.html#L1'>sandbox</a>, key, globals, data-disk, <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">1</span>/tweak-real-screen
 <span id="L67" class="LineNr"> 67 </span>    <span class="Delimiter">}</span>
 <span id="L68" class="LineNr"> 68 </span>    <span class="PreProc">loop</span>
 <span id="L69" class="LineNr"> 69 </span>  <span class="Delimiter">}</span>
@@ -161,7 +161,7 @@ if ('onhashchange' in window) {
 <span id="L102" class="LineNr">102 </span>  <span class="PreProc">var</span> globals-literal/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *globals-literal-ah
 <span id="L103" class="LineNr">103 </span>  <span class="PreProc">var</span> globals-cell-storage: (handle <a href='cell.mu.html#L1'>cell</a>)
 <span id="L104" class="LineNr">104 </span>  <span class="PreProc">var</span> globals-cell-ah/<span class="Constant">edx</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> address globals-cell-storage
-<span id="L105" class="LineNr">105 </span>  <a href='evaluate.mu.html#L463'>lookup-symbol</a> globals-literal, globals-cell-ah, *initial-root, <span class="Constant">0</span>/no-globals, <span class="Constant">0</span>/no-trace, <span class="Constant">0</span>/no-screen, <span class="Constant">0</span>/no-keyboard
+<span id="L105" class="LineNr">105 </span>  <a href='evaluate.mu.html#L558'>lookup-symbol</a> globals-literal, globals-cell-ah, *initial-root, <span class="Constant">0</span>/no-globals, <span class="Constant">0</span>/no-trace, <span class="Constant">0</span>/no-screen, <span class="Constant">0</span>/no-keyboard
 <span id="L106" class="LineNr">106 </span>  <span class="PreProc">var</span> globals-cell/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *globals-cell-ah
 <span id="L107" class="LineNr">107 </span>  <span class="Delimiter">{</span>
 <span id="L108" class="LineNr">108 </span>    compare globals-cell, <span class="Constant">0</span>
@@ -175,7 +175,7 @@ if ('onhashchange' in window) {
 <span id="L116" class="LineNr">116 </span>  <span class="PreProc">var</span> sandbox-literal/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *sandbox-literal-ah
 <span id="L117" class="LineNr">117 </span>  <span class="PreProc">var</span> sandbox-cell-storage: (handle <a href='cell.mu.html#L1'>cell</a>)
 <span id="L118" class="LineNr">118 </span>  <span class="PreProc">var</span> sandbox-cell-ah/<span class="Constant">edx</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> address sandbox-cell-storage
-<span id="L119" class="LineNr">119 </span>  <a href='evaluate.mu.html#L463'>lookup-symbol</a> sandbox-literal, sandbox-cell-ah, *initial-root, <span class="Constant">0</span>/no-globals, <span class="Constant">0</span>/no-trace, <span class="Constant">0</span>/no-screen, <span class="Constant">0</span>/no-keyboard
+<span id="L119" class="LineNr">119 </span>  <a href='evaluate.mu.html#L558'>lookup-symbol</a> sandbox-literal, sandbox-cell-ah, *initial-root, <span class="Constant">0</span>/no-globals, <span class="Constant">0</span>/no-trace, <span class="Constant">0</span>/no-screen, <span class="Constant">0</span>/no-keyboard
 <span id="L120" class="LineNr">120 </span>  <span class="PreProc">var</span> sandbox-cell/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *sandbox-cell-ah
 <span id="L121" class="LineNr">121 </span>  <span class="Delimiter">{</span>
 <span id="L122" class="LineNr">122 </span>    compare sandbox-cell, <span class="Constant">0</span>

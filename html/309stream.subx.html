@@ -268,6 +268,95 @@ if ('onhashchange' in window) {
 <span id="L212" class="LineNr">212 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L213" class="LineNr">213 </span>    5d/pop-to-ebp
 <span id="L214" class="LineNr">214 </span>    c3/return
+<span id="L215" class="LineNr">215 </span>
+<span id="L216" class="LineNr">216 </span><span class="subxComment"># compare all the data in two streams (ignoring the read pointer)</span>
+<span id="L217" class="LineNr">217 </span><span class="subxFunction">streams-data-equal?</span>:  <span class="subxComment"># f: (addr stream byte), s: (addr array byte) -&gt; result/eax: boolean</span>
+<span id="L218" class="LineNr">218 </span>    <span class="subxComment"># pseudocode:</span>
+<span id="L219" class="LineNr">219 </span>    <span class="subxComment">#   awrite = a-&gt;write</span>
+<span id="L220" class="LineNr">220 </span>    <span class="subxComment">#   if (awrite != b-&gt;write) return false</span>
+<span id="L221" class="LineNr">221 </span>    <span class="subxComment">#   i = 0</span>
+<span id="L222" class="LineNr">222 </span>    <span class="subxComment">#   curra = a-&gt;data</span>
+<span id="L223" class="LineNr">223 </span>    <span class="subxComment">#   currb = b-&gt;data</span>
+<span id="L224" class="LineNr">224 </span>    <span class="subxComment">#   while i &lt; awrite</span>
+<span id="L225" class="LineNr">225 </span>    <span class="subxComment">#     i1 = *curra</span>
+<span id="L226" class="LineNr">226 </span>    <span class="subxComment">#     i2 = *currb</span>
+<span id="L227" class="LineNr">227 </span>    <span class="subxComment">#     if (c1 != c2) return false</span>
+<span id="L228" class="LineNr">228 </span>    <span class="subxComment">#     i+=4, curra+=4, currb+=4</span>
+<span id="L229" class="LineNr">229 </span>    <span class="subxComment">#   return true</span>
+<span id="L230" class="LineNr">230 </span>    <span class="subxComment">#</span>
+<span id="L231" class="LineNr">231 </span>    <span class="subxComment"># registers:</span>
+<span id="L232" class="LineNr">232 </span>    <span class="subxComment">#   i: ecx</span>
+<span id="L233" class="LineNr">233 </span>    <span class="subxComment">#   awrite: edx</span>
+<span id="L234" class="LineNr">234 </span>    <span class="subxComment">#   curra: esi</span>
+<span id="L235" class="LineNr">235 </span>    <span class="subxComment">#   currb: edi</span>
+<span id="L236" class="LineNr">236 </span>    <span class="subxComment">#   i1: eax</span>
+<span id="L237" class="LineNr">237 </span>    <span class="subxComment">#   i2: ebx</span>
+<span id="L238" class="LineNr">238 </span>    <span class="subxComment">#</span>
+<span id="L239" class="LineNr">239 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L240" class="LineNr">240 </span>    55/push-ebp
+<span id="L241" class="LineNr">241 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L242" class="LineNr">242 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L243" class="LineNr">243 </span>    51/push-ecx
+<span id="L244" class="LineNr">244 </span>    52/push-edx
+<span id="L245" class="LineNr">245 </span>    53/push-ebx
+<span id="L246" class="LineNr">246 </span>    56/push-esi
+<span id="L247" class="LineNr">247 </span>    57/push-edi
+<span id="L248" class="LineNr">248 </span>    <span class="subxComment"># esi = a</span>
+<span id="L249" class="LineNr">249 </span>    8b/-&gt; *(ebp+8) 6/r32/esi
+<span id="L250" class="LineNr">250 </span>    <span class="subxComment"># edi = b</span>
+<span id="L251" class="LineNr">251 </span>    8b/-&gt; *(ebp+0xc) 7/r32/edi
+<span id="L252" class="LineNr">252 </span>    <span class="subxComment"># var awrite/edx: int = a-&gt;write</span>
+<span id="L253" class="LineNr">253 </span>    8b/-&gt; *esi 2/r32/edx
+<span id="L254" class="LineNr">254 </span><span class="Constant">$streams-data-equal?:sizes</span>:
+<span id="L255" class="LineNr">255 </span>    <span class="subxComment"># if (awrite != b-&gt;write) return false</span>
+<span id="L256" class="LineNr">256 </span>    39/compare *edi 2/r32/edx
+<span id="L257" class="LineNr">257 </span>    75/jump-if-!= $streams-data-equal?:false/disp8
+<span id="L258" class="LineNr">258 </span>    <span class="subxComment"># var curra/esi: (addr byte) = a-&gt;data</span>
+<span id="L259" class="LineNr">259 </span>    81 0/subop/add %esi 0xc/imm32
+<span id="L260" class="LineNr">260 </span>    <span class="subxComment"># var currb/edi: (addr byte) = b-&gt;data</span>
+<span id="L261" class="LineNr">261 </span>    81 0/subop/add %edi 0xc/imm32
+<span id="L262" class="LineNr">262 </span>    <span class="subxComment"># var i/ecx: int = 0</span>
+<span id="L263" class="LineNr">263 </span>    31/xor-with %ecx 1/r32/ecx
+<span id="L264" class="LineNr">264 </span>    <span class="subxComment"># var vala/eax: int</span>
+<span id="L265" class="LineNr">265 </span>    31/xor-with %eax 0/r32/eax
+<span id="L266" class="LineNr">266 </span>    <span class="subxComment"># var valb/ebx: int</span>
+<span id="L267" class="LineNr">267 </span>    31/xor-with %ebx 3/r32/ebx
+<span id="L268" class="LineNr">268 </span><span class="Constant">$streams-data-equal?:loop</span>:
+<span id="L269" class="LineNr">269 </span>    {
+<span id="L270" class="LineNr">270 </span>      <span class="subxComment"># if (i &gt;= awrite) return true</span>
+<span id="L271" class="LineNr">271 </span>      39/compare %ecx 2/r32/edx
+<span id="L272" class="LineNr">272 </span>      7d/jump-if-&gt;= $streams-data-equal?:true/disp8
+<span id="L273" class="LineNr">273 </span>      <span class="subxComment"># var vala/eax: int = *curra</span>
+<span id="L274" class="LineNr">274 </span>      8a/byte-&gt; *esi 0/r32/eax
+<span id="L275" class="LineNr">275 </span>      <span class="subxComment"># var valb/ebx: int = *currb</span>
+<span id="L276" class="LineNr">276 </span>      8a/byte-&gt; *edi 3/r32/ebx
+<span id="L277" class="LineNr">277 </span>      <span class="subxComment"># if (vala != valb) return false</span>
+<span id="L278" class="LineNr">278 </span>      39/compare %eax 3/r32/ebx
+<span id="L279" class="LineNr">279 </span>      75/jump-if-!= $streams-data-equal?:false/disp8
+<span id="L280" class="LineNr">280 </span>      <span class="subxComment"># i++</span>
+<span id="L281" class="LineNr">281 </span>      41/increment-ecx
+<span id="L282" class="LineNr">282 </span>      <span class="subxComment"># curra++</span>
+<span id="L283" class="LineNr">283 </span>      46/increment-esi
+<span id="L284" class="LineNr">284 </span>      <span class="subxComment"># currb++</span>
+<span id="L285" class="LineNr">285 </span>      47/increment-edi
+<span id="L286" class="LineNr">286 </span>      eb/jump <span class="Constant">loop</span>/disp8
+<span id="L287" class="LineNr">287 </span>    }
+<span id="L288" class="LineNr">288 </span><span class="Constant">$streams-data-equal?:true</span>:
+<span id="L289" class="LineNr">289 </span>    b8/copy-to-eax 1/imm32
+<span id="L290" class="LineNr">290 </span>    eb/jump $streams-data-equal?:end/disp8
+<span id="L291" class="LineNr">291 </span><span class="Constant">$streams-data-equal?:false</span>:
+<span id="L292" class="LineNr">292 </span>    b8/copy-to-eax 0/imm32
+<span id="L293" class="LineNr">293 </span><span class="Constant">$streams-data-equal?:end</span>:
+<span id="L294" class="LineNr">294 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L295" class="LineNr">295 </span>    5f/pop-to-edi
+<span id="L296" class="LineNr">296 </span>    5e/pop-to-esi
+<span id="L297" class="LineNr">297 </span>    5b/pop-to-ebx
+<span id="L298" class="LineNr">298 </span>    5a/pop-to-edx
+<span id="L299" class="LineNr">299 </span>    59/pop-to-ecx
+<span id="L300" class="LineNr">300 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L301" class="LineNr">301 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L302" class="LineNr">302 </span>    5d/pop-to-ebp
+<span id="L303" class="LineNr">303 </span>    c3/return
 </pre>
 </body>
 </html>
