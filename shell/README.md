@@ -26,6 +26,12 @@ Load an s-expression into it:
 $ echo '(+ 1 1)' |dd of=data.img conv=notrunc
 ```
 
+You can also try one of the files of definitions in this directory (`*.limg`).
+
+```sh
+$ cat iter.limg |dd of=data.img conv=notrunc
+```
+
 Now run with both code and data disks:
 ```sh
 $ qemu-system-i386 -enable-kvm -hda code.img -hdb data.img
