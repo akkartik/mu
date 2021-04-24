@@ -9,7 +9,7 @@ $ ./translate shell/*.mu      # generates code.img
 
 2. Run it:
 ```sh
-$ qemu-system-i386 -enable-kvm code.img
+$ qemu-system-i386 code.img
 ```
 or:
 ```
@@ -34,7 +34,7 @@ $ cat iter.limg |dd of=data.img conv=notrunc
 
 Now run with both code and data disks:
 ```sh
-$ qemu-system-i386 -enable-kvm -hda code.img -hdb data.img
+$ qemu-system-i386 -hda code.img -hdb data.img
 ```
 or:
 ```
@@ -46,6 +46,20 @@ to focus on the `...` below and browse how the results were computed. [Here's
 a demo.](https://archive.org/details/akkartik-2min-2021-02-24) The bottom of
 the screen shows context-dependent keyboard shortcuts (there's no mouse in the
 Mu computer at the moment).
+
+*Improvements*
+
+If your Qemu installation supports them, one of these commandline arguments
+may speed up emulation:
+
+- `-enable-kvm`
+- `-accel ___` (run with `-accel help` for a list of available options)
+
+As a complete example, here's the command I typically use on Linux:
+
+```
+$ qemu-system-i386 -enable-kvm -hda code.img -hdb data.img
+```
 
 *Known issues*
 
