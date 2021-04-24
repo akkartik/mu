@@ -50,7 +50,6 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "write"
   # misc
   append-primitive self, "abort"
-  append-primitive self, "life"
   # keep sync'd with render-primitives
 }
 
@@ -664,13 +663,6 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare abort?, 0/false
     break-if-=
     apply-abort args-ah, out, trace
-    return
-  }
-  {
-    var life?/eax: boolean <- string-equal? f-name, "life"
-    compare life?, 0/false
-    break-if-=
-    apply-life args-ah, out, trace
     return
   }
   abort "unknown primitive function"
@@ -1712,10 +1704,6 @@ fn apply-lines _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
 
 fn apply-abort _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   abort "aa"
-}
-
-fn apply-life _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  life
 }
 
 fn apply-columns _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
