@@ -9,11 +9,11 @@ $ ./translate shell/*.mu      # generates code.img
 
 2. Run it:
 ```sh
-$ qemu-system-i386 code.img
+$ qemu-system-i386 -m 2G code.img
 ```
 or:
 ```
-$ bochs -f bochsrc
+$ bochs -f bochsrc            # _much_ slower
 ```
 
 To save typing in a large s-expression, create a secondary disk for data:
@@ -34,7 +34,7 @@ $ cat iterative-definitions.limg |dd of=data.img conv=notrunc
 
 Now run with both code and data disks:
 ```sh
-$ qemu-system-i386 -hda code.img -hdb data.img
+$ qemu-system-i386 -m 2G -hda code.img -hdb data.img
 ```
 or:
 ```
@@ -58,7 +58,7 @@ may speed up emulation:
 As a complete example, here's the command I typically use on Linux:
 
 ```
-$ qemu-system-i386 -enable-kvm -hda code.img -hdb data.img
+$ qemu-system-i386 -m 2G -enable-kvm -hda code.img -hdb data.img
 ```
 
 *Known issues*
