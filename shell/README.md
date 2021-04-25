@@ -63,7 +63,5 @@ $ qemu-system-i386 -m 2G -enable-kvm -hda code.img -hdb data.img
 
 *Known issues*
 
-* There's no way to save to disk.
-
 * Don't press keys too quickly (such as by holding down a key). The Mu
   computer will crash (and often Qemu will segfault).
