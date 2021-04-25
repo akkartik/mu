@@ -65,3 +65,14 @@ $ qemu-system-i386 -m 2G -enable-kvm -hda code.img -hdb data.img
 
 * Don't press keys too quickly (such as by holding down a key). The Mu
   computer will crash (and often Qemu will segfault).
+
+* Mu currently assumes access to 2GB of RAM. To change that, modify the
+  definition of `Heap` in 120allocate.subx, and then modify the `-m 2G`
+  argument in the Qemu commands above. Mu currently has no virtual
+  memory. If your Heap is too large for RAM, allocating past the end of RAM
+  will succeed. However, accessing addresses not backed by RAM will fail with
+  this error:
+
+  ```
+  lookup: failed
+  ```
