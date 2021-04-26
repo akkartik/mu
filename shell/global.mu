@@ -450,190 +450,190 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
   var f-name-ah/ecx: (addr handle array byte) <- get f-value, name
   var f-name/eax: (addr array byte) <- lookup *f-name-ah
   {
-    var is-add?/eax: boolean <- string-equal? f-name, "+"
-    compare is-add?, 0/false
+    var add?/eax: boolean <- string-equal? f-name, "+"
+    compare add?, 0/false
     break-if-=
     apply-add args-ah, out, trace
     return
   }
   {
-    var is-subtract?/eax: boolean <- string-equal? f-name, "-"
-    compare is-subtract?, 0/false
+    var subtract?/eax: boolean <- string-equal? f-name, "-"
+    compare subtract?, 0/false
     break-if-=
     apply-subtract args-ah, out, trace
     return
   }
   {
-    var is-multiply?/eax: boolean <- string-equal? f-name, "*"
-    compare is-multiply?, 0/false
+    var multiply?/eax: boolean <- string-equal? f-name, "*"
+    compare multiply?, 0/false
     break-if-=
     apply-multiply args-ah, out, trace
     return
   }
   {
-    var is-divide?/eax: boolean <- string-equal? f-name, "/"
-    compare is-divide?, 0/false
+    var divide?/eax: boolean <- string-equal? f-name, "/"
+    compare divide?, 0/false
     break-if-=
     apply-divide args-ah, out, trace
     return
   }
   {
-    var is-square-root?/eax: boolean <- string-equal? f-name, "sqrt"
-    compare is-square-root?, 0/false
+    var square-root?/eax: boolean <- string-equal? f-name, "sqrt"
+    compare square-root?, 0/false
     break-if-=
     apply-square-root args-ah, out, trace
     return
   }
   {
-    var is-abs?/eax: boolean <- string-equal? f-name, "abs"
-    compare is-abs?, 0/false
+    var abs?/eax: boolean <- string-equal? f-name, "abs"
+    compare abs?, 0/false
     break-if-=
     apply-abs args-ah, out, trace
     return
   }
   {
-    var is-sgn?/eax: boolean <- string-equal? f-name, "sgn"
-    compare is-sgn?, 0/false
+    var sgn?/eax: boolean <- string-equal? f-name, "sgn"
+    compare sgn?, 0/false
     break-if-=
     apply-sgn args-ah, out, trace
     return
   }
   {
-    var is-car?/eax: boolean <- string-equal? f-name, "car"
-    compare is-car?, 0/false
+    var car?/eax: boolean <- string-equal? f-name, "car"
+    compare car?, 0/false
     break-if-=
     apply-car args-ah, out, trace
     return
   }
   {
-    var is-cdr?/eax: boolean <- string-equal? f-name, "cdr"
-    compare is-cdr?, 0/false
+    var cdr?/eax: boolean <- string-equal? f-name, "cdr"
+    compare cdr?, 0/false
     break-if-=
     apply-cdr args-ah, out, trace
     return
   }
   {
-    var is-cons?/eax: boolean <- string-equal? f-name, "cons"
-    compare is-cons?, 0/false
+    var cons?/eax: boolean <- string-equal? f-name, "cons"
+    compare cons?, 0/false
     break-if-=
     apply-cons args-ah, out, trace
     return
   }
   {
-    var is-structurally-equal?/eax: boolean <- string-equal? f-name, "="
-    compare is-structurally-equal?, 0/false
+    var structurally-equal?/eax: boolean <- string-equal? f-name, "="
+    compare structurally-equal?, 0/false
     break-if-=
     apply-structurally-equal args-ah, out, trace
     return
   }
   {
-    var is-lesser?/eax: boolean <- string-equal? f-name, "<"
-    compare is-lesser?, 0/false
+    var lesser?/eax: boolean <- string-equal? f-name, "<"
+    compare lesser?, 0/false
     break-if-=
     apply-< args-ah, out, trace
     return
   }
   {
-    var is-greater?/eax: boolean <- string-equal? f-name, ">"
-    compare is-greater?, 0/false
+    var greater?/eax: boolean <- string-equal? f-name, ">"
+    compare greater?, 0/false
     break-if-=
     apply-> args-ah, out, trace
     return
   }
   {
-    var is-lesser-or-equal?/eax: boolean <- string-equal? f-name, "<="
-    compare is-lesser-or-equal?, 0/false
+    var lesser-or-equal?/eax: boolean <- string-equal? f-name, "<="
+    compare lesser-or-equal?, 0/false
     break-if-=
     apply-<= args-ah, out, trace
     return
   }
   {
-    var is-greater-or-equal?/eax: boolean <- string-equal? f-name, ">="
-    compare is-greater-or-equal?, 0/false
+    var greater-or-equal?/eax: boolean <- string-equal? f-name, ">="
+    compare greater-or-equal?, 0/false
     break-if-=
     apply->= args-ah, out, trace
     return
   }
   {
-    var is-print?/eax: boolean <- string-equal? f-name, "print"
-    compare is-print?, 0/false
+    var print?/eax: boolean <- string-equal? f-name, "print"
+    compare print?, 0/false
     break-if-=
     apply-print args-ah, out, trace
     return
   }
   {
-    var is-clear?/eax: boolean <- string-equal? f-name, "clear"
-    compare is-clear?, 0/false
+    var clear?/eax: boolean <- string-equal? f-name, "clear"
+    compare clear?, 0/false
     break-if-=
     apply-clear args-ah, out, trace
     return
   }
   {
-    var is-lines?/eax: boolean <- string-equal? f-name, "lines"
-    compare is-lines?, 0/false
+    var lines?/eax: boolean <- string-equal? f-name, "lines"
+    compare lines?, 0/false
     break-if-=
     apply-lines args-ah, out, trace
     return
   }
   {
-    var is-columns?/eax: boolean <- string-equal? f-name, "columns"
-    compare is-columns?, 0/false
+    var columns?/eax: boolean <- string-equal? f-name, "columns"
+    compare columns?, 0/false
     break-if-=
     apply-columns args-ah, out, trace
     return
   }
   {
-    var is-up?/eax: boolean <- string-equal? f-name, "up"
-    compare is-up?, 0/false
+    var up?/eax: boolean <- string-equal? f-name, "up"
+    compare up?, 0/false
     break-if-=
     apply-up args-ah, out, trace
     return
   }
   {
-    var is-down?/eax: boolean <- string-equal? f-name, "down"
-    compare is-down?, 0/false
+    var down?/eax: boolean <- string-equal? f-name, "down"
+    compare down?, 0/false
     break-if-=
     apply-down args-ah, out, trace
     return
   }
   {
-    var is-left?/eax: boolean <- string-equal? f-name, "left"
-    compare is-left?, 0/false
+    var left?/eax: boolean <- string-equal? f-name, "left"
+    compare left?, 0/false
     break-if-=
     apply-left args-ah, out, trace
     return
   }
   {
-    var is-right?/eax: boolean <- string-equal? f-name, "right"
-    compare is-right?, 0/false
+    var right?/eax: boolean <- string-equal? f-name, "right"
+    compare right?, 0/false
     break-if-=
     apply-right args-ah, out, trace
     return
   }
   {
-    var is-cr?/eax: boolean <- string-equal? f-name, "cr"
-    compare is-cr?, 0/false
+    var cr?/eax: boolean <- string-equal? f-name, "cr"
+    compare cr?, 0/false
     break-if-=
     apply-cr args-ah, out, trace
     return
   }
   {
-    var is-pixel?/eax: boolean <- string-equal? f-name, "pixel"
-    compare is-pixel?, 0/false
+    var pixel?/eax: boolean <- string-equal? f-name, "pixel"
+    compare pixel?, 0/false
     break-if-=
     apply-pixel args-ah, out, trace
     return
   }
   {
-    var is-width?/eax: boolean <- string-equal? f-name, "width"
-    compare is-width?, 0/false
+    var width?/eax: boolean <- string-equal? f-name, "width"
+    compare width?, 0/false
     break-if-=
     apply-width args-ah, out, trace
     return
   }
   {
-    var is-height?/eax: boolean <- string-equal? f-name, "height"
-    compare is-height?, 0/false
+    var height?/eax: boolean <- string-equal? f-name, "height"
+    compare height?, 0/false
     break-if-=
     apply-height args-ah, out, trace
     return
@@ -646,8 +646,8 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     return
   }
   {
-    var is-stream?/eax: boolean <- string-equal? f-name, "stream"
-    compare is-stream?, 0/false
+    var stream?/eax: boolean <- string-equal? f-name, "stream"
+    compare stream?, 0/false
     break-if-=
     apply-stream args-ah, out, trace
     return
