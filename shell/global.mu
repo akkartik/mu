@@ -12,8 +12,6 @@ fn initialize-globals _self: (addr global-table) {
   var self/esi: (addr global-table) <- copy _self
   var data-ah/eax: (addr handle array global) <- get self, data
   populate data-ah, 0x40
-  # generic
-  append-primitive self, "="
   # for numbers
   append-primitive self, "+"
   append-primitive self, "-"
@@ -26,6 +24,8 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, ">"
   append-primitive self, "<="
   append-primitive self, ">="
+  # generic
+  append-primitive self, "="
   # for pairs
   append-primitive self, "car"
   append-primitive self, "cdr"

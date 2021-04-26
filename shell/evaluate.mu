@@ -736,7 +736,7 @@ fn test-lookup-symbol-in-globals {
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 4/primitive-function, "F - test-lookup-symbol-in-globals/0"
   var result-value/eax: (addr int) <- get result, index-data
-  check-ints-equal *result-value, 2/add, "F - test-lookup-symbol-in-globals/1"
+  check-ints-equal *result-value, 1/add, "F - test-lookup-symbol-in-globals/1"
 }
 
 fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace) {
@@ -1124,7 +1124,7 @@ fn test-evaluate-primitive-function {
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 4/primitive-function, "F - test-evaluate-primitive-function/0"
   var result-value/eax: (addr int) <- get result, index-data
-  check-ints-equal *result-value, 2/add, "F - test-evaluate-primitive-function/1"
+  check-ints-equal *result-value, 1/add, "F - test-evaluate-primitive-function/1"
 }
 
 fn test-evaluate-primitive-function-call {
