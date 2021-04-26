@@ -5,7 +5,16 @@
 fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # stack overflow?   # disable when enabling Really-debug-print
   check-stack
-  show-stack-state
+  {
+    var screen-cell/eax: (addr handle cell) <- copy screen-cell
+    compare screen-cell, 0
+    break-if-=
+    var screen-cell-addr/eax: (addr cell) <- lookup *screen-cell
+    compare screen-cell-addr, 0
+    break-if-=
+    # if screen-cell exists, we're probably not in a test
+    show-stack-state
+  }
   # errors? skip
   {
     compare trace, 0
