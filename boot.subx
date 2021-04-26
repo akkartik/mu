@@ -16,8 +16,8 @@
 
 # Memory map of a Mu computer:
 #   code: currently 4 tracks loaded from the primary disk to [0x00007c00, 0x00048600)
-#   stack: grows down from 0x00070000
-#   heap: [0x01000000, 0x08000000)
+#   stack: grows down from 0x02000000 to 0x01000000
+#   heap: [0x02000000, 0x08000000)
 #     see 120allocate.subx; Qemu initializes with 128MB RAM by default
 # Consult https://wiki.osdev.org/Memory_Map_(x86) before modifying any of
 # this. And don't forget to keep *stack-debug.subx in sync.
@@ -41,7 +41,7 @@
   8e/->seg 3/mod/direct 0/rm32/ax 4/r32/fs
   8e/->seg 3/mod/direct 0/rm32/ax 5/r32/gs
 
-  # initialize stack to 0x00070000
+  # Temporarily initialize stack to 0x00070000 in real mode.
   # We don't read or write the stack before we get to 32-bit mode, but BIOS
   # calls do. We need to move the stack in case BIOS initializes it to some
   # low address that we want to write code into.
@@ -209,7 +209,7 @@ initialize_32bit_mode:
   8e/->seg 3/mod/direct 0/rm32/ax 4/r32/fs
   8e/->seg 3/mod/direct 0/rm32/ax 5/r32/gs
 
-  bc/copy-to-esp 0x00070000/imm32
+  bc/copy-to-esp 0x02000000/imm32
 
   ## load interrupt handlers
   # We can't refer to the label directly because SubX doesn't do the right
