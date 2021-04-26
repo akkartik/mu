@@ -689,7 +689,7 @@ fn render-trace-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 0x18/bg=keyboard
+  draw-text-rightward-from-cursor screen, " ctrl-m ", width, 0/fg, 0x18/bg=keyboard
   draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " j ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " down  ", width, 7/fg, 0/bg

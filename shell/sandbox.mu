@@ -506,17 +506,17 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
-  $render-sandbox-menu:render-tab: {
+  $render-sandbox-menu:render-ctrl-m: {
     var self/eax: (addr sandbox) <- copy _self
     var has-trace?/eax: boolean <- has-trace? self
     compare has-trace?, 0/false
     {
       break-if-=
-      draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 9/bg=blue
+      draw-text-rightward-from-cursor screen, " ctrl-m ", width, 0/fg, 9/bg=blue
       draw-text-rightward-from-cursor screen, " to trace  ", width, 7/fg, 0/bg
-      break $render-sandbox-menu:render-tab
+      break $render-sandbox-menu:render-ctrl-m
     }
-    draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 0x18/bg=keyboard
+    draw-text-rightward-from-cursor screen, " ctrl-m ", width, 0/fg, 0x18/bg=keyboard
     draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0/bg
   }
   draw-text-rightward-from-cursor screen, " ctrl-a ", width, 0/fg, 7/bg=grey
@@ -543,7 +543,7 @@ fn render-keyboard-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " tab ", width, 0/fg, 3/bg=cyan
+  draw-text-rightward-from-cursor screen, " ctrl-m ", width, 0/fg, 3/bg=cyan
   draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0/bg
 }
 
@@ -587,9 +587,9 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     run data, value, globals, trace, screen-cell, keyboard-cell
     return
   }
-  # tab
+  # ctrl-m
   {
-    compare g, 9/tab
+    compare g, 0xd/ctrl-m
     break-if-!=
     # if cursor in data, switch to trace or fall through to keyboard
     {
@@ -959,7 +959,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/pre-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/pre-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/trace-0"
@@ -969,7 +969,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  2/y, "=> 12 ", "F - test-run-move-cursor-into-trace/trace-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "      ", "F - test-run-move-cursor-into-trace/trace-2/cursor"
   # move cursor into input
-  edit-sandbox sandbox, 9/tab, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
   check-screen-row screen,                                  0/y, "12    ", "F - test-run-move-cursor-into-trace/input-0"
