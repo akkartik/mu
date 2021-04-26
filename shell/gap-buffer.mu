@@ -971,6 +971,14 @@ fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
     clear-gap-buffer self
     return
   }
+  {
+    compare g, 9/tab
+    break-if-!=
+    # tab = 2 spaces
+    add-code-point-at-gap self, 0x20/space
+    add-code-point-at-gap self, 0x20/space
+    return
+  }
   # default: insert character
   add-grapheme-at-gap self, g
 }
