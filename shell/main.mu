@@ -10,8 +10,8 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   initialize-sandbox sandbox, 1/with-screen
   load-state data-disk, sandbox, globals
   $main:loop: {
-    render-globals screen, globals, 0/x, 0/y, 0x40/xmax, 0x2f/screen-height-without-menu
-    render-sandbox screen, sandbox, 0x41/sandbox-left-margin, 1/y, 0x80/screen-width, 0x2f/screen-height-without-menu
+    render-globals screen, globals, 0/x, 0/y, 0x55/xmax, 0x2f/screen-height-without-menu
+    render-sandbox screen, sandbox, 0x56/sandbox-left-margin, 1/y, 0x80/screen-width, 0x2f/screen-height-without-menu
     {
       var key/eax: byte <- read-key keyboard
       compare key, 0
