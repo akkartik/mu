@@ -573,7 +573,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     {
       compare tweak-real-screen?, 0/false
       break-if-=
-      clear-sandbox-output real-screen, self, 0x40/sandbox-left-margin, 0/y, 0x80/screen-width, 0x2f/screen-height-without-menu
+      clear-sandbox-output real-screen, self, 0x41/sandbox-left-margin, 1/y, 0x80/screen-width, 0x2f/screen-height-without-menu
     }
     var screen-cell/eax: (addr handle cell) <- get self, screen-var
     clear-screen-cell screen-cell
