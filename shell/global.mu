@@ -26,6 +26,8 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, ">="
   # generic
   append-primitive self, "="
+  append-primitive self, "no"
+  append-primitive self, "not"
   # for pairs
   append-primitive self, "car"
   append-primitive self, "cdr"
@@ -216,11 +218,9 @@ fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, yma
   tmpx <- draw-text-rightward screen, ": stream grapheme -> stream", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "fn if while = set def  ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, "numbers: ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "fn def set if while = no(t) car cdr cons  ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "num: ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "+ - * / sqrt abs sgn < > <= >=   ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, "pairs: ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, "car cdr cons", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
 }
 
 fn primitive-global? _x: (addr global) -> _/eax: boolean {
@@ -524,6 +524,20 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare structurally-equal?, 0/false
     break-if-=
     apply-structurally-equal args-ah, out, trace
+    return
+  }
+  {
+    var not?/eax: boolean <- string-equal? f-name, "no"
+    compare not?, 0/false
+    break-if-=
+    apply-not args-ah, out, trace
+    return
+  }
+  {
+    var not?/eax: boolean <- string-equal? f-name, "not"
+    compare not?, 0/false
+    break-if-=
+    apply-not args-ah, out, trace
     return
   }
   {
@@ -1071,6 +1085,33 @@ fn apply-structurally-equal _args-ah: (addr handle cell), out: (addr handle cell
     return
   }
   new-integer out, 1/true
+}
+
+fn apply-not _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply not"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "not needs 1 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  # not
+  var nil?/eax: boolean <- nil? first
+  compare nil?, 0/false
+  {
+    break-if-!=
+    nil out
+    return
+  }
+  new-integer out, 1
 }
 
 fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
