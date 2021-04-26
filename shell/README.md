@@ -41,11 +41,11 @@ or:
 $ bochs -f bochsrc.2disks
 ```
 
-You can type in expressions, hit `ctrl-s` to see their results, and hit `Tab`
-to focus on the `...` below and browse how the results were computed. [Here's
-a demo.](https://archive.org/details/akkartik-2min-2021-02-24) The bottom of
-the screen shows context-dependent keyboard shortcuts (there's no mouse in the
-Mu computer at the moment).
+You can type in expressions, hit `ctrl-s` to see their results, and hit
+`ctrl-m` to focus on the `...` below and browse how the results were computed.
+[Here's a demo.](https://archive.org/details/akkartik-2min-2021-02-24) The
+bottom of the screen shows context-dependent keyboard shortcuts (there's no
+mouse in the Mu computer at the moment).
 
 *Improvements*
 
