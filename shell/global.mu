@@ -216,8 +216,9 @@ fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, yma
   tmpx <- draw-text-rightward screen, ": stream grapheme -> stream", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   y <- increment
   var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "fn if while = set def  ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "numbers: ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
-  tmpx <- draw-text-rightward screen, "+ - * / sqrt abs sgn = < > <= >=   ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
+  tmpx <- draw-text-rightward screen, "+ - * / sqrt abs sgn < > <= >=   ", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "pairs: ", tmpx, xmax, y, 7/fg=grey, 0x12/bg=almost-black
   tmpx <- draw-text-rightward screen, "car cdr cons", tmpx, xmax, y, 0x2a/fg=orange, 0x12/bg=almost-black
 }
