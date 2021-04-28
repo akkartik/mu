@@ -142,19 +142,13 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
     compare y, ymax
     break-if->=
     {
-      var curr-offset/ebx: (offset global) <- compute-offset data, curr-index
-      var curr/ebx: (addr global) <- index data, curr-offset
-      var curr-name-ah/eax: (addr handle array byte) <- get curr, name
-      var _curr-name/eax: (addr array byte) <- lookup *curr-name-ah
-      var curr-name/edx: (addr array byte) <- copy _curr-name
+      var curr-offset/edx: (offset global) <- compute-offset data, curr-index
+      var curr/edx: (addr global) <- index data, curr-offset
+      var curr-input-ah/edx: (addr handle gap-buffer) <- get curr, input
+      var _curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
+      var curr-input/ebx: (addr gap-buffer) <- copy _curr-input
       var x/eax: int <- copy xmin
-      x, y <- draw-text-wrapping-right-then-down screen, curr-name, xmin, ymin, xmax, ymax, x, y, 0x2a/fg=orange, 0x12/bg=almost-black
-      x, y <- draw-text-wrapping-right-then-down screen, " <- ", xmin, ymin, xmax, ymax, x, y, 7/fg=grey, 0x12/bg=almost-black
-      var curr-value/edx: (addr handle cell) <- get curr, value
-      var s-storage: (stream byte 0x400)
-      var s/ebx: (addr stream byte) <- address s-storage
-      print-cell curr-value, s, 0/no-trace
-      x, y <- draw-stream-wrapping-right-then-down screen, s, xmin, ymin, xmax, ymax, x, y, 3/fg=cyan, 0x12/bg=almost-black
+      x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, xmin, ymin, xmax, ymax, 0/no-cursor
     }
     curr-index <- decrement
     y <- increment
