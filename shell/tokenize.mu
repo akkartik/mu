@@ -624,6 +624,13 @@ fn number-token? _in: (addr cell) -> _/eax: boolean {
 
 fn bracket-token? _in: (addr cell) -> _/eax: boolean {
   var in/eax: (addr cell) <- copy _in
+  {
+    var in-type/eax: (addr int) <- get in, type
+    compare *in-type, 3/stream
+    break-if-!=
+    # streams are never paren tokens
+    return 0/false
+  }
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data

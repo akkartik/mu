@@ -885,6 +885,23 @@ fn test-run-multiple-expressions-after-dot {
   # further errors may occur
 }
 
+fn test-run-stream {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox-with sandbox, "[a b]"
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  check-screen-row screen, 0/y, "[a b]    ", "F - test-run-stream/0"
+  check-screen-row screen, 1/y, "...      ", "F - test-run-stream/1"
+  check-screen-row screen, 2/y, "=> [a b] ", "F - test-run-stream/2"
+}
+
 fn test-run-move-cursor-into-trace {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage

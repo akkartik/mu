@@ -175,9 +175,20 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
     }
     return
   }
-  # default: symbol
-  # just copy token data
-  allocate-symbol _out
+  # default: copy either to a symbol or a stream
+  # stream token -> literal
+  var stream-token?/eax: boolean <- stream-token? curr-token
+  compare stream-token?, 0/false
+  {
+    break-if-=
+    allocate-stream _out
+  }
+  compare stream-token?, 0/false
+  {
+    break-if-!=
+    allocate-symbol _out
+  }
+  # copy token data
   var out/eax: (addr handle cell) <- copy _out
   var out-addr/eax: (addr cell) <- lookup *out
   var curr-token-data-ah/ecx: (addr handle stream byte) <- get curr-token, text-data
