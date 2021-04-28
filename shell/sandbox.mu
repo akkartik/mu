@@ -745,6 +745,23 @@ fn test-run-integer {
   check-screen-row screen, 2/y, "=> 1 ", "F - test-run-integer/2"
 }
 
+fn test-run-error-invalid-integer {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox-with sandbox, "1a"
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  check-screen-row screen, 0/y, "1a             ", "F - test-run-error-invalid-integer/0"
+  check-screen-row screen, 1/y, "...            ", "F - test-run-error-invalid-integer/0"
+  check-screen-row screen, 2/y, "invalid number ", "F - test-run-error-invalid-integer/2"
+}
+
 fn test-run-with-spaces {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
@@ -866,23 +883,6 @@ fn test-run-multiple-expressions-after-dot {
   check-screen-row screen, 1/y, "...                                                  ", "F - test-run-multiple-expressions-after-dot/1"
   check-screen-row screen, 2/y, "cannot have multiple expressions between '.' and ')' ", "F - test-run-multiple-expressions-after-dot/2"
   # further errors may occur
-}
-
-fn test-run-error-invalid-integer {
-  var sandbox-storage: sandbox
-  var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox-with sandbox, "1a"
-  # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
-  # setup: screen
-  var screen-on-stack: screen
-  var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
-  #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, "1a             ", "F - test-run-error-invalid-integer/0"
-  check-screen-row screen, 1/y, "...            ", "F - test-run-error-invalid-integer/0"
-  check-screen-row screen, 2/y, "invalid number ", "F - test-run-error-invalid-integer/2"
 }
 
 fn test-run-move-cursor-into-trace {
