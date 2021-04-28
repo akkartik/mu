@@ -56,6 +56,30 @@ fn test-tokenize-dotted-list {
   check close-paren?, "F - test-tokenize-dotted-list: close paren"
 }
 
+fn test-tokenize-stream-literal {
+  # in: "[abc def]"
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "[abc def]"
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  tokenize in, stream, 0/no-trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var stream?/eax: boolean <- stream-token? curr-token
+  check stream?, "F - test-tokenize-stream-literal: type"
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  var data-equal?/eax: boolean <- stream-data-equal? curr-token-data, "abc def"
+  check data-equal?, "F - test-tokenize-stream-literal"
+  var empty?/eax: boolean <- stream-empty? stream
+  check empty?, "F - test-tokenize-stream-literal: empty?"
+}
+
 fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace) {
   trace-text trace, "read", "next-token"
   trace-lower trace
@@ -91,7 +115,25 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       next-symbol-token in, out, trace
       break $next-token:body
     }
-    # brackets are always single-char tokens
+    # open square brackets begin streams
+    {
+      compare g, 0x5b/open-square-bracket
+      break-if-!=
+      g <- read-from-gap-buffer in  # skip open bracket
+      next-stream-token in, out, trace
+      var out-cell/eax: (addr cell) <- copy _out-cell
+      var out-cell-type/eax: (addr int) <- get out-cell, type
+      copy-to *out-cell-type, 3/stream
+      break $next-token:body
+    }
+    # unbalanced close square brackets are errors
+    {
+      compare g, 0x5d/close-square-bracket
+      break-if-!=
+      error trace, "unbalanced ']'"
+      return
+    }
+    # other brackets are always single-char tokens
     {
       var bracket?/eax: boolean <- bracket-grapheme? g
       compare bracket?, 0/false
@@ -230,6 +272,30 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     loop
   }
   trace-higher trace
+}
+
+fn next-stream-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+  trace-text trace, "read", "stream"
+  {
+    var empty?/eax: boolean <- gap-buffer-scan-done? in
+    compare empty?, 0/false
+    {
+      break-if-=
+      error trace, "unbalanced '['"
+      return
+    }
+    var g/eax: grapheme <- read-from-gap-buffer in
+    compare g, 0x5d/close-square-bracket
+    break-if-=
+    write-grapheme out, g
+    loop
+  }
+  var stream-storage: (stream byte 0x40)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  write stream, "=> "
+  rewind-stream out
+  write-stream stream, out
+  trace trace, "read", stream
 }
 
 fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) {
@@ -635,4 +701,15 @@ fn test-dot-token {
   var tmp/eax: (addr cell) <- lookup *tmp-ah
   var result/eax: boolean <- dot-token? tmp
   check result, "F - test-dot-token"
+}
+
+fn stream-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-type/eax: (addr int) <- get in, type
+  compare *in-type, 3/stream
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
 }
