@@ -149,12 +149,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-ah/ecx: (addr handle cell) <- get in-addr, left
     var rest-ah/edx: (addr handle cell) <- get in-addr, right
     var first/eax: (addr cell) <- lookup *first-ah
-    var first-type/ecx: (addr int) <- get first, type
-    compare *first-type, 2/symbol
-    break-if-!=
-    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
-    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
-    var quote?/eax: boolean <- stream-data-equal? sym-data, "'"
+    var quote?/eax: boolean <- symbol-equal? first, "'"
     compare quote?, 0/false
     break-if-=
     #
@@ -170,12 +165,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-ah/ecx: (addr handle cell) <- get in-addr, left
     var rest-ah/edx: (addr handle cell) <- get in-addr, right
     var first/eax: (addr cell) <- lookup *first-ah
-    var first-type/ecx: (addr int) <- get first, type
-    compare *first-type, 2/symbol
-    break-if-!=
-    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
-    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
-    var def?/eax: boolean <- stream-data-equal? sym-data, "def"
+    var def?/eax: boolean <- symbol-equal? first, "def"
     compare def?, 0/false
     break-if-=
     #
@@ -220,12 +210,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-ah/ecx: (addr handle cell) <- get in-addr, left
     var rest-ah/edx: (addr handle cell) <- get in-addr, right
     var first/eax: (addr cell) <- lookup *first-ah
-    var first-type/ecx: (addr int) <- get first, type
-    compare *first-type, 2/symbol
-    break-if-!=
-    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
-    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
-    var set?/eax: boolean <- stream-data-equal? sym-data, "set"
+    var set?/eax: boolean <- symbol-equal? first, "set"
     compare set?, 0/false
     break-if-=
     #
@@ -263,12 +248,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-ah/ecx: (addr handle cell) <- get in-addr, left
     var rest-ah/edx: (addr handle cell) <- get in-addr, right
     var first/eax: (addr cell) <- lookup *first-ah
-    var first-type/ecx: (addr int) <- get first, type
-    compare *first-type, 2/symbol
-    break-if-!=
-    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
-    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
-    var and?/eax: boolean <- stream-data-equal? sym-data, "and"
+    var and?/eax: boolean <- symbol-equal? first, "and"
     compare and?, 0/false
     break-if-=
     #
@@ -306,12 +286,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-ah/ecx: (addr handle cell) <- get in-addr, left
     var rest-ah/edx: (addr handle cell) <- get in-addr, right
     var first/eax: (addr cell) <- lookup *first-ah
-    var first-type/ecx: (addr int) <- get first, type
-    compare *first-type, 2/symbol
-    break-if-!=
-    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
-    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
-    var or?/eax: boolean <- stream-data-equal? sym-data, "or"
+    var or?/eax: boolean <- symbol-equal? first, "or"
     compare or?, 0/false
     break-if-=
     #
@@ -350,12 +325,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-ah/ecx: (addr handle cell) <- get in-addr, left
     var rest-ah/edx: (addr handle cell) <- get in-addr, right
     var first/eax: (addr cell) <- lookup *first-ah
-    var first-type/ecx: (addr int) <- get first, type
-    compare *first-type, 2/symbol
-    break-if-!=
-    var sym-data-ah/eax: (addr handle stream byte) <- get first, text-data
-    var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
-    var if?/eax: boolean <- stream-data-equal? sym-data, "if"
+    var if?/eax: boolean <- symbol-equal? first, "if"
     compare if?, 0/false
     break-if-=
     #

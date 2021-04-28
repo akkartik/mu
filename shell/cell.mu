@@ -40,6 +40,20 @@ fn new-symbol out: (addr handle cell), val: (addr array byte) {
   initialize-symbol out, val
 }
 
+fn symbol-equal? _in: (addr cell), name: (addr array byte) -> _/eax: boolean {
+  var in/esi: (addr cell) <- copy _in
+  var in-type/eax: (addr int) <- get in, type
+  compare *in-type, 2/symbol
+  {
+    break-if-=
+    return 0/false
+  }
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  var result/eax: boolean <- stream-data-equal? in-data, name
+  return result
+}
+
 fn allocate-stream _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out
