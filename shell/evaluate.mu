@@ -88,7 +88,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   compare *in-type, 3/stream
   {
     break-if-!=
-    # numbers are literals
+    # streams are literals
     trace-text trace, "eval", "stream"
     copy-object _in, out
     trace-higher trace
