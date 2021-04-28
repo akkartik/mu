@@ -24,6 +24,15 @@ fn clear-gap-buffer _self: (addr gap-buffer) {
   clear-grapheme-stack right
 }
 
+fn gap-buffer-capacity _gap: (addr gap-buffer) -> _/ecx: int {
+  var gap/esi: (addr gap-buffer) <- copy _gap
+  var left/eax: (addr grapheme-stack) <- get gap, left
+  var left-data-ah/eax: (addr handle array grapheme) <- get left, data
+  var left-data/eax: (addr array grapheme) <- lookup *left-data-ah
+  var result/eax: int <- length left-data
+  return result
+}
+
 # just for tests
 fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
   initialize-gap-buffer self, 0x10/capacity

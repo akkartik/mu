@@ -568,9 +568,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     # we'll need to revisit where serialization happens.
     store-state data-disk, self, globals
     # run sandbox
-    var data-ah/eax: (addr handle gap-buffer) <- get self, data
-    var _data/eax: (addr gap-buffer) <- lookup *data-ah
-    var data/ecx: (addr gap-buffer) <- copy _data
+    var data-ah/ecx: (addr handle gap-buffer) <- get self, data
     var value-ah/eax: (addr handle stream byte) <- get self, value
     var _value/eax: (addr stream byte) <- lookup *value-ah
     var value/edx: (addr stream byte) <- copy _value
@@ -592,7 +590,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
       break-if-=
       set-cursor-position real-screen, 0/x, 0/y  # for any debug prints during evaluation
     }
-    run data, value, globals, trace, screen-cell, keyboard-cell
+    run data-ah, value, globals, trace, screen-cell, keyboard-cell
     return
   }
   # ctrl-m
@@ -699,10 +697,12 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
   }
 }
 
-fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
-  var read-result-storage: (handle cell)
-  var read-result/esi: (addr handle cell) <- address read-result-storage
-  read-cell in, read-result, trace
+fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+  var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
+  var in/eax: (addr gap-buffer) <- lookup *in-ah
+  var read-result-h: (handle cell)
+  var read-result-ah/esi: (addr handle cell) <- address read-result-h
+  read-cell in, read-result-ah, trace
   var error?/eax: boolean <- has-errors? trace
   {
     compare error?, 0/false
@@ -715,7 +715,7 @@ fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-tab
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
   debug-print "^", 4/fg, 0/bg
-  evaluate read-result, eval-result, *nil-ah, globals, trace, screen-cell, keyboard-cell, 1/call-number
+  evaluate read-result-ah, eval-result, *nil-ah, globals, trace, screen-cell, keyboard-cell, 1/call-number
   debug-print "$", 4/fg, 0/bg
   var error?/eax: boolean <- has-errors? trace
   {
@@ -723,6 +723,10 @@ fn run in: (addr gap-buffer), out: (addr stream byte), globals: (addr global-tab
     break-if-=
     return
   }
+  # if there was no error and the read-result starts with "set" or "def", save
+  # the gap buffer in the modified global, then create a new one for the next
+  # command.
+  maybe-stash-gap-buffer-to-global globals, read-result-ah, _in-ah
   clear-stream out
   print-cell eval-result, out, trace
   mark-lines-dirty trace
