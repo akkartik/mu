@@ -31,7 +31,6 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
 }
 
 fn test-tokenize-dotted-list {
-  # in: "(a . b)"
   var in-storage: gap-buffer
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "(a . b)"
@@ -57,7 +56,6 @@ fn test-tokenize-dotted-list {
 }
 
 fn test-tokenize-stream-literal {
-  # in: "[abc def]"
   var in-storage: gap-buffer
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "[abc def]"
@@ -80,10 +78,43 @@ fn test-tokenize-stream-literal {
   check empty?, "F - test-tokenize-stream-literal: empty?"
 }
 
+fn test-tokenize-stream-literal-in-tree {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "([abc def])"
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  tokenize in, stream, 0/no-trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var bracket?/eax: boolean <- bracket-token? curr-token
+  check bracket?, "F - test-tokenize-stream-literal-in-tree: open paren"
+  read-from-stream stream, curr-token
+  var stream?/eax: boolean <- stream-token? curr-token
+  check stream?, "F - test-tokenize-stream-literal-in-tree: type"
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  var data-equal?/eax: boolean <- stream-data-equal? curr-token-data, "abc def"
+  check data-equal?, "F - test-tokenize-stream-literal-in-tree"
+  read-from-stream stream, curr-token
+  var bracket?/eax: boolean <- bracket-token? curr-token
+  check bracket?, "F - test-tokenize-stream-literal-in-tree: close paren"
+  var empty?/eax: boolean <- stream-empty? stream
+  check empty?, "F - test-tokenize-stream-literal-in-tree: empty?"
+}
+
 fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace) {
   trace-text trace, "read", "next-token"
   trace-lower trace
   var out-cell/eax: (addr cell) <- copy _out-cell
+  {
+    var out-cell-type/eax: (addr int) <- get out-cell, type
+    copy-to *out-cell-type, 0/uninitialized
+  }
   var out-ah/eax: (addr handle stream byte) <- get out-cell, text-data
   var _out/eax: (addr stream byte) <- lookup *out-ah
   var out/edi: (addr stream byte) <- copy _out
