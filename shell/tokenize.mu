@@ -34,14 +34,7 @@ fn test-tokenize-dotted-list {
   # in: "(a . b)"
   var in-storage: gap-buffer
   var in/esi: (addr gap-buffer) <- address in-storage
-  initialize-gap-buffer in, 0x10
-  add-code-point-at-gap in, 0x28/open-paren
-  add-code-point-at-gap in, 0x61/a
-  add-code-point-at-gap in, 0x20/space
-  add-code-point-at-gap in, 0x2e/dot
-  add-code-point-at-gap in, 0x20/space
-  add-code-point-at-gap in, 0x62/b
-  add-code-point-at-gap in, 0x29/close-paren
+  initialize-gap-buffer-with in, "(a . b)"
   #
   var stream-storage: (stream cell 0x10)
   var stream/edi: (addr stream cell) <- address stream-storage
