@@ -92,7 +92,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   y <- maybe-render-empty-screen screen, self, xmin, y
   y <- maybe-render-keyboard screen, self, xmin, y
   var cursor-in-sandbox?/ebx: (addr boolean) <- get self, cursor-in-data?
-  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, *cursor-in-sandbox?, 3/fg, 0/bg
+  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, *cursor-in-sandbox?, 0xf/fg, 0/bg
   y <- increment
   # trace
   var trace-ah/eax: (addr handle trace) <- get self, trace
