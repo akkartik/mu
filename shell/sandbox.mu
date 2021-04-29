@@ -730,7 +730,7 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
   mark-lines-dirty trace
 }
 
-fn read-evaluate-and-stash-to-globals _in-ah: (addr handle gap-buffer), globals: (addr global-table) {
+fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: (addr global-table) {
   var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
   var in/eax: (addr gap-buffer) <- lookup *in-ah
   var read-result-h: (handle cell)

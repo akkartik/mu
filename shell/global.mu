@@ -76,8 +76,9 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     var value-gap-buffer-ah/edx: (addr handle gap-buffer) <- address value-gap-buffer-storage
     allocate value-gap-buffer-ah
     var value-gap-buffer/eax: (addr gap-buffer) <- lookup *value-gap-buffer-ah
+    initialize-gap-buffer value-gap-buffer, 0x1000/4KB
     load-gap-buffer-from-stream value-gap-buffer, value-data
-    read-evaluate-and-stash-to-globals value-gap-buffer-ah, self
+    read-evaluate-and-move-to-globals value-gap-buffer-ah, self
     loop
   }
 }
@@ -154,6 +155,8 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
       var curr-input-ah/edx: (addr handle gap-buffer) <- get curr, input
       var _curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
       var curr-input/ebx: (addr gap-buffer) <- copy _curr-input
+      compare curr-input, 0
+      break-if-=
       var x/eax: int <- copy xmin
       x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, xmin, y, xmax, ymax, 0/no-cursor
     }
