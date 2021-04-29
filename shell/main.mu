@@ -14,7 +14,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
     # sandbox layout: 1 padding, 41 code, 1 padding                          =  43
     #                                                                  total = 128 chars
     render-globals screen, globals
-    render-sandbox screen, sandbox, 0x56/sandbox-left-margin, 1/y, 0x80/screen-width, 0x2f/screen-height-without-menu
+    render-sandbox screen, sandbox, 0x55/sandbox-left-margin, 1/y, 0x80/screen-width, 0x2f/screen-height-without-menu
     {
       var key/eax: byte <- read-key keyboard
       compare key, 0

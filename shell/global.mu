@@ -125,7 +125,7 @@ fn write-globals out: (addr stream byte), _self: (addr global-table) {
 
 # globals layout: 1 char padding, 41 code, 1 padding, 41 code, 1 padding =  85 chars
 fn render-globals screen: (addr screen), _self: (addr global-table) {
-  clear-rect screen, 0/xmin, 0/ymin, 0x56/xmax, 0x2f/ymax=screen-height-without-menu, 0x12/bg=almost-black
+  clear-rect screen, 0/xmin, 0/ymin, 0x55/xmax, 0x2f/ymax=screen-height-without-menu, 0x12/bg=almost-black
   var self/esi: (addr global-table) <- copy _self
   # render primitives
   render-primitives screen, 1/xmin=padding-left, 0x55/xmax, 0x2f/ymax
@@ -142,14 +142,22 @@ fn render-globals screen: (addr screen), _self: (addr global-table) {
     loop
   }
   var lowest-index/edi: int <- copy curr-index
-  var y/ecx: int <- copy 1/padding-top
   var final-index/edx: (addr int) <- get self, final-index
   var curr-index/edx: int <- copy *final-index
-  {
+  var y1: int
+  copy-to y1, 1/padding-top
+  var y2: int
+  copy-to y2, 1/padding-top
+  $render-globals:loop: {
     compare curr-index, lowest-index
     break-if-<
-    compare y, 0x2f/ymax
-    break-if->=
+    {
+      compare y1, 0x2f/ymax
+      break-if-<
+      compare y2, 0x2f/ymax
+      break-if-<
+      break $render-globals:loop
+    }
     {
       var curr-offset/edx: (offset global) <- compute-offset data, curr-index
       var curr/edx: (addr global) <- index data, curr-offset
@@ -158,12 +166,23 @@ fn render-globals screen: (addr screen), _self: (addr global-table) {
       var curr-input/ebx: (addr gap-buffer) <- copy _curr-input
       compare curr-input, 0
       break-if-=
-      var x/eax: int <- copy 1/padding-left
-      x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, x, y, 0x2a/xmax, 0x2f/ymax, 0/no-cursor, 7/fg=definition, 0/bg
-      y <- increment
+      $render-globals:render-global: {
+        var x/eax: int <- copy 0
+        var y/ecx: int <- copy y1
+        compare y, y2
+        {
+          break-if->=
+          x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 1/padding-left, y1, 0x2a/xmax, 0x2f/ymax, 0/no-cursor, 7/fg=definition, 0/bg
+          y <- add 2
+          copy-to y1, y
+          break $render-globals:render-global
+        }
+        x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 0x2b/xmin, y2, 0x54/xmax, 0x2f/ymax, 0/no-cursor, 7/fg=definition, 0/bg
+        y <- add 2
+        copy-to y2, y
+      }
     }
     curr-index <- decrement
-    y <- increment
     loop
   }
 }
