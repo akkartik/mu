@@ -15,7 +15,7 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
     break-if-!=
     # initialize token data each iteration to avoid aliasing
     var dest-ah/eax: (addr handle stream byte) <- get token, text-data
-    populate-stream dest-ah, 0x40/max-token-size
+    populate-stream dest-ah, 0x100/max-definition-size
     #
     next-token in, token, trace
     var error?/eax: boolean <- has-errors? trace
