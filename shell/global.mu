@@ -159,7 +159,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table) {
       compare curr-input, 0
       break-if-=
       var x/eax: int <- copy 1/padding-left
-      x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, x, y, 0x56/xmax, 0x2f/ymax, 0/no-cursor, 3/fg=cyan, 0x14/bg=definition
+      x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, x, y, 0x2a/xmax, 0x2f/ymax, 0/no-cursor, 3/fg=cyan, 0x14/bg=definition
       y <- increment
     }
     curr-index <- decrement
