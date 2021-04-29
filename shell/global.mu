@@ -155,7 +155,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
       var _curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
       var curr-input/ebx: (addr gap-buffer) <- copy _curr-input
       var x/eax: int <- copy xmin
-      x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, xmin, ymin, xmax, ymax, 0/no-cursor
+      x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, xmin, y, xmax, ymax, 0/no-cursor
     }
     curr-index <- decrement
     y <- increment
