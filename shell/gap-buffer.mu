@@ -120,7 +120,7 @@ fn emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte) {
 
 # We implicitly render everything editable in a single color, and assume the
 # cursor is a single other color.
-fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, render-cursor?: boolean -> _/eax: int, _/ecx: int {
+fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
   var left/edx: (addr grapheme-stack) <- get gap, left
   var highlight-matching-open-paren?/ebx: boolean <- copy 0/false
@@ -128,11 +128,11 @@ fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr
   highlight-matching-open-paren?, matching-open-paren-depth <- highlight-matching-open-paren? gap, render-cursor?
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
-  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, left, xmin, ymin, xmax, ymax, xmin, ymin, highlight-matching-open-paren?, matching-open-paren-depth
+  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, left, xmin, ymin, xmax, ymax, xmin, ymin, highlight-matching-open-paren?, matching-open-paren-depth, color, background-color
   var right/edx: (addr grapheme-stack) <- get gap, right
-  x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, right, xmin, ymin, xmax, ymax, x2, y2, render-cursor?
+  x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, right, xmin, ymin, xmax, ymax, x2, y2, render-cursor?, color, background-color
   # decide whether we still need to print a cursor
-  var bg/ebx: int <- copy 0
+  var bg/ebx: int <- copy background-color
   compare render-cursor?, 0/false
   {
     break-if-=
@@ -144,11 +144,11 @@ fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr
   }
   # print a grapheme either way so that cursor position doesn't affect printed width
   var space/edx: grapheme <- copy 0x20
-  x2, y2 <- render-grapheme screen, space, xmin, ymin, xmax, ymax, x2, y2, 3/fg=cyan, bg
+  x2, y2 <- render-grapheme screen, space, xmin, ymin, xmax, ymax, x2, y2, color, bg
   return x2, y2
 }
 
-fn render-gap-buffer screen: (addr screen), gap: (addr gap-buffer), x: int, y: int, render-cursor?: boolean -> _/eax: int {
+fn render-gap-buffer screen: (addr screen), gap: (addr gap-buffer), x: int, y: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int {
   var _width/eax: int <- copy 0
   var _height/ecx: int <- copy 0
   _width, _height <- screen-size screen
@@ -156,7 +156,7 @@ fn render-gap-buffer screen: (addr screen), gap: (addr gap-buffer), x: int, y: i
   var height/ebx: int <- copy _height
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
-  x2, y2 <- render-gap-buffer-wrapping-right-then-down screen, gap, x, y, width, height, render-cursor?
+  x2, y2 <- render-gap-buffer-wrapping-right-then-down screen, gap, x, y, width, height, render-cursor?, color, background-color
   return x2  # y2? yolo
 }
 
@@ -556,7 +556,7 @@ fn test-render-gap-buffer-without-cursor {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
-  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 0/no-cursor
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 0/no-cursor, 3/fg, 0/bg
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-without-cursor"
   check-ints-equal x, 4, "F - test-render-gap-buffer-without-cursor: result"
                                                                 # abc
@@ -574,7 +574,7 @@ fn test-render-gap-buffer-with-cursor-at-end {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
-  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0/bg
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-at-end"
   # we've drawn one extra grapheme for the cursor
   check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-at-end: result"
@@ -594,7 +594,7 @@ fn test-render-gap-buffer-with-cursor-in-middle {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
-  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0/bg
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-in-middle"
   check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-in-middle: result"
                                                                 # abc
@@ -611,7 +611,7 @@ fn test-render-gap-buffer-with-cursor-at-start {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
-  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0/bg
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-at-start"
   check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-at-start: result"
                                                                 # abc
@@ -628,7 +628,7 @@ fn test-render-gap-buffer-highlight-matching-close-paren {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
-  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0/bg
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-close-paren"
   check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-close-paren: result"
   check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "|   ", "F - test-render-gap-buffer-highlight-matching-close-paren: cursor"
@@ -646,7 +646,7 @@ fn test-render-gap-buffer-highlight-matching-open-paren {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
-  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0/bg
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-open-paren"
   check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-open-paren: result"
   check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "  | ", "F - test-render-gap-buffer-highlight-matching-open-paren: cursor"
@@ -663,7 +663,7 @@ fn test-render-gap-buffer-highlight-matching-open-paren-of-end {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
-  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor
+  var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0/bg
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end"
   check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-open-paren-of-end: result"
   check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "   |", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end: cursor"

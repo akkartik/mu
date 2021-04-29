@@ -123,11 +123,12 @@ fn write-globals out: (addr stream byte), _self: (addr global-table) {
   write out, "  ))\n"
 }
 
-fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, ymin: int, xmax: int, ymax: int {
-  clear-rect screen, xmin, ymin, xmax, ymax, 0x12/bg=almost-black
+# globals layout: 1 char padding, 41 code, 1 padding, 41 code, 1 padding =  85 chars
+fn render-globals screen: (addr screen), _self: (addr global-table) {
+  clear-rect screen, 0/xmin, 0/ymin, 0x56/xmax, 0x2f/ymax=screen-height-without-menu, 0x12/bg=almost-black
   var self/esi: (addr global-table) <- copy _self
   # render primitives
-  render-primitives screen, xmin, ymin, xmax, ymax
+  render-primitives screen, 1/xmin=padding-left, 0x55/xmax, 0x2f/ymax
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
   var curr-index/edx: int <- copy 1
@@ -141,13 +142,13 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
     loop
   }
   var lowest-index/edi: int <- copy curr-index
-  var y/ecx: int <- copy ymin
+  var y/ecx: int <- copy 1/padding-top
   var final-index/edx: (addr int) <- get self, final-index
   var curr-index/edx: int <- copy *final-index
   {
     compare curr-index, lowest-index
     break-if-<
-    compare y, ymax
+    compare y, 0x2f/ymax
     break-if->=
     {
       var curr-offset/edx: (offset global) <- compute-offset data, curr-index
@@ -157,8 +158,9 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
       var curr-input/ebx: (addr gap-buffer) <- copy _curr-input
       compare curr-input, 0
       break-if-=
-      var x/eax: int <- copy xmin
-      x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, xmin, y, xmax, ymax, 0/no-cursor
+      var x/eax: int <- copy 1/padding-left
+      x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, x, y, 0x56/xmax, 0x2f/ymax, 0/no-cursor, 3/fg=cyan, 0x14/bg=definition
+      y <- increment
     }
     curr-index <- decrement
     y <- increment
@@ -166,7 +168,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table), xmin: int, 
   }
 }
 
-fn render-primitives screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int {
+fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var y/ecx: int <- copy ymax
   y <- subtract 0xf
   var tmpx/eax: int <- copy xmin

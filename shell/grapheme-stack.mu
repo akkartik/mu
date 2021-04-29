@@ -82,8 +82,9 @@ fn copy-grapheme-stack _src: (addr grapheme-stack), dest: (addr grapheme-stack) 
 }
 
 # dump stack to screen from bottom to top
-# colors hardcoded
-fn render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _self: (addr grapheme-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int -> _/eax: int, _/ecx: int {
+# hardcoded colors:
+#   matching paren
+fn render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _self: (addr grapheme-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var self/esi: (addr grapheme-stack) <- copy _self
   var matching-open-paren-index/edx: int <- get-matching-open-paren-index self, highlight-matching-open-paren?, open-paren-depth
   var data-ah/edi: (addr handle array grapheme) <- get self, data
@@ -99,13 +100,16 @@ fn render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _sel
     {
       var g/esi: (addr grapheme) <- index data, i
       var fg: int
-      copy-to fg, 3/cyan
+      {
+        var tmp/eax: int <- copy color
+        copy-to fg, tmp
+      }
       {
         compare i, matching-open-paren-index
         break-if-!=
         copy-to fg, 0xf/highlight
       }
-      x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, fg, 0/bg
+      x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, fg, background-color
     }
     i <- increment
     loop
@@ -122,13 +126,16 @@ fn render-stack-from-bottom screen: (addr screen), self: (addr grapheme-stack), 
   var height/ebx: int <- copy _height
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
-  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, self, x, y, width, height, x, y, highlight-matching-open-paren?, open-paren-depth
+  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, self, x, y, width, height, x, y, highlight-matching-open-paren?, open-paren-depth, 3/fg=cyan, 0/bg
   return x2  # y2? yolo
 }
 
 # dump stack to screen from top to bottom
 # optionally render a 'cursor' with the top grapheme
-fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: (addr grapheme-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, render-cursor?: boolean -> _/eax: int, _/ecx: int {
+# hard-coded colors:
+#   matching paren
+#   cursor
+fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: (addr grapheme-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var self/esi: (addr grapheme-stack) <- copy _self
   var matching-close-paren-index/edx: int <- get-matching-close-paren-index self, render-cursor?
   var data-ah/eax: (addr handle array grapheme) <- get self, data
@@ -146,7 +153,7 @@ fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: 
     compare i, 0
     break-if-<
     var g/esi: (addr grapheme) <- index data, i
-    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, 3/fg=cyan, 7/bg=cursor
+    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, color, 7/bg=cursor
     i <- decrement
   }
   # remaining iterations
@@ -155,7 +162,10 @@ fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: 
     break-if-<
     # highlight matching paren if needed
     var fg: int
-    copy-to fg, 3/cyan
+    {
+      var tmp/eax: int <- copy color
+      copy-to fg, tmp
+    }
     compare i, matching-close-paren-index
     {
       break-if-!=
@@ -163,7 +173,7 @@ fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: 
     }
     #
     var g/esi: (addr grapheme) <- index data, i
-    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, fg, 0/bg=cursor
+    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, fg, background-color
     i <- decrement
     loop
   }
@@ -179,7 +189,7 @@ fn render-stack-from-top screen: (addr screen), self: (addr grapheme-stack), x: 
   var height/ebx: int <- copy _height
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
-  x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, self, x, y, width, height, x, y, render-cursor?
+  x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, self, x, y, width, height, x, y, render-cursor?, 3/fg=cyan, 0/bg
   return x2  # y2? yolo
 }
 
