@@ -12,6 +12,12 @@
 Entry:
   # initialize stack
   bd/copy-to-ebp 0/imm32
+  # Clear memory location 0 to ensure that uninitialized arrays run afoul of
+  # the bounds checker.
+  # TODO: This is utterly bonkers, and does not actually protect us against
+  # all null pointer reads/writes. Create a real page table sometime.
+  b8/copy-to-eax 0/imm32
+  c7 0/subop/copy *eax 0/imm32
 #?   (main 0 0 Primary-bus-secondary-drive)
   # always first run tests
   (run-tests)
