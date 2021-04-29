@@ -67,12 +67,17 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     var curr-ah/eax: (addr handle cell) <- get remaining, left
     var curr/eax: (addr cell) <- lookup *curr-ah
     remaining-ah <- get remaining, right
-    var name-ah/ecx: (addr handle cell) <- get curr, left
-    var value-ah/ebx: (addr handle cell) <- get curr, right
-    var name/eax: (addr cell) <- lookup *name-ah
-    var name-data-ah/eax: (addr handle stream byte) <- get name, text-data
-    var name-data/eax: (addr stream byte) <- lookup *name-data-ah
-    append-global-binding-of-stream self, name-data, *value-ah
+    var value-ah/eax: (addr handle cell) <- get curr, right
+    var value/eax: (addr cell) <- lookup *value-ah
+    var value-data-ah/eax: (addr handle stream byte) <- get value, text-data
+    var _value-data/eax: (addr stream byte) <- lookup *value-data-ah
+    var value-data/ecx: (addr stream byte) <- copy _value-data
+    var value-gap-buffer-storage: (handle gap-buffer)
+    var value-gap-buffer-ah/edx: (addr handle gap-buffer) <- address value-gap-buffer-storage
+    allocate value-gap-buffer-ah
+    var value-gap-buffer/eax: (addr gap-buffer) <- lookup *value-gap-buffer-ah
+    load-gap-buffer-from-stream value-gap-buffer, value-data
+    read-evaluate-and-stash-to-globals value-gap-buffer-ah, self
     loop
   }
 }
@@ -105,9 +110,11 @@ fn write-globals out: (addr stream byte), _self: (addr global-table) {
       var curr-name-ah/eax: (addr handle array byte) <- get curr, name
       var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
       write out, curr-name
-      write out, " . "
-      print-cell curr-value-ah, out, 0/no-trace
-      write out, ")\n"
+      write out, " . ["
+      var curr-input-ah/eax: (addr handle gap-buffer) <- get curr, input
+      var curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
+      append-gap-buffer curr-input, out
+      write out, "])\n"
     }
     curr-index <- increment
     loop
@@ -274,22 +281,6 @@ fn append-global _self: (addr global-table), name: (addr array byte), value: (ha
   var curr/esi: (addr global) <- index data, curr-offset
   var curr-name-ah/eax: (addr handle array byte) <- get curr, name
   copy-array-object name, curr-name-ah
-  var curr-value-ah/eax: (addr handle cell) <- get curr, value
-  copy-handle value, curr-value-ah
-}
-
-fn append-global-binding-of-stream _self: (addr global-table), name: (addr stream byte), value: (handle cell) {
-  var self/esi: (addr global-table) <- copy _self
-  var final-index-addr/ecx: (addr int) <- get self, final-index
-  increment *final-index-addr
-  var curr-index/ecx: int <- copy *final-index-addr
-  var data-ah/eax: (addr handle array global) <- get self, data
-  var data/eax: (addr array global) <- lookup *data-ah
-  var curr-offset/esi: (offset global) <- compute-offset data, curr-index
-  var curr/esi: (addr global) <- index data, curr-offset
-  var curr-name-ah/eax: (addr handle array byte) <- get curr, name
-  rewind-stream name
-  stream-to-array name, curr-name-ah
   var curr-value-ah/eax: (addr handle cell) <- get curr, value
   copy-handle value, curr-value-ah
 }
@@ -1902,4 +1893,53 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _definition-a
   allocate gap2
   var gap-addr/eax: (addr gap-buffer) <- lookup *gap2
   initialize-gap-buffer gap-addr, capacity
+}
+
+# Accepts an input s-expression, naively checks if it is a definition, and if
+# so saves the gap-buffer to the appropriate global.
+fn move-gap-buffer-to-global _globals: (addr global-table), _definition-ah: (addr handle cell), gap: (addr handle gap-buffer) {
+  # if 'definition' is not a pair, return
+  var definition-ah/eax: (addr handle cell) <- copy _definition-ah
+  var _definition/eax: (addr cell) <- lookup *definition-ah
+  var definition/esi: (addr cell) <- copy _definition
+  var definition-type/eax: (addr int) <- get definition, type
+  compare *definition-type, 0/pair
+  {
+    break-if-=
+    return
+  }
+  # if definition->left is neither "def" nor "set", return
+  var left-ah/eax: (addr handle cell) <- get definition, left
+  var _left/eax: (addr cell) <- lookup *left-ah
+  var left/ecx: (addr cell) <- copy _left
+  {
+    var def?/eax: boolean <- symbol-equal? left, "def"
+    compare def?, 0/false
+    break-if-!=
+    var set?/eax: boolean <- symbol-equal? left, "set"
+    compare set?, 0/false
+    break-if-!=
+    return
+  }
+  # locate the global for definition->right->left
+  var right-ah/eax: (addr handle cell) <- get definition, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  var defined-symbol-ah/eax: (addr handle cell) <- get right, left
+  var defined-symbol/eax: (addr cell) <- lookup *defined-symbol-ah
+  var defined-symbol-name-ah/eax: (addr handle stream byte) <- get defined-symbol, text-data
+  var defined-symbol-name/eax: (addr stream byte) <- lookup *defined-symbol-name-ah
+  var index/ecx: int <- find-symbol-in-globals _globals, defined-symbol-name
+  {
+    compare index, -1/not-found
+    break-if-!=
+    return
+  }
+  # move 'gap' to it
+  var globals/eax: (addr global-table) <- copy _globals
+  var global-data-ah/eax: (addr handle array global) <- get globals, data
+  var global-data/eax: (addr array global) <- lookup *global-data-ah
+  var offset/ebx: (offset global) <- compute-offset global-data, index
+  var dest-global/eax: (addr global) <- index global-data, offset
+  var dest-ah/eax: (addr handle gap-buffer) <- get dest-global, input
+  copy-object gap, dest-ah
 }

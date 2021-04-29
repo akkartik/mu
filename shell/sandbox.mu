@@ -730,6 +730,23 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
   mark-lines-dirty trace
 }
 
+fn read-evaluate-and-stash-to-globals _in-ah: (addr handle gap-buffer), globals: (addr global-table) {
+  var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
+  var in/eax: (addr gap-buffer) <- lookup *in-ah
+  var read-result-h: (handle cell)
+  var read-result-ah/esi: (addr handle cell) <- address read-result-h
+  read-cell in, read-result-ah, 0/no-trace
+  var nil-storage: (handle cell)
+  var nil-ah/eax: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  var eval-result-storage: (handle cell)
+  var eval-result/edi: (addr handle cell) <- address eval-result-storage
+  debug-print "^", 4/fg, 0/bg
+  evaluate read-result-ah, eval-result, *nil-ah, globals, 0/no-trace, 0/no-screen-cell, 0/no-keyboard-cell, 1/call-number
+  debug-print "$", 4/fg, 0/bg
+  move-gap-buffer-to-global globals, read-result-ah, _in-ah
+}
+
 fn test-run-integer {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
