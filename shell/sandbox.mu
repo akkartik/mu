@@ -563,9 +563,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     compare g, 0x13/ctrl-s
     break-if-!=
     # minor gotcha here: any bindings created later in this iteration won't be
-    # persisted.
-    # That's ok since we don't clear the gap buffer. If we start doing so
-    # we'll need to revisit where serialization happens.
+    # persisted until the next call to ctrl-s.
     store-state data-disk, self, globals
     # run sandbox
     var data-ah/ecx: (addr handle gap-buffer) <- get self, data
