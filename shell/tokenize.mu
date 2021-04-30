@@ -18,6 +18,9 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
     populate-stream dest-ah, 0x100/max-definition-size
     #
     next-token in, token, trace
+    var skip?/eax: boolean <- comment-token? token
+    compare skip?, 0/false
+    loop-if-!=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
     {
@@ -128,6 +131,13 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       var gval/eax: int <- copy g
       write-int32-hex stream, gval
       trace trace, "read", stream
+    }
+    # comment
+    {
+      compare g, 0x23/comment
+      break-if-!=
+      rest-of-line in, out, trace
+      break $next-token:body
     }
     # digit
     {
@@ -332,6 +342,29 @@ fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) 
   trace-text trace, "read", "bracket"
   write-grapheme out, g
   var stream-storage: (stream byte 0x40)
+  var stream/esi: (addr stream byte) <- address stream-storage
+  write stream, "=> "
+  rewind-stream out
+  write-stream stream, out
+  trace trace, "read", stream
+}
+
+fn rest-of-line in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+  trace-text trace, "read", "comment"
+  {
+    var empty?/eax: boolean <- gap-buffer-scan-done? in
+    compare empty?, 0/false
+    {
+      break-if-=
+      return
+    }
+    var g/eax: grapheme <- read-from-gap-buffer in
+    compare g, 0xa/newline
+    break-if-=
+    write-grapheme out, g
+    loop
+  }
+  var stream-storage: (stream byte 0x80)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, "=> "
   rewind-stream out
@@ -744,6 +777,20 @@ fn stream-token? _in: (addr cell) -> _/eax: boolean {
   var in/eax: (addr cell) <- copy _in
   var in-type/eax: (addr int) <- get in, type
   compare *in-type, 3/stream
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
+}
+
+fn comment-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  rewind-stream in-data
+  var g/eax: grapheme <- read-grapheme in-data
+  compare g, 0x23/hash
   {
     break-if-=
     return 0/false
