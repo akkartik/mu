@@ -216,13 +216,14 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
   # top border
   {
     set-cursor-position screen, xmin, screen-y
-    move-cursor-right screen
     var width/edx: (addr int) <- get target-screen, width
+    var limit/edx: int <- copy *width
+    limit <- add 2/screen-border
     var x/ebx: int <- copy 0
     {
-      compare x, *width
+      compare x, limit
       break-if->=
-      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
       move-cursor-right screen
       x <- increment
       loop
@@ -236,7 +237,7 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
     compare y, *height
     break-if->=
     set-cursor-position screen, xmin, screen-y
-    draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
+    draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
     move-cursor-right screen
     var width/edx: (addr int) <- get target-screen, width
     var x/ebx: int <- copy 0
@@ -248,7 +249,7 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
       x <- increment
       loop
     }
-    draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
+    draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
     y <- increment
     screen-y <- increment
     loop
@@ -256,13 +257,14 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
   # bottom border
   {
     set-cursor-position screen, xmin, screen-y
-    move-cursor-right screen
     var width/edx: (addr int) <- get target-screen, width
+    var limit/edx: int <- copy *width
+    limit <- add 2/screen-border
     var x/ebx: int <- copy 0
     {
-      compare x, *width
+      compare x, limit
       break-if->=
-      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      draw-code-point-at-cursor screen, 0x20/space, 0x20/space, 0x12/bg=almost-black
       move-cursor-right screen
       x <- increment
       loop
@@ -278,13 +280,14 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
   # top border
   {
     set-cursor-position screen, xmin, screen-y
-    move-cursor-right screen
     var width/edx: (addr int) <- get target-screen, width
+    var limit/edx: int <- copy *width
+    limit <- add 2/screen-border
     var x/ebx: int <- copy 0
     {
-      compare x, *width
+      compare x, limit
       break-if->=
-      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
       move-cursor-right screen
       x <- increment
       loop
@@ -299,7 +302,7 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
       compare y, *height
       break-if->=
       set-cursor-position screen, xmin, screen-y
-      draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
+      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
       move-cursor-right screen
       var width/edx: (addr int) <- get target-screen, width
       var x/ebx: int <- copy 0
@@ -311,7 +314,7 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
         x <- increment
         loop
       }
-      draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x18/fg, 0/bg
+      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
       y <- increment
       screen-y <- increment
       loop
@@ -372,13 +375,14 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
   # bottom border
   {
     set-cursor-position screen, xmin, screen-y
-    move-cursor-right screen
     var width/edx: (addr int) <- get target-screen, width
+    var limit/edx: int <- copy *width
+    limit <- add 2/screen-border
     var x/ebx: int <- copy 0
     {
-      compare x, *width
+      compare x, limit
       break-if->=
-      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      draw-code-point-at-cursor screen, 0x20/space, 0x20/space, 0x12/bg=almost-black
       move-cursor-right screen
       x <- increment
       loop
