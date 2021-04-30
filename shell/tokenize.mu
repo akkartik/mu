@@ -120,7 +120,6 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
   var out/edi: (addr stream byte) <- copy _out
   $next-token:body: {
     clear-stream out
-    skip-whitespace-from-gap-buffer in
     var g/eax: grapheme <- peek-from-gap-buffer in
     {
       var stream-storage: (stream byte 0x40)
