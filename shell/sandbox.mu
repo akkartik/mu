@@ -23,7 +23,7 @@ fn initialize-sandbox _self: (addr sandbox), fake-screen-and-keyboard?: boolean 
     compare fake-screen-and-keyboard?, 0/false
     break-if-=
     var screen-ah/eax: (addr handle cell) <- get self, screen-var
-    new-fake-screen screen-ah, 5/width, 4/height, 1/enable-pixel-graphics
+    new-fake-screen screen-ah, 8/width, 3/height, 1/enable-pixel-graphics
     var keyboard-ah/eax: (addr handle cell) <- get self, keyboard-var
     new-fake-keyboard keyboard-ah, 0x10/keyboard-capacity
   }
