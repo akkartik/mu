@@ -41,7 +41,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
     compare screen-obj, 0
     break-if-=
-    var y/ecx: int <- render-screen 0/screen, screen-obj, 0x70/xmin, 2/ymin
+    var y/ecx: int <- render-screen 0/screen, screen-obj, 0x70/xmin, 1/ymin
   }
 #?   dump-cell in
 #?   {
