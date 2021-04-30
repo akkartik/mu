@@ -199,7 +199,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     stream-to-array first-arg-data, tmp-ah
     var first-arg-data-string/eax: (addr array byte) <- lookup *tmp-ah
     var out2/edi: (addr handle cell) <- copy out
-    append-global globals, first-arg-data-string, *out2, trace
+    assign-or-create-global globals, first-arg-data-string, *out2, trace
     trace-higher trace
     return
   }

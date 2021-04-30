@@ -282,23 +282,16 @@ fn append-primitive _self: (addr global-table), name: (addr array byte) {
   new-primitive-function curr-value-ah, curr-index
 }
 
-fn append-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {
+fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {
   var self/esi: (addr global-table) <- copy _self
+  var curr-index/ecx: int <- find-symbol-name-in-globals self, name
   {
-    var curr-index/ecx: int <- find-symbol-name-in-globals self, name
     compare curr-index, -1/not-found
-    break-if-=
-    # otherwise error "global already exists: ", sym
-    var stream-storage: (stream byte 0x40)
-    var stream/ecx: (addr stream byte) <- address stream-storage
-    write stream, "global already exists: "
-    write stream, name
-    trace trace, "error", stream
-    return
+    break-if-!=
+    var final-index-addr/eax: (addr int) <- get self, final-index
+    increment *final-index-addr
+    curr-index <- copy *final-index-addr
   }
-  var final-index-addr/ecx: (addr int) <- get self, final-index
-  increment *final-index-addr
-  var curr-index/ecx: int <- copy *final-index-addr
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
   var curr-offset/esi: (offset global) <- compute-offset data, curr-index
