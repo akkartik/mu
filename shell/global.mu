@@ -208,7 +208,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  cr", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
   tmpx <- draw-text-rightward screen, ": screen   ", tmpx, xmax, y, 7/fg=grey, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, "# move cursor down and to left margin", tmpx, xmax, y, 9/fg=blue, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, "# move cursor down and to left margin", tmpx, xmax, y, 0x38/fg=trace, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "pixel graphics", tmpx, xmax, y, 7/fg=grey, 0xdc/bg=green-bg

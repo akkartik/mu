@@ -347,7 +347,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
       var curr/ebx: (addr trace-line) <- index trace, offset
       var curr-label-ah/eax: (addr handle array byte) <- get curr, label
       var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
-      var bg/edi: int <- copy 0/black
+      var bg/edi: int <- copy 0xc5/bg=blue-bg
       compare show-cursor?, 0/false
       {
         break-if-=
@@ -372,7 +372,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
       {
         compare display?, 0/false
         break-if-=
-        y <- render-trace-line screen, curr, xmin, y, xmax, ymax, 9/fg=blue, bg
+        y <- render-trace-line screen, curr, xmin, y, xmax, ymax, 0x38/fg=trace, bg
         copy-to already-hiding-lines?, 0/false
         break $render-trace:iter
       }
@@ -506,7 +506,7 @@ fn clamp-cursor-to-bottom _self: (addr trace), _y: int, screen: (addr screen), x
   {
     compare display?, 0/false
     break-if-=
-    var dummy/ecx: int <- render-trace-line screen, cursor-line, xmin, y, xmax, ymax, 9/fg=blue, 7/cursor-line-bg
+    var dummy/ecx: int <- render-trace-line screen, cursor-line, xmin, y, xmax, ymax, 0x38/fg=trace, 7/cursor-line-bg
     return
   }
   var dummy1/eax: int <- copy 0
