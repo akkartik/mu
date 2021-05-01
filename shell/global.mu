@@ -1351,7 +1351,7 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var stream-storage: (stream byte 0x100)
   var stream/edi: (addr stream byte) <- address stream-storage
   print-cell second-ah, stream, trace
-  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, stream, 7/fg, 0xc5/bg=blue-bg
+  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, stream, 7/fg, 0/bg
   # return what was printed
   copy-object second-ah, out
 }

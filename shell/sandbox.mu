@@ -214,23 +214,6 @@ fn maybe-render-screen screen: (addr screen), _self: (addr sandbox), xmin: int, 
 fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
   var target-screen/esi: (addr screen) <- copy _target-screen
   var screen-y/edi: int <- copy ymin
-  # top border
-  {
-    set-cursor-position screen, xmin, screen-y
-    var width/edx: (addr int) <- get target-screen, width
-    var limit/edx: int <- copy *width
-    limit <- add 2/screen-border
-    var x/ebx: int <- copy 0
-    {
-      compare x, limit
-      break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
-      move-cursor-right screen
-      x <- increment
-      loop
-    }
-    screen-y <- increment
-  }
   # screen
   var height/edx: (addr int) <- get target-screen, height
   var y/ecx: int <- copy 0
@@ -238,39 +221,19 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
     compare y, *height
     break-if->=
     set-cursor-position screen, xmin, screen-y
-    draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
-    move-cursor-right screen
     var width/edx: (addr int) <- get target-screen, width
     var x/ebx: int <- copy 0
     {
       compare x, *width
       break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0x18/fg, 0xc5/bg=blue-bg
+      draw-code-point-at-cursor screen, 0x20/space, 0x18/fg, 0/bg
       move-cursor-right screen
       x <- increment
       loop
     }
-    draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
     y <- increment
     screen-y <- increment
     loop
-  }
-  # bottom border
-  {
-    set-cursor-position screen, xmin, screen-y
-    var width/edx: (addr int) <- get target-screen, width
-    var limit/edx: int <- copy *width
-    limit <- add 2/screen-border
-    var x/ebx: int <- copy 0
-    {
-      compare x, limit
-      break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0x20/space, 0xdc/bg=green-bg
-      move-cursor-right screen
-      x <- increment
-      loop
-    }
-    screen-y <- increment
   }
   return screen-y
 }
@@ -278,23 +241,6 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
 fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
   var target-screen/esi: (addr screen) <- copy _target-screen
   var screen-y/edi: int <- copy ymin
-  # top border
-  {
-    set-cursor-position screen, xmin, screen-y
-    var width/edx: (addr int) <- get target-screen, width
-    var limit/edx: int <- copy *width
-    limit <- add 2/screen-border
-    var x/ebx: int <- copy 0
-    {
-      compare x, limit
-      break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
-      move-cursor-right screen
-      x <- increment
-      loop
-    }
-    screen-y <- increment
-  }
   # text data
   {
     var height/edx: (addr int) <- get target-screen, height
@@ -303,8 +249,6 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
       compare y, *height
       break-if->=
       set-cursor-position screen, xmin, screen-y
-      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
-      move-cursor-right screen
       var width/edx: (addr int) <- get target-screen, width
       var x/ebx: int <- copy 0
       {
@@ -315,7 +259,6 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
         x <- increment
         loop
       }
-      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
       y <- increment
       screen-y <- increment
       loop
@@ -325,12 +268,10 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
   {
     # screen top left pixels x y width height
     var tmp/eax: int <- copy xmin
-    tmp <- add 1/margin-left
     tmp <- shift-left 3/log2-font-width
     var left: int
     copy-to left, tmp
     tmp <- copy ymin
-    tmp <- add 1/margin-top
     tmp <- shift-left 4/log2-font-height
     var top: int
     copy-to top, tmp
@@ -372,23 +313,6 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
       y <- increment
       loop
     }
-  }
-  # bottom border
-  {
-    set-cursor-position screen, xmin, screen-y
-    var width/edx: (addr int) <- get target-screen, width
-    var limit/edx: int <- copy *width
-    limit <- add 2/screen-border
-    var x/ebx: int <- copy 0
-    {
-      compare x, limit
-      break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0x20/space, 0xdc/bg=green-bg
-      move-cursor-right screen
-      x <- increment
-      loop
-    }
-    screen-y <- increment
   }
   return screen-y
 }
@@ -437,59 +361,28 @@ fn maybe-render-keyboard screen: (addr screen), _self: (addr sandbox), xmin: int
   var keyboard-obj-ah/eax: (addr handle gap-buffer) <- get keyboard-obj-cell, keyboard-data
   var _keyboard-obj/eax: (addr gap-buffer) <- lookup *keyboard-obj-ah
   var keyboard-obj/edx: (addr gap-buffer) <- copy _keyboard-obj
-  var x/eax: int <- draw-text-rightward screen, "keyboard: ", xmin, 0x99/xmax, ymin, 7/fg, 0xc5/bg=blue-bg
   var y/ecx: int <- copy ymin
+  y <- increment  # padding
+  var x/eax: int <- draw-text-rightward screen, "keyboard: ", xmin, 0x99/xmax, y, 7/fg, 0xc5/bg=blue-bg
   var cursor-in-keyboard?/esi: (addr boolean) <- get self, cursor-in-keyboard?
   y <- render-keyboard screen, keyboard-obj, x, y, *cursor-in-keyboard?
   y <- increment  # padding
   return y
 }
 
-# draw an evocative shape
 fn render-keyboard screen: (addr screen), _keyboard: (addr gap-buffer), xmin: int, ymin: int, render-cursor?: boolean -> _/ecx: int {
   var keyboard/esi: (addr gap-buffer) <- copy _keyboard
   var width/edx: int <- copy 0x10/keyboard-capacity
   var y/edi: int <- copy ymin
-  # top border
-  {
-    set-cursor-position screen, xmin, y
-    move-cursor-right screen
-    var x/ebx: int <- copy 0
-    {
-      compare x, width
-      break-if->=
-      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0xc5/bg=blue-bg
-      move-cursor-right screen
-      x <- increment
-      loop
-    }
-    y <- increment
-  }
   # keyboard
   var x/eax: int <- copy xmin
-  draw-code-point screen, 0x7c/vertical-bar, x, y, 0x18/fg, 0xc5/bg=blue-bg
-  x <- increment
-  x <- render-gap-buffer screen, keyboard, x, y, render-cursor?, 3/fg, 0xc5/bg=blue-bg
-  x <- copy xmin
-  x <- add 1  # for left bar
-  x <- add 0x10/keyboard-capacity
-  draw-code-point screen, 0x7c/vertical-bar, x, y, 0x18/fg, 0xc5/bg=blue-bg
+  var xmax/ecx: int <- copy x
+  xmax <- add 0x10
+  var ymax/edx: int <- copy ymin
+  ymax <- add 1
+  clear-rect screen, x, y, xmax, ymax, 0/bg
+  x <- render-gap-buffer screen, keyboard, x, y, render-cursor?, 3/fg, 0/bg
   y <- increment
-  # bottom border
-  {
-    set-cursor-position screen, xmin, y
-    move-cursor-right screen
-    var x/ebx: int <- copy 0
-    {
-      compare x, width
-      break-if->=
-      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0xc5/bg=blue-bg
-      move-cursor-right screen
-      x <- increment
-      loop
-    }
-    y <- increment
-  }
   return y
 }
 
