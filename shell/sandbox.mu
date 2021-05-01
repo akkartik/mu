@@ -81,6 +81,7 @@ fn write-sandbox out: (addr stream byte), _self: (addr sandbox) {
 fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int, xmax: int, ymax: int {
   clear-rect screen, xmin, ymin, xmax, ymax, 0xc5/bg=blue-bg=black
   add-to xmin, 1/padding-left
+  add-to ymin, 1/padding-top
   subtract-from xmax, 1/padding-right
   var self/esi: (addr sandbox) <- copy _self
   # data
@@ -767,9 +768,10 @@ fn test-run-integer {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, " 1    ", "F - test-run-integer/0"
-  check-screen-row screen, 1/y, " ...  ", "F - test-run-integer/1"
-  check-screen-row screen, 2/y, " => 1 ", "F - test-run-integer/2"
+  # skip one line of padding
+  check-screen-row screen, 1/y, " 1    ", "F - test-run-integer/0"
+  check-screen-row screen, 2/y, " ...  ", "F - test-run-integer/1"
+  check-screen-row screen, 3/y, " => 1 ", "F - test-run-integer/2"
 }
 
 fn test-run-error-invalid-integer {
@@ -784,9 +786,10 @@ fn test-run-error-invalid-integer {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, " 1a             ", "F - test-run-error-invalid-integer/0"
-  check-screen-row screen, 1/y, " ...            ", "F - test-run-error-invalid-integer/0"
-  check-screen-row screen, 2/y, " invalid number ", "F - test-run-error-invalid-integer/2"
+  # skip one line of padding
+  check-screen-row screen, 1/y, " 1a             ", "F - test-run-error-invalid-integer/0"
+  check-screen-row screen, 2/y, " ...            ", "F - test-run-error-invalid-integer/0"
+  check-screen-row screen, 3/y, " invalid number ", "F - test-run-error-invalid-integer/2"
 }
 
 fn test-run-with-spaces {
@@ -801,10 +804,11 @@ fn test-run-with-spaces {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, "  1   ", "F - test-run-with-spaces/0"
-  check-screen-row screen, 1/y, "      ", "F - test-run-with-spaces/1"
-  check-screen-row screen, 2/y, " ...  ", "F - test-run-with-spaces/2"
-  check-screen-row screen, 3/y, " => 1 ", "F - test-run-with-spaces/3"
+  # skip one line of padding
+  check-screen-row screen, 1/y, "  1   ", "F - test-run-with-spaces/0"
+  check-screen-row screen, 2/y, "      ", "F - test-run-with-spaces/1"
+  check-screen-row screen, 3/y, " ...  ", "F - test-run-with-spaces/2"
+  check-screen-row screen, 4/y, " => 1 ", "F - test-run-with-spaces/3"
 }
 
 fn test-run-quote {
@@ -819,9 +823,10 @@ fn test-run-quote {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, " 'a   ", "F - test-run-quote/0"
-  check-screen-row screen, 1/y, " ...  ", "F - test-run-quote/1"
-  check-screen-row screen, 2/y, " => a ", "F - test-run-quote/2"
+  # skip one line of padding
+  check-screen-row screen, 1/y, " 'a   ", "F - test-run-quote/0"
+  check-screen-row screen, 2/y, " ...  ", "F - test-run-quote/1"
+  check-screen-row screen, 3/y, " => a ", "F - test-run-quote/2"
 }
 
 fn test-run-dotted-list {
@@ -836,9 +841,10 @@ fn test-run-dotted-list {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, " '(a . b)   ", "F - test-run-dotted-list/0"
-  check-screen-row screen, 1/y, " ...        ", "F - test-run-dotted-list/1"
-  check-screen-row screen, 2/y, " => (a . b) ", "F - test-run-dotted-list/2"
+  # skip one line of padding
+  check-screen-row screen, 1/y, " '(a . b)   ", "F - test-run-dotted-list/0"
+  check-screen-row screen, 2/y, " ...        ", "F - test-run-dotted-list/1"
+  check-screen-row screen, 3/y, " => (a . b) ", "F - test-run-dotted-list/2"
 }
 
 fn test-run-dot-and-list {
@@ -853,9 +859,10 @@ fn test-run-dot-and-list {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, " '(a . (b)) ", "F - test-run-dot-and-list/0"
-  check-screen-row screen, 1/y, " ...        ", "F - test-run-dot-and-list/1"
-  check-screen-row screen, 2/y, " => (a b)   ", "F - test-run-dot-and-list/2"
+  # skip one line of padding
+  check-screen-row screen, 1/y, " '(a . (b)) ", "F - test-run-dot-and-list/0"
+  check-screen-row screen, 2/y, " ...        ", "F - test-run-dot-and-list/1"
+  check-screen-row screen, 3/y, " => (a b)   ", "F - test-run-dot-and-list/2"
 }
 
 fn test-run-final-dot {
@@ -870,9 +877,10 @@ fn test-run-final-dot {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, " '(a .)               ", "F - test-run-final-dot/0"
-  check-screen-row screen, 1/y, " ...                  ", "F - test-run-final-dot/1"
-  check-screen-row screen, 2/y, " '. )' makes no sense ", "F - test-run-final-dot/2"
+  # skip one line of padding
+  check-screen-row screen, 1/y, " '(a .)               ", "F - test-run-final-dot/0"
+  check-screen-row screen, 2/y, " ...                  ", "F - test-run-final-dot/1"
+  check-screen-row screen, 3/y, " '. )' makes no sense ", "F - test-run-final-dot/2"
   # further errors may occur
 }
 
@@ -888,9 +896,10 @@ fn test-run-double-dot {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, " '(a . .)             ", "F - test-run-double-dot/0"
-  check-screen-row screen, 1/y, " ...                  ", "F - test-run-double-dot/1"
-  check-screen-row screen, 2/y, " '. .' makes no sense ", "F - test-run-double-dot/2"
+  # skip one line of padding
+  check-screen-row screen, 1/y, " '(a . .)             ", "F - test-run-double-dot/0"
+  check-screen-row screen, 2/y, " ...                  ", "F - test-run-double-dot/1"
+  check-screen-row screen, 3/y, " '. .' makes no sense ", "F - test-run-double-dot/2"
   # further errors may occur
 }
 
@@ -906,9 +915,10 @@ fn test-run-multiple-expressions-after-dot {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, " '(a . b c)                                           ", "F - test-run-multiple-expressions-after-dot/0"
-  check-screen-row screen, 1/y, " ...                                                  ", "F - test-run-multiple-expressions-after-dot/1"
-  check-screen-row screen, 2/y, " cannot have multiple expressions between '.' and ')' ", "F - test-run-multiple-expressions-after-dot/2"
+  # skip one line of padding
+  check-screen-row screen, 1/y, " '(a . b c)                                           ", "F - test-run-multiple-expressions-after-dot/0"
+  check-screen-row screen, 2/y, " ...                                                  ", "F - test-run-multiple-expressions-after-dot/1"
+  check-screen-row screen, 3/y, " cannot have multiple expressions between '.' and ')' ", "F - test-run-multiple-expressions-after-dot/2"
   # further errors may occur
 }
 
@@ -924,9 +934,10 @@ fn test-run-stream {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen, 0/y, " [a b]    ", "F - test-run-stream/0"
-  check-screen-row screen, 1/y, " ...      ", "F - test-run-stream/1"
-  check-screen-row screen, 2/y, " => [a b] ", "F - test-run-stream/2"
+  # skip one line of padding
+  check-screen-row screen, 1/y, " [a b]    ", "F - test-run-stream/0"
+  check-screen-row screen, 2/y, " ...      ", "F - test-run-stream/1"
+  check-screen-row screen, 3/y, " => [a b] ", "F - test-run-stream/2"
 }
 
 fn test-run-move-cursor-into-trace {
@@ -941,32 +952,35 @@ fn test-run-move-cursor-into-trace {
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen,                                  0/y, " 12    ", "F - test-run-move-cursor-into-trace/pre-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "   |   ", "F - test-run-move-cursor-into-trace/pre-0/cursor"
-  check-screen-row screen,                                  1/y, " ...   ", "F - test-run-move-cursor-into-trace/pre-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-move-cursor-into-trace/pre-1/cursor"
-  check-screen-row screen,                                  2/y, " => 12 ", "F - test-run-move-cursor-into-trace/pre-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "       ", "F - test-run-move-cursor-into-trace/pre-2/cursor"
+  # skip one line of padding
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-move-cursor-into-trace/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   |   ", "F - test-run-move-cursor-into-trace/pre-0/cursor"
+  check-screen-row screen,                                  2/y, " ...   ", "F - test-run-move-cursor-into-trace/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "       ", "F - test-run-move-cursor-into-trace/pre-1/cursor"
+  check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-move-cursor-into-trace/pre-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-move-cursor-into-trace/pre-2/cursor"
   # move cursor into trace
   edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen,                                  0/y, " 12    ", "F - test-run-move-cursor-into-trace/trace-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "       ", "F - test-run-move-cursor-into-trace/trace-0/cursor"
-  check-screen-row screen,                                  1/y, " ...   ", "F - test-run-move-cursor-into-trace/trace-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, " |||   ", "F - test-run-move-cursor-into-trace/trace-1/cursor"
-  check-screen-row screen,                                  2/y, " => 12 ", "F - test-run-move-cursor-into-trace/trace-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "       ", "F - test-run-move-cursor-into-trace/trace-2/cursor"
+  # skip one line of padding
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-move-cursor-into-trace/trace-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-move-cursor-into-trace/trace-0/cursor"
+  check-screen-row screen,                                  2/y, " ...   ", "F - test-run-move-cursor-into-trace/trace-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, " |||   ", "F - test-run-move-cursor-into-trace/trace-1/cursor"
+  check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-move-cursor-into-trace/trace-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-move-cursor-into-trace/trace-2/cursor"
   # move cursor into input
   edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
-  check-screen-row screen,                                  0/y, " 12    ", "F - test-run-move-cursor-into-trace/input-0"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "   |   ", "F - test-run-move-cursor-into-trace/input-0/cursor"
-  check-screen-row screen,                                  1/y, " ...   ", "F - test-run-move-cursor-into-trace/input-1"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-move-cursor-into-trace/input-1/cursor"
-  check-screen-row screen,                                  2/y, " => 12 ", "F - test-run-move-cursor-into-trace/input-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "       ", "F - test-run-move-cursor-into-trace/input-2/cursor"
+  # skip one line of padding
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-move-cursor-into-trace/input-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   |   ", "F - test-run-move-cursor-into-trace/input-0/cursor"
+  check-screen-row screen,                                  2/y, " ...   ", "F - test-run-move-cursor-into-trace/input-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "       ", "F - test-run-move-cursor-into-trace/input-1/cursor"
+  check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-move-cursor-into-trace/input-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-move-cursor-into-trace/input-2/cursor"
 }
 
 fn has-trace? _self: (addr sandbox) -> _/eax: boolean {
