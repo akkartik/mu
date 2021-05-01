@@ -421,11 +421,11 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
     compare has-trace?, 0/false
     {
       break-if-=
-      draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 9/bg=blue
+      draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 0x38/bg=trace
       draw-text-rightward-from-cursor screen, " to trace  ", width, 7/fg, 0xc5/bg=blue-bg
       break $render-sandbox-menu:render-ctrl-m
     }
-    draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 0x18/bg=keyboard
+    draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 3/bg=keyboard
     draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0xc5/bg=blue-bg
   }
   draw-text-rightward-from-cursor screen, " a ", width, 0/fg, 0x5c/bg=black
@@ -453,7 +453,7 @@ fn render-keyboard-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " s ", width, 0/fg, 0x5c/bg=black
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 3/bg=cyan
+  draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 7/bg
   draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
