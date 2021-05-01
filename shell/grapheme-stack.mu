@@ -126,7 +126,7 @@ fn render-stack-from-bottom screen: (addr screen), self: (addr grapheme-stack), 
   var height/ebx: int <- copy _height
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
-  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, self, x, y, width, height, x, y, highlight-matching-open-paren?, open-paren-depth, 3/fg=cyan, 0/bg
+  x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, self, x, y, width, height, x, y, highlight-matching-open-paren?, open-paren-depth, 3/fg=cyan, 0xc5/bg=blue-bg
   return x2  # y2? yolo
 }
 
@@ -189,7 +189,7 @@ fn render-stack-from-top screen: (addr screen), self: (addr grapheme-stack), x: 
   var height/ebx: int <- copy _height
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
-  x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, self, x, y, width, height, x, y, render-cursor?, 3/fg=cyan, 0/bg
+  x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, self, x, y, width, height, x, y, render-cursor?, 3/fg=cyan, 0xc5/bg=blue-bg
   return x2  # y2? yolo
 }
 

@@ -302,7 +302,7 @@ fn dump-trace _self: (addr trace) {
       var curr/ebx: (addr trace-line) <- index trace, offset
       var curr-label-ah/eax: (addr handle array byte) <- get curr, label
       var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
-      y <- render-trace-line 0/screen, curr, 0, y, 0x80/width, 0x30/height, 7/fg, 0/bg
+      y <- render-trace-line 0/screen, curr, 0, y, 0x80/width, 0x30/height, 7/fg, 0xc5/bg=blue-bg
     }
     i <- increment
     loop
@@ -685,20 +685,20 @@ fn render-trace-menu screen: (addr screen) {
   var y/ecx: int <- copy height
   y <- decrement
   set-cursor-position screen, 0/x, y
-  draw-text-rightward-from-cursor screen, " ctrl-r ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl-r ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " ctrl-s ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " ctrl-m ", width, 0/fg, 0x18/bg=keyboard
-  draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " j ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " down  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " k ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " up  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " enter ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " expand  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " backspace ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " collapse  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " j ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " down  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " k ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " up  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " enter ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " expand  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " backspace ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " collapse  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
 fn edit-trace _self: (addr trace), key: grapheme {

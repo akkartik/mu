@@ -79,7 +79,7 @@ fn write-sandbox out: (addr stream byte), _self: (addr sandbox) {
 ##
 
 fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int, xmax: int, ymax: int {
-  clear-rect screen, xmin, ymin, xmax, ymax, 0/bg=black
+  clear-rect screen, xmin, ymin, xmax, ymax, 0xc5/bg=blue-bg=black
   add-to xmin, 1/padding-left
   subtract-from xmax, 1/padding-right
   var self/esi: (addr sandbox) <- copy _self
@@ -92,7 +92,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   y <- maybe-render-empty-screen screen, self, xmin, y
   y <- maybe-render-keyboard screen, self, xmin, y
   var cursor-in-sandbox?/ebx: (addr boolean) <- get self, cursor-in-data?
-  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, *cursor-in-sandbox?, 7/fg, 0/bg
+  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, *cursor-in-sandbox?, 7/fg, 0xc5/bg=blue-bg
   y <- increment
   # trace
   var trace-ah/eax: (addr handle trace) <- get self, trace
@@ -110,9 +110,9 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     compare done?, 0/false
     break-if-!=
     var x/eax: int <- copy 0
-    x, y <- draw-text-wrapping-right-then-down screen, "=> ", xmin, y, xmax, ymax, xmin, y, 7/fg, 0/bg
+    x, y <- draw-text-wrapping-right-then-down screen, "=> ", xmin, y, xmax, ymax, xmin, y, 7/fg, 0xc5/bg=blue-bg
     var x2/edx: int <- copy x
-    var dummy/eax: int <- draw-stream-rightward screen, value, x2, xmax, y, 7/fg=grey, 0/bg
+    var dummy/eax: int <- draw-stream-rightward screen, value, x2, xmax, y, 7/fg=grey, 0xc5/bg=blue-bg
   }
   y <- add 2  # padding
   y <- maybe-render-screen screen, self, xmin, y
@@ -151,9 +151,9 @@ fn clear-sandbox-output screen: (addr screen), _self: (addr sandbox), xmin: int,
   y <- maybe-render-empty-screen screen, self, xmin, y
   y <- maybe-render-keyboard screen, self, xmin, y
   var cursor-in-sandbox?/ebx: (addr boolean) <- get self, cursor-in-data?
-  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, *cursor-in-sandbox?, 3/fg, 0/bg
+  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, *cursor-in-sandbox?, 3/fg, 0xc5/bg=blue-bg
   y <- increment
-  clear-rect screen, xmin, y, xmax, ymax, 0/bg=black
+  clear-rect screen, xmin, y, xmax, ymax, 0xc5/bg=blue-bg=black
 }
 
 fn maybe-render-empty-screen screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int -> _/ecx: int {
@@ -175,7 +175,7 @@ fn maybe-render-empty-screen screen: (addr screen), _self: (addr sandbox), xmin:
   var screen-obj-ah/eax: (addr handle screen) <- get screen-obj-cell, screen-data
   var _screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
   var screen-obj/edx: (addr screen) <- copy _screen-obj
-  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, y, 7/fg, 0/bg
+  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, y, 7/fg, 0xc5/bg=blue-bg
   y <- render-empty-screen screen, screen-obj, x, y
   return y
 }
@@ -204,7 +204,7 @@ fn maybe-render-screen screen: (addr screen), _self: (addr sandbox), xmin: int, 
     break-if-=
     return ymin
   }
-  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, ymin, 7/fg, 0/bg
+  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, ymin, 7/fg, 0xc5/bg=blue-bg
   var y/ecx: int <- copy ymin
   y <- render-screen screen, screen-obj, x, y
   return y
@@ -223,7 +223,7 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
     {
       compare x, limit
       break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
+      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
       move-cursor-right screen
       x <- increment
       loop
@@ -237,19 +237,19 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
     compare y, *height
     break-if->=
     set-cursor-position screen, xmin, screen-y
-    draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
+    draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
     move-cursor-right screen
     var width/edx: (addr int) <- get target-screen, width
     var x/ebx: int <- copy 0
     {
       compare x, *width
       break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0x18/fg, 0/bg
+      draw-code-point-at-cursor screen, 0x20/space, 0x18/fg, 0xc5/bg=blue-bg
       move-cursor-right screen
       x <- increment
       loop
     }
-    draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
+    draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
     y <- increment
     screen-y <- increment
     loop
@@ -264,7 +264,7 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
     {
       compare x, limit
       break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0x20/space, 0x12/bg=almost-black
+      draw-code-point-at-cursor screen, 0x20/space, 0x20/space, 0xdc/bg=green-bg
       move-cursor-right screen
       x <- increment
       loop
@@ -287,7 +287,7 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
     {
       compare x, limit
       break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
+      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
       move-cursor-right screen
       x <- increment
       loop
@@ -302,7 +302,7 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
       compare y, *height
       break-if->=
       set-cursor-position screen, xmin, screen-y
-      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
+      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
       move-cursor-right screen
       var width/edx: (addr int) <- get target-screen, width
       var x/ebx: int <- copy 0
@@ -314,7 +314,7 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
         x <- increment
         loop
       }
-      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0x12/bg=almost-black
+      draw-code-point-at-cursor screen, 0x20/space, 0/fg, 0xdc/bg=green-bg
       y <- increment
       screen-y <- increment
       loop
@@ -382,7 +382,7 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
     {
       compare x, limit
       break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0x20/space, 0x12/bg=almost-black
+      draw-code-point-at-cursor screen, 0x20/space, 0x20/space, 0xdc/bg=green-bg
       move-cursor-right screen
       x <- increment
       loop
@@ -436,7 +436,7 @@ fn maybe-render-keyboard screen: (addr screen), _self: (addr sandbox), xmin: int
   var keyboard-obj-ah/eax: (addr handle gap-buffer) <- get keyboard-obj-cell, keyboard-data
   var _keyboard-obj/eax: (addr gap-buffer) <- lookup *keyboard-obj-ah
   var keyboard-obj/edx: (addr gap-buffer) <- copy _keyboard-obj
-  var x/eax: int <- draw-text-rightward screen, "keyboard: ", xmin, 0x99/xmax, ymin, 7/fg, 0/bg
+  var x/eax: int <- draw-text-rightward screen, "keyboard: ", xmin, 0x99/xmax, ymin, 7/fg, 0xc5/bg=blue-bg
   var y/ecx: int <- copy ymin
   var cursor-in-keyboard?/esi: (addr boolean) <- get self, cursor-in-keyboard?
   y <- render-keyboard screen, keyboard-obj, x, y, *cursor-in-keyboard?
@@ -457,7 +457,7 @@ fn render-keyboard screen: (addr screen), _keyboard: (addr gap-buffer), xmin: in
     {
       compare x, width
       break-if->=
-      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0xc5/bg=blue-bg
       move-cursor-right screen
       x <- increment
       loop
@@ -466,13 +466,13 @@ fn render-keyboard screen: (addr screen), _keyboard: (addr gap-buffer), xmin: in
   }
   # keyboard
   var x/eax: int <- copy xmin
-  draw-code-point screen, 0x7c/vertical-bar, x, y, 0x18/fg, 0/bg
+  draw-code-point screen, 0x7c/vertical-bar, x, y, 0x18/fg, 0xc5/bg=blue-bg
   x <- increment
-  x <- render-gap-buffer screen, keyboard, x, y, render-cursor?, 3/fg, 0/bg
+  x <- render-gap-buffer screen, keyboard, x, y, render-cursor?, 3/fg, 0xc5/bg=blue-bg
   x <- copy xmin
   x <- add 1  # for left bar
   x <- add 0x10/keyboard-capacity
-  draw-code-point screen, 0x7c/vertical-bar, x, y, 0x18/fg, 0/bg
+  draw-code-point screen, 0x7c/vertical-bar, x, y, 0x18/fg, 0xc5/bg=blue-bg
   y <- increment
   # bottom border
   {
@@ -482,7 +482,7 @@ fn render-keyboard screen: (addr screen), _keyboard: (addr gap-buffer), xmin: in
     {
       compare x, width
       break-if->=
-      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0/bg
+      draw-code-point-at-cursor screen, 0x2d/horizontal-bar, 0x18/fg, 0xc5/bg=blue-bg
       move-cursor-right screen
       x <- increment
       loop
@@ -514,13 +514,13 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
   y <- decrement
   var height/ebx: int <- copy y
   height <- increment
-  clear-rect screen, 0/x, y, width, height, 0/bg=black
+  clear-rect screen, 0/x, y, width, height, 0xc5/bg=blue-bg=black
   set-cursor-position screen, 0/x, y
-  draw-text-rightward-from-cursor screen, " ctrl+... ", width, 0xf/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " r ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " s ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl+... ", width, 0xf/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " r ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " s ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
   $render-sandbox-menu:render-ctrl-m: {
     var self/eax: (addr sandbox) <- copy _self
     var has-trace?/eax: boolean <- has-trace? self
@@ -528,20 +528,20 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
     {
       break-if-=
       draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 9/bg=blue
-      draw-text-rightward-from-cursor screen, " to trace  ", width, 7/fg, 0/bg
+      draw-text-rightward-from-cursor screen, " to trace  ", width, 7/fg, 0xc5/bg=blue-bg
       break $render-sandbox-menu:render-ctrl-m
     }
     draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 0x18/bg=keyboard
-    draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0/bg
+    draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0xc5/bg=blue-bg
   }
-  draw-text-rightward-from-cursor screen, " a ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " <<  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " b ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " <word  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " f ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " word>  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " e ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " >>  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " a ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " <<  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " b ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " <word  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " f ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " word>  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " e ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " >>  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
 fn render-keyboard-menu screen: (addr screen) {
@@ -552,15 +552,15 @@ fn render-keyboard-menu screen: (addr screen) {
   y <- decrement
   var height/edx: int <- copy y
   height <- increment
-  clear-rect screen, 0/x, y, width, height, 0/bg=black
+  clear-rect screen, 0/x, y, width, height, 0xc5/bg=blue-bg=black
   set-cursor-position screen, 0/x, y
-  draw-text-rightward-from-cursor screen, " ctrl+... ", width, 0xf/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " r ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " s ", width, 0/fg, 7/bg=grey
-  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ctrl+... ", width, 0xf/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " r ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " s ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 3/bg=cyan
-  draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
 fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), data-disk: (addr disk), real-screen: (addr screen), tweak-real-screen?: boolean {
@@ -720,9 +720,9 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
   allocate-pair nil-ah
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
-  debug-print "^", 4/fg, 0/bg
+  debug-print "^", 4/fg, 0xc5/bg=blue-bg
   evaluate read-result-ah, eval-result, *nil-ah, globals, trace, screen-cell, keyboard-cell, 1/call-number
-  debug-print "$", 4/fg, 0/bg
+  debug-print "$", 4/fg, 0xc5/bg=blue-bg
   var error?/eax: boolean <- has-errors? trace
   {
     compare error?, 0/false
@@ -749,9 +749,9 @@ fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: 
   allocate-pair nil-ah
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
-  debug-print "^", 4/fg, 0/bg
+  debug-print "^", 4/fg, 0xc5/bg=blue-bg
   evaluate read-result-ah, eval-result, *nil-ah, globals, 0/no-trace, 0/no-screen-cell, 0/no-keyboard-cell, 1/call-number
-  debug-print "$", 4/fg, 0/bg
+  debug-print "$", 4/fg, 0xc5/bg=blue-bg
   move-gap-buffer-to-global globals, read-result-ah, _in-ah
 }
 

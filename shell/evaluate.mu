@@ -98,9 +98,9 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   {
     break-if-!=
     trace-text trace, "eval", "symbol"
-    debug-print "a", 7/fg, 0/bg
+    debug-print "a", 7/fg, 0xc5/bg=blue-bg
     lookup-symbol in-addr, out, env-h, globals, trace, screen-cell, keyboard-cell
-    debug-print "z", 7/fg, 0/bg
+    debug-print "z", 7/fg, 0xc5/bg=blue-bg
     trace-higher trace
     return
   }
@@ -185,10 +185,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
     var second-arg-ah/edx: (addr handle cell) <- get rest, left
-    debug-print "P", 4/fg, 0/bg
+    debug-print "P", 4/fg, 0xc5/bg=blue-bg
     increment call-number
     evaluate second-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "Q", 4/fg, 0/bg
+    debug-print "Q", 4/fg, 0xc5/bg=blue-bg
     trace-text trace, "eval", "saving global binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
     var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
@@ -230,10 +230,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
     var second-arg-ah/edx: (addr handle cell) <- get rest, left
-    debug-print "P", 4/fg, 0/bg
+    debug-print "P", 4/fg, 0xc5/bg=blue-bg
     increment call-number
     evaluate second-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "Q", 4/fg, 0/bg
+    debug-print "Q", 4/fg, 0xc5/bg=blue-bg
     trace-text trace, "eval", "mutating binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
     var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
@@ -256,10 +256,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace-text trace, "eval", "evaluating first arg"
     var rest/eax: (addr cell) <- lookup *rest-ah
     var first-arg-ah/ecx: (addr handle cell) <- get rest, left
-    debug-print "R2", 4/fg, 0/bg
+    debug-print "R2", 4/fg, 0xc5/bg=blue-bg
     increment call-number
     evaluate first-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "S2", 4/fg, 0/bg
+    debug-print "S2", 4/fg, 0xc5/bg=blue-bg
     # if first arg is nil, short-circuit
     var out-ah/eax: (addr handle cell) <- copy out
     var out-a/eax: (addr cell) <- lookup *out-ah
@@ -273,10 +273,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
     var second-ah/eax: (addr handle cell) <- get rest, left
-    debug-print "T2", 4/fg, 0/bg
+    debug-print "T2", 4/fg, 0xc5/bg=blue-bg
     increment call-number
     evaluate second-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "U2", 4/fg, 0/bg
+    debug-print "U2", 4/fg, 0xc5/bg=blue-bg
     trace-higher trace
     return
   }
@@ -294,10 +294,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace-text trace, "eval", "evaluating first arg"
     var rest/eax: (addr cell) <- lookup *rest-ah
     var first-arg-ah/ecx: (addr handle cell) <- get rest, left
-    debug-print "R2", 4/fg, 0/bg
+    debug-print "R2", 4/fg, 0xc5/bg=blue-bg
     increment call-number
     evaluate first-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "S2", 4/fg, 0/bg
+    debug-print "S2", 4/fg, 0xc5/bg=blue-bg
     # if first arg is not nil, short-circuit
     var out-ah/eax: (addr handle cell) <- copy out
     var out-a/eax: (addr cell) <- lookup *out-ah
@@ -311,10 +311,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
     var second-ah/eax: (addr handle cell) <- get rest, left
-    debug-print "T2", 4/fg, 0/bg
+    debug-print "T2", 4/fg, 0xc5/bg=blue-bg
     increment call-number
     evaluate second-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "U2", 4/fg, 0/bg
+    debug-print "U2", 4/fg, 0xc5/bg=blue-bg
     trace-higher trace
     return
   }
@@ -335,10 +335,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-arg-ah/ecx: (addr handle cell) <- get rest, left
     var guard-h: (handle cell)
     var guard-ah/esi: (addr handle cell) <- address guard-h
-    debug-print "R", 4/fg, 0/bg
+    debug-print "R", 4/fg, 0xc5/bg=blue-bg
     increment call-number
     evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "S", 4/fg, 0/bg
+    debug-print "S", 4/fg, 0xc5/bg=blue-bg
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
     var branch-ah/edi: (addr handle cell) <- get rest, left
@@ -353,10 +353,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
       rest <- lookup *rest-ah
       branch-ah <- get rest, left
     }
-    debug-print "T", 4/fg, 0/bg
+    debug-print "T", 4/fg, 0xc5/bg=blue-bg
     increment call-number
     evaluate branch-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "U", 4/fg, 0/bg
+    debug-print "U", 4/fg, 0xc5/bg=blue-bg
     trace-higher trace
     return
   }
@@ -391,10 +391,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
         break-if-!= $evaluate:while:loop-execution
       }
       trace-text trace, "eval", "loop termination check"
-      debug-print "V", 4/fg, 0/bg
+      debug-print "V", 4/fg, 0xc5/bg=blue-bg
       increment call-number
       evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-      debug-print "W", 4/fg, 0/bg
+      debug-print "W", 4/fg, 0xc5/bg=blue-bg
       var guard-a/eax: (addr cell) <- lookup *guard-ah
       var done?/eax: boolean <- nil? guard-a
       compare done?, 0/false
@@ -422,10 +422,10 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var curr-out/eax: (addr cell) <- lookup *curr-out-ah
     var left-out-ah/edi: (addr handle cell) <- get curr-out, left
     var left-ah/esi: (addr handle cell) <- get curr, left
-    debug-print "A", 4/fg, 0/bg
+    debug-print "A", 4/fg, 0xc5/bg=blue-bg
     increment call-number
     evaluate left-ah, left-out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "B", 4/fg, 0/bg
+    debug-print "B", 4/fg, 0xc5/bg=blue-bg
     #
     curr-out-ah <- get curr-out, right
     var right-ah/eax: (addr handle cell) <- get curr, right
@@ -437,9 +437,9 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   var evaluated-list/eax: (addr cell) <- lookup *evaluated-list-ah
   var function-ah/ecx: (addr handle cell) <- get evaluated-list, left
   var args-ah/edx: (addr handle cell) <- get evaluated-list, right
-  debug-print "C", 4/fg, 0/bg
+  debug-print "C", 4/fg, 0xc5/bg=blue-bg
   apply function-ah, args-ah, out, globals, trace, screen-cell, keyboard-cell, call-number
-  debug-print "Y", 4/fg, 0/bg
+  debug-print "Y", 4/fg, 0xc5/bg=blue-bg
   trace-higher trace
   # trace "=> " out {{{
   {
@@ -452,7 +452,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     trace trace, "eval", stream
   }
   # }}}
-  debug-print "Z", 4/fg, 0/bg
+  debug-print "Z", 4/fg, 0xc5/bg=blue-bg
 }
 
 fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
@@ -499,9 +499,9 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     rest <- lookup *rest-ah
     var params-ah/ecx: (addr handle cell) <- get rest, left
     var body-ah/eax: (addr handle cell) <- get rest, right
-    debug-print "D", 7/fg, 0/bg
+    debug-print "D", 7/fg, 0xc5/bg=blue-bg
     apply-function params-ah, args-ah, body-ah, out, *callee-env-ah, globals, trace, screen-cell, keyboard-cell, call-number
-    debug-print "Y", 7/fg, 0/bg
+    debug-print "Y", 7/fg, 0xc5/bg=blue-bg
     trace-higher trace
     return
   }
@@ -531,10 +531,10 @@ fn evaluate-exprs _exprs-ah: (addr handle cell), out: (addr handle cell), env-h:
     # evaluate each expression, writing result to `out`
     {
       var curr-ah/eax: (addr handle cell) <- get exprs, left
-      debug-print "E", 7/fg, 0/bg
+      debug-print "E", 7/fg, 0xc5/bg=blue-bg
       increment call-number
       evaluate curr-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
-      debug-print "X", 7/fg, 0/bg
+      debug-print "X", 7/fg, 0xc5/bg=blue-bg
     }
     #
     exprs-ah <- get exprs, right
@@ -664,9 +664,9 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     var env-nil?/eax: boolean <- nil? env
     compare env-nil?, 0/false
     break-if-=
-    debug-print "b", 7/fg, 0/bg
+    debug-print "b", 7/fg, 0xc5/bg=blue-bg
     lookup-symbol-in-globals sym, out, globals, trace, screen-cell, keyboard-cell
-    debug-print "x", 7/fg, 0/bg
+    debug-print "x", 7/fg, 0xc5/bg=blue-bg
     trace-higher trace
     # trace "=> " out " (global)" {{{
     {
@@ -683,7 +683,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       trace trace, "eval", stream
     }
     # }}}
-    debug-print "y", 7/fg, 0/bg
+    debug-print "y", 7/fg, 0xc5/bg=blue-bg
     return
   }
   # check car
@@ -847,9 +847,9 @@ fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (han
     var env-nil?/eax: boolean <- nil? env
     compare env-nil?, 0/false
     break-if-=
-    debug-print "b", 3/fg, 0/bg
+    debug-print "b", 3/fg, 0xc5/bg=blue-bg
     mutate-binding-in-globals name, val, globals, trace
-    debug-print "x", 3/fg, 0/bg
+    debug-print "x", 3/fg, 0xc5/bg=blue-bg
     trace-higher trace
     # trace "=> " val " (global)" {{{
     {
@@ -866,7 +866,7 @@ fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (han
       trace trace, "eval", stream
     }
     # }}}
-    debug-print "y", 3/fg, 0/bg
+    debug-print "y", 3/fg, 0xc5/bg=blue-bg
     return
   }
   # check car

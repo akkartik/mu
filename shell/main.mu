@@ -82,7 +82,7 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
   var s-storage: (stream byte 0x1000)  # space for 8/sectors
   var s/ebx: (addr stream byte) <- address s-storage
   load-sectors data-disk, 0/lba, 8/sectors, s
-#?   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, s, 7/fg, 0/bg
+#?   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, s, 7/fg, 0xc5/bg=blue-bg
   # stream -> gap-buffer
   load-gap-buffer-from-stream data, s
   clear-stream s
