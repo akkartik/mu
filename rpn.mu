@@ -24,7 +24,6 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   {
     # print prompt
     var x/eax: int <- draw-text-rightward screen, "> ", 0/x, 0x80/xmax, y, 3/fg/cyan, 0/bg
-    set-cursor-position screen, x, y
     # read line from keyboard
     clear-stream in
     {
