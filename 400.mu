@@ -4,6 +4,7 @@ sig draw-grapheme-on-real-screen g: grapheme, x: int, y: int, color: int, backgr
 sig cursor-position-on-real-screen -> _/eax: int, _/ecx: int
 sig set-cursor-position-on-real-screen x: int, y: int
 sig draw-cursor-on-real-screen g: grapheme
+sig color-rgb color: int -> _/ecx: int, _/edx: int, _/ebx: int
 
 # keyboard
 sig read-key kbd: (addr keyboard) -> _/eax: byte

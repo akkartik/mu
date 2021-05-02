@@ -1,0 +1,328 @@
+# Some information about the default palette of 256 colors provided by the
+# BIOS on x86 computers.
+
+== code
+
+# Return the r/g/b for color [0, 256) in ecx/edx/ebx respectively.
+color-rgb:  # color: int -> _/ecx: int, _/edx: int, _/ebx: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    56/push-esi
+    # esi = color
+    8b/-> *(ebp+8) 6/r32/esi
+    #
+    81 7/subop/compare %esi 0x100/imm32
+    {
+      7c/jump-if-< break/disp8
+      (abort "invalid color")
+    }
+    # var color/esi: int = Colors-rgb[color]
+    b8/copy-to-eax Colors-rgb/imm32
+    8b/-> *(eax+esi<<2+4) 6/r32/esi
+    # var red/ecx: int = color & 0xff
+    89/<- %eax 6/r32/esi
+    25/and-eax-with 0xff/imm32
+    89/<- %ecx 0/r32/eax
+    # var green/edx: int = (color >> 8) & 0xff
+    89/<- %eax 6/r32/esi
+    c1 5/subop/shift-right-logical %eax 8/imm8
+    25/and-eax-with 0xff/imm32
+    89/<- %edx 0/r32/eax
+    # var blue/ebx: int = (color >> 16)
+    89/<- %eax 6/r32/esi
+    c1 5/subop/shift-right-logical %eax 0x10/imm8
+    89/<- %ebx 0/r32/eax
+$colors-rgb:end:
+    # . restore registers
+    5e/pop-to-esi
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-color-rgb:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (color-rgb 0x10)  # => eax ecx edx
+    (check-ints-equal %ecx 0 "F - test-color-rgb/0x10/r")
+    (check-ints-equal %edx 0 "F - test-color-rgb/0x10/g")
+    (check-ints-equal %ebx 0 "F - test-color-rgb/0x10/b")
+    (color-rgb 1)  # => eax ecx edx
+    (check-ints-equal %ecx 0 "F - test-color-rgb/1/r")
+    (check-ints-equal %edx 0 "F - test-color-rgb/1/g")
+    (check-ints-equal %ebx 0xaa "F - test-color-rgb/1/b")
+    (color-rgb 0xf)  # => eax ecx edx
+    (check-ints-equal %ecx 0xff "F - test-color-rgb/0xf/r")
+    (check-ints-equal %edx 0xff "F - test-color-rgb/0xf/g")
+    (check-ints-equal %ebx 0xff "F - test-color-rgb/0xf/b")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+== data
+
+Colors-rgb:
+  0x400/imm32
+  00 00 00 00
+  00 00 aa 00
+  00 aa 00 00
+  00 aa aa 00
+  aa 00 00 00
+  aa 00 aa 00
+  aa 55 00 00
+  aa aa aa 00
+  55 55 55 00
+  55 55 ff 00
+  55 ff 55 00
+  55 ff ff 00
+  ff 55 55 00
+  ff 55 ff 00
+  ff ff 55 00
+  ff ff ff 00
+  00 00 00 00
+  14 14 14 00
+  20 20 20 00
+  2c 2c 2c 00
+  38 38 38 00
+  45 45 45 00
+  51 51 51 00
+  61 61 61 00
+  71 71 71 00
+  82 82 82 00
+  92 92 92 00
+  a2 a2 a2 00
+  b6 b6 b6 00
+  cb cb cb 00
+  e3 e3 e3 00
+  ff ff ff 00
+  00 00 ff 00
+  41 00 ff 00
+  7d 00 ff 00
+  be 00 ff 00
+  ff 00 ff 00
+  ff 00 be 00
+  ff 00 7d 00
+  ff 00 41 00
+  ff 00 00 00
+  ff 41 00 00
+  ff 7d 00 00
+  ff be 00 00
+  ff ff 00 00
+  be ff 00 00
+  7d ff 00 00
+  41 ff 00 00
+  00 ff 00 00
+  00 ff 41 00
+  00 ff 7d 00
+  00 ff be 00
+  00 ff ff 00
+  00 be ff 00
+  00 7d ff 00
+  00 41 ff 00
+  7d 7d ff 00
+  9e 7d ff 00
+  be 7d ff 00
+  df 7d ff 00
+  ff 7d ff 00
+  ff 7d df 00
+  ff 7d be 00
+  ff 7d 9e 00
+  ff 7d 7d 00
+  ff 9e 7d 00
+  ff be 7d 00
+  ff df 7d 00
+  ff ff 7d 00
+  df ff 7d 00
+  be ff 7d 00
+  9e ff 7d 00
+  7d ff 7d 00
+  7d ff 9e 00
+  7d ff be 00
+  7d ff df 00
+  7d ff ff 00
+  7d df ff 00
+  7d be ff 00
+  7d 9e ff 00
+  b6 b6 ff 00
+  c7 b6 ff 00
+  db b6 ff 00
+  eb b6 ff 00
+  ff b6 ff 00
+  ff b6 eb 00
+  ff b6 db 00
+  ff b6 c7 00
+  ff b6 b6 00
+  ff c7 b6 00
+  ff db b6 00
+  ff eb b6 00
+  ff ff b6 00
+  eb ff b6 00
+  db ff b6 00
+  c7 ff b6 00
+  b6 ff b6 00
+  b6 ff c7 00
+  b6 ff db 00
+  b6 ff eb 00
+  b6 ff ff 00
+  b6 eb ff 00
+  b6 db ff 00
+  b6 c7 ff 00
+  00 00 71 00
+  1c 00 71 00
+  38 00 71 00
+  55 00 71 00
+  71 00 71 00
+  71 00 55 00
+  71 00 38 00
+  71 00 1c 00
+  71 00 00 00
+  71 1c 00 00
+  71 38 00 00
+  71 55 00 00
+  71 71 00 00
+  55 71 00 00
+  38 71 00 00
+  1c 71 00 00
+  00 71 00 00
+  00 71 1c 00
+  00 71 38 00
+  00 71 55 00
+  00 71 71 00
+  00 55 71 00
+  00 38 71 00
+  00 1c 71 00
+  38 38 71 00
+  45 38 71 00
+  55 38 71 00
+  61 38 71 00
+  71 38 71 00
+  71 38 61 00
+  71 38 55 00
+  71 38 45 00
+  71 38 38 00
+  71 45 38 00
+  71 55 38 00
+  71 61 38 00
+  71 71 38 00
+  61 71 38 00
+  55 71 38 00
+  45 71 38 00
+  38 71 38 00
+  38 71 45 00
+  38 71 55 00
+  38 71 61 00
+  38 71 71 00
+  38 61 71 00
+  38 55 71 00
+  38 45 71 00
+  51 51 71 00
+  59 51 71 00
+  61 51 71 00
+  69 51 71 00
+  71 51 71 00
+  71 51 69 00
+  71 51 61 00
+  71 51 59 00
+  71 51 51 00
+  71 59 51 00
+  71 61 51 00
+  71 69 51 00
+  71 71 51 00
+  69 71 51 00
+  61 71 51 00
+  59 71 51 00
+  51 71 51 00
+  51 71 59 00
+  51 71 61 00
+  51 71 69 00
+  51 71 71 00
+  51 69 71 00
+  51 61 71 00
+  51 59 71 00
+  00 00 41 00
+  10 00 41 00
+  20 00 41 00
+  30 00 41 00
+  41 00 41 00
+  41 00 30 00
+  41 00 20 00
+  41 00 10 00
+  41 00 00 00
+  41 10 00 00
+  41 20 00 00
+  41 30 00 00
+  41 41 00 00
+  30 41 00 00
+  20 41 00 00
+  10 41 00 00
+  00 41 00 00
+  00 41 10 00
+  00 41 20 00
+  00 41 30 00
+  00 41 41 00
+  00 30 41 00
+  00 20 41 00
+  00 10 41 00
+  20 20 41 00
+  28 20 41 00
+  30 20 41 00
+  38 20 41 00
+  41 20 41 00
+  41 20 38 00
+  41 20 30 00
+  41 20 28 00
+  41 20 20 00
+  41 28 20 00
+  41 30 20 00
+  41 38 20 00
+  41 41 20 00
+  38 41 20 00
+  30 41 20 00
+  28 41 20 00
+  20 41 20 00
+  20 41 28 00
+  20 41 30 00
+  20 41 38 00
+  20 41 41 00
+  20 38 41 00
+  20 30 41 00
+  20 28 41 00
+  2c 2c 41 00
+  30 2c 41 00
+  34 2c 41 00
+  3c 2c 41 00
+  41 2c 41 00
+  41 2c 3c 00
+  41 2c 34 00
+  41 2c 30 00
+  41 2c 2c 00
+  41 30 2c 00
+  41 34 2c 00
+  41 3c 2c 00
+  41 41 2c 00
+  3c 41 2c 00
+  34 41 2c 00
+  30 41 2c 00
+  2c 41 2c 00
+  2c 41 30 00
+  2c 41 34 00
+  2c 41 3c 00
+  2c 41 41 00
+  2c 3c 41 00
+  2c 34 41 00
+  2c 30 41 00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
