@@ -19,7 +19,7 @@ process() {
 URL_BASE='https://github.com/akkartik/mu/blob/main'
 
 convert_html() {
-  vim -c "set number" -c TOhtml -c write -c qall $1
+  vim -u $MYVIM/vimrc.vim -c "set number" -c TOhtml -c write -c qall $1
 
   sed -i 's,<title>.*/mu/,<title>Mu - ,' $1.html
   sed -i 's,\.html</title>,</title>,' $1.html
@@ -59,49 +59,6 @@ done
 for f in shell/*.mu
 do
   test $# -gt 0  &&  test $1 != shell/$f  &&  continue
-  process $f
-done
-
-( cd linux
-  ctags -x [0-9]*.subx [0-9]*.mu  > /tmp/tags
-)
-for f in linux/[0-9]*.subx linux/[0-9]*.mu
-do
-  process $f
-done
-
-for f in linux/[^0-9]*.subx linux/[^0-9]*.mu
-do
-  ( cd $(dirname $f)
-    ctags -x [0-9]*.subx [0-9]*.mu $(basename $f)  > /tmp/tags
-  )
-  process $f
-done
-
-for f in linux/advent2020/*.mu
-do
-  ( cd $(dirname $f)
-    ctags -x ../[0-9]*.subx ../[0-9]*.mu $(basename $f) > /tmp/tags
-  )
-  process $f
-done
-
-for dir in linux/raytracing linux/tile
-do
-  ( cd $dir
-    ctags -x ../[0-9]*.subx ../[0-9]*.mu *.mu > /tmp/tags
-  )
-  for f in $dir/*.mu
-  do
-    process $f
-  done
-done
-
-( cd linux/bootstrap
-  ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
-)
-for f in linux/bootstrap/*.cc
-do
   process $f
 done
 

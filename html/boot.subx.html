@@ -76,9 +76,9 @@ if ('onhashchange' in window) {
 <span id="L16" class="LineNr">  16 </span>
 <span id="L17" class="LineNr">  17 </span><span class="subxComment"># Memory map of a Mu computer:</span>
 <span id="L18" class="LineNr">  18 </span><span class="subxComment">#   code: currently 4 tracks loaded from the primary disk to [0x00007c00, 0x00048600)</span>
-<span id="L19" class="LineNr">  19 </span><span class="subxComment">#   stack: grows down from 0x00070000</span>
-<span id="L20" class="LineNr">  20 </span><span class="subxComment">#   heap: [0x01000000, 0x02000000)</span>
-<span id="L21" class="LineNr">  21 </span><span class="subxComment">#     see 120allocate.subx</span>
+<span id="L19" class="LineNr">  19 </span><span class="subxComment">#   stack: grows down from 0x02000000 to 0x01000000</span>
+<span id="L20" class="LineNr">  20 </span><span class="subxComment">#   heap: [0x02000000, 0x08000000)</span>
+<span id="L21" class="LineNr">  21 </span><span class="subxComment">#     see 120allocate.subx; Qemu initializes with 128MB RAM by default</span>
 <span id="L22" class="LineNr">  22 </span><span class="subxComment"># Consult <a href="https://wiki.osdev.org/Memory_Map_(x86)">https://wiki.osdev.org/Memory_Map_(x86)</a> before modifying any of</span>
 <span id="L23" class="LineNr">  23 </span><span class="subxComment"># this. And don't forget to keep *stack-debug.subx in sync.</span>
 <span id="L24" class="LineNr">  24 </span>
@@ -101,7 +101,7 @@ if ('onhashchange' in window) {
 <span id="L41" class="LineNr">  41 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 4/r32/fs
 <span id="L42" class="LineNr">  42 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 5/r32/gs
 <span id="L43" class="LineNr">  43 </span>
-<span id="L44" class="LineNr">  44 </span>  <span class="subxComment"># initialize stack to 0x00070000</span>
+<span id="L44" class="LineNr">  44 </span>  <span class="subxComment"># Temporarily initialize stack to 0x00070000 in real mode.</span>
 <span id="L45" class="LineNr">  45 </span>  <span class="subxComment"># We don't read or write the stack before we get to 32-bit mode, but BIOS</span>
 <span id="L46" class="LineNr">  46 </span>  <span class="subxComment"># calls do. We need to move the stack in case BIOS initializes it to some</span>
 <span id="L47" class="LineNr">  47 </span>  <span class="subxComment"># low address that we want to write code into.</span>
@@ -269,7 +269,7 @@ if ('onhashchange' in window) {
 <span id="L209" class="LineNr"> 209 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 4/r32/fs
 <span id="L210" class="LineNr"> 210 </span>  8e/-&gt;seg 3/mod/direct 0/rm32/ax 5/r32/gs
 <span id="L211" class="LineNr"> 211 </span>
-<span id="L212" class="LineNr"> 212 </span>  bc/copy-to-esp 0x00070000/imm32
+<span id="L212" class="LineNr"> 212 </span>  bc/copy-to-esp 0x02000000/imm32
 <span id="L213" class="LineNr"> 213 </span>
 <span id="L214" class="LineNr"> 214 </span>  <span class="subxComment">## load interrupt handlers</span>
 <span id="L215" class="LineNr"> 215 </span>  <span class="subxComment"># We can't refer to the label directly because SubX doesn't do the right</span>

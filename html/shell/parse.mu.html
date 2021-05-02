@@ -100,12 +100,12 @@ if ('onhashchange' in window) {
 <span id="L42" class="LineNr"> 42 </span>  <a href='../309stream.subx.html#L107'>read-from-stream</a> tokens, curr-token
 <span id="L43" class="LineNr"> 43 </span>  $parse-sexpression:type-check: <span class="Delimiter">{</span>
 <span id="L44" class="LineNr"> 44 </span>    <span class="muComment"># single quote -&gt; parse as list with a special car</span>
-<span id="L45" class="LineNr"> 45 </span>    <span class="PreProc">var</span> <a href='tokenize.mu.html#L576'>quote-token?</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L576'>quote-token?</a> curr-token
-<span id="L46" class="LineNr"> 46 </span>    compare <a href='tokenize.mu.html#L576'>quote-token?</a>, <span class="Constant">0</span>/false
+<span id="L45" class="LineNr"> 45 </span>    <span class="PreProc">var</span> <a href='tokenize.mu.html#L705'>quote-token?</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L705'>quote-token?</a> curr-token
+<span id="L46" class="LineNr"> 46 </span>    compare <a href='tokenize.mu.html#L705'>quote-token?</a>, <span class="Constant">0</span>/false
 <span id="L47" class="LineNr"> 47 </span>    <span class="Delimiter">{</span>
 <span id="L48" class="LineNr"> 48 </span>      <span class="PreProc">break-if-=</span>
 <span id="L49" class="LineNr"> 49 </span>      <span class="PreProc">var</span> out/<span class="Constant">edi</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _out
-<span id="L50" class="LineNr"> 50 </span>      <a href='cell.mu.html#L87'>allocate-pair</a> out
+<span id="L50" class="LineNr"> 50 </span>      <a href='cell.mu.html#L101'>allocate-pair</a> out
 <span id="L51" class="LineNr"> 51 </span>      <span class="PreProc">var</span> out-addr/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *out
 <span id="L52" class="LineNr"> 52 </span>      <span class="PreProc">var</span> left-ah/<span class="Constant">edx</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get out-addr, left
 <span id="L53" class="LineNr"> 53 </span>      <a href='cell.mu.html#L38'>new-symbol</a> left-ah, <span class="Constant">&quot;'&quot;</span>
@@ -116,7 +116,7 @@ if ('onhashchange' in window) {
 <span id="L58" class="LineNr"> 58 </span>      <span class="PreProc">return</span> close-paren?, dot?
 <span id="L59" class="LineNr"> 59 </span>    <span class="Delimiter">}</span>
 <span id="L60" class="LineNr"> 60 </span>    <span class="muComment"># dot -&gt; return</span>
-<span id="L61" class="LineNr"> 61 </span>    <span class="PreProc">var</span> dot?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L622'>dot-token?</a> curr-token
+<span id="L61" class="LineNr"> 61 </span>    <span class="PreProc">var</span> dot?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L751'>dot-token?</a> curr-token
 <span id="L62" class="LineNr"> 62 </span>    compare dot?, <span class="Constant">0</span>/false
 <span id="L63" class="LineNr"> 63 </span>    <span class="Delimiter">{</span>
 <span id="L64" class="LineNr"> 64 </span>      <span class="PreProc">break-if-=</span>
@@ -124,20 +124,20 @@ if ('onhashchange' in window) {
 <span id="L66" class="LineNr"> 66 </span>      <span class="PreProc">return</span> <span class="Constant">0</span>/false, <span class="Constant">1</span>/true
 <span id="L67" class="LineNr"> 67 </span>    <span class="Delimiter">}</span>
 <span id="L68" class="LineNr"> 68 </span>    <span class="muComment"># not bracket -&gt; parse atom</span>
-<span id="L69" class="LineNr"> 69 </span>    <span class="PreProc">var</span> <a href='tokenize.mu.html#L566'>bracket-token?</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L566'>bracket-token?</a> curr-token
-<span id="L70" class="LineNr"> 70 </span>    compare <a href='tokenize.mu.html#L566'>bracket-token?</a>, <span class="Constant">0</span>/false
+<span id="L69" class="LineNr"> 69 </span>    <span class="PreProc">var</span> <a href='tokenize.mu.html#L688'>bracket-token?</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L688'>bracket-token?</a> curr-token
+<span id="L70" class="LineNr"> 70 </span>    compare <a href='tokenize.mu.html#L688'>bracket-token?</a>, <span class="Constant">0</span>/false
 <span id="L71" class="LineNr"> 71 </span>    <span class="Delimiter">{</span>
 <span id="L72" class="LineNr"> 72 </span>      <span class="PreProc">break-if-!=</span>
 <span id="L73" class="LineNr"> 73 </span>      <a href='parse.mu.html#L148'>parse-atom</a> curr-token, _out, trace
 <span id="L74" class="LineNr"> 74 </span>      <span class="PreProc">break</span> $parse-sexpression:type-check
 <span id="L75" class="LineNr"> 75 </span>    <span class="Delimiter">}</span>
 <span id="L76" class="LineNr"> 76 </span>    <span class="muComment"># open paren -&gt; parse list</span>
-<span id="L77" class="LineNr"> 77 </span>    <span class="PreProc">var</span> open-paren?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L590'>open-paren-token?</a> curr-token
+<span id="L77" class="LineNr"> 77 </span>    <span class="PreProc">var</span> open-paren?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L719'>open-paren-token?</a> curr-token
 <span id="L78" class="LineNr"> 78 </span>    compare open-paren?, <span class="Constant">0</span>/false
 <span id="L79" class="LineNr"> 79 </span>    <span class="Delimiter">{</span>
 <span id="L80" class="LineNr"> 80 </span>      <span class="PreProc">break-if-=</span>
 <span id="L81" class="LineNr"> 81 </span>      <span class="PreProc">var</span> curr/<span class="Constant">esi</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _out
-<span id="L82" class="LineNr"> 82 </span>      <a href='cell.mu.html#L87'>allocate-pair</a> curr
+<span id="L82" class="LineNr"> 82 </span>      <a href='cell.mu.html#L101'>allocate-pair</a> curr
 <span id="L83" class="LineNr"> 83 </span>      <span class="PreProc">var</span> curr-addr/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *curr
 <span id="L84" class="LineNr"> 84 </span>      <span class="PreProc">var</span> left/<span class="Constant">edx</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get curr-addr, left
 <span id="L85" class="LineNr"> 85 </span>      <span class="Delimiter">{</span>
@@ -164,10 +164,10 @@ if ('onhashchange' in window) {
 <span id="L106" class="LineNr">106 </span>          compare dot?, <span class="Constant">0</span>/false
 <span id="L107" class="LineNr">107 </span>          <span class="Delimiter">{</span>
 <span id="L108" class="LineNr">108 </span>            <span class="PreProc">break-if-=</span>
-<span id="L109" class="LineNr">109 </span>            <a href='parse.mu.html#L195'>parse-dot-tail</a> tokens, curr, trace
+<span id="L109" class="LineNr">109 </span>            <a href='parse.mu.html#L206'>parse-dot-tail</a> tokens, curr, trace
 <span id="L110" class="LineNr">110 </span>            <span class="PreProc">return</span> <span class="Constant">0</span>/false, <span class="Constant">0</span>/false
 <span id="L111" class="LineNr">111 </span>          <span class="Delimiter">}</span>
-<span id="L112" class="LineNr">112 </span>          <a href='cell.mu.html#L87'>allocate-pair</a> curr
+<span id="L112" class="LineNr">112 </span>          <a href='cell.mu.html#L101'>allocate-pair</a> curr
 <span id="L113" class="LineNr">113 </span>          <span class="muComment"># ')' -&gt; return</span>
 <span id="L114" class="LineNr">114 </span>          compare close-paren?, <span class="Constant">0</span>/false
 <span id="L115" class="LineNr">115 </span>          <span class="PreProc">break-if-!=</span>
@@ -182,7 +182,7 @@ if ('onhashchange' in window) {
 <span id="L124" class="LineNr">124 </span>      <span class="PreProc">break</span> $parse-sexpression:type-check
 <span id="L125" class="LineNr">125 </span>    <span class="Delimiter">}</span>
 <span id="L126" class="LineNr">126 </span>    <span class="muComment"># close paren -&gt; return</span>
-<span id="L127" class="LineNr">127 </span>    <span class="PreProc">var</span> close-paren?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L606'>close-paren-token?</a> curr-token
+<span id="L127" class="LineNr">127 </span>    <span class="PreProc">var</span> close-paren?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L735'>close-paren-token?</a> curr-token
 <span id="L128" class="LineNr">128 </span>    compare close-paren?, <span class="Constant">0</span>/false
 <span id="L129" class="LineNr">129 </span>    <span class="Delimiter">{</span>
 <span id="L130" class="LineNr">130 </span>      <span class="PreProc">break-if-=</span>
@@ -211,15 +211,15 @@ if ('onhashchange' in window) {
 <span id="L153" class="LineNr">153 </span>  <span class="PreProc">var</span> curr-token-data/<span class="Constant">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> copy _curr-token-data
 <span id="L154" class="LineNr">154 </span>  trace trace, <span class="Constant">&quot;read&quot;</span>, curr-token-data
 <span id="L155" class="LineNr">155 </span>  <span class="muComment"># number</span>
-<span id="L156" class="LineNr">156 </span>  <span class="PreProc">var</span> <a href='tokenize.mu.html#L556'>number-token?</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L556'>number-token?</a> curr-token
-<span id="L157" class="LineNr">157 </span>  compare <a href='tokenize.mu.html#L556'>number-token?</a>, <span class="Constant">0</span>/false
+<span id="L156" class="LineNr">156 </span>  <span class="PreProc">var</span> <a href='tokenize.mu.html#L678'>number-token?</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L678'>number-token?</a> curr-token
+<span id="L157" class="LineNr">157 </span>  compare <a href='tokenize.mu.html#L678'>number-token?</a>, <span class="Constant">0</span>/false
 <span id="L158" class="LineNr">158 </span>  <span class="Delimiter">{</span>
 <span id="L159" class="LineNr">159 </span>    <span class="PreProc">break-if-=</span>
 <span id="L160" class="LineNr">160 </span>    <a href='../106stream.subx.html#L59'>rewind-stream</a> curr-token-data
 <span id="L161" class="LineNr">161 </span>    <span class="PreProc">var</span> _val/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='../311decimal-int.subx.html#L48'>parse-decimal-int-from-stream</a> curr-token-data
 <span id="L162" class="LineNr">162 </span>    <span class="PreProc">var</span> val/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy _val
 <span id="L163" class="LineNr">163 </span>    <span class="PreProc">var</span> val-float/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert val
-<span id="L164" class="LineNr">164 </span>    <a href='cell.mu.html#L53'>allocate-number</a> _out
+<span id="L164" class="LineNr">164 </span>    <a href='cell.mu.html#L67'>allocate-number</a> _out
 <span id="L165" class="LineNr">165 </span>    <span class="PreProc">var</span> out/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _out
 <span id="L166" class="LineNr">166 </span>    <span class="PreProc">var</span> out-addr/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *out
 <span id="L167" class="LineNr">167 </span>    <span class="PreProc">var</span> dest/<span class="Constant">edi</span>: (addr float) <span class="Special">&lt;-</span> get out-addr, number-data
@@ -233,57 +233,68 @@ if ('onhashchange' in window) {
 <span id="L175" class="LineNr">175 </span>    <span class="Delimiter">}</span>
 <span id="L176" class="LineNr">176 </span>    <span class="PreProc">return</span>
 <span id="L177" class="LineNr">177 </span>  <span class="Delimiter">}</span>
-<span id="L178" class="LineNr">178 </span>  <span class="muComment"># default: symbol</span>
-<span id="L179" class="LineNr">179 </span>  <span class="muComment"># just copy token data</span>
-<span id="L180" class="LineNr">180 </span>  <a href='cell.mu.html#L20'>allocate-symbol</a> _out
-<span id="L181" class="LineNr">181 </span>  <span class="PreProc">var</span> out/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _out
-<span id="L182" class="LineNr">182 </span>  <span class="PreProc">var</span> out-addr/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *out
-<span id="L183" class="LineNr">183 </span>  <span class="PreProc">var</span> curr-token-data-ah/<span class="Constant">ecx</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get curr-token, text-data
-<span id="L184" class="LineNr">184 </span>  <span class="PreProc">var</span> dest-ah/<span class="Constant">edx</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get out-addr, text-data
-<span id="L185" class="LineNr">185 </span>  copy-object curr-token-data-ah, dest-ah
-<span id="L186" class="LineNr">186 </span>  <span class="Delimiter">{</span>
-<span id="L187" class="LineNr">187 </span>    <span class="PreProc">var</span> stream-storage: (stream byte <span class="Constant">0x40</span>)
-<span id="L188" class="LineNr">188 </span>    <span class="PreProc">var</span> stream/<span class="Constant">ecx</span>: (addr stream byte) <span class="Special">&lt;-</span> address stream-storage
-<span id="L189" class="LineNr">189 </span>    <a href='../108write.subx.html#L11'>write</a> stream, <span class="Constant">&quot;=&gt; symbol &quot;</span>
-<span id="L190" class="LineNr">190 </span>    <a href='print.mu.html#L101'>print-symbol</a> out-addr, stream, <span class="Constant">0</span>/no-trace
-<span id="L191" class="LineNr">191 </span>    trace trace, <span class="Constant">&quot;read&quot;</span>, stream
-<span id="L192" class="LineNr">192 </span>  <span class="Delimiter">}</span>
-<span id="L193" class="LineNr">193 </span><span class="Delimiter">}</span>
-<span id="L194" class="LineNr">194 </span>
-<span id="L195" class="LineNr">195 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='parse.mu.html#L195'>parse-dot-tail</a></span> tokens: (addr stream <a href='cell.mu.html#L1'>cell</a>), _out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L196" class="LineNr">196 </span>  <span class="PreProc">var</span> out/<span class="Constant">edi</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _out
-<span id="L197" class="LineNr">197 </span>  <span class="PreProc">var</span> close-paren?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> copy <span class="Constant">0</span>/false
-<span id="L198" class="LineNr">198 </span>  <span class="PreProc">var</span> dot?/<span class="Constant">ecx</span>: boolean <span class="Special">&lt;-</span> copy <span class="Constant">0</span>/false
-<span id="L199" class="LineNr">199 </span>  close-paren?, dot? <span class="Special">&lt;-</span> <a href='parse.mu.html#L30'>parse-sexpression</a> tokens, out, trace
-<span id="L200" class="LineNr">200 </span>  compare close-paren?, <span class="Constant">0</span>/false
-<span id="L201" class="LineNr">201 </span>  <span class="Delimiter">{</span>
-<span id="L202" class="LineNr">202 </span>    <span class="PreProc">break-if-=</span>
-<span id="L203" class="LineNr">203 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'. )' makes no sense&quot;</span>
-<span id="L204" class="LineNr">204 </span>    <span class="PreProc">return</span>
-<span id="L205" class="LineNr">205 </span>  <span class="Delimiter">}</span>
-<span id="L206" class="LineNr">206 </span>  compare dot?, <span class="Constant">0</span>/false
-<span id="L207" class="LineNr">207 </span>  <span class="Delimiter">{</span>
-<span id="L208" class="LineNr">208 </span>    <span class="PreProc">break-if-=</span>
-<span id="L209" class="LineNr">209 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'. .' makes no sense&quot;</span>
-<span id="L210" class="LineNr">210 </span>    <span class="PreProc">return</span>
-<span id="L211" class="LineNr">211 </span>  <span class="Delimiter">}</span>
-<span id="L212" class="LineNr">212 </span>  <span class="muComment">#</span>
-<span id="L213" class="LineNr">213 </span>  <span class="PreProc">var</span> dummy: (handle <a href='cell.mu.html#L1'>cell</a>)
-<span id="L214" class="LineNr">214 </span>  <span class="PreProc">var</span> dummy-ah/<span class="Constant">edi</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> address dummy
-<span id="L215" class="LineNr">215 </span>  close-paren?, dot? <span class="Special">&lt;-</span> <a href='parse.mu.html#L30'>parse-sexpression</a> tokens, dummy-ah, trace
-<span id="L216" class="LineNr">216 </span>  compare close-paren?, <span class="Constant">0</span>/false
-<span id="L217" class="LineNr">217 </span>  <span class="Delimiter">{</span>
-<span id="L218" class="LineNr">218 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L219" class="LineNr">219 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;cannot have multiple expressions between '.' and ')'&quot;</span>
-<span id="L220" class="LineNr">220 </span>    <span class="PreProc">return</span>
-<span id="L221" class="LineNr">221 </span>  <span class="Delimiter">}</span>
-<span id="L222" class="LineNr">222 </span>  compare dot?, <span class="Constant">0</span>/false
-<span id="L223" class="LineNr">223 </span>  <span class="Delimiter">{</span>
-<span id="L224" class="LineNr">224 </span>    <span class="PreProc">break-if-=</span>
-<span id="L225" class="LineNr">225 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;cannot have two dots in a single list&quot;</span>
-<span id="L226" class="LineNr">226 </span>    <span class="PreProc">return</span>
-<span id="L227" class="LineNr">227 </span>  <span class="Delimiter">}</span>
-<span id="L228" class="LineNr">228 </span><span class="Delimiter">}</span>
+<span id="L178" class="LineNr">178 </span>  <span class="muComment"># default: copy either to a symbol or a stream</span>
+<span id="L179" class="LineNr">179 </span>  <span class="muComment"># stream token -&gt; literal</span>
+<span id="L180" class="LineNr">180 </span>  <span class="PreProc">var</span> <a href='tokenize.mu.html#L776'>stream-token?</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='tokenize.mu.html#L776'>stream-token?</a> curr-token
+<span id="L181" class="LineNr">181 </span>  compare <a href='tokenize.mu.html#L776'>stream-token?</a>, <span class="Constant">0</span>/false
+<span id="L182" class="LineNr">182 </span>  <span class="Delimiter">{</span>
+<span id="L183" class="LineNr">183 </span>    <span class="PreProc">break-if-=</span>
+<span id="L184" class="LineNr">184 </span>    <a href='cell.mu.html#L57'>allocate-stream</a> _out
+<span id="L185" class="LineNr">185 </span>  <span class="Delimiter">}</span>
+<span id="L186" class="LineNr">186 </span>  compare <a href='tokenize.mu.html#L776'>stream-token?</a>, <span class="Constant">0</span>/false
+<span id="L187" class="LineNr">187 </span>  <span class="Delimiter">{</span>
+<span id="L188" class="LineNr">188 </span>    <span class="PreProc">break-if-!=</span>
+<span id="L189" class="LineNr">189 </span>    <a href='cell.mu.html#L20'>allocate-symbol</a> _out
+<span id="L190" class="LineNr">190 </span>  <span class="Delimiter">}</span>
+<span id="L191" class="LineNr">191 </span>  <span class="muComment"># copy token data</span>
+<span id="L192" class="LineNr">192 </span>  <span class="PreProc">var</span> out/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _out
+<span id="L193" class="LineNr">193 </span>  <span class="PreProc">var</span> out-addr/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L226'>lookup</a> *out
+<span id="L194" class="LineNr">194 </span>  <span class="PreProc">var</span> curr-token-data-ah/<span class="Constant">ecx</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get curr-token, text-data
+<span id="L195" class="LineNr">195 </span>  <span class="PreProc">var</span> dest-ah/<span class="Constant">edx</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get out-addr, text-data
+<span id="L196" class="LineNr">196 </span>  copy-object curr-token-data-ah, dest-ah
+<span id="L197" class="LineNr">197 </span>  <span class="Delimiter">{</span>
+<span id="L198" class="LineNr">198 </span>    <span class="PreProc">var</span> stream-storage: (stream byte <span class="Constant">0x40</span>)
+<span id="L199" class="LineNr">199 </span>    <span class="PreProc">var</span> stream/<span class="Constant">ecx</span>: (addr stream byte) <span class="Special">&lt;-</span> address stream-storage
+<span id="L200" class="LineNr">200 </span>    <a href='../108write.subx.html#L11'>write</a> stream, <span class="Constant">&quot;=&gt; symbol &quot;</span>
+<span id="L201" class="LineNr">201 </span>    <a href='print.mu.html#L101'>print-symbol</a> out-addr, stream, <span class="Constant">0</span>/no-trace
+<span id="L202" class="LineNr">202 </span>    trace trace, <span class="Constant">&quot;read&quot;</span>, stream
+<span id="L203" class="LineNr">203 </span>  <span class="Delimiter">}</span>
+<span id="L204" class="LineNr">204 </span><span class="Delimiter">}</span>
+<span id="L205" class="LineNr">205 </span>
+<span id="L206" class="LineNr">206 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='parse.mu.html#L206'>parse-dot-tail</a></span> tokens: (addr stream <a href='cell.mu.html#L1'>cell</a>), _out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
+<span id="L207" class="LineNr">207 </span>  <span class="PreProc">var</span> out/<span class="Constant">edi</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _out
+<span id="L208" class="LineNr">208 </span>  <span class="PreProc">var</span> close-paren?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> copy <span class="Constant">0</span>/false
+<span id="L209" class="LineNr">209 </span>  <span class="PreProc">var</span> dot?/<span class="Constant">ecx</span>: boolean <span class="Special">&lt;-</span> copy <span class="Constant">0</span>/false
+<span id="L210" class="LineNr">210 </span>  close-paren?, dot? <span class="Special">&lt;-</span> <a href='parse.mu.html#L30'>parse-sexpression</a> tokens, out, trace
+<span id="L211" class="LineNr">211 </span>  compare close-paren?, <span class="Constant">0</span>/false
+<span id="L212" class="LineNr">212 </span>  <span class="Delimiter">{</span>
+<span id="L213" class="LineNr">213 </span>    <span class="PreProc">break-if-=</span>
+<span id="L214" class="LineNr">214 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'. )' makes no sense&quot;</span>
+<span id="L215" class="LineNr">215 </span>    <span class="PreProc">return</span>
+<span id="L216" class="LineNr">216 </span>  <span class="Delimiter">}</span>
+<span id="L217" class="LineNr">217 </span>  compare dot?, <span class="Constant">0</span>/false
+<span id="L218" class="LineNr">218 </span>  <span class="Delimiter">{</span>
+<span id="L219" class="LineNr">219 </span>    <span class="PreProc">break-if-=</span>
+<span id="L220" class="LineNr">220 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'. .' makes no sense&quot;</span>
+<span id="L221" class="LineNr">221 </span>    <span class="PreProc">return</span>
+<span id="L222" class="LineNr">222 </span>  <span class="Delimiter">}</span>
+<span id="L223" class="LineNr">223 </span>  <span class="muComment">#</span>
+<span id="L224" class="LineNr">224 </span>  <span class="PreProc">var</span> dummy: (handle <a href='cell.mu.html#L1'>cell</a>)
+<span id="L225" class="LineNr">225 </span>  <span class="PreProc">var</span> dummy-ah/<span class="Constant">edi</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> address dummy
+<span id="L226" class="LineNr">226 </span>  close-paren?, dot? <span class="Special">&lt;-</span> <a href='parse.mu.html#L30'>parse-sexpression</a> tokens, dummy-ah, trace
+<span id="L227" class="LineNr">227 </span>  compare close-paren?, <span class="Constant">0</span>/false
+<span id="L228" class="LineNr">228 </span>  <span class="Delimiter">{</span>
+<span id="L229" class="LineNr">229 </span>    <span class="PreProc">break-if-!=</span>
+<span id="L230" class="LineNr">230 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;cannot have multiple expressions between '.' and ')'&quot;</span>
+<span id="L231" class="LineNr">231 </span>    <span class="PreProc">return</span>
+<span id="L232" class="LineNr">232 </span>  <span class="Delimiter">}</span>
+<span id="L233" class="LineNr">233 </span>  compare dot?, <span class="Constant">0</span>/false
+<span id="L234" class="LineNr">234 </span>  <span class="Delimiter">{</span>
+<span id="L235" class="LineNr">235 </span>    <span class="PreProc">break-if-=</span>
+<span id="L236" class="LineNr">236 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;cannot have two dots in a single list&quot;</span>
+<span id="L237" class="LineNr">237 </span>    <span class="PreProc">return</span>
+<span id="L238" class="LineNr">238 </span>  <span class="Delimiter">}</span>
+<span id="L239" class="LineNr">239 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
