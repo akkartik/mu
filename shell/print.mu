@@ -156,12 +156,40 @@ fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   # if in starts with a quote, print the quote outside the expression
   var in/esi: (addr cell) <- copy _in
   var left-ah/eax: (addr handle cell) <- get in, left
-  var left/eax: (addr cell) <- lookup *left-ah
+  var _left/eax: (addr cell) <- lookup *left-ah
+  var left/ecx: (addr cell) <- copy _left
   var is-quote?/eax: boolean <- symbol-equal? left, "'"
   compare is-quote?, 0/false
   {
     break-if-=
     write out, "'"
+    var right-ah/eax: (addr handle cell) <- get in, right
+    print-cell right-ah, out, trace
+    return
+  }
+  var is-backquote?/eax: boolean <- symbol-equal? left, "`"
+  compare is-backquote?, 0/false
+  {
+    break-if-=
+    write out, "`"
+    var right-ah/eax: (addr handle cell) <- get in, right
+    print-cell right-ah, out, trace
+    return
+  }
+  var is-unquote?/eax: boolean <- symbol-equal? left, ","
+  compare is-unquote?, 0/false
+  {
+    break-if-=
+    write out, ","
+    var right-ah/eax: (addr handle cell) <- get in, right
+    print-cell right-ah, out, trace
+    return
+  }
+  var is-unquote-splice?/eax: boolean <- symbol-equal? left, ",@"
+  compare is-unquote-splice?, 0/false
+  {
+    break-if-=
+    write out, ",@"
     var right-ah/eax: (addr handle cell) <- get in, right
     print-cell right-ah, out, trace
     return

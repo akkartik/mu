@@ -33,6 +33,95 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
   trace-higher trace
 }
 
+fn test-tokenize-quote {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "'(a)"
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  tokenize in, stream, 0/no-trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var quote?/eax: boolean <- quote-token? curr-token
+  check quote?, "F - test-tokenize-quote: quote"
+  read-from-stream stream, curr-token
+  var open-paren?/eax: boolean <- open-paren-token? curr-token
+  check open-paren?, "F - test-tokenize-quote: open paren"
+  read-from-stream stream, curr-token  # skip a
+  read-from-stream stream, curr-token
+  var close-paren?/eax: boolean <- close-paren-token? curr-token
+  check close-paren?, "F - test-tokenize-quote: close paren"
+}
+
+fn test-tokenize-backquote {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "`(a)"
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  tokenize in, stream, 0/no-trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var backquote?/eax: boolean <- backquote-token? curr-token
+  check backquote?, "F - test-tokenize-backquote: backquote"
+  read-from-stream stream, curr-token
+  var open-paren?/eax: boolean <- open-paren-token? curr-token
+  check open-paren?, "F - test-tokenize-backquote: open paren"
+  read-from-stream stream, curr-token  # skip a
+  read-from-stream stream, curr-token
+  var close-paren?/eax: boolean <- close-paren-token? curr-token
+  check close-paren?, "F - test-tokenize-backquote: close paren"
+}
+
+fn test-tokenize-unquote {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, ",(a)"
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  tokenize in, stream, 0/no-trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var unquote?/eax: boolean <- unquote-token? curr-token
+  check unquote?, "F - test-tokenize-unquote: unquote"
+  read-from-stream stream, curr-token
+  var open-paren?/eax: boolean <- open-paren-token? curr-token
+  check open-paren?, "F - test-tokenize-unquote: open paren"
+  read-from-stream stream, curr-token  # skip a
+  read-from-stream stream, curr-token
+  var close-paren?/eax: boolean <- close-paren-token? curr-token
+  check close-paren?, "F - test-tokenize-unquote: close paren"
+}
+
+fn test-tokenize-unquote-splice {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, ",@a"
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  tokenize in, stream, 0/no-trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var unquote-splice?/eax: boolean <- unquote-splice-token? curr-token
+  check unquote-splice?, "F - test-tokenize-unquote-splice: unquote-splice"
+}
+
 fn test-tokenize-dotted-list {
   var in-storage: gap-buffer
   var in/esi: (addr gap-buffer) <- address in-storage
@@ -188,6 +277,38 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       compare operator?, 0/false
       break-if-=
       next-operator-token in, out, trace
+      break $next-token:body
+    }
+    # quote
+    {
+      compare g, 0x27/single-quote
+      break-if-!=
+      g <- read-from-gap-buffer in  # consume
+      write-grapheme out, g
+      break $next-token:body
+    }
+    # backquote
+    {
+      compare g, 0x60/single-quote
+      break-if-!=
+      g <- read-from-gap-buffer in  # consume
+      write-grapheme out, g
+      break $next-token:body
+    }
+    # unquote
+    {
+      compare g, 0x2c/comma
+      break-if-!=
+      g <- read-from-gap-buffer in  # consume
+      write-grapheme out, g
+      # check for unquote-splice
+      {
+        var g2/eax: grapheme <- peek-from-gap-buffer in
+        compare g2, 0x40/at-sign
+        break-if-!=
+        g2 <- read-from-gap-buffer in
+        write-grapheme out, g2
+      }
       break $next-token:body
     }
   }
@@ -454,17 +575,27 @@ fn symbol-grapheme? g: grapheme -> _/eax: boolean {
     break-if-!=
     return 0/false
   }
+  compare g, 0x60/backquote
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x2c/comma
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x40/at-sign
+  {
+    break-if-!=
+    return 0/false
+  }
   compare g, 0x2a/asterisk
   {
     break-if-!=
     return 0/false
   }
   compare g, 0x2b/plus
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x2c/comma
   {
     break-if-!=
     return 0/false
@@ -510,11 +641,6 @@ fn symbol-grapheme? g: grapheme -> _/eax: boolean {
     return 0/false
   }
   # '?' is a symbol char
-  compare g, 0x40/at-sign
-  {
-    break-if-!=
-    return 0/false
-  }
   compare g, 0x5c/backslash
   {
     break-if-!=
@@ -588,7 +714,22 @@ fn operator-grapheme? g: grapheme -> _/eax: boolean {
   compare g, 0x27/single-quote
   {
     break-if-!=
-    return 1/true
+    return 0/true
+  }
+  compare g, 0x60/backquote
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x2c/comma
+  {
+    break-if-!=
+    return 0/false
+  }
+  compare g, 0x40/at-sign
+  {
+    break-if-!=
+    return 0/false
   }
   compare g, 0x2a/asterisk
   {
@@ -596,11 +737,6 @@ fn operator-grapheme? g: grapheme -> _/eax: boolean {
     return 1/true
   }
   compare g, 0x2b/plus
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x2c/comma
   {
     break-if-!=
     return 1/true
@@ -646,11 +782,6 @@ fn operator-grapheme? g: grapheme -> _/eax: boolean {
     return 1/true
   }
   # '?' is a symbol char
-  compare g, 0x40/at-sign
-  {
-    break-if-!=
-    return 1/true
-  }
   compare g, 0x5c/backslash
   {
     break-if-!=
@@ -707,13 +838,35 @@ fn quote-token? _in: (addr cell) -> _/eax: boolean {
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
-  var g/eax: grapheme <- read-grapheme in-data
-  compare g, 0x27/single-quote
-  {
-    break-if-!=
-    return 1/true
-  }
-  return 0/false
+  var result/eax: boolean <- stream-data-equal? in-data, "'"
+  return result
+}
+
+fn backquote-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  rewind-stream in-data
+  var result/eax: boolean <- stream-data-equal? in-data, "`"
+  return result
+}
+
+fn unquote-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  rewind-stream in-data
+  var result/eax: boolean <- stream-data-equal? in-data, ","
+  return result
+}
+
+fn unquote-splice-token? _in: (addr cell) -> _/eax: boolean {
+  var in/eax: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  rewind-stream in-data
+  var result/eax: boolean <- stream-data-equal? in-data, ",@"
+  return result
 }
 
 fn open-paren-token? _in: (addr cell) -> _/eax: boolean {

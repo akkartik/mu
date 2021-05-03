@@ -57,6 +57,54 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
       return close-paren?, dot?
     }
+    # backquote quote -> parse as list with a special car
+    var backquote-token?/eax: boolean <- backquote-token? curr-token
+    compare backquote-token?, 0/false
+    {
+      break-if-=
+      var out/edi: (addr handle cell) <- copy _out
+      allocate-pair out
+      var out-addr/eax: (addr cell) <- lookup *out
+      var left-ah/edx: (addr handle cell) <- get out-addr, left
+      new-symbol left-ah, "`"
+      var right-ah/edx: (addr handle cell) <- get out-addr, right
+      var close-paren?/eax: boolean <- copy 0/false
+      var dot?/ecx: boolean <- copy 0/false
+      close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
+      return close-paren?, dot?
+    }
+    # unquote -> parse as list with a special car
+    var unquote-token?/eax: boolean <- unquote-token? curr-token
+    compare unquote-token?, 0/false
+    {
+      break-if-=
+      var out/edi: (addr handle cell) <- copy _out
+      allocate-pair out
+      var out-addr/eax: (addr cell) <- lookup *out
+      var left-ah/edx: (addr handle cell) <- get out-addr, left
+      new-symbol left-ah, ","
+      var right-ah/edx: (addr handle cell) <- get out-addr, right
+      var close-paren?/eax: boolean <- copy 0/false
+      var dot?/ecx: boolean <- copy 0/false
+      close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
+      return close-paren?, dot?
+    }
+    # unquote-splice -> parse as list with a special car
+    var unquote-splice-token?/eax: boolean <- unquote-splice-token? curr-token
+    compare unquote-splice-token?, 0/false
+    {
+      break-if-=
+      var out/edi: (addr handle cell) <- copy _out
+      allocate-pair out
+      var out-addr/eax: (addr cell) <- lookup *out
+      var left-ah/edx: (addr handle cell) <- get out-addr, left
+      new-symbol left-ah, ",@"
+      var right-ah/edx: (addr handle cell) <- get out-addr, right
+      var close-paren?/eax: boolean <- copy 0/false
+      var dot?/ecx: boolean <- copy 0/false
+      close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
+      return close-paren?, dot?
+    }
     # dot -> return
     var dot?/eax: boolean <- dot-token? curr-token
     compare dot?, 0/false
