@@ -153,6 +153,20 @@ fn print-number _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
 }
 
 fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
+  # if in starts with a quote, print the quote outside the expression
+  var in/esi: (addr cell) <- copy _in
+  var left-ah/eax: (addr handle cell) <- get in, left
+  var left/eax: (addr cell) <- lookup *left-ah
+  var is-quote?/eax: boolean <- symbol-equal? left, "'"
+  compare is-quote?, 0/false
+  {
+    break-if-=
+    write out, "'"
+    var right-ah/eax: (addr handle cell) <- get in, right
+    print-cell right-ah, out, trace
+    return
+  }
+  #
   var curr/esi: (addr cell) <- copy _in
   write out, "("
   $print-pair:loop: {
