@@ -23,7 +23,7 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
   compare *in-type, 0/pair
   {
     break-if-!=
-    print-list in-addr, out, trace
+    print-pair in-addr, out, trace
     trace-higher trace
     return
   }
@@ -152,10 +152,10 @@ fn print-number _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   trace trace, "print", stream
 }
 
-fn print-list _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
+fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   var curr/esi: (addr cell) <- copy _in
   write out, "("
-  $print-list:loop: {
+  $print-pair:loop: {
     var left/ecx: (addr handle cell) <- get curr, left
     print-cell left, out, trace
     var right/ecx: (addr handle cell) <- get curr, right
@@ -171,7 +171,7 @@ fn print-list _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
       {
         break-if-=
         trace-text trace, "print", "right is nil"
-        break $print-list:loop
+        break $print-pair:loop
       }
     }
     write out, " "
@@ -181,7 +181,7 @@ fn print-list _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
       break-if-=
       write out, ". "
       print-cell right, out, trace
-      break $print-list:loop
+      break $print-pair:loop
     }
     curr <- copy right-addr
     loop
