@@ -1,8 +1,8 @@
 # env is an alist of ((sym . val) (sym . val) ...)
-# we never modify `in` or `env`
+# we never modify `_in-ah` or `env`
 # ignore args past 'trace' on a first reading; they're for the environment not the language
 # 'call-number' is just for showing intermediate progress; this is a _slow_ interpreter
-fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
+fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # stack overflow?   # disable when enabling Really-debug-print
   check-stack
   {
@@ -24,7 +24,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     break-if-=
     return
   }
-  var in/esi: (addr handle cell) <- copy _in
+  var in-ah/esi: (addr handle cell) <- copy _in-ah
   # show intermediate progress on screen if necessary
   {
     compare screen-cell, 0
@@ -43,7 +43,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     break-if-=
     var y/ecx: int <- render-screen 0/screen, screen-obj, 0x70/xmin, 1/ymin
   }
-#?   dump-cell in
+#?   dump-cell in-ah
 #?   {
 #?     var foo/eax: byte <- read-key 0/keyboard
 #?     compare foo, 0
@@ -56,7 +56,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "evaluate "
-    print-cell in, stream, 0/no-trace
+    print-cell in-ah, stream, 0/no-trace
     write stream, " in environment "
     var env-ah/eax: (addr handle cell) <- address env-h
     print-cell env-ah, stream, 0/no-trace
@@ -64,24 +64,24 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   }
   # }}}
   trace-lower trace
-  var in-addr/eax: (addr cell) <- lookup *in
+  var in/eax: (addr cell) <- lookup *in-ah
   {
-    var nil?/eax: boolean <- nil? in-addr
+    var nil?/eax: boolean <- nil? in
     compare nil?, 0/false
     break-if-=
     # nil is a literal
     trace-text trace, "eval", "nil"
-    copy-object _in, out
+    copy-object _in-ah, _out-ah
     trace-higher trace
     return
   }
-  var in-type/ecx: (addr int) <- get in-addr, type
+  var in-type/ecx: (addr int) <- get in, type
   compare *in-type, 1/number
   {
     break-if-!=
     # numbers are literals
     trace-text trace, "eval", "number"
-    copy-object _in, out
+    copy-object _in-ah, _out-ah
     trace-higher trace
     return
   }
@@ -90,7 +90,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     break-if-!=
     # streams are literals
     trace-text trace, "eval", "stream"
-    copy-object _in, out
+    copy-object _in-ah, _out-ah
     trace-higher trace
     return
   }
@@ -99,7 +99,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     break-if-!=
     trace-text trace, "eval", "symbol"
     debug-print "a", 7/fg, 0xc5/bg=blue-bg
-    lookup-symbol in-addr, out, env-h, globals, trace, screen-cell, keyboard-cell
+    lookup-symbol in, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell
     debug-print "z", 7/fg, 0xc5/bg=blue-bg
     trace-higher trace
     return
@@ -108,7 +108,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   {
     break-if-!=
     trace-text trace, "eval", "screen"
-    copy-object _in, out
+    copy-object _in-ah, _out-ah
     trace-higher trace
     return
   }
@@ -116,54 +116,54 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   {
     break-if-!=
     trace-text trace, "eval", "keyboard"
-    copy-object _in, out
+    copy-object _in-ah, _out-ah
     trace-higher trace
     return
   }
-  # in-addr is a syntax tree
+  # in is a syntax tree
   $evaluate:anonymous-function: {
     # trees starting with "fn" are anonymous functions
-    var expr/esi: (addr cell) <- copy in-addr
+    var expr/esi: (addr cell) <- copy in
     # if its first elem is not "fn", break
-    var in-addr/edx: (addr cell) <- copy in-addr
-    var first-ah/ecx: (addr handle cell) <- get in-addr, left
+    var in/edx: (addr cell) <- copy in
+    var first-ah/ecx: (addr handle cell) <- get in, left
     var first/eax: (addr cell) <- lookup *first-ah
     var fn?/eax: boolean <- fn? first
     compare fn?, 0/false
     break-if-=
     # turn (fn ...) into (fn env ...)
     trace-text trace, "eval", "anonymous function"
-    var rest-ah/eax: (addr handle cell) <- get in-addr, right
+    var rest-ah/eax: (addr handle cell) <- get in, right
     var tmp: (handle cell)
     var tmp-ah/edi: (addr handle cell) <- address tmp
     new-pair tmp-ah, env-h, *rest-ah
-    new-pair out, *first-ah, *tmp-ah
+    new-pair _out-ah, *first-ah, *tmp-ah
     trace-higher trace
     return
   }
   # builtins with "special" evaluation rules
   $evaluate:quote: {
     # trees starting with single quote create literals
-    var expr/esi: (addr cell) <- copy in-addr
+    var expr/esi: (addr cell) <- copy in
     # if its first elem is not "'", break
-    var first-ah/ecx: (addr handle cell) <- get in-addr, left
-    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var rest-ah/edx: (addr handle cell) <- get in, right
     var first/eax: (addr cell) <- lookup *first-ah
     var quote?/eax: boolean <- symbol-equal? first, "'"
     compare quote?, 0/false
     break-if-=
     #
     trace-text trace, "eval", "quote"
-    copy-object rest-ah, out
+    copy-object rest-ah, _out-ah
     trace-higher trace
     return
   }
   $evaluate:def: {
     # trees starting with "def" define globals
-    var expr/esi: (addr cell) <- copy in-addr
+    var expr/esi: (addr cell) <- copy in
     # if its first elem is not "def", break
-    var first-ah/ecx: (addr handle cell) <- get in-addr, left
-    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var rest-ah/edx: (addr handle cell) <- get in, right
     var first/eax: (addr cell) <- lookup *first-ah
     var def?/eax: boolean <- symbol-equal? first, "def"
     compare def?, 0/false
@@ -187,7 +187,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var second-arg-ah/edx: (addr handle cell) <- get rest, left
     debug-print "P", 4/fg, 0xc5/bg=blue-bg
     increment call-number
-    evaluate second-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    evaluate second-arg-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "Q", 4/fg, 0xc5/bg=blue-bg
     trace-text trace, "eval", "saving global binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
@@ -198,17 +198,17 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     rewind-stream first-arg-data
     stream-to-array first-arg-data, tmp-ah
     var first-arg-data-string/eax: (addr array byte) <- lookup *tmp-ah
-    var out2/edi: (addr handle cell) <- copy out
-    assign-or-create-global globals, first-arg-data-string, *out2, trace
+    var out-ah/edi: (addr handle cell) <- copy _out-ah
+    assign-or-create-global globals, first-arg-data-string, *out-ah, trace
     trace-higher trace
     return
   }
   $evaluate:set: {
     # trees starting with "set" mutate bindings
-    var expr/esi: (addr cell) <- copy in-addr
+    var expr/esi: (addr cell) <- copy in
     # if its first elem is not "set", break
-    var first-ah/ecx: (addr handle cell) <- get in-addr, left
-    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var rest-ah/edx: (addr handle cell) <- get in, right
     var first/eax: (addr cell) <- lookup *first-ah
     var set?/eax: boolean <- symbol-equal? first, "set"
     compare set?, 0/false
@@ -232,21 +232,21 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var second-arg-ah/edx: (addr handle cell) <- get rest, left
     debug-print "P", 4/fg, 0xc5/bg=blue-bg
     increment call-number
-    evaluate second-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    evaluate second-arg-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "Q", 4/fg, 0xc5/bg=blue-bg
     trace-text trace, "eval", "mutating binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
     var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
     var first-arg-data/eax: (addr stream byte) <- lookup *first-arg-data-ah
-    mutate-binding first-arg-data, out, env-h, globals, trace
+    mutate-binding first-arg-data, _out-ah, env-h, globals, trace
     trace-higher trace
     return
   }
   $evaluate:and: {
-    var expr/esi: (addr cell) <- copy in-addr
+    var expr/esi: (addr cell) <- copy in
     # if its first elem is not "and", break
-    var first-ah/ecx: (addr handle cell) <- get in-addr, left
-    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var rest-ah/edx: (addr handle cell) <- get in, right
     var first/eax: (addr cell) <- lookup *first-ah
     var and?/eax: boolean <- symbol-equal? first, "and"
     compare and?, 0/false
@@ -258,12 +258,12 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-arg-ah/ecx: (addr handle cell) <- get rest, left
     debug-print "R2", 4/fg, 0xc5/bg=blue-bg
     increment call-number
-    evaluate first-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    evaluate first-arg-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "S2", 4/fg, 0xc5/bg=blue-bg
     # if first arg is nil, short-circuit
-    var out-ah/eax: (addr handle cell) <- copy out
-    var out-a/eax: (addr cell) <- lookup *out-ah
-    var nil?/eax: boolean <- nil? out-a
+    var out-ah/eax: (addr handle cell) <- copy _out-ah
+    var out/eax: (addr cell) <- lookup *out-ah
+    var nil?/eax: boolean <- nil? out
     compare nil?, 0/false
     {
       break-if-=
@@ -275,16 +275,16 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var second-ah/eax: (addr handle cell) <- get rest, left
     debug-print "T2", 4/fg, 0xc5/bg=blue-bg
     increment call-number
-    evaluate second-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    evaluate second-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "U2", 4/fg, 0xc5/bg=blue-bg
     trace-higher trace
     return
   }
   $evaluate:or: {
-    var expr/esi: (addr cell) <- copy in-addr
+    var expr/esi: (addr cell) <- copy in
     # if its first elem is not "or", break
-    var first-ah/ecx: (addr handle cell) <- get in-addr, left
-    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var rest-ah/edx: (addr handle cell) <- get in, right
     var first/eax: (addr cell) <- lookup *first-ah
     var or?/eax: boolean <- symbol-equal? first, "or"
     compare or?, 0/false
@@ -296,12 +296,12 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var first-arg-ah/ecx: (addr handle cell) <- get rest, left
     debug-print "R2", 4/fg, 0xc5/bg=blue-bg
     increment call-number
-    evaluate first-arg-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    evaluate first-arg-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "S2", 4/fg, 0xc5/bg=blue-bg
     # if first arg is not nil, short-circuit
-    var out-ah/eax: (addr handle cell) <- copy out
-    var out-a/eax: (addr cell) <- lookup *out-ah
-    var nil?/eax: boolean <- nil? out-a
+    var out-ah/eax: (addr handle cell) <- copy _out-ah
+    var out/eax: (addr cell) <- lookup *out-ah
+    var nil?/eax: boolean <- nil? out
     compare nil?, 0/false
     {
       break-if-!=
@@ -313,17 +313,17 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     var second-ah/eax: (addr handle cell) <- get rest, left
     debug-print "T2", 4/fg, 0xc5/bg=blue-bg
     increment call-number
-    evaluate second-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    evaluate second-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "U2", 4/fg, 0xc5/bg=blue-bg
     trace-higher trace
     return
   }
   $evaluate:if: {
     # trees starting with "if" are conditionals
-    var expr/esi: (addr cell) <- copy in-addr
+    var expr/esi: (addr cell) <- copy in
     # if its first elem is not "if", break
-    var first-ah/ecx: (addr handle cell) <- get in-addr, left
-    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var rest-ah/edx: (addr handle cell) <- get in, right
     var first/eax: (addr cell) <- lookup *first-ah
     var if?/eax: boolean <- symbol-equal? first, "if"
     compare if?, 0/false
@@ -355,17 +355,17 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
     }
     debug-print "T", 4/fg, 0xc5/bg=blue-bg
     increment call-number
-    evaluate branch-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    evaluate branch-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "U", 4/fg, 0xc5/bg=blue-bg
     trace-higher trace
     return
   }
   $evaluate:while: {
     # trees starting with "while" are loops
-    var expr/esi: (addr cell) <- copy in-addr
+    var expr/esi: (addr cell) <- copy in
     # if its first elem is not "while", break
-    var first-ah/ecx: (addr handle cell) <- get in-addr, left
-    var rest-ah/edx: (addr handle cell) <- get in-addr, right
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var rest-ah/edx: (addr handle cell) <- get in, right
     var first/eax: (addr cell) <- lookup *first-ah
     var first-type/ecx: (addr int) <- get first, type
     compare *first-type, 2/symbol
@@ -399,7 +399,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
       var done?/eax: boolean <- nil? guard-a
       compare done?, 0/false
       break-if-!=
-      evaluate-exprs rest-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+      evaluate-exprs rest-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
       loop
     }
     trace-text trace, "eval", "loop terminated"
@@ -412,7 +412,7 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   var evaluated-list-storage: (handle cell)
   var evaluated-list-ah/esi: (addr handle cell) <- address evaluated-list-storage
   var curr-out-ah/edx: (addr handle cell) <- copy evaluated-list-ah
-  var curr/ecx: (addr cell) <- copy in-addr
+  var curr/ecx: (addr cell) <- copy in
   $evaluate-list:loop: {
     allocate-pair curr-out-ah
     var nil?/eax: boolean <- nil? curr
@@ -438,17 +438,17 @@ fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cel
   var function-ah/ecx: (addr handle cell) <- get evaluated-list, left
   var args-ah/edx: (addr handle cell) <- get evaluated-list, right
   debug-print "C", 4/fg, 0xc5/bg=blue-bg
-  apply function-ah, args-ah, out, globals, trace, screen-cell, keyboard-cell, call-number
+  apply function-ah, args-ah, _out-ah, globals, trace, screen-cell, keyboard-cell, call-number
   debug-print "Y", 4/fg, 0xc5/bg=blue-bg
   trace-higher trace
-  # trace "=> " out {{{
+  # trace "=> " _out-ah {{{
   {
     compare trace, 0
     break-if-=
     var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "=> "
-    print-cell out, stream, 0/no-trace
+    print-cell _out-ah, stream, 0/no-trace
     trace trace, "eval", stream
   }
   # }}}
