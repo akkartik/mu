@@ -1359,6 +1359,38 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     evaluate rest-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     return
   }
+  # check for unquote-splice in in-left
+  var out-ah/edi: (addr handle cell) <- copy _out-ah
+  {
+    var in-left/eax: (addr cell) <- lookup *in-left-ah
+    {
+      var in-left-left-ah/eax: (addr handle cell) <- get in-left, left
+      var in-left-left/eax: (addr cell) <- lookup *in-left-left-ah
+      var left-is-unquote-splice?/eax: boolean <- symbol-equal? in-left-left, ",@"
+      compare left-is-unquote-splice?, 0/false
+    }
+    break-if-=
+    trace-text trace, "eval", "unquote-splice"
+    var in-unquote-payload-ah/eax: (addr handle cell) <- get in-left, right
+    increment call-number
+    evaluate in-unquote-payload-ah, out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    # while (*out-ah != null) out-ah = cdr(out-ah)
+    {
+      var out/eax: (addr cell) <- lookup *out-ah
+      {
+        var done?/eax: boolean <- nil? out
+        compare done?, 0/false
+      }
+      break-if-!=
+      out-ah <- get out, right
+      loop
+    }
+    # append result of in-right
+    var in-right-ah/ecx: (addr handle cell) <- get in, right
+    evaluate-backquote in-right-ah, out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    return
+  }
+  # otherwise continue copying
   trace-text trace, "eval", "backquote: copy"
   var out-ah/edi: (addr handle cell) <- copy _out-ah
   allocate-pair out-ah
@@ -1479,4 +1511,92 @@ fn test-evaluate-backquote-list-with-unquote {
   var rest/eax: (addr cell) <- lookup *rest-ah
   var check3/eax: boolean <- nil? rest
   check check3, "F - test-evaluate-backquote-list-with-unquote/3"
+}
+
+fn test-evaluate-backquote-list-with-unquote-splice {
+  var nil-h: (handle cell)
+  var nil-ah/eax: (addr handle cell) <- address nil-h
+  allocate-pair nil-ah
+  var backquote-h: (handle cell)
+  var backquote-ah/eax: (addr handle cell) <- address backquote-h
+  new-symbol backquote-ah, "`"
+  var unquote-splice-h: (handle cell)
+  var unquote-splice-ah/eax: (addr handle cell) <- address unquote-splice-h
+  new-symbol unquote-splice-ah, ",@"
+  var a-h: (handle cell)
+  var a-ah/eax: (addr handle cell) <- address a-h
+  new-symbol a-ah, "a"
+  var b-h: (handle cell)
+  var b-ah/eax: (addr handle cell) <- address b-h
+  new-symbol b-ah, "b"
+  # env = ((b . (a 3)))
+  var val-h: (handle cell)
+  var val-ah/eax: (addr handle cell) <- address val-h
+  new-integer val-ah, 3
+  new-pair val-ah, val-h, nil-h
+  new-pair val-ah, a-h, val-h
+  var env-h: (handle cell)
+  var env-ah/eax: (addr handle cell) <- address env-h
+  new-pair env-ah, b-h, val-h
+  new-pair env-ah, env-h, nil-h
+  # input is `(a ,@b b)
+  var tmp-h: (handle cell)
+  var tmp-ah/eax: (addr handle cell) <- address tmp-h
+  # tmp = cons(b, nil)
+  new-pair tmp-ah, b-h, nil-h
+  # tmp2 = cons(unquote-splice, b)
+  var tmp2-h: (handle cell)
+  var tmp2-ah/ecx: (addr handle cell) <- address tmp2-h
+  new-pair tmp2-ah, unquote-splice-h, b-h
+  # tmp = cons(tmp2, tmp)
+  new-pair tmp-ah, tmp2-h, tmp-h
+  # tmp = cons(a, tmp)
+  new-pair tmp-ah, a-h, tmp-h
+  # tmp = cons(backquote, tmp)
+  new-pair tmp-ah, backquote-h, tmp-h
+  dump-cell-from-cursor-over-full-screen tmp-ah
+  #
+  evaluate tmp-ah, tmp-ah, env-h, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  # result is (a a 3 b)
+#?   dump-cell-from-cursor-over-full-screen tmp-ah
+  var result/eax: (addr cell) <- lookup *tmp-ah
+  {
+    var result-type/eax: (addr int) <- get result, type
+    check-ints-equal *result-type, 0/pair, "F - test-evaluate-backquote-list-with-unquote-splice/0"
+  }
+  {
+    var a1-ah/eax: (addr handle cell) <- get result, left
+    var a1/eax: (addr cell) <- lookup *a1-ah
+    var check1/eax: boolean <- symbol-equal? a1, "a"
+    check check1, "F - test-evaluate-backquote-list-with-unquote-splice/1"
+  }
+  var rest-ah/eax: (addr handle cell) <- get result, right
+  var rest/eax: (addr cell) <- lookup *rest-ah
+  {
+    var a2-ah/eax: (addr handle cell) <- get rest, left
+    var a2/eax: (addr cell) <- lookup *a2-ah
+    var check2/eax: boolean <- symbol-equal? a2, "a"
+    check check2, "F - test-evaluate-backquote-list-with-unquote-splice/2"
+  }
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var rest/eax: (addr cell) <- lookup *rest-ah
+  {
+    var a3-ah/eax: (addr handle cell) <- get rest, left
+    var a3/eax: (addr cell) <- lookup *a3-ah
+    var a3-value-addr/eax: (addr float) <- get a3, number-data
+    var a3-value/eax: int <- convert *a3-value-addr
+    check-ints-equal a3-value, 3, "F - test-evaluate-backquote-list-with-unquote-splice/3"
+  }
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var rest/eax: (addr cell) <- lookup *rest-ah
+  {
+    var a4-ah/eax: (addr handle cell) <- get rest, left
+    var a4/eax: (addr cell) <- lookup *a4-ah
+    var check4/eax: boolean <- symbol-equal? a4, "b"
+    check check4, "F - test-evaluate-backquote-list-with-unquote-splice/4"
+  }
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var rest/eax: (addr cell) <- lookup *rest-ah
+  var check5/eax: boolean <- nil? rest
+  check check5, "F - test-evaluate-backquote-list-with-unquote-splice/5"
 }

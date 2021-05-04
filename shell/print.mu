@@ -95,7 +95,7 @@ fn dump-cell-from-cursor-over-full-screen in-ah: (addr handle cell) {
   var stream-storage: (stream byte 0x200)
   var stream/edx: (addr stream byte) <- address stream-storage
   print-cell in-ah, stream, 0/no-trace
-  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, stream, 7/fg, 0xc5/bg=blue-bg
+  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, stream, 7/fg, 0/bg
 }
 
 fn print-symbol _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
