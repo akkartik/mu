@@ -158,6 +158,22 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     trace-higher trace
     return
   }
+  $evaluate:backquote: {
+    # trees starting with single backquote create literals
+    var expr/esi: (addr cell) <- copy in
+    # if its first elem is not "'", break
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var rest-ah/edx: (addr handle cell) <- get in, right
+    var first/eax: (addr cell) <- lookup *first-ah
+    var backquote?/eax: boolean <- symbol-equal? first, "`"
+    compare backquote?, 0/false
+    break-if-=
+    #
+    trace-text trace, "eval", "backquote"
+    evaluate-backquote rest-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    trace-higher trace
+    return
+  }
   $evaluate:def: {
     # trees starting with "def" define globals
     var expr/esi: (addr cell) <- copy in
@@ -1257,4 +1273,134 @@ fn test-evaluate-primitive-function-call {
   var result-value-addr/eax: (addr float) <- get result, number-data
   var result-value/eax: int <- convert *result-value-addr
   check-ints-equal result-value, 2, "F - test-evaluate-primitive-function-call/1"
+}
+
+fn test-evaluate-backquote {
+  # env = nil
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  # eval `a, env
+  var tmp-storage: (handle cell)
+  var tmp-ah/edx: (addr handle cell) <- address tmp-storage
+  new-symbol tmp-ah, "`"
+  var tmp2-storage: (handle cell)
+  var tmp2-ah/ebx: (addr handle cell) <- address tmp2-storage
+  new-symbol tmp2-ah, "a"
+  new-pair tmp-ah, *tmp-ah, *tmp2-ah
+  clear-object tmp2-ah
+  evaluate tmp-ah, tmp2-ah, *nil-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var result/eax: (addr cell) <- lookup *tmp2-ah
+  var result-type/edx: (addr int) <- get result, type
+  check-ints-equal *result-type, 2/symbol, "F - test-evaluate-backquote/0"
+  var sym?/eax: boolean <- symbol-equal? result, "a"
+  check sym?, "F - test-evaluate-backquote/1"
+}
+
+fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
+  # stack overflow?   # disable when enabling Really-debug-print
+  check-stack
+  {
+    var screen-cell/eax: (addr handle cell) <- copy screen-cell
+    compare screen-cell, 0
+    break-if-=
+    var screen-cell-addr/eax: (addr cell) <- lookup *screen-cell
+    compare screen-cell-addr, 0
+    break-if-=
+    # if screen-cell exists, we're probably not in a test
+    show-stack-state
+  }
+  # errors? skip
+  {
+    compare trace, 0
+    break-if-=
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-=
+    return
+  }
+  var in-ah/esi: (addr handle cell) <- copy _in-ah
+  var in/eax: (addr cell) <- lookup *in-ah
+  {
+    var nil?/eax: boolean <- nil? in
+    compare nil?, 0/false
+    break-if-=
+    # nil is a literal
+    trace-text trace, "eval", "backquote nil"
+    copy-object _in-ah, _out-ah
+    trace-higher trace
+    return
+  }
+  var in-type/ecx: (addr int) <- get in, type
+  compare *in-type, 0/pair
+  {
+    break-if-=
+    # copy non-pairs directly
+    # TODO: streams might need to be copied
+    trace-text trace, "eval", "backquote atom"
+    copy-object _in-ah, _out-ah
+    trace-higher trace
+    return
+  }
+  # in is a pair
+  var in-ah/esi: (addr handle cell) <- copy _in-ah
+  var _in/eax: (addr cell) <- lookup *in-ah
+  var in/ebx: (addr cell) <- copy _in
+  var in-left-ah/ecx: (addr handle cell) <- get in, left
+  var out-ah/edi: (addr handle cell) <- copy _out-ah
+  allocate-pair out-ah
+  var out/eax: (addr cell) <- lookup *out-ah
+  var out-left-ah/edx: (addr handle cell) <- get out, left
+  evaluate-backquote in-left-ah, out-left-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+  var in-right-ah/ecx: (addr handle cell) <- get in, right
+  var out-right-ah/edx: (addr handle cell) <- get out, right
+  evaluate-backquote in-right-ah, out-right-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+}
+
+fn test-evaluate-backquote-list {
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  var backquote-storage: (handle cell)
+  var backquote-ah/edx: (addr handle cell) <- address backquote-storage
+  new-symbol backquote-ah, "`"
+  # input is `(a b)
+  var a-storage: (handle cell)
+  var a-ah/ebx: (addr handle cell) <- address a-storage
+  new-symbol a-ah, "a"
+  var b-storage: (handle cell)
+  var b-ah/esi: (addr handle cell) <- address b-storage
+  new-symbol b-ah, "b"
+  var tmp-storage: (handle cell)
+  var tmp-ah/eax: (addr handle cell) <- address tmp-storage
+  new-pair tmp-ah, *b-ah, *nil-ah
+  new-pair tmp-ah, *a-ah, *tmp-ah
+  new-pair tmp-ah, *backquote-ah, *tmp-ah
+  #
+  evaluate tmp-ah, tmp-ah, *nil-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+#?   dump-trace t
+  # result is (a b)
+  var result/eax: (addr cell) <- lookup *tmp-ah
+  {
+    var result-type/eax: (addr int) <- get result, type
+    check-ints-equal *result-type, 0/pair, "F - test-evaluate-backquote-list/0"
+  }
+  {
+    var a1-ah/eax: (addr handle cell) <- get result, left
+    var a1/eax: (addr cell) <- lookup *a1-ah
+    var check1/eax: boolean <- symbol-equal? a1, "a"
+    check check1, "F - test-evaluate-backquote-list/1"
+  }
+  var rest-ah/eax: (addr handle cell) <- get result, right
+  var rest/eax: (addr cell) <- lookup *rest-ah
+  {
+    var a2-ah/eax: (addr handle cell) <- get rest, left
+    var a2/eax: (addr cell) <- lookup *a2-ah
+    var check2/eax: boolean <- symbol-equal? a2, "b"
+    check check2, "F - test-evaluate-backquote-list/2"
+  }
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var rest/eax: (addr cell) <- lookup *rest-ah
+  var check3/eax: boolean <- nil? rest
+  check check3, "F - test-evaluate-backquote-list/3"
 }
