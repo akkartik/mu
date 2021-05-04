@@ -1179,6 +1179,27 @@ fn test-evaluate-symbol {
   check-ints-equal result-value, 3, "F - test-evaluate-symbol/1"
 }
 
+fn test-evaluate-quote {
+  # env = nil
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  # eval `a, env
+  var tmp-storage: (handle cell)
+  var tmp-ah/edx: (addr handle cell) <- address tmp-storage
+  new-symbol tmp-ah, "'"
+  var tmp2-storage: (handle cell)
+  var tmp2-ah/ebx: (addr handle cell) <- address tmp2-storage
+  new-symbol tmp2-ah, "a"
+  new-pair tmp-ah, *tmp-ah, *tmp2-ah
+  evaluate tmp-ah, tmp-ah, *nil-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var result/eax: (addr cell) <- lookup *tmp-ah
+  var result-type/edx: (addr int) <- get result, type
+  check-ints-equal *result-type, 2/symbol, "F - test-evaluate-quote/0"
+  var sym?/eax: boolean <- symbol-equal? result, "a"
+  check sym?, "F - test-evaluate-quote/1"
+}
+
 fn test-evaluate-primitive-function {
   var globals-storage: global-table
   var globals/edi: (addr global-table) <- address globals-storage
