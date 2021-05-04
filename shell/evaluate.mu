@@ -1,6 +1,6 @@
 # env is an alist of ((sym . val) (sym . val) ...)
 # we never modify `in` or `env`
-# ignore 'screen-cell' on a first reading; it's a hack for sandboxes
+# ignore args past 'trace' on a first reading; they're for the environment not the language
 # 'call-number' is just for showing intermediate progress; this is a _slow_ interpreter
 fn evaluate _in: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # stack overflow?   # disable when enabling Really-debug-print
