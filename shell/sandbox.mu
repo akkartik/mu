@@ -609,13 +609,13 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
     break-if-=
     return
   }
-  var nil-storage: (handle cell)
-  var nil-ah/eax: (addr handle cell) <- address nil-storage
+  var nil-h: (handle cell)
+  var nil-ah/eax: (addr handle cell) <- address nil-h
   allocate-pair nil-ah
-  var eval-result-storage: (handle cell)
-  var eval-result/edi: (addr handle cell) <- address eval-result-storage
+  var eval-result-h: (handle cell)
+  var eval-result-ah/edi: (addr handle cell) <- address eval-result-h
   debug-print "^", 4/fg, 0xc5/bg=blue-bg
-  evaluate read-result-ah, eval-result, *nil-ah, globals, trace, screen-cell, keyboard-cell, 1/call-number
+  evaluate read-result-ah, eval-result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, 1/call-number
   debug-print "$", 4/fg, 0xc5/bg=blue-bg
   var error?/eax: boolean <- has-errors? trace
   {
@@ -628,7 +628,7 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
   # command.
   maybe-stash-gap-buffer-to-global globals, read-result-ah, _in-ah
   clear-stream out
-  print-cell eval-result, out, trace
+  print-cell eval-result-ah, out, trace
   mark-lines-dirty trace
 }
 
