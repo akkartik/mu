@@ -15,6 +15,7 @@ type cell {
   # type 6: keyboard
   keyboard-data: (handle gap-buffer)
   # TODO: array, (associative) table
+  # if you add types here, don't forget to update cell-isomorphic?
 }
 
 fn allocate-symbol _out: (addr handle cell) {

@@ -1058,6 +1058,46 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     }
     return match?
   }
+  # if objects are primitive functions, compare index-data
+  compare b-type, 4/primitive
+  {
+    break-if-!=
+    var a-val-addr/eax: (addr int) <- get a, index-data
+    var b-val-addr/ecx: (addr int) <- get b, index-data
+    var a-val/eax: int <- copy *a-val-addr
+    compare a-val, *b-val-addr
+    {
+      break-if-=
+      trace-higher trace
+      trace-text trace, "eval", "=> false (primitives)"
+      return 0/false
+    }
+    trace-higher trace
+    trace-text trace, "eval", "=> true (primitives)"
+    return 1/true
+  }
+  # if objects are screens, check if they're the same object
+  compare b-type, 5/screen
+  {
+    break-if-!=
+    var a-val-addr/eax: (addr handle screen) <- get a, screen-data
+    var b-val-addr/ecx: (addr handle screen) <- get b, screen-data
+    var result/eax: boolean <- handle-equal? *a-val-addr, *b-val-addr
+    compare result, 0/false
+    return result
+  }
+  # if objects are keyboards, check if they have the same contents
+  compare b-type, 6/keyboard
+  {
+    break-if-!=
+    var a-val-addr/ecx: (addr handle gap-buffer) <- get a, keyboard-data
+    var _a/eax: (addr gap-buffer) <- lookup *a-val-addr
+    var a/ecx: (addr gap-buffer) <- copy _a
+    var b-val-addr/eax: (addr handle gap-buffer) <- get b, keyboard-data
+    var b/eax: (addr gap-buffer) <- lookup *b-val-addr
+    var result/eax: boolean <- gap-buffers-equal? a, b
+    return result
+  }
   # if a is nil, b should be nil
   {
     # (assumes nil? returns 0 or 1)
