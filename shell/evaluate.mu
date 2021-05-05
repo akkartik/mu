@@ -1026,9 +1026,14 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     trace-text trace, "eval", "=> true (numbers)"
     return 1/true
   }
-  compare b-type, 2/symbol
-  {
-    break-if-!=
+  $cell-isomorphic?:text-data: {
+    {
+      compare b-type, 2/symbol
+      break-if-=
+      compare b-type, 3/stream
+      break-if-=
+      break $cell-isomorphic?:text-data
+    }
     var b-val-ah/eax: (addr handle stream byte) <- get b, text-data
     var _b-val/eax: (addr stream byte) <- lookup *b-val-ah
     var b-val/ecx: (addr stream byte) <- copy _b-val
