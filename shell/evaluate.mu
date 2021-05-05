@@ -1554,7 +1554,7 @@ fn test-evaluate-backquote-list-with-unquote-splice {
   new-pair tmp-ah, a-h, tmp-h
   # tmp = cons(backquote, tmp)
   new-pair tmp-ah, backquote-h, tmp-h
-  dump-cell-from-cursor-over-full-screen tmp-ah
+#?   dump-cell-from-cursor-over-full-screen tmp-ah
   #
   evaluate tmp-ah, tmp-ah, env-h, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
   # result is (a a 3 b)
