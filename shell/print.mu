@@ -83,7 +83,7 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
 
 # debug helper
 fn dump-cell-at-top-right in-ah: (addr handle cell) {
-  var stream-storage: (stream byte 0x200)
+  var stream-storage: (stream byte 0x1000)
   var stream/edx: (addr stream byte) <- address stream-storage
   print-cell in-ah, stream, 0/no-trace
   var d1/eax: int <- copy 0

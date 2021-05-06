@@ -9,13 +9,15 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
   var token-storage: cell
   var token/edx: (addr cell) <- address token-storage
   {
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "a", 7/fg 0/bg
     skip-whitespace-from-gap-buffer in
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "b", 7/fg 0/bg
     # initialize token data each iteration to avoid aliasing
     var dest-ah/eax: (addr handle stream byte) <- get token, text-data
-    populate-stream dest-ah, 0x100/max-definition-size
+    populate-stream dest-ah, 0x400/max-definition-size
     #
     next-token in, token, trace
     var skip?/eax: boolean <- comment-token? token
@@ -27,7 +29,9 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
       break-if-=
       return
     }
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "y", 7/fg 0/bg
     write-to-stream out, token  # shallow-copy text-data
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "z", 7/fg 0/bg
     loop
   }
   trace-higher trace
