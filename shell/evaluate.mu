@@ -131,13 +131,16 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     var fn?/eax: boolean <- fn? first
     compare fn?, 0/false
     break-if-=
-    # turn (fn ...) into (fn env ...)
+    # turn (fn ...) into (litfn env ...)
     trace-text trace, "eval", "anonymous function"
     var rest-ah/eax: (addr handle cell) <- get in, right
     var tmp: (handle cell)
     var tmp-ah/edi: (addr handle cell) <- address tmp
     new-pair tmp-ah, env-h, *rest-ah
-    new-pair _out-ah, *first-ah, *tmp-ah
+    var litfn: (handle cell)
+    var litfn-ah/eax: (addr handle cell) <- address litfn
+    new-symbol litfn-ah, "litfn"
+    new-pair _out-ah, *litfn-ah, *tmp-ah
     trace-higher trace
     return
   }
@@ -505,8 +508,8 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
     break-if-!=
     var first-ah/eax: (addr handle cell) <- get f, left
     var first/eax: (addr cell) <- lookup *first-ah
-    var fn?/eax: boolean <- fn? first
-    compare fn?, 0/false
+    var litfn?/eax: boolean <- litfn? first
+    compare litfn?, 0/false
     break-if-=
     var rest-ah/esi: (addr handle cell) <- get f, right
     var rest/eax: (addr cell) <- lookup *rest-ah
@@ -1172,6 +1175,20 @@ fn fn? _x: (addr cell) -> _/eax: boolean {
   var contents-ah/eax: (addr handle stream byte) <- get x, text-data
   var contents/eax: (addr stream byte) <- lookup *contents-ah
   var result/eax: boolean <- stream-data-equal? contents, "fn"
+  return result
+}
+
+fn litfn? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 2/symbol
+  {
+    break-if-=
+    return 0/false
+  }
+  var contents-ah/eax: (addr handle stream byte) <- get x, text-data
+  var contents/eax: (addr stream byte) <- lookup *contents-ah
+  var result/eax: boolean <- stream-data-equal? contents, "litfn"
   return result
 }
 
