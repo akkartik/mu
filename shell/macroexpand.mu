@@ -87,8 +87,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
   }
   var result/edi: boolean <- copy 0/false
   # for each builtin, expand only what will later be evaluated
-  macroexpand-iter:anonymous-function: {
-    var first/eax: (addr cell) <- lookup *first-ah
+  $macroexpand-iter:anonymous-function: {
     var fn?/eax: boolean <- fn? first
     compare fn?, 0/false
     break-if-=
@@ -113,7 +112,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     return result
   }
   # builtins with "special" evaluation rules
-  macroexpand-iter:quote: {
+  $macroexpand-iter:quote: {
     # trees starting with single quote create literals
     var quote?/eax: boolean <- symbol-equal? first, "'"
     compare quote?, 0/false
@@ -124,7 +123,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     return 0/false
   }
   # TODO: expand within backquotes
-  macroexpand-iter:def: {
+  $macroexpand-iter:def: {
     # trees starting with "def" define globals
     var def?/eax: boolean <- symbol-equal? first, "def"
     compare def?, 0/false
@@ -139,7 +138,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return macro-found?
   }
-  macroexpand-iter:set: {
+  $macroexpand-iter:set: {
     # trees starting with "set" mutate bindings
     var set?/eax: boolean <- symbol-equal? first, "set"
     compare set?, 0/false
@@ -159,24 +158,20 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
   # 'if' is like a function for macroexpansion purposes
   # 'while' is like a function for macroexpansion purposes
   # if car(expr) is a symbol defined as a macro, expand it
-  var definition-h: (handle cell)
-  var definition-ah/ebx: (addr handle cell) <- address definition-h
-  maybe-lookup-symbol-in-globals first, definition-ah, globals, trace
-  var definition/eax: (addr cell) <- lookup *definition-ah
-  compare definition, 0
   {
-    break-if-!=
-    # no definition
-    return 0/false
-  }
-  {
-    var definition-type/eax: (addr int) <- get definition, type
-    compare *definition-type, 0/pair
+    var definition-h: (handle cell)
+    var definition-ah/edx: (addr handle cell) <- address definition-h
+    maybe-lookup-symbol-in-globals first, definition-ah, globals, trace
+    var definition/eax: (addr cell) <- lookup *definition-ah
+    compare definition, 0
     break-if-=
-    # definition not a pair
-    return 0/false
-  }
-  {
+    # definition found
+    {
+      var definition-type/eax: (addr int) <- get definition, type
+      compare *definition-type, 0/pair
+    }
+    break-if-!=
+    # definition is a pair
     {
       var definition-car-ah/eax: (addr handle cell) <- get definition, left
       var definition-car/eax: (addr cell) <- lookup *definition-car-ah
@@ -188,9 +183,26 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     var macro-definition-ah/eax: (addr handle cell) <- get definition, right
     # TODO: check car(macro-definition) is litfn
     apply macro-definition-ah, rest-ah, expr-ah, globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
-    result <- copy 1/true
+    return 1/true
   }
-  # TODO: process arbitrary function calls
+  # no macro found; process any macros within args
+  trace-text trace, "mac", "recursing into function definition"
+  var curr-ah/ebx: (addr handle cell) <- copy first-ah
+  $macroexpand-iter:loop: {
+#?     clear-screen 0/screen
+#?     dump-trace trace
+    var macro-found?/eax: boolean <- macroexpand-iter curr-ah, globals, trace
+    result <- or macro-found?
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    {
+      var nil?/eax: boolean <- nil? rest
+      compare nil?, 0/false
+    }
+    break-if-!=
+    curr-ah <- get rest, left
+    rest-ah <- get rest, right
+    loop
+  }
   return result
 }
 
@@ -264,4 +276,38 @@ fn test-macroexpand-inside-anonymous-fn {
   #
   var assertion/eax: boolean <- cell-isomorphic? result, expected, 0/no-trace
   check assertion, "F - test-macroexpand-inside-anonymous-fn"
+}
+
+fn test-macroexpand-inside-fn-call {
+  var globals-storage: global-table
+  var globals/edx: (addr global-table) <- address globals-storage
+  initialize-globals globals
+  # new macro: m
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
+  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  # invoke macro
+  initialize-sandbox-with sandbox, "((fn() (m 3 4)))"
+  var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
+  var gap/eax: (addr gap-buffer) <- lookup *gap-ah
+  var result-h: (handle cell)
+  var result-ah/ebx: (addr handle cell) <- address result-h
+  read-cell gap, result-ah, 0/no-trace
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, 0/no-trace
+#?   dump-cell-from-cursor-over-full-screen result-ah
+  var _result/eax: (addr cell) <- lookup *result-ah
+  var result/edi: (addr cell) <- copy _result
+  # expected
+  initialize-sandbox-with sandbox, "((fn() (+ 3 4)))"
+  var expected-gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
+  var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
+  var expected-h: (handle cell)
+  var expected-ah/ecx: (addr handle cell) <- address expected-h
+  read-cell expected-gap, expected-ah, 0/no-trace
+#?   dump-cell-from-cursor-over-full-screen expected-ah
+  var expected/eax: (addr cell) <- lookup *expected-ah
+  #
+  var assertion/eax: boolean <- cell-isomorphic? result, expected, 0/no-trace
+  check assertion, "F - test-macroexpand-inside-fn-call"
 }
