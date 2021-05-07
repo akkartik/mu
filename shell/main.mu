@@ -81,15 +81,23 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
   # data-disk -> stream
   var s-storage: (stream byte 0x1000)  # space for 8/sectors
   var s/ebx: (addr stream byte) <- address s-storage
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sectors from data disk", 3/fg, 0/bg
+  move-cursor-to-left-margin-of-next-line 0/screen
   load-sectors data-disk, 0/lba, 8/sectors, s
 #?   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, s, 7/fg, 0xc5/bg=blue-bg
   # stream -> gap-buffer
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
+  move-cursor-to-left-margin-of-next-line 0/screen
   load-gap-buffer-from-stream data, s
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "  into gap buffer", 3/fg, 0/bg
+  move-cursor-to-left-margin-of-next-line 0/screen
   clear-stream s
   # read: gap-buffer -> cell
   var initial-root-storage: (handle cell)
   var initial-root/ecx: (addr handle cell) <- address initial-root-storage
   read-cell data, initial-root, 0/no-trace
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "  into s-expressions", 3/fg, 0/bg
+  move-cursor-to-left-margin-of-next-line 0/screen
   clear-gap-buffer data
   #
   {
@@ -113,6 +121,7 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
     load-globals globals-cell-ah, globals
   }
   # sandbox = assoc(initial-root, 'sandbox)
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sandbox", 3/fg, 0/bg
   var sandbox-literal-storage: (handle cell)
   var sandbox-literal-ah/eax: (addr handle cell) <- address sandbox-literal-storage
   new-symbol sandbox-literal-ah, "sandbox"

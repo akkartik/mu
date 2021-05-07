@@ -64,7 +64,7 @@ fn initialize-globals _self: (addr global-table) {
 }
 
 fn load-globals in: (addr handle cell), self: (addr global-table) {
-#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "a", 2/fg 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading globals:", 3/fg, 0/bg
   var remaining-ah/esi: (addr handle cell) <- copy in
   {
     var _remaining/eax: (addr cell) <- lookup *remaining-ah
@@ -76,6 +76,15 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     var curr-ah/eax: (addr handle cell) <- get remaining, left
     var curr/eax: (addr cell) <- lookup *curr-ah
     remaining-ah <- get remaining, right
+    {
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 2/fg 0/bg
+      var name-ah/ecx: (addr handle cell) <- get curr, left
+      var name/eax: (addr cell) <- lookup *name-ah
+      var name-data-ah/eax: (addr handle stream byte) <- get name, text-data
+      var name-data/eax: (addr stream byte) <- lookup *name-data-ah
+      rewind-stream name-data
+      draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, name-data, 3/fg, 0/bg
+    }
     var value-ah/eax: (addr handle cell) <- get curr, right
     var value/eax: (addr cell) <- lookup *value-ah
     var value-data-ah/eax: (addr handle stream byte) <- get value, text-data
@@ -93,6 +102,7 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
 #?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y", 2/fg 0/bg
     loop
   }
+  move-cursor-to-left-margin-of-next-line 0/screen
 #?   abort "zz"
 }
 
