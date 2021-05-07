@@ -176,7 +176,7 @@ fn maybe-render-empty-screen screen: (addr screen), _self: (addr sandbox), xmin:
   var screen-obj-ah/eax: (addr handle screen) <- get screen-obj-cell, screen-data
   var _screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
   var screen-obj/edx: (addr screen) <- copy _screen-obj
-  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, y, 7/fg, 0xc5/bg=blue-bg
+  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, y, 0x17/fg, 0xc5/bg=blue-bg
   y <- render-empty-screen screen, screen-obj, x, y
   return y
 }
@@ -205,7 +205,7 @@ fn maybe-render-screen screen: (addr screen), _self: (addr sandbox), xmin: int, 
     break-if-=
     return ymin
   }
-  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, ymin, 7/fg, 0xc5/bg=blue-bg
+  var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, ymin, 0x17/fg, 0xc5/bg=blue-bg
   var y/ecx: int <- copy ymin
   y <- render-screen screen, screen-obj, x, y
   return y
@@ -363,7 +363,7 @@ fn maybe-render-keyboard screen: (addr screen), _self: (addr sandbox), xmin: int
   var keyboard-obj/edx: (addr gap-buffer) <- copy _keyboard-obj
   var y/ecx: int <- copy ymin
   y <- increment  # padding
-  var x/eax: int <- draw-text-rightward screen, "keyboard: ", xmin, 0x99/xmax, y, 7/fg, 0xc5/bg=blue-bg
+  var x/eax: int <- draw-text-rightward screen, "keyboard: ", xmin, 0x99/xmax, y, 0x17/fg, 0xc5/bg=blue-bg
   var cursor-in-keyboard?/esi: (addr boolean) <- get self, cursor-in-keyboard?
   y <- render-keyboard screen, keyboard-obj, x, y, *cursor-in-keyboard?
   y <- increment  # padding
