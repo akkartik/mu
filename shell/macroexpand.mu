@@ -112,6 +112,52 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return result
   }
+  # builtins with "special" evaluation rules
+  macroexpand-iter:quote: {
+    # trees starting with single quote create literals
+    var quote?/eax: boolean <- symbol-equal? first, "'"
+    compare quote?, 0/false
+    break-if-=
+    #
+    trace-text trace, "mac", "quote"
+    trace-higher trace
+    return 0/false
+  }
+  # TODO: expand within backquotes
+  macroexpand-iter:def: {
+    # trees starting with "def" define globals
+    var def?/eax: boolean <- symbol-equal? first, "def"
+    compare def?, 0/false
+    break-if-=
+    #
+    trace-text trace, "mac", "def"
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    rest-ah <- get rest, right  # skip name
+    rest <- lookup *rest-ah
+    var val-ah/edx: (addr handle cell) <- get rest, left
+    var macro-found?/eax: boolean <- macroexpand-iter val-ah, globals, trace
+    trace-higher trace
+    return macro-found?
+  }
+  macroexpand-iter:set: {
+    # trees starting with "set" mutate bindings
+    var set?/eax: boolean <- symbol-equal? first, "set"
+    compare set?, 0/false
+    break-if-=
+    #
+    trace-text trace, "mac", "set"
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    rest-ah <- get rest, right  # skip name
+    rest <- lookup *rest-ah
+    var val-ah/edx: (addr handle cell) <- get rest, left
+    var macro-found?/eax: boolean <- macroexpand-iter val-ah, globals, trace
+    trace-higher trace
+    return macro-found?
+  }
+  # 'and' is like a function for macroexpansion purposes
+  # 'or' is like a function for macroexpansion purposes
+  # 'if' is like a function for macroexpansion purposes
+  # 'while' is like a function for macroexpansion purposes
   # if car(expr) is a symbol defined as a macro, expand it
   var definition-h: (handle cell)
   var definition-ah/ebx: (addr handle cell) <- address definition-h
@@ -131,18 +177,21 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     return 0/false
   }
   {
-    var definition-car-ah/eax: (addr handle cell) <- get definition, left
-    var definition-car/eax: (addr cell) <- lookup *definition-car-ah
-    var macro?/eax: boolean <- litmac? definition-car
-    compare macro?, 0/false
-    break-if-!=
-    # definition not a macro
-    return 0/false
+    {
+      var definition-car-ah/eax: (addr handle cell) <- get definition, left
+      var definition-car/eax: (addr cell) <- lookup *definition-car-ah
+      var macro?/eax: boolean <- litmac? definition-car
+      compare macro?, 0/false
+    }
+    break-if-=
+    # definition is a macro
+    var macro-definition-ah/eax: (addr handle cell) <- get definition, right
+    # TODO: check car(macro-definition) is litfn
+    apply macro-definition-ah, rest-ah, expr-ah, globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
+    result <- copy 1/true
   }
-  var macro-definition-ah/eax: (addr handle cell) <- get definition, right
-  # TODO: check car(macro-definition) is litfn
-  apply macro-definition-ah, rest-ah, expr-ah, globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
-  return 1/true
+  # TODO: process arbitrary function calls
+  return result
 }
 
 fn test-macroexpand {
