@@ -45,16 +45,13 @@
             (if (<= e2 dx)
               dx
               0))))))))))))))])
-  (read_line_2 . [(def read_line_2 (fn (keyboard stream)
-  ((fn (c)
-     (if (= c 10)
-       stream
-       (if (= c 0)
-         stream
-         (read_line_2 keyboard (write stream c)))))
-   (key keyboard))))])
   (read_line . [(def read_line (fn (keyboard)
-  (read_line_2 keyboard (stream))))])
+  (let str (stream)
+  (let c (key keyboard)
+    (while (not (or (= c 0) (= c 10)))
+      (write str c)
+      (set c (key keyboard))))
+  str)))])
   (chessboard . [(def chessboard (fn (screen px)
   (chessboard1 screen px 0 15)))])
   (chessboard1 . [(def chessboard1 (fn (screen px y color)
