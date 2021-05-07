@@ -120,11 +120,24 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     trace-higher trace
     return
   }
-  # in is a syntax tree
+  # 'in' is a syntax tree
+  $evaluate:literal-function: {
+    # trees starting with "litfn" are literals
+    var expr/esi: (addr cell) <- copy in
+    var in/edx: (addr cell) <- copy in
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var first/eax: (addr cell) <- lookup *first-ah
+    var litfn?/eax: boolean <- litfn? first
+    compare litfn?, 0/false
+    break-if-=
+    trace-text trace, "eval", "literal function"
+    copy-object _in-ah, _out-ah
+    trace-higher trace
+    return
+  }
   $evaluate:anonymous-function: {
     # trees starting with "fn" are anonymous functions
     var expr/esi: (addr cell) <- copy in
-    # if its first elem is not "fn", break
     var in/edx: (addr cell) <- copy in
     var first-ah/ecx: (addr handle cell) <- get in, left
     var first/eax: (addr cell) <- lookup *first-ah
