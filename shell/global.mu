@@ -351,6 +351,28 @@ fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals
   trace trace, "error", stream
 }
 
+fn maybe-lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace) {
+  var sym/eax: (addr cell) <- copy _sym
+  var sym-name-ah/eax: (addr handle stream byte) <- get sym, text-data
+  var _sym-name/eax: (addr stream byte) <- lookup *sym-name-ah
+  var sym-name/edx: (addr stream byte) <- copy _sym-name
+  var globals/esi: (addr global-table) <- copy _globals
+  {
+    compare globals, 0
+    break-if-=
+    var curr-index/ecx: int <- find-symbol-in-globals globals, sym-name
+    compare curr-index, -1/not-found
+    break-if-=
+    var global-data-ah/eax: (addr handle array global) <- get globals, data
+    var global-data/eax: (addr array global) <- lookup *global-data-ah
+    var curr-offset/ebx: (offset global) <- compute-offset global-data, curr-index
+    var curr/ebx: (addr global) <- index global-data, curr-offset
+    var curr-value/eax: (addr handle cell) <- get curr, value
+    copy-object curr-value, out
+    return
+  }
+}
+
 # return the index in globals containing 'sym'
 # or -1 if not found
 fn find-symbol-in-globals _globals: (addr global-table), sym-name: (addr stream byte) -> _/ecx: int {
