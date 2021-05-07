@@ -474,11 +474,13 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "B", 4/fg, 0xc5/bg=blue-bg
     # a trip wire in case we're running without a trace (e.g. when loading the initial state from disk)
     {
+      compare trace, 0
+      break-if-!=
       var left-out/eax: (addr cell) <- lookup *left-out-ah
       compare left-out, 0
       {
         break-if-!=
-        abort "unknown variable"
+        abort "error in eval-list"
       }
     }
     #
