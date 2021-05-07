@@ -35,8 +35,8 @@ fn gap-buffer-capacity _gap: (addr gap-buffer) -> _/ecx: int {
 
 # just for tests
 fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
-  initialize-gap-buffer self, 0x10/capacity
-  var stream-storage: (stream byte 0x10/capacity)
+  initialize-gap-buffer self, 0x40/capacity
+  var stream-storage: (stream byte 0x40/capacity)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, s
   {

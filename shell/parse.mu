@@ -28,7 +28,7 @@ fn parse-input tokens: (addr stream cell), out: (addr handle cell), trace: (addr
 #   unmatched close-paren encountered?
 #   dot encountered? (only used internally by recursive calls)
 fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) -> _/eax: boolean, _/ecx: boolean {
-  trace-text trace, "read", "parse"
+  trace-text trace, "parse", "parse"
   trace-lower trace
   var curr-token-storage: cell
   var curr-token/ecx: (addr cell) <- address curr-token-storage
@@ -180,7 +180,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       return 1/true, 0/false
     }
     # otherwise abort
-    var stream-storage: (stream byte 0x40)
+    var stream-storage: (stream byte 0x400)
     var stream/edx: (addr stream byte) <- address stream-storage
     write stream, "unexpected token "
     var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
@@ -194,12 +194,12 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
 }
 
 fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "read", "parse atom"
+  trace-text trace, "parse", "parse atom"
   var curr-token/ecx: (addr cell) <- copy _curr-token
   var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
   var _curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
   var curr-token-data/esi: (addr stream byte) <- copy _curr-token-data
-  trace trace, "read", curr-token-data
+  trace trace, "parse", curr-token-data
   # number
   var number-token?/eax: boolean <- number-token? curr-token
   compare number-token?, 0/false
@@ -215,11 +215,11 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
     var dest/edi: (addr float) <- get out-addr, number-data
     copy-to *dest, val-float
     {
-      var stream-storage: (stream byte 0x40)
+      var stream-storage: (stream byte 0x400)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> number "
       print-number out-addr, stream, 0/no-trace
-      trace trace, "read", stream
+      trace trace, "parse", stream
     }
     return
   }
@@ -243,11 +243,11 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
   var dest-ah/edx: (addr handle stream byte) <- get out-addr, text-data
   copy-object curr-token-data-ah, dest-ah
   {
-    var stream-storage: (stream byte 0x40)
+    var stream-storage: (stream byte 0x400)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "=> symbol "
     print-symbol out-addr, stream, 0/no-trace
-    trace trace, "read", stream
+    trace trace, "parse", stream
   }
 }
 

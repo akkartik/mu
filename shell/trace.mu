@@ -300,9 +300,40 @@ fn dump-trace _self: (addr trace) {
     $dump-trace:iter: {
       var offset/ebx: (offset trace-line) <- compute-offset trace, i
       var curr/ebx: (addr trace-line) <- index trace, offset
+      y <- render-trace-line 0/screen, curr, 0, y, 0x80/width, 0x30/height, 7/fg, 0/bg
+    }
+    i <- increment
+    loop
+  }
+}
+
+fn dump-trace-with-label _self: (addr trace), label: (addr array byte) {
+  var already-hiding-lines?: boolean
+  var y/ecx: int <- copy 0
+  var self/esi: (addr trace) <- copy _self
+  compare self, 0
+  {
+    break-if-!=
+    return
+  }
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  var _trace/eax: (addr array trace-line) <- lookup *trace-ah
+  var trace/edi: (addr array trace-line) <- copy _trace
+  var i/edx: int <- copy 0
+  var max-addr/ebx: (addr int) <- get self, first-free
+  var max/ebx: int <- copy *max-addr
+  $dump-trace:loop: {
+    compare i, max
+    break-if->=
+    $dump-trace:iter: {
+      var offset/ebx: (offset trace-line) <- compute-offset trace, i
+      var curr/ebx: (addr trace-line) <- index trace, offset
       var curr-label-ah/eax: (addr handle array byte) <- get curr, label
       var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
-      y <- render-trace-line 0/screen, curr, 0, y, 0x80/width, 0x30/height, 7/fg, 0xc5/bg=blue-bg
+      var show?/eax: boolean <- string-equal? curr-label, label
+      compare show?, 0/false
+      break-if-=
+      y <- render-trace-line 0/screen, curr, 0, y, 0x80/width, 0x30/height, 7/fg, 0/bg
     }
     i <- increment
     loop

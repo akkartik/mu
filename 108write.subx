@@ -194,7 +194,7 @@ $_append-4:loop:
     73/jump-if-addr>=  $_append-4:end/disp8
     # if (out >= outend) abort  # just to catch test failures fast
     39/compare                      3/mod/direct    7/rm32/edi    .           .             .           2/r32/edx   .               .                 # compare edi with edx
-    73/jump-if-addr>=  $_append-4:end/disp8  # TODO: abort
+    0f 83/jump-if-addr>=  $_append-4:abort/disp32
     # *out = *in
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           3/r32/BL    .               .                 # copy byte at *esi to BL
     88/copy-byte                    0/mod/indirect  7/rm32/edi    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *edi
@@ -216,5 +216,13 @@ $_append-4:end:
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
+
+$_append-4:abort:
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "_append-4: stream full at " 3 0)  # 3=cyan
+    (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 3 0)
+    {
+      eb/jump loop/disp8
+    }
+    # never gets here
 
 # . . vim:nowrap:textwidth=0

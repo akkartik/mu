@@ -3,7 +3,7 @@
 # they always have text-data.
 
 fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) {
-  trace-text trace, "read", "tokenize"
+  trace-text trace, "tokenize", "tokenize"
   trace-lower trace
   rewind-gap-buffer in
   var token-storage: cell
@@ -19,7 +19,9 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
     var dest-ah/eax: (addr handle stream byte) <- get token, text-data
     populate-stream dest-ah, 0x400/max-definition-size
     #
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "c", 7/fg 0/bg
     next-token in, token, trace
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "d", 7/fg 0/bg
     var skip?/eax: boolean <- comment-token? token
     compare skip?, 0/false
     loop-if-!=
@@ -204,7 +206,7 @@ fn test-tokenize-stream-literal-in-tree {
 }
 
 fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace) {
-  trace-text trace, "read", "next-token"
+  trace-text trace, "tokenize", "next-token"
   trace-lower trace
   var out-cell/eax: (addr cell) <- copy _out-cell
   {
@@ -217,13 +219,15 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
   $next-token:body: {
     clear-stream out
     var g/eax: grapheme <- peek-from-gap-buffer in
+#?     draw-grapheme-at-cursor 0/screen, g, 7/fg, 0/bg
+#?     move-cursor-rightward-and-downward 0/screen, 0, 0x80
     {
       var stream-storage: (stream byte 0x40)
       var stream/esi: (addr stream byte) <- address stream-storage
       write stream, "next: "
       var gval/eax: int <- copy g
       write-int32-hex stream, gval
-      trace trace, "read", stream
+      trace trace, "tokenize", stream
     }
     # comment
     {
@@ -317,16 +321,16 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     }
   }
   trace-higher trace
-  var stream-storage: (stream byte 0x40)
+  var stream-storage: (stream byte 0x400)  # maximum possible token size (next-stream-token)
   var stream/eax: (addr stream byte) <- address stream-storage
   write stream, "=> "
   rewind-stream out
   write-stream stream, out
-  trace trace, "read", stream
+  trace trace, "tokenize", stream
 }
 
 fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
-  trace-text trace, "read", "looking for a symbol"
+  trace-text trace, "tokenize", "looking for a symbol"
   trace-lower trace
   $next-symbol-token:loop: {
     var done?/eax: boolean <- gap-buffer-scan-done? in
@@ -339,14 +343,14 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
       write stream, "next: "
       var gval/eax: int <- copy g
       write-int32-hex stream, gval
-      trace trace, "read", stream
+      trace trace, "tokenize", stream
     }
     # if non-symbol, return
     {
       var symbol-grapheme?/eax: boolean <- symbol-grapheme? g
       compare symbol-grapheme?, 0/false
       break-if-!=
-      trace-text trace, "read", "stop"
+      trace-text trace, "tokenize", "stop"
       break $next-symbol-token:loop
     }
     var g/eax: grapheme <- read-from-gap-buffer in
@@ -359,11 +363,11 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
   write stream, "=> "
   rewind-stream out
   write-stream stream, out
-  trace trace, "read", stream
+  trace trace, "tokenize", stream
 }
 
 fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
-  trace-text trace, "read", "looking for a operator"
+  trace-text trace, "tokenize", "looking for a operator"
   trace-lower trace
   $next-operator-token:loop: {
     var done?/eax: boolean <- gap-buffer-scan-done? in
@@ -376,14 +380,14 @@ fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (a
       write stream, "next: "
       var gval/eax: int <- copy g
       write-int32-hex stream, gval
-      trace trace, "read", stream
+      trace trace, "tokenize", stream
     }
     # if non-operator, return
     {
       var operator-grapheme?/eax: boolean <- operator-grapheme? g
       compare operator-grapheme?, 0/false
       break-if-!=
-      trace-text trace, "read", "stop"
+      trace-text trace, "tokenize", "stop"
       break $next-operator-token:loop
     }
     var g/eax: grapheme <- read-from-gap-buffer in
@@ -396,11 +400,11 @@ fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (a
   write stream, "=> "
   rewind-stream out
   write-stream stream, out
-  trace trace, "read", stream
+  trace trace, "tokenize", stream
 }
 
 fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
-  trace-text trace, "read", "looking for a number"
+  trace-text trace, "tokenize", "looking for a number"
   trace-lower trace
   $next-number-token:loop: {
     var done?/eax: boolean <- gap-buffer-scan-done? in
@@ -413,14 +417,14 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
       write stream, "next: "
       var gval/eax: int <- copy g
       write-int32-hex stream, gval
-      trace trace, "read", stream
+      trace trace, "tokenize", stream
     }
     # if not symbol grapheme, return
     {
       var symbol-grapheme?/eax: boolean <- symbol-grapheme? g
       compare symbol-grapheme?, 0/false
       break-if-!=
-      trace-text trace, "read", "stop"
+      trace-text trace, "tokenize", "stop"
       break $next-number-token:loop
     }
     # if not digit grapheme, abort
@@ -431,7 +435,7 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
       error trace, "invalid number"
       return
     }
-    trace-text trace, "read", "append"
+    trace-text trace, "tokenize", "append"
     var g/eax: grapheme <- read-from-gap-buffer in
     write-grapheme out, g
     loop
@@ -440,7 +444,7 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
 }
 
 fn next-stream-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
-  trace-text trace, "read", "stream"
+  trace-text trace, "tokenize", "stream"
   {
     var empty?/eax: boolean <- gap-buffer-scan-done? in
     compare empty?, 0/false
@@ -455,27 +459,27 @@ fn next-stream-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     write-grapheme out, g
     loop
   }
-  var stream-storage: (stream byte 0x40)
+  var stream-storage: (stream byte 0x400)  # max-definition-size
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, "=> "
   rewind-stream out
   write-stream stream, out
-  trace trace, "read", stream
+  trace trace, "tokenize", stream
 }
 
 fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) {
-  trace-text trace, "read", "bracket"
+  trace-text trace, "tokenize", "bracket"
   write-grapheme out, g
   var stream-storage: (stream byte 0x40)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, "=> "
   rewind-stream out
   write-stream stream, out
-  trace trace, "read", stream
+  trace trace, "tokenize", stream
 }
 
 fn rest-of-line in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
-  trace-text trace, "read", "comment"
+  trace-text trace, "tokenize", "comment"
   {
     var empty?/eax: boolean <- gap-buffer-scan-done? in
     compare empty?, 0/false
@@ -494,7 +498,7 @@ fn rest-of-line in: (addr gap-buffer), out: (addr stream byte), trace: (addr tra
   write stream, "=> "
   rewind-stream out
   write-stream stream, out
-  trace trace, "read", stream
+  trace trace, "tokenize", stream
 }
 
 fn symbol-grapheme? g: grapheme -> _/eax: boolean {
