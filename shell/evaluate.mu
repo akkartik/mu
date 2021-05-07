@@ -135,6 +135,20 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     trace-higher trace
     return
   }
+  $evaluate:literal-macro: {
+    # trees starting with "litmac" are literals
+    var expr/esi: (addr cell) <- copy in
+    var in/edx: (addr cell) <- copy in
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var first/eax: (addr cell) <- lookup *first-ah
+    var litmac?/eax: boolean <- litmac? first
+    compare litmac?, 0/false
+    break-if-=
+    trace-text trace, "eval", "literal macro"
+    copy-object _in-ah, _out-ah
+    trace-higher trace
+    return
+  }
   $evaluate:anonymous-function: {
     # trees starting with "fn" are anonymous functions
     var expr/esi: (addr cell) <- copy in
@@ -1202,6 +1216,20 @@ fn litfn? _x: (addr cell) -> _/eax: boolean {
   var contents-ah/eax: (addr handle stream byte) <- get x, text-data
   var contents/eax: (addr stream byte) <- lookup *contents-ah
   var result/eax: boolean <- stream-data-equal? contents, "litfn"
+  return result
+}
+
+fn litmac? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 2/symbol
+  {
+    break-if-=
+    return 0/false
+  }
+  var contents-ah/eax: (addr handle stream byte) <- get x, text-data
+  var contents/eax: (addr stream byte) <- lookup *contents-ah
+  var result/eax: boolean <- stream-data-equal? contents, "litmac"
   return result
 }
 
