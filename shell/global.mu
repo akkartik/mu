@@ -35,6 +35,7 @@ fn initialize-globals _self: (addr global-table) {
   append-primitive self, "="
   append-primitive self, "no"
   append-primitive self, "not"
+  append-primitive self, "dbg"
   # for pairs
   append-primitive self, "car"
   append-primitive self, "cdr"
@@ -605,6 +606,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare not?, 0/false
     break-if-=
     apply-not args-ah, out, trace
+    return
+  }
+  {
+    var debug?/eax: boolean <- string-equal? f-name, "dbg"
+    compare debug?, 0/false
+    break-if-=
+    apply-debug args-ah, out, trace
     return
   }
   {
@@ -1179,6 +1187,30 @@ fn apply-not _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
     return
   }
   new-integer out, 1
+}
+
+fn apply-debug _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply debug"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "not needs 1 arg but got 0"
+    return
+  }
+  # dump args->left uglily to screen and wait for a keypress
+  var first-ah/eax: (addr handle cell) <- get args, left
+  dump-cell-from-cursor-over-full-screen first-ah
+  {
+    var foo/eax: byte <- read-key 0/keyboard
+    compare foo, 0
+    loop-if-=
+  }
+  # return nothing
 }
 
 fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
