@@ -68,27 +68,26 @@
                x        y
                (+ x px) (+ y px) 15)
     (set x (+ x (* px 2))))))])
-  (brcircle . [(def brcircle (fn (screen cx cy r color)
-  ((fn (x y err continue)
-     (while continue
-       (pixel screen (- cx x) (+ cy y) color)
-       (pixel screen (- cx y) (- cy x) color)
-       (pixel screen (+ cx x) (- cy y) color)
-       (pixel screen (+ cx y) (+ cy x) color)
-       (set r err)
-       (if (<= r y)
-         (set err (+ err (+ 1 (* 2 (set y (+ y 1))))))
-         ())
-       (if (or (> r x) (> err y))
-         (set err (+ err (+ 1 (* 2 (set x (+ x 1))))))
-         ())
-       (set continue (< x 0))
-       ))
-    (- 0 r)
-    0
-    (- 2 (* 2 r))
-    1
-   )))])
+  (brcircle . [(def brcircle (fn (screen cx cy r clr)
+  (let x (- 0 r)
+  (let y 0
+  (let err (- 2 (* 2 r))
+  (let continue 1
+  (while continue
+    (pixel screen (- cx x) (+ cy y) clr)
+    (pixel screen (- cx y) (- cy x) clr)
+    (pixel screen (+ cx x) (- cy y) clr)
+    (pixel screen (+ cx y) (+ cy x) clr)
+    (set r err)
+    (when (<= r y)
+      (set err
+        (+ err
+           (+ 1 (* 2 (set y (+ y 1)))))))
+    (when (or (> r x) (> err y))
+      (set err
+        (+ err
+           (+ 1 (* 2 (set x (+ x 1)))))))
+    (set continue (< x 0)))))))))])
   (main . [(def main (fn (screen keyboard)
   (chessboard screen 16)))])
   ))
