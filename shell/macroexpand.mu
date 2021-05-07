@@ -122,7 +122,16 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
-  # TODO: expand within backquotes
+  $macroexpand-iter:backquote: {
+    # nested backquote not supported for now
+    var backquote?/eax: boolean <- symbol-equal? first, "`"
+    compare backquote?, 0/false
+    break-if-=
+    #
+    error trace, "nested backquote not supported yet"
+    trace-higher trace
+    return 0/false
+  }
   $macroexpand-iter:def: {
     # trees starting with "def" define globals
     var def?/eax: boolean <- symbol-equal? first, "def"
@@ -311,3 +320,73 @@ fn test-macroexpand-inside-fn-call {
   var assertion/eax: boolean <- cell-isomorphic? result, expected, 0/no-trace
   check assertion, "F - test-macroexpand-inside-fn-call"
 }
+
+fn pending-test-macroexpand-inside-backquote-unquote {
+  var globals-storage: global-table
+  var globals/edx: (addr global-table) <- address globals-storage
+  initialize-globals globals
+  # new macro: m
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
+  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  # invoke macro
+  initialize-sandbox-with sandbox, "`(print [result is ] ,(m 3 4)))"
+  var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
+  var gap/eax: (addr gap-buffer) <- lookup *gap-ah
+  var result-h: (handle cell)
+  var result-ah/ebx: (addr handle cell) <- address result-h
+  read-cell gap, result-ah, 0/no-trace
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, 0/no-trace
+  dump-cell-from-cursor-over-full-screen result-ah
+  var _result/eax: (addr cell) <- lookup *result-ah
+  var result/edi: (addr cell) <- copy _result
+  # expected
+  initialize-sandbox-with sandbox, "`(print [result is ] ,(+ 3 4)))"
+  var expected-gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
+  var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
+  var expected-h: (handle cell)
+  var expected-ah/ecx: (addr handle cell) <- address expected-h
+  read-cell expected-gap, expected-ah, 0/no-trace
+  dump-cell-from-cursor-over-full-screen expected-ah
+  var expected/eax: (addr cell) <- lookup *expected-ah
+  #
+  var assertion/eax: boolean <- cell-isomorphic? result, expected, 0/no-trace
+  check assertion, "F - test-macroexpand-inside-backquote-unquote"
+}
+
+fn pending-test-macroexpand-inside-nested-backquote-unquote {
+  var globals-storage: global-table
+  var globals/edx: (addr global-table) <- address globals-storage
+  initialize-globals globals
+  # new macro: m
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
+  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  # invoke macro
+  initialize-sandbox-with sandbox, "`(a ,(m 3 4) `(b ,(m 3 4) ,,(m 3 4)))"
+  var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
+  var gap/eax: (addr gap-buffer) <- lookup *gap-ah
+  var result-h: (handle cell)
+  var result-ah/ebx: (addr handle cell) <- address result-h
+  read-cell gap, result-ah, 0/no-trace
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, 0/no-trace
+  dump-cell-from-cursor-over-full-screen result-ah
+  var _result/eax: (addr cell) <- lookup *result-ah
+  var result/edi: (addr cell) <- copy _result
+  # expected
+  initialize-sandbox-with sandbox, "`(a ,(+ 3 4) `(b ,(m 3 4) ,,(+ 3 4)))"
+  var expected-gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
+  var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
+  var expected-h: (handle cell)
+  var expected-ah/ecx: (addr handle cell) <- address expected-h
+  read-cell expected-gap, expected-ah, 0/no-trace
+  dump-cell-from-cursor-over-full-screen expected-ah
+  var expected/eax: (addr cell) <- lookup *expected-ah
+  #
+  var assertion/eax: boolean <- cell-isomorphic? result, expected, 0/no-trace
+  check assertion, "F - test-macroexpand-inside-nested-backquote-unquote"
+}
+
+# TODO: unquote-splice, nested and unnested

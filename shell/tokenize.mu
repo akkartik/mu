@@ -9,19 +9,16 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
   var token-storage: cell
   var token/edx: (addr cell) <- address token-storage
   {
-#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "a", 7/fg 0/bg
     skip-whitespace-from-gap-buffer in
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
-#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "b", 7/fg 0/bg
     # initialize token data each iteration to avoid aliasing
     var dest-ah/eax: (addr handle stream byte) <- get token, text-data
+    # I'm allocating 1KB for every. single. token. Just because a whole definition needs to fit in a string sometimes. Absolutely bonkers.
     populate-stream dest-ah, 0x400/max-definition-size
     #
-#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "c", 7/fg 0/bg
     next-token in, token, trace
-#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "d", 7/fg 0/bg
     var skip?/eax: boolean <- comment-token? token
     compare skip?, 0/false
     loop-if-!=
@@ -31,9 +28,7 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
       break-if-=
       return
     }
-#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "y", 7/fg 0/bg
     write-to-stream out, token  # shallow-copy text-data
-#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "z", 7/fg 0/bg
     loop
   }
   trace-higher trace
@@ -319,6 +314,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       }
       break $next-token:body
     }
+    abort "unknown token type"
   }
   trace-higher trace
   var stream-storage: (stream byte 0x400)  # maximum possible token size (next-stream-token)
