@@ -11,6 +11,12 @@ type global-table {
 
 fn initialize-globals _self: (addr global-table) {
   var self/esi: (addr global-table) <- copy _self
+  compare self, 0
+  {
+    break-if-!=
+    abort "initialize globals"
+    return
+  }
   var data-ah/eax: (addr handle array global) <- get self, data
   populate data-ah, 0x40
   # for numbers
@@ -85,6 +91,12 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
 
 fn write-globals out: (addr stream byte), _self: (addr global-table) {
   var self/esi: (addr global-table) <- copy _self
+  compare self, 0
+  {
+    break-if-!=
+    abort "write globals"
+    return
+  }
   write out, "  (globals . (\n"
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
@@ -127,6 +139,12 @@ fn write-globals out: (addr stream byte), _self: (addr global-table) {
 fn render-globals screen: (addr screen), _self: (addr global-table) {
   clear-rect screen, 0/xmin, 0/ymin, 0x55/xmax, 0x2f/ymax=screen-height-without-menu, 0xdc/bg=green-bg
   var self/esi: (addr global-table) <- copy _self
+  compare self, 0
+  {
+    break-if-!=
+    abort "render globals"
+    return
+  }
   # render primitives
   render-primitives screen, 1/xmin=padding-left, 0x55/xmax, 0x2f/ymax
   var data-ah/eax: (addr handle array global) <- get self, data
@@ -269,6 +287,12 @@ fn primitive-global? _x: (addr global) -> _/eax: boolean {
 
 fn append-primitive _self: (addr global-table), name: (addr array byte) {
   var self/esi: (addr global-table) <- copy _self
+  compare self, 0
+  {
+    break-if-!=
+    abort "append primitive"
+    return
+  }
   var final-index-addr/ecx: (addr int) <- get self, final-index
   increment *final-index-addr
   var curr-index/ecx: int <- copy *final-index-addr
@@ -284,6 +308,12 @@ fn append-primitive _self: (addr global-table), name: (addr array byte) {
 
 fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {
   var self/esi: (addr global-table) <- copy _self
+  compare self, 0
+  {
+    break-if-!=
+    abort "assign global"
+    return
+  }
   var curr-index/ecx: int <- find-symbol-name-in-globals self, name
   {
     compare curr-index, -1/not-found
@@ -468,6 +498,12 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
   var f-index-a/ecx: (addr int) <- get f, index-data
   var f-index/ecx: int <- copy *f-index-a
   var globals/eax: (addr global-table) <- copy _globals
+  compare globals, 0
+  {
+    break-if-!=
+    abort "apply primitive"
+    return
+  }
   var global-data-ah/eax: (addr handle array global) <- get globals, data
   var global-data/eax: (addr array global) <- lookup *global-data-ah
   var f-offset/ecx: (offset global) <- compute-offset global-data, f-index
@@ -1919,6 +1955,12 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _definition-a
   }
   # stash 'gap' to it
   var globals/eax: (addr global-table) <- copy _globals
+  compare globals, 0
+  {
+    break-if-!=
+    abort "stash to globals"
+    return
+  }
   var global-data-ah/eax: (addr handle array global) <- get globals, data
   var global-data/eax: (addr array global) <- lookup *global-data-ah
   var offset/ebx: (offset global) <- compute-offset global-data, index
@@ -1975,6 +2017,12 @@ fn move-gap-buffer-to-global _globals: (addr global-table), _definition-ah: (add
   }
   # move 'gap' to it
   var globals/eax: (addr global-table) <- copy _globals
+  compare globals, 0
+  {
+    break-if-!=
+    abort "move to globals"
+    return
+  }
   var global-data-ah/eax: (addr handle array global) <- get globals, data
   var global-data/eax: (addr array global) <- lookup *global-data-ah
   var offset/ebx: (offset global) <- compute-offset global-data, index
