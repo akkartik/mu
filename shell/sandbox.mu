@@ -609,16 +609,14 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
     break-if-=
     return
   }
-  var macroexpand-result-h: (handle cell)
-  var macroexpand-result-ah/edx: (addr handle cell) <- address macroexpand-result-h
-  macroexpand read-result-ah, macroexpand-result-ah, globals, trace
+  macroexpand read-result-ah, globals, trace
   var nil-h: (handle cell)
   var nil-ah/eax: (addr handle cell) <- address nil-h
   allocate-pair nil-ah
   var eval-result-h: (handle cell)
   var eval-result-ah/edi: (addr handle cell) <- address eval-result-h
   debug-print "^", 4/fg, 0xc5/bg=blue-bg
-  evaluate macroexpand-result-ah, eval-result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, 1/call-number
+  evaluate read-result-ah, eval-result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, 1/call-number
   debug-print "$", 4/fg, 0xc5/bg=blue-bg
   var error?/eax: boolean <- has-errors? trace
   {
