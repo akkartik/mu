@@ -472,6 +472,15 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     increment call-number
     evaluate left-ah, left-out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "B", 4/fg, 0xc5/bg=blue-bg
+    # a trip wire in case we're running without a trace (e.g. when loading the initial state from disk)
+    {
+      var left-out/eax: (addr cell) <- lookup *left-out-ah
+      compare left-out, 0
+      {
+        break-if-!=
+        abort "unknown variable"
+      }
+    }
     #
     curr-out-ah <- get curr-out, right
     var right-ah/eax: (addr handle cell) <- get curr, right

@@ -63,6 +63,7 @@ fn initialize-globals _self: (addr global-table) {
 }
 
 fn load-globals in: (addr handle cell), self: (addr global-table) {
+#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "a", 2/fg 0/bg
   var remaining-ah/esi: (addr handle cell) <- copy in
   {
     var _remaining/eax: (addr cell) <- lookup *remaining-ah
@@ -70,6 +71,7 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     var done?/eax: boolean <- nil? remaining
     compare done?, 0/false
     break-if-!=
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "b", 2/fg 0/bg
     var curr-ah/eax: (addr handle cell) <- get remaining, left
     var curr/eax: (addr cell) <- lookup *curr-ah
     remaining-ah <- get remaining, right
@@ -83,10 +85,14 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     allocate value-gap-buffer-ah
     var value-gap-buffer/eax: (addr gap-buffer) <- lookup *value-gap-buffer-ah
     initialize-gap-buffer value-gap-buffer, 0x1000/4KB
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "w", 2/fg 0/bg
     load-gap-buffer-from-stream value-gap-buffer, value-data
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "x", 2/fg 0/bg
     read-evaluate-and-move-to-globals value-gap-buffer-ah, self
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y", 2/fg 0/bg
     loop
   }
+#?   abort "zz"
 }
 
 fn write-globals out: (addr stream byte), _self: (addr global-table) {

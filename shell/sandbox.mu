@@ -639,6 +639,7 @@ fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: 
   var read-result-h: (handle cell)
   var read-result-ah/esi: (addr handle cell) <- address read-result-h
   read-cell in, read-result-ah, 0/no-trace
+  macroexpand read-result-ah, globals, 0/no-trace
   var nil-storage: (handle cell)
   var nil-ah/eax: (addr handle cell) <- address nil-storage
   allocate-pair nil-ah
