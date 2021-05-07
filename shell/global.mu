@@ -938,7 +938,7 @@ fn apply-square-root _args-ah: (addr handle cell), out: (addr handle cell), trac
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "sqrt needs 1 args but got 0"
+    error trace, "sqrt needs 1 arg but got 0"
     return
   }
   # args->left->value
@@ -967,7 +967,7 @@ fn apply-abs _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "abs needs 1 args but got 0"
+    error trace, "abs needs 1 arg but got 0"
     return
   }
   # args->left->value
@@ -1004,7 +1004,7 @@ fn apply-sgn _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "sgn needs 1 args but got 0"
+    error trace, "sgn needs 1 arg but got 0"
     return
   }
   # args->left->value
@@ -1050,7 +1050,7 @@ fn apply-car _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "car needs 1 args but got 0"
+    error trace, "car needs 1 arg but got 0"
     return
   }
   # args->left
@@ -1078,7 +1078,7 @@ fn apply-cdr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "cdr needs 1 args but got 0"
+    error trace, "cdr needs 1 arg but got 0"
     return
   }
   # args->left
@@ -1164,7 +1164,7 @@ fn apply-not _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "not needs 1 args but got 0"
+    error trace, "not needs 1 arg but got 0"
     return
   }
   # args->left
