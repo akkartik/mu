@@ -53,7 +53,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
   {
     compare trace, 0
     break-if-=
-    var stream-storage: (stream byte 0x200)
+    var stream-storage: (stream byte 0x300)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "evaluate "
     print-cell in-ah, stream, 0/no-trace
