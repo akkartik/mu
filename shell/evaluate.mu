@@ -482,7 +482,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       compare left-out, 0
       {
         break-if-!=
-        abort "error in eval-list"
+        abort "there was some error (likely in syntax): eval-list"
       }
     }
     #
