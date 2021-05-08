@@ -1,7 +1,7 @@
 # Mandelbrot set
 #
 # To build:
-#   $ ./translate life.mu
+#   $ ./translate mandelbrot.mu
 # To run:
 #   $ qemu-system-i386 code.img
 
