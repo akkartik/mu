@@ -2,10 +2,11 @@
   (globals . (
     (mac . [(def mac (litmac litfn () (name params . body)
   `(def ,name (litmac litfn () ,params ,@body))))])
-    (when . [(mac when (cond body)
-  `(if ,cond ,body ()))])
+    (do . [(mac do body `((fn () ,@body)))])
     (let . [(mac let (var val . body)
   `((fn (,var) ,@body) ,val))])
+    (when . [(mac when (cond . body)
+  `(if ,cond (do ,@body) ()))])
     (hline1 . [(def hline1 (fn (screen y x xmax color)
   (while (< x xmax)
     (pixel screen x y color)
