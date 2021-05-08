@@ -200,7 +200,9 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     break-if-=
     #
     trace-text trace, "eval", "backquote"
+    debug-print "`(", 7/fg, 0/bg
     evaluate-backquote rest-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    debug-print ")", 7/fg, 0/bg
     trace-higher trace
     return
   }
@@ -1413,6 +1415,7 @@ fn test-evaluate-backquote {
 
 fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # stack overflow?   # disable when enabling Really-debug-print
+#?   dump-cell-from-cursor-over-full-screen _in-ah
   check-stack
   {
     var screen-cell/eax: (addr handle cell) <- copy screen-cell
@@ -1457,12 +1460,14 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     return
   }
   # 'in' is a pair
+  debug-print "()", 4/fg, 0/bg
   var in-ah/esi: (addr handle cell) <- copy _in-ah
   var _in/eax: (addr cell) <- lookup *in-ah
   var in/ebx: (addr cell) <- copy _in
   var in-left-ah/ecx: (addr handle cell) <- get in, left
+  debug-print "10", 4/fg, 0/bg
   # check for unquote
-  {
+  $macroexpand-iter:unquote: {
     var in-left/eax: (addr cell) <- lookup *in-left-ah
     var unquote?/eax: boolean <- symbol-equal? in-left, ","
     compare unquote?, 0/false
@@ -1470,20 +1475,39 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     trace-text trace, "eval", "unquote"
     var rest-ah/eax: (addr handle cell) <- get in, right
     increment call-number
+    debug-print ",", 3/fg, 0/bg
     evaluate rest-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    debug-print ",)", 3/fg, 0/bg
     return
   }
   # check for unquote-splice in in-left
+  debug-print "11", 4/fg, 0/bg
   var out-ah/edi: (addr handle cell) <- copy _out-ah
-  {
+  $macroexpand-iter:unquote-splice: {
+#?     dump-cell-from-cursor-over-full-screen in-left-ah
     var in-left/eax: (addr cell) <- lookup *in-left-ah
     {
+      debug-print "12", 4/fg, 0/bg
+      {
+        var in-left-is-nil?/eax: boolean <- nil? in-left
+        compare in-left-is-nil?, 0/false
+      }
+      break-if-!= $macroexpand-iter:unquote-splice
+      var in-left-type/ecx: (addr int) <- get in-left, type
+      debug-print "13", 4/fg, 0/bg
+      compare *in-left-type, 0/pair
+      break-if-!= $macroexpand-iter:unquote-splice
       var in-left-left-ah/eax: (addr handle cell) <- get in-left, left
+      debug-print "14", 4/fg, 0/bg
       var in-left-left/eax: (addr cell) <- lookup *in-left-left-ah
+      debug-print "15", 4/fg, 0/bg
+      var in-left-left-type/ecx: (addr int) <- get in-left-left, type
       var left-is-unquote-splice?/eax: boolean <- symbol-equal? in-left-left, ",@"
+      debug-print "16", 4/fg, 0/bg
       compare left-is-unquote-splice?, 0/false
     }
     break-if-=
+    debug-print "17", 4/fg, 0/bg
     trace-text trace, "eval", "unquote-splice"
     var in-unquote-payload-ah/eax: (addr handle cell) <- get in-left, right
     increment call-number
@@ -1504,16 +1528,23 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     evaluate-backquote in-right-ah, out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     return
   }
+  debug-print "19", 4/fg, 0/bg
   # otherwise continue copying
   trace-text trace, "eval", "backquote: copy"
   var out-ah/edi: (addr handle cell) <- copy _out-ah
   allocate-pair out-ah
+  debug-print "20", 7/fg, 0/bg
+#?   dump-cell-from-cursor-over-full-screen out-ah
   var out/eax: (addr cell) <- lookup *out-ah
   var out-left-ah/edx: (addr handle cell) <- get out, left
+  debug-print "`(l", 3/fg, 0/bg
   evaluate-backquote in-left-ah, out-left-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+  debug-print "`r)", 3/fg, 0/bg
   var in-right-ah/ecx: (addr handle cell) <- get in, right
   var out-right-ah/edx: (addr handle cell) <- get out, right
+  debug-print "`r(", 3/fg, 0/bg
   evaluate-backquote in-right-ah, out-right-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+  debug-print "`r)", 3/fg, 0/bg
 }
 
 fn test-evaluate-backquote-list {

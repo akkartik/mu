@@ -191,6 +191,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     # definition is a macro
     var macro-definition-ah/eax: (addr handle cell) <- get definition, right
     # TODO: check car(macro-definition) is litfn
+#?     turn-on-debug-print
     apply macro-definition-ah, rest-ah, expr-ah, globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
     return 1/true
   }
