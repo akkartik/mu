@@ -6879,16 +6879,20 @@ test-convert-function-and-type-definition:
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-function-and-type-definition/6")
     (check-next-stream-line-equal _test-output-stream "    8b/-> *(ebp+0x00000008) 0x00000000/r32"  "F - test-convert-function-and-type-definition/7")
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-and-type-definition/8")
-    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + 0x00000000) 0x00000001/r32"  "F - test-convert-function-and-type-definition/9")
-    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + 0x00000004) 0x00000001/r32"  "F - test-convert-function-and-type-definition/11")
-    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-and-type-definition/13")
-    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax" "F - test-convert-function-and-type-definition/14")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-and-type-definition/15")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-and-type-definition/16")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-and-type-definition/17")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-and-type-definition/18")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-and-type-definition/19")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-and-type-definition/20")
+    (check-next-stream-line-equal _test-output-stream "    81 7/subop/compare %eax 0/imm32"  "F - test-convert-function-and-type-definition/9")
+    (check-next-stream-line-equal _test-output-stream "    0f 84/jump-if-= __mu-abort-null-get-base-address/disp32"  "F - test-convert-function-and-type-definition/10")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + 0x00000000) 0x00000001/r32"  "F - test-convert-function-and-type-definition/11")
+    (check-next-stream-line-equal _test-output-stream "    81 7/subop/compare %eax 0/imm32"  "F - test-convert-function-and-type-definition/12")
+    (check-next-stream-line-equal _test-output-stream "    0f 84/jump-if-= __mu-abort-null-get-base-address/disp32"  "F - test-convert-function-and-type-definition/13")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + 0x00000004) 0x00000001/r32"  "F - test-convert-function-and-type-definition/14")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-and-type-definition/15")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax" "F - test-convert-function-and-type-definition/16")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-and-type-definition/17")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-and-type-definition/18")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-and-type-definition/19")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-and-type-definition/20")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-and-type-definition/21")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-and-type-definition/22")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -29754,17 +29758,35 @@ translate-mu-get-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     50/push-eax
     51/push-ecx
     52/push-edx
-    #
-    (emit-indent *(ebp+8) *Curr-block-depth)
-    (write-buffered *(ebp+8) "8d/copy-address ")
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
+    # var base/eax: (addr var) = stmt->inouts->value
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    # if base is in a register, insert a null check
+    81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
+    {
+      0f 84/jump-if-= break/disp32
+$translate-mu-get-stmt:emit-null-check-for-register-input:
+      # emit "81 7/subop/compare %" base->register " 0/imm32\n"
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "81 7/subop/compare %")
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      (write-buffered *(ebp+8) %eax)
+      (write-buffered *(ebp+8) " 0/imm32\n")
+      #
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "0f 84/jump-if-= __mu-abort-null-get-base-address/disp32\n")
+    }
     # var offset/edx: int = get offset of stmt
     (mu-get-offset %ecx)  # => eax
     89/<- %edx 0/r32/eax
     # var base/eax: (addr var) = stmt->inouts->value
     (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "8d/copy-address ")
     # if base is in a register
     81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
     {

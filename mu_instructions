@@ -374,9 +374,13 @@ If a record (product) type T was defined to have elements a, b, c, ... of
 types T_a, T_b, T_c, ..., then accessing one of those elements f of type T_f:
 
 var/reg: (addr T_f) <- get var2/reg2: (addr T), f
-  => "8d/copy-address *(" reg2 "+" offset(f) ") " reg "/r32"
+  => "81 7/subop/compare %" reg2 " 0/imm32"
+     "0f 84/jump-if-= __mu-abort-null-get-base-address/disp32"
+     "8d/copy-address *(" reg2 "+" offset(f) ") " reg "/r32"
 var/reg: (addr T_f) <- get var2: T, f
   => "8d/copy-address *(ebp+" var2.stack-offset "+" offset(f) ") " reg "/r32"
+
+When the base is an address we perform a null check.
 
 # Allocating memory
 
