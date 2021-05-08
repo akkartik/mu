@@ -85,6 +85,14 @@ __check-mu-array-bounds:overflow:
 #            # actually save the index addr in reg
 #            "8d/copy-address *(" rega "+" regi "<<" log2(size-of(T)) "+4) " reg "/r32"
 
+__mu-abort-null-index-base-address:
+    (write-buffered Stderr "null address in 'index'\n")
+    (flush Stderr)
+    # exit(1)
+    bb/copy-to-ebx 1/imm32
+    e8/call syscall_exit/disp32
+    # never gets here
+
 __mu-abort-null-get-base-address:
     (write-buffered Stderr "null address in 'get'\n")
     (flush Stderr)

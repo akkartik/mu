@@ -318,13 +318,17 @@ var/reg: (addr T) <- address var2: T
 
 var/reg: (addr T) <- index arr/rega: (addr array T), idx/regi: int
   | if size-of(T) is 1, 2, 4 or 8
-      => "(__check-mu-array-bounds *" rega " %" regi " " size-of(T) ")"
+      => "81 7/subop/compare %" rega " 0/imm32"
+         "0f 84/jump-if-= __mu-abort-null-index-base-address/disp32"
+         "(__check-mu-array-bounds *" rega " %" regi " " size-of(T) ")"
          "8d/copy-address *(" rega "+" regi "<<" log2(size-of(T)) "+4) " reg "/r32"
 var/reg: (addr T) <- index arr: (array T len), idx/regi: int
   => "(__check-mu-array-bounds *(ebp+" arr.stack-offset ") %" regi " " size-of(T) ")"
      "8d/copy-address *(ebp+" regi "<<" log2(size-of(T)) "+" (arr.stack-offset + 4) ") " reg "/r32"
 var/reg: (addr T) <- index arr/rega: (addr array T), n
-  => "(__check-mu-array-bounds *" rega " " n " " size-of(T) ")"
+  => "81 7/subop/compare %" rega " 0/imm32"
+     "0f 84/jump-if-= __mu-abort-null-index-base-address/disp32"
+     "(__check-mu-array-bounds *" rega " " n " " size-of(T) ")"
      "8d/copy-address *(" rega "+" (n*size-of(T)+4) ") " reg "/r32"
 var/reg: (addr T) <- index arr: (array T len), n
   => "(__check-mu-array-bounds *(ebp+" arr.stack-offset ") " n " " size-of(T) ")"
@@ -335,7 +339,9 @@ var/reg: (offset T) <- compute-offset arr: (addr array T), idx/regi: int  # arr 
 var/reg: (offset T) <- compute-offset arr: (addr array T), idx: int       # arr can be in reg or mem
   => "69/multiply *(ebp+" idx.stack-offset ") " size-of(T) "/imm32 " reg "/r32"
 var/reg: (addr T) <- index arr/rega: (addr array T), o/rego: (offset T)
-  => "(__check-mu-array-bounds %" rega " %" rego " 1 \"" function-name "\")"
+  => "81 7/subop/compare %" rega " 0/imm32"
+     "0f 84/jump-if-= __mu-abort-null-index-base-address/disp32"
+     "(__check-mu-array-bounds %" rega " %" rego " 1 \"" function-name "\")"
      "8d/copy-address *(" rega "+" rego "+4) " reg "/r32"
 
 Computing the length of an array is complex.
