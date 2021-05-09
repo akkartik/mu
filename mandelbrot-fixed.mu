@@ -7,7 +7,7 @@
 #   $ ./translate mandelbrot-fixed.mu
 # Build on other platforms (slow):
 #   $ ./translate_emulated mandelbrot-fixed.mu
-# To run:
+# Run:
 #   $ qemu-system-i386 code.img
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
