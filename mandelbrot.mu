@@ -21,18 +21,18 @@ fn mandelbrot screen: (addr screen) {
   {
     compare y, height
     break-if->=
-#?     var new-x/eax: int <- render-float-decimal 0/screen, seed-y, 3, 0/x, 0/y, 7/fg, 0/bg
-    var seed-y/xmm1: float <- mandelbrot-min-y y, width, height
+#?     var new-x/eax: int <- render-float-decimal 0/screen, imaginary, 3, 0/x, 0/y, 7/fg, 0/bg
+    var imaginary/xmm1: float <- mandelbrot-min-y y, width, height
     var x/edx: int <- copy 0
     {
       compare x, width
       break-if->=
-      var seed-x/xmm0: float <- mandelbrot-min-x x, width
+      var real/xmm0: float <- mandelbrot-min-x x, width
       var new-x/eax: int <- copy 0
-      new-x <- render-float-decimal 0/screen, seed-x, 3, new-x, 0/y, 7/fg, 0/bg
+      new-x <- render-float-decimal 0/screen, real, 3, new-x, 0/y, 7/fg, 0/bg
       new-x <- increment
-      new-x <- render-float-decimal 0/screen, seed-y, 3, new-x, 0/y, 7/fg, 0/bg
-      var iterations/eax: int <- mandelbrot-pixel seed-x, seed-y, 0x400/max
+      new-x <- render-float-decimal 0/screen, imaginary, 3, new-x, 0/y, 7/fg, 0/bg
+      var iterations/eax: int <- mandelbrot-pixel real, imaginary, 0x400/max
       set-cursor-position 0/screen 0/x 1/y
       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, iterations, 7/fg, 0/bg
       compare iterations, 0x400/max
@@ -53,7 +53,7 @@ fn mandelbrot screen: (addr screen) {
   }
 }
 
-fn mandelbrot-pixel seed-x: float, seed-y: float, max: int -> _/eax: int {
+fn mandelbrot-pixel real: float, imaginary: float, max: int -> _/eax: int {
   var zero: float
   var x/xmm0: float <- copy zero
   var y/xmm1: float <- copy zero
@@ -64,8 +64,8 @@ fn mandelbrot-pixel seed-x: float, seed-y: float, max: int -> _/eax: int {
     break-if-!=
     compare iterations, max
     break-if->=
-    var newx/xmm2: float <- mandelbrot-x x, y, seed-x
-    var newy/xmm3: float <- mandelbrot-y x, y, seed-y
+    var newx/xmm2: float <- mandelbrot-x x, y, real
+    var newy/xmm3: float <- mandelbrot-y x, y, imaginary
     x <- copy newx
     y <- copy newy
     iterations <- increment
@@ -93,25 +93,25 @@ fn mandelbrot-done? x: float, y: float -> _/eax: boolean {
   return 1/true
 }
 
-fn mandelbrot-x x: float, y: float, seed-x: float -> _/xmm2: float {
-  # x*x - y*y + seed-x
+fn mandelbrot-x x: float, y: float, real: float -> _/xmm2: float {
+  # x*x - y*y + real
   var x2/xmm0: float <- copy x
   x2 <- multiply x
   var y2/xmm1: float <- copy y
   y2 <- multiply y
   var result/xmm0: float <- copy x2
   result <- subtract y2
-  result <- add seed-x
+  result <- add real
   return result
 }
 
-fn mandelbrot-y x: float, y: float, seed-y: float -> _/xmm3: float {
-  # 2*x*y + seed-y
+fn mandelbrot-y x: float, y: float, imaginary: float -> _/xmm3: float {
+  # 2*x*y + imaginary
   var two/eax: int <- copy 2
   var result/xmm0: float <- convert two
   result <- multiply x
   result <- multiply y
-  result <- add seed-y
+  result <- add imaginary
   return result
 }
 
