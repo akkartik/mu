@@ -81,9 +81,9 @@ fn test-fixed-conversion {
 
 # special routines for multiplying and dividing fixed-point numbers
 
-fn multiply-fixed a: int, b: int -> _/eax: int {
-  var result/eax: int <- copy a
-  result <- multiply b
+fn multiply-fixed a-f: int, b-f: int -> _/eax: int {
+  var result/eax: int <- copy a-f
+  result <- multiply b-f
   {
     break-if-not-overflow
     abort "multiply-fixed: overflow"
