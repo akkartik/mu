@@ -405,3 +405,27 @@ void test_jle_disp32_greater() {
   );
   CHECK_TRACE_DOESNT_CONTAIN("run: jump 5");
 }
+
+//:: jump if overflow
+
+:(before "End Initialize Op Names")
+put_new(Name_0f, "80", "jump disp32 bytes away if OF is set (jcc/jo)");
+put_new(Name_0f, "81", "jump disp32 bytes away if OF is unset (jcc/jno)");
+
+:(before "End Two-Byte Opcodes Starting With 0f")
+case 0x80: {  // jump disp8 if OF is set
+  const int32_t offset = next32();
+  if (OF) {
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    EIP += offset;
+  }
+  break;
+}
+case 0x81: {  // jump disp8 if OF is unset
+  const int32_t offset = next32();
+  if (!OF) {
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    EIP += offset;
+  }
+  break;
+}

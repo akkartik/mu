@@ -293,6 +293,31 @@ Similar float variants like `break-if-float<` are aliases for the corresponding
 `addr` equivalents. The x86 instruction set stupidly has floating-point
 operations only update a subset of flags.
 
+Four sets of conditional jumps are useful for detecting overflow.
+
+break-if-carry                    => "0f 82/jump-if-carry break/disp32"
+break-if-carry label              => "0f 82/jump-if-carry " label "/disp32"
+loop-if-carry                     => "0f 82/jump-if-carry break/disp32"
+loop-if-carry label               => "0f 82/jump-if-carry " label "/disp32"
+
+break-if-not-carry                => "0f 83/jump-if-not-carry break/disp32"
+break-if-not-carry label          => "0f 83/jump-if-not-carry " label "/disp32"
+loop-if-not-carry                 => "0f 83/jump-if-not-carry break/disp32"
+loop-if-not-carry label           => "0f 83/jump-if-not-carry " label "/disp32"
+
+break-if-overflow                 => "0f 80/jump-if-overflow break/disp32"
+break-if-overflow label           => "0f 80/jump-if-overflow " label ":break/disp32"
+loop-if-overflow                  => "0f 80/jump-if-overflow loop/disp32"
+loop-if-overflow label            => "0f 80/jump-if-overflow " label ":loop/disp32"
+
+break-if-not-overflow             => "0f 81/jump-if-not-overflow break/disp32"
+break-if-not-overflow label       => "0f 81/jump-if-not-overflow " label ":break/disp32"
+loop-if-not-overflow              => "0f 81/jump-if-not-overflow loop/disp32"
+loop-if-not-overflow label        => "0f 81/jump-if-not-overflow " label ":loop/disp32"
+
+All this relies on a convention that every `{}` block is delimited by labels
+ending in `:loop` and `:break`.
+
 ## Returns
 
 The `return` instruction cleans up variable declarations just like an unconditional

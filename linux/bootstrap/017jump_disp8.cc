@@ -405,3 +405,27 @@ void test_jle_disp8_greater() {
   );
   CHECK_TRACE_DOESNT_CONTAIN("run: jump 5");
 }
+
+//:: jump if overflow
+
+:(before "End Initialize Op Names")
+put_new(Name, "70", "jump disp8 bytes away if OF is set (jcc/jo)");
+put_new(Name, "71", "jump disp8 bytes away if OF is unset (jcc/jno)");
+
+:(before "End Single-Byte Opcodes")
+case 0x70: {  // jump disp8 if OF is set
+  const int8_t offset = static_cast<int>(next());
+  if (OF) {
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    EIP += offset;
+  }
+  break;
+}
+case 0x71: {  // jump disp8 if OF is unset
+  const int8_t offset = static_cast<int>(next());
+  if (!OF) {
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    EIP += offset;
+  }
+  break;
+}

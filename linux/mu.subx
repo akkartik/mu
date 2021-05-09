@@ -27610,9 +27610,9 @@ $emit-reverse-break:end:
 # Table from Mu branch instructions to the reverse SubX opcodes for them.
 Reverse-branch:  # (table (handle array byte) (handle array byte))
   # a table is a stream
-  0x1c0/imm32/write
+  0x240/imm32/write
   0/imm32/read
-  0x1c0/imm32/size
+  0x240/imm32/size
   # data
   0x11/imm32/alloc-id   _string-break-if-=/imm32                0x11/imm32/alloc-id   _string_0f_85_jump_label/imm32
   0x11/imm32/alloc-id   _string-loop-if-=/imm32                 0x11/imm32/alloc-id   _string_0f_85_jump_label/imm32
@@ -27642,6 +27642,14 @@ Reverse-branch:  # (table (handle array byte) (handle array byte))
   0x11/imm32/alloc-id   _string-loop-if-float<=/imm32           0x11/imm32/alloc-id   _string_0f_87_jump_label/imm32
   0x11/imm32/alloc-id   _string-break-if-float>=/imm32          0x11/imm32/alloc-id   _string_0f_82_jump_label/imm32
   0x11/imm32/alloc-id   _string-loop-if-float>=/imm32           0x11/imm32/alloc-id   _string_0f_82_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-carry/imm32            0x11/imm32/alloc-id   _string_0f_83_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-carry/imm32             0x11/imm32/alloc-id   _string_0f_83_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-not-carry/imm32        0x11/imm32/alloc-id   _string_0f_82_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-not-carry/imm32         0x11/imm32/alloc-id   _string_0f_82_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-overflow/imm32         0x11/imm32/alloc-id   _string_0f_81_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-overflow/imm32          0x11/imm32/alloc-id   _string_0f_81_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-not-overflow/imm32     0x11/imm32/alloc-id   _string_0f_80_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-not-overflow/imm32      0x11/imm32/alloc-id   _string_0f_80_jump_label/imm32
 
 == code
 
@@ -32836,6 +32844,82 @@ _Primitive-break-if->:  # (payload primitive)
     0/imm32/no-xm32
     0/imm32/no-x32
     0x11/imm32/alloc-id:fake
+    _Primitive-break-if-carry/imm32/next
+_Primitive-break-if-carry:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    _string-break-if-carry/imm32/name
+    0/imm32/no-inouts
+    0/imm32/no-inouts
+    0/imm32/no-outputs
+    0/imm32/no-outputs
+    0x11/imm32/alloc-id:fake
+    _string_0f_82_jump_break/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    0/imm32/no-xm32
+    0/imm32/no-x32
+    0x11/imm32/alloc-id:fake
+    _Primitive-break-if-not-carry/imm32/next
+_Primitive-break-if-not-carry:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    _string-break-if-not-carry/imm32/name
+    0/imm32/no-inouts
+    0/imm32/no-inouts
+    0/imm32/no-outputs
+    0/imm32/no-outputs
+    0x11/imm32/alloc-id:fake
+    _string_0f_83_jump_break/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    0/imm32/no-xm32
+    0/imm32/no-x32
+    0x11/imm32/alloc-id:fake
+    _Primitive-break-if-overflow/imm32/next
+_Primitive-break-if-overflow:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    _string-break-if-overflow/imm32/name
+    0/imm32/no-inouts
+    0/imm32/no-inouts
+    0/imm32/no-outputs
+    0/imm32/no-outputs
+    0x11/imm32/alloc-id:fake
+    _string_0f_80_jump_break/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    0/imm32/no-xm32
+    0/imm32/no-x32
+    0x11/imm32/alloc-id:fake
+    _Primitive-break-if-not-overflow/imm32/next
+_Primitive-break-if-not-overflow:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    _string-break-if-not-overflow/imm32/name
+    0/imm32/no-inouts
+    0/imm32/no-inouts
+    0/imm32/no-outputs
+    0/imm32/no-outputs
+    0x11/imm32/alloc-id:fake
+    _string_0f_81_jump_break/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    0/imm32/no-xm32
+    0/imm32/no-x32
+    0x11/imm32/alloc-id:fake
     _Primitive-break/imm32/next
 _Primitive-break:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
@@ -33037,6 +33121,82 @@ _Primitive-loop-if->:  # (payload primitive)
     0/imm32/no-outputs
     0x11/imm32/alloc-id:fake
     _string_0f_8f_jump_loop/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    0/imm32/no-xm32
+    0/imm32/no-x32
+    0x11/imm32/alloc-id:fake
+    _Primitive-loop-if-carry/imm32/next
+_Primitive-loop-if-carry:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    _string-loop-if-carry/imm32/name
+    0/imm32/no-inouts
+    0/imm32/no-inouts
+    0/imm32/no-outputs
+    0/imm32/no-outputs
+    0x11/imm32/alloc-id:fake
+    _string_0f_82_jump_loop/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    0/imm32/no-xm32
+    0/imm32/no-x32
+    0x11/imm32/alloc-id:fake
+    _Primitive-loop-if-not-carry/imm32/next
+_Primitive-loop-if-not-carry:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    _string-loop-if-not-carry/imm32/name
+    0/imm32/no-inouts
+    0/imm32/no-inouts
+    0/imm32/no-outputs
+    0/imm32/no-outputs
+    0x11/imm32/alloc-id:fake
+    _string_0f_83_jump_loop/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    0/imm32/no-xm32
+    0/imm32/no-x32
+    0x11/imm32/alloc-id:fake
+    _Primitive-loop-if-overflow/imm32/next
+_Primitive-loop-if-overflow:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    _string-loop-if-overflow/imm32/name
+    0/imm32/no-inouts
+    0/imm32/no-inouts
+    0/imm32/no-outputs
+    0/imm32/no-outputs
+    0x11/imm32/alloc-id:fake
+    _string_0f_80_jump_loop/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/no-imm8
+    0/imm32/no-disp32
+    0/imm32/no-xm32
+    0/imm32/no-x32
+    0x11/imm32/alloc-id:fake
+    _Primitive-loop-if-not-overflow/imm32/next
+_Primitive-loop-if-not-overflow:  # (payload primitive)
+    0x11/imm32/alloc-id:fake:payload
+    0x11/imm32/alloc-id:fake
+    _string-loop-if-not-overflow/imm32/name
+    0/imm32/no-inouts
+    0/imm32/no-inouts
+    0/imm32/no-outputs
+    0/imm32/no-outputs
+    0x11/imm32/alloc-id:fake
+    _string_0f_81_jump_loop/imm32/subx-name
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
@@ -33891,6 +34051,26 @@ _string-break-if-float>=:  # (payload array byte)
     # "break-if-float>="
     0x10/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x66/f 0x6c/l 0x6f/o 0x61/a 0x74/t 0x3e/> 0x3d/=
+_string-break-if-carry:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "break-if-carry"
+    0xe/imm32/size
+    0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x63/c 0x61/a 0x72/r 0x72/r 0x79/y
+_string-break-if-not-carry:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "break-if-not-carry"
+    0x12/imm32/size
+    0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6e/n 0x6f/o 0x74/t 0x2d/dash 0x63/c 0x61/a 0x72/r 0x72/r 0x79/y
+_string-break-if-overflow:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "break-if-overflow"
+    0x11/imm32/size
+    0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w
+_string-break-if-not-overflow:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "break-if-not-overflow"
+    0x15/imm32/size
+    0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6e/n 0x6f/o 0x74/t 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w
 _string-compare:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "compare"
@@ -33910,12 +34090,12 @@ _string-copy-byte:
     0x11/imm32/alloc-id:fake:payload
     # "copy-byte"
     0x9/imm32/size
-    0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/- 0x62/b 0x79/y 0x74/t 0x65/e
+    0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x62/b 0x79/y 0x74/t 0x65/e
 _string-copy-byte-to:
     0x11/imm32/alloc-id:fake:payload
     # "copy-byte-to"
     0xc/imm32/size
-    0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/- 0x62/b 0x79/y 0x74/t 0x65/e 0x2d/- 0x74/t 0x6f/o
+    0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x62/b 0x79/y 0x74/t 0x65/e 0x2d/dash 0x74/t 0x6f/o
 _string-decrement:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "decrement"
@@ -34001,6 +34181,26 @@ _string-loop-if-float>=:  # (payload array byte)
     # "loop-if-float>="
     0xf/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x66/f 0x6c/l 0x6f/o 0x61/a 0x74/t 0x3e/> 0x3d/=
+_string-loop-if-carry:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "loop-if-carry"
+    0xd/imm32/size
+    0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x63/c 0x61/a 0x72/r 0x72/r 0x79/y
+_string-loop-if-not-carry:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "loop-if-not-carry"
+    0x11/imm32/size
+    0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6e/n 0x6f/o 0x74/t 0x2d/dash 0x63/c 0x61/a 0x72/r 0x72/r 0x79/y
+_string-loop-if-overflow:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "loop-if-overflow"
+    0x10/imm32/size
+    0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w
+_string-loop-if-not-overflow:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "loop-if-not-overflow"
+    0x14/imm32/size
+    0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6e/n 0x6f/o 0x74/t 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w
 _string-multiply:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "multiply"
@@ -34045,12 +34245,12 @@ _string-square-root:
     0x11/imm32/alloc-id:fake:payload
     # "square-root"
     0xb/imm32/size
-    0x73/s 0x71/q 0x75/u 0x61/a 0x72/r 0x65/e 0x2d/- 0x72/r 0x6f/o 0x6f/o 0x74/t
+    0x73/s 0x71/q 0x75/u 0x61/a 0x72/r 0x65/e 0x2d/dash 0x72/r 0x6f/o 0x6f/o 0x74/t
 _string-inverse-square-root:
     0x11/imm32/alloc-id:fake:payload
     # "inverse-square-root"
     0x13/imm32/size
-    0x69/i 0x6e/n 0x76/v 0x65/e 0x72/r 0x73/s 0x65/e 0x2d/- 0x73/s 0x71/q 0x75/u 0x61/a 0x72/r 0x65/e 0x2d/- 0x72/r 0x6f/o 0x6f/o 0x74/t
+    0x69/i 0x6e/n 0x76/v 0x65/e 0x72/r 0x73/s 0x65/e 0x2d/dash 0x73/s 0x71/q 0x75/u 0x61/a 0x72/r 0x65/e 0x2d/dash 0x72/r 0x6f/o 0x6f/o 0x74/t
 _string-negate:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "negate"
@@ -34133,6 +34333,36 @@ _string_0d_or_with_eax:  # (payload array byte)
     # "0d/or-with-eax"
     0xe/imm32/size
     0x30/0 0x64/d 0x2f/slash 0x6f/o 0x72/r 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h 0x2d/dash 0x65/e 0x61/a 0x78/x
+_string_0f_80_jump_label:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "0f 80/jump-if-overflow"
+    0x16/imm32/size
+    0x30/0 0x66/f 0x20/space 0x38/8 0x30/0 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w
+_string_0f_80_jump_break:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "0f 80/jump-if-overflow break/disp32"
+    0x23/imm32/size
+    0x30/0 0x66/f 0x20/space 0x38/8 0x30/0 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
+_string_0f_80_jump_loop:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "0f 80/jump-if-overflow loop/disp32"
+    0x22/imm32/size
+    0x30/0 0x66/f 0x20/space 0x38/8 0x30/0 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
+_string_0f_81_jump_label:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "0f 81/jump-if-not-overflow"
+    0x1a/imm32/size
+    0x30/0 0x66/f 0x20/space 0x38/8 0x31/1 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6e/n 0x6f/o 0x74/t 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w
+_string_0f_81_jump_break:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "0f 81/jump-if-not-overflow break/disp32"
+    0x27/imm32/size
+    0x30/0 0x66/f 0x20/space 0x38/8 0x31/1 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6e/n 0x6f/o 0x74/t 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
+_string_0f_81_jump_loop:  # (payload array byte)
+    0x11/imm32/alloc-id:fake:payload
+    # "0f 81/jump-if-not-overflow loop/disp32"
+    0x26/imm32/size
+    0x30/0 0x66/f 0x20/space 0x38/8 0x31/1 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x6e/n 0x6f/o 0x74/t 0x2d/dash 0x6f/o 0x76/v 0x65/e 0x72/r 0x66/f 0x6c/l 0x6f/o 0x77/w 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
 _string_0f_82_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 82/jump-if-addr<"
@@ -34176,7 +34406,7 @@ _string_0f_84_jump_break:  # (payload array byte)
 _string_0f_84_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 84/jump-if-= loop/disp32"
-    0x1b/imm32/size
+    0x1a/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x34/4 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3d/= 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
 _string_0f_85_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
@@ -34527,12 +34757,12 @@ _string_8a_copy_byte:
     0x11/imm32/alloc-id:fake:payload
     # "8a/byte->"
     0x9/imm32/size
-    0x38/8 0x61/a 0x2f// 0x62/b 0x79/y 0x74/t 0x65/e 0x2d/- 0x3e/>
+    0x38/8 0x61/a 0x2f/slash 0x62/b 0x79/y 0x74/t 0x65/e 0x2d/dash 0x3e/>
 _string_88_copy_byte:
     0x11/imm32/alloc-id:fake:payload
     # "88/byte<-"
     0x9/imm32/size
-    0x38/8 0x38/8 0x2f// 0x62/b 0x79/y 0x74/t 0x65/e 0x3c/< 0x2d/-
+    0x38/8 0x38/8 0x2f/slash 0x62/b 0x79/y 0x74/t 0x65/e 0x3c/< 0x2d/-
 _string_8d_copy_address:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "8d/copy-address"
