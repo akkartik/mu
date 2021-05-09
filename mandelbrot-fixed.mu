@@ -111,46 +111,36 @@ fn mandelbrot screen: (addr screen) {
   width-f <- shift-left 0xb/log2-font-width-and-fixed-precision  # 3 + 8 = 11
   var height-f/edi: int <- copy b
   height-f <- shift-left 0xc/log2-font-height-and-fixed-precision  # 4 + 8 = 12
-  # it might make sense to keep x and y as regular ints
-  # treating them as fixed-point for demonstration purposes
-  var y-f/ecx: int <- copy 0
+  var y/ecx: int <- copy 0
   {
-    compare y-f, height-f
+    compare y, height-f
     break-if->=
-    var imaginary-f/ebx: int <- mandelbrot-min-y y-f, width-f, height-f
-    var x-f/eax: int <- copy 0
+    var imaginary-f/ebx: int <- viewport-to-imaginary-f y, width-f, height-f
+    var x/eax: int <- copy 0
     {
-      compare x-f, width-f
+      compare x, width-f
       break-if->=
-      var real-f/edx: int <- mandelbrot-min-x x-f, width-f
-      var iterations/esi: int <- mandelbrot-pixel real-f, imaginary-f, 0x400/max
+      var real-f/edx: int <- viewport-to-real-f x, width-f
+      var iterations/esi: int <- mandelbrot-iterations-for-point real-f, imaginary-f, 0x400/max
+      compare iterations, 0x400/max
       {
-        var x: int
-        var y: int
-        var tmp/eax: int <- fixed-to-int x-f
-        copy-to x, tmp
-        tmp <- fixed-to-int y-f
-        copy-to y, tmp
-        compare iterations, 0x400/max
-        {
-          break-if->=
-          pixel screen, x, y, 0xf/white
-        }
-        compare iterations, 0x400/max
-        {
-          break-if-<
-          pixel screen, x, y, 0/black
-        }
+        break-if->=
+        pixel screen, x, y, 0xf/white
       }
-      x-f <- add 0x100/1
+      compare iterations, 0x400/max
+      {
+        break-if-<
+        pixel screen, x, y, 0/black
+      }
+      x <- increment
       loop
     }
-    y-f <- add 0x100/1
+    y <- increment
     loop
   }
 }
 
-fn mandelbrot-pixel real-f: int, imaginary-f: int, max: int -> _/esi: int {
+fn mandelbrot-iterations-for-point real-f: int, imaginary-f: int, max: int -> _/esi: int {
   var x-f/esi: int <- copy 0
   var y-f/edi: int <- copy 0
   var iterations/ecx: int <- copy 0
@@ -203,9 +193,13 @@ fn mandelbrot-y x-f: int, y-f: int, imaginary-f: int -> _/ebx: int {
   return result-f
 }
 
-fn mandelbrot-min-x x-f: int, width-f: int -> _/edx: int {
+# Scale (x, y) pixel coordinates to a complex plane where the viewport width
+# ranges from -2 to +2. Viewport height just follows the viewport's aspect
+# ratio.
+
+fn viewport-to-real-f x: int, width-f: int -> _/edx: int {
   # (x - width/2)*4/width
-  var result-f/eax: int <- copy x-f
+  var result-f/eax: int <- int-to-fixed x
   var half-width-f/ecx: int <- copy width-f
   half-width-f <- shift-right-signed 1/log2
   result-f <- subtract half-width-f
@@ -214,9 +208,9 @@ fn mandelbrot-min-x x-f: int, width-f: int -> _/edx: int {
   return result-f
 }
 
-fn mandelbrot-min-y y-f: int, width-f: int, height-f: int -> _/ebx: int {
+fn viewport-to-imaginary-f y: int, width-f: int, height-f: int -> _/ebx: int {
   # (y - height/2)*4/width
-  var result-f/eax: int <- copy y-f
+  var result-f/eax: int <- int-to-fixed y
   shift-right-signed height-f, 1/log2
   result-f <- subtract height-f
   result-f <- shift-left 2/log4

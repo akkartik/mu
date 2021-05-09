@@ -21,20 +21,13 @@ fn mandelbrot screen: (addr screen) {
   {
     compare y, height
     break-if->=
-#?     var new-x/eax: int <- render-float-decimal 0/screen, imaginary, 3, 0/x, 0/y, 7/fg, 0/bg
-    var imaginary/xmm1: float <- mandelbrot-min-y y, width, height
+    var imaginary/xmm1: float <- viewport-to-imaginary y, width, height
     var x/edx: int <- copy 0
     {
       compare x, width
       break-if->=
-      var real/xmm0: float <- mandelbrot-min-x x, width
-      var new-x/eax: int <- copy 0
-      new-x <- render-float-decimal 0/screen, real, 3, new-x, 0/y, 7/fg, 0/bg
-      new-x <- increment
-      new-x <- render-float-decimal 0/screen, imaginary, 3, new-x, 0/y, 7/fg, 0/bg
-      var iterations/eax: int <- mandelbrot-pixel real, imaginary, 0x400/max
-      set-cursor-position 0/screen 0/x 1/y
-      draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, iterations, 7/fg, 0/bg
+      var real/xmm0: float <- viewport-to-real x, width
+      var iterations/eax: int <- mandelbrot-iterations-for-point real, imaginary, 0x400/max
       compare iterations, 0x400/max
       {
         break-if->=
@@ -53,7 +46,7 @@ fn mandelbrot screen: (addr screen) {
   }
 }
 
-fn mandelbrot-pixel real: float, imaginary: float, max: int -> _/eax: int {
+fn mandelbrot-iterations-for-point real: float, imaginary: float, max: int -> _/eax: int {
   var zero: float
   var x/xmm0: float <- copy zero
   var y/xmm1: float <- copy zero
@@ -77,7 +70,6 @@ fn mandelbrot-pixel real: float, imaginary: float, max: int -> _/eax: int {
 fn mandelbrot-done? x: float, y: float -> _/eax: boolean {
   # x*x + y*y > 4
   var x2/xmm0: float <- copy x
-#?   var new-x/eax: int <- render-float-decimal 0/screen, x2, 3, 0/x, 2/y, 4/fg, 0/bg
   x2 <- multiply x
   var y2/xmm1: float <- copy y
   y2 <- multiply y
@@ -115,7 +107,7 @@ fn mandelbrot-y x: float, y: float, imaginary: float -> _/xmm3: float {
   return result
 }
 
-fn mandelbrot-min-x x: int, width: int -> _/xmm0: float {
+fn viewport-to-real x: int, width: int -> _/xmm0: float {
   # (x - width/2)*4/width
   var result/xmm0: float <- convert x
   var width-f/xmm1: float <- convert width
@@ -131,7 +123,7 @@ fn mandelbrot-min-x x: int, width: int -> _/xmm0: float {
   return result
 }
 
-fn mandelbrot-min-y y: int, width: int, height: int -> _/xmm1: float {
+fn viewport-to-imaginary y: int, width: int, height: int -> _/xmm1: float {
   # (y - height/2)*4/width
   var result/xmm0: float <- convert y
   var height-f/xmm1: float <- convert height
