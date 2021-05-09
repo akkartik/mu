@@ -107,6 +107,10 @@ fn mandelbrot-y x: float, y: float, imaginary: float -> _/xmm3: float {
   return result
 }
 
+# Scale (x, y) pixel coordinates to a complex plane where the viewport width
+# ranges from -2 to +2. Viewport height just follows the viewport's aspect
+# ratio.
+
 fn viewport-to-real x: int, width: int -> _/xmm0: float {
   # (x - width/2)*4/width
   var result/xmm0: float <- convert x
