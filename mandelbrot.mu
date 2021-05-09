@@ -1,7 +1,12 @@
 # Mandelbrot set
 #
-# To build:
+# Install:
+#   $ git clone https://github.com/akkartik/mu
+#   $ cd mu
+# Build on Linux:
 #   $ ./translate mandelbrot.mu
+# Build on other platforms (slow):
+#   $ ./translate_emulated mandelbrot.mu
 # To run:
 #   $ qemu-system-i386 code.img
 
