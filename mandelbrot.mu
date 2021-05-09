@@ -22,12 +22,12 @@ fn mandelbrot screen: (addr screen) {
     compare y, height
     break-if->=
 #?     var new-x/eax: int <- render-float-decimal 0/screen, seed-y, 3, 0/x, 0/y, 7/fg, 0/bg
+    var seed-y/xmm1: float <- mandelbrot-min-y y, width, height
     var x/edx: int <- copy 0
     {
       compare x, width
       break-if->=
       var seed-x/xmm0: float <- mandelbrot-min-x x, width
-      var seed-y/xmm1: float <- mandelbrot-min-y y, width, height
       var new-x/eax: int <- copy 0
       new-x <- render-float-decimal 0/screen, seed-x, 3, new-x, 0/y, 7/fg, 0/bg
       new-x <- increment
