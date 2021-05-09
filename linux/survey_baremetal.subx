@@ -111,7 +111,7 @@ subx-survey:  # infile: (addr buffered-file), out: (addr buffered-file)
     #   var in: (stream byte Input-size)
     #   slurp(infile, in)
     #   var labels: (stream {label-name, address} Max-labels)
-    #   compute-offsets(in, labels)
+    #   compute-addresses(in, labels)
     #   rewind-stream(in)
     #   emit-output(in, out, labels)
     #
@@ -151,12 +151,12 @@ subx-survey:  # infile: (addr buffered-file), out: (addr buffered-file)
     e8/call  slurp/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # compute-offsets(in, labels)
+    # compute-addresses(in, labels)
     # . . push args
     52/push-edx
     56/push-esi
     # . . call
-    e8/call  compute-offsets/disp32
+    e8/call  compute-addresses/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # rewind-stream(in)
@@ -459,7 +459,7 @@ test-subx-survey-computes-addresses-with-padding:
     5d/pop-to-ebp
     c3/return
 
-compute-offsets:  # in: (addr stream byte), labels: (addr stream {(handle array byte), address})
+compute-addresses:  # in: (addr stream byte), labels: (addr stream {(handle array byte), address})
     # pseudocode:
     #   var current-address = 0x7c00
     #   var line: (stream byte 512)
@@ -514,7 +514,7 @@ compute-offsets:  # in: (addr stream byte), labels: (addr stream {(handle array 
     68/push  0/imm32
     68/push  0/imm32
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-$compute-offsets:line-loop:
+$compute-addresses:line-loop:
     # clear-stream(line)
     # . . push args
     51/push-ecx
@@ -533,7 +533,7 @@ $compute-offsets:line-loop:
     # if (line->write == 0) break
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
     3d/compare-eax-and  0/imm32
-    0f 84/jump-if-=  $compute-offsets:end/disp32
+    0f 84/jump-if-=  $compute-addresses:end/disp32
 #?     # dump line {{{
 #?     # . write(2/stderr, "LL: ")
 #?     # . . push args
@@ -567,7 +567,7 @@ $compute-offsets:line-loop:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
-$compute-offsets:word-loop:
+$compute-addresses:word-loop:
     # next-word(line, word-slice)
     # . . push args
     52/push-edx
@@ -576,7 +576,7 @@ $compute-offsets:word-loop:
     e8/call  next-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$compute-offsets:case-empty:
+$compute-addresses:case-empty:
     # if slice-empty?(word-slice) break
     # . eax = slice-empty?(word-slice)
     # . . push args
@@ -587,8 +587,8 @@ $compute-offsets:case-empty:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
-$compute-offsets:case-comment:
+    0f 85/jump-if-!=  $compute-addresses:line-loop/disp32
+$compute-addresses:case-comment:
     # if slice-starts-with?(word-slice, "#") break
     # . . push args
     68/push  "#"/imm32
@@ -599,8 +599,8 @@ $compute-offsets:case-comment:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
-$compute-offsets:case-segment-header:
+    0f 85/jump-if-!=  $compute-addresses:line-loop/disp32
+$compute-addresses:case-segment-header:
     # if !slice-equal?(word-slice, "==") goto next case
     # . eax = slice-equal?(word-slice, "==")
     # . . push args
@@ -612,7 +612,7 @@ $compute-offsets:case-segment-header:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 84/jump-if-=  $compute-offsets:case-label/disp32
+    0f 84/jump-if-=  $compute-addresses:case-label/disp32
     # next-word(line, word-slice)
     # . . push args
     52/push-edx
@@ -631,7 +631,7 @@ $compute-offsets:case-segment-header:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) abort
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $compute-offsets:abort/disp32
+    0f 85/jump-if-!=  $compute-addresses:abort/disp32
     # next-word(line, word-slice)
     # . . push args
     52/push-edx
@@ -650,7 +650,7 @@ $compute-offsets:case-segment-header:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
+    0f 85/jump-if-!=  $compute-addresses:line-loop/disp32
     # var new-address/eax: int = parse-hex-int-from-slice(word-slice)
     # . . push args
     52/push-edx
@@ -660,12 +660,12 @@ $compute-offsets:case-segment-header:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # if (new-address < current-address) abort
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           6/r32/esi   .               .                 # compare eax with esi
-    0f 82/jump-if-addr<  $compute-offsets:error-bad-segment-address/disp32
+    0f 82/jump-if-addr<  $compute-addresses:error-bad-segment-address/disp32
     # current-address = new-address
     89/copy                         3/mod/direct    6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to esi
     # break
-    e9/jump  $compute-offsets:line-loop/disp32
-$compute-offsets:case-label:
+    e9/jump  $compute-addresses:line-loop/disp32
+$compute-addresses:case-label:
     # if (!label?(word-slice)) goto next case
     # . eax = label?(word-slice)
     # . . push args
@@ -676,7 +676,7 @@ $compute-offsets:case-label:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) goto next case
     3d/compare-eax-and  0/imm32/false
-    0f 84/jump-if-=  $compute-offsets:case-default/disp32
+    0f 84/jump-if-=  $compute-addresses:case-default/disp32
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # decrement *(edx+4)
     # var tmp/eax: (addr int) = get-or-insert-slice(labels, word-slice, row-size=12)
@@ -703,8 +703,8 @@ $compute-offsets:case-label:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
     # continue
-    e9/jump  $compute-offsets:word-loop/disp32
-$compute-offsets:case-default:
+    e9/jump  $compute-addresses:word-loop/disp32
+$compute-addresses:case-default:
     # width/eax = compute-width-of-slice(word-slice)
     # . . push args
     52/push-edx
@@ -733,7 +733,7 @@ $compute-offsets:case-default:
 #?     # . write-int32-hex-buffered(Stderr, segment-offset)
 #?     # . . push args
 #?     52/push-edx
-#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32  # push *segment-offset
+#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-addresses:segment-offset/disp32  # push *segment-offset
 #?     68/push  Stderr/imm32
 #?     # . . call
 #?     e8/call  write-int32-hex-buffered/disp32
@@ -755,8 +755,8 @@ $compute-offsets:case-default:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    e9/jump $compute-offsets:word-loop/disp32
-$compute-offsets:end:
+    e9/jump $compute-addresses:word-loop/disp32
+$compute-addresses:end:
     # . reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x214/imm32       # add to esp
     # . restore registers
@@ -771,7 +771,7 @@ $compute-offsets:end:
     5d/pop-to-ebp
     c3/return
 
-$compute-offsets:abort:
+$compute-addresses:abort:
     # . _write(2/stderr, error)
     # . . push args
     68/push  "'==' must be followed by segment name and optionally an address\n"/imm32
@@ -785,7 +785,7 @@ $compute-offsets:abort:
     e8/call  syscall_exit/disp32
     # never gets here
 
-$compute-offsets:error-bad-segment-address:
+$compute-addresses:error-bad-segment-address:
     # . _write(2/stderr, error)
     # . . push args
     68/push  "'==' specifies an address that implies negative padding\n"/imm32
@@ -799,7 +799,7 @@ $compute-offsets:error-bad-segment-address:
     e8/call  syscall_exit/disp32
     # never gets here
 
-test-compute-offsets:
+test-compute-addresses:
     # input:
     #   == code
     #   ab x/imm32  # skip comment
@@ -877,12 +877,12 @@ test-compute-offsets:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # compute-offsets(_test-input-stream, labels)
+    # compute-addresses(_test-input-stream, labels)
     # . . push args
     52/push-edx
     68/push  _test-input-stream/imm32
     # . . call
-    e8/call  compute-offsets/disp32
+    e8/call  compute-addresses/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32          # add to esp
 #?     # dump *Trace-stream {{{
@@ -913,7 +913,7 @@ test-compute-offsets:
 #?     # }}}
     # . check-trace-contains("label 'x' is at address 0x00007c06.", msg)
     # . . push args
-    68/push  "F - test-compute-offsets"/imm32
+    68/push  "F - test-compute-addresses"/imm32
     68/push  "label 'x' is at address 0x00007c06."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
@@ -921,7 +921,7 @@ test-compute-offsets:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . check-ints-equal(labels->write, 0xc, msg)
     # . . push args
-    68/push  "F - test-compute-offsets-maintains-labels-write-index"/imm32
+    68/push  "F - test-compute-addresses-maintains-labels-write-index"/imm32
     68/push  0xc/imm32/1-entry
     ff          6/subop/push        0/mod/indirect  2/rm32/edx    .           .             .           .           .               .                 # push *edx
     # . . call
