@@ -7,14 +7,15 @@
 <meta name="plugin-version" content="vim8.1_v1">
 <meta name="syntax" content="none">
 <meta name="settings" content="use_css,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal-light">
+<meta name="colorscheme" content="minimal-dark">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #000000; background-color: #c6c6c6; }
-body { font-family: monospace; color: #000000; background-color: #c6c6c6; }
+pre { font-family: monospace; color: #000000; background-color: #a8a8a8; }
+body { font-family: monospace; color: #000000; background-color: #a8a8a8; }
 * { font-size: 1em; }
 .PreProc { color: #c000c0; }
 .muComment { color: #005faf; }
+.Delimiter { color: #c000c0; }
 .Constant { color: #008787; }
 .Special { color: #ff6060; }
 -->
@@ -317,6 +318,31 @@ Similar float variants like `<span class="PreProc">break-if-float&lt;`</span> ar
 `addr` equivalents. The x86 instruction set stupidly has floating-point
 operations only update a subset of flags.
 
+Four sets of conditional jumps are useful for detecting overflow.
+
+<span class="PreProc">break-if-carry</span>                    =&gt; <span class="Constant">&quot;0f 82/jump-if-carry break/disp32&quot;</span>
+<span class="PreProc">break-if-carry</span> label              =&gt; <span class="Constant">&quot;0f 82/jump-if-carry &quot;</span> label <span class="Constant">&quot;/disp32&quot;</span>
+<span class="PreProc">loop-if-carry</span>                     =&gt; <span class="Constant">&quot;0f 82/jump-if-carry break/disp32&quot;</span>
+<span class="PreProc">loop-if-carry</span> label               =&gt; <span class="Constant">&quot;0f 82/jump-if-carry &quot;</span> label <span class="Constant">&quot;/disp32&quot;</span>
+
+<span class="PreProc">break-if-not-carry</span>                =&gt; <span class="Constant">&quot;0f 83/jump-if-not-carry break/disp32&quot;</span>
+<span class="PreProc">break-if-not-carry</span> label          =&gt; <span class="Constant">&quot;0f 83/jump-if-not-carry &quot;</span> label <span class="Constant">&quot;/disp32&quot;</span>
+<span class="PreProc">loop-if-not-carry</span>                 =&gt; <span class="Constant">&quot;0f 83/jump-if-not-carry break/disp32&quot;</span>
+<span class="PreProc">loop-if-not-carry</span> label           =&gt; <span class="Constant">&quot;0f 83/jump-if-not-carry &quot;</span> label <span class="Constant">&quot;/disp32&quot;</span>
+
+<span class="PreProc">break-if-overflow</span>                 =&gt; <span class="Constant">&quot;0f 80/jump-if-overflow break/disp32&quot;</span>
+<span class="PreProc">break-if-overflow</span> label           =&gt; <span class="Constant">&quot;0f 80/jump-if-overflow &quot;</span> label <span class="Constant">&quot;:break/disp32&quot;</span>
+<span class="PreProc">loop-if-overflow</span>                  =&gt; <span class="Constant">&quot;0f 80/jump-if-overflow loop/disp32&quot;</span>
+<span class="PreProc">loop-if-overflow</span> label            =&gt; <span class="Constant">&quot;0f 80/jump-if-overflow &quot;</span> label <span class="Constant">&quot;:loop/disp32&quot;</span>
+
+<span class="PreProc">break-if-not-overflow</span>             =&gt; <span class="Constant">&quot;0f 81/jump-if-not-overflow break/disp32&quot;</span>
+<span class="PreProc">break-if-not-overflow</span> label       =&gt; <span class="Constant">&quot;0f 81/jump-if-not-overflow &quot;</span> label <span class="Constant">&quot;:break/disp32&quot;</span>
+<span class="PreProc">loop-if-not-overflow</span>              =&gt; <span class="Constant">&quot;0f 81/jump-if-not-overflow loop/disp32&quot;</span>
+<span class="PreProc">loop-if-not-overflow</span> label        =&gt; <span class="Constant">&quot;0f 81/jump-if-not-overflow &quot;</span> label <span class="Constant">&quot;:loop/disp32&quot;</span>
+
+All this relies on a convention that every `<span class="Delimiter">{}</span>` block is delimited by labels
+ending in `:<span class="PreProc">loop</span>` and `:<span class="PreProc">break</span>`.
+
 <span class="muComment">## Returns</span>
 
 The `<span class="PreProc">return</span>` instruction cleans up variable declarations just like an unconditional
@@ -342,13 +368,17 @@ var/reg: (addr T) <span class="Special">&lt;-</span> address var2: T
 
 var/reg: (addr T) <span class="Special">&lt;-</span> index arr/rega: (addr array T), idx/regi: int
   | if size-of(T) is <span class="Constant">1</span>, <span class="Constant">2</span>, <span class="Constant">4</span> or <span class="Constant">8</span>
-      =&gt; <span class="Constant">&quot;(__check-mu-array-bounds *&quot;</span> rega <span class="Constant">&quot; %&quot;</span> regi <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
+      =&gt; <span class="Constant">&quot;81 7/subop/compare %&quot;</span> rega <span class="Constant">&quot; 0/imm32&quot;</span>
+         <span class="Constant">&quot;0f 84/jump-if-= __mu-abort-null-index-base-address/disp32&quot;</span>
+         <span class="Constant">&quot;(__check-mu-array-bounds *&quot;</span> rega <span class="Constant">&quot; %&quot;</span> regi <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
          <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size-of(T)) <span class="Constant">&quot;+4) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg: (addr T) <span class="Special">&lt;-</span> index arr: (array T len), idx/regi: int
   =&gt; <span class="Constant">&quot;(__check-mu-array-bounds *(ebp+&quot;</span> arr.stack-offset <span class="Constant">&quot;) %&quot;</span> regi <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
      <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> regi <span class="Constant">&quot;&lt;&lt;&quot;</span> log2(size-of(T)) <span class="Constant">&quot;+&quot;</span> (arr.stack-offset + <span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg: (addr T) <span class="Special">&lt;-</span> index arr/rega: (addr array T), n
-  =&gt; <span class="Constant">&quot;(__check-mu-array-bounds *&quot;</span> rega <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
+  =&gt; <span class="Constant">&quot;81 7/subop/compare %&quot;</span> rega <span class="Constant">&quot; 0/imm32&quot;</span>
+     <span class="Constant">&quot;0f 84/jump-if-= __mu-abort-null-index-base-address/disp32&quot;</span>
+     <span class="Constant">&quot;(__check-mu-array-bounds *&quot;</span> rega <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
      <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> (n*size-of(T)+<span class="Constant">4</span>) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg: (addr T) <span class="Special">&lt;-</span> index arr: (array T len), n
   =&gt; <span class="Constant">&quot;(__check-mu-array-bounds *(ebp+&quot;</span> arr.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot; &quot;</span> size-of(T) <span class="Constant">&quot;)&quot;</span>
@@ -359,7 +389,9 @@ var/reg: (offset T) <span class="Special">&lt;-</span> compute-offset arr: (addr
 var/reg: (offset T) <span class="Special">&lt;-</span> compute-offset arr: (addr array T), idx: int       <span class="muComment"># arr can be in reg or mem</span>
   =&gt; <span class="Constant">&quot;69/multiply *(ebp+&quot;</span> idx.stack-offset <span class="Constant">&quot;) &quot;</span> size-of(T) <span class="Constant">&quot;/imm32 &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg: (addr T) <span class="Special">&lt;-</span> index arr/rega: (addr array T), o/rego: (offset T)
-  =&gt; <span class="Constant">&quot;(__check-mu-array-bounds %&quot;</span> rega <span class="Constant">&quot; %&quot;</span> rego <span class="Constant">&quot; 1 \&quot;&quot; function-name &quot;</span>\<span class="Constant">&quot;)&quot;</span>
+  =&gt; <span class="Constant">&quot;81 7/subop/compare %&quot;</span> rega <span class="Constant">&quot; 0/imm32&quot;</span>
+     <span class="Constant">&quot;0f 84/jump-if-= __mu-abort-null-index-base-address/disp32&quot;</span>
+     <span class="Constant">&quot;(__check-mu-array-bounds %&quot;</span> rega <span class="Constant">&quot; %&quot;</span> rego <span class="Constant">&quot; 1 \&quot;&quot; function-name &quot;</span>\<span class="Constant">&quot;)&quot;</span>
      <span class="Constant">&quot;8d/copy-address *(&quot;</span> rega <span class="Constant">&quot;+&quot;</span> rego <span class="Constant">&quot;+4) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 
 Computing the length of an array is complex.
@@ -398,9 +430,13 @@ If a record (product) <span class="PreProc">type</span> T was defined to have el
 types T_a, T_b, T_c, ..., then accessing one of those elements f of <span class="PreProc">type</span> T_f:
 
 var/reg: (addr T_f) <span class="Special">&lt;-</span> get var2/reg2: (addr T), f
-  =&gt; <span class="Constant">&quot;8d/copy-address *(&quot;</span> reg2 <span class="Constant">&quot;+&quot;</span> offset(f) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+  =&gt; <span class="Constant">&quot;81 7/subop/compare %&quot;</span> reg2 <span class="Constant">&quot; 0/imm32&quot;</span>
+     <span class="Constant">&quot;0f 84/jump-if-= __mu-abort-null-get-base-address/disp32&quot;</span>
+     <span class="Constant">&quot;8d/copy-address *(&quot;</span> reg2 <span class="Constant">&quot;+&quot;</span> offset(f) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 var/reg: (addr T_f) <span class="Special">&lt;-</span> get var2: T, f
   =&gt; <span class="Constant">&quot;8d/copy-address *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;+&quot;</span> offset(f) <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
+
+When the base is an address we perform a null check.
 
 <span class="muComment"># Allocating memory</span>
 
