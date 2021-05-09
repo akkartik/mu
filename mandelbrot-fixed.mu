@@ -28,6 +28,7 @@ fn fixed-to-int in-f: int -> _/eax: int {
   return result
 }
 
+# The process of throwing bits away always adjusts a number towards -infinity.
 fn test-fixed-conversion {
   # 0
   var f/eax: int <- int-to-fixed 0
