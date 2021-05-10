@@ -11,7 +11,14 @@
 #   $ qemu-system-i386 code.img
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
-  mandelbrot screen
+  # Initially the viewport is centered at 0, 0 in the scene.
+  var scene-cx-f: int
+  var scene-cy-f: int
+  # Initially the viewport shows a section of the scene 4 units wide.
+  var scene-width-f: int
+  copy-to scene-width-f, 0x400/4
+  var tmp-f/eax: int <- copy 0
+  mandelbrot screen, scene-cx-f, scene-cy-f, scene-width-f
 }
 
 # Since they still look like int types, we'll append a '-f' suffix to variable
@@ -108,7 +115,7 @@ fn divide-fixed a-f: int, b-f: int -> _/eax: int {
 
 # adding and subtracting two fixed-point numbers can use existing instructions.
 
-fn mandelbrot screen: (addr screen) {
+fn mandelbrot screen: (addr screen), scene-cx-f: int, scene-cy-f: int, scene-width-f: int {
   var a/eax: int <- copy 0
   var b/ecx: int <- copy 0
   a, b <- screen-size screen
@@ -120,12 +127,12 @@ fn mandelbrot screen: (addr screen) {
   {
     compare y, height
     break-if->=
-    var imaginary-f/ebx: int <- viewport-to-imaginary-f y, width, height
+    var imaginary-f/ebx: int <- viewport-to-imaginary-f y, width, height, scene-cx-f, scene-width-f
     var x/eax: int <- copy 0
     {
       compare x, width
       break-if->=
-      var real-f/edx: int <- viewport-to-real-f x, width
+      var real-f/edx: int <- viewport-to-real-f x, width, scene-cx-f, scene-width-f
       var iterations/esi: int <- mandelbrot-iterations-for-point real-f, imaginary-f, 0x400/max
       compare iterations, 0x400/max
       {
@@ -202,29 +209,47 @@ fn mandelbrot-y x-f: int, y-f: int, imaginary-f: int -> _/ebx: int {
 # ranges from -2 to +2. Viewport height just follows the viewport's aspect
 # ratio.
 
-fn viewport-to-real-f x: int, width: int -> _/edx: int {
-  # (x - width/2)*4/width
+fn viewport-to-real-f x: int, width: int, scene-cx-f: int, scene-width-f: int -> _/edx: int {
+  # 0 in the viewport       goes to scene-cx - scene-width/2 
+  # width in the viewport   goes to scene-cx + scene-width/2
+  # Therefore:
+  # x in the viewport       goes to (scene-cx - scene-width/2) + x*scene-width/width
+  # At most two numbers being multiplied before a divide, so no risk of overflow.
   var result-f/eax: int <- int-to-fixed x
+  result-f <- multiply-fixed result-f, scene-width-f
   var width-f/ecx: int <- copy width
   width-f <- shift-left 8/fixed-precision
-  var half-width-f/edx: int <- copy width-f
-  half-width-f <- shift-right-signed 1/log2
-  result-f <- subtract half-width-f
-  result-f <- shift-left 2/log4
   result-f <- divide-fixed result-f, width-f
+  result-f <- add scene-cx-f
+  var half-scene-width-f/ecx: int <- copy scene-width-f
+  half-scene-width-f <- shift-right 1
+  result-f <- subtract half-scene-width-f
   return result-f
 }
 
-fn viewport-to-imaginary-f y: int, width: int, height: int -> _/ebx: int {
-  # (y - height/2)*4/width
+fn viewport-to-imaginary-f y: int, width: int, height: int, scene-cy-f: int, scene-width-f: int -> _/ebx: int {
+  # 0 in the viewport       goes to scene-cy - scene-width/2*height/width
+  # height in the viewport  goes to scene-cy + scene-width/2*height/width
+  # Therefore:
+  # y in the viewport       goes to (scene-cy - scene-width/2*height/width) + y*scene-width/width
+  #  scene-cy - scene-width/width * (height/2 + y)
+  # At most two numbers being multiplied before a divide, so no risk of overflow.
   var result-f/eax: int <- int-to-fixed y
-  var half-height-f/ecx: int <- copy height
-  half-height-f <- shift-left 8/fixed-precision
-  half-height-f <- shift-right-signed 1/log2
-  result-f <- subtract half-height-f
-  result-f <- shift-left 2/log4
+  result-f <- multiply-fixed result-f, scene-width-f
   var width-f/ecx: int <- copy width
   width-f <- shift-left 8/fixed-precision
   result-f <- divide-fixed result-f, width-f
+  result-f <- add scene-cy-f
+  var second-term-f/edx: int <- copy 0
+  {
+    var _second-term-f/eax: int <- copy scene-width-f
+    _second-term-f <- shift-right 1
+    var height-f/ebx: int <- copy height
+    height-f <- shift-left 8/fixed-precision
+    _second-term-f <- multiply-fixed _second-term-f, height-f
+    _second-term-f <- divide-fixed _second-term-f, width-f
+    second-term-f <- copy _second-term-f
+  }
+  result-f <- subtract second-term-f
   return result-f
 }
