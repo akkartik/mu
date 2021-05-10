@@ -171,20 +171,20 @@ if ('onhashchange' in window) {
 <span id="L112" class="LineNr">112 </span>  <span class="PreProc">var</span> a/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L113" class="LineNr">113 </span>  <span class="PreProc">var</span> b/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L114" class="LineNr">114 </span>  a, b <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L70'>screen-size</a> <a href='500fake-screen.mu.html#L14'>screen</a>
-<span id="L115" class="LineNr">115 </span>  <span class="PreProc">var</span> width-f/<span class="Constant">esi</span>: int <span class="Special">&lt;-</span> copy a
-<span id="L116" class="LineNr">116 </span>  width-f <span class="Special">&lt;-</span> shift-left <span class="Constant">0xb</span>/log2-font-width-and-fixed-precision  <span class="muComment"># 3 + 8 = 11</span>
-<span id="L117" class="LineNr">117 </span>  <span class="PreProc">var</span> height-f/<span class="Constant">edi</span>: int <span class="Special">&lt;-</span> copy b
-<span id="L118" class="LineNr">118 </span>  height-f <span class="Special">&lt;-</span> shift-left <span class="Constant">0xc</span>/log2-font-height-and-fixed-precision  <span class="muComment"># 4 + 8 = 12</span>
+<span id="L115" class="LineNr">115 </span>  <span class="PreProc">var</span> width/<span class="Constant">esi</span>: int <span class="Special">&lt;-</span> copy a
+<span id="L116" class="LineNr">116 </span>  width <span class="Special">&lt;-</span> shift-left <span class="Constant">3</span>/log2-font-width
+<span id="L117" class="LineNr">117 </span>  <span class="PreProc">var</span> height/<span class="Constant">edi</span>: int <span class="Special">&lt;-</span> copy b
+<span id="L118" class="LineNr">118 </span>  height <span class="Special">&lt;-</span> shift-left <span class="Constant">4</span>/log2-font-height
 <span id="L119" class="LineNr">119 </span>  <span class="PreProc">var</span> y/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L120" class="LineNr">120 </span>  <span class="Delimiter">{</span>
-<span id="L121" class="LineNr">121 </span>    compare y, height-f
+<span id="L121" class="LineNr">121 </span>    compare y, height
 <span id="L122" class="LineNr">122 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L123" class="LineNr">123 </span>    <span class="PreProc">var</span> imaginary-f/<span class="Constant">ebx</span>: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L216'>viewport-to-imaginary-f</a> y, width-f, height-f
+<span id="L123" class="LineNr">123 </span>    <span class="PreProc">var</span> imaginary-f/<span class="Constant">ebx</span>: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L218'>viewport-to-imaginary-f</a> y, width, height
 <span id="L124" class="LineNr">124 </span>    <span class="PreProc">var</span> x/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L125" class="LineNr">125 </span>    <span class="Delimiter">{</span>
-<span id="L126" class="LineNr">126 </span>      compare x, width-f
+<span id="L126" class="LineNr">126 </span>      compare x, width
 <span id="L127" class="LineNr">127 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L128" class="LineNr">128 </span>      <span class="PreProc">var</span> real-f/<span class="Constant">edx</span>: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L205'>viewport-to-real-f</a> x, width-f
+<span id="L128" class="LineNr">128 </span>      <span class="PreProc">var</span> real-f/<span class="Constant">edx</span>: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L205'>viewport-to-real-f</a> x, width
 <span id="L129" class="LineNr">129 </span>      <span class="PreProc">var</span> iterations/<span class="Constant">esi</span>: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L148'>mandelbrot-iterations-for-point</a> real-f, imaginary-f, <span class="Constant">0x400</span>/max
 <span id="L130" class="LineNr">130 </span>      compare iterations, <span class="Constant">0x400</span>/max
 <span id="L131" class="LineNr">131 </span>      <span class="Delimiter">{</span>
@@ -261,26 +261,32 @@ if ('onhashchange' in window) {
 <span id="L202" class="LineNr">202 </span><span class="muComment"># ranges from -2 to +2. Viewport height just follows the viewport's aspect</span>
 <span id="L203" class="LineNr">203 </span><span class="muComment"># ratio.</span>
 <span id="L204" class="LineNr">204 </span>
-<span id="L205" class="LineNr">205 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-fixed.mu.html#L205'>viewport-to-real-f</a></span> x: int, width-f: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">edx</span>: int <span class="Delimiter">{</span>
+<span id="L205" class="LineNr">205 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-fixed.mu.html#L205'>viewport-to-real-f</a></span> x: int, width: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">edx</span>: int <span class="Delimiter">{</span>
 <span id="L206" class="LineNr">206 </span>  <span class="muComment"># (x - width/2)*4/width</span>
 <span id="L207" class="LineNr">207 </span>  <span class="PreProc">var</span> result-f/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L20'>int-to-fixed</a> x
-<span id="L208" class="LineNr">208 </span>  <span class="PreProc">var</span> half-width-f/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy width-f
-<span id="L209" class="LineNr">209 </span>  half-width-f <span class="Special">&lt;-</span> shift-right-signed <span class="Constant">1</span>/log2
-<span id="L210" class="LineNr">210 </span>  result-f <span class="Special">&lt;-</span> subtract half-width-f
-<span id="L211" class="LineNr">211 </span>  result-f <span class="Special">&lt;-</span> shift-left <span class="Constant">2</span>/log4
-<span id="L212" class="LineNr">212 </span>  result-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L95'>divide-fixed</a> result-f, width-f
-<span id="L213" class="LineNr">213 </span>  <span class="PreProc">return</span> result-f
-<span id="L214" class="LineNr">214 </span><span class="Delimiter">}</span>
-<span id="L215" class="LineNr">215 </span>
-<span id="L216" class="LineNr">216 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-fixed.mu.html#L216'>viewport-to-imaginary-f</a></span> y: int, width-f: int, height-f: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">ebx</span>: int <span class="Delimiter">{</span>
-<span id="L217" class="LineNr">217 </span>  <span class="muComment"># (y - height/2)*4/width</span>
-<span id="L218" class="LineNr">218 </span>  <span class="PreProc">var</span> result-f/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L20'>int-to-fixed</a> y
-<span id="L219" class="LineNr">219 </span>  shift-right-signed height-f, <span class="Constant">1</span>/log2
-<span id="L220" class="LineNr">220 </span>  result-f <span class="Special">&lt;-</span> subtract height-f
-<span id="L221" class="LineNr">221 </span>  result-f <span class="Special">&lt;-</span> shift-left <span class="Constant">2</span>/log4
-<span id="L222" class="LineNr">222 </span>  result-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L95'>divide-fixed</a> result-f, width-f
-<span id="L223" class="LineNr">223 </span>  <span class="PreProc">return</span> result-f
-<span id="L224" class="LineNr">224 </span><span class="Delimiter">}</span>
+<span id="L208" class="LineNr">208 </span>  <span class="PreProc">var</span> width-f/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy width
+<span id="L209" class="LineNr">209 </span>  width-f <span class="Special">&lt;-</span> shift-left <span class="Constant">8</span>/fixed-precision
+<span id="L210" class="LineNr">210 </span>  <span class="PreProc">var</span> half-width-f/<span class="Constant">edx</span>: int <span class="Special">&lt;-</span> copy width-f
+<span id="L211" class="LineNr">211 </span>  half-width-f <span class="Special">&lt;-</span> shift-right-signed <span class="Constant">1</span>/log2
+<span id="L212" class="LineNr">212 </span>  result-f <span class="Special">&lt;-</span> subtract half-width-f
+<span id="L213" class="LineNr">213 </span>  result-f <span class="Special">&lt;-</span> shift-left <span class="Constant">2</span>/log4
+<span id="L214" class="LineNr">214 </span>  result-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L95'>divide-fixed</a> result-f, width-f
+<span id="L215" class="LineNr">215 </span>  <span class="PreProc">return</span> result-f
+<span id="L216" class="LineNr">216 </span><span class="Delimiter">}</span>
+<span id="L217" class="LineNr">217 </span>
+<span id="L218" class="LineNr">218 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-fixed.mu.html#L218'>viewport-to-imaginary-f</a></span> y: int, width: int, height: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">ebx</span>: int <span class="Delimiter">{</span>
+<span id="L219" class="LineNr">219 </span>  <span class="muComment"># (y - height/2)*4/width</span>
+<span id="L220" class="LineNr">220 </span>  <span class="PreProc">var</span> result-f/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L20'>int-to-fixed</a> y
+<span id="L221" class="LineNr">221 </span>  <span class="PreProc">var</span> half-height-f/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy height
+<span id="L222" class="LineNr">222 </span>  half-height-f <span class="Special">&lt;-</span> shift-left <span class="Constant">8</span>/fixed-precision
+<span id="L223" class="LineNr">223 </span>  half-height-f <span class="Special">&lt;-</span> shift-right-signed <span class="Constant">1</span>/log2
+<span id="L224" class="LineNr">224 </span>  result-f <span class="Special">&lt;-</span> subtract half-height-f
+<span id="L225" class="LineNr">225 </span>  result-f <span class="Special">&lt;-</span> shift-left <span class="Constant">2</span>/log4
+<span id="L226" class="LineNr">226 </span>  <span class="PreProc">var</span> width-f/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy width
+<span id="L227" class="LineNr">227 </span>  width-f <span class="Special">&lt;-</span> shift-left <span class="Constant">8</span>/fixed-precision
+<span id="L228" class="LineNr">228 </span>  result-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L95'>divide-fixed</a> result-f, width-f
+<span id="L229" class="LineNr">229 </span>  <span class="PreProc">return</span> result-f
+<span id="L230" class="LineNr">230 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
