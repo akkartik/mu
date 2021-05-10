@@ -143,16 +143,14 @@ fn mandelbrot screen: (addr screen), scene-cx-f: int, scene-cy-f: int, scene-wid
       break-if->=
       var real-f/edx: int <- viewport-to-real-f x, width, scene-cx-f, scene-width-f
       var iterations/esi: int <- mandelbrot-iterations-for-point real-f, imaginary-f, 0x400/max
-      compare iterations, 0x400/max
+      iterations <- shift-right 3
+      var color/edx: int <- copy 0
       {
-        break-if->=
-        pixel screen, x, y, 0xf/white
+        var dummy/eax: int <- copy 0
+        dummy, color <- integer-divide iterations, 0x18/24/size-of-cycle-0
+        color <- add 0x20/cycle-0
       }
-      compare iterations, 0x400/max
-      {
-        break-if-<
-        pixel screen, x, y, 0/black
-      }
+      pixel screen, x, y, color
       x <- increment
       loop
     }

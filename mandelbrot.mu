@@ -51,22 +51,17 @@ fn mandelbrot screen: (addr screen), scene-cx: float, scene-cy: float, scene-wid
     compare y, height
     break-if->=
     var imaginary/xmm1: float <- viewport-to-imaginary y, width, height, scene-cy, scene-width
-    var x/edx: int <- copy 0
+    var x/ebx: int <- copy 0
     {
       compare x, width
       break-if->=
       var real/xmm0: float <- viewport-to-real x, width, scene-cx, scene-width
       var iterations/eax: int <- mandelbrot-iterations-for-point real, imaginary, 0x400/max
-      compare iterations, 0x400/max
-      {
-        break-if->=
-        pixel screen, x, y, 0xf/white
-      }
-      compare iterations, 0x400/max
-      {
-        break-if-<
-        pixel screen, x, y, 0/black
-      }
+      iterations <- shift-right 3
+      var color/edx: int <- copy 0
+      iterations, color <- integer-divide iterations, 0x18/24/size-of-cycle-0
+      color <- add 0x20/cycle-0
+      pixel screen, x, y, color
       x <- increment
       loop
     }
