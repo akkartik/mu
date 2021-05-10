@@ -11,10 +11,34 @@
 #   $ qemu-system-i386 code.img
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
-  mandelbrot screen
+  # Initially the viewport is centered at 0, 0 in the scene.
+  var zero: float
+  var scene-cx/xmm1: float <- copy zero
+  var scene-cy/xmm2: float <- copy zero
+  # Initially the viewport shows a section of the scene 4 units wide.
+  # scene-width-scale = 0.5
+  var scene-width-scale: float
+  var dest/eax: (addr float) <- address scene-width-scale
+  fill-in-rational dest, 1, 2
+  # scene-width = 4
+  var four: float
+  var dest/eax: (addr float) <- address four
+  fill-in-rational dest, 4, 1
+  var scene-width/xmm3: float <- copy four
+  {
+    mandelbrot screen scene-cx, scene-cy, scene-width
+    # move the center some % of the current screen-width
+    var adj/xmm0: float <- rational 2, 0x1c/28
+    adj <- multiply scene-width
+    scene-cx <- subtract adj
+    scene-cy <- add adj
+    # slowly shrink the scene width to zoom in
+    scene-width <- multiply scene-width-scale
+    loop
+  }
 }
 
-fn mandelbrot screen: (addr screen) {
+fn mandelbrot screen: (addr screen), scene-cx: float, scene-cy: float, scene-width: float {
   var a/eax: int <- copy 0
   var b/ecx: int <- copy 0
   a, b <- screen-size screen
@@ -26,12 +50,12 @@ fn mandelbrot screen: (addr screen) {
   {
     compare y, height
     break-if->=
-    var imaginary/xmm1: float <- viewport-to-imaginary y, width, height
+    var imaginary/xmm1: float <- viewport-to-imaginary y, width, height, scene-cy, scene-width
     var x/edx: int <- copy 0
     {
       compare x, width
       break-if->=
-      var real/xmm0: float <- viewport-to-real x, width
+      var real/xmm0: float <- viewport-to-real x, width, scene-cx, scene-width
       var iterations/eax: int <- mandelbrot-iterations-for-point real, imaginary, 0x400/max
       compare iterations, 0x400/max
       {
@@ -116,35 +140,45 @@ fn mandelbrot-y x: float, y: float, imaginary: float -> _/xmm3: float {
 # ranges from -2 to +2. Viewport height just follows the viewport's aspect
 # ratio.
 
-fn viewport-to-real x: int, width: int -> _/xmm0: float {
-  # (x - width/2)*4/width
+fn viewport-to-real x: int, width: int, scene-cx: float, scene-width: float -> _/xmm0: float {
+  # 0 in the viewport       goes to scene-cx - scene-width/2 
+  # width in the viewport   goes to scene-cx + scene-width/2
+  # Therefore:
+  # x in the viewport       goes to (scene-cx - scene-width/2) + x*scene-width/width
+  # At most two numbers being multiplied before a divide, so no risk of overflow.
   var result/xmm0: float <- convert x
+  result <- multiply scene-width
   var width-f/xmm1: float <- convert width
+  result <- divide width-f
+  result <- add scene-cx
   var two/eax: int <- copy 2
   var two-f/xmm2: float <- convert two
-  var half-width-f/xmm2: float <- reciprocal two-f
-  half-width-f <- multiply width-f
-  result <- subtract half-width-f
-  var four/eax: int <- copy 4
-  var four-f/xmm2: float <- convert four
-  result <- multiply four-f
-  result <- divide width-f
+  var half-scene-width/xmm1: float <- copy scene-width
+  half-scene-width <- divide two-f
+  result <- subtract half-scene-width
   return result
 }
 
-fn viewport-to-imaginary y: int, width: int, height: int -> _/xmm1: float {
-  # (y - height/2)*4/width
+fn viewport-to-imaginary y: int, width: int, height: int, scene-cy: float, scene-width: float -> _/xmm1: float {
+  # 0 in the viewport       goes to scene-cy - scene-width/2*height/width
+  # height in the viewport  goes to scene-cy + scene-width/2*height/width
+  # Therefore:
+  # y in the viewport       goes to (scene-cy - scene-width/2*height/width) + y*scene-width/width
+  #  scene-cy - scene-width/width * (height/2 + y)
+  # At most two numbers being multiplied before a divide, so no risk of overflow.
   var result/xmm0: float <- convert y
-  var height-f/xmm1: float <- convert height
-  var half-height-f/xmm1: float <- copy height-f
-  var two/eax: int <- copy 2
-  var two-f/xmm2: float <- convert two
-  half-height-f <- divide two-f
-  result <- subtract half-height-f
-  var four/eax: int <- copy 4
-  var four-f/xmm1: float <- convert four
-  result <- multiply four-f
+  result <- multiply scene-width
   var width-f/xmm1: float <- convert width
   result <- divide width-f
+  result <- add scene-cy
+  var two/eax: int <- copy 2
+  var two-f/xmm2: float <- convert two
+  var second-term/xmm1: float <- copy scene-width
+  second-term <- divide two-f
+  var height-f/xmm2: float <- convert height
+  second-term <- multiply height-f
+  var width-f/xmm2: float <- convert width
+  second-term <- divide width-f
+  result <- subtract second-term
   return result
 }

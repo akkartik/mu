@@ -17,8 +17,17 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   # Initially the viewport shows a section of the scene 4 units wide.
   var scene-width-f: int
   copy-to scene-width-f, 0x400/4
-  var tmp-f/eax: int <- copy 0
-  mandelbrot screen, scene-cx-f, scene-cy-f, scene-width-f
+  {
+    mandelbrot screen scene-cx-f, scene-cy-f, scene-width-f
+    # move at an angle slowly towards the edge
+    var adj-f/eax: int <- multiply-fixed scene-width-f, 0x12/0.07
+    subtract-from scene-cx-f, adj-f
+    add-to scene-cy-f, adj-f
+    # slowly shrink the scene width to zoom in
+    var tmp-f/eax: int <- multiply-fixed scene-width-f, 0x80/0.5
+    copy-to scene-width-f, tmp-f
+    loop
+  }
 }
 
 # Since they still look like int types, we'll append a '-f' suffix to variable
@@ -127,7 +136,7 @@ fn mandelbrot screen: (addr screen), scene-cx-f: int, scene-cy-f: int, scene-wid
   {
     compare y, height
     break-if->=
-    var imaginary-f/ebx: int <- viewport-to-imaginary-f y, width, height, scene-cx-f, scene-width-f
+    var imaginary-f/ebx: int <- viewport-to-imaginary-f y, width, height, scene-cy-f, scene-width-f
     var x/eax: int <- copy 0
     {
       compare x, width
