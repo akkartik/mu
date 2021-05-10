@@ -112,20 +112,20 @@ fn mandelbrot screen: (addr screen) {
   var a/eax: int <- copy 0
   var b/ecx: int <- copy 0
   a, b <- screen-size screen
-  var width-f/esi: int <- copy a
-  width-f <- shift-left 0xb/log2-font-width-and-fixed-precision  # 3 + 8 = 11
-  var height-f/edi: int <- copy b
-  height-f <- shift-left 0xc/log2-font-height-and-fixed-precision  # 4 + 8 = 12
+  var width/esi: int <- copy a
+  width <- shift-left 3/log2-font-width
+  var height/edi: int <- copy b
+  height <- shift-left 4/log2-font-height
   var y/ecx: int <- copy 0
   {
-    compare y, height-f
+    compare y, height
     break-if->=
-    var imaginary-f/ebx: int <- viewport-to-imaginary-f y, width-f, height-f
+    var imaginary-f/ebx: int <- viewport-to-imaginary-f y, width, height
     var x/eax: int <- copy 0
     {
-      compare x, width-f
+      compare x, width
       break-if->=
-      var real-f/edx: int <- viewport-to-real-f x, width-f
+      var real-f/edx: int <- viewport-to-real-f x, width
       var iterations/esi: int <- mandelbrot-iterations-for-point real-f, imaginary-f, 0x400/max
       compare iterations, 0x400/max
       {
@@ -202,10 +202,12 @@ fn mandelbrot-y x-f: int, y-f: int, imaginary-f: int -> _/ebx: int {
 # ranges from -2 to +2. Viewport height just follows the viewport's aspect
 # ratio.
 
-fn viewport-to-real-f x: int, width-f: int -> _/edx: int {
+fn viewport-to-real-f x: int, width: int -> _/edx: int {
   # (x - width/2)*4/width
   var result-f/eax: int <- int-to-fixed x
-  var half-width-f/ecx: int <- copy width-f
+  var width-f/ecx: int <- copy width
+  width-f <- shift-left 8/fixed-precision
+  var half-width-f/edx: int <- copy width-f
   half-width-f <- shift-right-signed 1/log2
   result-f <- subtract half-width-f
   result-f <- shift-left 2/log4
@@ -213,12 +215,16 @@ fn viewport-to-real-f x: int, width-f: int -> _/edx: int {
   return result-f
 }
 
-fn viewport-to-imaginary-f y: int, width-f: int, height-f: int -> _/ebx: int {
+fn viewport-to-imaginary-f y: int, width: int, height: int -> _/ebx: int {
   # (y - height/2)*4/width
   var result-f/eax: int <- int-to-fixed y
-  shift-right-signed height-f, 1/log2
-  result-f <- subtract height-f
+  var half-height-f/ecx: int <- copy height
+  half-height-f <- shift-left 8/fixed-precision
+  half-height-f <- shift-right-signed 1/log2
+  result-f <- subtract half-height-f
   result-f <- shift-left 2/log4
+  var width-f/ecx: int <- copy width
+  width-f <- shift-left 8/fixed-precision
   result-f <- divide-fixed result-f, width-f
   return result-f
 }
