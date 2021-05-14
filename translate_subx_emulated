@@ -3,27 +3,37 @@
 #
 # This script uses emulation, so it does not require x86 or Linux. However it
 # is slow.
+#
+# A couple of gotchas:
+# * Many phases here have no error-checking. Perhaps I should use a
+#   version of translate_subx_debug for baremetal.
+# * Don't pass in numbered .subx files without translated .mu files. Our test
+#   harness is in test.mu, and only Mu programs can run tests in baremetal.
+#
+# The top level is in general not as rigorous about avoiding dependency cycles
+# as the lower-level tools in linux/
 
 set -e
 set -v
 
-cat $*            |linux/bootstrap/bootstrap run linux/braces             > a.braces
+cat $*            |linux/bootstrap/bootstrap run linux/braces                         > a.braces
 
-cat a.braces      |linux/bootstrap/bootstrap run linux/calls              > a.calls
+cat a.braces      |linux/bootstrap/bootstrap run linux/calls                          > a.calls
 
-cat a.calls       |linux/bootstrap/bootstrap run linux/sigils             > a.sigils
+cat a.calls       |linux/bootstrap/bootstrap run linux/sigils                         > a.sigils
 
-cat a.sigils      |linux/bootstrap/bootstrap run linux/tests              > a.tests
+cat a.sigils      |linux/bootstrap/bootstrap run linux/tests                          > a.tests
 
 # no assort since baremetal SubX doesn't have segments yet
 
-cat a.tests       |linux/bootstrap/bootstrap run linux/dquotes            > a.dquotes
+cat a.tests       |linux/bootstrap/bootstrap run linux/dquotes                        > a.dquotes
 
-cat a.dquotes     |linux/bootstrap/bootstrap run linux/pack               > a.pack
+cat a.dquotes     |linux/bootstrap/bootstrap run linux/pack                           > a.pack
 
-cat a.pack        |linux/bootstrap/bootstrap run linux/survey_baremetal   > a.survey
+cat a.pack        |linux/bootstrap/bootstrap linux/survey_baremetal   > labels
+cat a.pack        |linux/bootstrap/bootstrap linux/labels_baremetal     labels        > a.survey
 
-cat a.survey      |linux/bootstrap/bootstrap run linux/hex                > a.bin
+cat a.survey      |linux/bootstrap/bootstrap run linux/hex                            > a.bin
 
 # Create code.img containing a.bin
 dd if=/dev/zero of=code.img count=20160  # 512-byte sectors, so 10MB
