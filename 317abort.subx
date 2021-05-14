@@ -1,0 +1,15 @@
+# Dump a stack trace when you abort.
+
+== code
+
+abort:  # e: (addr array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (set-cursor-position-on-real-screen 0 0)
+    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+8) 0xf 0xc)  # 0/real-screen, 0xf/fg=white, 0xc/bg=red
+    # crash
+    {
+      eb/jump loop/disp8
+    }

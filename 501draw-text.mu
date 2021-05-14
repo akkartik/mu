@@ -475,14 +475,3 @@ fn draw-text-wrapping-down-then-right-from-cursor-over-full-screen screen: (addr
   width, height <- screen-size screen
   draw-text-wrapping-down-then-right-from-cursor screen, text, 0/xmin, 0/ymin, width, height, color, background-color
 }
-
-# hacky error-handling
-# just go into an infinite loop
-fn abort e: (addr array byte) {
-  var dummy1/eax: int <- copy 0
-  var dummy2/ecx: int <- copy 0
-  dummy1, dummy2 <- draw-text-wrapping-right-then-down-over-full-screen 0/screen, e, 0/x, 0x2f/y, 0xf/fg=white, 0xc/bg=red
-  {
-    loop
-  }
-}

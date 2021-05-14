@@ -31,6 +31,7 @@ sig debug-print x: (addr array byte), fg: int, bg: int
 sig debug-print? -> _/eax: boolean
 sig turn-on-debug-print
 sig turn-off-debug-print
+sig abort e: (addr array byte)
 
 # streams
 sig clear-stream f: (addr stream _)
