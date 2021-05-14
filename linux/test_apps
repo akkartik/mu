@@ -216,25 +216,7 @@ bootstrap/bootstrap translate [01]*.subx random.subx  -o random
 
 # Phases of the self-hosted SubX translator.
 
-for phase in hex survey_elf pack assort dquotes tests
-do
-  echo $phase
-  bootstrap/bootstrap translate [01]*.subx subx-params.subx $phase.subx -o $phase
-  test "$1" = 'record'  ||  git diff --exit-code $phase
-  {
-    bootstrap/bootstrap run $phase test
-    echo
-  }
-  {
-    chmod +x $phase
-    ./$phase test
-    echo
-  }
-done
-
-# One phase variant for translating SubX to baremetal. (Other phases are reused.)
-
-for phase in survey_baremetal
+for phase in hex survey_elf survey_baremetal pack assort dquotes tests
 do
   echo $phase
   bootstrap/bootstrap translate [01]*.subx subx-params.subx $phase.subx -o $phase
@@ -332,16 +314,7 @@ done
 
 # Phases of the self-hosted SubX translator.
 
-for app in hex survey_elf pack assort dquotes tests
-do
-  echo $app
-  ./translate_subx [01]*.subx subx-params.subx $app.subx
-  diff $app a.elf
-done
-
-# One phase variant for translating SubX to baremetal. (Other phases are reused.)
-
-for app in survey_baremetal
+for app in hex survey_elf survey_baremetal pack assort dquotes tests
 do
   echo $app
   ./translate_subx [01]*.subx subx-params.subx $app.subx
