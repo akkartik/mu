@@ -15807,7 +15807,7 @@ $parse-mu:line-loop:
       # . eax = *word-slice->start
       8b/-> *edx 0/r32/eax
       8a/copy-byte *eax 0/r32/AL
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       # . if (eax == '#') continue
       3d/compare-eax-and 0x23/imm32/hash
       0f 84/jump-if-= loop/disp32
@@ -16619,7 +16619,7 @@ type-tree-contains?:  # t: (addr type-tree), n: type-id -> result/eax: boolean
       8b/-> *(ebp+0xc) 1/r32/ecx
       39/compare *(eax+4) 1/r32/ecx  # Type-tree-value
       0f 94/set-if-= %al
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       eb/jump $type-tree-contains?:end/disp8
     }
     # if t->left contains n, return true
@@ -17094,7 +17094,7 @@ float-register?:  # r: (addr array byte) -> result/eax: boolean
     (get Mu-registers-unique *(ebp+8) 0xc "Mu-registers-unique")  # => eax
     81 7/subop/compare *eax 8/imm32/start-of-floating-point-registers
     0f 9d/set-if->= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
 $float-register?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -17179,7 +17179,7 @@ $parse-type:check-for-int:
         # var tmp/eax: byte = *s->slice
         8b/-> *ecx 0/r32/eax
         8a/copy-byte *eax 0/r32/AL
-        81 4/subop/and %eax 0xff/imm32
+        25/and-eax-with 0xff/imm32
         # TODO: raise an error on `var x: (array int a)`
         (decimal-digit? %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
@@ -17202,7 +17202,7 @@ $parse-type:check-for-type-parameter:
         # var tmp/eax: byte = *s->slice
         8b/-> *ecx 0/r32/eax
         8a/copy-byte *eax 0/r32/AL
-        81 4/subop/and %eax 0xff/imm32
+        25/and-eax-with 0xff/imm32
         # if (tmp != '_') break
         3d/compare-eax-and 0x5f/imm32/_
         75/jump-if-!= break/disp8
@@ -17800,7 +17800,7 @@ identifier?:  # in: (addr slice) -> result/eax: boolean
     8b/-> *(ebp+8) 0/r32/eax
     8b/-> *eax 0/r32/eax
     8a/copy-byte *eax 0/r32/AL
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
     # if (c == '$') return true
     3d/compare-eax-and 0x24/imm32/$
     74/jump-if-= $identifier?:true/disp8
@@ -18213,7 +18213,7 @@ $parse-mu-block:line-loop:
       # . eax = *word-slice->start
       8b/-> *edx 0/r32/eax
       8a/copy-byte *eax 0/r32/AL
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       # . if (eax == '#') continue
       3d/compare-eax-and 0x23/imm32/hash
       0f 84/jump-if-= loop/disp32
@@ -18249,7 +18249,7 @@ $parse-mu-block:check-for-named-block:
         8b/-> *(edx+4) 0/r32/eax
         48/decrement-eax
         8a/copy-byte *eax 0/r32/AL
-        81 4/subop/and %eax 0xff/imm32
+        25/and-eax-with 0xff/imm32
         # . if (eax != ':') break
         3d/compare-eax-and 0x3a/imm32/colon
         0f 85/jump-if-!= break/disp32
@@ -18417,7 +18417,7 @@ check-no-tokens-left:  # line: (addr stream byte)
     # . eax = *s->start
     8b/-> *edx 0/r32/eax
     8a/copy-byte *eax 0/r32/AL
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
     # . if (eax == '#') continue
     3d/compare-eax-and 0x23/imm32/hash
     74/jump-if-= $check-no-tokens-left:end/disp8
@@ -18823,7 +18823,7 @@ $parse-mu-stmt:read-outputs:
         # if slice-starts-with?(name, "*") abort
         8b/-> *ecx 0/r32/eax  # Slice-start
         8a/copy-byte *eax 0/r32/AL
-        81 4/subop/and %eax 0xff/imm32
+        25/and-eax-with 0xff/imm32
         3d/compare-eax-and 0x2a/imm32/asterisk
         0f 84/jump-if-= $parse-mu-stmt:error-output-dereferenced/disp32
         # assert(identifier?(name))
@@ -18953,7 +18953,7 @@ $add-operation-and-inputs-to-stmt:read-inouts:
       # if (slice-starts-with?(name, '*')) ++name->start and set is-deref?
       8b/-> *ecx 0/r32/eax  # Slice-start
       8a/copy-byte *eax 0/r32/AL
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       3d/compare-eax-and 0x2a/imm32/asterisk
       {
         75/jump-if-!= break/disp8
@@ -19067,7 +19067,7 @@ stmt-has-outputs?:  # line: (addr stream byte) -> result/eax: boolean
       # . eax = *word-slice->start
       8b/-> *ecx 0/r32/eax
       8a/copy-byte *eax 0/r32/AL
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       # . if (eax == '#') break
       3d/compare-eax-and 0x23/imm32/hash
       b8/copy-to-eax 0/imm32/false/result  # restore result (if we're here it's still false)
@@ -20255,7 +20255,7 @@ container?:  # t: type-id -> result/eax: boolean
     c1/shift 4/subop/left %eax 2/imm8
     3b/compare 0/r32/eax *Primitive-type-ids
     0f 9d/set-if->= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
 $container?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -26520,7 +26520,7 @@ $type-component-match?:is-atom:
       8b/-> *(ecx+4) 0/r32/eax  # Type-tree-value
       39/compare *(edx+4) 0/r32/eax  # Type-tree-value
       0f 94/set-if-= %al
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       e9/jump $type-component-match?:end/disp32
     }
 $type-component-match?:check-left:
@@ -26687,7 +26687,7 @@ mu-array?:  # t: (addr type-tree) -> result/eax: boolean
     # return t->left->value == array
     81 7/subop/compare *(eax+4) 3/imm32/array-type-id  # Type-tree-value
     0f 94/set-if-= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
     eb/jump $mu-array?:end/disp8
 $mu-array?:return-false:
     b8/copy-to-eax 0/imm32/false
@@ -26752,7 +26752,7 @@ mu-stream?:  # t: (addr type-tree) -> result/eax: boolean
     # return t->left->value == stream
     81 7/subop/compare *(eax+4) 0xb/imm32/stream-type-id  # Type-tree-value
     0f 94/set-if-= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
     eb/jump $mu-stream?:end/disp8
 $mu-stream?:return-false:
     b8/copy-to-eax 0/imm32/false
@@ -26941,7 +26941,7 @@ $type-equal?:is-atom:
       8b/-> *(ecx+4) 0/r32/eax  # Type-tree-value
       39/compare *(edx+4) 0/r32/eax  # Type-tree-value
       0f 94/set-if-= %al
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       e9/jump $type-equal?:end/disp32
     }
 $type-equal?:check-left:
@@ -27459,7 +27459,7 @@ $emit-outputs:loop:
       89/<- %ecx 0/r32/eax
       # if curr-output-register starts with "x", emit a floating-point copy
       8a/copy-byte *(ecx+4) 0/r32/AL
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       3d/compare-eax-and 0x78/imm32/x
       {
         75/jump-if-!= break/disp8
@@ -27905,7 +27905,7 @@ emit-push-register:  # out: (addr buffered-file), reg: (addr array byte)
     8b/-> *(ebp+0xc) 0/r32/eax
     # var prefix/eax: byte = reg->data[0]
     8a/copy-byte *(eax+4) 0/r32/AL
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
     # if (prefix == 'x') push xmm register
     {
       3d/compare-eax-and 0x78/imm32/x
@@ -27918,7 +27918,7 @@ emit-push-register:  # out: (addr buffered-file), reg: (addr array byte)
       # var prefix/eax: byte = reg->data[3]
       8b/-> *(ebp+0xc) 0/r32/eax
       8a/copy-byte *(eax+7) 0/r32/AL
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       (write-byte-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) "/x32\n")
       e9/jump $emit-push-register:end/disp32
@@ -27944,7 +27944,7 @@ emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
     8b/-> *(ebp+0xc) 0/r32/eax
     # var prefix/eax: byte = reg->data[0]
     8a/copy-byte *(eax+4) 0/r32/AL
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
     # if (prefix == 'x') pop to xmm register
     {
       3d/compare-eax-and 0x78/imm32/x
@@ -27955,7 +27955,7 @@ emit-pop-register:  # out: (addr buffered-file), reg: (addr array byte)
       # var prefix/eax: byte = reg->data[3]
       8b/-> *(ebp+0xc) 0/r32/eax
       8a/copy-byte *(eax+7) 0/r32/AL
-      81 4/subop/and %eax 0xff/imm32
+      25/and-eax-with 0xff/imm32
       (write-byte-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) "/x32\n")
       (emit-indent *(ebp+8) *Curr-block-depth)
@@ -30269,7 +30269,7 @@ power-of-2?:  # n: int, err: (addr buffered-file), ed: (addr exit-descriptor) ->
     # return (tmp2 == 0)
     3d/compare-eax-and 0/imm32
     0f 94/set-byte-if-= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
 $power-of-2?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -36139,7 +36139,7 @@ subx-type-category-match?:  # a: (addr type-tree), b: (addr type-tree) -> result
     # return cata == catb
     39/compare %eax 1/r32/ecx
     0f 94/set-byte-if-= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
 $subx-type-category-match?:end:
     # . restore registers
     59/pop-to-ecx
@@ -36182,7 +36182,7 @@ simple-mu-type?:  # a: (addr type-tree), n: type-id -> result/eax: boolean
     8b/-> *(ebp+8) 0/r32/eax
     39/compare *(eax+4) 1/r32/ecx  # Type-tree-value
     0f 94/set-byte-if-= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
 $simple-mu-type?:end:
     # . restore registers
     59/pop-to-ecx
@@ -36206,7 +36206,7 @@ mu-addr-type?:  # a: (addr type-tree) -> result/eax: boolean
     # return (a->value == addr)
     81 7/subop/compare *(eax+4) 2/imm32/addr  # Type-tree-value
     0f 94/set-byte-if-= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
 $mu-addr-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -36228,7 +36228,7 @@ mu-array-type?:  # a: (addr type-tree) -> result/eax: boolean
     # return (a->value == array)
     81 7/subop/compare *(eax+4) 3/imm32/array  # Type-tree-value
     0f 94/set-byte-if-= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
 $mu-array-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -36290,7 +36290,7 @@ mu-stream-type?:  # a: (addr type-tree) -> result/eax: boolean
     # return (a->value == stream)
     81 7/subop/compare *(eax+4) 0xb/imm32/stream  # Type-tree-value
     0f 94/set-byte-if-= %al
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
 $mu-stream-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp

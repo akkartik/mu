@@ -152,7 +152,7 @@ $subx-braces:check-for-curly-open:
     # . eax = line->data[line->read]
     8b/-> *(ecx+4) 0/r32/eax
     8a/copy-byte *(ecx+eax+0xc) 0/r32/AL
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
     # . if (eax != '{') continue
     3d/compare-eax-and 0x7b/imm32/open-curly
     0f 85/jump-if-!= $subx-braces:check-for-curly-closed/disp32
@@ -192,7 +192,7 @@ $subx-braces:check-for-comment:
     # . eax = *word-slice->start
     8b/-> *edi 0/r32/eax
     8a/copy-byte *eax 0/r32/AL
-    81 4/subop/and %eax 0xff/imm32
+    25/and-eax-with 0xff/imm32
     # . if (eax == '#') continue
     3d/compare-eax-and 0x23/imm32/hash
     74/jump-if-= $subx-braces:word-loop/disp8

@@ -3119,7 +3119,7 @@ $far-jump-or-call?:check-second-word:
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy *edx to eax
     # . c/eax = *start
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
-    81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
+    25/and-eax-with  0xff/imm32
     # . if (eax != '8') return
     3d/compare-eax-and  0x38/imm32/8
     75/jump-if-!=  $far-jump-or-call?:end/disp8
@@ -3257,7 +3257,7 @@ $emit-headers:loop:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # curr-segment += 20                        # size of a row
-    81          0/subop/add         3/mod/direct    0/rm32/eax    .           .             .           .           .               0x14/imm32        # add to eax
+    05/add-to-eax  0x14/imm32
     e9/jump  $emit-headers:loop/disp32
 $emit-headers:end:
     # . restore registers
