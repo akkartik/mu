@@ -43,13 +43,13 @@ fi
 
 # Latter half of disk is for debug info.
 dd if=labels of=code.img seek=10080 conv=notrunc  # keep this sync'd with abort.subx
-if [ `stat --printf="%s" labels` -ge 131072 ]  # 256 sectors * 512 bytes per sector, the most an ATA drive can read in a single command
+if [ `stat --printf="%s" labels` -ge 524288 ]  # 4 reads * 256 sectors * 512 bytes per sector
 then
   echo "labels won't all be loaded on abort"
   exit 1
 fi
 
-if [ `wc -l < labels` -gt 4096 ]  # 0x1000 stream capacity in abort.subx
+if [ `wc -l < labels` -gt 16384 ]  # 0x4000 stream capacity in abort.subx
 then
   echo "abort will go into infinite regress"
   exit 1

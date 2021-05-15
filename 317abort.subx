@@ -27,10 +27,10 @@ dump-call-stack:
     51/push-ecx
     52/push-edx
     53/push-ebx
-    # var labels/edx: (addr stream {start-address, label-slice} 0x1000)
+    # var labels/edx: (addr stream {start-address, label-slice} 0x4000)
     # start addresses are in ascending order
-    81 5/subop/subtract %esp 0xc000/imm32
-    68/push  0xc000/imm32
+    81 5/subop/subtract %esp 0x30000/imm32  # 0x4000 labels * 12 bytes per label
+    68/push  0x30000/imm32
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/<- %edx 4/r32/esp
@@ -81,8 +81,11 @@ load-debug-symbols:  # labels: (addr stream {start-address, label-slice})
     c7 0/subop/copy *ecx 0/imm32  # write index
     c7 0/subop/copy *(ecx+4) 0/imm32  # read index
     c7 0/subop/copy *(ecx+8) 0x01000000/imm32  # stream capacity = 16MB
-    # load 0x100 sectors starting from sector 10080 = 0x2760
+    # load 0x400 sectors starting from sector 10080 = 0x2760
     (load-sectors Primary-bus-primary-drive 0x2760 0x100 %ecx)
+    (load-sectors Primary-bus-primary-drive 0x2860 0x100 %ecx)
+    (load-sectors Primary-bus-primary-drive 0x2960 0x100 %ecx)
+    (load-sectors Primary-bus-primary-drive 0x2a60 0x100 %ecx)
     # - parse pointers to portions of this stream into labels
     # var curr/ecx: (addr byte) = s->data
     81 0/subop/add %ecx 0xc/imm32
