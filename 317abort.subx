@@ -15,13 +15,24 @@ abort:  # e: (addr array byte)
       eb/jump loop/disp8
     }
 
+# destroys the heap
 dump-call-stack:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
+    51/push-ecx
+    52/push-edx
     53/push-ebx
+    # var labels/edx: (stream {label-name, address} 0x1000)
+    81 5/subop/subtract %esp 0xc000/imm32
+    68/push  0xc000/imm32
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/<- %edx 4/r32/esp
+    #
+    (load-debug-symbols %edx)  # destroys the heap
     # traverse the linked list of ebp pointers: https://wiki.osdev.org/Stack_Trace
     8b/-> *ebp 3/r32/ebx
     {
@@ -37,8 +48,55 @@ dump-call-stack:
       e9/jump loop/disp32
     }
 $dump-call-stack:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x100c/imm32
     # . restore registers
     5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+load-debug-symbols:  # labels/edx: (stream {label-name, address})
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    # create space for a stream on the heap, clobbering any existing data
+    # var ecx: (addr stream byte)
+    b9/copy-to-ecx 0x03000000/imm32
+    c7 0/subop/copy *ecx 0/imm32  # write index
+    c7 0/subop/copy *(ecx+4) 0/imm32  # read index
+    c7 0/subop/copy *(ecx+8) 0x01000000/imm32  # stream capacity = 16MB
+    # load 0x100 sectors starting from sector 10080 = 0x2760
+    (load-sectors Primary-bus-primary-drive 0x2760 0x100 %ecx)
+    b8/copy-to-eax 0x0300000c/imm32
+    b9/copy-to-ecx 0/imm32
+    {
+      3d/compare-eax-and 0x030000ff/imm32
+      74/jump-if-= break/disp8
+      #
+      8a/byte-> *eax 1/r32/CL
+      (draw-grapheme-at-cursor 0 %ecx 7 0)
+      (move-cursor-rightward-and-downward 0)
+      #
+      40/increment-eax
+      eb/jump loop/disp8
+    }
+$load-debug-symbols:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x100c/imm32
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp

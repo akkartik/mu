@@ -25,4 +25,13 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
     y <- increment
     loop
   }
+  foo
+}
+
+fn foo {
+  bar
+}
+
+fn bar {
+  abort "aaa"
 }

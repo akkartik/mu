@@ -889,12 +889,33 @@ Font:
 
 == data
 
-# We'll be gaining access just to the secondary drive on the primary bus for
-# now. It will have the designated 'data' disk so we don't mess with the code
-# disk.
-#
-# The type definition for this variable is in safe Mu (rather than unsafe
-# SubX) code.
+# code disk
+# All ports are 8-bit except data-port, which is 16-bit.
+Primary-bus-primary-drive:
+  # command-port: int (write)
+  0x1f7/imm32
+  # status-port: int (read)
+  0x1f7/imm32
+  # alternative-status-port: int (read)
+  0x3f6/imm32
+  # error-port: int (read)
+  0x1f1/imm32
+  # drive-and-head-port: int
+  0x1f6/imm32
+  # sector-count-port: int
+  0x1f2/imm32
+  # lba-low-port: int
+  0x1f3/imm32
+  # lba-mid-port: int
+  0x1f4/imm32
+  # lba-high-port: int
+  0x1f5/imm32
+  # data-port: int
+  0x1f0/imm32
+  # drive-code: byte                # only drive-specific field
+  0xe0/imm32  # LBA mode also enabled
+
+# data disk
 # All ports are 8-bit except data-port, which is 16-bit.
 Primary-bus-secondary-drive:
   # command-port: int (write)
@@ -944,6 +965,7 @@ load-sectors:  # disk: (addr disk), lba: int, n: int, out: (addr stream byte)
   {
     # poll for results
 #?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "waiting for sector.." 7 0)
+#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "." 7 0)
     (while-ata-busy *(ebp+8))
     (until-ata-data-available *(ebp+8))
 #?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "reading\n" 7 0)
