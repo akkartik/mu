@@ -28,11 +28,13 @@ dump-call-stack:
     52/push-edx
     53/push-ebx
     # var labels/edx: (addr stream {start-address, label-slice} 0x1000)
+    # start addresses are in ascending order
     81 5/subop/subtract %esp 0xc000/imm32
     68/push  0xc000/imm32
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/<- %edx 4/r32/esp
+#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 0xf 0)
     #
     (load-debug-symbols %edx)  # destroys the heap
     # traverse the linked list of ebp pointers: https://wiki.osdev.org/Stack_Trace
@@ -44,6 +46,9 @@ dump-call-stack:
       # loop body
       (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "\n" 0 0xc)
       (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebx+4) 0xf 0xc)
+      (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 0 0xc)
+      (containing-function %edx *(ebx+4))  # => eax, ecx
+#?       (draw-slice-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax %ecx 0 0xc)
       # loop update
       8b/-> *ebx 3/r32/ebx
       #
@@ -102,8 +107,6 @@ load-debug-symbols:  # labels: (addr stream {start-address, label-slice})
       e9/jump loop/disp32
     }
 $load-debug-symbols:end:
-    # . reclaim locals
-    81 0/subop/add %esp 0x100c/imm32
     # . restore registers
     5b/pop-to-ebx
     5a/pop-to-edx
@@ -224,6 +227,69 @@ $label-append:end:
     5e/pop-to-esi
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+containing-function:  # labels: (addr stream {start-address, label-slice}), address: int -> start/eax: (addr byte), end/ecx: (addr byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = labels
+    8b/-> *(ebp+8) 6/r32/esi
+#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %esi 7 0)
+    # var curr/ecx: (addr byte) = labels->data
+    8b/-> *(esi+0xc) 1/r32/ecx
+#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %ecx 7 0)
+    # var max/edx: (addr byte) = labels->data + labels->write
+    8b/-> *esi 2/r32/edx
+    01/add-to %edx 1/r32/ecx
+#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
+    # var previous-function-name/ebx: (addr slice) = 0
+    bb/copy-to-ebx 0/imm32
+    {
+      # abort if not found
+      39/compare %ecx 2/r32/edx
+      {
+        0f 82/jump-if-addr< break/disp32
+        (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "failed to find function for address " 7 0)
+        (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0xc) 7 0)
+        {
+          eb/jump loop/disp8
+        }
+      }
+      # if *curr > address, break
+      8b/-> *ecx 0/r32/eax
+      3b/compare 0/r32/eax *(ebp+0xc)
+      0f 87/jump-if-addr> break/disp32
+      # if **(curr+4) not '$' or '@', save curr to previous-function-name
+      {
+        8b/-> *(ecx+4) 0/r32/eax
+        8a/byte-> *eax 0/r32/eax
+        25/and-with-eax 0xff/imm32
+        3d/compare-eax-and 0x24/imm32/$
+        74/jump-if-= break/disp8
+        3d/compare-eax-and 0x40/imm32/@
+        74/jump-if-= break/disp8
+        8d/copy-address *(ecx+4) 3/r32/ebx
+      }
+      # loop update
+      81 0/subop/add %ecx 0xc/imm32
+      #
+      e9/jump loop/disp32
+    }
+    8b/-> *ebx 0/r32/eax
+    8b/-> *(ebx+4) 1/r32/ecx
+$containing-function:end:
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
