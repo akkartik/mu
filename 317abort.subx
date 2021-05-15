@@ -34,7 +34,6 @@ dump-call-stack:
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/<- %edx 4/r32/esp
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 0xf 0)
     #
     (load-debug-symbols %edx)  # destroys the heap
     # traverse the linked list of ebp pointers: https://wiki.osdev.org/Stack_Trace
@@ -88,7 +87,6 @@ load-debug-symbols:  # labels: (addr stream {start-address, label-slice})
     # var curr/ecx: (addr byte) = s->data
     81 0/subop/add %ecx 0xc/imm32
     {
-#?       (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "." 7 0)
       # loop termination check
       b8/copy-to-eax 0/imm32
       8a/byte-> *ecx 0/r32/eax
@@ -209,18 +207,11 @@ label-append:  # labels: (addr stream {start-address, label-slice}), address: in
     56/push-esi
     # esi = labels
     8b/-> *(ebp+8) 6/r32/esi
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %esi 7 0)
     # ecx = labels->write
     8b/-> *esi 1/r32/ecx
     # labels->data[labels->write] = address
     8b/-> *(ebp+0xc) 0/r32/eax
     89/<- *(esi+ecx+0xc) 0/r32/eax
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
-#?     8d/copy-address *(esi+ecx+0xc) 0/r32/eax
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
-#?     {
-#?       eb/jump loop/disp8
-#?     }
     # labels->data[labels->write+4] = start
     8b/-> *(ebp+0x10) 0/r32/eax
     89/<- *(esi+ecx+0x10) 0/r32/eax
@@ -247,18 +238,13 @@ containing-function:  # labels: (addr stream {start-address, label-slice}), addr
     52/push-edx
     53/push-ebx
     56/push-esi
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0xc) 7 0)
     # esi = labels
     8b/-> *(ebp+8) 6/r32/esi
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %esi 7 0)
     # var curr/ecx: (addr byte) = labels->data
     8d/copy-address *(esi+0xc) 1/r32/ecx
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %ecx 7 0)
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 *ecx 7 0)
     # var max/edx: (addr byte) = labels->data + labels->write
     8b/-> *esi 2/r32/edx
     01/add-to %edx 1/r32/ecx
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %edx 7 0)
     # var previous-function-name/ebx: (addr slice) = 0
     bb/copy-to-ebx 0/imm32
     {
@@ -276,7 +262,6 @@ containing-function:  # labels: (addr stream {start-address, label-slice}), addr
       8b/-> *ecx 0/r32/eax
       3b/compare 0/r32/eax *(ebp+0xc)
       0f 87/jump-if-addr> break/disp32
-#?       (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "." 7 0)
       # if **(curr+4) not '$' or '@', save curr to previous-function-name
       {
         8b/-> *(ecx+4) 0/r32/eax
@@ -286,7 +271,6 @@ containing-function:  # labels: (addr stream {start-address, label-slice}), addr
         74/jump-if-= break/disp8
         3d/compare-eax-and 0x40/imm32/@
         74/jump-if-= break/disp8
-#?         (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "found" 7 0)
         8d/copy-address *(ecx+4) 3/r32/ebx
       }
       # loop update
@@ -294,11 +278,8 @@ containing-function:  # labels: (addr stream {start-address, label-slice}), addr
       #
       e9/jump loop/disp32
     }
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %ebx 7 0)
     8b/-> *ebx 0/r32/eax
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %eax 7 0)
     8b/-> *(ebx+4) 1/r32/ecx
-#?     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 %ecx 7 0)
 $containing-function:end:
     # . restore registers
     5e/pop-to-esi
@@ -330,7 +311,6 @@ draw-slice-wrapping-right-then-down-from-cursor-over-full-screen:  # screen: (ad
       73/jump-if-addr>= break/disp8
       # print *curr
       8a/byte-> *ecx 0/r32/eax
-#?       (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen *(ebp+8) %eax *(ebp+0x14) *(ebp+0x18))
       (draw-grapheme-at-cursor *(ebp+8) %eax *(ebp+0x14) *(ebp+0x18))
       (move-cursor-rightward-and-downward *(ebp+8))
       #
