@@ -15,7 +15,9 @@ abort:  # e: (addr array byte)
       eb/jump loop/disp8
     }
 
-# destroys the heap
+# Helpers below this point are not intended to be reused; they assume the
+# program will soon crash. In particular, they destroy the heap.
+
 dump-call-stack:
     # . prologue
     55/push-ebp
@@ -25,7 +27,7 @@ dump-call-stack:
     51/push-ecx
     52/push-edx
     53/push-ebx
-    # var labels/edx: (stream {label-name, address} 0x1000)
+    # var labels/edx: (addr stream {start-address, label-slice} 0x1000)
     81 5/subop/subtract %esp 0xc000/imm32
     68/push  0xc000/imm32
     68/push  0/imm32/read
@@ -60,7 +62,7 @@ $dump-call-stack:end:
     5d/pop-to-ebp
     c3/return
 
-load-debug-symbols:  # labels/edx: (stream {label-name, address})
+load-debug-symbols:  # labels: (addr stream {start-address, label-slice})
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -70,25 +72,34 @@ load-debug-symbols:  # labels/edx: (stream {label-name, address})
     52/push-edx
     53/push-ebx
     # create space for a stream on the heap, clobbering any existing data
-    # var ecx: (addr stream byte)
+    # var s/ecx: (addr stream byte)
     b9/copy-to-ecx 0x03000000/imm32
     c7 0/subop/copy *ecx 0/imm32  # write index
     c7 0/subop/copy *(ecx+4) 0/imm32  # read index
     c7 0/subop/copy *(ecx+8) 0x01000000/imm32  # stream capacity = 16MB
     # load 0x100 sectors starting from sector 10080 = 0x2760
     (load-sectors Primary-bus-primary-drive 0x2760 0x100 %ecx)
-    b8/copy-to-eax 0x0300000c/imm32
-    b9/copy-to-ecx 0/imm32
+    # - parse pointers to portions of this stream into labels
+    # var curr/ecx: (addr byte) = s->data
+    81 0/subop/add %ecx 0xc/imm32
     {
-      3d/compare-eax-and 0x030000ff/imm32
-      74/jump-if-= break/disp8
+#?       (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "." 7 0)
+      # loop termination check
+      b8/copy-to-eax 0/imm32
+      8a/byte-> *ecx 0/r32/eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+      # loop body
+      (skip-to-next-space %ecx)  # => edx
+      42/increment-edx
+      (skip-to-next-newline %edx)  # => ebx
+      (parse-hex-int-helper %edx %ebx)  # => eax
+      43/increment-ebx
+      (label-append *(ebp+8) %eax %ecx %edx)
+      # loop update
+      89/<- %ecx 3/r32/ebx
       #
-      8a/byte-> *eax 1/r32/CL
-      (draw-grapheme-at-cursor 0 %ecx 7 0)
-      (move-cursor-rightward-and-downward 0)
-      #
-      40/increment-eax
-      eb/jump loop/disp8
+      e9/jump loop/disp32
     }
 $load-debug-symbols:end:
     # . reclaim locals
@@ -96,6 +107,121 @@ $load-debug-symbols:end:
     # . restore registers
     5b/pop-to-ebx
     5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+skip-to-next-space:  # curr: (addr byte) -> _/edx: (addr byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # eax = 0
+    b8/copy-to-eax 0/imm32
+    #
+    8b/-> *(ebp+8) 2/r32/edx
+    {
+      8a/byte-> *edx 0/r32/eax
+      3d/compare-eax-and 0x20/imm32/space
+      0f 84/jump-if-= break/disp32
+      3d/compare-eax-and 0/imm32
+      {
+        75/jump-if-!= break/disp8
+        (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "done loading" 7 0)
+        {
+          eb/jump loop/disp8
+        }
+      }
+      3d/compare-eax-and 0xa/imm32/newline
+      {
+        75/jump-if-!= break/disp8
+        (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "unexpected newline" 7 0)
+        {
+          eb/jump loop/disp8
+        }
+      }
+      42/increment-edx
+      e9/jump loop/disp32
+    }
+$skip-to-next-space:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+skip-to-next-newline:  # curr: (addr byte) -> _/ebx: (addr byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # eax = 0
+    b8/copy-to-eax 0/imm32
+    #
+    8b/-> *(ebp+8) 3/r32/ebx
+    {
+      8a/byte-> *ebx 0/r32/eax
+      3d/compare-eax-and 0xa/imm32/newline
+      0f 84/jump-if-= break/disp32
+      3d/compare-eax-and 0/imm32
+      {
+        75/jump-if-!= break/disp8
+        (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "done loading" 7 0)
+        {
+          eb/jump loop/disp8
+        }
+      }
+      3d/compare-eax-and 0x20/imm32/space
+      {
+        75/jump-if-!= break/disp8
+        (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "unexpected space" 7 0)
+        {
+          eb/jump loop/disp8
+        }
+      }
+      43/increment-ebx
+      e9/jump loop/disp32
+    }
+$skip-to-next-newline:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+label-append:  # labels: (addr stream {start-address, label-slice}), address: int, start: int, end: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    # esi = labels
+    8b/-> *(ebp+8) 6/r32/esi
+    # ecx = labels->write
+    8b/-> *esi 1/r32/ecx
+    # labels->data[labels->write] = address
+    8b/-> *(ebp+0xc) 0/r32/eax
+    89/<- *(esi+ecx+0xc) 0/r32/eax
+    # labels->data[labels->write+4] = start
+    8b/-> *(ebp+0x10) 0/r32/eax
+    89/<- *(esi+ecx+0x10) 0/r32/eax
+    # labels->data[labels->write+8] = end
+    8b/-> *(ebp+0x14) 0/r32/eax
+    89/<- *(esi+ecx+0x14) 0/r32/eax
+    # labels->write += 12
+    81 0/subop/add *esi 0xc/imm32
+$label-append:end:
+    # . restore registers
+    5e/pop-to-esi
     59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
