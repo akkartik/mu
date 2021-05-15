@@ -11,10 +11,10 @@
 #     74/jump-if-= loop/disp8
 #   }
 #   $ cat x.subx |braces
-#   _loop1:
-#     7c/jump-if-< _break1/disp8
-#     74/jump-if-= _loop1/disp8
-#   _break1:
+#   @loop1:
+#     7c/jump-if-< @break1/disp8
+#     74/jump-if-= @loop1/disp8
+#   @break1:
 #
 # Example 2:
 #   $ cat x.subx
@@ -25,12 +25,12 @@
 #     74/jump-if-= loop/disp8
 #   }
 #   $ cat x.subx |braces
-#   _loop1:
-#     7c/jump-if-< _break1/disp8
-#   _break1:
-#   _loop2:
-#     74/jump-if-= _loop2/disp8
-#   _break2:
+#   @loop1:
+#     7c/jump-if-< @break1/disp8
+#   @break1:
+#   @loop2:
+#     74/jump-if-= @loop2/disp8
+#   @break2:
 #
 # Example 3:
 #   $ cat x.subx
@@ -41,12 +41,12 @@
 #     7c/jump-if-< loop/disp8
 #   }
 #   $ cat x.subx |braces
-#   _loop1:
-#     _loop2:
-#       74/jump-if-= _loop2/disp8
-#     _break2:
-#     7c/jump-if-< _loop1/disp8
-#   _break1:
+#   @loop1:
+#     @loop2:
+#       74/jump-if-= @loop2/disp8
+#     @break2:
+#     7c/jump-if-< @loop1/disp8
+#   @break1:
 
 == code
 
@@ -85,13 +85,13 @@ subx-braces:  # in: (addr buffered-file), out: (addr buffered-file)
     #     if (line->write == 0) break                           # end of file
     #     skip-chars-matching-whitespace(line)
     #     if line->data[line->read] == '{'
-    #       print(out, "_loop" next-label-id ":\n")
+    #       print(out, "@loop" next-label-id ":\n")
     #       push(label-stack, next-label-id)
     #       ++next-label-id
     #       continue
     #     if line->data[line->read] == '}'
     #       var top = pop(label-stack)
-    #       print(out, "_break" top ":\n")
+    #       print(out, "@break" top ":\n")
     #       continue
     #     while true
     #       var word-slice: (addr slice) = next-word-or-string(line)
@@ -101,11 +101,11 @@ subx-braces:  # in: (addr buffered-file), out: (addr buffered-file)
     #         continue
     #       if slice-starts-with?(word-slice, "break/")
     #         var top = top(label-stack)
-    #         print(out, "_break" top)
+    #         print(out, "@break" top)
     #         word-slice->start += len("break")
     #       else if slice-starts-with?(word-slice, "loop/")
     #         var top = top(label-stack)
-    #         print(out, "_loop" top)
+    #         print(out, "@loop" top)
     #         word-slice->start += len("loop")
     #       print(out, word-slice " ")
     #     print(out, "\n")
@@ -157,8 +157,8 @@ $subx-braces:check-for-curly-open:
     3d/compare-eax-and 0x7b/imm32/open-curly
     0f 85/jump-if-!= $subx-braces:check-for-curly-closed/disp32
 $subx-braces:emit-curly-open:
-    # print(out, "_loop" next-label-id ":")
-    (write-buffered *(ebp+0xc) "_loop")
+    # print(out, "@loop" next-label-id ":")
+    (write-buffered *(ebp+0xc) "@loop")
     (write-int32-hex-buffered *(ebp+0xc) %ebx)
     (write-buffered *(ebp+0xc) ":")
     # push(label-stack, next-label-id)
@@ -174,8 +174,8 @@ $subx-braces:check-for-curly-closed:
 $subx-braces:emit-curly-closed:
     # eax = pop(label-stack)
     (pop %edx)
-    # print(out, "_break" eax ":")
-    (write-buffered *(ebp+0xc) "_break")
+    # print(out, "@break" eax ":")
+    (write-buffered *(ebp+0xc) "@break")
     (write-int32-hex-buffered *(ebp+0xc) %eax)
     (write-buffered *(ebp+0xc) ":")
     # continue
@@ -205,8 +205,8 @@ $subx-braces:check-for-break:
     74/jump-if-= $subx-braces:check-for-loop/disp8
 $subx-braces:emit-break:
     (top %edx)
-    # print(out, "_break" eax)
-    (write-buffered *(ebp+0xc) "_break")
+    # print(out, "@break" eax)
+    (write-buffered *(ebp+0xc) "@break")
     (write-int32-hex-buffered *(ebp+0xc) %eax)
     # word-slice->start += len("break")
     81 0/subop/add *edi 5/imm32/strlen
@@ -221,8 +221,8 @@ $subx-braces:check-for-loop:
     74/jump-if-= $subx-braces:emit-word-slice/disp8
 $subx-braces:emit-loop:
     (top %edx)
-    # print(out, "_loop" eax)
-    (write-buffered *(ebp+0xc) "_loop")
+    # print(out, "@loop" eax)
+    (write-buffered *(ebp+0xc) "@loop")
     (write-int32-hex-buffered *(ebp+0xc) %eax)
     # word-slice->start += len("loop")
     81 0/subop/add *edi 4/imm32/strlen
@@ -288,10 +288,10 @@ test-subx-braces-1:
     #   }
     #
     # output:
-    #   _loop1:
-    #   ab _break1/imm32
-    #   cd _loop1/imm32
-    #   _break1:
+    #   @loop1:
+    #   ab @break1/imm32
+    #   cd @loop1/imm32
+    #   @break1:
     #
     # . prologue
     55/push-ebp
@@ -311,7 +311,7 @@ test-subx-braces-1:
 #?     (write-stream 2 _test-output-stream)
 #?     (write 2 "$\n")
 #?     # }}}
-    (check-stream-equal _test-output-stream "_loop0x00000001:\nab _break0x00000001/imm32 \ncd _loop0x00000001/imm32 \n_break0x00000001:\n" "F - test-subx-braces-1")
+    (check-stream-equal _test-output-stream "@loop0x00000001:\nab @break0x00000001/imm32 \ncd @loop0x00000001/imm32 \n@break0x00000001:\n" "F - test-subx-braces-1")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -327,12 +327,12 @@ test-subx-braces-2:
     #   }
     #
     # output:
-    #   _loop1:
-    #   _loop2:
-    #   ab _break2/imm32
-    #   _break2:
-    #   cd _loop1/imm32
-    #   _break1:
+    #   @loop1:
+    #   @loop2:
+    #   ab @break2/imm32
+    #   @break2:
+    #   cd @loop1/imm32
+    #   @break1:
     #
     # . prologue
     55/push-ebp
@@ -352,7 +352,7 @@ test-subx-braces-2:
 #?     (write-stream 2 _test-output-stream)
 #?     (write 2 "$\n")
 #?     # }}}
-    (check-stream-equal _test-output-stream "_loop0x00000001:\n_loop0x00000002:\nab _break0x00000002/imm32 \n_break0x00000002:\ncd _loop0x00000001/imm32 \n_break0x00000001:\n" "F - test-subx-braces-2")
+    (check-stream-equal _test-output-stream "@loop0x00000001:\n@loop0x00000002:\nab @break0x00000002/imm32 \n@break0x00000002:\ncd @loop0x00000001/imm32 \n@break0x00000001:\n" "F - test-subx-braces-2")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
