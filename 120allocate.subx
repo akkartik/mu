@@ -130,10 +130,7 @@ $allocate-raw:end:
     c3/return
 
 $allocate-raw:abort:
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "allocate: failed" 3 0)  # 3=cyan
-    {
-      eb/jump loop/disp8
-    }
+    (abort "allocate: failed")
     # never gets here
 
 test-allocate-raw-success:
@@ -282,10 +279,7 @@ $lookup:abort:
     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 2 0)
     40/increment-eax
     (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 *eax 3 0)
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 " " 2 0)
-    {
-      eb/jump loop/disp8
-    }
+    (abort "\n")
     # never gets here
 
 test-lookup-success:
@@ -554,10 +548,7 @@ allocate-region:  # ad: (addr allocation-descriptor), n: int, out: (addr handle 
 # we bloat a potentially cold segment in RAM so we can abort with a single
 # instruction.
 $allocate-region:abort:
-    (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "allocate-region: failed to allocate" 3 0)  # 3=cyan
-    {
-      eb/jump loop/disp8
-    }
+    (abort "allocate-region: failed to allocate")
     # never gets here
 
 # Claim the next 'n+4' bytes of memory and initialize the first 4 to n.
