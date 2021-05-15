@@ -9,7 +9,38 @@ abort:  # e: (addr array byte)
     #
     (set-cursor-position-on-real-screen 0 0)
     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+8) 0xf 0xc)  # 0/real-screen, 0xf/fg=white, 0xc/bg=red
+    (dump-call-stack)
     # crash
     {
       eb/jump loop/disp8
     }
+
+dump-call-stack:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    53/push-ebx
+    # traverse the linked list of ebp pointers: https://wiki.osdev.org/Stack_Trace
+    8b/-> *ebp 3/r32/ebx
+    {
+      # loop termination check
+      81 7/subop/compare %ebx 0/imm32
+      0f 84/jump-if-= break/disp32
+      # loop body
+      (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "\n" 0 0xc)
+      (draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebx+4) 0xf 0xc)
+      # loop update
+      8b/-> *ebx 3/r32/ebx
+      #
+      e9/jump loop/disp32
+    }
+$dump-call-stack:end:
+    # . restore registers
+    5b/pop-to-ebx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
