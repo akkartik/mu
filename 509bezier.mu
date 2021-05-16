@@ -43,16 +43,6 @@ fn draw-monotonic-bezier screen: (addr screen), x0: int, y0: int, x1: int, y1: i
     tmp2-f <- multiply sx-f
     cur-f <- subtract tmp2-f
   }
-  set-cursor-position 0/screen, 0/x, 0x1d/y
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, sx, 4/fg 0/bg
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 4/fg 0/bg
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, sy, 4/fg 0/bg
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 4/fg 0/bg
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, xx, 4/fg 0/bg
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 4/fg 0/bg
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, yy, 4/fg 0/bg
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 4/fg 0/bg
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, xy, 4/fg 0/bg
   # if (xx*sx > 0) abort
   {
     tmp <- copy xx
@@ -106,8 +96,6 @@ fn draw-monotonic-bezier screen: (addr screen), x0: int, y0: int, x1: int, y1: i
     # if (dist1 <= dist2) break
     compare dist1, dist2
     break-if-<=
-    set-cursor-position 0/screen, 0/x 0x1e/y
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "swapping P0 and P2", 4/fg 0/bg
     # swap x0 and x2
     tmp <- copy x0
     copy-to x2, tmp
@@ -128,7 +116,6 @@ fn draw-monotonic-bezier screen: (addr screen), x0: int, y0: int, x1: int, y1: i
   var x/ecx: int <- copy x0
   var y/edx: int <- copy y0
   set-cursor-position 0/screen, 0/x 0x1f/y
-#?   printf("sx %d sy %d xx %ld yy %ld xy %ld cur %g\n", sx, sy, xx, yy, xy, cur);
   var zero-f: float
   # plot a curved part if necessary
   $draw-monotonic-bezier:curve: {
@@ -197,15 +184,6 @@ fn draw-monotonic-bezier screen: (addr screen), x0: int, y0: int, x1: int, y1: i
       var negative-1-f/xmm1: float <- convert negative-1
       cur-f <- multiply negative-1-f
     }
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, sx, 4/fg 0/bg
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 4/fg 0/bg
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, sy, 4/fg 0/bg
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 4/fg 0/bg
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, xx, 4/fg 0/bg
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 4/fg 0/bg
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, yy, 4/fg 0/bg
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 4/fg 0/bg
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, xy, 4/fg 0/bg
     var four/ebx: int <- copy 4
     var dx-f/xmm5: float <- convert four
     var dy-f/xmm6: float <- convert four
@@ -249,27 +227,8 @@ fn draw-monotonic-bezier screen: (addr screen), x0: int, y0: int, x1: int, y1: i
     var xy-f/xmm0: float <- convert xy
     err-f <- add xy-f
     #
-#?     set-cursor-position 0, 0/x 0/y
-#?     var screen-y/esi: int <- copy 0
     $draw-monotonic-bezier:loop: {
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg 0/bg
-#?       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 3/fg 0/bg
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg 0/bg
-#?       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " vs ", 3/fg 0/bg
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x2, 3/fg 0/bg
-#?       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 3/fg 0/bg
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y2, 3/fg 0/bg
-#?       var dummy/eax: int <- render-float-decimal 0/screen,  dx-f, 3/precision,    0/x screen-y, 3/fg 0/bg
-#?       var dummy/eax: int <- render-float-decimal 0/screen,  dy-f, 3/precision, 0x10/x screen-y, 3/fg 0/bg
-#?       var dummy/eax: int <- render-float-decimal 0/screen, err-f, 3/precision, 0x20/x screen-y, 3/fg 0/bg
-#?       move-cursor-to-left-margin-of-next-line 0/screen
-#?       screen-y <- increment
       pixel screen, x, y, color
-#?       {
-#?         var foo/eax: byte <- read-key 0/keyboard
-#?         compare foo, 0
-#?         loop-if-=
-#?       }
       # if (x == x2 && y == y2) return
       {
         compare x, x2
@@ -293,8 +252,6 @@ fn draw-monotonic-bezier screen: (addr screen), x0: int, y0: int, x1: int, y1: i
       {
         compare two-err-f, dy-f
         break-if-float<=
-#?         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "x step", 3/fg 0/bg
-#?         move-cursor-to-left-margin-of-next-line 0/screen
         # x += sx
         x <- add sx
         # dx -= xy
@@ -310,8 +267,6 @@ fn draw-monotonic-bezier screen: (addr screen), x0: int, y0: int, x1: int, y1: i
       {
         compare perform-y-step?, 0/false
         break-if-=
-#?         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y step", 3/fg 0/bg
-#?         move-cursor-to-left-margin-of-next-line 0/screen
         # y += sy
         y <- add sy
         # dy -= xy
