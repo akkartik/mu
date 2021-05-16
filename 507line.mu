@@ -82,3 +82,14 @@ fn draw-vertical-line screen: (addr screen), x: int, y0: int, y1: int, color: in
     loop
   }
 }
+
+fn draw-rect screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int, color: int {
+  var y/eax: int <- copy ymin
+  {
+    compare y, ymax
+    break-if->=
+    draw-horizontal-line screen, y, xmin, xmax, color
+    y <- increment
+    loop
+  }
+}
