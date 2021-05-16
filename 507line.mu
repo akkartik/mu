@@ -93,3 +93,17 @@ fn draw-rect screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int, 
     loop
   }
 }
+
+# 0 <= u <= 1
+fn line-point u: float, x0: int, x1: int -> _/eax: int {
+  var one/eax: int <- copy 1
+  var u-prime/xmm0: float <- convert one
+  u-prime <- subtract u
+  var result/xmm1: float <- convert x0
+  result <- multiply u-prime
+  var term2/xmm2: float <- convert x1
+  term2 <- multiply u
+  result <- add term2
+  var result/eax: int <- convert result
+  return result
+}

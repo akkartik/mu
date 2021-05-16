@@ -86,28 +86,59 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   var tick-a/eax: (addr int) <- get self, tick
   set-cursor-position screen, 0x78/x, 0/y
   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, *tick-a, 7/fg 0/bg
-  # time-variant portion
+  # time-variant portion: 16 repeating steps
   var progress/eax: int <- copy *tick-a
-  progress <- and 7
-  var u/xmm7: float <- convert progress
-  var eight/eax: int <- copy 8
-  var eight-f/xmm0: float <- convert eight
-  u <- divide eight-f
-  # points on conveyers from neighboring cells
-  draw-bezier-point screen, u, 0xa0/x0 0x20/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-  draw-bezier-point screen, u, 0xa0/x0 0x180/y0, 0xc0/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-  draw-bezier-point screen, u, 0xa0/x0 0x2e0/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-  draw-bezier-point screen, u, 0x200/x0 0x20/y0, 0x180/x1 0x90/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
-  draw-bezier-point screen, u, 0x200/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
-  draw-bezier-point screen, u, 0x360/x0 0x20/y0, 0x180/x1 0xc0/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
-  draw-bezier-point screen, u, 0x360/x0 0x180/y0, 0x35c/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-  draw-bezier-point screen, u, 0x360/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
+  progress <- and 0xf
+  # 7 time steps for getting inputs to sum
+  {
+    compare progress, 7
+    break-if->=
+    var u/xmm7: float <- convert progress
+    var six/eax: int <- copy 6
+    var six-f/xmm0: float <- convert six
+    u <- divide six-f
+    # points on conveyers from neighboring cells
+    draw-bezier-point screen, u, 0xa0/x0 0x20/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0xa0/x0 0x180/y0, 0xc0/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0xa0/x0 0x2e0/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x200/x0 0x20/y0, 0x180/x1 0x90/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x200/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x360/x0 0x20/y0, 0x180/x1 0xc0/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x360/x0 0x180/y0, 0x35c/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x360/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
+    return
+  }
+  # two time steps for getting count to filter
+  progress <- subtract 7
+  {
+    compare progress, 2
+    break-if->=
+    progress <- increment  # (0, 1) => (1, 2)
+    var u/xmm7: float <- convert progress
+    var three/eax: int <- copy 3
+    var three-f/xmm0: float <- convert three
+    u <- divide three-f
+    draw-linear-point screen, u, 0x180/xs, 0x150/ys, 0x210/xf, 0x190/yf, 7/color, 4/radius
+    set-cursor-position screen, 0x3a/scol, 0x16/srow
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, 3, 0xf/fg 0/bg
+    return
+  }
+  # final 7 time steps for updating output
+  progress <- subtract 2
+  # TODO points on conveyers to outputs
 }
 
 fn draw-bezier-point screen: (addr screen), u: float, x0: int, y0: int, x1: int, y1: int, x2: int, y2: int, color: int, radius: int {
   var _cy/eax: int <- bezier-point u, y0, y1, y2
   var cy/ecx: int <- copy _cy
   var cx/eax: int <- bezier-point u, x0, x1, x2
+  draw-disc screen, cx, cy, radius, color, 0xf/border-color=white
+}
+
+fn draw-linear-point screen: (addr screen), u: float, x0: int, y0: int, x1: int, y1: int, color: int, radius: int {
+  var _cy/eax: int <- line-point u, y0, y1
+  var cy/ecx: int <- copy _cy
+  var cx/eax: int <- line-point u, x0, x1
   draw-disc screen, cx, cy, radius, color, 0xf/border-color=white
 }
 
