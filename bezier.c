@@ -1,3 +1,4 @@
+/* From http://members.chello.at/easyfilter/bresenham.html */
 #include<assert.h>
 #include<stdio.h>
 
