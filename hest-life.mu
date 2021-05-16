@@ -82,6 +82,8 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-rect screen,  0xd0/xmin 0x170/ymin,  0xf0/xmax, 0x190/ymax, 0xf/alive
   draw-rect screen, 0x1f0/xmin 0x290/ymin, 0x210/xmax, 0x2b0/ymax, 0xf/alive
   draw-rect screen, 0x310/xmin 0x170/ymin, 0x330/xmax, 0x190/ymax, 0xf/alive
+  # conveyers from filter to outputs
+  draw-monotonic-bezier screen, 0x210/xf 0x190/yf, 0x1c0/x1 0x60/y1,    0xe0/x2   0x60/y2,  0x2a/color
   # clock
   var tick-a/eax: (addr int) <- get self, tick
   set-cursor-position screen, 0x78/x, 0/y
