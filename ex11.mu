@@ -1,10 +1,25 @@
 # Demo of an interactive app: controlling a Bezier curve on screen
+#
+# To build a disk image:
+#   ./translate ex11.mu            # emits code.img
+# To run:
+#   qemu-system-i386 code.img
+# Or:
+#   bochs -f bochsrc               # bochsrc loads code.img
+#
+# Expected output: a spline with 3 control points. Use `Tab` to switch cursor
+# between control points, and arrow keys to move the control point at the
+# cursor.
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env, 0x10 0x10, 0x80 0x100, 0x200 0x140
-  render screen, env
+  {
+    render screen, env
+    edit keyboard, env
+    loop
+  }
 }
 
 type environment {
@@ -20,6 +35,7 @@ type point {
 }
 
 fn render screen: (addr screen), _self: (addr environment) {
+  clear-screen screen
   var self/esi: (addr environment) <- copy _self
   var tmp-ah/ecx: (addr handle point) <- get self, p0
   var tmp/eax: (addr point) <- lookup *tmp-ah
@@ -80,6 +96,121 @@ fn cursor screen: (addr screen), _p: (addr point), side: int, color: int {
   var bottom-y/edx: int <- copy top-y
   bottom-y <- add side
   draw-horizontal-line screen, bottom-y, left-x, right-x, color
+}
+
+fn edit keyboard: (addr keyboard), _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var key/eax: byte <- read-key keyboard
+  compare key, 0
+  loop-if-=
+  {
+    compare key, 9/tab
+    break-if-!=
+    toggle-cursor self
+    return
+  }
+  {
+    compare key, 0x80/left-arrow
+    break-if-!=
+    cursor-left self
+    return
+  }
+  {
+    compare key, 0x83/right-arrow
+    break-if-!=
+    cursor-right self
+    return
+  }
+  {
+    compare key, 0x81/down-arrow
+    break-if-!=
+    cursor-down self
+    return
+  }
+  {
+    compare key, 0x83/up-arrow
+    break-if-!=
+    cursor-up self
+    return
+  }
+}
+
+fn toggle-cursor _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var cursor-ah/edi: (addr handle point) <- get self, cursor
+  var p0-ah/ecx: (addr handle point) <- get self, p0
+  var p1-ah/edx: (addr handle point) <- get self, p1
+  var p2-ah/ebx: (addr handle point) <- get self, p2
+  {
+    var p0?/eax: boolean <- handle-equal? *p0-ah, *cursor-ah
+    compare p0?, 0/false
+    break-if-=
+    copy-object p1-ah, cursor-ah
+    return
+  }
+  {
+    var p1?/eax: boolean <- handle-equal? *p1-ah, *cursor-ah
+    compare p1?, 0/false
+    break-if-=
+    copy-object p2-ah, cursor-ah
+    return
+  }
+  {
+    var p2?/eax: boolean <- handle-equal? *p2-ah, *cursor-ah
+    compare p2?, 0/false
+    break-if-=
+    copy-object p0-ah, cursor-ah
+    return
+  }
+  abort "lost cursor"
+}
+
+fn cursor-left _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var cursor-ah/esi: (addr handle point) <- get self, cursor
+  var cursor/eax: (addr point) <- lookup *cursor-ah
+  var cursor-x/eax: (addr int) <- get cursor, x
+  compare *cursor-x, 5
+  {
+    break-if-<
+    subtract-from *cursor-x, 5
+  }
+}
+
+fn cursor-right _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var cursor-ah/esi: (addr handle point) <- get self, cursor
+  var cursor/eax: (addr point) <- lookup *cursor-ah
+  var cursor-x/eax: (addr int) <- get cursor, x
+  compare *cursor-x, 0x3f0
+  {
+    break-if->
+    add-to *cursor-x, 5
+  }
+}
+
+fn cursor-up _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var cursor-ah/esi: (addr handle point) <- get self, cursor
+  var cursor/eax: (addr point) <- lookup *cursor-ah
+  var cursor-y/eax: (addr int) <- get cursor, y
+  compare *cursor-y, 5
+  {
+    break-if-<
+    subtract-from *cursor-y, 5
+  }
+}
+
+fn cursor-down _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var cursor-ah/esi: (addr handle point) <- get self, cursor
+  var cursor/eax: (addr point) <- lookup *cursor-ah
+  var cursor-y/eax: (addr int) <- get cursor, y
+  compare *cursor-y, 0x2f0
+  {
+    break-if->
+    add-to *cursor-y, 5
+  }
 }
 
 fn line screen: (addr screen), _p0: (addr point), _p1: (addr point), color: int {
