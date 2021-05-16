@@ -67,11 +67,11 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-monotonic-bezier screen, 0x360/x0 0x180/y0,  0x35c/x1 0x150/ys,  0x180/x2 0x150/ys,  4/color
   draw-monotonic-bezier screen, 0x360/x0 0x2e0/y0,  0x180/x1 0x200/y1,  0x180/x2 0x150/ys,  4/color
   # filter node
-  draw-rect screen, 0x200/xfmin, 0x180/yfmin, 0x220/xfmax, 0x1a0/yfmax, 0x31/color
-  set-cursor-position screen, 0x3f/fcol, 0x17/frow
+  draw-rect screen, 0x200/xfmin, 0x1c0/yfmin, 0x220/xfmax, 0x1e0/yfmax, 0x31/color
+  set-cursor-position screen, 0x40/fcol, 0x1b/frow
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "?", 0xf/color, 0/bg
   # conveyor from sum node to filter node
-  draw-line screen 0x180/xs, 0x150/ys, 0x210/xf, 0x190/yf, 0xa2/color
+  draw-line screen 0x180/xs, 0x150/ys, 0x210/xf, 0x1d0/yf, 0xa2/color
   # cell outputs at corners
   draw-rect screen,  0xd0/xmin  0x50/ymin,   0xf0/xmax  0x70/ymax, 0xf/alive
   draw-rect screen, 0x310/xmin  0x50/ymin,  0x330/xmax  0x70/ymax, 0xf/alive
@@ -83,7 +83,7 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-rect screen, 0x1f0/xmin 0x290/ymin, 0x210/xmax, 0x2b0/ymax, 0xf/alive
   draw-rect screen, 0x310/xmin 0x170/ymin, 0x330/xmax, 0x190/ymax, 0xf/alive
   # conveyors from filter to outputs
-  draw-monotonic-bezier screen, 0x210/xf 0x190/yf, 0x1c0/x1 0x60/y1,    0xe0/x2   0x60/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x210/xf 0x1d0/yf, 0x1c0/x1 0x60/y1,    0xe0/x2   0x60/y2,  0x2a/color
   # clock
   var tick-a/eax: (addr int) <- get self, tick
   set-cursor-position screen, 0x78/x, 0/y
@@ -120,8 +120,8 @@ fn render0 screen: (addr screen), _self: (addr environment) {
     var three/eax: int <- copy 3
     var three-f/xmm0: float <- convert three
     u <- divide three-f
-    draw-linear-point screen, u, 0x180/xs, 0x150/ys, 0x210/xf, 0x190/yf, 7/color, 4/radius
-    set-cursor-position screen, 0x3a/scol, 0x16/srow
+    draw-linear-point screen, u, 0x180/xs, 0x150/ys, 0x210/xf, 0x1d0/yf, 7/color, 4/radius
+    set-cursor-position screen, 0x3a/scol, 0x18/srow
     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, 3, 0xf/fg 0/bg
     return
   }
