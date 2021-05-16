@@ -83,9 +83,32 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-rect screen, 0x1f0/xmin, 0x290/ymin, 0x210/xmax, 0x2b0/ymax, 0xf/alive
   draw-rect screen, 0x310/xmin, 0x170/ymin, 0x330/xmax, 0x190/ymax, 0xf/alive
   # clock
-  var tick/eax: (addr int) <- get self, tick
+  var tick-a/eax: (addr int) <- get self, tick
   set-cursor-position screen, 0x78/x, 0/y
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, *tick, 7/fg 0/bg
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, *tick-a, 7/fg 0/bg
+  # time-variant portion
+  var progress/eax: int <- copy *tick-a
+  progress <- and 7
+  var u/xmm7: float <- convert progress
+  var eight/eax: int <- copy 8
+  var eight-f/xmm0: float <- convert eight
+  u <- divide eight-f
+  # points on conveyers from neighboring cells
+  draw-bezier-point screen, u, 0xa0/x0 0x20/y0, 0x100/x1 0x160/y1, 0x180/x2 0x160/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0xa0/x0 0x180/y0, 0x110/x1 0x160/y1, 0x180/x2 0x160/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0xa0/x0 0x2e0/y0, 0x100/x1 0x160/y1, 0x180/x2 0x160/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x200/x0 0x20/y0, 0x180/x1 0x90/y1, 0x180/x2 0x160/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x200/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x160/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x360/x0 0x20/y0, 0x180/x1 0xc0/y1, 0x180/x2 0x160/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x360/x0 0x180/y0, 0x300/x1 0x160/y1, 0x180/x2 0x160/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x360/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x160/y2, 7/color, 4/radius
+}
+
+fn draw-bezier-point screen: (addr screen), u: float, x0: int, y0: int, x1: int, y1: int, x2: int, y2: int, color: int, radius: int {
+  var _cy/eax: int <- bezier-point u, y0, y1, y2
+  var cy/ecx: int <- copy _cy
+  var cx/eax: int <- bezier-point u, x0, x1, x2
+  draw-disc screen, cx, cy, radius, color, 0xf/border-color=white
 }
 
 fn edit keyboard: (addr keyboard), _self: (addr environment) {

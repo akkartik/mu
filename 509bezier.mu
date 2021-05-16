@@ -293,3 +293,24 @@ fn draw-monotonic-bezier screen: (addr screen), x0: int, y0: int, x1: int, y1: i
   # plot the remaining straight line
   draw-line screen, x y, x2 y2, color
 }
+
+# 0 <= u <= 1
+fn bezier-point u: float, x0: int, x1: int, x2: int -> _/eax: int {
+  var one/eax: int <- copy 1
+  var u-prime/xmm0: float <- convert one
+  u-prime <- subtract u
+  var result/xmm1: float <- convert x0
+  result <- multiply u-prime
+  result <- multiply u-prime
+  var term2/xmm2: float <- convert x1
+  term2 <- multiply u
+  term2 <- multiply u-prime
+  result <- add term2
+  result <- add term2
+  var term3/xmm2: float <- convert x2
+  term3 <- multiply u
+  term3 <- multiply u
+  result <- add term3
+  var result/eax: int <- convert result
+  return result
+}
