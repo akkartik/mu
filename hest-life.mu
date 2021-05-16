@@ -57,7 +57,7 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-rect screen, 0x170/xsmin 0x140/ysmin,  0x190/xsmax 0x160/ysmax, 0x40/color
   set-cursor-position screen, 0x2d/scol, 0x13/srow
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "+", 0xf/color, 0/bg
-  # conveyers from neighboring inputs to sum node
+  # conveyors from neighboring inputs to sum node
   draw-monotonic-bezier screen,  0xa0/x0  0x20/y0,  0x100/x1 0x150/ys,  0x180/x2 0x150/ys,  4/color
   draw-monotonic-bezier screen,  0xa0/x0 0x180/y0,   0xc0/x1 0x150/ys,  0x180/x2 0x150/ys,  4/color
   draw-monotonic-bezier screen,  0xa0/x0 0x2e0/y0,  0x100/x1 0x150/ys,  0x180/x2 0x150/ys,  4/color
@@ -70,7 +70,7 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-rect screen, 0x200/xfmin, 0x180/yfmin, 0x220/xfmax, 0x1a0/yfmax, 0x31/color
   set-cursor-position screen, 0x3f/fcol, 0x17/frow
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "?", 0xf/color, 0/bg
-  # conveyer from sum node to filter node
+  # conveyor from sum node to filter node
   draw-line screen 0x180/xs, 0x150/ys, 0x210/xf, 0x190/yf, 0xa2/color
   # cell outputs at corners
   draw-rect screen,  0xd0/xmin  0x50/ymin,   0xf0/xmax  0x70/ymax, 0xf/alive
@@ -82,7 +82,7 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-rect screen,  0xd0/xmin 0x170/ymin,  0xf0/xmax, 0x190/ymax, 0xf/alive
   draw-rect screen, 0x1f0/xmin 0x290/ymin, 0x210/xmax, 0x2b0/ymax, 0xf/alive
   draw-rect screen, 0x310/xmin 0x170/ymin, 0x330/xmax, 0x190/ymax, 0xf/alive
-  # conveyers from filter to outputs
+  # conveyors from filter to outputs
   draw-monotonic-bezier screen, 0x210/xf 0x190/yf, 0x1c0/x1 0x60/y1,    0xe0/x2   0x60/y2,  0x2a/color
   # clock
   var tick-a/eax: (addr int) <- get self, tick
@@ -99,7 +99,7 @@ fn render0 screen: (addr screen), _self: (addr environment) {
     var six/eax: int <- copy 6
     var six-f/xmm0: float <- convert six
     u <- divide six-f
-    # points on conveyers from neighboring cells
+    # points on conveyors from neighboring cells
     draw-bezier-point screen, u, 0xa0/x0 0x20/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
     draw-bezier-point screen, u, 0xa0/x0 0x180/y0, 0xc0/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
     draw-bezier-point screen, u, 0xa0/x0 0x2e0/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
@@ -127,7 +127,7 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   }
   # final 7 time steps for updating output
   progress <- subtract 2
-  # TODO points on conveyers to outputs
+  # TODO points on conveyors to outputs
 }
 
 fn draw-bezier-point screen: (addr screen), u: float, x0: int, y0: int, x1: int, y1: int, x2: int, y2: int, color: int, radius: int {
