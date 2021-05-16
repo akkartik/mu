@@ -1,9 +1,19 @@
+# Conway's Game of Life in a Hestified way
+#   https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+#   https://ivanish.ca/hest-podcast
+#
+# To build:
+#   $ ./translate life.mu
+# To run:
+#   $ qemu-system-i386 -enable-kvm code.img
+
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
   {
     render screen, env
+    pause env
     edit keyboard, env
     loop
   }
@@ -11,6 +21,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 
 type environment {
   zoom: int
+  tick: int
 }
 
 fn render screen: (addr screen), _self: (addr environment) {
@@ -60,13 +71,29 @@ fn render screen: (addr screen), _self: (addr environment) {
   draw-rect screen, 0xd0/xmin, 0x170/ymin, 0xf0/xmax, 0x190/ymax, 0x1a/dead
   draw-rect screen, 0x1f0/xmin, 0x290/ymin, 0x210/xmax, 0x2b0/ymax, 0xf/alive
   draw-rect screen, 0x310/xmin, 0x170/ymin, 0x330/xmax, 0x190/ymax, 0xf/alive
+  # clock
+  var tick/eax: (addr int) <- get self, tick
+  set-cursor-position screen, 0x78/x, 0/y
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, *tick, 7/fg 0/bg
 }
 
 fn edit keyboard: (addr keyboard), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var key/eax: byte <- read-key keyboard
-  compare key, 0
-  loop-if-=
+  # TODO: hotkeys
+  var dest/eax: (addr int) <- get self, tick
+  increment *dest
+}
+
+fn pause _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var i/ecx: int <- copy 0
+  {
+    compare i, 0x10000000
+    break-if->=
+    i <- increment
+    loop
+  }
 }
 
 fn initialize-environment _self: (addr environment) {
