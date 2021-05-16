@@ -20,12 +20,23 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 }
 
 type environment {
-  zoom: int
+  zoom: int  # 0 = 1024 px per cell; 5 = 4px per cell; each step adjusts by a factor of 4
   tick: int
 }
 
 fn render screen: (addr screen), _self: (addr environment) {
   clear-screen screen
+  var self/esi: (addr environment) <- copy _self
+  var zoom/eax: (addr int) <- get self, zoom
+  compare *zoom, 0
+  {
+    break-if-!=
+    render0 screen, self
+    return
+  }
+}
+
+fn render0 screen: (addr screen), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   # cell border
   draw-vertical-line   screen, 0xc0/x, 0/ymin, 0x300/ymax, 0x16/color=dark-grey
