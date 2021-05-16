@@ -14,7 +14,7 @@
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env, 0x80 0x80, 0x200 0x180, 0x380 0x280
+  initialize-environment env, 0x200 0x20, 0x180 0x90, 0x180 0x160
   {
     render screen, env
     edit keyboard, env
