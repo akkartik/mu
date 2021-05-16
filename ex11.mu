@@ -3,7 +3,7 @@
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var p0-storage: point
   var p0/ecx: (addr point) <- address p0-storage
-  initialize-point p0, 1 1
+  initialize-point p0, 5 5
   var p1-storage: point
   var p1/edx: (addr point) <- address p1-storage
   initialize-point p1, 0x80 0x100
