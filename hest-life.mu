@@ -52,6 +52,22 @@ fn render screen: (addr screen), _self: (addr environment) {
   draw-monotonic-bezier screen, 0x360/x0 0x20/y0, 0x180/x1 0xc0/y1, 0x180/x2 0x160/y2, 4/color
   draw-monotonic-bezier screen, 0x360/x0 0x180/y0, 0x300/x1 0x160/y1, 0x180/x2 0x160/y2, 4/color
   draw-monotonic-bezier screen, 0x360/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x160/y2, 4/color
+  # filter node
+  draw-rect screen, 0x200/xmin, 0x180/ymin, 0x220/xmax, 0x1a0/ymax, 0x31/color
+  set-cursor-position screen, 0x3f/col, 0x17/row
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "?", 0xf/color, 0/bg
+  # conveyer from sum node to filter node
+  draw-line screen 0x180/x0, 0x160/y0, 0x210/x1, 0x190/y1, 0xa2/color
+  # cell outputs at corners
+  draw-rect screen, 0xd0/xmin, 0x50/ymin, 0xf0/xmax, 0x70/ymax, 0xf/alive
+  draw-rect screen, 0x310/xmin, 0x50/ymin, 0x330/xmax, 0x70/ymax, 0x1a/dead
+  draw-rect screen, 0xd0/xmin, 0x290/ymin, 0xf0/xmax, 0x2b0/ymax, 0xf/alive
+  draw-rect screen, 0x310/xmin, 0x290/ymin, 0x330/xmax, 0x2b0/ymax, 0xf/alive
+  # cell outputs at edges
+  draw-rect screen, 0x1f0/xmin, 0x50/ymin, 0x210/xmax, 0x70/ymax, 0xf/alive
+  draw-rect screen, 0xd0/xmin, 0x170/ymin, 0xf0/xmax, 0x190/ymax, 0x1a/dead
+  draw-rect screen, 0x1f0/xmin, 0x290/ymin, 0x210/xmax, 0x2b0/ymax, 0xf/alive
+  draw-rect screen, 0x310/xmin, 0x170/ymin, 0x330/xmax, 0x190/ymax, 0xf/alive
 }
 
 fn bezier screen: (addr screen), _p0: (addr point), _p1: (addr point), _p2: (addr point), color: int {
