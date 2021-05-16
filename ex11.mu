@@ -3,7 +3,7 @@
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env, 5 5, 0x80 0x100, 0x200 0x140
+  initialize-environment env, 0x10 0x10, 0x80 0x100, 0x200 0x140
   render screen, env
 }
 
@@ -39,6 +39,10 @@ fn render screen: (addr screen), _self: (addr environment) {
   disc    screen, p0,           3/radius, 7/color   0xf/border
   disc    screen, p1,           3/radius, 7/color   0xf/border
   disc    screen, p2,           3/radius, 7/color   0xf/border
+  # cursor last of all
+  var cursor-ah/eax: (addr handle point) <- get self, cursor
+  var cursor/eax: (addr point) <- lookup *cursor-ah
+  cursor screen, cursor, 0xa/side, 3/color
 }
 
 fn bezier screen: (addr screen), _p0: (addr point), _p1: (addr point), _p2: (addr point), color: int {
@@ -52,6 +56,30 @@ fn bezier screen: (addr screen), _p0: (addr point), _p1: (addr point), _p2: (add
   var x2/edi: (addr int) <- get p2, x
   var y2/esi: (addr int) <- get p2, y
   draw-monotonic-bezier screen, *x0 *y0, *x1 *y1, *x2 *y2, color
+}
+
+fn cursor screen: (addr screen), _p: (addr point), side: int, color: int {
+  var half-side/eax: int <- copy side
+  half-side <- shift-right 1
+  var p/esi: (addr point) <- copy _p
+  var x-a/ecx: (addr int) <- get p, x
+  var left-x/ecx: int <- copy *x-a
+  left-x <- subtract half-side
+  var y-a/edx: (addr int) <- get p, y
+  var top-y/edx: int <- copy *y-a
+  top-y <- subtract half-side
+  var max/eax: int <- copy left-x
+  max <- add side
+  draw-horizontal-line screen, top-y, left-x, max, color
+  max <- copy top-y
+  max <- add side
+  draw-vertical-line screen, left-x, top-y, max, color
+  var right-x/ebx: int <- copy left-x
+  right-x <- add side
+  draw-vertical-line screen, right-x, top-y, max, color
+  var bottom-y/edx: int <- copy top-y
+  bottom-y <- add side
+  draw-horizontal-line screen, bottom-y, left-x, right-x, color
 }
 
 fn line screen: (addr screen), _p0: (addr point), _p1: (addr point), color: int {

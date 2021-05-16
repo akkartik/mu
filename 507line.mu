@@ -60,3 +60,25 @@ fn draw-line screen: (addr screen), x0: int, y0: int, x1: int, y1: int, color: i
     loop
   }
 }
+
+fn draw-horizontal-line screen: (addr screen), y: int, x0: int, x1: int, color: int {
+  var x/eax: int <- copy x0
+  {
+    compare x, x1
+    break-if->=
+    pixel screen, x, y, color
+    x <- increment
+    loop
+  }
+}
+
+fn draw-vertical-line screen: (addr screen), x: int, y0: int, y1: int, color: int {
+  var y/eax: int <- copy y0
+  {
+    compare y, y1
+    break-if->=
+    pixel screen, x, y, color
+    y <- increment
+    loop
+  }
+}
