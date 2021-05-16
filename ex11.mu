@@ -14,7 +14,7 @@
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env, 0x10 0x10, 0x80 0x100, 0x200 0x140
+  initialize-environment env, 0x80 0x80, 0x200 0x180, 0x380 0x280
   {
     render screen, env
     edit keyboard, env
@@ -128,7 +128,7 @@ fn edit keyboard: (addr keyboard), _self: (addr environment) {
     return
   }
   {
-    compare key, 0x83/up-arrow
+    compare key, 0x82/up-arrow
     break-if-!=
     cursor-up self
     return
@@ -170,10 +170,10 @@ fn cursor-left _self: (addr environment) {
   var cursor-ah/esi: (addr handle point) <- get self, cursor
   var cursor/eax: (addr point) <- lookup *cursor-ah
   var cursor-x/eax: (addr int) <- get cursor, x
-  compare *cursor-x, 5
+  compare *cursor-x, 0x20
   {
     break-if-<
-    subtract-from *cursor-x, 5
+    subtract-from *cursor-x, 0x20
   }
 }
 
@@ -185,7 +185,7 @@ fn cursor-right _self: (addr environment) {
   compare *cursor-x, 0x3f0
   {
     break-if->
-    add-to *cursor-x, 5
+    add-to *cursor-x, 0x20
   }
 }
 
@@ -194,10 +194,10 @@ fn cursor-up _self: (addr environment) {
   var cursor-ah/esi: (addr handle point) <- get self, cursor
   var cursor/eax: (addr point) <- lookup *cursor-ah
   var cursor-y/eax: (addr int) <- get cursor, y
-  compare *cursor-y, 5
+  compare *cursor-y, 0x20
   {
     break-if-<
-    subtract-from *cursor-y, 5
+    subtract-from *cursor-y, 0x20
   }
 }
 
@@ -209,7 +209,7 @@ fn cursor-down _self: (addr environment) {
   compare *cursor-y, 0x2f0
   {
     break-if->
-    add-to *cursor-y, 5
+    add-to *cursor-y, 0x20
   }
 }
 
