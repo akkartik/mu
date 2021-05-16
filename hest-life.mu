@@ -41,9 +41,17 @@ fn render screen: (addr screen), _self: (addr environment) {
   draw-rect screen, 0x350/xmin, 0x170/ymin, 0x370/xmax, 0x190/ymax, 0xf/alive
   # sum node
   draw-rect screen, 0x170/xmin, 0x150/ymin, 0x190/xmax, 0x170/ymax, 0x40/color
+  set-cursor-position screen, 0x2c/col, 0x14/row
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "+", 0xf/color, 0/bg
   # conveyers from neighboring inputs to sum node
+  draw-monotonic-bezier screen, 0xa0/x0 0x20/y0, 0x100/x1 0x160/y1, 0x180/x2 0x160/y2, 4/color
   draw-monotonic-bezier screen, 0xa0/x0 0x180/y0, 0x110/x1 0x160/y1, 0x180/x2 0x160/y2, 4/color
+  draw-monotonic-bezier screen, 0xa0/x0 0x2e0/y0, 0x100/x1 0x160/y1, 0x180/x2 0x160/y2, 4/color
   draw-monotonic-bezier screen, 0x200/x0 0x20/y0, 0x180/x1 0x90/y1, 0x180/x2 0x160/y2, 4/color
+  draw-monotonic-bezier screen, 0x200/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x160/y2, 4/color
+  draw-monotonic-bezier screen, 0x360/x0 0x20/y0, 0x180/x1 0xc0/y1, 0x180/x2 0x160/y2, 4/color
+  draw-monotonic-bezier screen, 0x360/x0 0x180/y0, 0x300/x1 0x160/y1, 0x180/x2 0x160/y2, 4/color
+  draw-monotonic-bezier screen, 0x360/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x160/y2, 4/color
 }
 
 fn bezier screen: (addr screen), _p0: (addr point), _p1: (addr point), _p2: (addr point), color: int {
