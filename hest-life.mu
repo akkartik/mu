@@ -69,76 +69,9 @@ fn render screen: (addr screen), _self: (addr environment) {
   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, *tick-a, 7/fg 0/bg
 }
 
-type cell-render-template {
-  # cells are squares
-  side: int
-  # centers of internal nodes
-  # nodes in neighboring cells are symmetrical with these
-  node-1-x: int
-  node-1-y: int
-  node-2-x: int
-  node-2-y: int
-  node-3-x: int
-  node-3-y: int
-  node-4-x: int
-  node-4-y: int
-  node-5-x: int
-  node-5-y: int
-  node-6-x: int
-  node-6-y: int
-  node-7-x: int
-  node-7-y: int
-  node-8-x: int
-  node-8-y: int
-  # internal nodes
-  sum-x: int
-  sum-y: int
-  filter-x: int
-  filter-y: int
-  # control points for bezier curves
-  # One point in each curve goes to a neighbor or output, one point is the sum
-  # or filter node. We just need to track the middle control point.
-  #
-  # For neighboring nodes we do need to know which direction each neighboring
-  # node is in. Arbitrarily we'll assign nodes starting at East and in
-  # clockwise order. Nodes above will also need to follow this rule, but only
-  # to make input edges work. Otherwise we don't care how the nodes and output
-  # edges are ordered, as long as the i'th control point corresponds to the
-  # curve connecting the i'th node.
-  input-edge-1-x: int
-  input-edge-1-y: int
-  input-edge-2-x: int
-  input-edge-2-y: int
-  input-edge-3-x: int
-  input-edge-3-y: int
-  input-edge-4-x: int
-  input-edge-4-y: int
-  input-edge-5-x: int
-  input-edge-5-y: int
-  input-edge-6-x: int
-  input-edge-6-y: int
-  input-edge-7-x: int
-  input-edge-7-y: int
-  input-edge-8-x: int
-  input-edge-8-y: int
-  output-edge-1-x: int
-  output-edge-1-y: int
-  output-edge-2-x: int
-  output-edge-2-y: int
-  output-edge-3-x: int
-  output-edge-3-y: int
-  output-edge-4-x: int
-  output-edge-4-y: int
-  output-edge-5-x: int
-  output-edge-5-y: int
-  output-edge-6-x: int
-  output-edge-6-y: int
-  output-edge-7-x: int
-  output-edge-7-y: int
-  output-edge-8-x: int
-  output-edge-8-y: int
-}
-
+# Lots of hardcoded constants for now.
+# TODO: split this up into a primitive to render a single cell and its
+# incoming edges (but not the neighboring nodes they emanate from)
 fn render0 screen: (addr screen), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   # cell border
