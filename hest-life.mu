@@ -53,6 +53,11 @@ fn render screen: (addr screen), _self: (addr environment) {
     break-if-!=
     render0 screen, self
   }
+  compare *zoom, 1
+  {
+    break-if-!=
+    render1 screen, self
+  }
   compare *zoom, 4
   {
     break-if-!=
@@ -184,6 +189,17 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x320/x1 0x230/y1, 0x320/x2  0x2a0/y2, 7/color, 4/radius
 }
 
+fn render1 screen: (addr screen), _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  # cell borders
+  draw-vertical-line   screen,  0xe0/x, 0/ymin, 0x300/ymax, 0x16/color=dark-grey
+  draw-vertical-line   screen, 0x200/x, 0/ymin, 0x300/ymax, 0x16/color=dark-grey
+  draw-vertical-line   screen, 0x320/x, 0/ymin, 0x300/ymax, 0x16/color=dark-grey
+  draw-horizontal-line screen,  0x60/y, 0/xmin, 0x400/xmax, 0x16/color=dark-grey
+  draw-horizontal-line screen, 0x180/y, 0/xmin, 0x400/xmax, 0x16/color=dark-grey
+  draw-horizontal-line screen, 0x2a0/y, 0/xmin, 0x400/xmax, 0x16/color=dark-grey
+}
+
 fn draw-bezier-point screen: (addr screen), u: float, x0: int, y0: int, x1: int, y1: int, x2: int, y2: int, color: int, radius: int {
   var _cy/eax: int <- bezier-point u, y0, y1, y2
   var cy/ecx: int <- copy _cy
@@ -245,14 +261,19 @@ fn edit keyboard: (addr keyboard), _self: (addr environment) {
     compare key, 0x2d/-
     break-if-!=
     var zoom/eax: (addr int) <- get self, zoom
-    compare *zoom, 4
+    compare *zoom, 1
     {
-      break-if->=
-      increment *zoom
-      # set tick to a multiple of zoom
-      var tick-a/edx: (addr int) <- get self, tick
-      clear-lowest-bits tick-a, *zoom
+      break-if-!=
+      copy-to *zoom, 4
     }
+    compare *zoom, 0
+    {
+      break-if-!=
+      copy-to *zoom, 1
+    }
+    # set tick to a multiple of zoom
+    var tick-a/edx: (addr int) <- get self, tick
+    clear-lowest-bits tick-a, *zoom
     return
   }
   # +: zoom in
@@ -260,14 +281,19 @@ fn edit keyboard: (addr keyboard), _self: (addr environment) {
     compare key, 0x2b/+
     break-if-!=
     var zoom/eax: (addr int) <- get self, zoom
-    compare *zoom, 0
+    compare *zoom, 1
     {
-      break-if-<=
-      decrement *zoom
-      # set tick to a multiple of zoom
-      var tick-a/edx: (addr int) <- get self, tick
-      clear-lowest-bits tick-a, *zoom
+      break-if-!=
+      copy-to *zoom, 0
     }
+    compare *zoom, 4
+    {
+      break-if-!=
+      copy-to *zoom, 1
+    }
+    # set tick to a multiple of zoom
+    var tick-a/edx: (addr int) <- get self, tick
+    clear-lowest-bits tick-a, *zoom
     return
   }
 }
