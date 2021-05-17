@@ -107,12 +107,12 @@ fn render0 screen: (addr screen), _self: (addr environment) {
     var six-f/xmm0: float <- convert six
     u <- divide six-f
     # points on conveyors from neighboring cells
-    draw-bezier-point screen, u, 0xa0/x0 0x20/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u, 0xa0/x0 0x180/y0, 0xc0/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u, 0xa0/x0 0x2e0/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u, 0x200/x0 0x20/y0, 0x180/x1 0x90/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u,  0xa0/x0  0x20/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u,  0xa0/x0 0x180/y0,  0xc0/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u,  0xa0/x0 0x2e0/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x200/x0  0x20/y0, 0x180/x1  0x90/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
     draw-bezier-point screen, u, 0x200/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u, 0x360/x0 0x20/y0, 0x180/x1 0xc0/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x360/x0  0x20/y0, 0x180/x1  0xc0/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
     draw-bezier-point screen, u, 0x360/x0 0x180/y0, 0x35c/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
     draw-bezier-point screen, u, 0x360/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
     return
@@ -134,7 +134,19 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   }
   # final 7 time steps for updating output
   progress <- subtract 2
-  # TODO points on conveyors to outputs
+  # points on conveyors to outputs
+  var u/xmm7: float <- convert progress
+  var six/eax: int <- copy 6
+  var six-f/xmm0: float <- convert six
+  u <- divide six-f
+  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x1c0/x1  0x60/y1,  0xe0/x2   0x60/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,   0xe0/x1 0x1c0/y1,  0xe0/x2  0x180/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x1c0/x1 0x2a0/y1,  0xe0/x2  0x2a0/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x210/x1  0x60/y1, 0x200/x2   0x60/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x210/x1 0x230/y1, 0x200/x2  0x2a0/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x320/x1 0x120/y1, 0x320/x2   0x60/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x320/x1 0x1c0/y1  0x320/x2  0x180/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x320/x1 0x230/y1, 0x320/x2  0x2a0/y2, 7/color, 4/radius
 }
 
 fn draw-bezier-point screen: (addr screen), u: float, x0: int, y0: int, x1: int, y1: int, x2: int, y2: int, color: int, radius: int {
