@@ -26,9 +26,14 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 }
 
 type environment {
-  data: (handle array handle array boolean)
+  data: (handle array handle array cell)
   zoom: int  # 0 = 1024 px per cell; 5 = 4px per cell; each step adjusts by a factor of 4
   tick: int
+}
+
+type cell {
+  curr: boolean
+  next: boolean
 }
 
 fn render screen: (addr screen), _self: (addr environment) {
@@ -39,14 +44,16 @@ fn render screen: (addr screen), _self: (addr environment) {
   {
     break-if-!=
     render0 screen, self
-    return
   }
   compare *zoom, 4
   {
     break-if-!=
     render4 screen, self
-    return
   }
+  # clock
+  var tick-a/eax: (addr int) <- get self, tick
+  set-cursor-position screen, 0x78/x, 0/y
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, *tick-a, 7/fg 0/bg
 }
 
 fn render0 screen: (addr screen), _self: (addr environment) {
@@ -104,11 +111,8 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-monotonic-bezier screen, 0x210/xf 0x1d0/yf,  0x320/x1 0x120/y1, 0x320/x2   0x60/y2,  0x2a/color
   draw-monotonic-bezier screen, 0x210/xf 0x1d0/yf,  0x320/x1 0x1c0/y1  0x320/x2  0x180/y2,  0x2a/color
   draw-monotonic-bezier screen, 0x210/xf 0x1d0/yf,  0x320/x1 0x230/y1, 0x320/x2  0x2a0/y2,  0x2a/color
-  # clock
-  var tick-a/eax: (addr int) <- get self, tick
-  set-cursor-position screen, 0x78/x, 0/y
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, *tick-a, 7/fg 0/bg
   # time-variant portion: 16 repeating steps
+  var tick-a/eax: (addr int) <- get self, tick
   var progress/eax: int <- copy *tick-a
   progress <- and 0xf
   # 7 time steps for getting inputs to sum
@@ -201,13 +205,11 @@ fn step _self: (addr environment) {
   {
     break-if-!=
     increment *tick-a
-    return
   }
   compare *zoom, 4
   {
     break-if-!=
     add-to *tick-a, 0x10
-    return
   }
   var tick/eax: int <- copy *tick-a
   tick <- and 0xf
@@ -222,47 +224,102 @@ fn initialize-environment _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var zoom/eax: (addr int) <- get self, zoom
   copy-to *zoom, 4
-  var data-ah/eax: (addr handle array handle array boolean) <- get self, data
+  var data-ah/eax: (addr handle array handle array cell) <- get self, data
   populate data-ah, 0x100
-  var data/eax: (addr array handle array boolean) <- lookup *data-ah
+  var data/eax: (addr array handle array cell) <- lookup *data-ah
   var y/ecx: int <- copy 0
   {
     compare y, 0xc0
     break-if->=
-    var dest-ah/eax: (addr handle array boolean) <- index data, y
+    var dest-ah/eax: (addr handle array cell) <- index data, y
     populate dest-ah, 0x100
     y <- increment
     loop
   }
-  set self, 0x80, 0x5f
-  set self, 0x81, 0x5f
-  set self, 0x7f, 0x60
-  set self, 0x80, 0x60
-  set self, 0x80, 0x61
+  set self, 0x80, 0x5f, 1/alive
+  set self, 0x81, 0x5f, 1/alive
+  set self, 0x7f, 0x60, 1/alive
+  set self, 0x80, 0x60, 1/alive
+  set self, 0x80, 0x61, 1/alive
+  flush self
 }
 
-fn set _self: (addr environment), _x: int, _y: int {
+fn set _self: (addr environment), _x: int, _y: int, _val: boolean {
   var self/esi: (addr environment) <- copy _self
-  var data-ah/eax: (addr handle array handle array boolean) <- get self, data
-  var data/eax: (addr array handle array boolean) <- lookup *data-ah
+  var data-ah/eax: (addr handle array handle array cell) <- get self, data
+  var data/eax: (addr array handle array cell) <- lookup *data-ah
   var y/ecx: int <- copy _y
-  var row-ah/eax: (addr handle array boolean) <- index data, y
-  var row/eax: (addr array boolean) <- lookup *row-ah
+  var row-ah/eax: (addr handle array cell) <- index data, y
+  var row/eax: (addr array cell) <- lookup *row-ah
   var x/ecx: int <- copy _x
-  var dest/eax: (addr boolean) <- index row, x
-  copy-to *dest, 1/true
+  var cell/eax: (addr cell) <- index row, x
+  var dest/eax: (addr boolean) <- get cell, next
+  var val/ecx: boolean <- copy _val
+  copy-to *dest, val
 }
 
 fn state _self: (addr environment), _x: int, _y: int -> _/eax: boolean {
   var self/esi: (addr environment) <- copy _self
-  var data-ah/eax: (addr handle array handle array boolean) <- get self, data
-  var data/eax: (addr array handle array boolean) <- lookup *data-ah
-  var y/ecx: int <- copy _y
-  var row-ah/eax: (addr handle array boolean) <- index data, y
-  var row/eax: (addr array boolean) <- lookup *row-ah
   var x/ecx: int <- copy _x
-  var src/eax: (addr boolean) <- index row, x
+  var y/edx: int <- copy _y
+  # clip at the edge
+  compare x, 0
+  {
+    break-if->=
+    return 0/false
+  }
+  compare y, 0
+  {
+    break-if->=
+    return 0/false
+  }
+  compare x, 0x100/width
+  {
+    break-if-<
+    return 0/false
+  }
+  compare y, 0xc0/height
+  {
+    break-if-<
+    return 0/false
+  }
+  var data-ah/eax: (addr handle array handle array cell) <- get self, data
+  var data/eax: (addr array handle array cell) <- lookup *data-ah
+  var row-ah/eax: (addr handle array cell) <- index data, y
+  var row/eax: (addr array cell) <- lookup *row-ah
+  var cell/eax: (addr cell) <- index row, x
+  var src/eax: (addr boolean) <- get cell, curr
   return *src
+}
+
+fn flush  _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var data-ah/eax: (addr handle array handle array cell) <- get self, data
+  var _data/eax: (addr array handle array cell) <- lookup *data-ah
+  var data/esi: (addr array handle array cell) <- copy _data
+  var y/ecx: int <- copy 0
+  {
+    compare y, 0xc0/height
+    break-if->=
+    var row-ah/eax: (addr handle array cell) <- index data, y
+    var _row/eax: (addr array cell) <- lookup *row-ah
+    var row/ebx: (addr array cell) <- copy _row
+    var x/edx: int <- copy 0
+    {
+      compare x, 0x100/width
+      break-if->=
+      var cell-a/eax: (addr cell) <- index row, x
+      var curr-a/edi: (addr boolean) <- get cell-a, curr
+      var next-a/esi: (addr boolean) <- get cell-a, next
+      var val/eax: boolean <- copy *next-a
+      copy-to *curr-a, val
+      copy-to *next-a, 0/dead
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
 }
 
 fn render4 screen: (addr screen), _self: (addr environment) {
@@ -307,4 +364,112 @@ fn render4-cell screen: (addr screen), x: int, y: int, color: int {
 }
 
 fn step4 _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var y/ecx: int <- copy 0
+  {
+    compare y, 0xc0/height
+    break-if->=
+    var x/edx: int <- copy 0
+    {
+      compare x, 0x100/width
+      break-if->=
+      var n/eax: int <- num-live-neighbors self, x, y
+      # if neighbors < 2, die of loneliness
+      {
+        compare n, 2
+        break-if->=
+        set self, x, y, 0/dead
+      }
+      # if neighbors > 3, die of overcrowding
+      {
+        compare n, 3
+        break-if-<=
+        set self, x, y, 0/dead
+      }
+      # if neighbors = 2, preserve state
+      {
+        compare n, 2
+        break-if-!=
+        var old-state/eax: boolean <- state self, x, y
+        set self, x, y, old-state
+      }
+      # if neighbors = 3, cell quickens to life
+      {
+        compare n, 3
+        break-if-!=
+        set self, x, y, 1/live
+      }
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+  flush self
+}
+
+fn num-live-neighbors _self: (addr environment), x: int, y: int -> _/eax: int {
+  var self/esi: (addr environment) <- copy _self
+  var result/edi: int <- copy 0
+  # row above: zig
+  decrement y
+  decrement x
+  var s/eax: boolean <- state self, x, y
+  {
+    compare s, 0/false
+    break-if-=
+    result <- increment
+  }
+  increment x
+  s <- state self, x, y
+  {
+    compare s, 0/false
+    break-if-=
+    result <- increment
+  }
+  increment x
+  s <- state self, x, y
+  {
+    compare s, 0/false
+    break-if-=
+    result <- increment
+  }
+  # curr row: zag
+  increment y
+  s <- state self, x, y
+  {
+    compare s, 0/false
+    break-if-=
+    result <- increment
+  }
+  subtract-from x, 2
+  s <- state self, x, y
+  {
+    compare s, 0/false
+    break-if-=
+    result <- increment
+  }
+  # row below: zig
+  increment y
+  s <- state self, x, y
+  {
+    compare s, 0/false
+    break-if-=
+    result <- increment
+  }
+  increment x
+  s <- state self, x, y
+  {
+    compare s, 0/false
+    break-if-=
+    result <- increment
+  }
+  increment x
+  s <- state self, x, y
+  {
+    compare s, 0/false
+    break-if-=
+    result <- increment
+  }
+  return result
 }
