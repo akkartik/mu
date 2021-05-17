@@ -111,22 +111,22 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-monotonic-bezier screen, 0x360/x0 0x180/y0,  0x35c/x1 0x150/ys,  0x180/x2 0x150/ys,  4/color
   draw-monotonic-bezier screen, 0x360/x0 0x2e0/y0,  0x180/x1 0x200/y1,  0x180/x2 0x150/ys,  4/color
   # filter node
-  draw-rect screen, 0x200/xfmin, 0x1c0/yfmin, 0x220/xfmax, 0x1e0/yfmax, 0x31/color
+  draw-rect screen, 0x200/xfmin 0x1c0/yfmin, 0x220/xfmax 0x1e0/yfmax, 0x31/color
   set-cursor-position screen, 0x40/fcol, 0x1b/frow
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "?", 0xf/color, 0/bg
   # conveyor from sum node to filter node
   draw-line screen 0x180/xs, 0x150/ys, 0x210/xf, 0x1d0/yf, 0xa2/color
   # cell outputs at corners
   var color/eax: int <- state-color self, 0x80/curx, 0x60/cury
-  draw-rect screen,  0xd0/xmin  0x50/ymin,   0xf0/xmax  0x70/ymax, color
-  draw-rect screen, 0x310/xmin  0x50/ymin,  0x330/xmax  0x70/ymax, color
-  draw-rect screen,  0xd0/xmin 0x290/ymin,   0xf0/xmax 0x2b0/ymax, color
-  draw-rect screen, 0x310/xmin 0x290/ymin,  0x330/xmax 0x2b0/ymax, color
+  draw-rect screen,  0xd0/xmin  0x50/ymin,  0xf0/xmax  0x70/ymax, color
+  draw-rect screen, 0x310/xmin  0x50/ymin, 0x330/xmax  0x70/ymax, color
+  draw-rect screen,  0xd0/xmin 0x290/ymin,  0xf0/xmax 0x2b0/ymax, color
+  draw-rect screen, 0x310/xmin 0x290/ymin, 0x330/xmax 0x2b0/ymax, color
   # cell outputs at edges
-  draw-rect screen, 0x1f0/xmin  0x50/ymin, 0x210/xmax,  0x70/ymax, color
-  draw-rect screen,  0xd0/xmin 0x170/ymin,  0xf0/xmax, 0x190/ymax, color
-  draw-rect screen, 0x1f0/xmin 0x290/ymin, 0x210/xmax, 0x2b0/ymax, color
-  draw-rect screen, 0x310/xmin 0x170/ymin, 0x330/xmax, 0x190/ymax, color
+  draw-rect screen, 0x1f0/xmin  0x50/ymin, 0x210/xmax  0x70/ymax, color
+  draw-rect screen,  0xd0/xmin 0x170/ymin,  0xf0/xmax 0x190/ymax, color
+  draw-rect screen, 0x1f0/xmin 0x290/ymin, 0x210/xmax 0x2b0/ymax, color
+  draw-rect screen, 0x310/xmin 0x170/ymin, 0x330/xmax 0x190/ymax, color
   # conveyors from filter to outputs
   draw-monotonic-bezier screen, 0x210/xf 0x1d0/yf,  0x1c0/x1  0x60/y1,  0xe0/x2   0x60/y2,  0x2a/color
   draw-monotonic-bezier screen, 0x210/xf 0x1d0/yf,   0xe0/x1 0x1c0/y1,  0xe0/x2  0x180/y2,  0x2a/color
@@ -188,7 +188,7 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x210/xf  0x60/y1, 0x200/x2   0x60/y2, 7/color, 4/radius
   draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x210/xf 0x230/y1, 0x200/x2  0x2a0/y2, 7/color, 4/radius
   draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x320/x1 0x120/y1, 0x320/x2   0x60/y2, 7/color, 4/radius
-  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x320/x1 0x1c0/y1  0x320/x2  0x180/y2, 7/color, 4/radius
+  draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x320/x1 0x1c0/y1, 0x320/x2  0x180/y2, 7/color, 4/radius
   draw-bezier-point screen, u, 0x210/xf 0x1d0/yf,  0x320/x1 0x230/y1, 0x320/x2  0x2a0/y2, 7/color, 4/radius
 }
 
@@ -201,52 +201,91 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   draw-horizontal-line screen,  0x60/y, 0/xmin, 0x400/xmax, 0x16/color=dark-grey
   draw-horizontal-line screen, 0x180/y, 0/xmin, 0x400/xmax, 0x16/color=dark-grey
   draw-horizontal-line screen, 0x2a0/y, 0/xmin, 0x400/xmax, 0x16/color=dark-grey
-  # cell outputs
+  # cell 0: outputs
   var color/eax: int <- state-color self, 0x80/curx, 0x60/cury
-  draw-rect screen,  0xe8/xmin  0x68/ymin,  0x148/xmax  0xc8/ymax, color
-  draw-rect screen,  0xe8/xmin 0x118/ymin,  0x148/xmax 0x178/ymax, color
-  draw-rect screen, 0x198/xmin  0x68/ymin,  0x1f8/xmax  0xc8/ymax, color
-  draw-rect screen, 0x198/xmin 0x118/ymin,  0x1f8/xmax 0x178/ymax, color
+  draw-rect screen,  0xe8/xmin  0x68/ymin, 0x118/xmax   0x98/ymax, color
+  draw-rect screen,  0xe8/xmin  0xd0/ymin, 0x118/xmax  0x100/ymax, color
+  draw-rect screen,  0xe8/xmin 0x148/ymin, 0x118/xmax  0x178/ymax, color
+  draw-rect screen, 0x158/xmin  0x68/ymin, 0x188/xmax   0x98/ymax, color
+  draw-rect screen, 0x158/xmin 0x148/ymin, 0x188/xmax  0x178/ymax, color
+  draw-rect screen, 0x1c8/xmin  0x68/ymin, 0x1f8/xmax   0x98/ymax, color
+  draw-rect screen, 0x1c8/xmin  0xd0/ymin, 0x1f8/xmax  0x100/ymax, color
+  draw-rect screen, 0x1c8/xmin 0x148/ymin, 0x1f8/xmax  0x178/ymax, color
+  # cell 1: outputs
   var color/eax: int <- state-color self, 0x81/curx, 0x60/cury
-  draw-rect screen, 0x208/xmin  0x68/ymin,  0x268/xmax  0xc8/ymax, color
-  draw-rect screen, 0x208/xmin 0x118/ymin,  0x268/xmax 0x178/ymax, color
-  draw-rect screen, 0x2b8/xmin  0x68/ymin,  0x318/xmax  0xc8/ymax, color
-  draw-rect screen, 0x2b8/xmin 0x118/ymin,  0x318/xmax 0x178/ymax, color
-  var color/eax: int <- state-color self, 0x80/curx, 0x61/cury
-  draw-rect screen,  0xe8/xmin 0x188/ymin,  0x148/xmax 0x1e8/ymax, color
-  draw-rect screen,  0xe8/xmin 0x238/ymin,  0x148/xmax 0x298/ymax, color
-  draw-rect screen, 0x198/xmin 0x188/ymin,  0x1f8/xmax 0x1e8/ymax, color
-  draw-rect screen, 0x198/xmin 0x238/ymin,  0x1f8/xmax 0x298/ymax, color
-  var color/eax: int <- state-color self, 0x81/curx, 0x61/cury
-  draw-rect screen, 0x208/xmin 0x188/ymin,  0x268/xmax 0x1e8/ymax, color
-  draw-rect screen, 0x208/xmin 0x238/ymin,  0x268/xmax 0x298/ymax, color
-  draw-rect screen, 0x2b8/xmin 0x188/ymin,  0x318/xmax 0x1e8/ymax, color
-  draw-rect screen, 0x2b8/xmin 0x238/ymin,  0x318/xmax 0x298/ymax, color
-  # cell neighbors
-  var color/eax: int <- state-color self, 0x7f/curx, 0x60/cury
-  draw-rect screen,  0x78/xmin  0xa0/ymin,   0xd8/xmax 0x140/ymax, color
+  draw-rect screen, 0x208/xmin  0x68/ymin, 0x238/xmax   0x98/ymax, color
+  draw-rect screen, 0x208/xmin  0xd0/ymin, 0x238/xmax  0x100/ymax, color
+  draw-rect screen, 0x208/xmin 0x148/ymin, 0x238/xmax  0x178/ymax, color
+  draw-rect screen, 0x278/xmin  0x68/ymin, 0x2a8/xmax   0x98/ymax, color
+  draw-rect screen, 0x278/xmin 0x148/ymin, 0x2a8/xmax  0x178/ymax, color
+  draw-rect screen, 0x2e8/xmin  0x68/ymin, 0x318/xmax   0x98/ymax, color
+  draw-rect screen, 0x2e8/xmin  0xd0/ymin, 0x318/xmax  0x100/ymax, color
+  draw-rect screen, 0x2e8/xmin 0x148/ymin, 0x318/xmax  0x178/ymax, color
+  # cell 2: outputs
+  var color/eax: int <- state-color self, 0x80/curx, 0x60/cury
+  draw-rect screen,  0xe8/xmin 0x188/ymin, 0x118/xmax  0x1b8/ymax, color
+  draw-rect screen,  0xe8/xmin 0x1f0/ymin, 0x118/xmax  0x220/ymax, color
+  draw-rect screen,  0xe8/xmin 0x268/ymin, 0x118/xmax  0x298/ymax, color
+  draw-rect screen, 0x158/xmin 0x188/ymin, 0x188/xmax  0x1b8/ymax, color
+  draw-rect screen, 0x158/xmin 0x268/ymin, 0x188/xmax  0x298/ymax, color
+  draw-rect screen, 0x1c8/xmin 0x188/ymin, 0x1f8/xmax  0x1b8/ymax, color
+  draw-rect screen, 0x1c8/xmin 0x1f0/ymin, 0x1f8/xmax  0x220/ymax, color
+  draw-rect screen, 0x1c8/xmin 0x268/ymin, 0x1f8/xmax  0x298/ymax, color
+  # cell 3: outputs
+  var color/eax: int <- state-color self, 0x81/curx, 0x60/cury
+  draw-rect screen, 0x208/xmin 0x188/ymin, 0x238/xmax  0x1b8/ymax, color
+  draw-rect screen, 0x208/xmin 0x1f0/ymin, 0x238/xmax  0x220/ymax, color
+  draw-rect screen, 0x208/xmin 0x268/ymin, 0x238/xmax  0x298/ymax, color
+  draw-rect screen, 0x278/xmin 0x188/ymin, 0x2a8/xmax  0x1b8/ymax, color
+  draw-rect screen, 0x278/xmin 0x268/ymin, 0x2a8/xmax  0x298/ymax, color
+  draw-rect screen, 0x2e8/xmin 0x188/ymin, 0x318/xmax  0x1b8/ymax, color
+  draw-rect screen, 0x2e8/xmin 0x1f0/ymin, 0x318/xmax  0x220/ymax, color
+  draw-rect screen, 0x2e8/xmin 0x268/ymin, 0x318/xmax  0x298/ymax, color
+  # neighboring nodes
   var color/eax: int <- state-color self, 0x7f/curx, 0x5f/cury
-  draw-rect screen,  0x78/xmin     8/ymin,   0xd8/xmax  0x58/ymax, color
+  draw-rect screen,  0xa8/xmin  0x28/ymin,  0xd8/xmax   0x58/ymax, color
   var color/eax: int <- state-color self, 0x80/curx, 0x5f/cury
-  draw-rect screen, 0x128/xmin     8/ymin,  0x1b8/xmax  0x58/ymax, color
+  draw-rect screen, 0x158/xmin  0x28/ymin, 0x188/xmax   0x58/ymax, color
+  draw-rect screen, 0x1c8/xmin  0x28/ymin, 0x1f8/xmax   0x58/ymax, color
   var color/eax: int <- state-color self, 0x81/curx, 0x5f/cury
-  draw-rect screen, 0x248/xmin     8/ymin,  0x2d8/xmax  0x58/ymax, color
+  draw-rect screen, 0x208/xmin  0x28/ymin, 0x238/xmax   0x58/ymax, color
+  draw-rect screen, 0x278/xmin  0x28/ymin, 0x2a8/xmax   0x58/ymax, color
   var color/eax: int <- state-color self, 0x82/curx, 0x5f/cury
-  draw-rect screen, 0x328/xmin     8/ymin,  0x398/xmax  0x58/ymax, color
+  draw-rect screen, 0x328/xmin  0x28/ymin, 0x358/xmax   0x58/ymax, color
+  var color/eax: int <- state-color self, 0x7f/curx, 0x60/cury
+  draw-rect screen,  0xa8/xmin  0xd0/ymin,  0xd8/xmax  0x100/ymax, color
+  draw-rect screen,  0xa8/xmin 0x148/ymin,  0xd8/xmax  0x178/ymax, color
   var color/eax: int <- state-color self, 0x82/curx, 0x60/cury
-  draw-rect screen, 0x328/xmin  0xa0/ymin,  0x398/xmax 0x140/ymax, color
+  draw-rect screen, 0x328/xmin  0xd0/ymin, 0x358/xmax  0x100/ymax, color
+  draw-rect screen, 0x328/xmin 0x148/ymin, 0x358/xmax  0x178/ymax, color
   var color/eax: int <- state-color self, 0x7f/curx, 0x61/cury
-  draw-rect screen,  0x78/xmin 0x1c8/ymin,   0xd8/xmax 0x258/ymax, color
-  var color/eax: int <- state-color self, 0x7f/curx, 0x62/cury
-  draw-rect screen,  0x78/xmin 0x2a8/ymin,   0xd8/xmax 0x2f8/ymax, color
-  var color/eax: int <- state-color self, 0x80/curx, 0x62/cury
-  draw-rect screen, 0x128/xmin 0x2a8/ymin,  0x1b8/xmax 0x2f8/ymax, color
-  var color/eax: int <- state-color self, 0x81/curx, 0x62/cury
-  draw-rect screen, 0x248/xmin 0x2a8/ymin,  0x2d8/xmax 0x2f8/ymax, color
-  var color/eax: int <- state-color self, 0x82/curx, 0x62/cury
-  draw-rect screen, 0x328/xmin 0x2a8/ymin,  0x398/xmax 0x2f8/ymax, color
+  draw-rect screen,  0xa8/xmin 0x188/ymin,  0xd8/xmax  0x1b8/ymax, color
+  draw-rect screen,  0xa8/xmin 0x1f0/ymin,  0xd8/xmax  0x220/ymax, color
   var color/eax: int <- state-color self, 0x82/curx, 0x61/cury
-  draw-rect screen, 0x328/xmin 0x1c8/ymin,  0x398/xmax 0x258/ymax, color
+  draw-rect screen, 0x328/xmin 0x188/ymin, 0x358/xmax  0x1b8/ymax, color
+  draw-rect screen, 0x328/xmin 0x1f0/ymin, 0x358/xmax  0x220/ymax, color
+  var color/eax: int <- state-color self, 0x7f/curx, 0x62/cury
+  draw-rect screen,  0xa8/xmin 0x2a8/ymin,  0xd8/xmax  0x2d8/ymax, color
+  var color/eax: int <- state-color self, 0x80/curx, 0x62/cury
+  draw-rect screen, 0x158/xmin 0x2a8/ymin, 0x188/xmax  0x2d8/ymax, color
+  draw-rect screen, 0x1c8/xmin 0x2a8/ymin, 0x1f8/xmax  0x2d8/ymax, color
+  var color/eax: int <- state-color self, 0x81/curx, 0x62/cury
+  draw-rect screen, 0x208/xmin 0x2a8/ymin, 0x238/xmax  0x2d8/ymax, color
+  draw-rect screen, 0x278/xmin 0x2a8/ymin, 0x2a8/xmax  0x2d8/ymax, color
+  var color/eax: int <- state-color self, 0x82/curx, 0x62/cury
+  draw-rect screen, 0x328/xmin 0x2a8/ymin, 0x358/xmax  0x2d8/ymax, color
+  # cell 0: sum and filter nodes
+  draw-rect screen, 0x148/xsmin  0xc8/ysmin, 0x158/xsmax  0xd8/ysmax, 0x40/color
+  draw-rect screen, 0x180/xfmin  0xf8/yfmin, 0x190/xfmax 0x108/yfmax, 0x31/color
+  # cell 1: sum and filter nodes
+  draw-rect screen, 0x270/xsmin  0xc8/ysmin, 0x280/xsmax  0xd8/ysmax, 0x40/color
+  draw-rect screen, 0x2a8/xfmin  0xf8/yfmin, 0x2b8/xfmax 0x108/yfmax, 0x31/color
+  # cell 2: sum and filter nodes
+  draw-rect screen, 0x148/xsmin 0x1e8/ysmin, 0x158/xsmax 0x1f8/ysmax, 0x40/color
+  draw-rect screen, 0x180/xfmin 0x218/yfmin, 0x190/xfmax 0x228/yfmax, 0x31/color
+  # cell 3: sum and filter nodes
+  draw-rect screen, 0x270/xsmin 0x1e8/ysmin, 0x280/xsmax 0x1f8/ysmax, 0x40/color
+  draw-rect screen, 0x2a8/xfmin 0x218/yfmin, 0x2b8/xfmax 0x228/yfmax, 0x31/color
   # neighbor counts
   var n/eax: int <- num-live-neighbors self, 0x80/curx, 0x60/cury
   set-cursor-position screen, 0x2d, 0xe
@@ -255,13 +294,11 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   set-cursor-position screen, 0x52, 0xe
   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, n, 0xf/fg 0/bg
   var n/eax: int <- num-live-neighbors self, 0x80/curx, 0x61/cury
-  set-cursor-position screen, 0x2d, 0x21
+  set-cursor-position screen, 0x2d, 0x20
   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, n, 0xf/fg 0/bg
   var n/eax: int <- num-live-neighbors self, 0x81/curx, 0x61/cury
-  set-cursor-position screen, 0x52, 0x21
+  set-cursor-position screen, 0x52, 0x20
   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, n, 0xf/fg 0/bg
-  # incoming edges
-  # outgoing edges
 }
 
 fn draw-bezier-point screen: (addr screen), u: float, x0: int, y0: int, x1: int, y1: int, x2: int, y2: int, color: int, radius: int {
