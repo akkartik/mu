@@ -26,6 +26,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 }
 
 type environment {
+  data: (handle array handle array boolean)
   zoom: int  # 0 = 1024 px per cell; 5 = 4px per cell; each step adjusts by a factor of 4
   tick: int
 }
@@ -38,6 +39,12 @@ fn render screen: (addr screen), _self: (addr environment) {
   {
     break-if-!=
     render0 screen, self
+    return
+  }
+  compare *zoom, 4
+  {
+    break-if-!=
+    render4 screen, self
     return
   }
 }
@@ -173,8 +180,6 @@ fn edit keyboard: (addr keyboard), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var key/eax: byte <- read-key keyboard
   # TODO: hotkeys
-  var dest/eax: (addr int) <- get self, tick
-  increment *dest
 }
 
 fn pause _self: (addr environment) {
@@ -190,8 +195,116 @@ fn pause _self: (addr environment) {
 
 fn step _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
+  var tick-a/ecx: (addr int) <- get self, tick
+  var zoom/edx: (addr int) <- get self, zoom
+  compare *zoom, 0
+  {
+    break-if-!=
+    increment *tick-a
+    return
+  }
+  compare *zoom, 4
+  {
+    break-if-!=
+    add-to *tick-a, 0x10
+    return
+  }
+  var tick/eax: int <- copy *tick-a
+  tick <- and 0xf
+  compare tick, 0
+  {
+    break-if-!=
+    step4 self
+  }
 }
 
 fn initialize-environment _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
+  var zoom/eax: (addr int) <- get self, zoom
+  copy-to *zoom, 4
+  var data-ah/eax: (addr handle array handle array boolean) <- get self, data
+  populate data-ah, 0x100
+  var data/eax: (addr array handle array boolean) <- lookup *data-ah
+  var y/ecx: int <- copy 0
+  {
+    compare y, 0xc0
+    break-if->=
+    var dest-ah/eax: (addr handle array boolean) <- index data, y
+    populate dest-ah, 0x100
+    y <- increment
+    loop
+  }
+  set self, 0x80, 0x5f
+  set self, 0x81, 0x5f
+  set self, 0x7f, 0x60
+  set self, 0x80, 0x60
+  set self, 0x80, 0x61
+}
+
+fn set _self: (addr environment), _x: int, _y: int {
+  var self/esi: (addr environment) <- copy _self
+  var data-ah/eax: (addr handle array handle array boolean) <- get self, data
+  var data/eax: (addr array handle array boolean) <- lookup *data-ah
+  var y/ecx: int <- copy _y
+  var row-ah/eax: (addr handle array boolean) <- index data, y
+  var row/eax: (addr array boolean) <- lookup *row-ah
+  var x/ecx: int <- copy _x
+  var dest/eax: (addr boolean) <- index row, x
+  copy-to *dest, 1/true
+}
+
+fn state _self: (addr environment), _x: int, _y: int -> _/eax: boolean {
+  var self/esi: (addr environment) <- copy _self
+  var data-ah/eax: (addr handle array handle array boolean) <- get self, data
+  var data/eax: (addr array handle array boolean) <- lookup *data-ah
+  var y/ecx: int <- copy _y
+  var row-ah/eax: (addr handle array boolean) <- index data, y
+  var row/eax: (addr array boolean) <- lookup *row-ah
+  var x/ecx: int <- copy _x
+  var src/eax: (addr boolean) <- index row, x
+  return *src
+}
+
+fn render4 screen: (addr screen), _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var y/ecx: int <- copy 0
+  {
+    compare y, 0xc0/height
+    break-if->=
+    var x/edx: int <- copy 0
+    {
+      compare x, 0x100/width
+      break-if->=
+      var state/eax: boolean <- state self, x, y
+      compare state, 0/false
+      {
+        break-if-=
+        render4-cell screen, x, y, 0xf/alive
+      }
+      compare state, 0/false
+      {
+        break-if-!=
+        render4-cell screen, x, y, 0x1a/dead
+      }
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+}
+
+fn render4-cell screen: (addr screen), x: int, y: int, color: int {
+  var xmin/eax: int <- copy x
+  xmin <- shift-left 2
+  var xmax/ecx: int <- copy xmin
+  xmax <- add 4
+  var ymin/edx: int <- copy y
+  ymin <- shift-left 2
+  var ymax/ebx: int <- copy ymin
+  ymax <- add 4
+  draw-rect screen, xmin ymin, xmax ymax, color
+}
+
+fn step4 _self: (addr environment) {
 }
