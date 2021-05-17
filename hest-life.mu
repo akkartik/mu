@@ -64,15 +64,23 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   draw-horizontal-line screen,  0x40/y, 0/xmin, 0x400/xmax, 0x16/color=dark-grey
   draw-horizontal-line screen, 0x2c0/y, 0/xmin, 0x400/xmax, 0x16/color=dark-grey
   # neighboring inputs, corners
-  draw-rect screen,  0x90/xmin   0x10/ymin,    0xb0/xmax   0x30/ymax,   0xf/alive
-  draw-rect screen, 0x350/xmin   0x10/ymin,   0x370/xmax   0x30/ymax,  0x1a/dead
-  draw-rect screen,  0x90/xmin  0x2d0/ymin,    0xb0/xmax  0x2f0/ymax,   0xf/alive
-  draw-rect screen, 0x350/xmin  0x2d0/ymin,   0x370/xmax  0x2f0/ymax,   0xf/alive
+  var color/eax: int <- state-color self, 0x7f/cur-topleftx, 0x5f/cur-toplefty
+  draw-rect screen,  0x90/xmin   0x10/ymin,    0xb0/xmax   0x30/ymax,  color
+  color <- state-color self, 0x81/cur-toprightx, 0x5f/cur-toprighty
+  draw-rect screen, 0x350/xmin   0x10/ymin,   0x370/xmax   0x30/ymax,  color
+  color <- state-color self, 0x7f/cur-botleftx, 0x61/cur-botlefty
+  draw-rect screen,  0x90/xmin  0x2d0/ymin,    0xb0/xmax  0x2f0/ymax,  color
+  color <- state-color self, 0x81/cur-botrightx, 0x61/cur-botrighty
+  draw-rect screen, 0x350/xmin  0x2d0/ymin,   0x370/xmax  0x2f0/ymax,  color
   # neighboring inputs, edges
-  draw-rect screen, 0x1f0/xmin   0x10/ymin,   0x210/xmax   0x30/ymax,   0xf/alive
-  draw-rect screen,  0x90/xmin  0x170/ymin,    0xb0/xmax  0x190/ymax,  0x1a/dead
-  draw-rect screen, 0x1f0/xmin  0x2d0/ymin,   0x210/xmax  0x2f0/ymax,   0xf/alive
-  draw-rect screen, 0x350/xmin  0x170/ymin,   0x370/xmax  0x190/ymax,   0xf/alive
+  color <- state-color self, 0x80/cur-topx, 0x5f/cur-topy
+  draw-rect screen, 0x1f0/xmin   0x10/ymin,   0x210/xmax   0x30/ymax,  color
+  color <- state-color self, 0x7f/cur-leftx, 0x80/cur-lefty
+  draw-rect screen,  0x90/xmin  0x170/ymin,    0xb0/xmax  0x190/ymax,  color
+  color <- state-color self, 0x80/cur-botx, 0x61/cur-boty
+  draw-rect screen, 0x1f0/xmin  0x2d0/ymin,   0x210/xmax  0x2f0/ymax,  color
+  color <- state-color self, 0x81/cur-rightx, 0x80/cur-righty
+  draw-rect screen, 0x350/xmin  0x170/ymin,   0x370/xmax  0x190/ymax,  color
   # sum node
   draw-rect screen, 0x170/xsmin 0x140/ysmin,  0x190/xsmax 0x160/ysmax, 0x40/color
   set-cursor-position screen, 0x2d/scol, 0x13/srow
@@ -93,15 +101,16 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   # conveyor from sum node to filter node
   draw-line screen 0x180/xs, 0x150/ys, 0x210/xf, 0x1d0/yf, 0xa2/color
   # cell outputs at corners
-  draw-rect screen,  0xd0/xmin  0x50/ymin,   0xf0/xmax  0x70/ymax, 0xf/alive
-  draw-rect screen, 0x310/xmin  0x50/ymin,  0x330/xmax  0x70/ymax, 0xf/alive
-  draw-rect screen,  0xd0/xmin 0x290/ymin,   0xf0/xmax 0x2b0/ymax, 0xf/alive
-  draw-rect screen, 0x310/xmin 0x290/ymin,  0x330/xmax 0x2b0/ymax, 0xf/alive
+  var color/eax: int <- state-color self, 0x80/curx, 0x60/cury
+  draw-rect screen,  0xd0/xmin  0x50/ymin,   0xf0/xmax  0x70/ymax, color
+  draw-rect screen, 0x310/xmin  0x50/ymin,  0x330/xmax  0x70/ymax, color
+  draw-rect screen,  0xd0/xmin 0x290/ymin,   0xf0/xmax 0x2b0/ymax, color
+  draw-rect screen, 0x310/xmin 0x290/ymin,  0x330/xmax 0x2b0/ymax, color
   # cell outputs at edges
-  draw-rect screen, 0x1f0/xmin  0x50/ymin, 0x210/xmax,  0x70/ymax, 0xf/alive
-  draw-rect screen,  0xd0/xmin 0x170/ymin,  0xf0/xmax, 0x190/ymax, 0xf/alive
-  draw-rect screen, 0x1f0/xmin 0x290/ymin, 0x210/xmax, 0x2b0/ymax, 0xf/alive
-  draw-rect screen, 0x310/xmin 0x170/ymin, 0x330/xmax, 0x190/ymax, 0xf/alive
+  draw-rect screen, 0x1f0/xmin  0x50/ymin, 0x210/xmax,  0x70/ymax, color
+  draw-rect screen,  0xd0/xmin 0x170/ymin,  0xf0/xmax, 0x190/ymax, color
+  draw-rect screen, 0x1f0/xmin 0x290/ymin, 0x210/xmax, 0x2b0/ymax, color
+  draw-rect screen, 0x310/xmin 0x170/ymin, 0x330/xmax, 0x190/ymax, color
   # conveyors from filter to outputs
   draw-monotonic-bezier screen, 0x210/xf 0x1d0/yf,  0x1c0/x1  0x60/y1,  0xe0/x2   0x60/y2,  0x2a/color
   draw-monotonic-bezier screen, 0x210/xf 0x1d0/yf,   0xe0/x1 0x1c0/y1,  0xe0/x2  0x180/y2,  0x2a/color
@@ -146,7 +155,8 @@ fn render0 screen: (addr screen), _self: (addr environment) {
     u <- divide three-f
     draw-linear-point screen, u, 0x180/xs, 0x150/ys, 0x210/xf, 0x1d0/yf, 7/color, 4/radius
     set-cursor-position screen, 0x3a/scol, 0x18/srow
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, 3, 0xf/fg 0/bg
+    var n/eax: int <- num-live-neighbors self, 0x80/curx, 0x60/cury
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, n, 0xf/fg 0/bg
     return
   }
   # final 7 time steps for updating output
@@ -223,7 +233,7 @@ fn step _self: (addr environment) {
 fn initialize-environment _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var zoom/eax: (addr int) <- get self, zoom
-  copy-to *zoom, 4
+#?   copy-to *zoom, 4
   var data-ah/eax: (addr handle array handle array cell) <- get self, data
   populate data-ah, 0x100
   var data/eax: (addr array handle array cell) <- lookup *data-ah
@@ -290,6 +300,18 @@ fn state _self: (addr environment), _x: int, _y: int -> _/eax: boolean {
   var cell/eax: (addr cell) <- index row, x
   var src/eax: (addr boolean) <- get cell, curr
   return *src
+}
+
+fn state-color _self: (addr environment), x: int, y: int -> _/eax: int {
+  var self/esi: (addr environment) <- copy _self
+  var color/ecx: int <- copy 0x1a/dead
+  {
+    var state/eax: boolean <- state self, x, y
+    compare state, 0/dead
+    break-if-=
+    color <- copy 0xf/alive
+  }
+  return color
 }
 
 fn flush  _self: (addr environment) {
