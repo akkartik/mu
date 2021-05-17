@@ -82,11 +82,11 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   # neighboring inputs, edges
   color <- state-color self, 0x80/cur-topx, 0x5f/cur-topy
   draw-rect screen, 0x1f0/xmin   0x10/ymin,   0x210/xmax   0x30/ymax,  color
-  color <- state-color self, 0x7f/cur-leftx, 0x80/cur-lefty
+  color <- state-color self, 0x7f/cur-leftx, 0x60/cur-lefty
   draw-rect screen,  0x90/xmin  0x170/ymin,    0xb0/xmax  0x190/ymax,  color
   color <- state-color self, 0x80/cur-botx, 0x61/cur-boty
   draw-rect screen, 0x1f0/xmin  0x2d0/ymin,   0x210/xmax  0x2f0/ymax,  color
-  color <- state-color self, 0x81/cur-rightx, 0x80/cur-righty
+  color <- state-color self, 0x81/cur-rightx, 0x60/cur-righty
   draw-rect screen, 0x350/xmin  0x170/ymin,   0x370/xmax  0x190/ymax,  color
   # sum node
   draw-rect screen, 0x170/xsmin 0x140/ysmin,  0x190/xsmax 0x160/ysmax, 0x40/color
