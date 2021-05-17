@@ -221,6 +221,9 @@ or-with var1, var2/reg
 var/reg <- or n
 or-with var, n
 
+var1/reg1 <- not
+not var
+
 var1/reg1 <- xor var2/reg2
 var/reg <- xor var2
 xor-with var1, var2/reg
