@@ -36,6 +36,7 @@ type environment {
   zoom: int  # 0 = 1024 px per cell; 5 = 4px per cell; each step adjusts by a factor of 4
   tick: int
   play?: boolean
+  loop: int  # if non-zero, return tick to 0 after this point
 }
 
 type cell {
@@ -221,6 +222,24 @@ fn edit keyboard: (addr keyboard), _self: (addr environment) {
     clear-environment self
     return
   }
+  # l: loop from here to start
+  {
+    compare key, 0x6c/l
+    break-if-!=
+    var tick-a/eax: (addr int) <- get self, tick
+    var tick/eax: int <- copy *tick-a
+    var loop/ecx: (addr int) <- get self, loop
+    copy-to *loop, tick
+    return
+  }
+  # L: reset loop
+  {
+    compare key, 0x4c/L
+    break-if-!=
+    var loop/eax: (addr int) <- get self, loop
+    copy-to *loop, 0
+    return
+  }
 }
 
 fn pause _self: (addr environment) {
@@ -254,6 +273,15 @@ fn step _self: (addr environment) {
   {
     break-if-!=
     step4 self
+  }
+  var loop-a/eax: (addr int) <- get self, loop
+  compare *loop-a, 0
+  {
+    break-if-=
+    var loop/eax: int <- copy *loop-a
+    compare *tick-a, loop
+    break-if-<
+    clear-environment self
   }
 }
 
