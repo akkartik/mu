@@ -209,21 +209,6 @@ subtract-from var1, var2/reg
 var/reg <- subtract n
 subtract-from var, n
 
-var1/reg1 <- and var2/reg2
-var/reg <- and var2
-and-with var1, var2/reg
-var/reg <- and n
-and-with var, n
-
-var1/reg1 <- or var2/reg2
-var/reg <- or var2
-or-with var1, var2/reg
-var/reg <- or n
-or-with var, n
-
-var1/reg1 <- not
-not var
-
 var1/reg1 <- xor var2/reg2
 var/reg <- xor var2
 xor-with var1, var2/reg
@@ -252,6 +237,24 @@ shift-right var, n
 shift-right-signed var, n
 
 var/reg <- multiply var2
+```
+
+Bitwise operations:
+```
+var1/reg1 <- and var2/reg2
+var/reg <- and var2
+and-with var1, var2/reg
+var/reg <- and n
+and-with var, n
+
+var1/reg1 <- or var2/reg2
+var/reg <- or var2
+or-with var1, var2/reg
+var/reg <- or n
+or-with var, n
+
+var1/reg1 <- not
+not var
 ```
 
 Any statement above that takes a variable in memory can be replaced with a
