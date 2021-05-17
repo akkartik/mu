@@ -8,7 +8,7 @@
 #   $ qemu-system-i386 -enable-kvm code.img
 #
 # If things seem too fast or too slow on your computer, adjust the loop bounds
-# in the function `pause` at the bottom. Its value will depend on how you
+# in the function `linger` at the bottom. Its value will depend on how you
 # accelerate Qemu. Mu will eventually get a clock to obviate the need for this
 # tuning.
 
@@ -26,7 +26,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       step env
       render screen, env
     }
-    pause env
+    linger env
     loop
   }
 }
@@ -272,7 +272,7 @@ fn edit keyboard: (addr keyboard), _self: (addr environment) {
   }
 }
 
-fn pause _self: (addr environment) {
+fn linger _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var i/ecx: int <- copy 0
   {
