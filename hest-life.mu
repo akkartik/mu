@@ -200,8 +200,9 @@ fn draw-linear-point screen: (addr screen), u: float, x0: int, y0: int, x1: int,
 fn edit keyboard: (addr keyboard), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var key/eax: byte <- read-key keyboard
-  compare key, 0x20/space
+  # space: play/pause
   {
+    compare key, 0x20/space
     break-if-!=
     var play?/eax: (addr boolean) <- get self, play?
     compare *play?, 0/false
@@ -211,6 +212,13 @@ fn edit keyboard: (addr keyboard), _self: (addr environment) {
       return
     }
     copy-to *play?, 1/true
+    return
+  }
+  # 0: back to start
+  {
+    compare key, 0x30/0
+    break-if-!=
+    clear-environment self
     return
   }
 }
@@ -264,6 +272,42 @@ fn initialize-environment _self: (addr environment) {
     break-if->=
     var dest-ah/eax: (addr handle array cell) <- index data, y
     populate dest-ah, 0x100
+    y <- increment
+    loop
+  }
+  set self, 0x80, 0x5f, 1/alive
+  set self, 0x81, 0x5f, 1/alive
+  set self, 0x7f, 0x60, 1/alive
+  set self, 0x80, 0x60, 1/alive
+  set self, 0x80, 0x61, 1/alive
+  flush self
+}
+
+fn clear-environment _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var tick/eax: (addr int) <- get self, tick
+  copy-to *tick, 0
+  var zoom/eax: (addr int) <- get self, zoom
+#?   copy-to *zoom, 4
+  var play?/eax: (addr boolean) <- get self, play?
+  copy-to *play?, 1/true
+  var data-ah/eax: (addr handle array handle array cell) <- get self, data
+  var data/eax: (addr array handle array cell) <- lookup *data-ah
+  var y/ecx: int <- copy 0
+  {
+    compare y, 0xc0
+    break-if->=
+    var row-ah/eax: (addr handle array cell) <- index data, y
+    var row/eax: (addr array cell) <- lookup *row-ah
+    var x/edx: int <- copy 0
+    {
+      compare x, 0x100
+      break-if->=
+      var dest/eax: (addr cell) <- index row, x
+      clear-object dest
+      x <- increment
+      loop
+    }
     y <- increment
     loop
   }
