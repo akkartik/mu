@@ -4,8 +4,13 @@
 #
 # To build:
 #   $ ./translate life.mu
-# To run:
+# I run it on my 2.5GHz Linux laptop like this:
 #   $ qemu-system-i386 -enable-kvm code.img
+#
+# If things seem too fast or too slow on your computer, adjust the loop bounds
+# in the function `pause` at the bottom. Its value will depend on how you
+# accelerate Qemu. Mu will eventually get a clock to obviate the need for this
+# tuning.
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var env-storage: environment
