@@ -20,6 +20,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
     render screen, env
     pause env
     edit keyboard, env
+    step env
     loop
   }
 }
@@ -185,6 +186,10 @@ fn pause _self: (addr environment) {
     i <- increment
     loop
   }
+}
+
+fn step _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
 }
 
 fn initialize-environment _self: (addr environment) {
