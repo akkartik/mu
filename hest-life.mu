@@ -16,11 +16,17 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
+  render screen, env
   {
-    render screen, env
-    pause env
     edit keyboard, env
-    step env
+    var play?/eax: (addr boolean) <- get env, play?
+    compare *play?, 0/false
+    {
+      break-if-=
+      step env
+      render screen, env
+    }
+    pause env
     loop
   }
 }
@@ -29,6 +35,7 @@ type environment {
   data: (handle array handle array cell)
   zoom: int  # 0 = 1024 px per cell; 5 = 4px per cell; each step adjusts by a factor of 4
   tick: int
+  play?: boolean
 }
 
 type cell {
@@ -193,7 +200,19 @@ fn draw-linear-point screen: (addr screen), u: float, x0: int, y0: int, x1: int,
 fn edit keyboard: (addr keyboard), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var key/eax: byte <- read-key keyboard
-  # TODO: hotkeys
+  compare key, 0x20/space
+  {
+    break-if-!=
+    var play?/eax: (addr boolean) <- get self, play?
+    compare *play?, 0/false
+    {
+      break-if-=
+      copy-to *play?, 0/false
+      return
+    }
+    copy-to *play?, 1/true
+    return
+  }
 }
 
 fn pause _self: (addr environment) {
@@ -234,6 +253,8 @@ fn initialize-environment _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var zoom/eax: (addr int) <- get self, zoom
 #?   copy-to *zoom, 4
+  var play?/eax: (addr boolean) <- get self, play?
+  copy-to *play?, 1/true
   var data-ah/eax: (addr handle array handle array cell) <- get self, data
   populate data-ah, 0x100
   var data/eax: (addr array handle array cell) <- lookup *data-ah
