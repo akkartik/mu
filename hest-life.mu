@@ -240,6 +240,36 @@ fn edit keyboard: (addr keyboard), _self: (addr environment) {
     copy-to *loop, 0
     return
   }
+  # -: zoom out
+  {
+    compare key, 0x2d/-
+    break-if-!=
+    var zoom/eax: (addr int) <- get self, zoom
+    compare *zoom, 4
+    {
+      break-if->=
+      increment *zoom
+      # set tick to a multiple of zoom
+      var tick-a/edx: (addr int) <- get self, tick
+      clear-lowest-bits tick-a, *zoom
+    }
+    return
+  }
+  # +: zoom in
+  {
+    compare key, 0x2b/+
+    break-if-!=
+    var zoom/eax: (addr int) <- get self, zoom
+    compare *zoom, 0
+    {
+      break-if-<=
+      decrement *zoom
+      # set tick to a multiple of zoom
+      var tick-a/edx: (addr int) <- get self, tick
+      clear-lowest-bits tick-a, *zoom
+    }
+    return
+  }
 }
 
 fn pause _self: (addr environment) {
