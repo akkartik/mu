@@ -659,17 +659,6 @@ fn edit keyboard: (addr keyboard), _self: (addr environment) {
   }
 }
 
-fn linger _self: (addr environment) {
-  var self/esi: (addr environment) <- copy _self
-  var i/ecx: int <- copy 0
-  {
-    compare i, 0x10000000
-    break-if->=
-    i <- increment
-    loop
-  }
-}
-
 fn step _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var tick-a/ecx: (addr int) <- get self, tick
@@ -1008,4 +997,15 @@ fn num-live-neighbors _self: (addr environment), x: int, y: int -> _/eax: int {
     result <- increment
   }
   return result
+}
+
+fn linger _self: (addr environment) {
+  var self/esi: (addr environment) <- copy _self
+  var i/ecx: int <- copy 0
+  {
+    compare i, 0x10000000
+    break-if->=
+    i <- increment
+    loop
+  }
 }
