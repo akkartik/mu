@@ -292,7 +292,7 @@ if ('onhashchange' in window) {
 <span id="L232" class="LineNr"> 232 </span>
 <span id="L233" class="LineNr"> 233 </span>  fb/enable-interrupts
 <span id="L234" class="LineNr"> 234 </span>
-<span id="L235" class="LineNr"> 235 </span>  (<a href='boot.subx.html#L1470'>initialize-mouse</a>)
+<span id="L235" class="LineNr"> 235 </span>  (<a href='boot.subx.html#L1492'>initialize-mouse</a>)
 <span id="L236" class="LineNr"> 236 </span>
 <span id="L237" class="LineNr"> 237 </span>  <span class="subxComment">## enable floating point</span>
 <span id="L238" class="LineNr"> 238 </span>  db/floating-point-coprocessor e3/initialize
@@ -514,272 +514,294 @@ if ('onhashchange' in window) {
 <span id="L889" class="LineNr"> 889 </span>
 <span id="L890" class="LineNr"> 890 </span>== data
 <span id="L891" class="LineNr"> 891 </span>
-<span id="L892" class="LineNr"> 892 </span><span class="subxComment"># We'll be gaining access just to the secondary drive on the primary bus for</span>
-<span id="L893" class="LineNr"> 893 </span><span class="subxComment"># now. It will have the designated 'data' disk so we don't mess with the code</span>
-<span id="L894" class="LineNr"> 894 </span><span class="subxComment"># disk.</span>
-<span id="L895" class="LineNr"> 895 </span><span class="subxComment">#</span>
-<span id="L896" class="LineNr"> 896 </span><span class="subxComment"># The type definition for this variable is in safe Mu (rather than unsafe</span>
-<span id="L897" class="LineNr"> 897 </span><span class="subxComment"># SubX) code.</span>
-<span id="L898" class="LineNr"> 898 </span><span class="subxComment"># All ports are 8-bit except data-port, which is 16-bit.</span>
-<span id="L899" class="LineNr"> 899 </span><span class="SpecialChar">Primary-bus-secondary-drive</span>:
-<span id="L900" class="LineNr"> 900 </span>  <span class="subxComment"># command-port: int (write)</span>
-<span id="L901" class="LineNr"> 901 </span>  0x1f7/imm32
-<span id="L902" class="LineNr"> 902 </span>  <span class="subxComment"># status-port: int (read)</span>
-<span id="L903" class="LineNr"> 903 </span>  0x1f7/imm32
-<span id="L904" class="LineNr"> 904 </span>  <span class="subxComment"># alternative-status-port: int (read)</span>
-<span id="L905" class="LineNr"> 905 </span>  0x3f6/imm32
-<span id="L906" class="LineNr"> 906 </span>  <span class="subxComment"># error-port: int (read)</span>
-<span id="L907" class="LineNr"> 907 </span>  0x1f1/imm32
-<span id="L908" class="LineNr"> 908 </span>  <span class="subxComment"># drive-and-head-port: int</span>
-<span id="L909" class="LineNr"> 909 </span>  0x1f6/imm32
-<span id="L910" class="LineNr"> 910 </span>  <span class="subxComment"># sector-count-port: int</span>
-<span id="L911" class="LineNr"> 911 </span>  0x1f2/imm32
-<span id="L912" class="LineNr"> 912 </span>  <span class="subxComment"># lba-low-port: int</span>
-<span id="L913" class="LineNr"> 913 </span>  0x1f3/imm32
-<span id="L914" class="LineNr"> 914 </span>  <span class="subxComment"># lba-mid-port: int</span>
-<span id="L915" class="LineNr"> 915 </span>  0x1f4/imm32
-<span id="L916" class="LineNr"> 916 </span>  <span class="subxComment"># lba-high-port: int</span>
-<span id="L917" class="LineNr"> 917 </span>  0x1f5/imm32
-<span id="L918" class="LineNr"> 918 </span>  <span class="subxComment"># data-port: int</span>
-<span id="L919" class="LineNr"> 919 </span>  0x1f0/imm32
-<span id="L920" class="LineNr"> 920 </span>  <span class="subxComment"># drive-code: byte                # only drive-specific field</span>
-<span id="L921" class="LineNr"> 921 </span>  0xf0/imm32  <span class="subxComment"># LBA mode also enabled</span>
-<span id="L922" class="LineNr"> 922 </span>
-<span id="L923" class="LineNr"> 923 </span>== code
-<span id="L924" class="LineNr"> 924 </span>
-<span id="L925" class="LineNr"> 925 </span><span class="subxFunction">load-sectors</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, out: (addr stream byte)</span>
-<span id="L926" class="LineNr"> 926 </span>  <span class="subxS1Comment"># . prologue</span>
-<span id="L927" class="LineNr"> 927 </span>  55/push-ebp
-<span id="L928" class="LineNr"> 928 </span>  89/&lt;- %ebp 4/r32/esp
-<span id="L929" class="LineNr"> 929 </span>  <span class="subxS1Comment"># . save registers</span>
-<span id="L930" class="LineNr"> 930 </span>  50/push-eax
-<span id="L931" class="LineNr"> 931 </span>  51/push-ecx
-<span id="L932" class="LineNr"> 932 </span>  52/push-edx
-<span id="L933" class="LineNr"> 933 </span>  <span class="subxComment"># check for drive</span>
-<span id="L934" class="LineNr"> 934 </span>  (<a href='boot.subx.html#L1096'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
-<span id="L935" class="LineNr"> 935 </span>  3d/compare-eax-and 0/imm32/false
-<span id="L936" class="LineNr"> 936 </span>  0f 84/jump-if-= $load-sectors:end/disp32
-<span id="L937" class="LineNr"> 937 </span>  <span class="subxComment"># kick off read</span>
-<span id="L938" class="LineNr"> 938 </span>  (<a href='boot.subx.html#L1160'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
-<span id="L939" class="LineNr"> 939 </span>  (<a href='boot.subx.html#L1189'>clear-ata-error</a> *(ebp+8))
-<span id="L940" class="LineNr"> 940 </span>  (<a href='boot.subx.html#L1211'>ata-sector-count</a> *(ebp+8) *(ebp+0x10))
-<span id="L941" class="LineNr"> 941 </span>  (<a href='boot.subx.html#L1233'>ata-lba</a> *(ebp+8) *(ebp+0xc))
-<span id="L942" class="LineNr"> 942 </span>  (<a href='boot.subx.html#L1264'>ata-command</a> *(ebp+8) 0x20)  <span class="subxComment"># read sectors with retries</span>
-<span id="L943" class="LineNr"> 943 </span>  <span class="subxComment"># for each sector</span>
-<span id="L944" class="LineNr"> 944 </span>  {
-<span id="L945" class="LineNr"> 945 </span>    <span class="subxComment"># poll for results</span>
-<span id="L946" class="LineNr"> 946 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;waiting for sector..&quot; 7 0)</span>
-<span id="L947" class="LineNr"> 947 </span>    (<a href='boot.subx.html#L1286'>while-ata-busy</a> *(ebp+8))
-<span id="L948" class="LineNr"> 948 </span>    (<a href='boot.subx.html#L1305'>until-ata-data-available</a> *(ebp+8))
-<span id="L949" class="LineNr"> 949 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;reading\n&quot; 7 0)</span>
-<span id="L950" class="LineNr"> 950 </span>    <span class="subxComment"># var data-port/edx = disk-&gt;data-port</span>
-<span id="L951" class="LineNr"> 951 </span>    8b/-&gt; *(ebp+8) 0/r32/eax
-<span id="L952" class="LineNr"> 952 </span>    8b/-&gt; *(eax+0x24) 2/r32/edx
-<span id="L953" class="LineNr"> 953 </span>    <span class="subxComment"># emit results</span>
-<span id="L954" class="LineNr"> 954 </span>    31/xor %eax 0/r32/eax
-<span id="L955" class="LineNr"> 955 </span>    b9/copy-to-ecx 0x200/imm32  <span class="subxComment"># 512 bytes per sector</span>
-<span id="L956" class="LineNr"> 956 </span>    {
-<span id="L957" class="LineNr"> 957 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L958" class="LineNr"> 958 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
-<span id="L959" class="LineNr"> 959 </span>      66 ed/read-port-dx-into-ax
-<span id="L960" class="LineNr"> 960 </span>      <span class="subxComment"># write 2 bytes to stream one at a time</span>
-<span id="L961" class="LineNr"> 961 </span>      (<a href='115write-byte.subx.html#L12'>append-byte</a> *(ebp+0x14) %eax)
-<span id="L962" class="LineNr"> 962 </span>      49/decrement-ecx
-<span id="L963" class="LineNr"> 963 </span>      c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
-<span id="L964" class="LineNr"> 964 </span>      (<a href='115write-byte.subx.html#L12'>append-byte</a> *(ebp+0x14) %eax)
-<span id="L965" class="LineNr"> 965 </span>      49/decrement-ecx
-<span id="L966" class="LineNr"> 966 </span>      eb/jump <span class="Constant">loop</span>/disp8
-<span id="L967" class="LineNr"> 967 </span>    }
-<span id="L968" class="LineNr"> 968 </span>    <span class="subxComment"># next sector</span>
-<span id="L969" class="LineNr"> 969 </span>    ff 1/subop/decrement *(ebp+0x10)
-<span id="L970" class="LineNr"> 970 </span><span class="CommentedCode">#?     (draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0x10) 0xc 0)</span>
-<span id="L971" class="LineNr"> 971 </span>    81 7/subop/compare *(ebp+0x10) 0/imm32
-<span id="L972" class="LineNr"> 972 </span>    7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
-<span id="L973" class="LineNr"> 973 </span>    (<a href='boot.subx.html#L1329'>wait-400ns</a> *(ebp+8))
-<span id="L974" class="LineNr"> 974 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;next sector\n&quot; 7 0)</span>
-<span id="L975" class="LineNr"> 975 </span>    e9/jump <span class="Constant">loop</span>/disp32
-<span id="L976" class="LineNr"> 976 </span>  }
-<span id="L977" class="LineNr"> 977 </span><span class="Constant">$load-sectors:end</span>:
-<span id="L978" class="LineNr"> 978 </span>  <span class="subxS1Comment"># . restore registers</span>
-<span id="L979" class="LineNr"> 979 </span>  5a/pop-to-edx
-<span id="L980" class="LineNr"> 980 </span>  59/pop-to-ecx
-<span id="L981" class="LineNr"> 981 </span>  58/pop-to-eax
-<span id="L982" class="LineNr"> 982 </span>  <span class="subxS1Comment"># . epilogue</span>
-<span id="L983" class="LineNr"> 983 </span>  89/&lt;- %esp 5/r32/ebp
-<span id="L984" class="LineNr"> 984 </span>  5d/pop-to-ebp
-<span id="L985" class="LineNr"> 985 </span>  c3/return
-<span id="L986" class="LineNr"> 986 </span>
-<span id="L987" class="LineNr"> 987 </span><span class="subxFunction">store-sectors</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, in: (addr stream byte)</span>
-<span id="L988" class="LineNr"> 988 </span>  <span class="subxS1Comment"># . prologue</span>
-<span id="L989" class="LineNr"> 989 </span>  55/push-ebp
-<span id="L990" class="LineNr"> 990 </span>  89/&lt;- %ebp 4/r32/esp
-<span id="L991" class="LineNr"> 991 </span>  <span class="subxS1Comment"># . save registers</span>
-<span id="L992" class="LineNr"> 992 </span>  50/push-eax
-<span id="L993" class="LineNr"> 993 </span>  51/push-ecx
-<span id="L994" class="LineNr"> 994 </span>  52/push-edx
-<span id="L995" class="LineNr"> 995 </span>  53/push-ebx
-<span id="L996" class="LineNr"> 996 </span>  <span class="subxComment"># check for drive</span>
-<span id="L997" class="LineNr"> 997 </span>  (<a href='boot.subx.html#L1096'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
-<span id="L998" class="LineNr"> 998 </span>  3d/compare-eax-and 0/imm32/false
-<span id="L999" class="LineNr"> 999 </span>  0f 84/jump-if-= $store-sectors:end/disp32
-<span id="L1000" class="LineNr">1000 </span>  <span class="subxComment"># kick off write</span>
-<span id="L1001" class="LineNr">1001 </span>  (<a href='boot.subx.html#L1160'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
-<span id="L1002" class="LineNr">1002 </span>  (<a href='boot.subx.html#L1189'>clear-ata-error</a> *(ebp+8))
-<span id="L1003" class="LineNr">1003 </span>  (<a href='boot.subx.html#L1211'>ata-sector-count</a> *(ebp+8) *(ebp+0x10))
-<span id="L1004" class="LineNr">1004 </span>  (<a href='boot.subx.html#L1233'>ata-lba</a> *(ebp+8) *(ebp+0xc))
-<span id="L1005" class="LineNr">1005 </span>  (<a href='boot.subx.html#L1264'>ata-command</a> *(ebp+8) 0x30)  <span class="subxComment"># write sectors with retries</span>
-<span id="L1006" class="LineNr">1006 </span>  <span class="subxComment"># for each sector</span>
-<span id="L1007" class="LineNr">1007 </span><span class="CommentedCode">#?   (set-cursor-position 0 0 0)</span>
-<span id="L1008" class="LineNr">1008 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;0&quot; 7 0)</span>
-<span id="L1009" class="LineNr">1009 </span>  {
-<span id="L1010" class="LineNr">1010 </span>    <span class="subxComment"># wait</span>
-<span id="L1011" class="LineNr">1011 </span>    (<a href='boot.subx.html#L1286'>while-ata-busy</a> *(ebp+8))
-<span id="L1012" class="LineNr">1012 </span>    (<a href='boot.subx.html#L1324'>until-ata-ready-for-data</a> *(ebp+8))
-<span id="L1013" class="LineNr">1013 </span>    <span class="subxComment"># var data-port/edx = disk-&gt;data-port</span>
-<span id="L1014" class="LineNr">1014 </span>    8b/-&gt; *(ebp+8) 0/r32/eax
-<span id="L1015" class="LineNr">1015 </span>    8b/-&gt; *(eax+0x24) 2/r32/edx
-<span id="L1016" class="LineNr">1016 </span>    <span class="subxComment"># send data</span>
-<span id="L1017" class="LineNr">1017 </span>    b9/copy-to-ecx 0x200/imm32  <span class="subxComment"># 512 bytes per sector</span>
-<span id="L1018" class="LineNr">1018 </span>    <span class="subxS1Comment"># . var first-byte/ebx: byte</span>
-<span id="L1019" class="LineNr">1019 </span>    <span class="subxS1Comment"># . when it's more than 0xff, we're at an even-numbered byte</span>
-<span id="L1020" class="LineNr">1020 </span>    bb/copy-to-ebx 0xffff/imm32
-<span id="L1021" class="LineNr">1021 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;D&quot; 7 0)</span>
-<span id="L1022" class="LineNr">1022 </span><span class="Constant">$store-sectors:store-sector</span>:
-<span id="L1023" class="LineNr">1023 </span>    {
-<span id="L1024" class="LineNr">1024 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L1025" class="LineNr">1025 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
-<span id="L1026" class="LineNr">1026 </span>      <span class="subxComment"># this loop is slow, but the ATA spec also requires a small delay</span>
-<span id="L1027" class="LineNr">1027 </span>      (<a href='309stream.subx.html#L6'>stream-empty?</a> *(ebp+0x14))  <span class="subxComment"># =&gt; eax</span>
-<span id="L1028" class="LineNr">1028 </span>      3d/compare-eax-and 0/imm32/false
-<span id="L1029" class="LineNr">1029 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
-<span id="L1030" class="LineNr">1030 </span>      <span class="subxComment"># read byte from stream</span>
-<span id="L1031" class="LineNr">1031 </span>      (<a href='112read-byte.subx.html#L13'>read-byte</a> *(ebp+0x14))  <span class="subxComment"># =&gt; eax</span>
-<span id="L1032" class="LineNr">1032 </span>      <span class="subxComment"># if we're at an odd-numbered byte, save it to first-byte</span>
-<span id="L1033" class="LineNr">1033 </span>      81 7/subop/compare %ebx 0xff/imm32
-<span id="L1034" class="LineNr">1034 </span>      {
-<span id="L1035" class="LineNr">1035 </span>        7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
-<span id="L1036" class="LineNr">1036 </span>        89/&lt;- %ebx 0/r32/eax
-<span id="L1037" class="LineNr">1037 </span>        eb/jump $store-sectors:store-sector/disp8
-<span id="L1038" class="LineNr">1038 </span>      }
-<span id="L1039" class="LineNr">1039 </span>      <span class="subxComment"># otherwise OR it with first-byte and write it out</span>
-<span id="L1040" class="LineNr">1040 </span>      c1/shift 4/subop/left %eax 8/imm8
-<span id="L1041" class="LineNr">1041 </span>      09/or %eax 3/r32/ebx
-<span id="L1042" class="LineNr">1042 </span>      66 ef/write-ax-into-port-dx
-<span id="L1043" class="LineNr">1043 </span>      49/decrement-ecx
-<span id="L1044" class="LineNr">1044 </span>      49/decrement-ecx
-<span id="L1045" class="LineNr">1045 </span>      <span class="subxComment"># reset first-byte</span>
-<span id="L1046" class="LineNr">1046 </span>      bb/copy-to-ebx 0xffff/imm32
-<span id="L1047" class="LineNr">1047 </span>      eb/jump <span class="Constant">loop</span>/disp8
-<span id="L1048" class="LineNr">1048 </span>    }
-<span id="L1049" class="LineNr">1049 </span>    <span class="subxComment"># write out final first-byte if necessary</span>
-<span id="L1050" class="LineNr">1050 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;I&quot; 7 0)</span>
-<span id="L1051" class="LineNr">1051 </span>    81 7/subop/compare %ebx 0xff/imm32
-<span id="L1052" class="LineNr">1052 </span>    {
-<span id="L1053" class="LineNr">1053 </span>      7f/jump-if-&gt; <span class="Constant">break</span>/disp8
-<span id="L1054" class="LineNr">1054 </span>      89/&lt;- %eax 3/r32/ebx
-<span id="L1055" class="LineNr">1055 </span>      66 ef/write-ax-into-port-dx
-<span id="L1056" class="LineNr">1056 </span>      49/decrement-ecx
-<span id="L1057" class="LineNr">1057 </span>      49/decrement-ecx
-<span id="L1058" class="LineNr">1058 </span>    }
-<span id="L1059" class="LineNr">1059 </span>    <span class="subxComment"># pad zeroes</span>
-<span id="L1060" class="LineNr">1060 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;P&quot; 7 0)</span>
-<span id="L1061" class="LineNr">1061 </span>    31/xor %eax 0/r32/eax
-<span id="L1062" class="LineNr">1062 </span>    {
-<span id="L1063" class="LineNr">1063 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L1064" class="LineNr">1064 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
-<span id="L1065" class="LineNr">1065 </span>      66 ef/write-ax-into-port-dx
+<span id="L892" class="LineNr"> 892 </span><span class="subxComment"># code disk</span>
+<span id="L893" class="LineNr"> 893 </span><span class="subxComment"># All ports are 8-bit except data-port, which is 16-bit.</span>
+<span id="L894" class="LineNr"> 894 </span><span class="SpecialChar">Primary-bus-primary-drive</span>:
+<span id="L895" class="LineNr"> 895 </span>  <span class="subxComment"># command-port: int (write)</span>
+<span id="L896" class="LineNr"> 896 </span>  0x1f7/imm32
+<span id="L897" class="LineNr"> 897 </span>  <span class="subxComment"># status-port: int (read)</span>
+<span id="L898" class="LineNr"> 898 </span>  0x1f7/imm32
+<span id="L899" class="LineNr"> 899 </span>  <span class="subxComment"># alternative-status-port: int (read)</span>
+<span id="L900" class="LineNr"> 900 </span>  0x3f6/imm32
+<span id="L901" class="LineNr"> 901 </span>  <span class="subxComment"># error-port: int (read)</span>
+<span id="L902" class="LineNr"> 902 </span>  0x1f1/imm32
+<span id="L903" class="LineNr"> 903 </span>  <span class="subxComment"># drive-and-head-port: int</span>
+<span id="L904" class="LineNr"> 904 </span>  0x1f6/imm32
+<span id="L905" class="LineNr"> 905 </span>  <span class="subxComment"># sector-count-port: int</span>
+<span id="L906" class="LineNr"> 906 </span>  0x1f2/imm32
+<span id="L907" class="LineNr"> 907 </span>  <span class="subxComment"># lba-low-port: int</span>
+<span id="L908" class="LineNr"> 908 </span>  0x1f3/imm32
+<span id="L909" class="LineNr"> 909 </span>  <span class="subxComment"># lba-mid-port: int</span>
+<span id="L910" class="LineNr"> 910 </span>  0x1f4/imm32
+<span id="L911" class="LineNr"> 911 </span>  <span class="subxComment"># lba-high-port: int</span>
+<span id="L912" class="LineNr"> 912 </span>  0x1f5/imm32
+<span id="L913" class="LineNr"> 913 </span>  <span class="subxComment"># data-port: int</span>
+<span id="L914" class="LineNr"> 914 </span>  0x1f0/imm32
+<span id="L915" class="LineNr"> 915 </span>  <span class="subxComment"># drive-code: byte                # only drive-specific field</span>
+<span id="L916" class="LineNr"> 916 </span>  0xe0/imm32  <span class="subxComment"># LBA mode also enabled</span>
+<span id="L917" class="LineNr"> 917 </span>
+<span id="L918" class="LineNr"> 918 </span><span class="subxComment"># data disk</span>
+<span id="L919" class="LineNr"> 919 </span><span class="subxComment"># All ports are 8-bit except data-port, which is 16-bit.</span>
+<span id="L920" class="LineNr"> 920 </span><span class="SpecialChar">Primary-bus-secondary-drive</span>:
+<span id="L921" class="LineNr"> 921 </span>  <span class="subxComment"># command-port: int (write)</span>
+<span id="L922" class="LineNr"> 922 </span>  0x1f7/imm32
+<span id="L923" class="LineNr"> 923 </span>  <span class="subxComment"># status-port: int (read)</span>
+<span id="L924" class="LineNr"> 924 </span>  0x1f7/imm32
+<span id="L925" class="LineNr"> 925 </span>  <span class="subxComment"># alternative-status-port: int (read)</span>
+<span id="L926" class="LineNr"> 926 </span>  0x3f6/imm32
+<span id="L927" class="LineNr"> 927 </span>  <span class="subxComment"># error-port: int (read)</span>
+<span id="L928" class="LineNr"> 928 </span>  0x1f1/imm32
+<span id="L929" class="LineNr"> 929 </span>  <span class="subxComment"># drive-and-head-port: int</span>
+<span id="L930" class="LineNr"> 930 </span>  0x1f6/imm32
+<span id="L931" class="LineNr"> 931 </span>  <span class="subxComment"># sector-count-port: int</span>
+<span id="L932" class="LineNr"> 932 </span>  0x1f2/imm32
+<span id="L933" class="LineNr"> 933 </span>  <span class="subxComment"># lba-low-port: int</span>
+<span id="L934" class="LineNr"> 934 </span>  0x1f3/imm32
+<span id="L935" class="LineNr"> 935 </span>  <span class="subxComment"># lba-mid-port: int</span>
+<span id="L936" class="LineNr"> 936 </span>  0x1f4/imm32
+<span id="L937" class="LineNr"> 937 </span>  <span class="subxComment"># lba-high-port: int</span>
+<span id="L938" class="LineNr"> 938 </span>  0x1f5/imm32
+<span id="L939" class="LineNr"> 939 </span>  <span class="subxComment"># data-port: int</span>
+<span id="L940" class="LineNr"> 940 </span>  0x1f0/imm32
+<span id="L941" class="LineNr"> 941 </span>  <span class="subxComment"># drive-code: byte                # only drive-specific field</span>
+<span id="L942" class="LineNr"> 942 </span>  0xf0/imm32  <span class="subxComment"># LBA mode also enabled</span>
+<span id="L943" class="LineNr"> 943 </span>
+<span id="L944" class="LineNr"> 944 </span>== code
+<span id="L945" class="LineNr"> 945 </span>
+<span id="L946" class="LineNr"> 946 </span><span class="subxFunction">load-sectors</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, out: (addr stream byte)</span>
+<span id="L947" class="LineNr"> 947 </span>  <span class="subxS1Comment"># . prologue</span>
+<span id="L948" class="LineNr"> 948 </span>  55/push-ebp
+<span id="L949" class="LineNr"> 949 </span>  89/&lt;- %ebp 4/r32/esp
+<span id="L950" class="LineNr"> 950 </span>  <span class="subxS1Comment"># . save registers</span>
+<span id="L951" class="LineNr"> 951 </span>  50/push-eax
+<span id="L952" class="LineNr"> 952 </span>  51/push-ecx
+<span id="L953" class="LineNr"> 953 </span>  52/push-edx
+<span id="L954" class="LineNr"> 954 </span>  <span class="subxComment"># check for drive</span>
+<span id="L955" class="LineNr"> 955 </span>  (<a href='boot.subx.html#L1118'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
+<span id="L956" class="LineNr"> 956 </span>  3d/compare-eax-and 0/imm32/false
+<span id="L957" class="LineNr"> 957 </span>  0f 84/jump-if-= $load-sectors:end/disp32
+<span id="L958" class="LineNr"> 958 </span>  <span class="subxComment"># kick off read</span>
+<span id="L959" class="LineNr"> 959 </span>  (<a href='boot.subx.html#L1182'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
+<span id="L960" class="LineNr"> 960 </span>  (<a href='boot.subx.html#L1211'>clear-ata-error</a> *(ebp+8))
+<span id="L961" class="LineNr"> 961 </span>  (<a href='boot.subx.html#L1233'>ata-sector-count</a> *(ebp+8) *(ebp+0x10))
+<span id="L962" class="LineNr"> 962 </span>  (<a href='boot.subx.html#L1255'>ata-lba</a> *(ebp+8) *(ebp+0xc))
+<span id="L963" class="LineNr"> 963 </span>  (<a href='boot.subx.html#L1286'>ata-command</a> *(ebp+8) 0x20)  <span class="subxComment"># read sectors with retries</span>
+<span id="L964" class="LineNr"> 964 </span>  <span class="subxComment"># for each sector</span>
+<span id="L965" class="LineNr"> 965 </span>  {
+<span id="L966" class="LineNr"> 966 </span>    <span class="subxComment"># poll for results</span>
+<span id="L967" class="LineNr"> 967 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;waiting for sector..&quot; 7 0)</span>
+<span id="L968" class="LineNr"> 968 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;.&quot; 7 0)</span>
+<span id="L969" class="LineNr"> 969 </span>    (<a href='boot.subx.html#L1308'>while-ata-busy</a> *(ebp+8))
+<span id="L970" class="LineNr"> 970 </span>    (<a href='boot.subx.html#L1327'>until-ata-data-available</a> *(ebp+8))
+<span id="L971" class="LineNr"> 971 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;reading\n&quot; 7 0)</span>
+<span id="L972" class="LineNr"> 972 </span>    <span class="subxComment"># var data-port/edx = disk-&gt;data-port</span>
+<span id="L973" class="LineNr"> 973 </span>    8b/-&gt; *(ebp+8) 0/r32/eax
+<span id="L974" class="LineNr"> 974 </span>    8b/-&gt; *(eax+0x24) 2/r32/edx
+<span id="L975" class="LineNr"> 975 </span>    <span class="subxComment"># emit results</span>
+<span id="L976" class="LineNr"> 976 </span>    31/xor %eax 0/r32/eax
+<span id="L977" class="LineNr"> 977 </span>    b9/copy-to-ecx 0x200/imm32  <span class="subxComment"># 512 bytes per sector</span>
+<span id="L978" class="LineNr"> 978 </span>    {
+<span id="L979" class="LineNr"> 979 </span>      81 7/subop/compare %ecx 0/imm32
+<span id="L980" class="LineNr"> 980 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
+<span id="L981" class="LineNr"> 981 </span>      66 ed/read-port-dx-into-ax
+<span id="L982" class="LineNr"> 982 </span>      <span class="subxComment"># write 2 bytes to stream one at a time</span>
+<span id="L983" class="LineNr"> 983 </span>      (<a href='115write-byte.subx.html#L12'>append-byte</a> *(ebp+0x14) %eax)
+<span id="L984" class="LineNr"> 984 </span>      49/decrement-ecx
+<span id="L985" class="LineNr"> 985 </span>      c1/shift 5/subop/right-padding-zeroes %eax 8/imm8
+<span id="L986" class="LineNr"> 986 </span>      (<a href='115write-byte.subx.html#L12'>append-byte</a> *(ebp+0x14) %eax)
+<span id="L987" class="LineNr"> 987 </span>      49/decrement-ecx
+<span id="L988" class="LineNr"> 988 </span>      eb/jump <span class="Constant">loop</span>/disp8
+<span id="L989" class="LineNr"> 989 </span>    }
+<span id="L990" class="LineNr"> 990 </span>    <span class="subxComment"># next sector</span>
+<span id="L991" class="LineNr"> 991 </span>    ff 1/subop/decrement *(ebp+0x10)
+<span id="L992" class="LineNr"> 992 </span><span class="CommentedCode">#?     (draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0 *(ebp+0x10) 0xc 0)</span>
+<span id="L993" class="LineNr"> 993 </span>    81 7/subop/compare *(ebp+0x10) 0/imm32
+<span id="L994" class="LineNr"> 994 </span>    7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
+<span id="L995" class="LineNr"> 995 </span>    (<a href='boot.subx.html#L1351'>wait-400ns</a> *(ebp+8))
+<span id="L996" class="LineNr"> 996 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;next sector\n&quot; 7 0)</span>
+<span id="L997" class="LineNr"> 997 </span>    e9/jump <span class="Constant">loop</span>/disp32
+<span id="L998" class="LineNr"> 998 </span>  }
+<span id="L999" class="LineNr"> 999 </span><span class="Constant">$load-sectors:end</span>:
+<span id="L1000" class="LineNr">1000 </span>  <span class="subxS1Comment"># . restore registers</span>
+<span id="L1001" class="LineNr">1001 </span>  5a/pop-to-edx
+<span id="L1002" class="LineNr">1002 </span>  59/pop-to-ecx
+<span id="L1003" class="LineNr">1003 </span>  58/pop-to-eax
+<span id="L1004" class="LineNr">1004 </span>  <span class="subxS1Comment"># . epilogue</span>
+<span id="L1005" class="LineNr">1005 </span>  89/&lt;- %esp 5/r32/ebp
+<span id="L1006" class="LineNr">1006 </span>  5d/pop-to-ebp
+<span id="L1007" class="LineNr">1007 </span>  c3/return
+<span id="L1008" class="LineNr">1008 </span>
+<span id="L1009" class="LineNr">1009 </span><span class="subxFunction">store-sectors</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, in: (addr stream byte)</span>
+<span id="L1010" class="LineNr">1010 </span>  <span class="subxS1Comment"># . prologue</span>
+<span id="L1011" class="LineNr">1011 </span>  55/push-ebp
+<span id="L1012" class="LineNr">1012 </span>  89/&lt;- %ebp 4/r32/esp
+<span id="L1013" class="LineNr">1013 </span>  <span class="subxS1Comment"># . save registers</span>
+<span id="L1014" class="LineNr">1014 </span>  50/push-eax
+<span id="L1015" class="LineNr">1015 </span>  51/push-ecx
+<span id="L1016" class="LineNr">1016 </span>  52/push-edx
+<span id="L1017" class="LineNr">1017 </span>  53/push-ebx
+<span id="L1018" class="LineNr">1018 </span>  <span class="subxComment"># check for drive</span>
+<span id="L1019" class="LineNr">1019 </span>  (<a href='boot.subx.html#L1118'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
+<span id="L1020" class="LineNr">1020 </span>  3d/compare-eax-and 0/imm32/false
+<span id="L1021" class="LineNr">1021 </span>  0f 84/jump-if-= $store-sectors:end/disp32
+<span id="L1022" class="LineNr">1022 </span>  <span class="subxComment"># kick off write</span>
+<span id="L1023" class="LineNr">1023 </span>  (<a href='boot.subx.html#L1182'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
+<span id="L1024" class="LineNr">1024 </span>  (<a href='boot.subx.html#L1211'>clear-ata-error</a> *(ebp+8))
+<span id="L1025" class="LineNr">1025 </span>  (<a href='boot.subx.html#L1233'>ata-sector-count</a> *(ebp+8) *(ebp+0x10))
+<span id="L1026" class="LineNr">1026 </span>  (<a href='boot.subx.html#L1255'>ata-lba</a> *(ebp+8) *(ebp+0xc))
+<span id="L1027" class="LineNr">1027 </span>  (<a href='boot.subx.html#L1286'>ata-command</a> *(ebp+8) 0x30)  <span class="subxComment"># write sectors with retries</span>
+<span id="L1028" class="LineNr">1028 </span>  <span class="subxComment"># for each sector</span>
+<span id="L1029" class="LineNr">1029 </span><span class="CommentedCode">#?   (set-cursor-position 0 0 0)</span>
+<span id="L1030" class="LineNr">1030 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;0&quot; 7 0)</span>
+<span id="L1031" class="LineNr">1031 </span>  {
+<span id="L1032" class="LineNr">1032 </span>    <span class="subxComment"># wait</span>
+<span id="L1033" class="LineNr">1033 </span>    (<a href='boot.subx.html#L1308'>while-ata-busy</a> *(ebp+8))
+<span id="L1034" class="LineNr">1034 </span>    (<a href='boot.subx.html#L1346'>until-ata-ready-for-data</a> *(ebp+8))
+<span id="L1035" class="LineNr">1035 </span>    <span class="subxComment"># var data-port/edx = disk-&gt;data-port</span>
+<span id="L1036" class="LineNr">1036 </span>    8b/-&gt; *(ebp+8) 0/r32/eax
+<span id="L1037" class="LineNr">1037 </span>    8b/-&gt; *(eax+0x24) 2/r32/edx
+<span id="L1038" class="LineNr">1038 </span>    <span class="subxComment"># send data</span>
+<span id="L1039" class="LineNr">1039 </span>    b9/copy-to-ecx 0x200/imm32  <span class="subxComment"># 512 bytes per sector</span>
+<span id="L1040" class="LineNr">1040 </span>    <span class="subxS1Comment"># . var first-byte/ebx: byte</span>
+<span id="L1041" class="LineNr">1041 </span>    <span class="subxS1Comment"># . when it's more than 0xff, we're at an even-numbered byte</span>
+<span id="L1042" class="LineNr">1042 </span>    bb/copy-to-ebx 0xffff/imm32
+<span id="L1043" class="LineNr">1043 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;D&quot; 7 0)</span>
+<span id="L1044" class="LineNr">1044 </span><span class="Constant">$store-sectors:store-sector</span>:
+<span id="L1045" class="LineNr">1045 </span>    {
+<span id="L1046" class="LineNr">1046 </span>      81 7/subop/compare %ecx 0/imm32
+<span id="L1047" class="LineNr">1047 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
+<span id="L1048" class="LineNr">1048 </span>      <span class="subxComment"># this loop is slow, but the ATA spec also requires a small delay</span>
+<span id="L1049" class="LineNr">1049 </span>      (<a href='309stream.subx.html#L6'>stream-empty?</a> *(ebp+0x14))  <span class="subxComment"># =&gt; eax</span>
+<span id="L1050" class="LineNr">1050 </span>      3d/compare-eax-and 0/imm32/false
+<span id="L1051" class="LineNr">1051 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
+<span id="L1052" class="LineNr">1052 </span>      <span class="subxComment"># read byte from stream</span>
+<span id="L1053" class="LineNr">1053 </span>      (<a href='112read-byte.subx.html#L13'>read-byte</a> *(ebp+0x14))  <span class="subxComment"># =&gt; eax</span>
+<span id="L1054" class="LineNr">1054 </span>      <span class="subxComment"># if we're at an odd-numbered byte, save it to first-byte</span>
+<span id="L1055" class="LineNr">1055 </span>      81 7/subop/compare %ebx 0xff/imm32
+<span id="L1056" class="LineNr">1056 </span>      {
+<span id="L1057" class="LineNr">1057 </span>        7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
+<span id="L1058" class="LineNr">1058 </span>        89/&lt;- %ebx 0/r32/eax
+<span id="L1059" class="LineNr">1059 </span>        eb/jump $store-sectors:store-sector/disp8
+<span id="L1060" class="LineNr">1060 </span>      }
+<span id="L1061" class="LineNr">1061 </span>      <span class="subxComment"># otherwise OR it with first-byte and write it out</span>
+<span id="L1062" class="LineNr">1062 </span>      c1/shift 4/subop/left %eax 8/imm8
+<span id="L1063" class="LineNr">1063 </span>      09/or %eax 3/r32/ebx
+<span id="L1064" class="LineNr">1064 </span>      66 ef/write-ax-into-port-dx
+<span id="L1065" class="LineNr">1065 </span>      49/decrement-ecx
 <span id="L1066" class="LineNr">1066 </span>      49/decrement-ecx
-<span id="L1067" class="LineNr">1067 </span>      49/decrement-ecx
-<span id="L1068" class="LineNr">1068 </span>      eb/jump <span class="Constant">loop</span>/disp8
-<span id="L1069" class="LineNr">1069 </span>    }
-<span id="L1070" class="LineNr">1070 </span>    <span class="subxComment"># next sector</span>
-<span id="L1071" class="LineNr">1071 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;N&quot; 7 0)</span>
-<span id="L1072" class="LineNr">1072 </span>    ff 1/subop/decrement *(ebp+0x10)
-<span id="L1073" class="LineNr">1073 </span>    81 7/subop/compare *(ebp+0x10) 0/imm32
-<span id="L1074" class="LineNr">1074 </span>    7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
-<span id="L1075" class="LineNr">1075 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;W&quot; 7 0)</span>
-<span id="L1076" class="LineNr">1076 </span>    (<a href='boot.subx.html#L1329'>wait-400ns</a> *(ebp+8))
-<span id="L1077" class="LineNr">1077 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;L&quot; 7 0)</span>
-<span id="L1078" class="LineNr">1078 </span>    e9/jump <span class="Constant">loop</span>/disp32
-<span id="L1079" class="LineNr">1079 </span>  }
-<span id="L1080" class="LineNr">1080 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;F&quot; 7 0)</span>
-<span id="L1081" class="LineNr">1081 </span>  (<a href='boot.subx.html#L1363'>flush-ata-cache</a> *(ebp+8))
-<span id="L1082" class="LineNr">1082 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;Y&quot; 7 0)</span>
-<span id="L1083" class="LineNr">1083 </span><span class="Constant">$store-sectors:end</span>:
-<span id="L1084" class="LineNr">1084 </span>  <span class="subxS1Comment"># . restore registers</span>
-<span id="L1085" class="LineNr">1085 </span>  5b/pop-to-ebx
-<span id="L1086" class="LineNr">1086 </span>  5a/pop-to-edx
-<span id="L1087" class="LineNr">1087 </span>  59/pop-to-ecx
-<span id="L1088" class="LineNr">1088 </span>  58/pop-to-eax
-<span id="L1089" class="LineNr">1089 </span>  <span class="subxS1Comment"># . epilogue</span>
-<span id="L1090" class="LineNr">1090 </span>  89/&lt;- %esp 5/r32/ebp
-<span id="L1091" class="LineNr">1091 </span>  5d/pop-to-ebp
-<span id="L1092" class="LineNr">1092 </span>  c3/return
-<span id="L1093" class="LineNr">1093 </span>
-<span id="L1094" class="Folded">1094 </span><span class="Folded">+--289 lines: # disk helpers ------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L1383" class="LineNr">1383 </span>
-<span id="L1384" class="LineNr">1384 </span><span class="subxComment">## Controlling a PS/2 mouse</span>
-<span id="L1385" class="LineNr">1385 </span><span class="subxComment"># Uses no IRQs, just polling.</span>
-<span id="L1386" class="LineNr">1386 </span><span class="subxComment"># Thanks Dave Long: <a href="https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py">https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py</a></span>
-<span id="L1387" class="LineNr">1387 </span><span class="subxComment">#</span>
-<span id="L1388" class="LineNr">1388 </span><span class="subxComment"># Resources:</span>
-<span id="L1389" class="LineNr">1389 </span><span class="subxComment">#   <a href="https://wiki.osdev.org/Mouse_Input">https://wiki.osdev.org/Mouse_Input</a></span>
-<span id="L1390" class="LineNr">1390 </span>
-<span id="L1391" class="LineNr">1391 </span><span class="subxComment"># results x/eax, y/ecx range from -256 to +255</span>
-<span id="L1392" class="LineNr">1392 </span><span class="subxComment"># See <a href="https://wiki.osdev.org/index.php?title=Mouse_Input&amp;oldid=25663#Format_of_First_3_Packet_Bytes">https://wiki.osdev.org/index.php?title=Mouse_Input&amp;oldid=25663#Format_of_First_3_Packet_Bytes</a></span>
-<span id="L1393" class="LineNr">1393 </span><span class="subxFunction">read-mouse-event</span>:  <span class="subxComment"># -&gt; _/eax: int, _/ecx: int</span>
-<span id="L1394" class="LineNr">1394 </span>  <span class="subxS1Comment"># . prologue</span>
-<span id="L1395" class="LineNr">1395 </span>  55/push-ebp
-<span id="L1396" class="LineNr">1396 </span>  89/&lt;- %ebp 4/r32/esp
-<span id="L1397" class="LineNr">1397 </span>  <span class="subxS1Comment"># . save registers</span>
-<span id="L1398" class="LineNr">1398 </span>  52/push-edx
-<span id="L1399" class="LineNr">1399 </span>  53/push-ebx
-<span id="L1400" class="LineNr">1400 </span>  <span class="subxComment"># if no event, return 0, 0</span>
-<span id="L1401" class="LineNr">1401 </span>  b8/copy-to-eax 0/imm32
-<span id="L1402" class="LineNr">1402 </span>  b9/copy-to-ecx 0/imm32
-<span id="L1403" class="LineNr">1403 </span>  (<a href='boot.subx.html#L1460'>any-mouse-event?</a>)  <span class="subxComment"># =&gt; eax</span>
-<span id="L1404" class="LineNr">1404 </span>  3d/compare-eax-and 0/imm32/false
-<span id="L1405" class="LineNr">1405 </span>  74/jump-if-= $read-mouse-event:end/disp8
-<span id="L1406" class="LineNr">1406 </span>  <span class="subxComment"># var f1/edx: byte = inb(0x60)</span>
-<span id="L1407" class="LineNr">1407 </span>  31/xor %eax 0/r32/eax
-<span id="L1408" class="LineNr">1408 </span>  e4/read-port-into-al 0x60/imm8
-<span id="L1409" class="LineNr">1409 </span>  89/&lt;- %edx 0/r32/eax
-<span id="L1410" class="LineNr">1410 </span>  (<a href='boot.subx.html#L1445'>wait-for-mouse-event</a>)
-<span id="L1411" class="LineNr">1411 </span>  <span class="subxComment"># var dx/ebx: byte = inb(0x60)</span>
-<span id="L1412" class="LineNr">1412 </span>  31/xor %eax 0/r32/eax
-<span id="L1413" class="LineNr">1413 </span>  e4/read-port-into-al 0x60/imm8
-<span id="L1414" class="LineNr">1414 </span>  89/&lt;- %ebx 0/r32/eax
-<span id="L1415" class="LineNr">1415 </span>  (<a href='boot.subx.html#L1445'>wait-for-mouse-event</a>)
-<span id="L1416" class="LineNr">1416 </span>  <span class="subxComment"># var dy/ecx: byte = inb(0x60)</span>
-<span id="L1417" class="LineNr">1417 </span>  31/xor %eax 0/r32/eax
-<span id="L1418" class="LineNr">1418 </span>  e4/read-port-into-al 0x60/imm8
-<span id="L1419" class="LineNr">1419 </span>  89/&lt;- %ecx 0/r32/eax
-<span id="L1420" class="LineNr">1420 </span>  <span class="subxComment"># eax = dx</span>
-<span id="L1421" class="LineNr">1421 </span>  89/&lt;- %eax 3/r32/ebx
-<span id="L1422" class="LineNr">1422 </span>  <span class="subxComment"># if (f1 &amp; 0x10) dx = -dx</span>
-<span id="L1423" class="LineNr">1423 </span>  {
-<span id="L1424" class="LineNr">1424 </span>    f6 0/subop/test-bits %dl 0x10/imm8
-<span id="L1425" class="LineNr">1425 </span>    74/jump-if-zero <span class="Constant">break</span>/disp8
-<span id="L1426" class="LineNr">1426 </span>    0d/or-eax-with 0xffffff00/imm32
-<span id="L1427" class="LineNr">1427 </span>  }
-<span id="L1428" class="LineNr">1428 </span>  <span class="subxComment"># if (f1 &amp; 0x20) dy = -dy</span>
-<span id="L1429" class="LineNr">1429 </span>  {
-<span id="L1430" class="LineNr">1430 </span>    f6 0/subop/test-bits %dl 0x20/imm8
-<span id="L1431" class="LineNr">1431 </span>    74/jump-if-zero <span class="Constant">break</span>/disp8
-<span id="L1432" class="LineNr">1432 </span>    81 1/subop/or %ecx 0xffffff00/imm32
-<span id="L1433" class="LineNr">1433 </span>  }
-<span id="L1434" class="LineNr">1434 </span><span class="Constant">$read-mouse-event:end</span>:
-<span id="L1435" class="LineNr">1435 </span>  <span class="subxS1Comment"># . restore registers</span>
-<span id="L1436" class="LineNr">1436 </span>  5b/pop-to-ebx
-<span id="L1437" class="LineNr">1437 </span>  5a/pop-to-edx
-<span id="L1438" class="LineNr">1438 </span>  <span class="subxS1Comment"># . epilogue</span>
-<span id="L1439" class="LineNr">1439 </span>  89/&lt;- %esp 5/r32/ebp
-<span id="L1440" class="LineNr">1440 </span>  5d/pop-to-ebp
-<span id="L1441" class="LineNr">1441 </span>  c3/return
-<span id="L1442" class="LineNr">1442 </span>
-<span id="L1443" class="Folded">1443 </span><span class="Folded">+--147 lines: # mouse helpers -----------------------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L1590" class="LineNr">1590 </span>
-<span id="L1591" class="LineNr">1591 </span><span class="subxComment"># vim&#0058;ft=subx</span>
+<span id="L1067" class="LineNr">1067 </span>      <span class="subxComment"># reset first-byte</span>
+<span id="L1068" class="LineNr">1068 </span>      bb/copy-to-ebx 0xffff/imm32
+<span id="L1069" class="LineNr">1069 </span>      eb/jump <span class="Constant">loop</span>/disp8
+<span id="L1070" class="LineNr">1070 </span>    }
+<span id="L1071" class="LineNr">1071 </span>    <span class="subxComment"># write out final first-byte if necessary</span>
+<span id="L1072" class="LineNr">1072 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;I&quot; 7 0)</span>
+<span id="L1073" class="LineNr">1073 </span>    81 7/subop/compare %ebx 0xff/imm32
+<span id="L1074" class="LineNr">1074 </span>    {
+<span id="L1075" class="LineNr">1075 </span>      7f/jump-if-&gt; <span class="Constant">break</span>/disp8
+<span id="L1076" class="LineNr">1076 </span>      89/&lt;- %eax 3/r32/ebx
+<span id="L1077" class="LineNr">1077 </span>      66 ef/write-ax-into-port-dx
+<span id="L1078" class="LineNr">1078 </span>      49/decrement-ecx
+<span id="L1079" class="LineNr">1079 </span>      49/decrement-ecx
+<span id="L1080" class="LineNr">1080 </span>    }
+<span id="L1081" class="LineNr">1081 </span>    <span class="subxComment"># pad zeroes</span>
+<span id="L1082" class="LineNr">1082 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;P&quot; 7 0)</span>
+<span id="L1083" class="LineNr">1083 </span>    31/xor %eax 0/r32/eax
+<span id="L1084" class="LineNr">1084 </span>    {
+<span id="L1085" class="LineNr">1085 </span>      81 7/subop/compare %ecx 0/imm32
+<span id="L1086" class="LineNr">1086 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
+<span id="L1087" class="LineNr">1087 </span>      66 ef/write-ax-into-port-dx
+<span id="L1088" class="LineNr">1088 </span>      49/decrement-ecx
+<span id="L1089" class="LineNr">1089 </span>      49/decrement-ecx
+<span id="L1090" class="LineNr">1090 </span>      eb/jump <span class="Constant">loop</span>/disp8
+<span id="L1091" class="LineNr">1091 </span>    }
+<span id="L1092" class="LineNr">1092 </span>    <span class="subxComment"># next sector</span>
+<span id="L1093" class="LineNr">1093 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;N&quot; 7 0)</span>
+<span id="L1094" class="LineNr">1094 </span>    ff 1/subop/decrement *(ebp+0x10)
+<span id="L1095" class="LineNr">1095 </span>    81 7/subop/compare *(ebp+0x10) 0/imm32
+<span id="L1096" class="LineNr">1096 </span>    7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
+<span id="L1097" class="LineNr">1097 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;W&quot; 7 0)</span>
+<span id="L1098" class="LineNr">1098 </span>    (<a href='boot.subx.html#L1351'>wait-400ns</a> *(ebp+8))
+<span id="L1099" class="LineNr">1099 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;L&quot; 7 0)</span>
+<span id="L1100" class="LineNr">1100 </span>    e9/jump <span class="Constant">loop</span>/disp32
+<span id="L1101" class="LineNr">1101 </span>  }
+<span id="L1102" class="LineNr">1102 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;F&quot; 7 0)</span>
+<span id="L1103" class="LineNr">1103 </span>  (<a href='boot.subx.html#L1385'>flush-ata-cache</a> *(ebp+8))
+<span id="L1104" class="LineNr">1104 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;Y&quot; 7 0)</span>
+<span id="L1105" class="LineNr">1105 </span><span class="Constant">$store-sectors:end</span>:
+<span id="L1106" class="LineNr">1106 </span>  <span class="subxS1Comment"># . restore registers</span>
+<span id="L1107" class="LineNr">1107 </span>  5b/pop-to-ebx
+<span id="L1108" class="LineNr">1108 </span>  5a/pop-to-edx
+<span id="L1109" class="LineNr">1109 </span>  59/pop-to-ecx
+<span id="L1110" class="LineNr">1110 </span>  58/pop-to-eax
+<span id="L1111" class="LineNr">1111 </span>  <span class="subxS1Comment"># . epilogue</span>
+<span id="L1112" class="LineNr">1112 </span>  89/&lt;- %esp 5/r32/ebp
+<span id="L1113" class="LineNr">1113 </span>  5d/pop-to-ebp
+<span id="L1114" class="LineNr">1114 </span>  c3/return
+<span id="L1115" class="LineNr">1115 </span>
+<span id="L1116" class="Folded">1116 </span><span class="Folded">+--289 lines: # disk helpers ------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L1405" class="LineNr">1405 </span>
+<span id="L1406" class="LineNr">1406 </span><span class="subxComment">## Controlling a PS/2 mouse</span>
+<span id="L1407" class="LineNr">1407 </span><span class="subxComment"># Uses no IRQs, just polling.</span>
+<span id="L1408" class="LineNr">1408 </span><span class="subxComment"># Thanks Dave Long: <a href="https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py">https://github.com/jtauber/cleese/blob/master/necco/kernel/bochs/py8042.py</a></span>
+<span id="L1409" class="LineNr">1409 </span><span class="subxComment">#</span>
+<span id="L1410" class="LineNr">1410 </span><span class="subxComment"># Resources:</span>
+<span id="L1411" class="LineNr">1411 </span><span class="subxComment">#   <a href="https://wiki.osdev.org/Mouse_Input">https://wiki.osdev.org/Mouse_Input</a></span>
+<span id="L1412" class="LineNr">1412 </span>
+<span id="L1413" class="LineNr">1413 </span><span class="subxComment"># results x/eax, y/ecx range from -256 to +255</span>
+<span id="L1414" class="LineNr">1414 </span><span class="subxComment"># See <a href="https://wiki.osdev.org/index.php?title=Mouse_Input&amp;oldid=25663#Format_of_First_3_Packet_Bytes">https://wiki.osdev.org/index.php?title=Mouse_Input&amp;oldid=25663#Format_of_First_3_Packet_Bytes</a></span>
+<span id="L1415" class="LineNr">1415 </span><span class="subxFunction">read-mouse-event</span>:  <span class="subxComment"># -&gt; _/eax: int, _/ecx: int</span>
+<span id="L1416" class="LineNr">1416 </span>  <span class="subxS1Comment"># . prologue</span>
+<span id="L1417" class="LineNr">1417 </span>  55/push-ebp
+<span id="L1418" class="LineNr">1418 </span>  89/&lt;- %ebp 4/r32/esp
+<span id="L1419" class="LineNr">1419 </span>  <span class="subxS1Comment"># . save registers</span>
+<span id="L1420" class="LineNr">1420 </span>  52/push-edx
+<span id="L1421" class="LineNr">1421 </span>  53/push-ebx
+<span id="L1422" class="LineNr">1422 </span>  <span class="subxComment"># if no event, return 0, 0</span>
+<span id="L1423" class="LineNr">1423 </span>  b8/copy-to-eax 0/imm32
+<span id="L1424" class="LineNr">1424 </span>  b9/copy-to-ecx 0/imm32
+<span id="L1425" class="LineNr">1425 </span>  (<a href='boot.subx.html#L1482'>any-mouse-event?</a>)  <span class="subxComment"># =&gt; eax</span>
+<span id="L1426" class="LineNr">1426 </span>  3d/compare-eax-and 0/imm32/false
+<span id="L1427" class="LineNr">1427 </span>  74/jump-if-= $read-mouse-event:end/disp8
+<span id="L1428" class="LineNr">1428 </span>  <span class="subxComment"># var f1/edx: byte = inb(0x60)</span>
+<span id="L1429" class="LineNr">1429 </span>  31/xor %eax 0/r32/eax
+<span id="L1430" class="LineNr">1430 </span>  e4/read-port-into-al 0x60/imm8
+<span id="L1431" class="LineNr">1431 </span>  89/&lt;- %edx 0/r32/eax
+<span id="L1432" class="LineNr">1432 </span>  (<a href='boot.subx.html#L1467'>wait-for-mouse-event</a>)
+<span id="L1433" class="LineNr">1433 </span>  <span class="subxComment"># var dx/ebx: byte = inb(0x60)</span>
+<span id="L1434" class="LineNr">1434 </span>  31/xor %eax 0/r32/eax
+<span id="L1435" class="LineNr">1435 </span>  e4/read-port-into-al 0x60/imm8
+<span id="L1436" class="LineNr">1436 </span>  89/&lt;- %ebx 0/r32/eax
+<span id="L1437" class="LineNr">1437 </span>  (<a href='boot.subx.html#L1467'>wait-for-mouse-event</a>)
+<span id="L1438" class="LineNr">1438 </span>  <span class="subxComment"># var dy/ecx: byte = inb(0x60)</span>
+<span id="L1439" class="LineNr">1439 </span>  31/xor %eax 0/r32/eax
+<span id="L1440" class="LineNr">1440 </span>  e4/read-port-into-al 0x60/imm8
+<span id="L1441" class="LineNr">1441 </span>  89/&lt;- %ecx 0/r32/eax
+<span id="L1442" class="LineNr">1442 </span>  <span class="subxComment"># eax = dx</span>
+<span id="L1443" class="LineNr">1443 </span>  89/&lt;- %eax 3/r32/ebx
+<span id="L1444" class="LineNr">1444 </span>  <span class="subxComment"># if (f1 &amp; 0x10) dx = -dx</span>
+<span id="L1445" class="LineNr">1445 </span>  {
+<span id="L1446" class="LineNr">1446 </span>    f6 0/subop/test-bits %dl 0x10/imm8
+<span id="L1447" class="LineNr">1447 </span>    74/jump-if-zero <span class="Constant">break</span>/disp8
+<span id="L1448" class="LineNr">1448 </span>    0d/or-eax-with 0xffffff00/imm32
+<span id="L1449" class="LineNr">1449 </span>  }
+<span id="L1450" class="LineNr">1450 </span>  <span class="subxComment"># if (f1 &amp; 0x20) dy = -dy</span>
+<span id="L1451" class="LineNr">1451 </span>  {
+<span id="L1452" class="LineNr">1452 </span>    f6 0/subop/test-bits %dl 0x20/imm8
+<span id="L1453" class="LineNr">1453 </span>    74/jump-if-zero <span class="Constant">break</span>/disp8
+<span id="L1454" class="LineNr">1454 </span>    81 1/subop/or %ecx 0xffffff00/imm32
+<span id="L1455" class="LineNr">1455 </span>  }
+<span id="L1456" class="LineNr">1456 </span><span class="Constant">$read-mouse-event:end</span>:
+<span id="L1457" class="LineNr">1457 </span>  <span class="subxS1Comment"># . restore registers</span>
+<span id="L1458" class="LineNr">1458 </span>  5b/pop-to-ebx
+<span id="L1459" class="LineNr">1459 </span>  5a/pop-to-edx
+<span id="L1460" class="LineNr">1460 </span>  <span class="subxS1Comment"># . epilogue</span>
+<span id="L1461" class="LineNr">1461 </span>  89/&lt;- %esp 5/r32/ebp
+<span id="L1462" class="LineNr">1462 </span>  5d/pop-to-ebp
+<span id="L1463" class="LineNr">1463 </span>  c3/return
+<span id="L1464" class="LineNr">1464 </span>
+<span id="L1465" class="Folded">1465 </span><span class="Folded">+--147 lines: # mouse helpers -----------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L1612" class="LineNr">1612 </span>
+<span id="L1613" class="LineNr">1613 </span><span class="subxComment"># vim&#0058;ft=subx</span>
 </pre>
 </body>
 </html>

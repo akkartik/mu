@@ -463,6 +463,30 @@ if ('onhashchange' in window) {
 <span id="L405" class="LineNr">405 </span>  <span class="Delimiter">);</span>
 <span id="L406" class="LineNr">406 </span>  <a href='003trace.cc.html#L292'>CHECK_TRACE_DOESNT_CONTAIN</a><span class="Delimiter">(</span><span class="Constant">&quot;run: jump 5&quot;</span><span class="Delimiter">);</span>
 <span id="L407" class="LineNr">407 </span><span class="Delimiter">}</span>
+<span id="L408" class="LineNr">408 </span>
+<span id="L409" class="LineNr">409 </span><span class="Comment">//:: jump if overflow</span>
+<span id="L410" class="LineNr">410 </span>
+<span id="L411" class="LineNr">411 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
+<span id="L412" class="LineNr">412 </span><a href='001help.cc.html#L237'>put_new</a><span class="Delimiter">(</span><a href='010vm.cc.html#L355'>Name</a><span class="Delimiter">,</span> <span class="Constant">&quot;70&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;jump disp8 bytes away if <a href='010vm.cc.html#L91'>OF</a> is set (jcc/jo)&quot;</span><span class="Delimiter">);</span>
+<span id="L413" class="LineNr">413 </span><a href='001help.cc.html#L237'>put_new</a><span class="Delimiter">(</span><a href='010vm.cc.html#L355'>Name</a><span class="Delimiter">,</span> <span class="Constant">&quot;71&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;jump disp8 bytes away if <a href='010vm.cc.html#L91'>OF</a> is unset (jcc/jno)&quot;</span><span class="Delimiter">);</span>
+<span id="L414" class="LineNr">414 </span>
+<span id="L415" class="LineNr">415 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
+<span id="L416" class="LineNr">416 </span><span class="Normal">case</span> <span class="Constant">0x70</span>: <span class="Delimiter">{</span>  <span class="Comment">// jump disp8 if OF is set</span>
+<span id="L417" class="LineNr">417 </span>  <span class="Normal">const</span> <span class="Normal">int8_t</span> offset = <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span><a href='010vm.cc.html#L338'>next</a><span class="Delimiter">());</span>
+<span id="L418" class="LineNr">418 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='010vm.cc.html#L91'>OF</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L419" class="LineNr">419 </span>    <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span>Callstack_depth+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; <a href='010vm.cc.html#L410'>NUM</a><span class="Delimiter">(</span>offset<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L420" class="LineNr">420 </span>    <a href='010vm.cc.html#L26'>EIP</a> += offset<span class="Delimiter">;</span>
+<span id="L421" class="LineNr">421 </span>  <span class="Delimiter">}</span>
+<span id="L422" class="LineNr">422 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L423" class="LineNr">423 </span><span class="Delimiter">}</span>
+<span id="L424" class="LineNr">424 </span><span class="Normal">case</span> <span class="Constant">0x71</span>: <span class="Delimiter">{</span>  <span class="Comment">// jump disp8 if OF is unset</span>
+<span id="L425" class="LineNr">425 </span>  <span class="Normal">const</span> <span class="Normal">int8_t</span> offset = <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span><a href='010vm.cc.html#L338'>next</a><span class="Delimiter">());</span>
+<span id="L426" class="LineNr">426 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!OF<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L427" class="LineNr">427 </span>    <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span>Callstack_depth+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; <a href='010vm.cc.html#L410'>NUM</a><span class="Delimiter">(</span>offset<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L428" class="LineNr">428 </span>    <a href='010vm.cc.html#L26'>EIP</a> += offset<span class="Delimiter">;</span>
+<span id="L429" class="LineNr">429 </span>  <span class="Delimiter">}</span>
+<span id="L430" class="LineNr">430 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L431" class="LineNr">431 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

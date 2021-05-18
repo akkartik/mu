@@ -1,0 +1,378 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 509bezier.mu</title>
+<meta name="Generator" content="Vim/8.1">
+<meta name="plugin-version" content="vim8.1_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal-dark">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #a8a8a8; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #a8a8a8; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.PreProc { color: #c000c0; }
+.Special { color: #ff6060; }
+.LineNr { }
+.Constant { color: #008787; }
+.Delimiter { color: #c000c0; }
+.muFunction { color: #af5f00; text-decoration: underline; }
+.muComment { color: #005faf; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/main/509bezier.mu'>https://github.com/akkartik/mu/blob/main/509bezier.mu</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr">  1 </span><span class="muComment"># Draw a second-degree bezier curve using 3 control points.</span>
+<span id="L2" class="LineNr">  2 </span><span class="muComment">#</span>
+<span id="L3" class="LineNr">  3 </span><span class="muComment"># <a href="http://members.chello.at/easyfilter/bresenham.html">http://members.chello.at/easyfilter/bresenham.html</a> says that this algorithm</span>
+<span id="L4" class="LineNr">  4 </span><span class="muComment"># works only if &quot;the gradient does not change sign&quot;. Either:</span>
+<span id="L5" class="LineNr">  5 </span><span class="muComment">#   x0 &gt;= x1 &gt;= x2</span>
+<span id="L6" class="LineNr">  6 </span><span class="muComment"># or:</span>
+<span id="L7" class="LineNr">  7 </span><span class="muComment">#   x0 &lt;= x1 &lt;= x2</span>
+<span id="L8" class="LineNr">  8 </span><span class="muComment"># Similarly for y0, y1 and y2.</span>
+<span id="L9" class="LineNr">  9 </span><span class="muComment">#</span>
+<span id="L10" class="LineNr"> 10 </span><span class="muComment"># This seems superficially similar to the notions of convex and concave, but I</span>
+<span id="L11" class="LineNr"> 11 </span><span class="muComment"># think it isn't. I think it's purely a property of the frame of reference.</span>
+<span id="L12" class="LineNr"> 12 </span><span class="muComment"># Rotating the axes can make the gradient change sign or stop changing sign</span>
+<span id="L13" class="LineNr"> 13 </span><span class="muComment"># even as 3 points preserve fixed relative bearings to each other.</span>
+<span id="L14" class="LineNr"> 14 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='509bezier.mu.html#L14'>draw-monotonic-bezier</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), x0: int, y0: int, x1: int, y1: int, x2: int, y2: int, color: int <span class="Delimiter">{</span>
+<span id="L15" class="LineNr"> 15 </span>  <span class="PreProc">var</span> xx: int
+<span id="L16" class="LineNr"> 16 </span>  <span class="PreProc">var</span> yy: int
+<span id="L17" class="LineNr"> 17 </span>  <span class="PreProc">var</span> xy: int
+<span id="L18" class="LineNr"> 18 </span>  <span class="PreProc">var</span> sx: int
+<span id="L19" class="LineNr"> 19 </span>  <span class="PreProc">var</span> sy: int
+<span id="L20" class="LineNr"> 20 </span>  <span class="muComment"># sx = x2-x1</span>
+<span id="L21" class="LineNr"> 21 </span>  <span class="PreProc">var</span> tmp/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy x2
+<span id="L22" class="LineNr"> 22 </span>  tmp <span class="Special">&lt;-</span> subtract x1
+<span id="L23" class="LineNr"> 23 </span>  copy-to sx, tmp
+<span id="L24" class="LineNr"> 24 </span>  <span class="muComment"># sy = y2-y1</span>
+<span id="L25" class="LineNr"> 25 </span>  tmp <span class="Special">&lt;-</span> copy y2
+<span id="L26" class="LineNr"> 26 </span>  tmp <span class="Special">&lt;-</span> subtract y1
+<span id="L27" class="LineNr"> 27 </span>  copy-to sy, tmp
+<span id="L28" class="LineNr"> 28 </span>  <span class="muComment"># xx = x0-x1</span>
+<span id="L29" class="LineNr"> 29 </span>  tmp <span class="Special">&lt;-</span> copy x0
+<span id="L30" class="LineNr"> 30 </span>  tmp <span class="Special">&lt;-</span> subtract x1
+<span id="L31" class="LineNr"> 31 </span>  copy-to xx, tmp
+<span id="L32" class="LineNr"> 32 </span>  <span class="muComment"># yy = y0-y1</span>
+<span id="L33" class="LineNr"> 33 </span>  tmp <span class="Special">&lt;-</span> copy y0
+<span id="L34" class="LineNr"> 34 </span>  tmp <span class="Special">&lt;-</span> subtract y1
+<span id="L35" class="LineNr"> 35 </span>  copy-to yy, tmp
+<span id="L36" class="LineNr"> 36 </span>  <span class="muComment"># cur = xx*sy - yy*sx</span>
+<span id="L37" class="LineNr"> 37 </span>  <span class="PreProc">var</span> cur-f/<span class="Constant">xmm4</span>: float <span class="Special">&lt;-</span> convert xx
+<span id="L38" class="LineNr"> 38 </span>  <span class="Delimiter">{</span>
+<span id="L39" class="LineNr"> 39 </span>    <span class="PreProc">var</span> sy-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert sy
+<span id="L40" class="LineNr"> 40 </span>    cur-f <span class="Special">&lt;-</span> multiply sy-f
+<span id="L41" class="LineNr"> 41 </span>    <span class="PreProc">var</span> tmp2-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert yy
+<span id="L42" class="LineNr"> 42 </span>    <span class="PreProc">var</span> sx-f/<span class="Constant">xmm2</span>: float <span class="Special">&lt;-</span> convert sx
+<span id="L43" class="LineNr"> 43 </span>    tmp2-f <span class="Special">&lt;-</span> multiply sx-f
+<span id="L44" class="LineNr"> 44 </span>    cur-f <span class="Special">&lt;-</span> subtract tmp2-f
+<span id="L45" class="LineNr"> 45 </span>  <span class="Delimiter">}</span>
+<span id="L46" class="LineNr"> 46 </span>  <span class="muComment"># if (xx*sx &gt; 0) abort</span>
+<span id="L47" class="LineNr"> 47 </span>  <span class="Delimiter">{</span>
+<span id="L48" class="LineNr"> 48 </span>    tmp <span class="Special">&lt;-</span> copy xx
+<span id="L49" class="LineNr"> 49 </span>    tmp <span class="Special">&lt;-</span> multiply sx
+<span id="L50" class="LineNr"> 50 </span>    compare tmp, <span class="Constant">0</span>
+<span id="L51" class="LineNr"> 51 </span>    <span class="PreProc">break-if-&lt;=</span>
+<span id="L52" class="LineNr"> 52 </span>    <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: gradient of x changes sign&quot;</span>
+<span id="L53" class="LineNr"> 53 </span>  <span class="Delimiter">}</span>
+<span id="L54" class="LineNr"> 54 </span>  <span class="muComment"># if (yy*sy &gt; 0) abort</span>
+<span id="L55" class="LineNr"> 55 </span>  <span class="Delimiter">{</span>
+<span id="L56" class="LineNr"> 56 </span>    tmp <span class="Special">&lt;-</span> copy yy
+<span id="L57" class="LineNr"> 57 </span>    tmp <span class="Special">&lt;-</span> multiply sy
+<span id="L58" class="LineNr"> 58 </span>    compare tmp, <span class="Constant">0</span>
+<span id="L59" class="LineNr"> 59 </span>    <span class="PreProc">break-if-&lt;=</span>
+<span id="L60" class="LineNr"> 60 </span>    <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: gradient of y changes sign&quot;</span>
+<span id="L61" class="LineNr"> 61 </span>  <span class="Delimiter">}</span>
+<span id="L62" class="LineNr"> 62 </span>  <span class="muComment"># swap P0 and P2 if necessary</span>
+<span id="L63" class="LineNr"> 63 </span>  <span class="Delimiter">{</span>
+<span id="L64" class="LineNr"> 64 </span>    <span class="muComment"># dist1 = sx*sx + sy*sy</span>
+<span id="L65" class="LineNr"> 65 </span>    <span class="PreProc">var</span> dist1/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy sx
+<span id="L66" class="LineNr"> 66 </span>    <span class="Delimiter">{</span>
+<span id="L67" class="LineNr"> 67 </span>      dist1 <span class="Special">&lt;-</span> multiply sx
+<span id="L68" class="LineNr"> 68 </span>      <span class="Delimiter">{</span>
+<span id="L69" class="LineNr"> 69 </span>        <span class="PreProc">break-if-not-overflow</span>
+<span id="L70" class="LineNr"> 70 </span>        <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: overflow 1&quot;</span>
+<span id="L71" class="LineNr"> 71 </span>      <span class="Delimiter">}</span>
+<span id="L72" class="LineNr"> 72 </span>      tmp <span class="Special">&lt;-</span> copy sy
+<span id="L73" class="LineNr"> 73 </span>      tmp <span class="Special">&lt;-</span> multiply sy
+<span id="L74" class="LineNr"> 74 </span>      <span class="Delimiter">{</span>
+<span id="L75" class="LineNr"> 75 </span>        <span class="PreProc">break-if-not-overflow</span>
+<span id="L76" class="LineNr"> 76 </span>        <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: overflow 2&quot;</span>
+<span id="L77" class="LineNr"> 77 </span>      <span class="Delimiter">}</span>
+<span id="L78" class="LineNr"> 78 </span>      dist1 <span class="Special">&lt;-</span> add tmp
+<span id="L79" class="LineNr"> 79 </span>    <span class="Delimiter">}</span>
+<span id="L80" class="LineNr"> 80 </span>    <span class="muComment"># dist2 = xx*xx + yy*yy</span>
+<span id="L81" class="LineNr"> 81 </span>    <span class="PreProc">var</span> dist2/<span class="Constant">edx</span>: int <span class="Special">&lt;-</span> copy xx
+<span id="L82" class="LineNr"> 82 </span>    <span class="Delimiter">{</span>
+<span id="L83" class="LineNr"> 83 </span>      dist2 <span class="Special">&lt;-</span> multiply xx
+<span id="L84" class="LineNr"> 84 </span>      <span class="Delimiter">{</span>
+<span id="L85" class="LineNr"> 85 </span>        <span class="PreProc">break-if-not-overflow</span>
+<span id="L86" class="LineNr"> 86 </span>        <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: overflow 3&quot;</span>
+<span id="L87" class="LineNr"> 87 </span>      <span class="Delimiter">}</span>
+<span id="L88" class="LineNr"> 88 </span>      tmp <span class="Special">&lt;-</span> copy yy
+<span id="L89" class="LineNr"> 89 </span>      tmp <span class="Special">&lt;-</span> multiply yy
+<span id="L90" class="LineNr"> 90 </span>      <span class="Delimiter">{</span>
+<span id="L91" class="LineNr"> 91 </span>        <span class="PreProc">break-if-not-overflow</span>
+<span id="L92" class="LineNr"> 92 </span>        <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: overflow 4&quot;</span>
+<span id="L93" class="LineNr"> 93 </span>      <span class="Delimiter">}</span>
+<span id="L94" class="LineNr"> 94 </span>      dist2 <span class="Special">&lt;-</span> add tmp
+<span id="L95" class="LineNr"> 95 </span>    <span class="Delimiter">}</span>
+<span id="L96" class="LineNr"> 96 </span>    <span class="muComment"># if (dist1 &lt;= dist2) break</span>
+<span id="L97" class="LineNr"> 97 </span>    compare dist1, dist2
+<span id="L98" class="LineNr"> 98 </span>    <span class="PreProc">break-if-&lt;=</span>
+<span id="L99" class="LineNr"> 99 </span>    <span class="muComment"># swap x0 and x2</span>
+<span id="L100" class="LineNr">100 </span>    tmp <span class="Special">&lt;-</span> copy x0
+<span id="L101" class="LineNr">101 </span>    copy-to x2, tmp
+<span id="L102" class="LineNr">102 </span>    tmp <span class="Special">&lt;-</span> copy sx
+<span id="L103" class="LineNr">103 </span>    tmp <span class="Special">&lt;-</span> add x1
+<span id="L104" class="LineNr">104 </span>    copy-to x0, tmp
+<span id="L105" class="LineNr">105 </span>    <span class="muComment"># swap y0 and y2</span>
+<span id="L106" class="LineNr">106 </span>    tmp <span class="Special">&lt;-</span> copy y0
+<span id="L107" class="LineNr">107 </span>    copy-to y2, tmp
+<span id="L108" class="LineNr">108 </span>    tmp <span class="Special">&lt;-</span> copy sy
+<span id="L109" class="LineNr">109 </span>    tmp <span class="Special">&lt;-</span> add y1
+<span id="L110" class="LineNr">110 </span>    copy-to y0, tmp
+<span id="L111" class="LineNr">111 </span>    <span class="muComment"># cur = -cur</span>
+<span id="L112" class="LineNr">112 </span>    <span class="PreProc">var</span> negative-1/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">-1</span>
+<span id="L113" class="LineNr">113 </span>    <span class="PreProc">var</span> negative-1-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert negative-1
+<span id="L114" class="LineNr">114 </span>    cur-f <span class="Special">&lt;-</span> multiply negative-1-f
+<span id="L115" class="LineNr">115 </span>  <span class="Delimiter">}</span>
+<span id="L116" class="LineNr">116 </span>  <span class="PreProc">var</span> x/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy x0
+<span id="L117" class="LineNr">117 </span>  <span class="PreProc">var</span> y/<span class="Constant">edx</span>: int <span class="Special">&lt;-</span> copy y0
+<span id="L118" class="LineNr">118 </span>  <span class="PreProc">var</span> zero-f: float
+<span id="L119" class="LineNr">119 </span>  <span class="muComment"># plot a curved part if necessary</span>
+<span id="L120" class="LineNr">120 </span>  $draw-monotonic-bezier:curve: <span class="Delimiter">{</span>
+<span id="L121" class="LineNr">121 </span>    compare cur-f, zero-f
+<span id="L122" class="LineNr">122 </span>    <span class="PreProc">break-if-=</span>
+<span id="L123" class="LineNr">123 </span>    <span class="muComment"># xx += sx</span>
+<span id="L124" class="LineNr">124 </span>    tmp <span class="Special">&lt;-</span> copy sx
+<span id="L125" class="LineNr">125 </span>    add-to xx, tmp
+<span id="L126" class="LineNr">126 </span>    <span class="muComment"># sx = sgn(x2-x)</span>
+<span id="L127" class="LineNr">127 </span>    tmp <span class="Special">&lt;-</span> copy x2
+<span id="L128" class="LineNr">128 </span>    tmp <span class="Special">&lt;-</span> subtract x
+<span id="L129" class="LineNr">129 </span>    tmp <span class="Special">&lt;-</span> <a href='506math.mu.html#L10'>sgn</a> tmp
+<span id="L130" class="LineNr">130 </span>    copy-to sx, tmp
+<span id="L131" class="LineNr">131 </span>    <span class="muComment"># xx *= sx</span>
+<span id="L132" class="LineNr">132 </span>    tmp <span class="Special">&lt;-</span> copy sx
+<span id="L133" class="LineNr">133 </span>    tmp <span class="Special">&lt;-</span> multiply xx
+<span id="L134" class="LineNr">134 </span>    copy-to xx, tmp
+<span id="L135" class="LineNr">135 </span>    <span class="muComment"># yy += sy</span>
+<span id="L136" class="LineNr">136 </span>    tmp <span class="Special">&lt;-</span> copy sy
+<span id="L137" class="LineNr">137 </span>    add-to yy, tmp
+<span id="L138" class="LineNr">138 </span>    <span class="muComment"># sy = sgn(y2-y)</span>
+<span id="L139" class="LineNr">139 </span>    tmp <span class="Special">&lt;-</span> copy y2
+<span id="L140" class="LineNr">140 </span>    tmp <span class="Special">&lt;-</span> subtract y
+<span id="L141" class="LineNr">141 </span>    tmp <span class="Special">&lt;-</span> <a href='506math.mu.html#L10'>sgn</a> tmp
+<span id="L142" class="LineNr">142 </span>    copy-to sy, tmp
+<span id="L143" class="LineNr">143 </span>    <span class="muComment"># yy *= sy</span>
+<span id="L144" class="LineNr">144 </span>    tmp <span class="Special">&lt;-</span> copy sy
+<span id="L145" class="LineNr">145 </span>    tmp <span class="Special">&lt;-</span> multiply yy
+<span id="L146" class="LineNr">146 </span>    copy-to yy, tmp
+<span id="L147" class="LineNr">147 </span>    <span class="muComment"># xy = 2*xx*xy</span>
+<span id="L148" class="LineNr">148 </span>    tmp <span class="Special">&lt;-</span> copy xx
+<span id="L149" class="LineNr">149 </span>    tmp <span class="Special">&lt;-</span> multiply yy
+<span id="L150" class="LineNr">150 </span>    <span class="Delimiter">{</span>
+<span id="L151" class="LineNr">151 </span>      <span class="PreProc">break-if-not-overflow</span>
+<span id="L152" class="LineNr">152 </span>      <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: overflow 5&quot;</span>
+<span id="L153" class="LineNr">153 </span>    <span class="Delimiter">}</span>
+<span id="L154" class="LineNr">154 </span>    tmp <span class="Special">&lt;-</span> shift-left <span class="Constant">1</span>
+<span id="L155" class="LineNr">155 </span>    <span class="Delimiter">{</span>
+<span id="L156" class="LineNr">156 </span>      <span class="PreProc">break-if-not-overflow</span>
+<span id="L157" class="LineNr">157 </span>      <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: overflow 6&quot;</span>
+<span id="L158" class="LineNr">158 </span>    <span class="Delimiter">}</span>
+<span id="L159" class="LineNr">159 </span>    copy-to xy, tmp
+<span id="L160" class="LineNr">160 </span>    <span class="muComment"># xx *= xx</span>
+<span id="L161" class="LineNr">161 </span>    tmp <span class="Special">&lt;-</span> copy xx
+<span id="L162" class="LineNr">162 </span>    tmp <span class="Special">&lt;-</span> multiply tmp
+<span id="L163" class="LineNr">163 </span>    <span class="Delimiter">{</span>
+<span id="L164" class="LineNr">164 </span>      <span class="PreProc">break-if-not-overflow</span>
+<span id="L165" class="LineNr">165 </span>      <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: overflow 7&quot;</span>
+<span id="L166" class="LineNr">166 </span>    <span class="Delimiter">}</span>
+<span id="L167" class="LineNr">167 </span>    copy-to xx, tmp
+<span id="L168" class="LineNr">168 </span>    <span class="muComment"># yy *= yy</span>
+<span id="L169" class="LineNr">169 </span>    tmp <span class="Special">&lt;-</span> copy yy
+<span id="L170" class="LineNr">170 </span>    tmp <span class="Special">&lt;-</span> multiply tmp
+<span id="L171" class="LineNr">171 </span>    <span class="Delimiter">{</span>
+<span id="L172" class="LineNr">172 </span>      <span class="PreProc">break-if-not-overflow</span>
+<span id="L173" class="LineNr">173 </span>      <a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;bezier: overflow 7&quot;</span>
+<span id="L174" class="LineNr">174 </span>    <span class="Delimiter">}</span>
+<span id="L175" class="LineNr">175 </span>    copy-to yy, tmp
+<span id="L176" class="LineNr">176 </span>    <span class="muComment"># if (cur*sx*sy &lt; 0) negative curvature</span>
+<span id="L177" class="LineNr">177 </span>    <span class="Delimiter">{</span>
+<span id="L178" class="LineNr">178 </span>      <span class="PreProc">var</span> tmp-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> copy cur-f
+<span id="L179" class="LineNr">179 </span>      <span class="PreProc">var</span> sx-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert sx
+<span id="L180" class="LineNr">180 </span>      tmp-f <span class="Special">&lt;-</span> multiply sx-f
+<span id="L181" class="LineNr">181 </span>      <span class="PreProc">var</span> sy-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert sy
+<span id="L182" class="LineNr">182 </span>      tmp-f <span class="Special">&lt;-</span> multiply sy-f
+<span id="L183" class="LineNr">183 </span>      compare tmp-f, zero-f
+<span id="L184" class="LineNr">184 </span>      <span class="PreProc">break-if-float&gt;=</span>
+<span id="L185" class="LineNr">185 </span>      <span class="muComment">#</span>
+<span id="L186" class="LineNr">186 </span>      negate xx
+<span id="L187" class="LineNr">187 </span>      negate yy
+<span id="L188" class="LineNr">188 </span>      negate xy
+<span id="L189" class="LineNr">189 </span>      <span class="muComment"># cur = -cur</span>
+<span id="L190" class="LineNr">190 </span>      <span class="PreProc">var</span> negative-1/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">-1</span>
+<span id="L191" class="LineNr">191 </span>      <span class="PreProc">var</span> negative-1-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert negative-1
+<span id="L192" class="LineNr">192 </span>      cur-f <span class="Special">&lt;-</span> multiply negative-1-f
+<span id="L193" class="LineNr">193 </span>    <span class="Delimiter">}</span>
+<span id="L194" class="LineNr">194 </span>    <span class="PreProc">var</span> four/<span class="Constant">ebx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">4</span>
+<span id="L195" class="LineNr">195 </span>    <span class="PreProc">var</span> dx-f/<span class="Constant">xmm5</span>: float <span class="Special">&lt;-</span> convert four
+<span id="L196" class="LineNr">196 </span>    <span class="PreProc">var</span> dy-f/<span class="Constant">xmm6</span>: float <span class="Special">&lt;-</span> convert four
+<span id="L197" class="LineNr">197 </span>    <span class="muComment"># dx = 4*sy*cur*(x1-x0) + xx - xy</span>
+<span id="L198" class="LineNr">198 </span>    <span class="Delimiter">{</span>
+<span id="L199" class="LineNr">199 </span>      <span class="PreProc">var</span> tmp/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert sy
+<span id="L200" class="LineNr">200 </span>      dx-f <span class="Special">&lt;-</span> multiply tmp
+<span id="L201" class="LineNr">201 </span>      dx-f <span class="Special">&lt;-</span> multiply cur-f
+<span id="L202" class="LineNr">202 </span>      tmp <span class="Special">&lt;-</span> convert x1
+<span id="L203" class="LineNr">203 </span>      <span class="PreProc">var</span> tmp2/<span class="Constant">xmm3</span>: float <span class="Special">&lt;-</span> convert x
+<span id="L204" class="LineNr">204 </span>      tmp <span class="Special">&lt;-</span> subtract tmp2
+<span id="L205" class="LineNr">205 </span>      dx-f <span class="Special">&lt;-</span> multiply tmp
+<span id="L206" class="LineNr">206 </span>      tmp <span class="Special">&lt;-</span> convert xx
+<span id="L207" class="LineNr">207 </span>      dx-f <span class="Special">&lt;-</span> add tmp
+<span id="L208" class="LineNr">208 </span>      tmp <span class="Special">&lt;-</span> convert xy
+<span id="L209" class="LineNr">209 </span>      dx-f <span class="Special">&lt;-</span> subtract tmp
+<span id="L210" class="LineNr">210 </span>    <span class="Delimiter">}</span>
+<span id="L211" class="LineNr">211 </span>    <span class="muComment"># dy-f = 4*sx*cur*(y0-y1) + yy - xy</span>
+<span id="L212" class="LineNr">212 </span>    <span class="Delimiter">{</span>
+<span id="L213" class="LineNr">213 </span>      <span class="PreProc">var</span> tmp/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert sx
+<span id="L214" class="LineNr">214 </span>      dy-f <span class="Special">&lt;-</span> multiply tmp
+<span id="L215" class="LineNr">215 </span>      dy-f <span class="Special">&lt;-</span> multiply cur-f
+<span id="L216" class="LineNr">216 </span>      tmp <span class="Special">&lt;-</span> convert y
+<span id="L217" class="LineNr">217 </span>      <span class="PreProc">var</span> tmp2/<span class="Constant">xmm3</span>: float <span class="Special">&lt;-</span> convert y1
+<span id="L218" class="LineNr">218 </span>      tmp <span class="Special">&lt;-</span> subtract tmp2
+<span id="L219" class="LineNr">219 </span>      dy-f <span class="Special">&lt;-</span> multiply tmp
+<span id="L220" class="LineNr">220 </span>      tmp <span class="Special">&lt;-</span> convert yy
+<span id="L221" class="LineNr">221 </span>      dy-f <span class="Special">&lt;-</span> add tmp
+<span id="L222" class="LineNr">222 </span>      tmp <span class="Special">&lt;-</span> convert xy
+<span id="L223" class="LineNr">223 </span>      dy-f <span class="Special">&lt;-</span> subtract tmp
+<span id="L224" class="LineNr">224 </span>    <span class="Delimiter">}</span>
+<span id="L225" class="LineNr">225 </span>    <span class="muComment"># xx += xx</span>
+<span id="L226" class="LineNr">226 </span>    tmp <span class="Special">&lt;-</span> copy xx
+<span id="L227" class="LineNr">227 </span>    add-to xx, tmp
+<span id="L228" class="LineNr">228 </span>    <span class="muComment"># yy += yy</span>
+<span id="L229" class="LineNr">229 </span>    tmp <span class="Special">&lt;-</span> copy yy
+<span id="L230" class="LineNr">230 </span>    add-to yy, tmp
+<span id="L231" class="LineNr">231 </span>    <span class="muComment"># err = dx+dy+xy</span>
+<span id="L232" class="LineNr">232 </span>    <span class="PreProc">var</span> err-f/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> copy dx-f
+<span id="L233" class="LineNr">233 </span>    err-f <span class="Special">&lt;-</span> add dy-f
+<span id="L234" class="LineNr">234 </span>    <span class="PreProc">var</span> xy-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert xy
+<span id="L235" class="LineNr">235 </span>    err-f <span class="Special">&lt;-</span> add xy-f
+<span id="L236" class="LineNr">236 </span>    <span class="muComment">#</span>
+<span id="L237" class="LineNr">237 </span>    $draw-monotonic-bezier:<span class="PreProc">loop</span>: <span class="Delimiter">{</span>
+<span id="L238" class="LineNr">238 </span>      <a href='500fake-screen.mu.html#L462'>pixel</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y, color
+<span id="L239" class="LineNr">239 </span>      <span class="muComment"># if (x == x2 &amp;&amp; y == y2) return</span>
+<span id="L240" class="LineNr">240 </span>      <span class="Delimiter">{</span>
+<span id="L241" class="LineNr">241 </span>        compare x, x2
+<span id="L242" class="LineNr">242 </span>        <span class="PreProc">break-if-!=</span>
+<span id="L243" class="LineNr">243 </span>        compare y, y2
+<span id="L244" class="LineNr">244 </span>        <span class="PreProc">break-if-!=</span>
+<span id="L245" class="LineNr">245 </span>        <span class="PreProc">return</span>
+<span id="L246" class="LineNr">246 </span>      <span class="Delimiter">}</span>
+<span id="L247" class="LineNr">247 </span>      <span class="muComment"># perform-y-step? = (2*err &lt; dx)</span>
+<span id="L248" class="LineNr">248 </span>      <span class="PreProc">var</span> perform-y-step?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> copy <span class="Constant">0</span>/false
+<span id="L249" class="LineNr">249 </span>      <span class="PreProc">var</span> two-err-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> copy err-f
+<span id="L250" class="LineNr">250 </span>      <span class="Delimiter">{</span>
+<span id="L251" class="LineNr">251 </span>        <span class="PreProc">var</span> two/<span class="Constant">ebx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">2</span>
+<span id="L252" class="LineNr">252 </span>        <span class="PreProc">var</span> two-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert two
+<span id="L253" class="LineNr">253 </span>        two-err-f <span class="Special">&lt;-</span> multiply two-f
+<span id="L254" class="LineNr">254 </span>        compare two-err-f, dx-f
+<span id="L255" class="LineNr">255 </span>        <span class="PreProc">break-if-float&gt;=</span>
+<span id="L256" class="LineNr">256 </span>        perform-y-step? <span class="Special">&lt;-</span> copy <span class="Constant">1</span>/true
+<span id="L257" class="LineNr">257 </span>      <span class="Delimiter">}</span>
+<span id="L258" class="LineNr">258 </span>      <span class="muComment"># if (2*err &gt; dy)</span>
+<span id="L259" class="LineNr">259 </span>      <span class="Delimiter">{</span>
+<span id="L260" class="LineNr">260 </span>        compare two-err-f, dy-f
+<span id="L261" class="LineNr">261 </span>        <span class="PreProc">break-if-float&lt;=</span>
+<span id="L262" class="LineNr">262 </span>        <span class="muComment"># x += sx</span>
+<span id="L263" class="LineNr">263 </span>        x <span class="Special">&lt;-</span> add sx
+<span id="L264" class="LineNr">264 </span>        <span class="muComment"># dx -= xy</span>
+<span id="L265" class="LineNr">265 </span>        <span class="PreProc">var</span> xy-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert xy
+<span id="L266" class="LineNr">266 </span>        dx-f <span class="Special">&lt;-</span> subtract xy-f
+<span id="L267" class="LineNr">267 </span>        <span class="muComment"># dy += yy</span>
+<span id="L268" class="LineNr">268 </span>        <span class="PreProc">var</span> yy-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert yy
+<span id="L269" class="LineNr">269 </span>        dy-f <span class="Special">&lt;-</span> add yy-f
+<span id="L270" class="LineNr">270 </span>        <span class="muComment"># err += dy</span>
+<span id="L271" class="LineNr">271 </span>        err-f <span class="Special">&lt;-</span> add dy-f
+<span id="L272" class="LineNr">272 </span>      <span class="Delimiter">}</span>
+<span id="L273" class="LineNr">273 </span>      <span class="muComment"># if perform-y-step?</span>
+<span id="L274" class="LineNr">274 </span>      <span class="Delimiter">{</span>
+<span id="L275" class="LineNr">275 </span>        compare perform-y-step?, <span class="Constant">0</span>/false
+<span id="L276" class="LineNr">276 </span>        <span class="PreProc">break-if-=</span>
+<span id="L277" class="LineNr">277 </span>        <span class="muComment"># y += sy</span>
+<span id="L278" class="LineNr">278 </span>        y <span class="Special">&lt;-</span> add sy
+<span id="L279" class="LineNr">279 </span>        <span class="muComment"># dy -= xy</span>
+<span id="L280" class="LineNr">280 </span>        <span class="PreProc">var</span> xy-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert xy
+<span id="L281" class="LineNr">281 </span>        dy-f <span class="Special">&lt;-</span> subtract xy-f
+<span id="L282" class="LineNr">282 </span>        <span class="muComment"># dx += xx</span>
+<span id="L283" class="LineNr">283 </span>        <span class="PreProc">var</span> xx-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert xx
+<span id="L284" class="LineNr">284 </span>        dx-f <span class="Special">&lt;-</span> add xx-f
+<span id="L285" class="LineNr">285 </span>        <span class="muComment"># err += dx</span>
+<span id="L286" class="LineNr">286 </span>        err-f <span class="Special">&lt;-</span> add dx-f
+<span id="L287" class="LineNr">287 </span>      <span class="Delimiter">}</span>
+<span id="L288" class="LineNr">288 </span>      <span class="muComment"># if (dy &lt; dx) loop</span>
+<span id="L289" class="LineNr">289 </span>      compare dy-f, dx-f
+<span id="L290" class="LineNr">290 </span>      <span class="PreProc">loop-if-float&lt;</span>
+<span id="L291" class="LineNr">291 </span>    <span class="Delimiter">}</span>
+<span id="L292" class="LineNr">292 </span>  <span class="Delimiter">}</span>
+<span id="L293" class="LineNr">293 </span>  <span class="muComment"># plot the remaining straight line</span>
+<span id="L294" class="LineNr">294 </span>  <a href='507line.mu.html#L1'>draw-line</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x y, x2 y2, color
+<span id="L295" class="LineNr">295 </span><span class="Delimiter">}</span>
+<span id="L296" class="LineNr">296 </span>
+<span id="L297" class="LineNr">297 </span><span class="muComment"># 0 &lt;= u &lt;= 1</span>
+<span id="L298" class="LineNr">298 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='509bezier.mu.html#L298'>bezier-point</a></span> u: float, x0: int, x1: int, x2: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L299" class="LineNr">299 </span>  <span class="PreProc">var</span> one/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">1</span>
+<span id="L300" class="LineNr">300 </span>  <span class="PreProc">var</span> u-prime/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert one
+<span id="L301" class="LineNr">301 </span>  u-prime <span class="Special">&lt;-</span> subtract u
+<span id="L302" class="LineNr">302 </span>  <span class="PreProc">var</span> result/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert x0
+<span id="L303" class="LineNr">303 </span>  result <span class="Special">&lt;-</span> multiply u-prime
+<span id="L304" class="LineNr">304 </span>  result <span class="Special">&lt;-</span> multiply u-prime
+<span id="L305" class="LineNr">305 </span>  <span class="PreProc">var</span> term2/<span class="Constant">xmm2</span>: float <span class="Special">&lt;-</span> convert x1
+<span id="L306" class="LineNr">306 </span>  term2 <span class="Special">&lt;-</span> multiply u
+<span id="L307" class="LineNr">307 </span>  term2 <span class="Special">&lt;-</span> multiply u-prime
+<span id="L308" class="LineNr">308 </span>  result <span class="Special">&lt;-</span> add term2
+<span id="L309" class="LineNr">309 </span>  result <span class="Special">&lt;-</span> add term2
+<span id="L310" class="LineNr">310 </span>  <span class="PreProc">var</span> term3/<span class="Constant">xmm2</span>: float <span class="Special">&lt;-</span> convert x2
+<span id="L311" class="LineNr">311 </span>  term3 <span class="Special">&lt;-</span> multiply u
+<span id="L312" class="LineNr">312 </span>  term3 <span class="Special">&lt;-</span> multiply u
+<span id="L313" class="LineNr">313 </span>  result <span class="Special">&lt;-</span> add term3
+<span id="L314" class="LineNr">314 </span>  <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> convert result
+<span id="L315" class="LineNr">315 </span>  <span class="PreProc">return</span> result
+<span id="L316" class="LineNr">316 </span><span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
