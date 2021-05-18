@@ -306,7 +306,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   draw-monotonic-bezier screen, 0x170/x0  0x40/y0,  0x150/x1  0x80/y1, 0x150/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x170/x0 0x1a0/y0,  0x150/x1 0x1a0/y1, 0x150/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x220/x0  0x40/y0,  0x150/x1  0x80/y1, 0x150/xs  0xd0/ys,  4/color
-  draw-monotonic-bezier screen, 0x220/x0  0xe8/y0,  0x150/x1  0xe8/y1, 0x150/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x220/x0  0xe8/y0,  0x220/x1  0xd0/y1, 0x150/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x220/x0 0x1a0/y0,  0x180/x1 0x1a0/y1, 0x150/xs  0xd0/ys,  4/color
   # cell 0: conveyors from filter to outputs
   draw-monotonic-bezier screen, 0x188/xf 0x100/yf,  0x160/x1  0x8c/y1, 0x100/x2  0x80/y2,  0x2a/color
@@ -337,7 +337,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
       draw-bezier-point screen, u, 0x170/x0  0x40/y0, 0x150/x1  0x80/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x170/x0 0x1a0/y0, 0x150/x1 0x1a0/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x220/x0  0x40/y0, 0x150/x1  0x80/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
-      draw-bezier-point screen, u, 0x220/x0  0xe8/y0, 0x150/x1  0xe8/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x220/x0  0xe8/y0, 0x220/x1  0xd0/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x220/x0 0x1a0/y0, 0x180/x1 0x1a0/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
       break $render1:cell0
     }
@@ -371,7 +371,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   draw-monotonic-bezier screen, 0x290/x0  0x40/y0,  0x270/x1  0x80/y1, 0x270/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x290/x0 0x1a0/y0,  0x270/x1 0x1a0/y1, 0x270/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x340/x0  0x40/y0,  0x270/x1  0x80/y1, 0x270/xs  0xd0/ys,  4/color
-  draw-monotonic-bezier screen, 0x340/x0  0xe8/y0,  0x270/x1  0xe8/y1, 0x270/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x340/x0  0xe8/y0,  0x340/x1  0xd0/y1, 0x270/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x340/x0 0x1a0/y0,  0x2a0/x1 0x1a0/y1, 0x270/xs  0xd0/ys,  4/color
   # cell 1: conveyors from filter to outputs
   draw-monotonic-bezier screen, 0x2a8/xf 0x100/yf,  0x280/x1  0x8c/y1, 0x220/x2  0x80/y2,  0x2a/color
@@ -402,7 +402,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
       draw-bezier-point screen, u, 0x290/x0  0x40/y0, 0x270/x1  0x80/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x290/x0 0x1a0/y0, 0x270/x1 0x1a0/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x340/x0  0x40/y0, 0x270/x1  0x80/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
-      draw-bezier-point screen, u, 0x340/x0  0xe8/y0, 0x270/x1  0xe8/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x340/x0  0xe8/y0, 0x340/x1  0xd0/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x340/x0 0x1a0/y0, 0x2a0/x1 0x1a0/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
       break $render1:cell1
     }
@@ -436,7 +436,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   draw-monotonic-bezier screen, 0x170/x0 0x160/y0,  0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x170/x0 0x2c0/y0,  0x150/x1 0x2c0/y1, 0x150/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x220/x0 0x160/y0,  0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys,  4/color
-  draw-monotonic-bezier screen, 0x220/x0 0x208/y0,  0x150/x1 0x208/y1, 0x150/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x220/x0 0x208/y0,  0x220/x1 0x1f0/y1, 0x150/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x220/x0 0x2c0/y0,  0x180/x1 0x2c0/y1, 0x150/xs 0x1f0/ys,  4/color
   # cell 2: conveyors from filter to outputs
   draw-monotonic-bezier screen, 0x188/xf 0x220/yf,  0x160/x1 0x1ac/y1, 0x100/x2 0x1a0/y2,  0x2a/color
@@ -467,7 +467,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
       draw-bezier-point screen, u, 0x170/x0 0x160/y0, 0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x170/x0 0x2c0/y0, 0x150/x1 0x2c0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x220/x0 0x160/y0, 0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
-      draw-bezier-point screen, u, 0x220/x0 0x208/y0, 0x150/x1 0x208/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x220/x0 0x208/y0, 0x220/x1 0x1f0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x220/x0 0x2c0/y0, 0x180/x1 0x2c0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
       break $render1:cell2
     }
@@ -501,7 +501,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   draw-monotonic-bezier screen, 0x290/x0 0x160/y0,  0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x290/x0 0x2c0/y0,  0x270/x1 0x2c0/y1, 0x270/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x340/x0 0x160/y0,  0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys,  4/color
-  draw-monotonic-bezier screen, 0x340/x0 0x208/y0,  0x270/x1 0x208/y1, 0x270/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x340/x0 0x208/y0,  0x340/x1 0x1f0/y1, 0x270/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x340/x0 0x2c0/y0,  0x2a0/x1 0x2c0/y1, 0x270/xs 0x1f0/ys,  4/color
   # cell 3: conveyors from filter to outputs
   draw-monotonic-bezier screen, 0x2a8/xf 0x220/yf,  0x280/x1 0x1ac/y1, 0x220/x2 0x1a0/y2,  0x2a/color
@@ -532,7 +532,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
       draw-bezier-point screen, u, 0x290/x0 0x160/y0, 0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x290/x0 0x2c0/y0, 0x270/x1 0x2c0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x340/x0 0x160/y0, 0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
-      draw-bezier-point screen, u, 0x340/x0 0x208/y0, 0x270/x1 0x208/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x340/x0 0x208/y0, 0x340/x1 0x1f0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x340/x0 0x2c0/y0, 0x2a0/x1 0x2c0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
       break $render1:cell3
     }
