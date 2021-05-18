@@ -45,17 +45,18 @@ type cell {
 }
 
 fn render screen: (addr screen), _self: (addr environment) {
-  clear-screen screen
   var self/esi: (addr environment) <- copy _self
   var zoom/eax: (addr int) <- get self, zoom
   compare *zoom, 0
   {
     break-if-!=
+    clear-screen screen
     render0 screen, self
   }
   compare *zoom, 1
   {
     break-if-!=
+    clear-screen screen
     render1 screen, self
   }
   compare *zoom, 4
@@ -1003,7 +1004,8 @@ fn linger _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var i/ecx: int <- copy 0
   {
-    compare i, 0x10000000
+    compare i, 0x10000000  # Kartik's Linux with -enable-kvm
+#?     compare i, 0x8000000  # Kartik's Mac with -accel tcg
     break-if->=
     i <- increment
     loop
