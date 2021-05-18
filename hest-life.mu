@@ -3,7 +3,7 @@
 #   https://ivanish.ca/hest-podcast
 #
 # To build:
-#   $ ./translate life.mu
+#   $ ./translate hest-life.mu
 # I run it on my 2.5GHz Linux laptop like this:
 #   $ qemu-system-i386 -enable-kvm code.img
 #
@@ -11,6 +11,14 @@
 # in the function `linger` at the bottom. Its value will depend on how you
 # accelerate Qemu. Mu will eventually get a clock to obviate the need for this
 # tuning.
+#
+# Keyboard shortcuts:
+#   space: pause/resume
+#   0: restart time
+#   l: start looping from 0 to curren time
+#   L: stop looping
+#   +: zoom in
+#   -: zoom out
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var env-storage: environment
