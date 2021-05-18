@@ -302,7 +302,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   # cell 0: conveyors from neighboring inputs to sum node
   draw-monotonic-bezier screen,  0xc0/x0  0x40/y0,  0x100/x1  0xd0/ys, 0x150/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen,  0xc0/x0  0xe8/y0,   0xc0/x1  0xd0/ys, 0x150/xs  0xd0/ys,  4/color
-  draw-monotonic-bezier screen,  0xc0/x0 0x1a0/y0,   0xc0/x1  0xd0/ys, 0x150/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen,  0xc0/x0 0x1a0/y0,   0xe0/x1  0xd0/ys, 0x150/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x170/x0  0x40/y0,  0x150/x1  0x80/y1, 0x150/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x170/x0 0x1a0/y0,  0x150/x1 0x1a0/y1, 0x150/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x220/x0  0x40/y0,  0x150/x1  0x80/y1, 0x150/xs  0xd0/ys,  4/color
@@ -333,7 +333,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
       # points on conveyors from neighboring cells
       draw-bezier-point screen, u,  0xc0/x0  0x40/y0, 0x100/x1  0xd0/ys, 0x150/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u,  0xc0/x0  0xe8/y0,  0xc0/x1  0xd0/ys, 0x150/xs  0xd0/ys, 7/color, 4/radius
-      draw-bezier-point screen, u,  0xc0/x0 0x1a0/y0,  0xc0/x1  0xd0/ys, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u,  0xc0/x0 0x1a0/y0,  0xe0/x1  0xd0/ys, 0x150/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x170/x0  0x40/y0, 0x150/x1  0x80/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x170/x0 0x1a0/y0, 0x150/x1 0x1a0/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x220/x0  0x40/y0, 0x150/x1  0x80/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
@@ -367,7 +367,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   # cell 1: conveyors from neighboring inputs to sum node
   draw-monotonic-bezier screen, 0x1e0/x0  0x40/y0,  0x220/x1  0xd0/ys, 0x270/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x1e0/x0  0xe8/y0,  0x1e0/x1  0xd0/ys, 0x270/xs  0xd0/ys,  4/color
-  draw-monotonic-bezier screen, 0x1e0/x0 0x1a0/y0,  0x1e0/x1  0xd0/ys, 0x270/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x1e0/x0 0x1a0/y0,  0x200/x1  0xd0/ys, 0x270/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x290/x0  0x40/y0,  0x270/x1  0x80/y1, 0x270/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x290/x0 0x1a0/y0,  0x270/x1 0x1a0/y1, 0x270/xs  0xd0/ys,  4/color
   draw-monotonic-bezier screen, 0x340/x0  0x40/y0,  0x270/x1  0x80/y1, 0x270/xs  0xd0/ys,  4/color
@@ -398,7 +398,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
       # points on conveyors from neighboring cells
       draw-bezier-point screen, u, 0x1e0/x0  0x40/y0, 0x220/x1  0xd0/ys, 0x270/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x1e0/x0  0xe8/y0, 0x1e0/x1  0xd0/ys, 0x270/xs  0xd0/ys, 7/color, 4/radius
-      draw-bezier-point screen, u, 0x1e0/x0 0x1a0/y0, 0x1e0/x1  0xd0/ys, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x1e0/x0 0x1a0/y0, 0x200/x1  0xd0/ys, 0x270/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x290/x0  0x40/y0, 0x270/x1  0x80/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x290/x0 0x1a0/y0, 0x270/x1 0x1a0/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x340/x0  0x40/y0, 0x270/x1  0x80/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
@@ -432,7 +432,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   # cell 2: conveyors from neighboring inputs to sum node
   draw-monotonic-bezier screen,  0xc0/x0 0x160/y0,  0x100/x1 0x1f0/ys, 0x150/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen,  0xc0/x0 0x208/y0,   0xc0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys,  4/color
-  draw-monotonic-bezier screen,  0xc0/x0 0x2c0/y0,   0xc0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen,  0xc0/x0 0x2c0/y0,   0xe0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x170/x0 0x160/y0,  0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x170/x0 0x2c0/y0,  0x150/x1 0x2c0/y1, 0x150/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x220/x0 0x160/y0,  0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys,  4/color
@@ -463,7 +463,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
       # points on conveyors from neighboring cells
       draw-bezier-point screen, u,  0xc0/x0 0x160/y0, 0x100/x1 0x1f0/ys, 0x150/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u,  0xc0/x0 0x208/y0,  0xc0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys, 7/color, 4/radius
-      draw-bezier-point screen, u,  0xc0/x0 0x2c0/y0,  0xc0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u,  0xc0/x0 0x2c0/y0,  0xe0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x170/x0 0x160/y0, 0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x170/x0 0x2c0/y0, 0x150/x1 0x2c0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x220/x0 0x160/y0, 0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
@@ -497,7 +497,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   # cell 3: conveyors from neighboring inputs to sum node
   draw-monotonic-bezier screen, 0x1e0/x0 0x160/y0,  0x220/x1 0x1f0/ys, 0x270/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x1e0/x0 0x208/y0,  0x1e0/x1 0x1f0/ys, 0x270/xs 0x1f0/ys,  4/color
-  draw-monotonic-bezier screen, 0x1e0/x0 0x2c0/y0,  0x1e0/x1 0x1f0/ys, 0x270/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x1e0/x0 0x2c0/y0,  0x200/x1 0x1f0/ys, 0x270/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x290/x0 0x160/y0,  0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x290/x0 0x2c0/y0,  0x270/x1 0x2c0/y1, 0x270/xs 0x1f0/ys,  4/color
   draw-monotonic-bezier screen, 0x340/x0 0x160/y0,  0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys,  4/color
@@ -528,7 +528,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
       # points on conveyors from neighboring cells
       draw-bezier-point screen, u, 0x1e0/x0 0x160/y0, 0x220/x1 0x1f0/ys, 0x270/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x1e0/x0 0x208/y0, 0x1e0/x1 0x1f0/ys, 0x270/xs 0x1f0/ys, 7/color, 4/radius
-      draw-bezier-point screen, u, 0x1e0/x0 0x2c0/y0, 0x1e0/x1 0x1f0/ys, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x1e0/x0 0x2c0/y0, 0x200/x1 0x1f0/ys, 0x270/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x290/x0 0x160/y0, 0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x290/x0 0x2c0/y0, 0x270/x1 0x2c0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
       draw-bezier-point screen, u, 0x340/x0 0x160/y0, 0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
