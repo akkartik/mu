@@ -739,10 +739,7 @@ fn clear-environment _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var tick/eax: (addr int) <- get self, tick
   copy-to *tick, 0
-  var zoom/eax: (addr int) <- get self, zoom
-  copy-to *zoom, 0
-  var play?/eax: (addr boolean) <- get self, play?
-  copy-to *play?, 1/true
+  # don't touch zoom or play settings
   var data-ah/eax: (addr handle array handle array cell) <- get self, data
   var data/eax: (addr array handle array cell) <- lookup *data-ah
   var y/ecx: int <- copy 0
