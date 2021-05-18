@@ -102,14 +102,14 @@ fn render0 screen: (addr screen), _self: (addr environment) {
   set-cursor-position screen, 0x2d/scol, 0x13/srow
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "+", 0xf/color, 0/bg
   # conveyors from neighboring inputs to sum node
-  draw-monotonic-bezier screen,  0xa0/x0  0x20/y0,  0x100/x1 0x150/ys,  0x180/x2 0x150/ys,  4/color
-  draw-monotonic-bezier screen,  0xa0/x0 0x180/y0,   0xc0/x1 0x150/ys,  0x180/x2 0x150/ys,  4/color
-  draw-monotonic-bezier screen,  0xa0/x0 0x2e0/y0,  0x100/x1 0x150/ys,  0x180/x2 0x150/ys,  4/color
-  draw-monotonic-bezier screen, 0x200/x0  0x20/y0,  0x180/x1  0x90/y1,  0x180/x2 0x150/ys,  4/color
-  draw-monotonic-bezier screen, 0x200/x0 0x2e0/y0,  0x180/x1 0x200/y1,  0x180/x2 0x150/ys,  4/color
-  draw-monotonic-bezier screen, 0x360/x0  0x20/y0,  0x180/x1  0xc0/y1,  0x180/x2 0x150/ys,  4/color
-  draw-monotonic-bezier screen, 0x360/x0 0x180/y0,  0x35c/x1 0x150/ys,  0x180/x2 0x150/ys,  4/color
-  draw-monotonic-bezier screen, 0x360/x0 0x2e0/y0,  0x180/x1 0x200/y1,  0x180/x2 0x150/ys,  4/color
+  draw-monotonic-bezier screen,  0xa0/x0  0x20/y0,  0x100/x1 0x150/ys,  0x180/xs 0x150/ys,  4/color
+  draw-monotonic-bezier screen,  0xa0/x0 0x180/y0,   0xc0/x1 0x150/ys,  0x180/xs 0x150/ys,  4/color
+  draw-monotonic-bezier screen,  0xa0/x0 0x2e0/y0,  0x100/x1 0x150/ys,  0x180/xs 0x150/ys,  4/color
+  draw-monotonic-bezier screen, 0x200/x0  0x20/y0,  0x180/x1  0x90/y1,  0x180/xs 0x150/ys,  4/color
+  draw-monotonic-bezier screen, 0x200/x0 0x2e0/y0,  0x180/x1 0x200/y1,  0x180/xs 0x150/ys,  4/color
+  draw-monotonic-bezier screen, 0x360/x0  0x20/y0,  0x180/x1  0xc0/y1,  0x180/xs 0x150/ys,  4/color
+  draw-monotonic-bezier screen, 0x360/x0 0x180/y0,  0x35c/x1 0x150/ys,  0x180/xs 0x150/ys,  4/color
+  draw-monotonic-bezier screen, 0x360/x0 0x2e0/y0,  0x180/x1 0x200/y1,  0x180/xs 0x150/ys,  4/color
   # filter node
   draw-rect screen, 0x200/xfmin 0x1c0/yfmin, 0x220/xfmax 0x1e0/yfmax, 0x31/color
   set-cursor-position screen, 0x40/fcol, 0x1b/frow
@@ -149,14 +149,14 @@ fn render0 screen: (addr screen), _self: (addr environment) {
     var six-f/xmm0: float <- convert six
     u <- divide six-f
     # points on conveyors from neighboring cells
-    draw-bezier-point screen, u,  0xa0/x0  0x20/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u,  0xa0/x0 0x180/y0,  0xc0/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u,  0xa0/x0 0x2e0/y0, 0x100/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u, 0x200/x0  0x20/y0, 0x180/x1  0x90/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u, 0x200/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u, 0x360/x0  0x20/y0, 0x180/x1  0xc0/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u, 0x360/x0 0x180/y0, 0x35c/x1 0x150/ys, 0x180/x2 0x150/ys, 7/color, 4/radius
-    draw-bezier-point screen, u, 0x360/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/x2 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u,  0xa0/x0  0x20/y0, 0x100/x1 0x150/ys, 0x180/xs 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u,  0xa0/x0 0x180/y0,  0xc0/x1 0x150/ys, 0x180/xs 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u,  0xa0/x0 0x2e0/y0, 0x100/x1 0x150/ys, 0x180/xs 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x200/x0  0x20/y0, 0x180/x1  0x90/y1, 0x180/xs 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x200/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/xs 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x360/x0  0x20/y0, 0x180/x1  0xc0/y1, 0x180/xs 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x360/x0 0x180/y0, 0x35c/x1 0x150/ys, 0x180/xs 0x150/ys, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x360/x0 0x2e0/y0, 0x180/x1 0x200/y1, 0x180/xs 0x150/ys, 7/color, 4/radius
     return
   }
   # two time steps for getting count to filter
@@ -222,7 +222,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   draw-rect screen, 0x2e8/xmin  0xd0/ymin, 0x318/xmax  0x100/ymax, color
   draw-rect screen, 0x2e8/xmin 0x148/ymin, 0x318/xmax  0x178/ymax, color
   # cell 2: outputs
-  var color/eax: int <- state-color self, 0x80/curx, 0x60/cury
+  var color/eax: int <- state-color self, 0x80/curx, 0x61/cury
   draw-rect screen,  0xe8/xmin 0x188/ymin, 0x118/xmax  0x1b8/ymax, color
   draw-rect screen,  0xe8/xmin 0x1f0/ymin, 0x118/xmax  0x220/ymax, color
   draw-rect screen,  0xe8/xmin 0x268/ymin, 0x118/xmax  0x298/ymax, color
@@ -232,7 +232,7 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   draw-rect screen, 0x1c8/xmin 0x1f0/ymin, 0x1f8/xmax  0x220/ymax, color
   draw-rect screen, 0x1c8/xmin 0x268/ymin, 0x1f8/xmax  0x298/ymax, color
   # cell 3: outputs
-  var color/eax: int <- state-color self, 0x81/curx, 0x60/cury
+  var color/eax: int <- state-color self, 0x81/curx, 0x61/cury
   draw-rect screen, 0x208/xmin 0x188/ymin, 0x238/xmax  0x1b8/ymax, color
   draw-rect screen, 0x208/xmin 0x1f0/ymin, 0x238/xmax  0x220/ymax, color
   draw-rect screen, 0x208/xmin 0x268/ymin, 0x238/xmax  0x298/ymax, color
@@ -278,14 +278,14 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   draw-rect screen, 0x148/xsmin  0xc8/ysmin, 0x158/xsmax  0xd8/ysmax, 0x40/color
   draw-rect screen, 0x180/xfmin  0xf8/yfmin, 0x190/xfmax 0x108/yfmax, 0x31/color
   # cell 1: sum and filter nodes
-  draw-rect screen, 0x270/xsmin  0xc8/ysmin, 0x280/xsmax  0xd8/ysmax, 0x40/color
-  draw-rect screen, 0x2a8/xfmin  0xf8/yfmin, 0x2b8/xfmax 0x108/yfmax, 0x31/color
+  draw-rect screen, 0x268/xsmin  0xc8/ysmin, 0x278/xsmax  0xd8/ysmax, 0x40/color
+  draw-rect screen, 0x2a0/xfmin  0xf8/yfmin, 0x2b0/xfmax 0x108/yfmax, 0x31/color
   # cell 2: sum and filter nodes
   draw-rect screen, 0x148/xsmin 0x1e8/ysmin, 0x158/xsmax 0x1f8/ysmax, 0x40/color
   draw-rect screen, 0x180/xfmin 0x218/yfmin, 0x190/xfmax 0x228/yfmax, 0x31/color
   # cell 3: sum and filter nodes
-  draw-rect screen, 0x270/xsmin 0x1e8/ysmin, 0x280/xsmax 0x1f8/ysmax, 0x40/color
-  draw-rect screen, 0x2a8/xfmin 0x218/yfmin, 0x2b8/xfmax 0x228/yfmax, 0x31/color
+  draw-rect screen, 0x268/xsmin 0x1e8/ysmin, 0x278/xsmax 0x1f8/ysmax, 0x40/color
+  draw-rect screen, 0x2a0/xfmin 0x218/yfmin, 0x2b0/xfmax 0x228/yfmax, 0x31/color
   # neighbor counts
   var n/eax: int <- num-live-neighbors self, 0x80/curx, 0x60/cury
   set-cursor-position screen, 0x2d, 0xe
@@ -299,6 +299,266 @@ fn render1 screen: (addr screen), _self: (addr environment) {
   var n/eax: int <- num-live-neighbors self, 0x81/curx, 0x61/cury
   set-cursor-position screen, 0x52, 0x20
   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, n, 0xf/fg 0/bg
+  # cell 0: conveyors from neighboring inputs to sum node
+  draw-monotonic-bezier screen,  0xc0/x0  0x40/y0,  0x100/x1  0xd0/ys, 0x150/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen,  0xc0/x0  0xe8/y0,   0xc0/x1  0xd0/ys, 0x150/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen,  0xc0/x0 0x1a0/y0,   0xc0/x1  0xd0/ys, 0x150/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x170/x0  0x40/y0,  0x150/x1  0x80/y1, 0x150/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x170/x0 0x1a0/y0,  0x150/x1 0x1a0/y1, 0x150/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x220/x0  0x40/y0,  0x150/x1  0x80/y1, 0x150/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x220/x0  0xe8/y0,  0x150/x1  0xe8/y1, 0x150/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x220/x0 0x1a0/y0,  0x180/x1 0x1a0/y1, 0x150/xs  0xd0/ys,  4/color
+  # cell 0: conveyors from filter to outputs
+  draw-monotonic-bezier screen, 0x188/xf 0x100/yf,  0x160/x1  0x8c/y1, 0x100/x2  0x80/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x100/yf,  0x100/x1 0x100/y1, 0x100/x2  0xe8/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x100/yf,  0x100/x1 0x100/y1, 0x100/x2 0x160/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x100/yf,  0x188/x1  0x80/y1, 0x170/x2  0x80/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x100/yf,  0x188/x1 0x160/y1, 0x170/x2 0x160/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x100/yf,  0x1e0/x1 0x100/y1, 0x1e0/x2  0x80/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x100/yf,  0x1e0/x1 0x100/y1  0x1e0/x2  0xe8/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x100/yf,  0x1e0/x1 0x100/y1, 0x1e0/x2 0x160/y2,  0x2a/color
+  # cell 0: time-variant portion: 16 repeating steps
+  $render1:cell0: {
+    var tick-a/eax: (addr int) <- get self, tick
+    var progress/eax: int <- copy *tick-a
+    progress <- and 0xf
+    # cell 0: 7 time steps for getting inputs to sum
+    {
+      compare progress, 7
+      break-if->=
+      var u/xmm7: float <- convert progress
+      var six/eax: int <- copy 6
+      var six-f/xmm0: float <- convert six
+      u <- divide six-f
+      # points on conveyors from neighboring cells
+      draw-bezier-point screen, u,  0xc0/x0  0x40/y0, 0x100/x1  0xd0/ys, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u,  0xc0/x0  0xe8/y0,  0xc0/x1  0xd0/ys, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u,  0xc0/x0 0x1a0/y0,  0xc0/x1  0xd0/ys, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x170/x0  0x40/y0, 0x150/x1  0x80/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x170/x0 0x1a0/y0, 0x150/x1 0x1a0/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x220/x0  0x40/y0, 0x150/x1  0x80/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x220/x0  0xe8/y0, 0x150/x1  0xe8/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x220/x0 0x1a0/y0, 0x180/x1 0x1a0/y1, 0x150/xs  0xd0/ys, 7/color, 4/radius
+      break $render1:cell0
+    }
+    # cell 0: two time steps for getting count to filter
+    progress <- subtract 7
+    {
+      compare progress, 2
+      break-if->=
+      break $render1:cell0
+    }
+    # cell 0: final 7 time steps for updating output
+    progress <- subtract 2
+    # cell 0: points on conveyors to outputs
+    var u/xmm7: float <- convert progress
+    var six/eax: int <- copy 6
+    var six-f/xmm0: float <- convert six
+    u <- divide six-f
+    draw-bezier-point screen, u, 0x188/xf 0x100/yf,  0x160/x1  0x8c/y1, 0x100/x2  0x80/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x100/yf,  0x100/x1 0x100/y1, 0x100/x2  0xe8/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x100/yf,  0x100/x1 0x100/y1, 0x100/x2 0x160/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x100/yf,  0x188/xf  0x80/y1, 0x170/x2  0x80/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x100/yf,  0x188/xf 0x160/y1, 0x170/x2 0x160/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x100/yf,  0x1e0/x1 0x100/y1, 0x1e0/x2  0x80/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x100/yf,  0x1e0/x1 0x100/y1, 0x1e0/x2  0xe8/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x100/yf,  0x1e0/x1 0x100/y1, 0x1e0/x2 0x160/y2, 7/color, 4/radius
+  }
+  # cell 1: conveyors from neighboring inputs to sum node
+  draw-monotonic-bezier screen, 0x1e0/x0  0x40/y0,  0x220/x1  0xd0/ys, 0x270/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x1e0/x0  0xe8/y0,  0x1e0/x1  0xd0/ys, 0x270/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x1e0/x0 0x1a0/y0,  0x1e0/x1  0xd0/ys, 0x270/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x290/x0  0x40/y0,  0x270/x1  0x80/y1, 0x270/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x290/x0 0x1a0/y0,  0x270/x1 0x1a0/y1, 0x270/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x340/x0  0x40/y0,  0x270/x1  0x80/y1, 0x270/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x340/x0  0xe8/y0,  0x270/x1  0xe8/y1, 0x270/xs  0xd0/ys,  4/color
+  draw-monotonic-bezier screen, 0x340/x0 0x1a0/y0,  0x2a0/x1 0x1a0/y1, 0x270/xs  0xd0/ys,  4/color
+  # cell 1: conveyors from filter to outputs
+  draw-monotonic-bezier screen, 0x2a8/xf 0x100/yf,  0x280/x1  0x8c/y1, 0x220/x2  0x80/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x100/yf,  0x220/x1 0x100/y1, 0x220/x2  0xe8/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x100/yf,  0x220/x1 0x100/y1, 0x220/x2 0x160/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x100/yf,  0x2a8/x1  0x80/y1, 0x290/x2  0x80/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x100/yf,  0x2a8/x1 0x160/y1, 0x290/x2 0x160/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x100/yf,  0x300/x1 0x100/y1, 0x300/x2  0x80/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x100/yf,  0x300/x1 0x100/y1  0x300/x2  0xe8/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x100/yf,  0x300/x1 0x100/y1, 0x300/x2 0x160/y2,  0x2a/color
+  # cell 1: time-variant portion: 16 repeating steps
+  $render1:cell1: {
+    var tick-a/eax: (addr int) <- get self, tick
+    var progress/eax: int <- copy *tick-a
+    progress <- and 0xf
+    # cell 1: 7 time steps for getting inputs to sum
+    {
+      compare progress, 7
+      break-if->=
+      var u/xmm7: float <- convert progress
+      var six/eax: int <- copy 6
+      var six-f/xmm0: float <- convert six
+      u <- divide six-f
+      # points on conveyors from neighboring cells
+      draw-bezier-point screen, u, 0x1e0/x0  0x40/y0, 0x220/x1  0xd0/ys, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x1e0/x0  0xe8/y0, 0x1e0/x1  0xd0/ys, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x1e0/x0 0x1a0/y0, 0x1e0/x1  0xd0/ys, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x290/x0  0x40/y0, 0x270/x1  0x80/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x290/x0 0x1a0/y0, 0x270/x1 0x1a0/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x340/x0  0x40/y0, 0x270/x1  0x80/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x340/x0  0xe8/y0, 0x270/x1  0xe8/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x340/x0 0x1a0/y0, 0x2a0/x1 0x1a0/y1, 0x270/xs  0xd0/ys, 7/color, 4/radius
+      break $render1:cell1
+    }
+    # cell 1: two time steps for getting count to filter
+    progress <- subtract 7
+    {
+      compare progress, 2
+      break-if->=
+      break $render1:cell1
+    }
+    # cell 1: final 7 time steps for updating output
+    progress <- subtract 2
+    # cell 1: points on conveyors to outputs
+    var u/xmm7: float <- convert progress
+    var six/eax: int <- copy 6
+    var six-f/xmm0: float <- convert six
+    u <- divide six-f
+    draw-bezier-point screen, u, 0x2a8/xf 0x100/yf,  0x280/x1  0x8c/y1, 0x220/x2  0x80/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x100/yf,  0x220/x1 0x100/y1, 0x220/x2  0xe8/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x100/yf,  0x220/x1 0x100/y1, 0x220/x2 0x160/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x100/yf,  0x2a8/xf  0x80/y1, 0x290/x2  0x80/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x100/yf,  0x2a8/xf 0x160/y1, 0x290/x2 0x160/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x100/yf,  0x300/x1 0x100/y1, 0x300/x2  0x80/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x100/yf,  0x300/x1 0x100/y1, 0x300/x2  0xe8/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x100/yf,  0x300/x1 0x100/y1, 0x300/x2 0x160/y2, 7/color, 4/radius
+  }
+  # cell 2: conveyors from neighboring inputs to sum node
+  draw-monotonic-bezier screen,  0xc0/x0 0x160/y0,  0x100/x1 0x1f0/ys, 0x150/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen,  0xc0/x0 0x208/y0,   0xc0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen,  0xc0/x0 0x2c0/y0,   0xc0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x170/x0 0x160/y0,  0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x170/x0 0x2c0/y0,  0x150/x1 0x2c0/y1, 0x150/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x220/x0 0x160/y0,  0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x220/x0 0x208/y0,  0x150/x1 0x208/y1, 0x150/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x220/x0 0x2c0/y0,  0x180/x1 0x2c0/y1, 0x150/xs 0x1f0/ys,  4/color
+  # cell 2: conveyors from filter to outputs
+  draw-monotonic-bezier screen, 0x188/xf 0x220/yf,  0x160/x1 0x1ac/y1, 0x100/x2 0x1a0/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x220/yf,  0x100/x1 0x220/y1, 0x100/x2 0x208/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x220/yf,  0x100/x1 0x220/y1, 0x100/x2 0x280/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x220/yf,  0x188/x1 0x1a0/y1, 0x170/x2 0x1a0/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x220/yf,  0x188/x1 0x280/y1, 0x170/x2 0x280/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x220/yf,  0x1e0/x1 0x220/y1, 0x1e0/x2 0x1a0/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x220/yf,  0x1e0/x1 0x220/y1  0x1e0/x2 0x208/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x188/xf 0x220/yf,  0x1e0/x1 0x220/y1, 0x1e0/x2 0x280/y2,  0x2a/color
+  # cell 2: time-variant portion: 16 repeating steps
+  $render1:cell2: {
+    var tick-a/eax: (addr int) <- get self, tick
+    var progress/eax: int <- copy *tick-a
+    progress <- and 0xf
+    # cell 2: 7 time steps for getting inputs to sum
+    {
+      compare progress, 7
+      break-if->=
+      var u/xmm7: float <- convert progress
+      var six/eax: int <- copy 6
+      var six-f/xmm0: float <- convert six
+      u <- divide six-f
+      # points on conveyors from neighboring cells
+      draw-bezier-point screen, u,  0xc0/x0 0x160/y0, 0x100/x1 0x1f0/ys, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u,  0xc0/x0 0x208/y0,  0xc0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u,  0xc0/x0 0x2c0/y0,  0xc0/x1 0x1f0/ys, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x170/x0 0x160/y0, 0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x170/x0 0x2c0/y0, 0x150/x1 0x2c0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x220/x0 0x160/y0, 0x150/x1 0x1a0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x220/x0 0x208/y0, 0x150/x1 0x208/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x220/x0 0x2c0/y0, 0x180/x1 0x2c0/y1, 0x150/xs 0x1f0/ys, 7/color, 4/radius
+      break $render1:cell2
+    }
+    # cell 2: two time steps for getting count to filter
+    progress <- subtract 7
+    {
+      compare progress, 2
+      break-if->=
+      break $render1:cell2
+    }
+    # cell 2: final 7 time steps for updating output
+    progress <- subtract 2
+    # cell 2: points on conveyors to outputs
+    var u/xmm7: float <- convert progress
+    var six/eax: int <- copy 6
+    var six-f/xmm0: float <- convert six
+    u <- divide six-f
+    draw-bezier-point screen, u, 0x188/xf 0x220/yf,  0x160/x1 0x1ac/y1, 0x100/x2 0x1a0/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x220/yf,  0x100/x1 0x220/y1, 0x100/x2 0x208/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x220/yf,  0x100/x1 0x220/y1, 0x100/x2 0x280/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x220/yf,  0x188/xf 0x1a0/y1, 0x170/x2 0x1a0/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x220/yf,  0x188/xf 0x280/y1, 0x170/x2 0x280/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x220/yf,  0x1e0/x1 0x220/y1, 0x1e0/x2 0x1a0/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x220/yf,  0x1e0/x1 0x220/y1, 0x1e0/x2 0x208/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x188/xf 0x220/yf,  0x1e0/x1 0x220/y1, 0x1e0/x2 0x280/y2, 7/color, 4/radius
+  }
+  # cell 3: conveyors from neighboring inputs to sum node
+  draw-monotonic-bezier screen, 0x1e0/x0 0x160/y0,  0x220/x1 0x1f0/ys, 0x270/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x1e0/x0 0x208/y0,  0x1e0/x1 0x1f0/ys, 0x270/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x1e0/x0 0x2c0/y0,  0x1e0/x1 0x1f0/ys, 0x270/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x290/x0 0x160/y0,  0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x290/x0 0x2c0/y0,  0x270/x1 0x2c0/y1, 0x270/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x340/x0 0x160/y0,  0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x340/x0 0x208/y0,  0x270/x1 0x208/y1, 0x270/xs 0x1f0/ys,  4/color
+  draw-monotonic-bezier screen, 0x340/x0 0x2c0/y0,  0x2a0/x1 0x2c0/y1, 0x270/xs 0x1f0/ys,  4/color
+  # cell 3: conveyors from filter to outputs
+  draw-monotonic-bezier screen, 0x2a8/xf 0x220/yf,  0x280/x1 0x1ac/y1, 0x220/x2 0x1a0/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x220/yf,  0x220/x1 0x220/y1, 0x220/x2 0x208/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x220/yf,  0x220/x1 0x220/y1, 0x220/x2 0x280/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x220/yf,  0x2a8/x1 0x1a0/y1, 0x290/x2 0x1a0/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x220/yf,  0x2a8/x1 0x280/y1, 0x290/x2 0x280/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x220/yf,  0x300/x1 0x220/y1, 0x300/x2 0x1a0/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x220/yf,  0x300/x1 0x220/y1  0x300/x2 0x208/y2,  0x2a/color
+  draw-monotonic-bezier screen, 0x2a8/xf 0x220/yf,  0x300/x1 0x220/y1, 0x300/x2 0x280/y2,  0x2a/color
+  # cell 3: time-variant portion: 16 repeating steps
+  $render1:cell3: {
+    var tick-a/eax: (addr int) <- get self, tick
+    var progress/eax: int <- copy *tick-a
+    progress <- and 0xf
+    # cell 3: 7 time steps for getting inputs to sum
+    {
+      compare progress, 7
+      break-if->=
+      var u/xmm7: float <- convert progress
+      var six/eax: int <- copy 6
+      var six-f/xmm0: float <- convert six
+      u <- divide six-f
+      # points on conveyors from neighboring cells
+      draw-bezier-point screen, u, 0x1e0/x0 0x160/y0, 0x220/x1 0x1f0/ys, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x1e0/x0 0x208/y0, 0x1e0/x1 0x1f0/ys, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x1e0/x0 0x2c0/y0, 0x1e0/x1 0x1f0/ys, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x290/x0 0x160/y0, 0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x290/x0 0x2c0/y0, 0x270/x1 0x2c0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x340/x0 0x160/y0, 0x270/x1 0x1a0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x340/x0 0x208/y0, 0x270/x1 0x208/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      draw-bezier-point screen, u, 0x340/x0 0x2c0/y0, 0x2a0/x1 0x2c0/y1, 0x270/xs 0x1f0/ys, 7/color, 4/radius
+      break $render1:cell3
+    }
+    # cell 3: two time steps for getting count to filter
+    progress <- subtract 7
+    {
+      compare progress, 2
+      break-if->=
+      break $render1:cell3
+    }
+    # cell 3: final 7 time steps for updating output
+    progress <- subtract 2
+    # cell 3: points on conveyors to outputs
+    var u/xmm7: float <- convert progress
+    var six/eax: int <- copy 6
+    var six-f/xmm0: float <- convert six
+    u <- divide six-f
+    draw-bezier-point screen, u, 0x2a8/xf 0x220/yf,  0x280/x1 0x1ac/y1, 0x220/x2 0x1a0/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x220/yf,  0x220/x1 0x220/y1, 0x220/x2 0x208/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x220/yf,  0x220/x1 0x220/y1, 0x220/x2 0x280/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x220/yf,  0x2a8/xf 0x1a0/y1, 0x290/x2 0x1a0/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x220/yf,  0x2a8/xf 0x280/y1, 0x290/x2 0x280/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x220/yf,  0x300/x1 0x220/y1, 0x300/x2 0x1a0/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x220/yf,  0x300/x1 0x220/y1, 0x300/x2 0x208/y2, 7/color, 4/radius
+    draw-bezier-point screen, u, 0x2a8/xf 0x220/yf,  0x300/x1 0x220/y1, 0x300/x2 0x280/y2, 7/color, 4/radius
+  }
 }
 
 fn draw-bezier-point screen: (addr screen), u: float, x0: int, y0: int, x1: int, y1: int, x2: int, y2: int, color: int, radius: int {
@@ -419,6 +679,13 @@ fn step _self: (addr environment) {
     break-if-!=
     increment *tick-a
   }
+  compare *zoom, 1
+  {
+    break-if-!=
+    # I wanted to speed up time, but that doesn't seem very usable.
+#?     add-to *tick-a, 2
+    increment *tick-a
+  }
   compare *zoom, 4
   {
     break-if-!=
@@ -445,7 +712,7 @@ fn step _self: (addr environment) {
 fn initialize-environment _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var zoom/eax: (addr int) <- get self, zoom
-  copy-to *zoom, 1
+  copy-to *zoom, 0
   var play?/eax: (addr boolean) <- get self, play?
   copy-to *play?, 1/true
   var data-ah/eax: (addr handle array handle array cell) <- get self, data
@@ -473,7 +740,7 @@ fn clear-environment _self: (addr environment) {
   var tick/eax: (addr int) <- get self, tick
   copy-to *tick, 0
   var zoom/eax: (addr int) <- get self, zoom
-#?   copy-to *zoom, 4
+  copy-to *zoom, 0
   var play?/eax: (addr boolean) <- get self, play?
   copy-to *play?, 1/true
   var data-ah/eax: (addr handle array handle array cell) <- get self, data
