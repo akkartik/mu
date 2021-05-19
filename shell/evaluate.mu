@@ -237,6 +237,16 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     increment call-number
     evaluate second-arg-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "Q", 4/fg, 0/bg
+    # errors? skip
+    {
+      compare trace, 0
+      break-if-=
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      trace-higher trace
+      return
+    }
     trace-text trace, "eval", "saving global binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
     var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
@@ -282,6 +292,16 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     increment call-number
     evaluate second-arg-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "Q", 4/fg, 0/bg
+    # errors? skip
+    {
+      compare trace, 0
+      break-if-=
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      trace-higher trace
+      return
+    }
     trace-text trace, "eval", "mutating binding"
     var first-arg/eax: (addr cell) <- lookup *first-arg-ah
     var first-arg-data-ah/eax: (addr handle stream byte) <- get first-arg, text-data
@@ -308,6 +328,16 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     increment call-number
     evaluate first-arg-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "S2", 4/fg, 0/bg
+    # errors? skip
+    {
+      compare trace, 0
+      break-if-=
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      trace-higher trace
+      return
+    }
     # if first arg is nil, short-circuit
     var out-ah/eax: (addr handle cell) <- copy _out-ah
     var out/eax: (addr cell) <- lookup *out-ah
@@ -346,6 +376,16 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     increment call-number
     evaluate first-arg-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "S2", 4/fg, 0/bg
+    # errors? skip
+    {
+      compare trace, 0
+      break-if-=
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      trace-higher trace
+      return
+    }
     # if first arg is not nil, short-circuit
     var out-ah/eax: (addr handle cell) <- copy _out-ah
     var out/eax: (addr cell) <- lookup *out-ah
@@ -363,6 +403,16 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     increment call-number
     evaluate second-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "U2", 4/fg, 0/bg
+    # errors? skip
+    {
+      compare trace, 0
+      break-if-=
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      trace-higher trace
+      return
+    }
     trace-higher trace
     return
   }
@@ -387,6 +437,16 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     increment call-number
     evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "S", 4/fg, 0/bg
+    # errors? skip
+    {
+      compare trace, 0
+      break-if-=
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      trace-higher trace
+      return
+    }
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
     var branch-ah/edi: (addr handle cell) <- get rest, left
@@ -443,11 +503,31 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       increment call-number
       evaluate first-arg-ah, guard-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
       debug-print "W", 4/fg, 0/bg
+      # errors? skip
+      {
+        compare trace, 0
+        break-if-=
+        var error?/eax: boolean <- has-errors? trace
+        compare error?, 0/false
+        break-if-=
+        trace-higher trace
+        return
+      }
       var guard-a/eax: (addr cell) <- lookup *guard-ah
       var done?/eax: boolean <- nil? guard-a
       compare done?, 0/false
       break-if-!=
       evaluate-exprs rest-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+      # errors? skip
+      {
+        compare trace, 0
+        break-if-=
+        var error?/eax: boolean <- has-errors? trace
+        compare error?, 0/false
+        break-if-=
+        trace-higher trace
+        return
+      }
       loop
     }
     trace-text trace, "eval", "loop terminated"
@@ -474,6 +554,16 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     increment call-number
     evaluate left-ah, left-out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print "B", 4/fg, 0/bg
+    # errors? skip
+    {
+      compare trace, 0
+      break-if-=
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      trace-higher trace
+      return
+    }
     # a trip wire in case we're running without a trace (e.g. when loading the initial state from disk)
     {
       compare trace, 0
@@ -572,6 +662,15 @@ fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), bo
   var new-env-h: (handle cell)
   var new-env-ah/esi: (addr handle cell) <- address new-env-h
   push-bindings params-ah, args-ah, env-h, new-env-ah, trace
+  # errors? skip
+  {
+    compare trace, 0
+    break-if-=
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-=
+    return
+  }
   #
   evaluate-exprs body-ah, out, new-env-h, globals, trace, screen-cell, keyboard-cell, call-number
 }
@@ -594,6 +693,15 @@ fn evaluate-exprs _exprs-ah: (addr handle cell), out: (addr handle cell), env-h:
       increment call-number
       evaluate curr-ah, out, env-h, globals, trace, screen-cell, keyboard-cell, call-number
       debug-print "X", 7/fg, 0/bg
+      # errors? skip
+      {
+        compare trace, 0
+        break-if-=
+        var error?/eax: boolean <- has-errors? trace
+        compare error?, 0/false
+        break-if-=
+        return
+      }
     }
     #
     exprs-ah <- get exprs, right
@@ -669,6 +777,13 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/edi: (addr cell) <- copy _args
   # params is now a pair, so args must be also
+  {
+    var args-nil?/eax: boolean <- nil? args
+    compare args-nil?, 0/false
+    break-if-=
+    error trace, "not enough args to bind"
+    return
+  }
   var args-type/eax: (addr int) <- get args, type
   compare *args-type, 0/pair
   {
@@ -682,6 +797,16 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   var first-param-ah/eax: (addr handle cell) <- get params, left
   var first-arg-ah/ecx: (addr handle cell) <- get args, left
   push-bindings first-param-ah, first-arg-ah, old-env-h, intermediate-env-ah, trace
+  # errors? skip
+  {
+    compare trace, 0
+    break-if-=
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-=
+    trace-higher trace
+    return
+  }
   var remaining-params-ah/eax: (addr handle cell) <- get params, right
   var remaining-args-ah/ecx: (addr handle cell) <- get args, right
   push-bindings remaining-params-ah, remaining-args-ah, *intermediate-env-ah, env-ah, trace
@@ -1512,6 +1637,16 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     var in-unquote-payload-ah/eax: (addr handle cell) <- get in-left, right
     increment call-number
     evaluate in-unquote-payload-ah, out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    # errors? skip
+    {
+      compare trace, 0
+      break-if-=
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      trace-higher trace
+      return
+    }
     # while (*out-ah != null) out-ah = cdr(out-ah)
     {
       var out/eax: (addr cell) <- lookup *out-ah
@@ -1540,6 +1675,16 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
   debug-print "`(l", 3/fg, 0/bg
   evaluate-backquote in-left-ah, out-left-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
   debug-print "`r)", 3/fg, 0/bg
+  # errors? skip
+  {
+    compare trace, 0
+    break-if-=
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-=
+    trace-higher trace
+    return
+  }
   var in-right-ah/ecx: (addr handle cell) <- get in, right
   var out-right-ah/edx: (addr handle cell) <- get out, right
   debug-print "`r(", 3/fg, 0/bg

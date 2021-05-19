@@ -610,6 +610,12 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
     return
   }
   macroexpand read-result-ah, globals, trace
+  var error?/eax: boolean <- has-errors? trace
+  {
+    compare error?, 0/false
+    break-if-=
+    return
+  }
   var nil-h: (handle cell)
   var nil-ah/eax: (addr handle cell) <- address nil-h
   allocate-pair nil-ah

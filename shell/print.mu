@@ -205,7 +205,13 @@ fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
     {
       compare right-addr, 0
       break-if-!=
-      abort "null encountered"
+      # This shouldn't ever happen in a regular REPL cycle.
+      # However, we also use print-cell when emitting the trace. And that can
+      # happen after there's been an error in the trace.
+      write out, "...NULL!"
+      error trace, "right is NULL"
+      trace-higher trace
+      return
     }
     {
       var right-nil?/eax: boolean <- nil? right-addr
