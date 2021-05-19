@@ -43,6 +43,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace trace, "mac", stream
   }
   # }}}
+  trace-lower trace
   # if expr is a non-pair, return
   var expr/eax: (addr cell) <- lookup *expr-ah
   {
@@ -193,6 +194,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     # TODO: check car(macro-definition) is litfn
 #?     turn-on-debug-print
     apply macro-definition-ah, rest-ah, expr-ah, globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
+    trace-higher trace
     return 1/true
   }
   # no macro found; process any macros within args
@@ -213,6 +215,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     rest-ah <- get rest, right
     loop
   }
+  trace-higher trace
   return result
 }
 

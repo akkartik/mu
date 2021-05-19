@@ -1561,6 +1561,7 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     break-if-=
     return
   }
+  trace-lower trace
   var in-ah/esi: (addr handle cell) <- copy _in-ah
   var in/eax: (addr cell) <- lookup *in-ah
   {
@@ -1603,6 +1604,7 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     debug-print ",", 3/fg, 0/bg
     evaluate rest-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     debug-print ",)", 3/fg, 0/bg
+    trace-higher trace
     return
   }
   # check for unquote-splice in in-left
@@ -1661,6 +1663,7 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     # append result of in-right
     var in-right-ah/ecx: (addr handle cell) <- get in, right
     evaluate-backquote in-right-ah, out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
+    trace-higher trace
     return
   }
   debug-print "19", 4/fg, 0/bg
@@ -1690,6 +1693,7 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
   debug-print "`r(", 3/fg, 0/bg
   evaluate-backquote in-right-ah, out-right-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
   debug-print "`r)", 3/fg, 0/bg
+  trace-higher trace
 }
 
 fn test-evaluate-backquote-list {
