@@ -70,12 +70,10 @@ fn has-errors? _self: (addr trace) -> _/eax: boolean {
     break-if->=
     var offset/eax: (offset trace-line) <- compute-offset trace, i
     var curr/eax: (addr trace-line) <- index trace, offset
-    var curr-label-ah/eax: (addr handle array byte) <- get curr, label
-    var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
-    var error?/eax: boolean <- string-equal? curr-label, "error"
-    compare error?, 0/false
+    var curr-depth-a/eax: (addr int) <- get curr, depth
+    compare *curr-depth-a, 0/error
     {
-      break-if-=
+      break-if-!=
       return 1/true
     }
     i <- increment
@@ -128,8 +126,15 @@ fn trace-text self: (addr trace), label: (addr array byte), s: (addr array byte)
   trace self, label, data
 }
 
-fn error self: (addr trace), message: (addr array byte) {
+fn error _self: (addr trace), message: (addr array byte) {
+  var self/esi: (addr trace) <- copy _self
+  compare self, 0
+  break-if-=
+  var curr-depth-a/eax: (addr int) <- get self, curr-depth
+  var save-depth/ecx: int <- copy *curr-depth-a
+  copy-to *curr-depth-a, 0/error
   trace-text self, "error", message
+  copy-to *curr-depth-a, save-depth
 }
 
 fn initialize-trace-line depth: int, label: (addr array byte), data: (addr stream byte), _out: (addr trace-line) {
@@ -392,6 +397,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
         copy-to *cursor-line-index, i
       }
       # always display errors
+      # TODO: use depth rather than label here
       var error?/eax: boolean <- string-equal? curr-label, "error"
       {
         compare error?, 0/false
@@ -432,17 +438,14 @@ fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int,
   var self/esi: (addr trace-line) <- copy _self
   var xsave/edx: int <- copy xmin
   var y/ecx: int <- copy ymin
-  var label-ah/eax: (addr handle array byte) <- get self, label
-  var _label/eax: (addr array byte) <- lookup *label-ah
-  var label/ebx: (addr array byte) <- copy _label
-  var error?/eax: boolean <- string-equal? label, "error"
-  compare error?, 0/false
+  # show depth for non-errors
+  var depth-a/ebx: (addr int) <- get self, depth
+  compare *depth-a, 0/error
   {
-    break-if-!=
+    break-if-=
     var x/eax: int <- copy xsave
     {
-      var depth/edx: (addr int) <- get self, depth
-      x, y <- draw-int32-decimal-wrapping-right-then-down screen, *depth, xmin, ymin, xmax, ymax, x, y, fg, bg
+      x, y <- draw-int32-decimal-wrapping-right-then-down screen, *depth-a, xmin, ymin, xmax, ymax, x, y, fg, bg
       x, y <- draw-text-wrapping-right-then-down screen, " ", xmin, ymin, xmax, ymax, x, y, fg, bg
       # don't show label in UI; it's just for tests
     }
