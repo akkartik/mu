@@ -1374,7 +1374,7 @@ fn litmac? _x: (addr cell) -> _/eax: boolean {
 fn test-evaluate-is-well-behaved {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0/visible  # we don't use trace UI
+  initialize-trace t, 0x100/max-depth, 0x10/capacity, 0/visible  # we don't use trace UI
   # env = nil
   var env-storage: (handle cell)
   var env-ah/ecx: (addr handle cell) <- address env-storage
@@ -1482,7 +1482,7 @@ fn test-evaluate-primitive-function {
 fn test-evaluate-primitive-function-call {
   var t-storage: trace
   var t/edi: (addr trace) <- address t-storage
-  initialize-trace t, 0x100, 0/visible  # we don't use trace UI
+  initialize-trace t, 0x100/max-depth, 0x100/capacity, 0/visible  # we don't use trace UI
   #
   var nil-storage: (handle cell)
   var nil-ah/ecx: (addr handle cell) <- address nil-storage

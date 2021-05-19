@@ -1,7 +1,15 @@
 # A trace records the evolution of a computation.
-# An integral part of the Mu Shell is facilities for browsing traces.
+# Traces are useful for:
+#   error-handling
+#   testing
+#   auditing
+#   debugging
+#   learning
+#
+# An integral part of the Mu computer is facilities for browsing traces.
 
 type trace {
+  max-depth: int
   curr-depth: int  # depth that will be assigned to next line appended
   data: (handle array trace-line)
   first-free: int
@@ -32,11 +40,14 @@ type trace-line {
 
 ## generating traces
 
-fn initialize-trace _self: (addr trace), capacity: int, visible-capacity: int {
+fn initialize-trace _self: (addr trace), max-depth: int, capacity: int, visible-capacity: int {
   var self/esi: (addr trace) <- copy _self
   compare self, 0
   break-if-=
-  var dest/eax: (addr int) <- get self, curr-depth
+  var src/ecx: int <- copy max-depth
+  var dest/eax: (addr int) <- get self, max-depth
+  copy-to *dest, src
+  dest <- get self, curr-depth
   copy-to *dest, 1  # 0 is the error depth
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   populate trace-ah, capacity
@@ -184,7 +195,7 @@ fn trace-scans-to? _self: (addr trace), label: (addr array byte), data: (addr ar
 fn test-trace-scans-to {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0/visible  # we don't use trace UI
+  initialize-trace t, 0x100/max-depth, 0x10/capacity, 0/visible  # we don't use trace UI
   #
   trace-text t, "label", "line 1"
   trace-text t, "label", "line 2"
@@ -206,7 +217,7 @@ fn check-trace-contains self: (addr trace), label: (addr array byte), data: (add
 fn test-trace-contains {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0/visible  # we don't use trace UI
+  initialize-trace t, 0x100/max-depth, 0x10/capacity, 0/visible  # we don't use trace UI
   #
   trace-text t, "label", "line 1"
   trace-text t, "label", "line 2"
@@ -553,7 +564,7 @@ fn clamp-cursor-to-bottom _self: (addr trace), _y: int, screen: (addr screen), x
 fn test-render-trace-empty {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -569,7 +580,7 @@ fn test-render-trace-empty {
 fn test-render-trace-empty-2 {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -585,7 +596,7 @@ fn test-render-trace-empty-2 {
 fn test-render-trace-empty-3 {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -603,7 +614,7 @@ fn test-render-trace-empty-3 {
 fn test-render-trace-collapsed-by-default {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   trace-text t, "l", "data"
   # setup: screen
   var screen-on-stack: screen
@@ -619,7 +630,7 @@ fn test-render-trace-collapsed-by-default {
 fn test-render-trace-error {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   error t, "error"
   # setup: screen
   var screen-on-stack: screen
@@ -635,7 +646,7 @@ fn test-render-trace-error {
 fn test-render-trace-error-at-start {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   error t, "error"
   trace-text t, "l", "data"
@@ -654,7 +665,7 @@ fn test-render-trace-error-at-start {
 fn test-render-trace-error-at-end {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "data"
   error t, "error"
@@ -673,7 +684,7 @@ fn test-render-trace-error-at-end {
 fn test-render-trace-error-in-the-middle {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   error t, "error"
@@ -694,7 +705,7 @@ fn test-render-trace-error-in-the-middle {
 fn test-render-trace-cursor-in-single-line {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   error t, "error"
@@ -941,7 +952,7 @@ fn hide-trace-line _self: (addr trace), line: (addr trace-line) {
 fn test-cursor-down-and-up-within-trace {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   error t, "error"
@@ -984,7 +995,7 @@ fn test-cursor-down-and-up-within-trace {
 fn test-cursor-down-past-bottom-of-trace {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   error t, "error"
@@ -1022,7 +1033,7 @@ fn test-cursor-down-past-bottom-of-trace {
 fn test-expand-within-trace {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-text t, "l", "line 2"
@@ -1052,7 +1063,7 @@ fn test-expand-within-trace {
 fn test-trace-expand-skips-lower-depth {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-lower t
@@ -1083,7 +1094,7 @@ fn test-trace-expand-skips-lower-depth {
 fn test-trace-expand-continues-past-lower-depth {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-lower t
@@ -1117,7 +1128,7 @@ fn test-trace-expand-continues-past-lower-depth {
 fn test-trace-expand-stops-at-higher-depth {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1.1"
   trace-lower t
@@ -1158,7 +1169,7 @@ fn test-trace-expand-stops-at-higher-depth {
 fn test-trace-expand-twice {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-lower t
@@ -1212,7 +1223,7 @@ fn test-trace-expand-twice {
 fn test-trace-refresh-cursor {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-text t, "l", "line 2"
@@ -1267,7 +1278,7 @@ fn test-trace-refresh-cursor {
 fn test-trace-preserve-cursor-on-refresh {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-text t, "l", "line 2"
@@ -1322,7 +1333,7 @@ fn test-trace-preserve-cursor-on-refresh {
 fn test-trace-keep-cursor-visible-on-refresh {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-text t, "l", "line 2"
@@ -1379,7 +1390,7 @@ fn test-trace-keep-cursor-visible-on-refresh {
 fn test-trace-collapse-at-top {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-lower t
@@ -1423,7 +1434,7 @@ fn test-trace-collapse-at-top {
 fn test-trace-collapse {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-text t, "l", "line 2"
@@ -1464,7 +1475,7 @@ fn test-trace-collapse {
 fn test-trace-collapse-skips-invisible-lines {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-lower t
@@ -1514,7 +1525,7 @@ fn test-trace-collapse-skips-invisible-lines {
 fn test-trace-collapse-two-levels {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-lower t
@@ -1575,7 +1586,7 @@ fn test-trace-collapse-two-levels {
 fn test-trace-collapse-nested-level {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage
-  initialize-trace t, 0x10, 0x10
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
   trace-text t, "l", "line 1"
   trace-lower t
