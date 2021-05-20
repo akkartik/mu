@@ -42,7 +42,10 @@ fn test-tokenize-quote {
   var stream-storage: (stream cell 0x10)
   var stream/edi: (addr stream cell) <- address stream-storage
   #
-  tokenize in, stream, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
   #
   var curr-token-storage: cell
   var curr-token/ebx: (addr cell) <- address curr-token-storage
@@ -66,7 +69,10 @@ fn test-tokenize-backquote {
   var stream-storage: (stream cell 0x10)
   var stream/edi: (addr stream cell) <- address stream-storage
   #
-  tokenize in, stream, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
   #
   var curr-token-storage: cell
   var curr-token/ebx: (addr cell) <- address curr-token-storage
@@ -90,7 +96,10 @@ fn test-tokenize-unquote {
   var stream-storage: (stream cell 0x10)
   var stream/edi: (addr stream cell) <- address stream-storage
   #
-  tokenize in, stream, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
   #
   var curr-token-storage: cell
   var curr-token/ebx: (addr cell) <- address curr-token-storage
@@ -114,7 +123,10 @@ fn test-tokenize-unquote-splice {
   var stream-storage: (stream cell 0x10)
   var stream/edi: (addr stream cell) <- address stream-storage
   #
-  tokenize in, stream, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
   #
   var curr-token-storage: cell
   var curr-token/ebx: (addr cell) <- address curr-token-storage
@@ -131,7 +143,10 @@ fn test-tokenize-dotted-list {
   var stream-storage: (stream cell 0x10)
   var stream/edi: (addr stream cell) <- address stream-storage
   #
-  tokenize in, stream, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
   #
   var curr-token-storage: cell
   var curr-token/ebx: (addr cell) <- address curr-token-storage
@@ -156,7 +171,10 @@ fn test-tokenize-stream-literal {
   var stream-storage: (stream cell 0x10)
   var stream/edi: (addr stream cell) <- address stream-storage
   #
-  tokenize in, stream, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
   #
   var curr-token-storage: cell
   var curr-token/ebx: (addr cell) <- address curr-token-storage
@@ -179,7 +197,10 @@ fn test-tokenize-stream-literal-in-tree {
   var stream-storage: (stream cell 0x10)
   var stream/edi: (addr stream cell) <- address stream-storage
   #
-  tokenize in, stream, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
   #
   var curr-token-storage: cell
   var curr-token/ebx: (addr cell) <- address curr-token-storage

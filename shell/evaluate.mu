@@ -17,7 +17,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
   }
   # errors? skip
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
@@ -51,15 +52,20 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
 #?   }
   # trace "evaluate " in " in environment " env {{{
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var stream-storage: (stream byte 0x300)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "evaluate "
-    print-cell in-ah, stream, 0/no-trace
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-cell in-ah, stream, nested-trace
     write stream, " in environment "
     var env-ah/eax: (addr handle cell) <- address env-h
-    print-cell env-ah, stream, 0/no-trace
+    clear-trace nested-trace
+    print-cell env-ah, stream, nested-trace
     trace trace, "eval", stream
   }
   # }}}
@@ -239,7 +245,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "Q", 4/fg, 0/bg
     # errors? skip
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -294,7 +301,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "Q", 4/fg, 0/bg
     # errors? skip
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -330,7 +338,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "S2", 4/fg, 0/bg
     # errors? skip
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -378,7 +387,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "S2", 4/fg, 0/bg
     # errors? skip
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -405,7 +415,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "U2", 4/fg, 0/bg
     # errors? skip
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -439,7 +450,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "S", 4/fg, 0/bg
     # errors? skip
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -492,7 +504,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     var guard-ah/esi: (addr handle cell) <- address guard-h
     $evaluate:while:loop-execution: {
       {
-        compare trace, 0
+        var should-trace?/eax: boolean <- should-trace? trace
+        compare should-trace?, 0/false
         break-if-=
         var error?/eax: boolean <- has-errors? trace
         compare error?, 0/false
@@ -505,7 +518,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       debug-print "W", 4/fg, 0/bg
       # errors? skip
       {
-        compare trace, 0
+        var should-trace?/eax: boolean <- should-trace? trace
+        compare should-trace?, 0/false
         break-if-=
         var error?/eax: boolean <- has-errors? trace
         compare error?, 0/false
@@ -520,7 +534,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       evaluate-exprs rest-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
       # errors? skip
       {
-        compare trace, 0
+        var should-trace?/eax: boolean <- should-trace? trace
+        compare should-trace?, 0/false
         break-if-=
         var error?/eax: boolean <- has-errors? trace
         compare error?, 0/false
@@ -556,7 +571,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "B", 4/fg, 0/bg
     # errors? skip
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -566,7 +582,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     }
     # a trip wire in case we're running without a trace (e.g. when loading the initial state from disk)
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-!=
       var left-out/eax: (addr cell) <- lookup *left-out-ah
       compare left-out, 0
@@ -592,12 +609,16 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
   trace-higher trace
   # trace "=> " _out-ah {{{
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "=> "
-    print-cell _out-ah, stream, 0/no-trace
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-cell _out-ah, stream, nested-trace
     trace trace, "eval", stream
   }
   # }}}
@@ -619,15 +640,20 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
   # if it's not a primitive function it must be an anonymous function
   # trace "apply anonymous function " f " in environment " env {{{
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "apply anonymous function "
-    print-cell _f-ah, stream, 0/no-trace
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-cell _f-ah, stream, nested-trace
 #?     write stream, " in environment "
 #?     var callee-env-ah/eax: (addr handle cell) <- address callee-env-h
-#?     print-cell callee-env-ah, stream, 0/no-trace
+#?     clear-trace nested-trace
+#?     print-cell callee-env-ah, stream, nested-trace
     trace trace, "eval", stream
   }
   # }}}
@@ -664,7 +690,8 @@ fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), bo
   push-bindings params-ah, args-ah, env-h, new-env-ah, trace
   # errors? skip
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
@@ -695,7 +722,8 @@ fn evaluate-exprs _exprs-ah: (addr handle cell), out: (addr handle cell), env-h:
       debug-print "X", 7/fg, 0/bg
       # errors? skip
       {
-        compare trace, 0
+        var should-trace?/eax: boolean <- should-trace? trace
+        compare should-trace?, 0/false
         break-if-=
         var error?/eax: boolean <- has-errors? trace
         compare error?, 0/false
@@ -738,17 +766,23 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   # Params can only be symbols or pairs. Args can be anything.
   # trace "pushing bindings from " params " to " args {{{
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "pushing bindings from "
-    print-cell params-ah, stream, 0/no-trace
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-cell params-ah, stream, nested-trace
     write stream, " to "
-    print-cell args-ah, stream, 0/no-trace
+    clear-trace nested-trace
+    print-cell args-ah, stream, nested-trace
     write stream, " onto "
     var old-env-ah/eax: (addr handle cell) <- address old-env-h
-    print-cell old-env-ah, stream, 0/no-trace
+    clear-trace nested-trace
+    print-cell old-env-ah, stream, nested-trace
     trace trace, "eval", stream
   }
   # }}}
@@ -799,7 +833,8 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   push-bindings first-param-ah, first-arg-ah, old-env-h, intermediate-env-ah, trace
   # errors? skip
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
@@ -816,7 +851,8 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
 fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   # trace sym
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var stream-storage: (stream byte 0x800)  # pessimistically sized just for the large alist loaded from disk in `main`
     var stream/ecx: (addr stream byte) <- address stream-storage
@@ -828,7 +864,10 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     write-stream stream, sym-data
     write stream, " in "
     var env-ah/eax: (addr handle cell) <- address env-h
-    print-cell env-ah, stream, 0/no-trace
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-cell env-ah, stream, nested-trace
     trace trace, "eval", stream
   }
   trace-lower trace
@@ -854,7 +893,8 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     trace-higher trace
     # trace "=> " out " (global)" {{{
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -862,7 +902,10 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       var stream-storage: (stream byte 0x200)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> "
-      print-cell out, stream, 0/no-trace
+      var nested-trace-storage: trace
+      var nested-trace/edi: (addr trace) <- address nested-trace-storage
+      initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+      print-cell out, stream, nested-trace
       write stream, " (global)"
       trace trace, "eval", stream
     }
@@ -873,7 +916,12 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   # check car
   var env-head-storage: (handle cell)
   var env-head-ah/eax: (addr handle cell) <- address env-head-storage
-  car env, env-head-ah, 0/no-trace
+  {
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    car env, env-head-ah, nested-trace
+  }
   var _env-head/eax: (addr cell) <- lookup *env-head-ah
   var env-head/ecx: (addr cell) <- copy _env-head
   # if car is not a list, abort
@@ -904,10 +952,14 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   compare match?, 0/false
   {
     break-if-=
-    cdr env-head, out, 0/no-trace
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    cdr env-head, out, nested-trace
     # trace "=> " out " (match)" {{{
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -915,7 +967,8 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       var stream-storage: (stream byte 0x800)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> "
-      print-cell out, stream, 0/no-trace
+      clear-trace nested-trace
+      print-cell out, stream, nested-trace
       write stream, " (match)"
       trace trace, "eval", stream
     }
@@ -929,21 +982,25 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   cdr env, env-tail-ah, trace
   lookup-symbol sym, out, *env-tail-ah, globals, trace, screen-cell, keyboard-cell
   trace-higher trace
-    # trace "=> " out " (recurse)" {{{
-    {
-      compare trace, 0
-      break-if-=
-      var error?/eax: boolean <- has-errors? trace
-      compare error?, 0/false
-      break-if-!=
-      var stream-storage: (stream byte 0x200)
-      var stream/ecx: (addr stream byte) <- address stream-storage
-      write stream, "=> "
-      print-cell out, stream, 0/no-trace
-      write stream, " (recurse)"
-      trace trace, "eval", stream
-    }
-    # }}}
+  # trace "=> " out " (recurse)" {{{
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-!=
+    var stream-storage: (stream byte 0x200)
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-cell out, stream, nested-trace
+    write stream, " (recurse)"
+    trace trace, "eval", stream
+  }
+  # }}}
 }
 
 fn test-lookup-symbol-in-env {
@@ -967,7 +1024,10 @@ fn test-lookup-symbol-in-env {
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "a"
   var in/eax: (addr cell) <- lookup *tmp-ah
-  lookup-symbol in, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  lookup-symbol in, tmp-ah, *env-ah, 0/no-globals, trace, 0/no-screen, 0/no-keyboard
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 1/number, "F - test-lookup-symbol-in-env/0"
@@ -989,7 +1049,10 @@ fn test-lookup-symbol-in-globals {
   var tmp-ah/ebx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "+"
   var in/eax: (addr cell) <- lookup *tmp-ah
-  lookup-symbol in, tmp-ah, *nil-ah, globals, 0/no-trace, 0/no-screen, 0/no-keyboard
+  var trace-storage: trace
+  var trace/esi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  lookup-symbol in, tmp-ah, *nil-ah, globals, trace, 0/no-screen, 0/no-keyboard
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 4/primitive-function, "F - test-lookup-symbol-in-globals/0"
@@ -1000,7 +1063,8 @@ fn test-lookup-symbol-in-globals {
 fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace) {
   # trace name
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var stream-storage: (stream byte 0x800)  # pessimistically sized just for the large alist loaded from disk in `main`
     var stream/ecx: (addr stream byte) <- address stream-storage
@@ -1008,10 +1072,14 @@ fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (han
     rewind-stream name
     write-stream stream, name
     write stream, " to "
-    print-cell val, stream, 0/no-trace
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-cell val, stream, nested-trace
     write stream, " in "
     var env-ah/eax: (addr handle cell) <- address env-h
-    print-cell env-ah, stream, 0/no-trace
+    clear-trace nested-trace
+    print-cell env-ah, stream, nested-trace
     trace trace, "eval", stream
   }
   trace-lower trace
@@ -1037,7 +1105,8 @@ fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (han
     trace-higher trace
     # trace "=> " val " (global)" {{{
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -1045,7 +1114,10 @@ fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (han
       var stream-storage: (stream byte 0x200)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> "
-      print-cell val, stream, 0/no-trace
+      var nested-trace-storage: trace
+      var nested-trace/edi: (addr trace) <- address nested-trace-storage
+      initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+      print-cell val, stream, nested-trace
       write stream, " (global)"
       trace trace, "eval", stream
     }
@@ -1056,7 +1128,10 @@ fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (han
   # check car
   var env-head-storage: (handle cell)
   var env-head-ah/eax: (addr handle cell) <- address env-head-storage
-  car env, env-head-ah, 0/no-trace
+  var nested-trace-storage: trace
+  var nested-trace/edi: (addr trace) <- address nested-trace-storage
+  initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+  car env, env-head-ah, nested-trace
   var _env-head/eax: (addr cell) <- lookup *env-head-ah
   var env-head/ecx: (addr cell) <- copy _env-head
   # if car is not a list, abort
@@ -1397,7 +1472,10 @@ fn test-evaluate-number {
   var tmp-storage: (handle cell)
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-integer tmp-ah, 3
-  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
   #
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
@@ -1427,7 +1505,10 @@ fn test-evaluate-symbol {
   var tmp-storage: (handle cell)
   var tmp-ah/edx: (addr handle cell) <- address tmp-storage
   new-symbol tmp-ah, "a"
-  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  evaluate tmp-ah, tmp-ah, *env-ah, 0/no-globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 1/number, "F - test-evaluate-symbol/0"
@@ -1449,7 +1530,10 @@ fn test-evaluate-quote {
   var tmp2-ah/ebx: (addr handle cell) <- address tmp2-storage
   new-symbol tmp2-ah, "a"
   new-pair tmp-ah, *tmp-ah, *tmp2-ah
-  evaluate tmp-ah, tmp-ah, *nil-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  evaluate tmp-ah, tmp-ah, *nil-ah, 0/no-globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 2/symbol, "F - test-evaluate-quote/0"
@@ -1470,7 +1554,10 @@ fn test-evaluate-primitive-function {
   # eval +, nil env
   var tmp-storage: (handle cell)
   var tmp-ah/esi: (addr handle cell) <- address tmp-storage
-  evaluate add-ah, tmp-ah, *nil-ah, globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  evaluate add-ah, tmp-ah, *nil-ah, globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
   #
   var result/eax: (addr cell) <- lookup *tmp-ah
   var result-type/edx: (addr int) <- get result, type
@@ -1530,7 +1617,10 @@ fn test-evaluate-backquote {
   new-symbol tmp2-ah, "a"
   new-pair tmp-ah, *tmp-ah, *tmp2-ah
   clear-object tmp2-ah
-  evaluate tmp-ah, tmp2-ah, *nil-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  evaluate tmp-ah, tmp2-ah, *nil-ah, 0/no-globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
   var result/eax: (addr cell) <- lookup *tmp2-ah
   var result-type/edx: (addr int) <- get result, type
   check-ints-equal *result-type, 2/symbol, "F - test-evaluate-backquote/0"
@@ -1554,7 +1644,8 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
   }
   # errors? skip
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
@@ -1641,7 +1732,8 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     evaluate in-unquote-payload-ah, out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     # errors? skip
     {
-      compare trace, 0
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
       break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
@@ -1680,7 +1772,8 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
   debug-print "`r)", 3/fg, 0/bg
   # errors? skip
   {
-    compare trace, 0
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
     break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
@@ -1716,7 +1809,10 @@ fn test-evaluate-backquote-list {
   new-pair tmp-ah, *a-ah, *tmp-ah
   new-pair tmp-ah, *backquote-ah, *tmp-ah
   #
-  evaluate tmp-ah, tmp-ah, *nil-ah, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  evaluate tmp-ah, tmp-ah, *nil-ah, 0/no-globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
   # result is (a b)
   var result/eax: (addr cell) <- lookup *tmp-ah
   {
@@ -1779,7 +1875,10 @@ fn test-evaluate-backquote-list-with-unquote {
   # tmp = cons(backquote, tmp)
   new-pair tmp-ah, backquote-h, tmp-h
   #
-  evaluate tmp-ah, tmp-ah, env-h, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  evaluate tmp-ah, tmp-ah, env-h, 0/no-globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
   # result is (a 3)
   var result/eax: (addr cell) <- lookup *tmp-ah
   {
@@ -1850,7 +1949,10 @@ fn test-evaluate-backquote-list-with-unquote-splice {
   new-pair tmp-ah, backquote-h, tmp-h
 #?   dump-cell-from-cursor-over-full-screen tmp-ah
   #
-  evaluate tmp-ah, tmp-ah, env-h, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard, 0/call-number
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  evaluate tmp-ah, tmp-ah, env-h, 0/no-globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
   # result is (a a 3 b)
 #?   dump-cell-from-cursor-over-full-screen tmp-ah
   var result/eax: (addr cell) <- lookup *tmp-ah

@@ -43,7 +43,10 @@ type trace-line {
 fn initialize-trace _self: (addr trace), max-depth: int, capacity: int, visible-capacity: int {
   var self/esi: (addr trace) <- copy _self
   compare self, 0
-  break-if-=
+  {
+    break-if-!=
+    abort "null trace"
+  }
   var src/ecx: int <- copy max-depth
   var dest/eax: (addr int) <- get self, max-depth
   copy-to *dest, src
@@ -58,7 +61,10 @@ fn initialize-trace _self: (addr trace), max-depth: int, capacity: int, visible-
 fn clear-trace _self: (addr trace) {
   var self/eax: (addr trace) <- copy _self
   compare self, 0
-  break-if-=
+  {
+    break-if-!=
+    abort "null trace"
+  }
   var len/edx: (addr int) <- get self, first-free
   copy-to *len, 0
   # might leak memory; existing elements won't be used anymore
@@ -66,10 +72,10 @@ fn clear-trace _self: (addr trace) {
 
 fn has-errors? _self: (addr trace) -> _/eax: boolean {
   var self/eax: (addr trace) <- copy _self
+  compare self, 0
   {
-    compare self, 0
     break-if-!=
-    return 0/false
+    abort "null trace"
   }
   var max/edx: (addr int) <- get self, first-free
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
@@ -93,10 +99,37 @@ fn has-errors? _self: (addr trace) -> _/eax: boolean {
   return 0/false
 }
 
+fn should-trace? _self: (addr trace) -> _/eax: boolean {
+  var self/esi: (addr trace) <- copy _self
+  compare self, 0
+  {
+    break-if-!=
+    abort "null trace"
+  }
+  var depth-a/ecx: (addr int) <- get self, curr-depth
+  var depth/ecx: int <- copy *depth-a
+  var max-depth-a/eax: (addr int) <- get self, max-depth
+  compare depth, *max-depth-a
+  {
+    break-if->=
+    return 1/true
+  }
+  return 0/false
+}
+
 fn trace _self: (addr trace), label: (addr array byte), message: (addr stream byte) {
   var self/esi: (addr trace) <- copy _self
   compare self, 0
-  break-if-=
+  {
+    break-if-!=
+    abort "null trace"
+  }
+  var should-trace?/eax: boolean <- should-trace? self
+  compare should-trace?, 0/false
+  {
+    break-if-!=
+    return
+  }
   var data-ah/eax: (addr handle array trace-line) <- get self, data
   var data/eax: (addr array trace-line) <- lookup *data-ah
   var index-addr/edi: (addr int) <- get self, first-free
@@ -130,7 +163,10 @@ fn trace _self: (addr trace), label: (addr array byte), message: (addr stream by
 
 fn trace-text self: (addr trace), label: (addr array byte), s: (addr array byte) {
   compare self, 0
-  break-if-=
+  {
+    break-if-!=
+    abort "null trace"
+  }
   var data-storage: (stream byte 0x100)
   var data/eax: (addr stream byte) <- address data-storage
   write data, s
@@ -140,7 +176,10 @@ fn trace-text self: (addr trace), label: (addr array byte), s: (addr array byte)
 fn error _self: (addr trace), message: (addr array byte) {
   var self/esi: (addr trace) <- copy _self
   compare self, 0
-  break-if-=
+  {
+    break-if-!=
+    abort "null trace"
+  }
   var curr-depth-a/eax: (addr int) <- get self, curr-depth
   var save-depth/ecx: int <- copy *curr-depth-a
   copy-to *curr-depth-a, 0/error
@@ -165,7 +204,10 @@ fn initialize-trace-line depth: int, label: (addr array byte), data: (addr strea
 fn trace-lower _self: (addr trace) {
   var self/esi: (addr trace) <- copy _self
   compare self, 0
-  break-if-=
+  {
+    break-if-!=
+    abort "null trace"
+  }
   var depth/eax: (addr int) <- get self, curr-depth
   increment *depth
 }
@@ -173,7 +215,10 @@ fn trace-lower _self: (addr trace) {
 fn trace-higher _self: (addr trace) {
   var self/esi: (addr trace) <- copy _self
   compare self, 0
-  break-if-=
+  {
+    break-if-!=
+    abort "null trace"
+  }
   var depth/eax: (addr int) <- get self, curr-depth
   decrement *depth
 }
@@ -304,7 +349,7 @@ fn dump-trace _self: (addr trace) {
   compare self, 0
   {
     break-if-!=
-    return
+    abort "null trace"
   }
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   var _trace/eax: (addr array trace-line) <- lookup *trace-ah
@@ -332,7 +377,7 @@ fn dump-trace-with-label _self: (addr trace), label: (addr array byte) {
   compare self, 0
   {
     break-if-!=
-    return
+    abort "null trace"
   }
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   var _trace/eax: (addr array trace-line) <- lookup *trace-ah
@@ -379,7 +424,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
   compare self, 0
   {
     break-if-!=
-    return ymin
+    abort "null trace"
   }
   clamp-cursor-to-top self, y
   var trace-ah/eax: (addr handle array trace-line) <- get self, data

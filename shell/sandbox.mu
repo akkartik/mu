@@ -31,7 +31,7 @@ fn initialize-sandbox _self: (addr sandbox), fake-screen-and-keyboard?: boolean 
   var trace-ah/eax: (addr handle trace) <- get self, trace
   allocate trace-ah
   var trace/eax: (addr trace) <- lookup *trace-ah
-  initialize-trace trace, 0x100/max-depth, 0x8000/lines, 0x80/visible-lines
+  initialize-trace trace, 0x100/max-depth, 0x8000/lines, 0x80/visible
   var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
   copy-to *cursor-in-data?, 1/true
 }
@@ -49,7 +49,7 @@ fn initialize-sandbox-with _self: (addr sandbox), s: (addr array byte) {
   var trace-ah/eax: (addr handle trace) <- get self, trace
   allocate trace-ah
   var trace/eax: (addr trace) <- lookup *trace-ah
-  initialize-trace trace, 0x100/max-depth, 0x8000/lines, 0x80/visible-lines
+  initialize-trace trace, 0x100/max-depth, 0x8000/lines, 0x80/visible
   var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
   copy-to *cursor-in-data?, 1/true
 }
@@ -646,15 +646,20 @@ fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: 
   var in/eax: (addr gap-buffer) <- lookup *in-ah
   var read-result-h: (handle cell)
   var read-result-ah/esi: (addr handle cell) <- address read-result-h
-  read-cell in, read-result-ah, 0/no-trace
-  macroexpand read-result-ah, globals, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell in, read-result-ah, trace
+  clear-trace trace
+  macroexpand read-result-ah, globals, trace
   var nil-storage: (handle cell)
   var nil-ah/eax: (addr handle cell) <- address nil-storage
   allocate-pair nil-ah
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
   debug-print "^", 4/fg, 0/bg
-  evaluate read-result-ah, eval-result, *nil-ah, globals, 0/no-trace, 0/no-screen-cell, 0/no-keyboard-cell, 1/call-number
+  clear-trace trace
+  evaluate read-result-ah, eval-result, *nil-ah, globals, trace, 0/no-screen-cell, 0/no-keyboard-cell, 1/call-number
   debug-print "$", 4/fg, 0/bg
   move-gap-buffer-to-global globals, read-result-ah, _in-ah
 }
@@ -894,7 +899,7 @@ fn has-trace? _self: (addr sandbox) -> _/eax: boolean {
   compare trace, 0
   {
     break-if-!=
-    return 0/false
+    abort "null trace"
   }
   var first-free/ebx: (addr int) <- get trace, first-free
   compare *first-free, 0

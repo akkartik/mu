@@ -56,7 +56,10 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
         # run
         var out: (handle cell)
         var out-ah/ecx: (addr handle cell) <- address out
-        evaluate tmp, out-ah, nil, globals, 0/no-trace, 0/no-fake-screen, 0/no-fake-keyboard, 0/call-number
+        var trace-storage: trace
+        var trace/ebx: (addr trace) <- address trace-storage
+        initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+        evaluate tmp, out-ah, nil, globals, trace, 0/no-fake-screen, 0/no-fake-keyboard, 0/call-number
         {
           var tmp/eax: byte <- read-key keyboard
           compare tmp, 0
@@ -95,7 +98,10 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
   # read: gap-buffer -> cell
   var initial-root-storage: (handle cell)
   var initial-root/ecx: (addr handle cell) <- address initial-root-storage
-  read-cell data, initial-root, 0/no-trace
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell data, initial-root, trace
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "  into s-expressions", 3/fg, 0/bg
   move-cursor-to-left-margin-of-next-line 0/screen
   clear-gap-buffer data
@@ -113,7 +119,8 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
   var globals-literal/eax: (addr cell) <- lookup *globals-literal-ah
   var globals-cell-storage: (handle cell)
   var globals-cell-ah/edx: (addr handle cell) <- address globals-cell-storage
-  lookup-symbol globals-literal, globals-cell-ah, *initial-root, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
+  clear-trace trace
+  lookup-symbol globals-literal, globals-cell-ah, *initial-root, 0/no-globals, trace, 0/no-screen, 0/no-keyboard
   var globals-cell/eax: (addr cell) <- lookup *globals-cell-ah
   {
     compare globals-cell, 0
@@ -128,13 +135,15 @@ fn load-state data-disk: (addr disk), _sandbox: (addr sandbox), globals: (addr g
   var sandbox-literal/eax: (addr cell) <- lookup *sandbox-literal-ah
   var sandbox-cell-storage: (handle cell)
   var sandbox-cell-ah/edx: (addr handle cell) <- address sandbox-cell-storage
-  lookup-symbol sandbox-literal, sandbox-cell-ah, *initial-root, 0/no-globals, 0/no-trace, 0/no-screen, 0/no-keyboard
+  clear-trace trace
+  lookup-symbol sandbox-literal, sandbox-cell-ah, *initial-root, 0/no-globals, trace, 0/no-screen, 0/no-keyboard
   var sandbox-cell/eax: (addr cell) <- lookup *sandbox-cell-ah
   {
     compare sandbox-cell, 0
     break-if-=
     # print: cell -> stream
-    print-cell sandbox-cell-ah, s, 0/no-trace
+    clear-trace trace
+    print-cell sandbox-cell-ah, s, trace
     # stream -> gap-buffer
     load-gap-buffer-from-stream data, s
   }

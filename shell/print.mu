@@ -85,7 +85,10 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
 fn dump-cell-at-top-right in-ah: (addr handle cell) {
   var stream-storage: (stream byte 0x1000)
   var stream/edx: (addr stream byte) <- address stream-storage
-  print-cell in-ah, stream, 0/no-trace
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell in-ah, stream, trace
   var d1/eax: int <- copy 0
   var d2/ecx: int <- copy 0
   d1, d2 <- draw-stream-wrapping-right-then-down 0/screen, stream, 0/xmin, 0/ymin, 0x80/xmax, 0x30/ymax, 0/x, 0/y, 7/fg, 0xc5/bg=blue-bg
@@ -94,7 +97,10 @@ fn dump-cell-at-top-right in-ah: (addr handle cell) {
 fn dump-cell-from-cursor-over-full-screen in-ah: (addr handle cell) {
   var stream-storage: (stream byte 0x200)
   var stream/edx: (addr stream byte) <- address stream-storage
-  print-cell in-ah, stream, 0/no-trace
+  var trace-storage: trace
+  var trace/edi: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell in-ah, stream, trace
   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, stream, 7/fg, 0/bg
 }
 
@@ -107,7 +113,8 @@ fn print-symbol _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   rewind-stream data
   write-stream out, data
   # trace
-  compare trace, 0
+  var should-trace?/eax: boolean <- should-trace? trace
+  compare should-trace?, 0/false
   break-if-=
   rewind-stream data
   var stream-storage: (stream byte 0x40)
@@ -128,7 +135,8 @@ fn print-stream _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   write-stream out, data
   write out, "]"
   # trace
-  compare trace, 0
+  var should-trace?/eax: boolean <- should-trace? trace
+  compare should-trace?, 0/false
   break-if-=
   rewind-stream data
   var stream-storage: (stream byte 0x40)
@@ -143,8 +151,12 @@ fn print-number _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   var val/eax: (addr float) <- get in, number-data
   write-float-decimal-approximate out, *val, 3/precision
   # trace
-  compare trace, 0
-  break-if-=
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-!=
+    return
+  }
   var stream-storage: (stream byte 0x40)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, "=> number "
@@ -273,7 +285,10 @@ fn test-print-cell-zero {
   new-integer num, 0
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell num, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell num, out, trace
   check-stream-equal out, "0", "F - test-print-cell-zero"
 }
 
@@ -283,7 +298,10 @@ fn test-print-cell-integer {
   new-integer num, 1
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell num, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell num, out, trace
   check-stream-equal out, "1", "F - test-print-cell-integer"
 }
 
@@ -293,7 +311,10 @@ fn test-print-cell-integer-2 {
   new-integer num, 0x30
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell num, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell num, out, trace
   check-stream-equal out, "48", "F - test-print-cell-integer-2"
 }
 
@@ -304,7 +325,10 @@ fn test-print-cell-fraction {
   new-float num, val
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell num, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell num, out, trace
   check-stream-equal out, "0.5", "F - test-print-cell-fraction"
 }
 
@@ -314,7 +338,10 @@ fn test-print-cell-symbol {
   new-symbol sym, "abc"
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell sym, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell sym, out, trace
   check-stream-equal out, "abc", "F - test-print-cell-symbol"
 }
 
@@ -324,7 +351,10 @@ fn test-print-cell-nil-list {
   allocate-pair nil
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell nil, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell nil, out, trace
   check-stream-equal out, "()", "F - test-print-cell-nil-list"
 }
 
@@ -342,7 +372,10 @@ fn test-print-cell-singleton-list {
   #
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell list, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell list, out, trace
   check-stream-equal out, "(abc)", "F - test-print-cell-singleton-list"
 }
 
@@ -363,7 +396,10 @@ fn test-print-cell-list {
   #
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell list, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell list, out, trace
   check-stream-equal out, "(64 abc)", "F - test-print-cell-list"
 }
 
@@ -384,7 +420,10 @@ fn test-print-cell-list-of-nil {
   #
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell list, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell list, out, trace
   check-stream-equal out, "(64 ())", "F - test-print-cell-list-nil"
 }
 
@@ -402,6 +441,9 @@ fn test-print-dotted-list {
   #
   var out-storage: (stream byte 0x40)
   var out/edi: (addr stream byte) <- address out-storage
-  print-cell list, out, 0/no-trace
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell list, out, trace
   check-stream-equal out, "(abc . 64)", "F - test-print-dotted-list"
 }

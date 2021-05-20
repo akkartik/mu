@@ -218,7 +218,10 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
       var stream-storage: (stream byte 0x400)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> number "
-      print-number out-addr, stream, 0/no-trace
+      var nested-trace-storage: trace
+      var nested-trace/edi: (addr trace) <- address nested-trace-storage
+      initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+      print-number out-addr, stream, nested-trace
       trace trace, "parse", stream
     }
     return
@@ -246,7 +249,10 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
     var stream-storage: (stream byte 0x400)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "=> symbol "
-    print-symbol out-addr, stream, 0/no-trace
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-symbol out-addr, stream, nested-trace
     trace trace, "parse", stream
   }
 }
