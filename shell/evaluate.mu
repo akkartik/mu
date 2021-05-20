@@ -17,9 +17,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
   }
   # errors? skip
   {
-    var should-trace?/eax: boolean <- should-trace? trace
-    compare should-trace?, 0/false
-    break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
     break-if-=

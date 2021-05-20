@@ -16,6 +16,9 @@ fn macroexpand expr-ah: (addr handle cell), globals: (addr global-table), trace:
   # }}}
   # loop until convergence
   {
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-!=
     var expanded?/eax: boolean <- macroexpand-iter expr-ah, globals, trace
     compare expanded?, 0/false
     loop-if-!=
@@ -119,6 +122,13 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
       var curr-ah/eax: (addr handle cell) <- get rest, left
       var macro-found?/eax: boolean <- macroexpand-iter curr-ah, globals, trace
       result <- or macro-found?
+      {
+        var error?/eax: boolean <- has-errors? trace
+        compare error?, 0/false
+        break-if-=
+        trace-higher trace
+        return result
+      }
       loop
     }
     trace-higher trace
@@ -217,6 +227,9 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
 #?     dump-trace trace
     var macro-found?/eax: boolean <- macroexpand-iter curr-ah, globals, trace
     result <- or macro-found?
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-!=
     var rest/eax: (addr cell) <- lookup *rest-ah
     {
       var nil?/eax: boolean <- nil? rest
