@@ -408,11 +408,10 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
         copy-to *cursor-line-index, i
       }
       # always display errors
-      # TODO: use depth rather than label here
-      var error?/eax: boolean <- string-equal? curr-label, "error"
       {
-        compare error?, 0/false
-        break-if-=
+        var curr-depth/eax: (addr int) <- get curr, depth
+        compare *curr-depth, 0/error
+        break-if-!=
         y <- render-trace-line screen, curr, xmin, y, xmax, ymax, 0xc/fg=trace-error, bg
         copy-to already-hiding-lines?, 0/false
         break $render-trace:iter
@@ -1130,6 +1129,7 @@ fn test-trace-expand-stops-at-higher-depth {
   var t/esi: (addr trace) <- address t-storage
   initialize-trace t, 0x100/max-depth, 0x10, 0x10
   #
+  trace-lower t
   trace-text t, "l", "line 1.1"
   trace-lower t
   trace-text t, "l", "line 1.1.1"
@@ -1154,11 +1154,11 @@ fn test-trace-expand-stops-at-higher-depth {
   edit-trace t, 0xa/enter
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 8/ymax, 1/show-cursor
   #
-  check-screen-row screen,                                  0/y, "1 line 1.1 ", "F - test-trace-expand-stops-at-higher-depth/expand-0"
+  check-screen-row screen,                                  0/y, "2 line 1.1 ", "F - test-trace-expand-stops-at-higher-depth/expand-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||||||||| ", "F - test-trace-expand-stops-at-higher-depth/expand-0/cursor"
   check-screen-row screen,                                  1/y, "...        ", "F - test-trace-expand-stops-at-higher-depth/expand-1"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-expand-stops-at-higher-depth/expand-1/cursor"
-  check-screen-row screen,                                  2/y, "1 line 1.2 ", "F - test-trace-expand-stops-at-higher-depth/expand-2"
+  check-screen-row screen,                                  2/y, "2 line 1.2 ", "F - test-trace-expand-stops-at-higher-depth/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-expand-stops-at-higher-depth/expand-2/cursor"
   check-screen-row screen,                                  3/y, "...        ", "F - test-trace-expand-stops-at-higher-depth/expand-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-expand-stops-at-higher-depth/expand-3/cursor"
