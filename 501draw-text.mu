@@ -165,8 +165,10 @@ fn render-grapheme screen: (addr screen), g: grapheme, xmin: int, ymin: int, xma
 # that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, truncate
 fn draw-text-wrapping-right-then-down screen: (addr screen), _text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
-  # TODO: obscenely pessimally sized
-  var stream-storage: (stream byte 0x200)
+  var stream-storage: (stream byte 0x200)  # 4 rows of text = 1/12th of a real screen
+                                           # fake screens unlikely to be larger
+                                           # so this seems a reasonable size
+                                           # allocated on the stack, so quickly reclaimed
   var stream/edi: (addr stream byte) <- address stream-storage
   var text/esi: (addr array byte) <- copy _text
   var len/eax: int <- length text
