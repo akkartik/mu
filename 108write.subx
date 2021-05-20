@@ -135,6 +135,79 @@ _test-stream:  # (stream byte)
 
 == code
 
+try-write:  # f: (addr stream byte), s: (addr array byte) -> overflow?/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # if (s == 0) return
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       0/imm32           # compare *(ebp+12)
+    74/jump-if-=  $write:end/disp8
+    # . save registers
+    51/push-ecx
+    # if (f->size - f->write < s->size) return
+    # . eax = f->size - f->write - s->size
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ecx+8) to eax
+    2b/subtract                     0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract *ecx from eax
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
+    2b/subtract                     0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract *ecx from eax
+    # . if (eax < 0) return
+    3d/compare-eax-and  0/imm32
+    7c/jump-if-<  $try-write:end/disp8
+    # write(f, s)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . restore registers
+    59/pop-to-ecx
+    # return 0
+    b8/copy-to-eax  0/imm32
+$try-write:end:
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+# probably a bad idea
+space-remaining-in-stream:  # f: (addr stream byte) -> n/eax: int
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    # return f->size - f->write
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ecx+8) to eax
+    2b/subtract                     0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract *ecx from eax
+    # . restore registers
+    59/pop-to-ecx
+$space-remaining-in-stream:end:
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+stream-size:  # f: (addr stream byte) -> n/eax: int
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    # return f->write
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
+    # . restore registers
+    59/pop-to-ecx
+$space-remaining-in-stream:end:
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
 # 3-argument variant of _append
 _append-3:  # out: (addr byte), outend: (addr byte), s: (addr array byte) -> num_bytes_appended/eax
     # . prologue
@@ -142,6 +215,15 @@ _append-3:  # out: (addr byte), outend: (addr byte), s: (addr array byte) -> num
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     51/push-ecx
+    # if (outend - out < s->size) abort
+    # . eax = f->size - f->write - s->size
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
+    2b/subtract                     1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # subtract *(ebp+8) from eax
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   0x10/disp8      .                 # copy *(ebp+16) to ecx
+    2b/subtract                     0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract *ecx from eax
+    # . if (eax < 0) abort
+    3d/compare-eax-and  0/imm32
+    7c/jump-if-<  $_append-3:abort/disp8
     # eax = _append-4(out, outend, &s->data[0], &s->data[s->size])
     # . . push &s->data[s->size]
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
@@ -166,6 +248,10 @@ $_append-3:end:
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
+
+$_append-3:abort:
+    (abort "_append-3 about to overflow")  # 3=cyan
+    # never gets here
 
 # 4-argument variant of _append
 _append-4:  # out: (addr byte), outend: (addr byte), in: (addr byte), inend: (addr byte) -> num_bytes_appended/eax: int

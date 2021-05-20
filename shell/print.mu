@@ -1,3 +1,9 @@
+# Scenario:
+#   print-cell can be used for printing into a trace
+#   traces can run out of space
+#   therefore, we need to gracefully handle insufficient space in 'out'
+#     if we're printing something 3 bytes or less, just make sure it doesn't crash
+#     if we're printing something longer than 3 bytes, try to fall back to ellipses (which are 3 bytes)
 fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr trace) {
   check-stack
   trace-text trace, "print", "print"
@@ -7,7 +13,13 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
   {
     compare in-addr, 0
     break-if-!=
-    write out, "NULL"
+    var overflow?/eax: boolean <- try-write out, "NULL"
+    compare overflow?, 0/false
+    {
+      break-if-=
+      overflow? <- try-write out, "..."
+      error trace, "print-cell: no space for 'NULL'"
+    }
     trace-higher trace
     return
   }
@@ -15,7 +27,12 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
     var nil?/eax: boolean <- nil? in-addr
     compare nil?, 0/false
     break-if-=
-    write out, "()"
+    var overflow?/eax: boolean <- try-write out, "()"
+    compare overflow?, 0/false
+    {
+      break-if-=
+      error trace, "print-cell: no space for '()'"
+    }
     trace-higher trace
     return
   }
@@ -51,13 +68,27 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
   compare *in-type, 4/primitive
   {
     break-if-!=
-    write out, "[primitive]"
+    var overflow?/eax: boolean <- try-write out, "[primitive]"
+    compare overflow?, 0/false
+    {
+      break-if-=
+      overflow? <- try-write out, "..."
+      error trace, "print-cell: no space for primitive"
+    }
     trace-higher trace
     return
   }
   compare *in-type, 5/screen
   {
     break-if-!=
+    {
+      var available-space/eax: int <- space-remaining-in-stream out
+      compare available-space, 0x10
+      break-if->=
+      var dummy/eax: boolean <- try-write out, "..."
+      error trace, "print-cell: no space for screen"
+      return
+    }
     write out, "[screen "
     var screen-ah/eax: (addr handle screen) <- get in-addr, screen-data
     var screen/eax: (addr screen) <- lookup *screen-ah
@@ -70,6 +101,14 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
   compare *in-type, 6/keyboard
   {
     break-if-!=
+    {
+      var available-space/eax: int <- space-remaining-in-stream out
+      compare available-space, 0x10
+      break-if->=
+      var dummy/eax: boolean <- try-write out, "..."
+      error trace, "print-cell: no space for keyboard"
+      return
+    }
     write out, "[keyboard "
     var keyboard-ah/eax: (addr handle gap-buffer) <- get in-addr, keyboard-data
     var keyboard/eax: (addr gap-buffer) <- lookup *keyboard-ah
@@ -111,6 +150,16 @@ fn print-symbol _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   var _data/eax: (addr stream byte) <- lookup *data-ah
   var data/esi: (addr stream byte) <- copy _data
   rewind-stream data
+  var _required-space/eax: int <- stream-size data
+  var required-space/ecx: int <- copy _required-space
+  var available-space/eax: int <- space-remaining-in-stream out
+  compare required-space, available-space
+  {
+    break-if-<=
+    var dummy/eax: boolean <- try-write out, "..."
+    error trace, "print-symbol: no space"
+    return
+  }
   write-stream out, data
   # trace
   var should-trace?/eax: boolean <- should-trace? trace
@@ -131,6 +180,17 @@ fn print-stream _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   var _data/eax: (addr stream byte) <- lookup *data-ah
   var data/esi: (addr stream byte) <- copy _data
   rewind-stream data
+  var _required-space/eax: int <- stream-size data
+  var required-space/ecx: int <- copy _required-space
+  required-space <- add 2  # for []
+  var available-space/eax: int <- space-remaining-in-stream out
+  compare required-space, available-space
+  {
+    break-if-<=
+    var dummy/eax: boolean <- try-write out, "..."
+    error trace, "print-stream: no space"
+    return
+  }
   write out, "["
   write-stream out, data
   write out, "]"
@@ -147,6 +207,14 @@ fn print-stream _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
 }
 
 fn print-number _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
+  var available-space/eax: int <- space-remaining-in-stream out
+  compare available-space, 0x10
+  {
+    break-if->=
+    var dummy/eax: boolean <- try-write out, "..."
+    error trace, "print-number: no space"
+    return
+  }
   var in/esi: (addr cell) <- copy _in
   var val/eax: (addr float) <- get in, number-data
   write-float-decimal-approximate out, *val, 3/precision
@@ -174,7 +242,7 @@ fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   compare is-quote?, 0/false
   {
     break-if-=
-    write out, "'"
+    var dummy/eax: boolean <- try-write out, "'"
     var right-ah/eax: (addr handle cell) <- get in, right
     print-cell right-ah, out, trace
     return
@@ -183,7 +251,7 @@ fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   compare is-backquote?, 0/false
   {
     break-if-=
-    write out, "`"
+    var dummy/eax: boolean <- try-write out, "`"
     var right-ah/eax: (addr handle cell) <- get in, right
     print-cell right-ah, out, trace
     return
@@ -192,7 +260,7 @@ fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   compare is-unquote?, 0/false
   {
     break-if-=
-    write out, ","
+    var dummy/eax: boolean <- try-write out, ","
     var right-ah/eax: (addr handle cell) <- get in, right
     print-cell right-ah, out, trace
     return
@@ -201,29 +269,36 @@ fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   compare is-unquote-splice?, 0/false
   {
     break-if-=
-    write out, ",@"
+    var dummy/eax: boolean <- try-write out, ",@"
     var right-ah/eax: (addr handle cell) <- get in, right
     print-cell right-ah, out, trace
     return
   }
   #
   var curr/esi: (addr cell) <- copy _in
-  write out, "("
+  {
+    var overflow?/eax: boolean <- try-write out, "("
+    compare overflow?, 0/false
+    break-if-=
+    error trace, "print-pair: no space for '('"
+    return
+  }
   $print-pair:loop: {
     var left/ecx: (addr handle cell) <- get curr, left
     print-cell left, out, trace
+    # errors? skip
+    {
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      return
+    }
     var right/ecx: (addr handle cell) <- get curr, right
     var right-addr/eax: (addr cell) <- lookup *right
     {
       compare right-addr, 0
       break-if-!=
-      # This shouldn't ever happen in a regular REPL cycle.
-      # However, we also use print-cell when emitting the trace. And that can
-      # happen after there's been an error in the trace.
-      write out, "...NULL!"
-      error trace, "right is NULL"
-      trace-higher trace
-      return
+      abort "NULL in print!"
     }
     {
       var right-nil?/eax: boolean <- nil? right-addr
@@ -234,19 +309,37 @@ fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
         break $print-pair:loop
       }
     }
-    write out, " "
+    {
+      var overflow?/eax: boolean <- try-write out, " "
+      compare overflow?, 0/false
+      break-if-=
+      error trace, "print-pair: no space"
+      return
+    }
     var right-type-addr/edx: (addr int) <- get right-addr, type
     {
       compare *right-type-addr, 0/pair
       break-if-=
-      write out, ". "
+      {
+        var overflow?/eax: boolean <- try-write out, ". "
+        compare overflow?, 0/false
+        break-if-=
+        error trace, "print-pair: no space"
+        return
+      }
       print-cell right, out, trace
       break $print-pair:loop
     }
     curr <- copy right-addr
     loop
   }
-  write out, ")"
+  {
+    var overflow?/eax: boolean <- try-write out, ")"
+    compare overflow?, 0/false
+    break-if-=
+    error trace, "print-pair: no space for ')'"
+    return
+  }
 }
 
 # Most lisps intern nil, but we don't really have globals yet, so we'll be
@@ -446,4 +539,53 @@ fn test-print-dotted-list {
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   print-cell list, out, trace
   check-stream-equal out, "(abc . 64)", "F - test-print-dotted-list"
+}
+
+fn test-print-cell-interrupted {
+  var sym-storage: (handle cell)
+  var sym/esi: (addr handle cell) <- address sym-storage
+  new-symbol sym, "abcd"  # requires 4 bytes
+  var out-storage: (stream byte 3)  # space for just 3 bytes
+  var out/edi: (addr stream byte) <- address out-storage
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell sym, out, trace
+  # insufficient space to print out the symbol; print out ellipses if we can
+  check-stream-equal out, "...", "F - test-print-cell-interrupted"
+}
+
+fn test-print-cell-impossible {
+  var sym-storage: (handle cell)
+  var sym/esi: (addr handle cell) <- address sym-storage
+  new-symbol sym, "abcd"  # requires 4 bytes
+  var out-storage: (stream byte 2)
+  var out/edi: (addr stream byte) <- address out-storage
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell sym, out, trace
+  # insufficient space even for ellipses; print nothing
+  check-stream-equal out, "", "F - test-print-cell-impossible"
+}
+
+fn test-print-cell-interrupted-list {
+  # list = (abcd) requires 6 bytes
+  var left-storage: (handle cell)
+  var left/ecx: (addr handle cell) <- address left-storage
+  new-symbol left, "abcd"
+  var nil-storage: (handle cell)
+  var nil/edx: (addr handle cell) <- address nil-storage
+  allocate-pair nil
+  var list-storage: (handle cell)
+  var list/esi: (addr handle cell) <- address list-storage
+  new-pair list, *left, *nil
+  #
+  var out-storage: (stream byte 4)  # space for just 4 bytes
+  var out/edi: (addr stream byte) <- address out-storage
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  print-cell list, out, trace
+  check-stream-equal out, "(...", "F - test-print-cell-interrupted-list"
 }

@@ -35,8 +35,8 @@ how they work under the hood.
 
   Invariant: 0 <= `read` <= `write` <= `size`
 
-  Writes to a stream abort if it's full. Reads to a stream abort if it's
-  empty.
+  By default, writes to a stream abort if it's full. Reads to a stream abort
+  if it's empty.
 
 - Graphemes: 32-bit fragments of utf-8 that encode a single Unicode code-point.
 - Code-points: 32-bit integers representing a Unicode character.
@@ -106,6 +106,8 @@ The most useful functions from 400.mu and later .mu files. Look for definitions
 
 - `write`: writes a string into a stream of bytes. Doesn't support streams of
   other types.
+- `try-write`: writes a string into a stream of bytes if possible. Doesn't
+  support streams of other types.
 - `write-stream`: concatenates one stream into another.
 - `write-slice`: writes a slice into a stream of bytes.
 - `append-byte`: writes a single byte into a stream of bytes.

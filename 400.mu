@@ -43,6 +43,10 @@ sig check-stream-equal f: (addr stream byte), s: (addr array byte), msg: (addr a
 sig next-stream-line-equal? f: (addr stream byte), s: (addr array byte) -> _/eax: boolean
 sig check-next-stream-line-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
 sig write f: (addr stream byte), s: (addr array byte)
+sig try-write f: (addr stream byte), s: (addr array byte) -> _/eax: boolean
+# probably a bad idea; I definitely want to discourage its use for streams of non-bytes
+sig stream-size f: (addr stream byte) -> _/eax: int
+sig space-remaining-in-stream f: (addr stream byte) -> _/eax: int
 sig write-stream f: (addr stream byte), s: (addr stream byte)
 sig read-byte s: (addr stream byte) -> _/eax: byte
 sig append-byte f: (addr stream byte), n: int  # really just a byte, but I want to pass in literal numbers
