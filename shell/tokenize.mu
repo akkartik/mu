@@ -15,6 +15,7 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
     break-if-!=
     # initialize token data each iteration to avoid aliasing
     var dest-ah/eax: (addr handle stream byte) <- get token, text-data
+    # TODO: obscenely pessimally sized
     # I'm allocating 1KB for every. single. token. Just because a whole definition needs to fit in a string sometimes. Absolutely bonkers.
     populate-stream dest-ah, 0x400/max-definition-size
     #

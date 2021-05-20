@@ -164,10 +164,22 @@ fn render-grapheme screen: (addr screen), g: grapheme, xmin: int, ymin: int, xma
 # return the next (x, y) coordinate in raster order where drawing stopped
 # that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, truncate
-fn draw-text-wrapping-right-then-down screen: (addr screen), text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
-  var stream-storage: (stream byte 0x100)
-  var stream/esi: (addr stream byte) <- address stream-storage
-  write stream, text
+fn draw-text-wrapping-right-then-down screen: (addr screen), _text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+  # TODO: obscenely pessimally sized
+  var stream-storage: (stream byte 0x200)
+  var stream/edi: (addr stream byte) <- address stream-storage
+  var text/esi: (addr array byte) <- copy _text
+  var len/eax: int <- length text
+  compare len, 0x200
+  {
+    break-if-<
+    write stream, "ERROR: stream too small in draw-text-wrapping-right-then-down"
+  }
+  compare len, 0x200
+  {
+    break-if->=
+    write stream, text
+  }
   var x/eax: int <- copy _x
   var y/ecx: int <- copy _y
   x, y <- draw-stream-wrapping-right-then-down screen, stream, xmin, ymin, xmax, ymax, x, y, color, background-color
