@@ -31,7 +31,7 @@ fn initialize-sandbox _self: (addr sandbox), fake-screen-and-keyboard?: boolean 
   var trace-ah/eax: (addr handle trace) <- get self, trace
   allocate trace-ah
   var trace/eax: (addr trace) <- lookup *trace-ah
-  initialize-trace trace, 0x100/max-depth, 0x8000/lines, 0x80/visible
+  initialize-trace trace, 4/max-depth, 0x8000/lines, 0x80/visible
   var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
   copy-to *cursor-in-data?, 1/true
 }

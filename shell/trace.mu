@@ -433,6 +433,22 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
   var i/edx: int <- copy 0
   var max-addr/ebx: (addr int) <- get self, first-free
   var max/ebx: int <- copy *max-addr
+  # display trace depth (not in tests)
+  $render-trace:render-depth: {
+    compare max, 0
+    break-if-<=
+    var max-depth/edx: (addr int) <- get self, max-depth
+    {
+      var width/eax: int <- copy 0
+      var height/ecx: int <- copy 0
+      width, height <- screen-size screen
+      compare width, 0x80
+      break-if-< $render-trace:render-depth
+    }
+    set-cursor-position screen, 0x70/x, y
+    draw-text-rightward-from-cursor-over-full-screen screen, "trace depth: ", 0x17/fg, 0xc5/bg=blue-bg
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, *max-depth, 0x7/fg, 0xc5/bg=blue-bg
+  }
   $render-trace:loop: {
     compare i, max
     break-if->=
