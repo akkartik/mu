@@ -18,7 +18,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       break-if->=
       var color/ecx: int <- copy x
       color <- and 0xff
-      pixel-on-real-screen x, y, color
+      pixel screen x, y, color
       x <- increment
       loop
     }
