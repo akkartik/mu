@@ -79,7 +79,7 @@ fn write-sandbox out: (addr stream byte), _self: (addr sandbox) {
 ##
 
 fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int, xmax: int, ymax: int {
-  clear-rect screen, xmin, ymin, xmax, ymax, 0xc5/bg=blue-bg=black
+  clear-rect screen, xmin, ymin, xmax, ymax, 0xc5/bg=blue-bg
   add-to xmin, 1/padding-left
   add-to ymin, 1/padding-top
   subtract-from xmax, 1/padding-right
@@ -154,7 +154,7 @@ fn clear-sandbox-output screen: (addr screen), _self: (addr sandbox), xmin: int,
   var cursor-in-sandbox?/ebx: (addr boolean) <- get self, cursor-in-data?
   x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, *cursor-in-sandbox?, 3/fg, 0xc5/bg=blue-bg
   y <- increment
-  clear-rect screen, xmin, y, xmax, ymax, 0xc5/bg=blue-bg=black
+  clear-rect screen, xmin, y, xmax, ymax, 0xc5/bg=blue-bg
 }
 
 fn maybe-render-empty-screen screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int -> _/ecx: int {
@@ -408,7 +408,7 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
   y <- decrement
   var height/ebx: int <- copy y
   height <- increment
-  clear-rect screen, 0/x, y, width, height, 0xc5/bg=blue-bg=black
+  clear-rect screen, 0/x, y, width, height, 0xc5/bg=blue-bg
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " ctrl+... ", width, 0xf/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " r ", width, 0/fg, 0x5c/bg=black
@@ -446,7 +446,7 @@ fn render-keyboard-menu screen: (addr screen) {
   y <- decrement
   var height/edx: int <- copy y
   height <- increment
-  clear-rect screen, 0/x, y, width, height, 0xc5/bg=blue-bg=black
+  clear-rect screen, 0/x, y, width, height, 0xc5/bg=blue-bg
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " ctrl+... ", width, 0xf/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " r ", width, 0/fg, 0x5c/bg=black
