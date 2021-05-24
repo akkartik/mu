@@ -458,14 +458,18 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
       var curr/ebx: (addr trace-line) <- index trace, offset
       var curr-label-ah/eax: (addr handle array byte) <- get curr, label
       var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
-      var bg/edi: int <- copy 0xc5/bg=blue-bg
+      var bg: int
+      copy-to bg, 0xc5/bg=blue-bg
+      var fg: int
+      copy-to fg, 0x38/fg=trace
       compare show-cursor?, 0/false
       {
         break-if-=
         var cursor-y/eax: (addr int) <- get self, cursor-y
         compare *cursor-y, y
         break-if-!=
-        bg <- copy 7/cursor-line-bg
+        copy-to bg, 7/trace-cursor-line-bg
+        copy-to fg, 0x68/cursor-line-fg=sober-blue
         var cursor-line-index/eax: (addr int) <- get self, cursor-line-index
         copy-to *cursor-line-index, i
       }
@@ -483,9 +487,8 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
       {
         compare display?, 0/false
         break-if-=
-        # if unclip? and i == *cursor-line-index, render unclipped
         var unclip-cursor-line?/eax: boolean <- unclip-cursor-line? self, i
-        y <- render-trace-line screen, curr, xmin, y, xmax, ymax, 0x38/fg=trace, bg, unclip-cursor-line?
+        y <- render-trace-line screen, curr, xmin, y, xmax, ymax, fg, bg, unclip-cursor-line?
         copy-to already-hiding-lines?, 0/false
         break $render-trace:iter
       }
@@ -494,7 +497,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
       {
         break-if-!=
         var x/eax: int <- copy xmin
-        x, y <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, x, y, 9/fg=trace, bg
+        x, y <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, x, y, fg, bg
         y <- increment
         copy-to already-hiding-lines?, 1/true
       }
@@ -509,6 +512,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
 }
 
 fn unclip-cursor-line? _self: (addr trace), _i: int -> _/eax: boolean {
+  # if unclip? and i == *cursor-line-index, render unclipped
   var self/esi: (addr trace) <- copy _self
   var unclip-cursor-line?/eax: (addr boolean) <- get self, unclip-cursor-line?
   compare *unclip-cursor-line?, 0/false
