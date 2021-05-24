@@ -526,7 +526,7 @@ fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int,
   var _data/eax: (addr array byte) <- lookup *data-ah
   var data/ebx: (addr array byte) <- copy _data
   var x/eax: int <- copy xsave
-  x, y <- draw-text-wrapping-right-then-down screen, data, xmin, ymin, xmax, ymax, x, y, fg, bg
+  x <- draw-text-rightward screen, data, x, xmax, y, fg, bg
   y <- increment
   return y
 }
