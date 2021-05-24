@@ -29,6 +29,7 @@ type trace {
   top-line-index: int  # index into data
   cursor-y: int  # row index on screen
   cursor-line-index: int  # index into data
+  unclip-cursor-line?: boolean  # extremely short-lived; reset any time cursor moves
 }
 
 type trace-line {
@@ -363,7 +364,7 @@ fn dump-trace _self: (addr trace) {
     $dump-trace:iter: {
       var offset/ebx: (offset trace-line) <- compute-offset trace, i
       var curr/ebx: (addr trace-line) <- index trace, offset
-      y <- render-trace-line 0/screen, curr, 0, y, 0x80/width, 0x30/height, 7/fg, 0/bg
+      y <- render-trace-line 0/screen, curr, 0, y, 0x80/width, 0x30/height, 7/fg, 0/bg, 0/clip
     }
     i <- increment
     loop
@@ -396,7 +397,7 @@ fn dump-trace-with-label _self: (addr trace), label: (addr array byte) {
       var show?/eax: boolean <- string-equal? curr-label, label
       compare show?, 0/false
       break-if-=
-      y <- render-trace-line 0/screen, curr, 0, y, 0x80/width, 0x30/height, 7/fg, 0/bg
+      y <- render-trace-line 0/screen, curr, 0, y, 0x80/width, 0x30/height, 7/fg, 0/bg, 0/clip
     }
     i <- increment
     loop
@@ -473,7 +474,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
         var curr-depth/eax: (addr int) <- get curr, depth
         compare *curr-depth, 0/error
         break-if-!=
-        y <- render-trace-line screen, curr, xmin, y, xmax, ymax, 0xc/fg=trace-error, bg
+        y <- render-trace-line screen, curr, xmin, y, xmax, ymax, 0xc/fg=trace-error, bg, 0/clip
         copy-to already-hiding-lines?, 0/false
         break $render-trace:iter
       }
@@ -482,7 +483,9 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
       {
         compare display?, 0/false
         break-if-=
-        y <- render-trace-line screen, curr, xmin, y, xmax, ymax, 0x38/fg=trace, bg
+        # if unclip? and i == *cursor-line-index, render unclipped
+        var unclip-cursor-line?/eax: boolean <- unclip-cursor-line? self, i
+        y <- render-trace-line screen, curr, xmin, y, xmax, ymax, 0x38/fg=trace, bg, unclip-cursor-line?
         copy-to already-hiding-lines?, 0/false
         break $render-trace:iter
       }
@@ -505,7 +508,25 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
   return y
 }
 
-fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int, ymin: int, xmax: int, ymax: int, fg: int, bg: int -> _/ecx: int {
+fn unclip-cursor-line? _self: (addr trace), _i: int -> _/eax: boolean {
+  var self/esi: (addr trace) <- copy _self
+  var unclip-cursor-line?/eax: (addr boolean) <- get self, unclip-cursor-line?
+  compare *unclip-cursor-line?, 0/false
+  {
+    break-if-!=
+    return 0/false
+  }
+  var cursor-line-index/eax: (addr int) <- get self, cursor-line-index
+  var i/ecx: int <- copy _i
+  compare i, *cursor-line-index
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
+}
+
+fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int, ymin: int, xmax: int, ymax: int, fg: int, bg: int, unclip?: boolean -> _/ecx: int {
   var self/esi: (addr trace-line) <- copy _self
   var xsave/edx: int <- copy xmin
   var y/ecx: int <- copy ymin
@@ -526,7 +547,16 @@ fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int,
   var _data/eax: (addr array byte) <- lookup *data-ah
   var data/ebx: (addr array byte) <- copy _data
   var x/eax: int <- copy xsave
-  x <- draw-text-rightward screen, data, x, xmax, y, fg, bg
+  compare unclip?, 0/false
+  {
+    break-if-=
+    x, y <- draw-text-wrapping-right-then-down screen, data, xmin, ymin, xmax, ymax, x, y, fg, bg
+  }
+  compare unclip?, 0/false
+  {
+    break-if-!=
+    x <- draw-text-rightward screen, data, x, xmax, y, fg, bg
+  }
   y <- increment
   return y
 }
@@ -613,7 +643,7 @@ fn clamp-cursor-to-bottom _self: (addr trace), _y: int, screen: (addr screen), x
   {
     compare display?, 0/false
     break-if-=
-    var dummy/ecx: int <- render-trace-line screen, cursor-line, xmin, y, xmax, ymax, 0x38/fg=trace, 7/cursor-line-bg
+    var dummy/ecx: int <- render-trace-line screen, cursor-line, xmin, y, xmax, ymax, 0x38/fg=trace, 7/cursor-line-bg, 0/clip
     return
   }
   var dummy1/eax: int <- copy 0
@@ -802,6 +832,8 @@ fn render-trace-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 3/bg=keyboard
   draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " s ", width, 0/fg, 3/bg=keyboard
+  draw-text-rightward-from-cursor screen, " show whole line  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
 fn edit-trace _self: (addr trace), key: grapheme {
@@ -812,6 +844,8 @@ fn edit-trace _self: (addr trace), key: grapheme {
     break-if-!=
     var cursor-y/eax: (addr int) <- get self, cursor-y
     increment *cursor-y
+    var unclip-cursor-line?/eax: (addr boolean) <- get self, unclip-cursor-line?
+    copy-to *unclip-cursor-line?, 0/false
     return
   }
   {
@@ -819,6 +853,8 @@ fn edit-trace _self: (addr trace), key: grapheme {
     break-if-!=
     var cursor-y/eax: (addr int) <- get self, cursor-y
     increment *cursor-y
+    var unclip-cursor-line?/eax: (addr boolean) <- get self, unclip-cursor-line?
+    copy-to *unclip-cursor-line?, 0/false
     return
   }
   # cursor up
@@ -827,6 +863,8 @@ fn edit-trace _self: (addr trace), key: grapheme {
     break-if-!=
     var cursor-y/eax: (addr int) <- get self, cursor-y
     decrement *cursor-y
+    var unclip-cursor-line?/eax: (addr boolean) <- get self, unclip-cursor-line?
+    copy-to *unclip-cursor-line?, 0/false
     return
   }
   {
@@ -834,6 +872,8 @@ fn edit-trace _self: (addr trace), key: grapheme {
     break-if-!=
     var cursor-y/eax: (addr int) <- get self, cursor-y
     decrement *cursor-y
+    var unclip-cursor-line?/eax: (addr boolean) <- get self, unclip-cursor-line?
+    copy-to *unclip-cursor-line?, 0/false
     return
   }
   # enter = expand
@@ -848,6 +888,14 @@ fn edit-trace _self: (addr trace), key: grapheme {
     compare key, 8/backspace
     break-if-!=
     collapse self
+    return
+  }
+  # ctrl-s: temporarily unclip current line
+  {
+    compare key, 0x13/ctrl-s
+    break-if-!=
+    var unclip-cursor-line?/eax: (addr boolean) <- get self, unclip-cursor-line?
+    copy-to *unclip-cursor-line?, 1/true
     return
   }
 }
