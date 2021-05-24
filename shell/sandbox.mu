@@ -413,8 +413,6 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
   draw-text-rightward-from-cursor screen, " ctrl+... ", width, 0xf/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " r ", width, 0/fg, 0x5c/bg=black
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " s ", width, 0/fg, 0x5c/bg=black
-  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
   $render-sandbox-menu:render-ctrl-m: {
     var self/eax: (addr sandbox) <- copy _self
     var has-trace?/eax: boolean <- has-trace? self
@@ -428,6 +426,8 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
     draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 3/bg=keyboard
     draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0xc5/bg=blue-bg
   }
+  draw-text-rightward-from-cursor screen, " s ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " a ", width, 0/fg, 0x5c/bg=black
   draw-text-rightward-from-cursor screen, " <<  ", width, 7/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " b ", width, 0/fg, 0x5c/bg=black
@@ -463,6 +463,10 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
   # ctrl-s
   {
     compare g, 0x13/ctrl-s
+    break-if-!=
+    # if cursor is in trace, skip
+    var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
+    compare *cursor-in-trace?, 0/false
     break-if-!=
     # minor gotcha here: any bindings created later in this iteration won't be
     # persisted until the next call to ctrl-s.
