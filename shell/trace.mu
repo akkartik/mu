@@ -152,7 +152,7 @@ fn trace _self: (addr trace), label: (addr array byte), message: (addr stream by
     write message, "  - find a smaller sub-computation to test,\n"
     write message, "  - allocate more space to the trace in initialize-sandbox\n"
     write message, "    (shell/sandbox.mu), or\n"
-    write message, "  - move the computation to 'main' and run it using ctrl-s"
+    write message, "  - move the computation to 'main' and run it using ctrl-r"
     initialize-trace-line 0/depth, "error", message, dest
     increment *index-addr
     return
