@@ -235,8 +235,6 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
   var out/edi: (addr stream byte) <- copy _out
   clear-stream out
   var g/eax: grapheme <- peek-from-gap-buffer in
-#?   draw-grapheme-at-cursor 0/screen, g, 7/fg, 0/bg
-#?   move-cursor-rightward-and-downward 0/screen, 0, 0x80
   {
     var stream-storage: (stream byte 0x40)
     var stream/esi: (addr stream byte) <- address stream-storage
