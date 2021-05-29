@@ -421,13 +421,13 @@ fn mark-lines-clean _self: (addr trace) {
 
 fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int, xmax: int, ymax: int, show-cursor?: boolean -> _/ecx: int {
   var already-hiding-lines?: boolean
-  var y/ecx: int <- copy ymin
   var self/esi: (addr trace) <- copy _self
   compare self, 0
   {
     break-if-!=
     abort "null trace"
   }
+  var y/ecx: int <- copy ymin
   clamp-cursor-to-top self, y
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   var _trace/eax: (addr array trace-line) <- lookup *trace-ah
