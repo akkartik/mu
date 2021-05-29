@@ -246,6 +246,17 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       write-int32-hex stream, gval
       trace trace, "tokenize", stream
     }
+    # open square brackets begin streams
+    {
+      compare g, 0x5b/open-square-bracket
+      break-if-!=
+      g <- read-from-gap-buffer in  # skip open bracket
+      next-stream-token in, out, trace
+      var out-cell/eax: (addr cell) <- copy _out-cell
+      var out-cell-type/eax: (addr int) <- get out-cell, type
+      copy-to *out-cell-type, 3/stream
+      break $next-token:body
+    }
     # comment
     {
       compare g, 0x23/comment
@@ -267,17 +278,6 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       compare symbol?, 0/false
       break-if-=
       next-symbol-token in, out, trace
-      break $next-token:body
-    }
-    # open square brackets begin streams
-    {
-      compare g, 0x5b/open-square-bracket
-      break-if-!=
-      g <- read-from-gap-buffer in  # skip open bracket
-      next-stream-token in, out, trace
-      var out-cell/eax: (addr cell) <- copy _out-cell
-      var out-cell-type/eax: (addr int) <- get out-cell, type
-      copy-to *out-cell-type, 3/stream
       break $next-token:body
     }
     # unbalanced close square brackets are errors
