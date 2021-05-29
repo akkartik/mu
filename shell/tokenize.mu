@@ -245,7 +245,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     write-int32-hex stream, gval
     trace trace, "tokenize", stream
   }
-  $next-token:body: {
+  $next-token:case: {
     # open square brackets begin streams
     {
       compare g, 0x5b/open-square-bracket
@@ -255,14 +255,14 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       var out-cell/eax: (addr cell) <- copy _out-cell
       var out-cell-type/eax: (addr int) <- get out-cell, type
       copy-to *out-cell-type, 3/stream
-      break $next-token:body
+      break $next-token:case
     }
     # comment
     {
       compare g, 0x23/comment
       break-if-!=
       rest-of-line in, out, trace
-      break $next-token:body
+      break $next-token:case
     }
     # digit
     {
@@ -270,7 +270,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       compare digit?, 0/false
       break-if-=
       next-number-token in, out, trace
-      break $next-token:body
+      break $next-token:case
     }
     # other symbol char
     {
@@ -278,7 +278,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       compare symbol?, 0/false
       break-if-=
       next-symbol-token in, out, trace
-      break $next-token:body
+      break $next-token:case
     }
     # unbalanced close square brackets are errors
     {
@@ -294,7 +294,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       break-if-=
       var g/eax: grapheme <- read-from-gap-buffer in
       next-bracket-token g, out, trace
-      break $next-token:body
+      break $next-token:case
     }
     # non-symbol operators
     {
@@ -302,7 +302,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       compare operator?, 0/false
       break-if-=
       next-operator-token in, out, trace
-      break $next-token:body
+      break $next-token:case
     }
     # quote
     {
@@ -310,7 +310,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       break-if-!=
       g <- read-from-gap-buffer in  # consume
       write-grapheme out, g
-      break $next-token:body
+      break $next-token:case
     }
     # backquote
     {
@@ -318,7 +318,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       break-if-!=
       g <- read-from-gap-buffer in  # consume
       write-grapheme out, g
-      break $next-token:body
+      break $next-token:case
     }
     # unquote
     {
@@ -334,7 +334,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
         g2 <- read-from-gap-buffer in
         write-grapheme out, g2
       }
-      break $next-token:body
+      break $next-token:case
     }
     abort "unknown token type"
   }
