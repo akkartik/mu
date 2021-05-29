@@ -13,11 +13,6 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
-    # initialize token data each iteration to avoid aliasing
-    var dest-ah/eax: (addr handle stream byte) <- get token, text-data
-    # TODO: obscenely pessimally sized
-    # I'm allocating 1KB for every. single. token. Just because a whole definition needs to fit in a string sometimes. Absolutely bonkers.
-    populate-stream dest-ah, 0x400/max-definition-size
     #
     next-token in, token, trace
     var skip?/eax: boolean <- comment-token? token
@@ -240,7 +235,10 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     var out-cell-type/eax: (addr int) <- get out-cell, type
     copy-to *out-cell-type, 0/uninitialized
   }
-  var out-ah/eax: (addr handle stream byte) <- get out-cell, text-data
+  var out-ah/edi: (addr handle stream byte) <- get out-cell, text-data
+  # TODO: obscenely pessimally sized
+  # I'm allocating 1KB for every. single. token. Just because a whole definition needs to fit in a string sometimes. Absolutely bonkers.
+  populate-stream out-ah, 0x400/max-definition-size
   var _out/eax: (addr stream byte) <- lookup *out-ah
   var out/edi: (addr stream byte) <- copy _out
   clear-stream out
