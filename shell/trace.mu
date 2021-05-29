@@ -21,6 +21,7 @@ type trace {
   #     append a bunch of new trace lines to the trace
   #     render loop:
   #       rendering displays trace lines that match visible lines
+  #         (caching in each line)
   #       rendering computes cursor-line based on the cursor-y coordinate
   #       edit-trace updates cursor-y coordinate
   #       edit-trace might add/remove lines to visible
