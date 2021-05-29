@@ -258,6 +258,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       var dummy/eax: grapheme <- read-from-gap-buffer in  # skip open bracket
       next-stream-token in, out, trace
       var out-cell/eax: (addr cell) <- copy _out-cell
+      # streams set the type
       var out-cell-type/eax: (addr int) <- get out-cell, type
       copy-to *out-cell-type, 3/stream
       break $next-token:case
