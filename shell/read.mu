@@ -1,4 +1,6 @@
 fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace) {
+  # TODO: we may be able to generate tokens lazily and drop this stream.
+  # Depends on how we implement indent-sensitivity and infix.
   var tokens-storage: (stream cell 0x400)
   var tokens/ecx: (addr stream cell) <- address tokens-storage
   tokenize in, tokens, trace
