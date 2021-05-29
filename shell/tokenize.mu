@@ -236,9 +236,17 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     copy-to *out-cell-type, 0/uninitialized
   }
   var out-ah/edi: (addr handle stream byte) <- get out-cell, text-data
-  # TODO: obscenely pessimally sized
-  # I'm allocating 1KB for every. single. token. Just because a whole definition needs to fit in a string sometimes. Absolutely bonkers.
-  populate-stream out-ah, 0x400/max-definition-size
+  $next-token:allocate: {
+    # Allocate a large buffer if it's a stream.
+    # Sometimes a whole function definition will need to fit in it.
+    compare g, 0x5b/open-square-bracket
+    {
+      break-if-!=
+      populate-stream out-ah, 0x400/max-definition-size=1KB
+      break $next-token:allocate
+    }
+    populate-stream out-ah, 0x40
+  }
   var _out/eax: (addr stream byte) <- lookup *out-ah
   var out/edi: (addr stream byte) <- copy _out
   clear-stream out
