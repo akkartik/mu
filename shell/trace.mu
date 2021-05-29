@@ -27,10 +27,10 @@ type trace {
   #       edit-trace might add/remove lines to visible
   visible: (handle array trace-line)
   recompute-visible?: boolean
-  top-line-index: int  # index into data
   cursor-y: int  # row index on screen
   cursor-line-index: int  # index into data
   unclip-cursor-line?: boolean  # extremely short-lived; reset any time cursor moves
+  top-line-index: int  # index into data
 }
 
 type trace-line {
