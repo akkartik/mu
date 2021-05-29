@@ -248,7 +248,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     {
       compare g, 0x5b/open-square-bracket
       break-if-!=
-      g <- read-from-gap-buffer in  # skip open bracket
+      var dummy/eax: grapheme <- read-from-gap-buffer in  # skip open bracket
       next-stream-token in, out, trace
       var out-cell/eax: (addr cell) <- copy _out-cell
       var out-cell-type/eax: (addr int) <- get out-cell, type
@@ -306,7 +306,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     {
       compare g, 0x27/single-quote
       break-if-!=
-      g <- read-from-gap-buffer in  # consume
+      var g/eax: grapheme <- read-from-gap-buffer in  # consume
       write-grapheme out, g
       break $next-token:case
     }
@@ -314,7 +314,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     {
       compare g, 0x60/single-quote
       break-if-!=
-      g <- read-from-gap-buffer in  # consume
+      var g/eax: grapheme <- read-from-gap-buffer in  # consume
       write-grapheme out, g
       break $next-token:case
     }
@@ -322,7 +322,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     {
       compare g, 0x2c/comma
       break-if-!=
-      g <- read-from-gap-buffer in  # consume
+      var g/eax: grapheme <- read-from-gap-buffer in  # consume
       write-grapheme out, g
       # check for unquote-splice
       {
