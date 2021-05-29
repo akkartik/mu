@@ -225,6 +225,16 @@ fn test-tokenize-stream-literal-in-tree {
 fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace) {
   trace-text trace, "tokenize", "next-token"
   trace-lower trace
+  var _g/eax: grapheme <- peek-from-gap-buffer in
+  var g/ecx: grapheme <- copy _g
+  {
+    var stream-storage: (stream byte 0x40)
+    var stream/esi: (addr stream byte) <- address stream-storage
+    write stream, "next: "
+    var gval/eax: int <- copy g
+    write-int32-hex stream, gval
+    trace trace, "tokenize", stream
+  }
   var out-cell/eax: (addr cell) <- copy _out-cell
   {
     var out-cell-type/eax: (addr int) <- get out-cell, type
@@ -234,15 +244,6 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
   var _out/eax: (addr stream byte) <- lookup *out-ah
   var out/edi: (addr stream byte) <- copy _out
   clear-stream out
-  var g/eax: grapheme <- peek-from-gap-buffer in
-  {
-    var stream-storage: (stream byte 0x40)
-    var stream/esi: (addr stream byte) <- address stream-storage
-    write stream, "next: "
-    var gval/eax: int <- copy g
-    write-int32-hex stream, gval
-    trace trace, "tokenize", stream
-  }
   $next-token:case: {
     # open square brackets begin streams
     {
