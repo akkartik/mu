@@ -34,6 +34,9 @@ sig turn-off-debug-print
 sig abort e: (addr array byte)
 sig dump-call-stack
 
+sig count-event
+sig count-of-events -> _/eax: int
+
 # streams
 sig clear-stream f: (addr stream _)
 sig rewind-stream f: (addr stream _)
