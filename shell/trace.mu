@@ -35,6 +35,7 @@ type trace {
   unclip-cursor-line?: boolean  # extremely short-lived; reset any time cursor moves
   top-line-index: int  # start rendering trace past this index into data (updated on re-evaluation)
   top-line-y: int  # trace starts rendering at this row index on screen (updated on re-evaluation)
+  screen-height: int  # initialized during render-trace
 }
 
 type trace-line {
@@ -62,6 +63,7 @@ fn initialize-trace _self: (addr trace), max-depth: int, capacity: int, visible-
   populate trace-ah, capacity
   var visible-ah/eax: (addr handle array trace-line) <- get self, visible
   populate visible-ah, visible-capacity
+  mark-lines-dirty self
 }
 
 fn clear-trace _self: (addr trace) {
@@ -349,7 +351,6 @@ fn trace-lines-equal? _a: (addr trace-line), _b: (addr trace-line) -> _/eax: boo
 }
 
 fn dump-trace _self: (addr trace) {
-  var already-hiding-lines?: boolean
   var y/ecx: int <- copy 0
   var self/esi: (addr trace) <- copy _self
   compare self, 0
@@ -377,7 +378,6 @@ fn dump-trace _self: (addr trace) {
 }
 
 fn dump-trace-with-label _self: (addr trace), label: (addr array byte) {
-  var already-hiding-lines?: boolean
   var y/ecx: int <- copy 0
   var self/esi: (addr trace) <- copy _self
   compare self, 0
@@ -437,8 +437,14 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
   compare *recreate-caches?, 0/false
   {
     break-if-=
+    # cache ymin
     var dest/eax: (addr int) <- get self, top-line-y
     copy-to *dest, y
+    # cache ymax
+    var ymax/ecx: int <- copy ymax
+    dest <- get self, screen-height
+    copy-to *dest, ymax
+    #
     recompute-all-visible-lines self
     mark-lines-clean self
   }
@@ -468,6 +474,8 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
   var i/edx: int <- copy *top-line-addr
   $render-trace:loop: {
     compare i, max
+    break-if->=
+    compare y, ymax
     break-if->=
     $render-trace:iter: {
       var offset/ebx: (offset trace-line) <- compute-offset trace, i
@@ -644,6 +652,7 @@ fn clamp-cursor-to-top _self: (addr trace), _y: int {
 }
 
 # extremely hacky; consider deleting test-render-trace-empty-3 when you clean this up
+# TODO: duplicates logic for rendering a line
 fn clamp-cursor-to-bottom _self: (addr trace), _y: int, screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int {
   var y/ebx: int <- copy _y
   compare y, ymin
@@ -658,7 +667,6 @@ fn clamp-cursor-to-bottom _self: (addr trace), _y: int, screen: (addr screen), x
   break-if-<=
   copy-to *cursor-y, y
   # redraw cursor-line
-  # TODO: ugly duplication
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   var trace/eax: (addr array trace-line) <- lookup *trace-ah
   var cursor-line-index-addr/ecx: (addr int) <- get self, cursor-line-index
@@ -1810,8 +1818,206 @@ fn test-trace-collapse-nested-level {
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-collapse-nested-level/post-3/cursor"
 }
 
+# TODO: duplicates logic for counting lines rendered
 fn scroll-down _self: (addr trace) {
+  var self/esi: (addr trace) <- copy _self
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  var _trace/eax: (addr array trace-line) <- lookup *trace-ah
+  var trace/edi: (addr array trace-line) <- copy _trace
+  var top-line-addr/ecx: (addr int) <- get self, top-line-index
+  var i/ecx: int <- copy *top-line-addr
+  var max-addr/edx: (addr int) <- get self, first-free
+  var screen-height-addr/ebx: (addr int) <- get self, screen-height  # only available after first render
+  var lines-to-skip/ebx: int <- copy *screen-height-addr
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, lines-to-skip, 7/fg 0/bg
+  var top-line-y-addr/eax: (addr int) <- get self, top-line-y
+  lines-to-skip <- subtract *top-line-y-addr
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, lines-to-skip, 7/fg 0/bg
+  var already-hiding-lines?: boolean
+  {
+    # if we run out of trace, return without changing anything
+    compare i, *max-addr
+    {
+      break-if-<
+      return
+    }
+    # if we've skipped enough, break
+    compare lines-to-skip, 0
+    break-if-<=
+    #
+    var offset/eax: (offset trace-line) <- compute-offset trace, i
+    var curr/eax: (addr trace-line) <- index trace, offset
+    $scroll-down:count: {
+      # count errors
+      {
+        var curr-depth/eax: (addr int) <- get curr, depth
+        compare *curr-depth, 0/error
+        break-if-!=
+        lines-to-skip <- decrement
+        copy-to already-hiding-lines?, 0/false
+        break $scroll-down:count
+      }
+      # count visible lines
+      {
+        var display?/eax: boolean <- should-render? curr
+        compare display?, 0/false
+        break-if-=
+        lines-to-skip <- decrement
+        copy-to already-hiding-lines?, 0/false
+        break $scroll-down:count
+      }
+      # count first undisplayed line after line to display
+      compare already-hiding-lines?, 0/false
+      break-if-!=
+      lines-to-skip <- decrement
+      copy-to already-hiding-lines?, 1/true
+    }
+    i <- increment
+    loop
+  }
+  # update top-line
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "updating", 7/fg 0/bg
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, i, 7/fg 0/bg
+  var top-line-addr/eax: (addr int) <- get self, top-line-index
+  copy-to *top-line-addr, i
 }
 
+# TODO: duplicates logic for counting lines rendered
 fn scroll-up _self: (addr trace) {
+  var self/esi: (addr trace) <- copy _self
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  var _trace/eax: (addr array trace-line) <- lookup *trace-ah
+  var trace/edi: (addr array trace-line) <- copy _trace
+  var top-line-addr/ecx: (addr int) <- get self, top-line-index
+  var i/ecx: int <- copy *top-line-addr
+  var max-addr/edx: (addr int) <- get self, first-free
+  var screen-height-addr/ebx: (addr int) <- get self, screen-height  # only available after first render
+  var lines-to-skip/ebx: int <- copy *screen-height-addr
+  var top-line-y-addr/eax: (addr int) <- get self, top-line-y
+  lines-to-skip <- subtract *top-line-y-addr
+  var already-hiding-lines?: boolean
+  $scroll-up:loop: {
+    # if we run out of trace, set to 0 and break
+    compare i, 0
+    {
+      break-if->=
+      i <- copy 0
+      break $scroll-up:loop
+    }
+    # if we've skipped enough, break
+    compare lines-to-skip, 0
+    break-if-<=
+    #
+    var offset/eax: (offset trace-line) <- compute-offset trace, i
+    var curr/eax: (addr trace-line) <- index trace, offset
+    $scroll-up:count: {
+      # count errors
+      {
+        var curr-depth/eax: (addr int) <- get curr, depth
+        compare *curr-depth, 0/error
+        break-if-!=
+        lines-to-skip <- decrement
+        copy-to already-hiding-lines?, 0/false
+        break $scroll-up:count
+      }
+      # count visible lines
+      {
+        var display?/eax: boolean <- should-render? curr
+        compare display?, 0/false
+        break-if-=
+        lines-to-skip <- decrement
+        copy-to already-hiding-lines?, 0/false
+        break $scroll-up:count
+      }
+      # count first undisplayed line after line to display
+      compare already-hiding-lines?, 0/false
+      break-if-!=
+      lines-to-skip <- decrement
+      copy-to already-hiding-lines?, 1/true
+    }
+    i <- decrement
+    loop
+  }
+  # update top-line
+  var top-line-addr/eax: (addr int) <- get self, top-line-index
+  copy-to *top-line-addr, i
+}
+
+fn test-trace-scroll {
+  var t-storage: trace
+  var t/esi: (addr trace) <- address t-storage
+  initialize-trace t, 0x100/max-depth, 0x10, 0x10
+  #
+  trace-text t, "l", "line 0"
+  trace-text t, "l", "line 1"
+  trace-text t, "l", "line 2"
+  trace-text t, "l", "line 3"
+  trace-text t, "l", "line 4"
+  trace-text t, "l", "line 5"
+  trace-text t, "l", "line 6"
+  trace-text t, "l", "line 7"
+  trace-text t, "l", "line 8"
+  trace-text t, "l", "line 9"
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x10/width, 4/height, 0/no-pixel-graphics
+  # pre-render
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "...        ", "F - test-trace-scroll/pre-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|||        ", "F - test-trace-scroll/pre-0/cursor"
+  check-screen-row screen,                                  1/y, "           ", "F - test-trace-scroll/pre-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-scroll/pre-1/cursor"
+  check-screen-row screen,                                  2/y, "           ", "F - test-trace-scroll/pre-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/pre-2/cursor"
+  check-screen-row screen,                                  3/y, "           ", "F - test-trace-scroll/pre-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/pre-3/cursor"
+  # expand
+  edit-trace t, 0xa/enter
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  #
+  check-screen-row screen,                                  0/y, "1 line 0   ", "F - test-trace-scroll/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-scroll/expand-0/cursor"
+  check-screen-row screen,                                  1/y, "1 line 1   ", "F - test-trace-scroll/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-scroll/expand-1/cursor"
+  check-screen-row screen,                                  2/y, "1 line 2   ", "F - test-trace-scroll/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/expand-2/cursor"
+  check-screen-row screen,                                  3/y, "1 line 3   ", "F - test-trace-scroll/expand-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/expand-3/cursor"
+  # scroll up
+  # hack: we must have rendered before this point; we're mixing state management with rendering
+  edit-trace t, 2/ctrl-b
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  # no change since we're already at the top
+  check-screen-row screen,                                  0/y, "1 line 0   ", "F - test-trace-scroll/up0-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-scroll/up0-0/cursor"
+  check-screen-row screen,                                  1/y, "1 line 1   ", "F - test-trace-scroll/up0-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-scroll/up0-1/cursor"
+  check-screen-row screen,                                  2/y, "1 line 2   ", "F - test-trace-scroll/up0-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/up0-2/cursor"
+  check-screen-row screen,                                  3/y, "1 line 3   ", "F - test-trace-scroll/up0-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/up0-3/cursor"
+  # scroll down
+  edit-trace t, 6/ctrl-f
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  check-screen-row screen,                                  0/y, "1 line 4   ", "F - test-trace-scroll/down1-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-scroll/down1-0/cursor"
+  check-screen-row screen,                                  1/y, "1 line 5   ", "F - test-trace-scroll/down1-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-scroll/down1-1/cursor"
+  check-screen-row screen,                                  2/y, "1 line 6   ", "F - test-trace-scroll/down1-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/down1-2/cursor"
+  check-screen-row screen,                                  3/y, "1 line 7   ", "F - test-trace-scroll/down1-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/down1-3/cursor"
+  # scroll up
+  edit-trace t, 2/ctrl-b
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  check-screen-row screen,                                  0/y, "1 line 0   ", "F - test-trace-scroll/up1-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-scroll/up1-0/cursor"
+  check-screen-row screen,                                  1/y, "1 line 1   ", "F - test-trace-scroll/up1-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-scroll/up1-1/cursor"
+  check-screen-row screen,                                  2/y, "1 line 2   ", "F - test-trace-scroll/up1-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/up1-2/cursor"
+  check-screen-row screen,                                  3/y, "1 line 3   ", "F - test-trace-scroll/up1-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/up1-3/cursor"
 }

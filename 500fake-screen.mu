@@ -116,9 +116,10 @@ fn draw-code-point screen: (addr screen), c: code-point, x: int, y: int, color: 
   draw-grapheme screen, g, x, y, color, background-color
 }
 
-# not really needed for a real screen, though it shouldn't do any harm
+# fake screens only
 fn screen-cell-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
   var screen/esi: (addr screen) <- copy _screen
+  # some bounds checks that aren't needed for a real screen, but might help catch problems
   {
     compare x, 0
     break-if->=
