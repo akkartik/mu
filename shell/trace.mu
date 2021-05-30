@@ -633,6 +633,7 @@ fn recompute-visibility _self: (addr trace), _line: (addr trace-line) {
       var line/eax: (addr trace-line) <- copy _line
       var dest/eax: (addr boolean) <- get line, visible?
       copy-to *dest, 1/true
+      return
     }
     i <- increment
     loop

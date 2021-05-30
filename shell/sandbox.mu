@@ -103,6 +103,8 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   y <- render-trace screen, trace, xmin, y, xmax, ymax, *cursor-in-trace?
   # value
   $render-sandbox:value: {
+    compare y, ymax
+    break-if->=
     var value-ah/eax: (addr handle stream byte) <- get self, value
     var _value/eax: (addr stream byte) <- lookup *value-ah
     var value/esi: (addr stream byte) <- copy _value
@@ -574,13 +576,17 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     break-if-=
     var trace-ah/eax: (addr handle trace) <- get self, trace
     var trace/eax: (addr trace) <- lookup *trace-ah
-    # if expanding the trace, first check if we need to run the sandbox again
+    # if expanding the trace, first check if we need to run the sandbox again with a deeper trace
     {
       compare g, 0xa/newline
       break-if-!=
-      var need-rerun?/eax: boolean <- cursor-too-deep? trace
-      compare need-rerun?, 0/false
+      {
+        var need-rerun?/eax: boolean <- cursor-too-deep? trace
+        compare need-rerun?, 0/false
+      }
       break-if-=
+      var max-depth-addr/eax: (addr int) <- get trace, max-depth
+      increment *max-depth-addr
       run-sandbox self, globals, real-screen, tweak-real-screen?
     }
     edit-trace trace, g
@@ -973,4 +979,69 @@ fn test-run-expand-trace {
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-expand-trace/expand-2/cursor"
   check-screen-row screen,                                  4/y, " 1 pars", "F - test-run-expand-trace/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-expand-trace/expand-2/cursor"
+}
+
+fn test-run-can-rerun-when-expanding-trace {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  # initialize sandbox with a max-depth of 3
+  initialize-sandbox-with sandbox, "12"
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  # skip one line of padding
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-can-rerun-when-expanding-trace/pre0-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   |   ", "F - test-run-can-rerun-when-expanding-trace/pre0-0/cursor"
+  check-screen-row screen,                                  2/y, " ...   ", "F - test-run-can-rerun-when-expanding-trace/pre0-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre0-1/cursor"
+  check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-can-rerun-when-expanding-trace/pre0-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre0-2/cursor"
+  # move cursor into trace
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  # skip one line of padding
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-can-rerun-when-expanding-trace/pre1-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre1-0/cursor"
+  check-screen-row screen,                                  2/y, " ...   ", "F - test-run-can-rerun-when-expanding-trace/pre1-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, " |||   ", "F - test-run-can-rerun-when-expanding-trace/pre1-1/cursor"
+  check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-can-rerun-when-expanding-trace/pre1-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre1-2/cursor"
+  # expand
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  #
+  clear-screen screen
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  # skip one line of padding
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-can-rerun-when-expanding-trace/pre2-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre2-0/cursor"
+  check-screen-row screen,                                  2/y, " 1 toke", "F - test-run-can-rerun-when-expanding-trace/pre2-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, " ||||||", "F - test-run-can-rerun-when-expanding-trace/pre2-1/cursor"
+  check-screen-row screen,                                  3/y, " ...   ", "F - test-run-can-rerun-when-expanding-trace/pre2-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre2-2/cursor"
+  check-screen-row screen,                                  4/y, " 1 pars", "F - test-run-can-rerun-when-expanding-trace/pre2-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre2-2/cursor"
+  # move cursor down and expand
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  #
+  clear-screen screen
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  # screen looks same as if trace max-depth was really high
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-can-rerun-when-expanding-trace/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-can-rerun-when-expanding-trace/expand-0/cursor"
+  check-screen-row screen,                                  2/y, " 1 toke", "F - test-run-can-rerun-when-expanding-trace/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "       ", "F - test-run-can-rerun-when-expanding-trace/expand-1/cursor"
+  check-screen-row screen,                                  3/y, " 2 next", "F - test-run-can-rerun-when-expanding-trace/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, " ||||||", "F - test-run-can-rerun-when-expanding-trace/expand-2/cursor"
+  check-screen-row screen,                                  4/y, " ...   ", "F - test-run-can-rerun-when-expanding-trace/expand-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-can-rerun-when-expanding-trace/expand-3/cursor"
+  check-screen-row screen,                                  5/y, " 2 => 1", "F - test-run-can-rerun-when-expanding-trace/expand-4"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 5/y, "       ", "F - test-run-can-rerun-when-expanding-trace/expand-4/cursor"
 }
