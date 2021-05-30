@@ -429,6 +429,14 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
     abort "null trace"
   }
   var y/ecx: int <- copy ymin
+  # recreate caches if necessary
+  var recreate-caches?/eax: (addr boolean) <- get self, recreate-caches?
+  compare *recreate-caches?, 0/false
+  {
+    break-if-=
+    recompute-all-visible-lines self
+    mark-lines-clean self
+  }
   clamp-cursor-to-top self, y
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   var _trace/eax: (addr array trace-line) <- lookup *trace-ah
@@ -485,7 +493,7 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
         break $render-trace:iter
       }
       # display expanded lines
-      var display?/eax: boolean <- should-render? self, curr
+      var display?/eax: boolean <- should-render? curr
       {
         compare display?, 0/false
         break-if-=
@@ -509,7 +517,6 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
   }
   # prevent cursor from going too far down
   clamp-cursor-to-bottom self, y, screen, xmin, ymin, xmax, ymax
-  mark-lines-clean self
   return y
 }
 
@@ -567,19 +574,34 @@ fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int,
   return y
 }
 
-# this is super-inefficient, string comparing every trace line
-# against every visible line on every render
-fn should-render? _self: (addr trace), _line: (addr trace-line) -> _/eax: boolean {
+fn should-render? _line: (addr trace-line) -> _/eax: boolean {
+  var line/eax: (addr trace-line) <- copy _line
+  var result/eax: (addr boolean) <- get line, visible?
+  return *result
+}
+
+# This is super-inefficient, string-comparing every trace line
+# against every visible line.
+fn recompute-all-visible-lines _self: (addr trace) {
   var self/esi: (addr trace) <- copy _self
-  # if visible? is already cached, just return it
-  var dest/edx: (addr boolean) <- get self, recreate-caches?
-  compare *dest, 0/false
+  var max-addr/edx: (addr int) <- get self, first-free
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  var _trace/eax: (addr array trace-line) <- lookup *trace-ah
+  var trace/esi: (addr array trace-line) <- copy _trace
+  var i/ecx: int <- copy 0
   {
-    break-if-!=
-    var line/eax: (addr trace-line) <- copy _line
-    var result/eax: (addr boolean) <- get line, visible?
-    return *result
+    compare i, *max-addr
+    break-if->=
+    var offset/ebx: (offset trace-line) <- compute-offset trace, i
+    var curr/ebx: (addr trace-line) <- index trace, offset
+    recompute-visibility _self, curr
+    i <- increment
+    loop
   }
+}
+
+fn recompute-visibility _self: (addr trace), _line: (addr trace-line) {
+  var self/esi: (addr trace) <- copy _self
   # recompute
   var candidates-ah/eax: (addr handle array trace-line) <- get self, visible
   var candidates/eax: (addr array trace-line) <- lookup *candidates-ah
@@ -597,7 +619,6 @@ fn should-render? _self: (addr trace), _line: (addr trace-line) -> _/eax: boolea
       var line/eax: (addr trace-line) <- copy _line
       var dest/eax: (addr boolean) <- get line, visible?
       copy-to *dest, 1/true
-      return 1/true
     }
     i <- increment
     loop
@@ -605,7 +626,6 @@ fn should-render? _self: (addr trace), _line: (addr trace-line) -> _/eax: boolea
   var line/eax: (addr trace-line) <- copy _line
   var dest/eax: (addr boolean) <- get line, visible?
   copy-to *dest, 0/false
-  return 0/false
 }
 
 fn clamp-cursor-to-top _self: (addr trace), _y: int {
@@ -645,7 +665,7 @@ fn clamp-cursor-to-bottom _self: (addr trace), _y: int, screen: (addr screen), x
   }
   var cursor-offset/ecx: (offset trace-line) <- compute-offset trace, cursor-line-index
   var cursor-line/ecx: (addr trace-line) <- index trace, cursor-offset
-  var display?/eax: boolean <- should-render? self, cursor-line
+  var display?/eax: boolean <- should-render? cursor-line
   {
     compare display?, 0/false
     break-if-=
