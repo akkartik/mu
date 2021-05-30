@@ -1947,6 +1947,7 @@ fn test-trace-scroll {
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/pre-3/cursor"
   # expand
   edit-trace t, 0xa/enter
+  clear-screen screen
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   #
   check-screen-row screen,                                  0/y, "1 line 0   ", "F - test-trace-scroll/expand-0"
@@ -1960,6 +1961,7 @@ fn test-trace-scroll {
   # scroll up
   # hack: we must have rendered before this point; we're mixing state management with rendering
   edit-trace t, 2/ctrl-b
+  clear-screen screen
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   # no change since we're already at the top
   check-screen-row screen,                                  0/y, "1 line 0   ", "F - test-trace-scroll/up0-0"
@@ -1972,6 +1974,7 @@ fn test-trace-scroll {
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/up0-3/cursor"
   # scroll down
   edit-trace t, 6/ctrl-f
+  clear-screen screen
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
   check-screen-row screen,                                  0/y, "1 line 4   ", "F - test-trace-scroll/down1-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-scroll/down1-0/cursor"
@@ -1981,15 +1984,53 @@ fn test-trace-scroll {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/down1-2/cursor"
   check-screen-row screen,                                  3/y, "1 line 7   ", "F - test-trace-scroll/down1-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/down1-3/cursor"
+  # scroll down
+  edit-trace t, 6/ctrl-f
+  clear-screen screen
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  check-screen-row screen,                                  0/y, "1 line 8   ", "F - test-trace-scroll/down2-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-scroll/down2-0/cursor"
+  check-screen-row screen,                                  1/y, "1 line 9   ", "F - test-trace-scroll/down2-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-scroll/down2-1/cursor"
+  check-screen-row screen,                                  2/y, "           ", "F - test-trace-scroll/down2-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/down2-2/cursor"
+  check-screen-row screen,                                  3/y, "           ", "F - test-trace-scroll/down2-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/down2-3/cursor"
+  # scroll down
+  edit-trace t, 6/ctrl-f
+  clear-screen screen
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  # no change since we're already at the bottom
+  check-screen-row screen,                                  0/y, "1 line 8   ", "F - test-trace-scroll/down3-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-scroll/down3-0/cursor"
+  check-screen-row screen,                                  1/y, "1 line 9   ", "F - test-trace-scroll/down3-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-scroll/down3-1/cursor"
+  check-screen-row screen,                                  2/y, "           ", "F - test-trace-scroll/down3-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/down3-2/cursor"
+  check-screen-row screen,                                  3/y, "           ", "F - test-trace-scroll/down3-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/down3-3/cursor"
   # scroll up
   edit-trace t, 2/ctrl-b
+  clear-screen screen
   var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
-  check-screen-row screen,                                  0/y, "1 line 0   ", "F - test-trace-scroll/up1-0"
+  check-screen-row screen,                                  0/y, "1 line 4   ", "F - test-trace-scroll/up1-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-scroll/up1-0/cursor"
-  check-screen-row screen,                                  1/y, "1 line 1   ", "F - test-trace-scroll/up1-1"
+  check-screen-row screen,                                  1/y, "1 line 5   ", "F - test-trace-scroll/up1-1"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-scroll/up1-1/cursor"
-  check-screen-row screen,                                  2/y, "1 line 2   ", "F - test-trace-scroll/up1-2"
+  check-screen-row screen,                                  2/y, "1 line 6   ", "F - test-trace-scroll/up1-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/up1-2/cursor"
-  check-screen-row screen,                                  3/y, "1 line 3   ", "F - test-trace-scroll/up1-3"
+  check-screen-row screen,                                  3/y, "1 line 7   ", "F - test-trace-scroll/up1-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/up1-3/cursor"
+  # scroll up
+  edit-trace t, 2/ctrl-b
+  clear-screen screen
+  var y/ecx: int <- render-trace screen, t, 0/xmin, 0/ymin, 0x10/xmax, 4/ymax, 1/show-cursor
+  check-screen-row screen,                                  0/y, "1 line 0   ", "F - test-trace-scroll/up2-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "||||||||   ", "F - test-trace-scroll/up2-0/cursor"
+  check-screen-row screen,                                  1/y, "1 line 1   ", "F - test-trace-scroll/up2-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "           ", "F - test-trace-scroll/up2-1/cursor"
+  check-screen-row screen,                                  2/y, "1 line 2   ", "F - test-trace-scroll/up2-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/up2-2/cursor"
+  check-screen-row screen,                                  3/y, "1 line 3   ", "F - test-trace-scroll/up2-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/up2-3/cursor"
 }
