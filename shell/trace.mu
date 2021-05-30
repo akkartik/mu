@@ -1107,6 +1107,35 @@ fn hide-trace-line _self: (addr trace), line: (addr trace-line) {
   }
 }
 
+fn cursor-too-deep? _self: (addr trace) -> _/eax: boolean {
+  var self/esi: (addr trace) <- copy _self
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  var _trace/eax: (addr array trace-line) <- lookup *trace-ah
+  var trace/edi: (addr array trace-line) <- copy _trace
+  var cursor-line-index-addr/ecx: (addr int) <- get self, cursor-line-index
+  var cursor-line-index/ecx: int <- copy *cursor-line-index-addr
+  var cursor-line-offset/eax: (offset trace-line) <- compute-offset trace, cursor-line-index
+  var cursor-line/edx: (addr trace-line) <- index trace, cursor-line-offset
+  var cursor-line-visible?/eax: (addr boolean) <- get cursor-line, visible?
+  var cursor-line-depth/ebx: (addr int) <- get cursor-line, depth
+  var target-depth/ebx: int <- copy *cursor-line-depth
+  # if cursor-line is visible, return false
+  compare *cursor-line-visible?, 0/false
+  {
+    break-if-=
+    return 0/false
+  }
+  # return cursor-line-depth >= max-depth-1
+  target-depth <- increment
+  var max-depth-addr/eax: (addr int) <- get self, max-depth
+  compare target-depth, *max-depth-addr
+  {
+    break-if-<
+    return 1/true
+  }
+  return 0/false
+}
+
 fn test-cursor-down-and-up-within-trace {
   var t-storage: trace
   var t/esi: (addr trace) <- address t-storage

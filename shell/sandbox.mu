@@ -574,6 +574,15 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     break-if-=
     var trace-ah/eax: (addr handle trace) <- get self, trace
     var trace/eax: (addr trace) <- lookup *trace-ah
+    # if expanding the trace, first check if we need to run the sandbox again
+    {
+      compare g, 0xa/newline
+      break-if-!=
+      var need-rerun?/eax: boolean <- cursor-too-deep? trace
+      compare need-rerun?, 0/false
+      break-if-=
+      run-sandbox self, globals, real-screen, tweak-real-screen?
+    }
     edit-trace trace, g
     return
   }
