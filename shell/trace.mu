@@ -1818,22 +1818,17 @@ fn test-trace-collapse-nested-level {
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-collapse-nested-level/post-3/cursor"
 }
 
-# TODO: duplicates logic for counting lines rendered
 fn scroll-down _self: (addr trace) {
   var self/esi: (addr trace) <- copy _self
-  var trace-ah/eax: (addr handle array trace-line) <- get self, data
-  var _trace/eax: (addr array trace-line) <- lookup *trace-ah
-  var trace/edi: (addr array trace-line) <- copy _trace
-  var top-line-addr/ecx: (addr int) <- get self, top-line-index
-  var i/ecx: int <- copy *top-line-addr
-  var max-addr/edx: (addr int) <- get self, first-free
   var screen-height-addr/ebx: (addr int) <- get self, screen-height  # only available after first render
   var lines-to-skip/ebx: int <- copy *screen-height-addr
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, lines-to-skip, 7/fg 0/bg
   var top-line-y-addr/eax: (addr int) <- get self, top-line-y
   lines-to-skip <- subtract *top-line-y-addr
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, lines-to-skip, 7/fg 0/bg
-  var already-hiding-lines?: boolean
+  var already-hiding-lines-storage: boolean
+  var already-hiding-lines/edx: (addr boolean) <- address already-hiding-lines-storage
+  var top-line-addr/edi: (addr int) <- get self, top-line-index
+  var i/eax: int <- copy *top-line-addr
+  var max-addr/ecx: (addr int) <- get self, first-free
   {
     # if we run out of trace, return without changing anything
     compare i, *max-addr
@@ -1845,102 +1840,79 @@ fn scroll-down _self: (addr trace) {
     compare lines-to-skip, 0
     break-if-<=
     #
-    var offset/eax: (offset trace-line) <- compute-offset trace, i
-    var curr/eax: (addr trace-line) <- index trace, offset
-    $scroll-down:count: {
-      # count errors
-      {
-        var curr-depth/eax: (addr int) <- get curr, depth
-        compare *curr-depth, 0/error
-        break-if-!=
-        lines-to-skip <- decrement
-        copy-to already-hiding-lines?, 0/false
-        break $scroll-down:count
-      }
-      # count visible lines
-      {
-        var display?/eax: boolean <- should-render? curr
-        compare display?, 0/false
-        break-if-=
-        lines-to-skip <- decrement
-        copy-to already-hiding-lines?, 0/false
-        break $scroll-down:count
-      }
-      # count first undisplayed line after line to display
-      compare already-hiding-lines?, 0/false
-      break-if-!=
+    {
+      var display?/eax: boolean <- count-line? self, i, already-hiding-lines
+      compare display?, 0/false
+      break-if-=
       lines-to-skip <- decrement
-      copy-to already-hiding-lines?, 1/true
     }
     i <- increment
     loop
   }
   # update top-line
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "updating", 7/fg 0/bg
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, i, 7/fg 0/bg
-  var top-line-addr/eax: (addr int) <- get self, top-line-index
   copy-to *top-line-addr, i
 }
 
-# TODO: duplicates logic for counting lines rendered
 fn scroll-up _self: (addr trace) {
   var self/esi: (addr trace) <- copy _self
-  var trace-ah/eax: (addr handle array trace-line) <- get self, data
-  var _trace/eax: (addr array trace-line) <- lookup *trace-ah
-  var trace/edi: (addr array trace-line) <- copy _trace
-  var top-line-addr/ecx: (addr int) <- get self, top-line-index
-  var i/ecx: int <- copy *top-line-addr
-  var max-addr/edx: (addr int) <- get self, first-free
   var screen-height-addr/ebx: (addr int) <- get self, screen-height  # only available after first render
   var lines-to-skip/ebx: int <- copy *screen-height-addr
   var top-line-y-addr/eax: (addr int) <- get self, top-line-y
   lines-to-skip <- subtract *top-line-y-addr
-  var already-hiding-lines?: boolean
+  var already-hiding-lines-storage: boolean
+  var already-hiding-lines/edx: (addr boolean) <- address already-hiding-lines-storage
+  var top-line-addr/ecx: (addr int) <- get self, top-line-index
   $scroll-up:loop: {
-    # if we run out of trace, set to 0 and break
-    compare i, 0
-    {
-      break-if->=
-      i <- copy 0
-      break $scroll-up:loop
-    }
+    # if we run out of trace, break
+    compare *top-line-addr, 0
+    break-if-<=
     # if we've skipped enough, break
     compare lines-to-skip, 0
     break-if-<=
     #
-    var offset/eax: (offset trace-line) <- compute-offset trace, i
-    var curr/eax: (addr trace-line) <- index trace, offset
-    $scroll-up:count: {
-      # count errors
-      {
-        var curr-depth/eax: (addr int) <- get curr, depth
-        compare *curr-depth, 0/error
-        break-if-!=
-        lines-to-skip <- decrement
-        copy-to already-hiding-lines?, 0/false
-        break $scroll-up:count
-      }
-      # count visible lines
-      {
-        var display?/eax: boolean <- should-render? curr
-        compare display?, 0/false
-        break-if-=
-        lines-to-skip <- decrement
-        copy-to already-hiding-lines?, 0/false
-        break $scroll-up:count
-      }
-      # count first undisplayed line after line to display
-      compare already-hiding-lines?, 0/false
-      break-if-!=
+    var display?/eax: boolean <- count-line? self, *top-line-addr, already-hiding-lines
+    compare display?, 0/false
+    {
+      break-if-=
       lines-to-skip <- decrement
-      copy-to already-hiding-lines?, 1/true
     }
-    i <- decrement
+    decrement *top-line-addr
     loop
   }
-  # update top-line
-  var top-line-addr/eax: (addr int) <- get self, top-line-index
-  copy-to *top-line-addr, i
+}
+
+# TODO: duplicates logic for counting lines rendered
+fn count-line? _self: (addr trace), index: int, _already-hiding-lines?: (addr boolean) -> _/eax: boolean {
+  var self/esi: (addr trace) <- copy _self
+  var trace-ah/eax: (addr handle array trace-line) <- get self, data
+  var trace/eax: (addr array trace-line) <- lookup *trace-ah
+  var offset/ecx: (offset trace-line) <- compute-offset trace, index
+  var curr/eax: (addr trace-line) <- index trace, offset
+  var already-hiding-lines?/ecx: (addr boolean) <- copy _already-hiding-lines?
+  # count errors
+  {
+    var curr-depth/eax: (addr int) <- get curr, depth
+    compare *curr-depth, 0/error
+    break-if-!=
+    copy-to *already-hiding-lines?, 0/false
+    return 1/true
+  }
+  # count visible lines
+  {
+    var display?/eax: boolean <- should-render? curr
+    compare display?, 0/false
+    break-if-=
+    copy-to *already-hiding-lines?, 0/false
+    return 1/true
+  }
+  # count first undisplayed line after line to display
+  compare *already-hiding-lines?, 0/false
+  {
+    break-if-!=
+    copy-to *already-hiding-lines?, 1/true
+    return 1/true
+  }
+  return 0/false
 }
 
 fn test-trace-scroll {
