@@ -37,6 +37,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
   {
     break-if-=
     error trace, "end of stream; never found a balancing ')'"
+    trace-higher trace
     return 1/true, 0/false
   }
   read-from-stream tokens, curr-token
@@ -55,6 +56,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       var close-paren?/eax: boolean <- copy 0/false
       var dot?/ecx: boolean <- copy 0/false
       close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
+      trace-higher trace
       return close-paren?, dot?
     }
     # backquote quote -> parse as list with a special car
@@ -71,6 +73,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       var close-paren?/eax: boolean <- copy 0/false
       var dot?/ecx: boolean <- copy 0/false
       close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
+      trace-higher trace
       return close-paren?, dot?
     }
     # unquote -> parse as list with a special car
@@ -87,6 +90,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       var close-paren?/eax: boolean <- copy 0/false
       var dot?/ecx: boolean <- copy 0/false
       close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
+      trace-higher trace
       return close-paren?, dot?
     }
     # unquote-splice -> parse as list with a special car
@@ -103,6 +107,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
       var close-paren?/eax: boolean <- copy 0/false
       var dot?/ecx: boolean <- copy 0/false
       close-paren?, dot? <- parse-sexpression tokens, right-ah, trace
+      trace-higher trace
       return close-paren?, dot?
     }
     # dot -> return
