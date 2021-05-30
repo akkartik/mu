@@ -23,15 +23,18 @@ type trace {
   #     render loop:
   #       rendering displays trace lines that match visible lines
   #         (caching in each line)
+  #         (caching top-line)
   #       rendering computes cursor-line based on the cursor-y coordinate
   #       edit-trace updates cursor-y coordinate
   #       edit-trace might add/remove lines to visible
+  #       edit-trace might update top-line
   visible: (handle array trace-line)
   recreate-caches?: boolean
   cursor-line-index: int  # index into data
   cursor-y: int  # row index on screen
   unclip-cursor-line?: boolean  # extremely short-lived; reset any time cursor moves
-  top-line-index: int  # index into data
+  top-line-index: int  # start rendering trace past this index into data (updated on re-evaluation)
+  top-line-y: int  # trace starts rendering at this row index on screen (updated on re-evaluation)
 }
 
 type trace-line {
@@ -434,6 +437,8 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
   compare *recreate-caches?, 0/false
   {
     break-if-=
+    var dest/eax: (addr int) <- get self, top-line-y
+    copy-to *dest, y
     recompute-all-visible-lines self
     mark-lines-clean self
   }
@@ -441,7 +446,6 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
   var trace-ah/eax: (addr handle array trace-line) <- get self, data
   var _trace/eax: (addr array trace-line) <- lookup *trace-ah
   var trace/edi: (addr array trace-line) <- copy _trace
-  var i/edx: int <- copy 0
   var max-addr/ebx: (addr int) <- get self, first-free
   var max/ebx: int <- copy *max-addr
   # display trace depth (not in tests)
@@ -460,6 +464,8 @@ fn render-trace screen: (addr screen), _self: (addr trace), xmin: int, ymin: int
     draw-text-rightward-from-cursor-over-full-screen screen, "trace depth: ", 0x17/fg, 0xc5/bg=blue-bg
     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, *max-depth, 0x7/fg, 0xc5/bg=blue-bg
   }
+  var top-line-addr/edx: (addr int) <- get self, top-line-index
+  var i/edx: int <- copy *top-line-addr
   $render-trace:loop: {
     compare i, max
     break-if->=
@@ -922,6 +928,20 @@ fn edit-trace _self: (addr trace), key: grapheme {
     break-if-!=
     var unclip-cursor-line?/eax: (addr boolean) <- get self, unclip-cursor-line?
     copy-to *unclip-cursor-line?, 1/true
+    return
+  }
+  # ctrl-f: scroll down
+  {
+    compare key, 6/ctrl-f
+    break-if-!=
+    scroll-down self
+    return
+  }
+  # ctrl-b: scroll up
+  {
+    compare key, 2/ctrl-b
+    break-if-!=
+    scroll-up self
     return
   }
 }
@@ -1788,4 +1808,10 @@ fn test-trace-collapse-nested-level {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "||||||||   ", "F - test-trace-collapse-nested-level/post-2/cursor"
   check-screen-row screen,                                  3/y, "...        ", "F - test-trace-collapse-nested-level/post-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-collapse-nested-level/post-3/cursor"
+}
+
+fn scroll-down _self: (addr trace) {
+}
+
+fn scroll-up _self: (addr trace) {
 }
