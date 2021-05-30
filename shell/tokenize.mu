@@ -320,7 +320,7 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     }
     # backquote
     {
-      compare g, 0x60/single-quote
+      compare g, 0x60/backquote
       break-if-!=
       var g/eax: grapheme <- read-from-gap-buffer in  # consume
       write-grapheme out, g
