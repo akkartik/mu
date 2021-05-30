@@ -49,7 +49,7 @@ fn initialize-sandbox-with _self: (addr sandbox), s: (addr array byte) {
   var trace-ah/eax: (addr handle trace) <- get self, trace
   allocate trace-ah
   var trace/eax: (addr trace) <- lookup *trace-ah
-  initialize-trace trace, 0x100/max-depth, 0x8000/lines, 0x80/visible
+  initialize-trace trace, 3/max-depth, 0x8000/lines, 0x80/visible
   var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
   copy-to *cursor-in-data?, 1/true
 }
@@ -927,4 +927,50 @@ fn has-trace? _self: (addr sandbox) -> _/eax: boolean {
     return 0/false
   }
   return 1/true
+}
+
+fn test-run-expand-trace {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox-with sandbox, "12"
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  # skip one line of padding
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-expand-trace/pre0-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   |   ", "F - test-run-expand-trace/pre0-0/cursor"
+  check-screen-row screen,                                  2/y, " ...   ", "F - test-run-expand-trace/pre0-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "       ", "F - test-run-expand-trace/pre0-1/cursor"
+  check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-expand-trace/pre0-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-expand-trace/pre0-2/cursor"
+  # move cursor into trace
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  # skip one line of padding
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-expand-trace/pre1-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-expand-trace/pre1-0/cursor"
+  check-screen-row screen,                                  2/y, " ...   ", "F - test-run-expand-trace/pre1-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, " |||   ", "F - test-run-expand-trace/pre1-1/cursor"
+  check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-expand-trace/pre1-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-expand-trace/pre1-2/cursor"
+  # expand
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  #
+  clear-screen screen
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  # skip one line of padding
+  check-screen-row screen,                                  1/y, " 12    ", "F - test-run-expand-trace/expand-0"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-expand-trace/expand-0/cursor"
+  check-screen-row screen,                                  2/y, " 1 toke", "F - test-run-expand-trace/expand-1"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, " ||||||", "F - test-run-expand-trace/expand-1/cursor"
+  check-screen-row screen,                                  3/y, " ...   ", "F - test-run-expand-trace/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-expand-trace/expand-2/cursor"
+  check-screen-row screen,                                  4/y, " 1 pars", "F - test-run-expand-trace/expand-2"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-expand-trace/expand-2/cursor"
 }
