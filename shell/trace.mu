@@ -19,6 +19,7 @@ type trace {
   #   reload loop:
   #     there are already some visible lines
   #     append a bunch of new trace lines to the trace
+  #     recreate trace caches
   #     render loop:
   #       rendering displays trace lines that match visible lines
   #         (caching in each line)
@@ -26,7 +27,7 @@ type trace {
   #       edit-trace updates cursor-y coordinate
   #       edit-trace might add/remove lines to visible
   visible: (handle array trace-line)
-  recompute-visible?: boolean
+  recreate-caches?: boolean
   cursor-line-index: int  # index into data
   cursor-y: int  # row index on screen
   unclip-cursor-line?: boolean  # extremely short-lived; reset any time cursor moves
@@ -409,13 +410,13 @@ fn dump-trace-with-label _self: (addr trace), label: (addr array byte) {
 
 fn mark-lines-dirty _self: (addr trace) {
   var self/eax: (addr trace) <- copy _self
-  var dest/edx: (addr boolean) <- get self, recompute-visible?
+  var dest/edx: (addr boolean) <- get self, recreate-caches?
   copy-to *dest, 1/true
 }
 
 fn mark-lines-clean _self: (addr trace) {
   var self/eax: (addr trace) <- copy _self
-  var dest/edx: (addr boolean) <- get self, recompute-visible?
+  var dest/edx: (addr boolean) <- get self, recreate-caches?
   copy-to *dest, 0/false
 }
 
@@ -571,7 +572,7 @@ fn render-trace-line screen: (addr screen), _self: (addr trace-line), xmin: int,
 fn should-render? _self: (addr trace), _line: (addr trace-line) -> _/eax: boolean {
   var self/esi: (addr trace) <- copy _self
   # if visible? is already cached, just return it
-  var dest/edx: (addr boolean) <- get self, recompute-visible?
+  var dest/edx: (addr boolean) <- get self, recreate-caches?
   compare *dest, 0/false
   {
     break-if-!=
