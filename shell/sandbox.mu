@@ -471,30 +471,8 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     # minor gotcha here: any bindings created later in this iteration won't be
     # persisted until the next call to ctrl-s.
     store-state data-disk, self, globals
-    # run sandbox
-    var data-ah/ecx: (addr handle gap-buffer) <- get self, data
-    var value-ah/eax: (addr handle stream byte) <- get self, value
-    var _value/eax: (addr stream byte) <- lookup *value-ah
-    var value/edx: (addr stream byte) <- copy _value
-    var trace-ah/eax: (addr handle trace) <- get self, trace
-    var _trace/eax: (addr trace) <- lookup *trace-ah
-    var trace/ebx: (addr trace) <- copy _trace
-    clear-trace trace
-    {
-      compare tweak-real-screen?, 0/false
-      break-if-=
-      clear-sandbox-output real-screen, self, 0x56/sandbox-left-margin, 1/y, 0x80/screen-width, 0x2f/screen-height-without-menu
-    }
-    var screen-cell/eax: (addr handle cell) <- get self, screen-var
-    clear-screen-cell screen-cell
-    var keyboard-cell/esi: (addr handle cell) <- get self, keyboard-var
-    rewind-keyboard-cell keyboard-cell  # don't clear keys from before
-    {
-      compare tweak-real-screen?, 0/false
-      break-if-=
-      set-cursor-position real-screen, 0/x, 0/y  # for any debug prints during evaluation
-    }
-    run data-ah, value, globals, trace, screen-cell, keyboard-cell
+    #
+    run-sandbox self, globals, real-screen, tweak-real-screen?
     return
   }
   # ctrl-m
@@ -599,6 +577,34 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     edit-trace trace, g
     return
   }
+}
+
+# hack: tweak-real-screen guards things there are no tests for
+fn run-sandbox _self: (addr sandbox), globals: (addr global-table), real-screen: (addr screen), tweak-real-screen?: boolean {
+  var self/esi: (addr sandbox) <- copy _self
+  var data-ah/ecx: (addr handle gap-buffer) <- get self, data
+  var value-ah/eax: (addr handle stream byte) <- get self, value
+  var _value/eax: (addr stream byte) <- lookup *value-ah
+  var value/edx: (addr stream byte) <- copy _value
+  var trace-ah/eax: (addr handle trace) <- get self, trace
+  var _trace/eax: (addr trace) <- lookup *trace-ah
+  var trace/ebx: (addr trace) <- copy _trace
+  clear-trace trace
+  {
+    compare tweak-real-screen?, 0/false
+    break-if-=
+    clear-sandbox-output real-screen, self, 0x56/sandbox-left-margin, 1/y, 0x80/screen-width, 0x2f/screen-height-without-menu
+  }
+  var screen-cell/eax: (addr handle cell) <- get self, screen-var
+  clear-screen-cell screen-cell
+  var keyboard-cell/esi: (addr handle cell) <- get self, keyboard-var
+  rewind-keyboard-cell keyboard-cell  # don't clear keys from before
+  {
+    compare tweak-real-screen?, 0/false
+    break-if-=
+    set-cursor-position real-screen, 0/x, 0/y  # for any debug prints during evaluation
+  }
+  run data-ah, value, globals, trace, screen-cell, keyboard-cell
 }
 
 fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
