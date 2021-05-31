@@ -132,6 +132,21 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
       loop
     }
     trace-higher trace
+    # trace "fn=> " _expr-ah {{{
+    {
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
+      break-if-=
+      var stream-storage: (stream byte 0x200)
+      var stream/ecx: (addr stream byte) <- address stream-storage
+      write stream, "fn=> "
+      var nested-trace-storage: trace
+      var nested-trace/edi: (addr trace) <- address nested-trace-storage
+      initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+      print-cell _expr-ah, stream, nested-trace
+      trace trace, "mac", stream
+    }
+    # }}}
     return result
   }
   # builtins with "special" evaluation rules
@@ -168,6 +183,21 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     var val-ah/edx: (addr handle cell) <- get rest, left
     var macro-found?/eax: boolean <- macroexpand-iter val-ah, globals, trace
     trace-higher trace
+    # trace "def=> " _expr-ah {{{
+    {
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
+      break-if-=
+      var stream-storage: (stream byte 0x200)
+      var stream/ecx: (addr stream byte) <- address stream-storage
+      write stream, "def=> "
+      var nested-trace-storage: trace
+      var nested-trace/edi: (addr trace) <- address nested-trace-storage
+      initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+      print-cell _expr-ah, stream, nested-trace
+      trace trace, "mac", stream
+    }
+    # }}}
     return macro-found?
   }
   $macroexpand-iter:set: {
@@ -183,6 +213,21 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     var val-ah/edx: (addr handle cell) <- get rest, left
     var macro-found?/eax: boolean <- macroexpand-iter val-ah, globals, trace
     trace-higher trace
+    # trace "set=> " _expr-ah {{{
+    {
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
+      break-if-=
+      var stream-storage: (stream byte 0x200)
+      var stream/ecx: (addr stream byte) <- address stream-storage
+      write stream, "set=> "
+      var nested-trace-storage: trace
+      var nested-trace/edi: (addr trace) <- address nested-trace-storage
+      initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+      print-cell _expr-ah, stream, nested-trace
+      trace trace, "mac", stream
+    }
+    # }}}
     return macro-found?
   }
   # 'and' is like a function for macroexpansion purposes
@@ -217,6 +262,21 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
 #?     turn-on-debug-print
     apply macro-definition-ah, rest-ah, expr-ah, globals, trace, 0/no-screen, 0/no-keyboard, 0/call-number
     trace-higher trace
+    # trace "1=> " _expr-ah {{{
+    {
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
+      break-if-=
+      var stream-storage: (stream byte 0x200)
+      var stream/ecx: (addr stream byte) <- address stream-storage
+      write stream, "1=> "
+      var nested-trace-storage: trace
+      var nested-trace/edi: (addr trace) <- address nested-trace-storage
+      initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+      print-cell _expr-ah, stream, nested-trace
+      trace trace, "mac", stream
+    }
+    # }}}
     return 1/true
   }
   # no macro found; process any macros within args
@@ -241,6 +301,21 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     loop
   }
   trace-higher trace
+  # trace "=> " _expr-ah {{{
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x200)
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-cell _expr-ah, stream, nested-trace
+    trace trace, "mac", stream
+  }
+  # }}}
   return result
 }
 
