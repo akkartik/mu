@@ -166,6 +166,8 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     compare backquote?, 0/false
     break-if-=
     #
+#?     set-cursor-position 0/screen, 0x40/x 0x10/y
+#?     dump-cell-from-cursor-over-full-screen rest-ah
     var double-unquote-found?/eax: boolean <- look-for-double-unquote rest-ah
     compare double-unquote-found?, 0/false
     {
@@ -358,8 +360,12 @@ fn look-for-double-unquote _expr-ah: (addr handle cell) -> _/eax: boolean {
       break-if-!=
       break $look-for-double-unquote:check
     }
-    # if cadr is not an unquote, break
+    # if cdr is not a pair, break
     var cdr/eax: (addr cell) <- lookup *cdr-ah
+    var cdr-type/ecx: (addr int) <- get cdr, type
+    compare *cdr-type, 0/pair
+    break-if-!=
+    # if cadr is not an unquote, break
     var cadr-ah/eax: (addr handle cell) <- get cdr, left
     var cadr/eax: (addr cell) <- lookup *cadr-ah
     {
