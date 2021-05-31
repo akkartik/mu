@@ -15,15 +15,15 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
     break-if-!=
     #
     next-token in, token, trace
-    var skip?/eax: boolean <- comment-token? token
-    compare skip?, 0/false
-    loop-if-!=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
     {
       break-if-=
       return
     }
+    var skip?/eax: boolean <- comment-token? token
+    compare skip?, 0/false
+    loop-if-!=
     write-to-stream out, token  # shallow-copy text-data
     loop
   }
