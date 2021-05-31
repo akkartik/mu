@@ -14,6 +14,7 @@ fn macroexpand expr-ah: (addr handle cell), globals: (addr global-table), trace:
     trace trace, "mac", stream
   }
   # }}}
+  trace-lower trace
   # loop until convergence
   {
     var error?/eax: boolean <- has-errors? trace
@@ -23,6 +24,7 @@ fn macroexpand expr-ah: (addr handle cell), globals: (addr global-table), trace:
     compare expanded?, 0/false
     loop-if-!=
   }
+  trace-higher trace
   # trace "=> " expr-ah {{{
   {
     var should-trace?/eax: boolean <- should-trace? trace
