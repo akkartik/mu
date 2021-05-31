@@ -166,7 +166,12 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     compare backquote?, 0/false
     break-if-=
     #
-    error trace, "nested backquote not supported yet"
+    var double-unquote-found?/eax: boolean <- look-for-double-unquote rest-ah
+    compare double-unquote-found?, 0/false
+    {
+      break-if-=
+      error trace, "double unquote not supported yet"
+    }
     trace-higher trace
     return 0/false
   }
@@ -319,6 +324,68 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
   return result
 }
 
+fn look-for-double-unquote _expr-ah: (addr handle cell) -> _/eax: boolean {
+  # if expr is a non-pair, return false
+  var expr-ah/eax: (addr handle cell) <- copy _expr-ah
+  var expr/eax: (addr cell) <- lookup *expr-ah
+  {
+    var nil?/eax: boolean <- nil? expr
+    compare nil?, 0/false
+    break-if-=
+    return 0/false
+  }
+  {
+    var expr-type/eax: (addr int) <- get expr, type
+    compare *expr-type, 0/pair
+    break-if-=
+    return 0/false
+  }
+  var cdr-ah/ecx: (addr handle cell) <- get expr, right
+  var car-ah/ebx: (addr handle cell) <- get expr, left
+  var car/eax: (addr cell) <- lookup *car-ah
+  # if car is unquote or unquote-splice, check if cadr is unquote or
+  # unquote-splice.
+  $look-for-double-unquote:check: {
+    # if car is not an unquote, break
+    {
+      {
+        var unquote?/eax: boolean <- symbol-equal? car, ","
+        compare unquote?, 0/false
+      }
+      break-if-!=
+      var unquote-splice?/eax: boolean <- symbol-equal? car, ",@"
+      compare unquote-splice?, 0/false
+      break-if-!=
+      break $look-for-double-unquote:check
+    }
+    # if cadr is not an unquote, break
+    var cdr/eax: (addr cell) <- lookup *cdr-ah
+    var cadr-ah/eax: (addr handle cell) <- get cdr, left
+    var cadr/eax: (addr cell) <- lookup *cadr-ah
+    {
+      {
+        var unquote?/eax: boolean <- symbol-equal? cadr, ","
+        compare unquote?, 0/false
+      }
+      break-if-!=
+      var unquote-splice?/eax: boolean <- symbol-equal? cadr, ",@"
+      compare unquote-splice?, 0/false
+      break-if-!=
+      break $look-for-double-unquote:check
+    }
+    # error
+    return 1/true
+  }
+  var result/eax: boolean <- look-for-double-unquote car-ah
+  compare result, 0/false
+  {
+    break-if-=
+    return result
+  }
+  result <- look-for-double-unquote cdr-ah
+  return result
+}
+
 fn test-macroexpand {
   var globals-storage: global-table
   var globals/edx: (addr global-table) <- address globals-storage
@@ -433,6 +500,67 @@ fn test-macroexpand-inside-fn-call {
   #
   var assertion/eax: boolean <- cell-isomorphic? result, expected, trace
   check assertion, "F - test-macroexpand-inside-fn-call"
+}
+
+fn test-macroexpand-repeatedly-with-backquoted-arg {
+  var globals-storage: global-table
+  var globals/edx: (addr global-table) <- address globals-storage
+  initialize-globals globals
+  # new macro: m
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a) `(cons 1 ,a)))"
+  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  # invoke macro
+  initialize-sandbox-with sandbox, "(m `(3))"
+#?   initialize-sandbox-with sandbox, "(m (m `(3)))"
+  var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
+  var gap/eax: (addr gap-buffer) <- lookup *gap-ah
+  var result-h: (handle cell)
+  var result-ah/ebx: (addr handle cell) <- address result-h
+  var trace-storage: trace
+  var trace/ecx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell gap, result-ah, trace
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
+  var error?/eax: boolean <- has-errors? trace
+  check-not error?, "F - test-macroexpand-repeatedly-with-backquoted-arg/error"
+  {
+    compare error?, 0/false
+    break-if-=
+    # we need space to display traces, so just stop rendering future tests on failure here
+    dump-trace trace
+    {
+      loop
+    }
+  }
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
+  var error?/eax: boolean <- has-errors? trace
+  check-not error?, "F - test-macroexpand-repeatedly-with-backquoted-arg/error2"
+  {
+    compare error?, 0/false
+    break-if-=
+    # we need space to display traces, so just stop rendering future tests on failure here
+    dump-trace trace
+    {
+      loop
+    }
+  }
+#?   dump-cell-from-cursor-over-full-screen result-ah
+  var _result/eax: (addr cell) <- lookup *result-ah
+  var result/edi: (addr cell) <- copy _result
+  # expected
+  initialize-sandbox-with sandbox, "(cons 1 `(3))"
+#?   initialize-sandbox-with sandbox, "(cons 1 (cons 1 `(3)))"
+  var expected-gap-ah/edx: (addr handle gap-buffer) <- get sandbox, data
+  var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
+  var expected-h: (handle cell)
+  var expected-ah/edx: (addr handle cell) <- address expected-h
+  read-cell expected-gap, expected-ah, trace
+  var expected/eax: (addr cell) <- lookup *expected-ah
+  #
+  var assertion/eax: boolean <- cell-isomorphic? result, expected, trace
+  check assertion, "F - test-macroexpand-repeatedly-with-backquoted-arg"
 }
 
 fn pending-test-macroexpand-inside-backquote-unquote {
