@@ -242,9 +242,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "Q", 4/fg, 0/bg
     # errors? skip
     {
-      var should-trace?/eax: boolean <- should-trace? trace
-      compare should-trace?, 0/false
-      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-=
@@ -298,9 +295,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "Q", 4/fg, 0/bg
     # errors? skip
     {
-      var should-trace?/eax: boolean <- should-trace? trace
-      compare should-trace?, 0/false
-      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-=
@@ -335,9 +329,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "S2", 4/fg, 0/bg
     # errors? skip
     {
-      var should-trace?/eax: boolean <- should-trace? trace
-      compare should-trace?, 0/false
-      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-=
@@ -384,9 +375,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "S2", 4/fg, 0/bg
     # errors? skip
     {
-      var should-trace?/eax: boolean <- should-trace? trace
-      compare should-trace?, 0/false
-      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-=
@@ -412,9 +400,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "U2", 4/fg, 0/bg
     # errors? skip
     {
-      var should-trace?/eax: boolean <- should-trace? trace
-      compare should-trace?, 0/false
-      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-=
@@ -447,9 +432,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "S", 4/fg, 0/bg
     # errors? skip
     {
-      var should-trace?/eax: boolean <- should-trace? trace
-      compare should-trace?, 0/false
-      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-=
@@ -501,9 +483,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     var guard-ah/esi: (addr handle cell) <- address guard-h
     $evaluate:while:loop-execution: {
       {
-        var should-trace?/eax: boolean <- should-trace? trace
-        compare should-trace?, 0/false
-        break-if-=
         var error?/eax: boolean <- has-errors? trace
         compare error?, 0/false
         break-if-!= $evaluate:while:loop-execution
@@ -515,9 +494,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       debug-print "W", 4/fg, 0/bg
       # errors? skip
       {
-        var should-trace?/eax: boolean <- should-trace? trace
-        compare should-trace?, 0/false
-        break-if-=
         var error?/eax: boolean <- has-errors? trace
         compare error?, 0/false
         break-if-=
@@ -531,9 +507,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       evaluate-exprs rest-ah, _out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
       # errors? skip
       {
-        var should-trace?/eax: boolean <- should-trace? trace
-        compare should-trace?, 0/false
-        break-if-=
         var error?/eax: boolean <- has-errors? trace
         compare error?, 0/false
         break-if-=
@@ -568,26 +541,11 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     debug-print "B", 4/fg, 0/bg
     # errors? skip
     {
-      var should-trace?/eax: boolean <- should-trace? trace
-      compare should-trace?, 0/false
-      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-=
       trace-higher trace
       return
-    }
-    # a trip wire in case we're running without a trace (e.g. when loading the initial state from disk)
-    {
-      var should-trace?/eax: boolean <- should-trace? trace
-      compare should-trace?, 0/false
-      break-if-!=
-      var left-out/eax: (addr cell) <- lookup *left-out-ah
-      compare left-out, 0
-      {
-        break-if-!=
-        abort "there was some error (likely in syntax): eval-list"
-      }
     }
     #
     curr-out-ah <- get curr-out, right
@@ -687,9 +645,6 @@ fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), bo
   push-bindings params-ah, args-ah, env-h, new-env-ah, trace
   # errors? skip
   {
-    var should-trace?/eax: boolean <- should-trace? trace
-    compare should-trace?, 0/false
-    break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
     break-if-=
@@ -719,9 +674,6 @@ fn evaluate-exprs _exprs-ah: (addr handle cell), out: (addr handle cell), env-h:
       debug-print "X", 7/fg, 0/bg
       # errors? skip
       {
-        var should-trace?/eax: boolean <- should-trace? trace
-        compare should-trace?, 0/false
-        break-if-=
         var error?/eax: boolean <- has-errors? trace
         compare error?, 0/false
         break-if-=
@@ -830,9 +782,6 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
   push-bindings first-param-ah, first-arg-ah, old-env-h, intermediate-env-ah, trace
   # errors? skip
   {
-    var should-trace?/eax: boolean <- should-trace? trace
-    compare should-trace?, 0/false
-    break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
     break-if-=
@@ -1641,9 +1590,6 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
   }
   # errors? skip
   {
-    var should-trace?/eax: boolean <- should-trace? trace
-    compare should-trace?, 0/false
-    break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
     break-if-=
@@ -1729,9 +1675,6 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     evaluate in-unquote-payload-ah, out-ah, env-h, globals, trace, screen-cell, keyboard-cell, call-number
     # errors? skip
     {
-      var should-trace?/eax: boolean <- should-trace? trace
-      compare should-trace?, 0/false
-      break-if-=
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-=
@@ -1769,9 +1712,6 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
   debug-print "`r)", 3/fg, 0/bg
   # errors? skip
   {
-    var should-trace?/eax: boolean <- should-trace? trace
-    compare should-trace?, 0/false
-    break-if-=
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
     break-if-=
