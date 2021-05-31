@@ -192,7 +192,7 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
     var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
     rewind-stream curr-token-data
     write-stream stream, curr-token-data
-    trace trace, "error", stream
+    error-stream trace, stream
   }
   trace-higher trace
   return 0/false, 0/false

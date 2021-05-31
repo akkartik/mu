@@ -195,6 +195,20 @@ fn error _self: (addr trace), message: (addr array byte) {
   copy-to *curr-depth-a, save-depth
 }
 
+fn error-stream _self: (addr trace), message: (addr stream byte) {
+  var self/esi: (addr trace) <- copy _self
+  compare self, 0
+  {
+    break-if-!=
+    abort "null trace"
+  }
+  var curr-depth-a/eax: (addr int) <- get self, curr-depth
+  var save-depth/ecx: int <- copy *curr-depth-a
+  copy-to *curr-depth-a, 0/error
+  trace self, "error", message
+  copy-to *curr-depth-a, save-depth
+}
+
 fn initialize-trace-line depth: int, label: (addr array byte), data: (addr stream byte), _out: (addr trace-line) {
   var out/edi: (addr trace-line) <- copy _out
   # depth

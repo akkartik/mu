@@ -395,7 +395,7 @@ fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals
   write stream, "unbound symbol: "
   rewind-stream sym-name
   write-stream stream, sym-name
-  trace trace, "error", stream
+  error-stream trace, stream
 }
 
 fn maybe-lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace) {
@@ -506,7 +506,7 @@ fn mutate-binding-in-globals name: (addr stream byte), val: (addr handle cell), 
   write stream, "unbound symbol: "
   rewind-stream name
   write-stream stream, name
-  trace trace, "error", stream
+  error-stream trace, stream
 }
 
 # a little strange; goes from value to name and selects primitive based on name

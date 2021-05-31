@@ -49,7 +49,7 @@ highlight link muError Error
 " sources of action at a distance
 syntax match muAssign "<-"
 highlight link muAssign SpecialChar
-syntax keyword muAssign error
+syntax keyword muAssign error error-stream
 highlight link muAssign Special
 
 " common keywords

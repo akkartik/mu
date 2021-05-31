@@ -819,7 +819,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   trace-lower trace
   var _env/eax: (addr cell) <- lookup env-h
   var env/ebx: (addr cell) <- copy _env
-  # if env is not a list, abort
+  # if env is not a list, error
   {
     var env-type/ecx: (addr int) <- get env, type
     compare *env-type, 0/pair
