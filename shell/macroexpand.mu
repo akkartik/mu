@@ -506,14 +506,10 @@ fn test-macroexpand-repeatedly-with-backquoted-arg {
   var globals-storage: global-table
   var globals/edx: (addr global-table) <- address globals-storage
   initialize-globals globals
-  # new macro: m
+  # macroexpand an expression with a backquote but no macro
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a) `(cons 1 ,a)))"
-  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
-  # invoke macro
-  initialize-sandbox-with sandbox, "(m `(3))"
-#?   initialize-sandbox-with sandbox, "(m (m `(3)))"
+  initialize-sandbox-with sandbox, "(cons 1 `(3))"
   var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
   var gap/eax: (addr gap-buffer) <- lookup *gap-ah
   var result-h: (handle cell)
@@ -524,7 +520,7 @@ fn test-macroexpand-repeatedly-with-backquoted-arg {
   read-cell gap, result-ah, trace
   var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
   var error?/eax: boolean <- has-errors? trace
-  check-not error?, "F - test-macroexpand-repeatedly-with-backquoted-arg/error"
+  check-not error?, "F - test-macroexpand-repeatedly-with-backquoted-arg"
   {
     compare error?, 0/false
     break-if-=
@@ -534,33 +530,6 @@ fn test-macroexpand-repeatedly-with-backquoted-arg {
       loop
     }
   }
-  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
-  var error?/eax: boolean <- has-errors? trace
-  check-not error?, "F - test-macroexpand-repeatedly-with-backquoted-arg/error2"
-  {
-    compare error?, 0/false
-    break-if-=
-    # we need space to display traces, so just stop rendering future tests on failure here
-    dump-trace trace
-    {
-      loop
-    }
-  }
-#?   dump-cell-from-cursor-over-full-screen result-ah
-  var _result/eax: (addr cell) <- lookup *result-ah
-  var result/edi: (addr cell) <- copy _result
-  # expected
-  initialize-sandbox-with sandbox, "(cons 1 `(3))"
-#?   initialize-sandbox-with sandbox, "(cons 1 (cons 1 `(3)))"
-  var expected-gap-ah/edx: (addr handle gap-buffer) <- get sandbox, data
-  var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
-  var expected-h: (handle cell)
-  var expected-ah/edx: (addr handle cell) <- address expected-h
-  read-cell expected-gap, expected-ah, trace
-  var expected/eax: (addr cell) <- lookup *expected-ah
-  #
-  var assertion/eax: boolean <- cell-isomorphic? result, expected, trace
-  check assertion, "F - test-macroexpand-repeatedly-with-backquoted-arg"
 }
 
 fn pending-test-macroexpand-inside-backquote-unquote {
