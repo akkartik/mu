@@ -73,6 +73,8 @@ fn clear-trace _self: (addr trace) {
     break-if-!=
     abort "null trace"
   }
+  var curr-depth-addr/ecx: (addr int) <- get self, curr-depth
+  copy-to *curr-depth-addr, 1
   var len/edx: (addr int) <- get self, first-free
   copy-to *len, 0
   # might leak memory; existing elements won't be used anymore
