@@ -342,6 +342,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     compare nil?, 0/false
     {
       break-if-=
+      trace-higher trace
       return
     }
     var rest/eax: (addr cell) <- lookup *rest-ah
@@ -388,6 +389,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     compare nil?, 0/false
     {
       break-if-!=
+      trace-higher trace
       return
     }
     var rest/eax: (addr cell) <- lookup *rest-ah
@@ -544,6 +546,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       var error?/eax: boolean <- has-errors? trace
       compare error?, 0/false
       break-if-=
+      trace-higher trace
       trace-higher trace
       return
     }
