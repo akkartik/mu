@@ -2,7 +2,9 @@
 # we never modify `_in-ah` or `env`
 # ignore args past 'trace' on a first reading; they're for the environment not the language
 # 'call-number' is just for showing intermediate progress; this is a _slow_ interpreter
-# side-effect: prints to real screen if not in a test (screen-cell != 0)
+# side-effects if not in a test (screen-cell != 0):
+#   prints intermediate states of the screen to real screen
+#   stops if a keypress is encountered
 fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # stack overflow?   # disable when enabling Really-debug-print
   check-stack
@@ -34,6 +36,10 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     compare screen-obj, 0
     break-if-=
     var y/ecx: int <- render-screen 0/screen, screen-obj, 0x70/xmin, 1/ymin
+    var key/eax: byte <- read-key 0/keyboard
+    compare key, 0
+    break-if-=
+    error trace, "key pressed; interrupting..."
   }
   # errors? skip
   {
