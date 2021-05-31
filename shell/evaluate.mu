@@ -16,14 +16,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     # if screen-cell exists, we're probably not in a test
     show-stack-state
   }
-  # errors? skip
-  {
-    var error?/eax: boolean <- has-errors? trace
-    compare error?, 0/false
-    break-if-=
-    return
-  }
-  var in-ah/esi: (addr handle cell) <- copy _in-ah
   # show intermediate progress on screen if necessary
   # treat input at the real keyboard as interrupting
   {
@@ -43,6 +35,14 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     break-if-=
     var y/ecx: int <- render-screen 0/screen, screen-obj, 0x70/xmin, 1/ymin
   }
+  # errors? skip
+  {
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-=
+    return
+  }
+  var in-ah/esi: (addr handle cell) <- copy _in-ah
 #?   dump-cell in-ah
 #?   {
 #?     var foo/eax: byte <- read-key 0/keyboard
