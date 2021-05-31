@@ -68,37 +68,37 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
   var remaining-ah/esi: (addr handle cell) <- copy in
   {
     var _remaining/eax: (addr cell) <- lookup *remaining-ah
-    var remaining/ecx: (addr cell) <- copy _remaining
+    var remaining/ebx: (addr cell) <- copy _remaining
     var done?/eax: boolean <- nil? remaining
     compare done?, 0/false
     break-if-!=
 #?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "b", 2/fg 0/bg
     var curr-ah/eax: (addr handle cell) <- get remaining, left
-    var curr/eax: (addr cell) <- lookup *curr-ah
+    var _curr/eax: (addr cell) <- lookup *curr-ah
+    var curr/ecx: (addr cell) <- copy _curr
     remaining-ah <- get remaining, right
-    {
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 2/fg 0/bg
-      var name-ah/ecx: (addr handle cell) <- get curr, left
-      var name/eax: (addr cell) <- lookup *name-ah
-      var name-data-ah/eax: (addr handle stream byte) <- get name, text-data
-      var name-data/eax: (addr stream byte) <- lookup *name-data-ah
-      rewind-stream name-data
-      draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, name-data, 3/fg, 0/bg
-    }
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 2/fg 0/bg
+    var name-ah/eax: (addr handle cell) <- get curr, left
+    var name/eax: (addr cell) <- lookup *name-ah
+    var name-data-ah/eax: (addr handle stream byte) <- get name, text-data
+    var _name-data/eax: (addr stream byte) <- lookup *name-data-ah
+    var name-data/edx: (addr stream byte) <- copy _name-data
+    rewind-stream name-data
+    draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, name-data, 3/fg, 0/bg
     var value-ah/eax: (addr handle cell) <- get curr, right
     var value/eax: (addr cell) <- lookup *value-ah
     var value-data-ah/eax: (addr handle stream byte) <- get value, text-data
     var _value-data/eax: (addr stream byte) <- lookup *value-data-ah
     var value-data/ecx: (addr stream byte) <- copy _value-data
     var value-gap-buffer-storage: (handle gap-buffer)
-    var value-gap-buffer-ah/edx: (addr handle gap-buffer) <- address value-gap-buffer-storage
+    var value-gap-buffer-ah/edi: (addr handle gap-buffer) <- address value-gap-buffer-storage
     allocate value-gap-buffer-ah
     var value-gap-buffer/eax: (addr gap-buffer) <- lookup *value-gap-buffer-ah
     initialize-gap-buffer value-gap-buffer, 0x1000/4KB
 #?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "w", 2/fg 0/bg
     load-gap-buffer-from-stream value-gap-buffer, value-data
 #?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "x", 2/fg 0/bg
-    read-evaluate-and-move-to-globals value-gap-buffer-ah, self
+    read-evaluate-and-move-to-globals value-gap-buffer-ah, self, name-data
 #?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y", 2/fg 0/bg
     loop
   }
