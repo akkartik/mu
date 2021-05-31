@@ -69,7 +69,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
         loop $main:loop
       }
       # no way to quit right now; just reboot
-      edit-sandbox sandbox, key, globals, data-disk, screen, 1/tweak-real-screen
+      edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
     }
     loop
   }

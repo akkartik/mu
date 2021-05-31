@@ -402,7 +402,7 @@ fn test-macroexpand {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
-  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "(m 3 4)"
   var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
@@ -441,7 +441,7 @@ fn test-macroexpand-inside-anonymous-fn {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
-  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "(fn() (m 3 4))"
   var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
@@ -479,7 +479,7 @@ fn test-macroexpand-inside-fn-call {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
-  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "((fn() (m 3 4)))"
   var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
@@ -548,7 +548,7 @@ fn pending-test-macroexpand-inside-backquote-unquote {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
-  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "`(print [result is ] ,(m 3 4)))"
   var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
@@ -586,7 +586,7 @@ fn pending-test-macroexpand-inside-nested-backquote-unquote {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
-  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "`(a ,(m 3 4) `(b ,(m 3 4) ,,(m 3 4)))"
   var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data

@@ -2,6 +2,7 @@
 # we never modify `_in-ah` or `env`
 # ignore args past 'trace' on a first reading; they're for the environment not the language
 # 'call-number' is just for showing intermediate progress; this is a _slow_ interpreter
+# side-effect: prints to real screen if not in a test (screen-cell != 0)
 fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell), call-number: int {
   # stack overflow?   # disable when enabling Really-debug-print
   check-stack
@@ -24,6 +25,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
   }
   var in-ah/esi: (addr handle cell) <- copy _in-ah
   # show intermediate progress on screen if necessary
+  # treat input at the real keyboard as interrupting
   {
     compare screen-cell, 0
     break-if-=
