@@ -328,20 +328,19 @@ fn test-macroexpand {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
   edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
-  var trace-ah/eax: (addr handle trace) <- get sandbox, trace
-  var trace/eax: (addr trace) <- lookup *trace-ah
   # invoke macro
   initialize-sandbox-with sandbox, "(m 3 4)"
   var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
   var gap/eax: (addr gap-buffer) <- lookup *gap-ah
   var result-h: (handle cell)
   var result-ah/ebx: (addr handle cell) <- address result-h
-  var nested-trace-storage: trace
-  var nested-trace/ecx: (addr trace) <- address nested-trace-storage
-  initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
-  read-cell gap, result-ah, nested-trace
-  clear-trace nested-trace
-  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, nested-trace
+  var trace-storage: trace
+  var trace/ecx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell gap, result-ah, trace
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
+  var error?/eax: boolean <- has-errors? trace
+  check-not error?, "F - test-macroexpand/error"
 #?   dump-cell-from-cursor-over-full-screen result-ah
   var _result/eax: (addr cell) <- lookup *result-ah
   var result/edi: (addr cell) <- copy _result
@@ -351,13 +350,11 @@ fn test-macroexpand {
   var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
   var expected-h: (handle cell)
   var expected-ah/edx: (addr handle cell) <- address expected-h
-  clear-trace nested-trace
-  read-cell expected-gap, expected-ah, nested-trace
+  read-cell expected-gap, expected-ah, trace
 #?   dump-cell-from-cursor-over-full-screen expected-ah
   var expected/eax: (addr cell) <- lookup *expected-ah
   #
-  clear-trace nested-trace
-  var assertion/eax: boolean <- cell-isomorphic? result, expected, nested-trace
+  var assertion/eax: boolean <- cell-isomorphic? result, expected, trace
   check assertion, "F - test-macroexpand"
 }
 
@@ -370,20 +367,19 @@ fn test-macroexpand-inside-anonymous-fn {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
   edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-screen, 0/no-tweak-screen
-  var trace-ah/eax: (addr handle trace) <- get sandbox, trace
-  var trace/eax: (addr trace) <- lookup *trace-ah
   # invoke macro
   initialize-sandbox-with sandbox, "(fn() (m 3 4))"
   var gap-ah/ecx: (addr handle gap-buffer) <- get sandbox, data
   var gap/eax: (addr gap-buffer) <- lookup *gap-ah
   var result-h: (handle cell)
   var result-ah/ebx: (addr handle cell) <- address result-h
-  var nested-trace-storage: trace
-  var nested-trace/ecx: (addr trace) <- address nested-trace-storage
-  initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
-  read-cell gap, result-ah, nested-trace
-  clear-trace nested-trace
-  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, nested-trace
+  var trace-storage: trace
+  var trace/ecx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell gap, result-ah, trace
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
+  var error?/eax: boolean <- has-errors? trace
+  check-not error?, "F - test-macroexpand-inside-anonymous-fn/error"
 #?   dump-cell-from-cursor-over-full-screen result-ah
   var _result/eax: (addr cell) <- lookup *result-ah
   var result/edi: (addr cell) <- copy _result
@@ -393,13 +389,10 @@ fn test-macroexpand-inside-anonymous-fn {
   var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
   var expected-h: (handle cell)
   var expected-ah/edx: (addr handle cell) <- address expected-h
-  clear-trace nested-trace
-  read-cell expected-gap, expected-ah, nested-trace
-#?   dump-cell-from-cursor-over-full-screen expected-ah
+  read-cell expected-gap, expected-ah, trace
   var expected/eax: (addr cell) <- lookup *expected-ah
   #
-  clear-trace nested-trace
-  var assertion/eax: boolean <- cell-isomorphic? result, expected, nested-trace
+  var assertion/eax: boolean <- cell-isomorphic? result, expected, trace
   check assertion, "F - test-macroexpand-inside-anonymous-fn"
 }
 
@@ -418,12 +411,13 @@ fn test-macroexpand-inside-fn-call {
   var gap/eax: (addr gap-buffer) <- lookup *gap-ah
   var result-h: (handle cell)
   var result-ah/ebx: (addr handle cell) <- address result-h
-  var nested-trace-storage: trace
-  var nested-trace/ecx: (addr trace) <- address nested-trace-storage
-  initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
-  read-cell gap, result-ah, nested-trace
-  clear-trace nested-trace
-  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, nested-trace
+  var trace-storage: trace
+  var trace/ecx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell gap, result-ah, trace
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
+  var error?/eax: boolean <- has-errors? trace
+  check-not error?, "F - test-macroexpand-inside-fn-call/error"
 #?   dump-cell-from-cursor-over-full-screen result-ah
   var _result/eax: (addr cell) <- lookup *result-ah
   var result/edi: (addr cell) <- copy _result
@@ -433,13 +427,11 @@ fn test-macroexpand-inside-fn-call {
   var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
   var expected-h: (handle cell)
   var expected-ah/edx: (addr handle cell) <- address expected-h
-  clear-trace nested-trace
-  read-cell expected-gap, expected-ah, nested-trace
+  read-cell expected-gap, expected-ah, trace
 #?   dump-cell-from-cursor-over-full-screen expected-ah
   var expected/eax: (addr cell) <- lookup *expected-ah
   #
-  clear-trace nested-trace
-  var assertion/eax: boolean <- cell-isomorphic? result, expected, nested-trace
+  var assertion/eax: boolean <- cell-isomorphic? result, expected, trace
   check assertion, "F - test-macroexpand-inside-fn-call"
 }
 
@@ -458,13 +450,14 @@ fn pending-test-macroexpand-inside-backquote-unquote {
   var gap/eax: (addr gap-buffer) <- lookup *gap-ah
   var result-h: (handle cell)
   var result-ah/ebx: (addr handle cell) <- address result-h
-  var nested-trace-storage: trace
-  var nested-trace/ecx: (addr trace) <- address nested-trace-storage
-  initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
-  read-cell gap, result-ah, nested-trace
-  clear-trace nested-trace
-  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, nested-trace
-  dump-cell-from-cursor-over-full-screen result-ah
+  var trace-storage: trace
+  var trace/ecx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell gap, result-ah, trace
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
+  var error?/eax: boolean <- has-errors? trace
+  check-not error?, "F - test-macroexpand-inside-backquote-unquote/error"
+#?   dump-cell-from-cursor-over-full-screen result-ah
   var _result/eax: (addr cell) <- lookup *result-ah
   var result/edi: (addr cell) <- copy _result
   # expected
@@ -473,13 +466,10 @@ fn pending-test-macroexpand-inside-backquote-unquote {
   var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
   var expected-h: (handle cell)
   var expected-ah/edx: (addr handle cell) <- address expected-h
-  clear-trace nested-trace
-  read-cell expected-gap, expected-ah, nested-trace
-  dump-cell-from-cursor-over-full-screen expected-ah
+  read-cell expected-gap, expected-ah, trace
   var expected/eax: (addr cell) <- lookup *expected-ah
   #
-  clear-trace nested-trace
-  var assertion/eax: boolean <- cell-isomorphic? result, expected, nested-trace
+  var assertion/eax: boolean <- cell-isomorphic? result, expected, trace
   check assertion, "F - test-macroexpand-inside-backquote-unquote"
 }
 
@@ -498,12 +488,13 @@ fn pending-test-macroexpand-inside-nested-backquote-unquote {
   var gap/eax: (addr gap-buffer) <- lookup *gap-ah
   var result-h: (handle cell)
   var result-ah/ebx: (addr handle cell) <- address result-h
-  var nested-trace-storage: trace
-  var nested-trace/ecx: (addr trace) <- address nested-trace-storage
-  initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
-  read-cell gap, result-ah, nested-trace
-  clear-trace nested-trace
-  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, nested-trace
+  var trace-storage: trace
+  var trace/ecx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell gap, result-ah, trace
+  var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
+  var error?/eax: boolean <- has-errors? trace
+  check-not error?, "F - test-macroexpand-inside-nested-backquote-unquote/error"
   dump-cell-from-cursor-over-full-screen result-ah
   var _result/eax: (addr cell) <- lookup *result-ah
   var result/edi: (addr cell) <- copy _result
@@ -513,13 +504,11 @@ fn pending-test-macroexpand-inside-nested-backquote-unquote {
   var expected-gap/eax: (addr gap-buffer) <- lookup *expected-gap-ah
   var expected-h: (handle cell)
   var expected-ah/edx: (addr handle cell) <- address expected-h
-  clear-trace nested-trace
-  read-cell expected-gap, expected-ah, nested-trace
+  read-cell expected-gap, expected-ah, trace
   dump-cell-from-cursor-over-full-screen expected-ah
   var expected/eax: (addr cell) <- lookup *expected-ah
   #
-  clear-trace nested-trace
-  var assertion/eax: boolean <- cell-isomorphic? result, expected, nested-trace
+  var assertion/eax: boolean <- cell-isomorphic? result, expected, trace
   check assertion, "F - test-macroexpand-inside-nested-backquote-unquote"
 }
 
