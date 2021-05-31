@@ -123,41 +123,41 @@ if ('onhashchange' in window) {
 <span id="L64" class="LineNr">  64 </span><span class="Delimiter">}</span>
 <span id="L65" class="LineNr">  65 </span>
 <span id="L66" class="LineNr">  66 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L66'>load-globals</a></span> in: (addr handle <a href='cell.mu.html#L1'>cell</a>), self: (addr <a href='global.mu.html#L7'>global-table</a>) <span class="Delimiter">{</span>
-<span id="L67" class="LineNr">  67 </span>  <a href='../501draw-text.mu.html#L258'>draw-text-wrapping-right-then-down-from-cursor-over-full-screen</a> <span class="Constant">0</span>/screen, <span class="Constant">&quot;loading globals:&quot;</span>, <span class="Constant">3</span>/fg, <span class="Constant">0</span>/bg
+<span id="L67" class="LineNr">  67 </span>  <a href='../501draw-text.mu.html#L279'>draw-text-wrapping-right-then-down-from-cursor-over-full-screen</a> <span class="Constant">0</span>/screen, <span class="Constant">&quot;loading globals:&quot;</span>, <span class="Constant">3</span>/fg, <span class="Constant">0</span>/bg
 <span id="L68" class="LineNr">  68 </span>  <span class="PreProc">var</span> remaining-ah/<span class="Constant">esi</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy in
 <span id="L69" class="LineNr">  69 </span>  <span class="Delimiter">{</span>
 <span id="L70" class="LineNr">  70 </span>    <span class="PreProc">var</span> _remaining/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *remaining-ah
-<span id="L71" class="LineNr">  71 </span>    <span class="PreProc">var</span> remaining/<span class="Constant">ecx</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _remaining
-<span id="L72" class="LineNr">  72 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> remaining
+<span id="L71" class="LineNr">  71 </span>    <span class="PreProc">var</span> remaining/<span class="Constant">ebx</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _remaining
+<span id="L72" class="LineNr">  72 </span>    <span class="PreProc">var</span> done?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> remaining
 <span id="L73" class="LineNr">  73 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L74" class="LineNr">  74 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L75" class="LineNr">  75 </span><span class="CommentedCode">#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, &quot;b&quot;, 2/fg 0/bg</span>
 <span id="L76" class="LineNr">  76 </span>    <span class="PreProc">var</span> curr-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get remaining, left
-<span id="L77" class="LineNr">  77 </span>    <span class="PreProc">var</span> curr/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *curr-ah
-<span id="L78" class="LineNr">  78 </span>    remaining-ah <span class="Special">&lt;-</span> get remaining, right
-<span id="L79" class="LineNr">  79 </span>    <span class="Delimiter">{</span>
-<span id="L80" class="LineNr">  80 </span>      <a href='../501draw-text.mu.html#L258'>draw-text-wrapping-right-then-down-from-cursor-over-full-screen</a> <span class="Constant">0</span>/screen, <span class="Constant">&quot; &quot;</span>, <span class="Constant">2</span>/fg <span class="Constant">0</span>/bg
-<span id="L81" class="LineNr">  81 </span>      <span class="PreProc">var</span> name-ah/<span class="Constant">ecx</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get curr, left
-<span id="L82" class="LineNr">  82 </span>      <span class="PreProc">var</span> name/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *name-ah
-<span id="L83" class="LineNr">  83 </span>      <span class="PreProc">var</span> name-data-ah/<span class="Constant">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get name, text-data
-<span id="L84" class="LineNr">  84 </span>      <span class="PreProc">var</span> name-data/<span class="Constant">eax</span>: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *name-data-ah
-<span id="L85" class="LineNr">  85 </span>      <a href='../106stream.subx.html#L59'>rewind-stream</a> name-data
-<span id="L86" class="LineNr">  86 </span>      <a href='../501draw-text.mu.html#L214'>draw-stream-wrapping-right-then-down-from-cursor-over-full-screen</a> <span class="Constant">0</span>/screen, name-data, <span class="Constant">3</span>/fg, <span class="Constant">0</span>/bg
-<span id="L87" class="LineNr">  87 </span>    <span class="Delimiter">}</span>
+<span id="L77" class="LineNr">  77 </span>    <span class="PreProc">var</span> _curr/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *curr-ah
+<span id="L78" class="LineNr">  78 </span>    <span class="PreProc">var</span> curr/<span class="Constant">ecx</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _curr
+<span id="L79" class="LineNr">  79 </span>    remaining-ah <span class="Special">&lt;-</span> get remaining, right
+<span id="L80" class="LineNr">  80 </span>    <a href='../501draw-text.mu.html#L279'>draw-text-wrapping-right-then-down-from-cursor-over-full-screen</a> <span class="Constant">0</span>/screen, <span class="Constant">&quot; &quot;</span>, <span class="Constant">2</span>/fg <span class="Constant">0</span>/bg
+<span id="L81" class="LineNr">  81 </span>    <span class="PreProc">var</span> name-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get curr, left
+<span id="L82" class="LineNr">  82 </span>    <span class="PreProc">var</span> name/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *name-ah
+<span id="L83" class="LineNr">  83 </span>    <span class="PreProc">var</span> name-data-ah/<span class="Constant">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get name, text-data
+<span id="L84" class="LineNr">  84 </span>    <span class="PreProc">var</span> _name-data/<span class="Constant">eax</span>: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *name-data-ah
+<span id="L85" class="LineNr">  85 </span>    <span class="PreProc">var</span> name-data/<span class="Constant">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> copy _name-data
+<span id="L86" class="LineNr">  86 </span>    <a href='../106stream.subx.html#L59'>rewind-stream</a> name-data
+<span id="L87" class="LineNr">  87 </span>    <a href='../501draw-text.mu.html#L235'>draw-stream-wrapping-right-then-down-from-cursor-over-full-screen</a> <span class="Constant">0</span>/screen, name-data, <span class="Constant">3</span>/fg, <span class="Constant">0</span>/bg
 <span id="L88" class="LineNr">  88 </span>    <span class="PreProc">var</span> value-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get curr, right
 <span id="L89" class="LineNr">  89 </span>    <span class="PreProc">var</span> value/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *value-ah
 <span id="L90" class="LineNr">  90 </span>    <span class="PreProc">var</span> value-data-ah/<span class="Constant">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get value, text-data
 <span id="L91" class="LineNr">  91 </span>    <span class="PreProc">var</span> _value-data/<span class="Constant">eax</span>: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *value-data-ah
 <span id="L92" class="LineNr">  92 </span>    <span class="PreProc">var</span> value-data/<span class="Constant">ecx</span>: (addr stream byte) <span class="Special">&lt;-</span> copy _value-data
 <span id="L93" class="LineNr">  93 </span>    <span class="PreProc">var</span> value-gap-buffer-storage: (handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>)
-<span id="L94" class="LineNr">  94 </span>    <span class="PreProc">var</span> value-gap-buffer-ah/<span class="Constant">edx</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> address value-gap-buffer-storage
+<span id="L94" class="LineNr">  94 </span>    <span class="PreProc">var</span> value-gap-buffer-ah/<span class="Constant">edi</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> address value-gap-buffer-storage
 <span id="L95" class="LineNr">  95 </span>    <a href='../120allocate.subx.html#L43'>allocate</a> value-gap-buffer-ah
 <span id="L96" class="LineNr">  96 </span>    <span class="PreProc">var</span> value-gap-buffer/<span class="Constant">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *value-gap-buffer-ah
 <span id="L97" class="LineNr">  97 </span>    <a href='gap-buffer.mu.html#L11'>initialize-gap-buffer</a> value-gap-buffer, <span class="Constant">0x1000</span>/4KB
 <span id="L98" class="LineNr">  98 </span><span class="CommentedCode">#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, &quot;w&quot;, 2/fg 0/bg</span>
 <span id="L99" class="LineNr">  99 </span>    <a href='gap-buffer.mu.html#L52'>load-gap-buffer-from-stream</a> value-gap-buffer, value-data
 <span id="L100" class="LineNr"> 100 </span><span class="CommentedCode">#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, &quot;x&quot;, 2/fg 0/bg</span>
-<span id="L101" class="LineNr"> 101 </span>    <a href='sandbox.mu.html#L638'>read-evaluate-and-move-to-globals</a> value-gap-buffer-ah, self
+<span id="L101" class="LineNr"> 101 </span>    <a href='sandbox.mu.html#L669'>read-evaluate-and-move-to-globals</a> value-gap-buffer-ah, self, name-data
 <span id="L102" class="LineNr"> 102 </span><span class="CommentedCode">#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, &quot;y&quot;, 2/fg 0/bg</span>
 <span id="L103" class="LineNr"> 103 </span>    <span class="PreProc">loop</span>
 <span id="L104" class="LineNr"> 104 </span>  <span class="Delimiter">}</span>
@@ -213,7 +213,7 @@ if ('onhashchange' in window) {
 <span id="L154" class="LineNr"> 154 </span>
 <span id="L155" class="LineNr"> 155 </span><span class="muComment"># globals layout: 1 char padding, 41 code, 1 padding, 41 code, 1 padding =  85 chars</span>
 <span id="L156" class="LineNr"> 156 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L156'>render-globals</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _self: (addr <a href='global.mu.html#L7'>global-table</a>) <span class="Delimiter">{</span>
-<span id="L157" class="LineNr"> 157 </span>  <a href='../500fake-screen.mu.html#L332'>clear-rect</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>/xmin, <span class="Constant">0</span>/ymin, <span class="Constant">0x55</span>/xmax, <span class="Constant">0x2f</span>/ymax=screen-height-without-menu, <span class="Constant">0xdc</span>/bg=green-bg
+<span id="L157" class="LineNr"> 157 </span>  <a href='../500fake-screen.mu.html#L333'>clear-rect</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>/xmin, <span class="Constant">0</span>/ymin, <span class="Constant">0x55</span>/xmax, <span class="Constant">0x2f</span>/ymax=screen-height-without-menu, <span class="Constant">0xdc</span>/bg=green-bg
 <span id="L158" class="LineNr"> 158 </span>  <span class="PreProc">var</span> self/<span class="Constant">esi</span>: (addr <a href='global.mu.html#L7'>global-table</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L159" class="LineNr"> 159 </span>  compare self, <span class="Constant">0</span>
 <span id="L160" class="LineNr"> 160 </span>  <span class="Delimiter">{</span>
@@ -338,7 +338,7 @@ if ('onhashchange' in window) {
 <span id="L279" class="LineNr"> 279 </span>  tmpx <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;: stream grapheme -&gt; stream&quot;</span>, tmpx, xmax, y, <span class="Constant">7</span>/fg=grey, <span class="Constant">0xdc</span>/bg=green-bg
 <span id="L280" class="LineNr"> 280 </span>  y <span class="Special">&lt;-</span> increment
 <span id="L281" class="LineNr"> 281 </span>  <span class="PreProc">var</span> tmpx/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy xmin
-<span id="L282" class="LineNr"> 282 </span>  tmpx <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;fn def set if while = no(t) <a href='evaluate.mu.html#L981'>car</a> <a href='evaluate.mu.html#L1009'>cdr</a> cons  &quot;</span>, tmpx, xmax, y, <span class="Constant">0x2a</span>/fg=orange, <span class="Constant">0xdc</span>/bg=green-bg
+<span id="L282" class="LineNr"> 282 </span>  tmpx <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;fn def set if while = no(t) <a href='evaluate.mu.html#L1130'>car</a> <a href='evaluate.mu.html#L1158'>cdr</a> cons  &quot;</span>, tmpx, xmax, y, <span class="Constant">0x2a</span>/fg=orange, <span class="Constant">0xdc</span>/bg=green-bg
 <span id="L283" class="LineNr"> 283 </span>  tmpx <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;num: &quot;</span>, tmpx, xmax, y, <span class="Constant">7</span>/fg=grey, <span class="Constant">0xdc</span>/bg=green-bg
 <span id="L284" class="LineNr"> 284 </span>  tmpx <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;+ - * / sqrt <a href='../506math.mu.html#L1'>abs</a> <a href='../506math.mu.html#L10'>sgn</a> &lt; &gt; &lt;= &gt;=   &quot;</span>, tmpx, xmax, y, <span class="Constant">0x2a</span>/fg=orange, <span class="Constant">0xdc</span>/bg=green-bg
 <span id="L285" class="LineNr"> 285 </span><span class="Delimiter">}</span>
@@ -454,7 +454,7 @@ if ('onhashchange' in window) {
 <span id="L395" class="LineNr"> 395 </span>  <a href='../108write.subx.html#L11'>write</a> stream, <span class="Constant">&quot;unbound symbol: &quot;</span>
 <span id="L396" class="LineNr"> 396 </span>  <a href='../106stream.subx.html#L59'>rewind-stream</a> sym-name
 <span id="L397" class="LineNr"> 397 </span>  <a href='../113write-stream.subx.html#L8'>write-stream</a> stream, sym-name
-<span id="L398" class="LineNr"> 398 </span>  trace trace, <span class="Constant">&quot;error&quot;</span>, stream
+<span id="L398" class="LineNr"> 398 </span>  <span class="Special"><a href='trace.mu.html#L200'>error-stream</a></span> trace, stream
 <span id="L399" class="LineNr"> 399 </span><span class="Delimiter">}</span>
 <span id="L400" class="LineNr"> 400 </span>
 <span id="L401" class="LineNr"> 401 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L401'>maybe-lookup-symbol-in-globals</a></span> _sym: (addr <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), _globals: (addr <a href='global.mu.html#L7'>global-table</a>), trace: (addr trace) <span class="Delimiter">{</span>
@@ -565,7 +565,7 @@ if ('onhashchange' in window) {
 <span id="L506" class="LineNr"> 506 </span>  <a href='../108write.subx.html#L11'>write</a> stream, <span class="Constant">&quot;unbound symbol: &quot;</span>
 <span id="L507" class="LineNr"> 507 </span>  <a href='../106stream.subx.html#L59'>rewind-stream</a> name
 <span id="L508" class="LineNr"> 508 </span>  <a href='../113write-stream.subx.html#L8'>write-stream</a> stream, name
-<span id="L509" class="LineNr"> 509 </span>  trace trace, <span class="Constant">&quot;error&quot;</span>, stream
+<span id="L509" class="LineNr"> 509 </span>  <span class="Special"><a href='trace.mu.html#L200'>error-stream</a></span> trace, stream
 <span id="L510" class="LineNr"> 510 </span><span class="Delimiter">}</span>
 <span id="L511" class="LineNr"> 511 </span>
 <span id="L512" class="LineNr"> 512 </span><span class="muComment"># a little strange; goes from value to name and selects primitive based on name</span>
@@ -828,16 +828,16 @@ if ('onhashchange' in window) {
 <span id="L769" class="LineNr"> 769 </span><span class="Delimiter">}</span>
 <span id="L770" class="LineNr"> 770 </span>
 <span id="L771" class="LineNr"> 771 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L771'>apply-add</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L772" class="LineNr"> 772 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply +&quot;</span>
+<span id="L772" class="LineNr"> 772 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply +&quot;</span>
 <span id="L773" class="LineNr"> 773 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L774" class="LineNr"> 774 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L775" class="LineNr"> 775 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L776" class="LineNr"> 776 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L777" class="LineNr"> 777 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L777" class="LineNr"> 777 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L778" class="LineNr"> 778 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L779" class="LineNr"> 779 </span>  <span class="Delimiter">{</span>
 <span id="L780" class="LineNr"> 780 </span>    <span class="PreProc">break-if-=</span>
-<span id="L781" class="LineNr"> 781 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;+ needs 2 args but got 0&quot;</span>
+<span id="L781" class="LineNr"> 781 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;+ needs 2 args but got 0&quot;</span>
 <span id="L782" class="LineNr"> 782 </span>    <span class="PreProc">return</span>
 <span id="L783" class="LineNr"> 783 </span>  <span class="Delimiter">}</span>
 <span id="L784" class="LineNr"> 784 </span>  <span class="muComment"># args-&gt;left-&gt;value</span>
@@ -847,7 +847,7 @@ if ('onhashchange' in window) {
 <span id="L788" class="LineNr"> 788 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L789" class="LineNr"> 789 </span>  <span class="Delimiter">{</span>
 <span id="L790" class="LineNr"> 790 </span>    <span class="PreProc">break-if-=</span>
-<span id="L791" class="LineNr"> 791 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for + is not a number&quot;</span>
+<span id="L791" class="LineNr"> 791 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for + is not a number&quot;</span>
 <span id="L792" class="LineNr"> 792 </span>    <span class="PreProc">return</span>
 <span id="L793" class="LineNr"> 793 </span>  <span class="Delimiter">}</span>
 <span id="L794" class="LineNr"> 794 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -863,7 +863,7 @@ if ('onhashchange' in window) {
 <span id="L804" class="LineNr"> 804 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L805" class="LineNr"> 805 </span>  <span class="Delimiter">{</span>
 <span id="L806" class="LineNr"> 806 </span>    <span class="PreProc">break-if-=</span>
-<span id="L807" class="LineNr"> 807 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;second arg for + is not a number&quot;</span>
+<span id="L807" class="LineNr"> 807 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;second arg for + is not a number&quot;</span>
 <span id="L808" class="LineNr"> 808 </span>    <span class="PreProc">return</span>
 <span id="L809" class="LineNr"> 809 </span>  <span class="Delimiter">}</span>
 <span id="L810" class="LineNr"> 810 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">edx</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -874,16 +874,16 @@ if ('onhashchange' in window) {
 <span id="L815" class="LineNr"> 815 </span><span class="Delimiter">}</span>
 <span id="L816" class="LineNr"> 816 </span>
 <span id="L817" class="LineNr"> 817 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L817'>apply-subtract</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L818" class="LineNr"> 818 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply -&quot;</span>
+<span id="L818" class="LineNr"> 818 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply -&quot;</span>
 <span id="L819" class="LineNr"> 819 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L820" class="LineNr"> 820 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L821" class="LineNr"> 821 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L822" class="LineNr"> 822 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L823" class="LineNr"> 823 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L823" class="LineNr"> 823 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L824" class="LineNr"> 824 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L825" class="LineNr"> 825 </span>  <span class="Delimiter">{</span>
 <span id="L826" class="LineNr"> 826 </span>    <span class="PreProc">break-if-=</span>
-<span id="L827" class="LineNr"> 827 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;- needs 2 args but got 0&quot;</span>
+<span id="L827" class="LineNr"> 827 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;- needs 2 args but got 0&quot;</span>
 <span id="L828" class="LineNr"> 828 </span>    <span class="PreProc">return</span>
 <span id="L829" class="LineNr"> 829 </span>  <span class="Delimiter">}</span>
 <span id="L830" class="LineNr"> 830 </span>  <span class="muComment"># args-&gt;left-&gt;value</span>
@@ -893,7 +893,7 @@ if ('onhashchange' in window) {
 <span id="L834" class="LineNr"> 834 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L835" class="LineNr"> 835 </span>  <span class="Delimiter">{</span>
 <span id="L836" class="LineNr"> 836 </span>    <span class="PreProc">break-if-=</span>
-<span id="L837" class="LineNr"> 837 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for - is not a number&quot;</span>
+<span id="L837" class="LineNr"> 837 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for - is not a number&quot;</span>
 <span id="L838" class="LineNr"> 838 </span>    <span class="PreProc">return</span>
 <span id="L839" class="LineNr"> 839 </span>  <span class="Delimiter">}</span>
 <span id="L840" class="LineNr"> 840 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -907,7 +907,7 @@ if ('onhashchange' in window) {
 <span id="L848" class="LineNr"> 848 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L849" class="LineNr"> 849 </span>  <span class="Delimiter">{</span>
 <span id="L850" class="LineNr"> 850 </span>    <span class="PreProc">break-if-=</span>
-<span id="L851" class="LineNr"> 851 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;second arg for - is not a number&quot;</span>
+<span id="L851" class="LineNr"> 851 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;second arg for - is not a number&quot;</span>
 <span id="L852" class="LineNr"> 852 </span>    <span class="PreProc">return</span>
 <span id="L853" class="LineNr"> 853 </span>  <span class="Delimiter">}</span>
 <span id="L854" class="LineNr"> 854 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">edx</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -918,16 +918,16 @@ if ('onhashchange' in window) {
 <span id="L859" class="LineNr"> 859 </span><span class="Delimiter">}</span>
 <span id="L860" class="LineNr"> 860 </span>
 <span id="L861" class="LineNr"> 861 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L861'>apply-multiply</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L862" class="LineNr"> 862 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply *&quot;</span>
+<span id="L862" class="LineNr"> 862 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply *&quot;</span>
 <span id="L863" class="LineNr"> 863 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L864" class="LineNr"> 864 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L865" class="LineNr"> 865 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L866" class="LineNr"> 866 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L867" class="LineNr"> 867 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L867" class="LineNr"> 867 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L868" class="LineNr"> 868 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L869" class="LineNr"> 869 </span>  <span class="Delimiter">{</span>
 <span id="L870" class="LineNr"> 870 </span>    <span class="PreProc">break-if-=</span>
-<span id="L871" class="LineNr"> 871 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;* needs 2 args but got 0&quot;</span>
+<span id="L871" class="LineNr"> 871 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;* needs 2 args but got 0&quot;</span>
 <span id="L872" class="LineNr"> 872 </span>    <span class="PreProc">return</span>
 <span id="L873" class="LineNr"> 873 </span>  <span class="Delimiter">}</span>
 <span id="L874" class="LineNr"> 874 </span>  <span class="muComment"># args-&gt;left-&gt;value</span>
@@ -937,7 +937,7 @@ if ('onhashchange' in window) {
 <span id="L878" class="LineNr"> 878 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L879" class="LineNr"> 879 </span>  <span class="Delimiter">{</span>
 <span id="L880" class="LineNr"> 880 </span>    <span class="PreProc">break-if-=</span>
-<span id="L881" class="LineNr"> 881 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for * is not a number&quot;</span>
+<span id="L881" class="LineNr"> 881 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for * is not a number&quot;</span>
 <span id="L882" class="LineNr"> 882 </span>    <span class="PreProc">return</span>
 <span id="L883" class="LineNr"> 883 </span>  <span class="Delimiter">}</span>
 <span id="L884" class="LineNr"> 884 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -951,7 +951,7 @@ if ('onhashchange' in window) {
 <span id="L892" class="LineNr"> 892 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L893" class="LineNr"> 893 </span>  <span class="Delimiter">{</span>
 <span id="L894" class="LineNr"> 894 </span>    <span class="PreProc">break-if-=</span>
-<span id="L895" class="LineNr"> 895 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;second arg for * is not a number&quot;</span>
+<span id="L895" class="LineNr"> 895 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;second arg for * is not a number&quot;</span>
 <span id="L896" class="LineNr"> 896 </span>    <span class="PreProc">return</span>
 <span id="L897" class="LineNr"> 897 </span>  <span class="Delimiter">}</span>
 <span id="L898" class="LineNr"> 898 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">edx</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -962,16 +962,16 @@ if ('onhashchange' in window) {
 <span id="L903" class="LineNr"> 903 </span><span class="Delimiter">}</span>
 <span id="L904" class="LineNr"> 904 </span>
 <span id="L905" class="LineNr"> 905 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L905'>apply-divide</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L906" class="LineNr"> 906 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply /&quot;</span>
+<span id="L906" class="LineNr"> 906 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply /&quot;</span>
 <span id="L907" class="LineNr"> 907 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L908" class="LineNr"> 908 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L909" class="LineNr"> 909 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L910" class="LineNr"> 910 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L911" class="LineNr"> 911 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L911" class="LineNr"> 911 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L912" class="LineNr"> 912 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L913" class="LineNr"> 913 </span>  <span class="Delimiter">{</span>
 <span id="L914" class="LineNr"> 914 </span>    <span class="PreProc">break-if-=</span>
-<span id="L915" class="LineNr"> 915 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;/ needs 2 args but got 0&quot;</span>
+<span id="L915" class="LineNr"> 915 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;/ needs 2 args but got 0&quot;</span>
 <span id="L916" class="LineNr"> 916 </span>    <span class="PreProc">return</span>
 <span id="L917" class="LineNr"> 917 </span>  <span class="Delimiter">}</span>
 <span id="L918" class="LineNr"> 918 </span>  <span class="muComment"># args-&gt;left-&gt;value</span>
@@ -981,7 +981,7 @@ if ('onhashchange' in window) {
 <span id="L922" class="LineNr"> 922 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L923" class="LineNr"> 923 </span>  <span class="Delimiter">{</span>
 <span id="L924" class="LineNr"> 924 </span>    <span class="PreProc">break-if-=</span>
-<span id="L925" class="LineNr"> 925 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for / is not a number&quot;</span>
+<span id="L925" class="LineNr"> 925 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for / is not a number&quot;</span>
 <span id="L926" class="LineNr"> 926 </span>    <span class="PreProc">return</span>
 <span id="L927" class="LineNr"> 927 </span>  <span class="Delimiter">}</span>
 <span id="L928" class="LineNr"> 928 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -995,7 +995,7 @@ if ('onhashchange' in window) {
 <span id="L936" class="LineNr"> 936 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L937" class="LineNr"> 937 </span>  <span class="Delimiter">{</span>
 <span id="L938" class="LineNr"> 938 </span>    <span class="PreProc">break-if-=</span>
-<span id="L939" class="LineNr"> 939 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;second arg for / is not a number&quot;</span>
+<span id="L939" class="LineNr"> 939 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;second arg for / is not a number&quot;</span>
 <span id="L940" class="LineNr"> 940 </span>    <span class="PreProc">return</span>
 <span id="L941" class="LineNr"> 941 </span>  <span class="Delimiter">}</span>
 <span id="L942" class="LineNr"> 942 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">edx</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -1006,16 +1006,16 @@ if ('onhashchange' in window) {
 <span id="L947" class="LineNr"> 947 </span><span class="Delimiter">}</span>
 <span id="L948" class="LineNr"> 948 </span>
 <span id="L949" class="LineNr"> 949 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L949'>apply-square-root</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L950" class="LineNr"> 950 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply sqrt&quot;</span>
+<span id="L950" class="LineNr"> 950 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply sqrt&quot;</span>
 <span id="L951" class="LineNr"> 951 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L952" class="LineNr"> 952 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L953" class="LineNr"> 953 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L954" class="LineNr"> 954 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L955" class="LineNr"> 955 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L955" class="LineNr"> 955 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L956" class="LineNr"> 956 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L957" class="LineNr"> 957 </span>  <span class="Delimiter">{</span>
 <span id="L958" class="LineNr"> 958 </span>    <span class="PreProc">break-if-=</span>
-<span id="L959" class="LineNr"> 959 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;sqrt needs 1 arg but got 0&quot;</span>
+<span id="L959" class="LineNr"> 959 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;sqrt needs 1 arg but got 0&quot;</span>
 <span id="L960" class="LineNr"> 960 </span>    <span class="PreProc">return</span>
 <span id="L961" class="LineNr"> 961 </span>  <span class="Delimiter">}</span>
 <span id="L962" class="LineNr"> 962 </span>  <span class="muComment"># args-&gt;left-&gt;value</span>
@@ -1025,7 +1025,7 @@ if ('onhashchange' in window) {
 <span id="L966" class="LineNr"> 966 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L967" class="LineNr"> 967 </span>  <span class="Delimiter">{</span>
 <span id="L968" class="LineNr"> 968 </span>    <span class="PreProc">break-if-=</span>
-<span id="L969" class="LineNr"> 969 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;arg for sqrt is not a number&quot;</span>
+<span id="L969" class="LineNr"> 969 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;arg for sqrt is not a number&quot;</span>
 <span id="L970" class="LineNr"> 970 </span>    <span class="PreProc">return</span>
 <span id="L971" class="LineNr"> 971 </span>  <span class="Delimiter">}</span>
 <span id="L972" class="LineNr"> 972 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -1035,16 +1035,16 @@ if ('onhashchange' in window) {
 <span id="L976" class="LineNr"> 976 </span><span class="Delimiter">}</span>
 <span id="L977" class="LineNr"> 977 </span>
 <span id="L978" class="LineNr"> 978 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L978'>apply-abs</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L979" class="LineNr"> 979 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply abs&quot;</span>
+<span id="L979" class="LineNr"> 979 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply abs&quot;</span>
 <span id="L980" class="LineNr"> 980 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L981" class="LineNr"> 981 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L982" class="LineNr"> 982 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L983" class="LineNr"> 983 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L984" class="LineNr"> 984 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L984" class="LineNr"> 984 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L985" class="LineNr"> 985 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L986" class="LineNr"> 986 </span>  <span class="Delimiter">{</span>
 <span id="L987" class="LineNr"> 987 </span>    <span class="PreProc">break-if-=</span>
-<span id="L988" class="LineNr"> 988 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;abs needs 1 arg but got 0&quot;</span>
+<span id="L988" class="LineNr"> 988 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;abs needs 1 arg but got 0&quot;</span>
 <span id="L989" class="LineNr"> 989 </span>    <span class="PreProc">return</span>
 <span id="L990" class="LineNr"> 990 </span>  <span class="Delimiter">}</span>
 <span id="L991" class="LineNr"> 991 </span>  <span class="muComment"># args-&gt;left-&gt;value</span>
@@ -1054,7 +1054,7 @@ if ('onhashchange' in window) {
 <span id="L995" class="LineNr"> 995 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L996" class="LineNr"> 996 </span>  <span class="Delimiter">{</span>
 <span id="L997" class="LineNr"> 997 </span>    <span class="PreProc">break-if-=</span>
-<span id="L998" class="LineNr"> 998 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;arg for <a href='../506math.mu.html#L1'>abs</a> is not a number&quot;</span>
+<span id="L998" class="LineNr"> 998 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;arg for <a href='../506math.mu.html#L1'>abs</a> is not a number&quot;</span>
 <span id="L999" class="LineNr"> 999 </span>    <span class="PreProc">return</span>
 <span id="L1000" class="LineNr">1000 </span>  <span class="Delimiter">}</span>
 <span id="L1001" class="LineNr">1001 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -1072,16 +1072,16 @@ if ('onhashchange' in window) {
 <span id="L1013" class="LineNr">1013 </span><span class="Delimiter">}</span>
 <span id="L1014" class="LineNr">1014 </span>
 <span id="L1015" class="LineNr">1015 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1015'>apply-sgn</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1016" class="LineNr">1016 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply sgn&quot;</span>
+<span id="L1016" class="LineNr">1016 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply sgn&quot;</span>
 <span id="L1017" class="LineNr">1017 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1018" class="LineNr">1018 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1019" class="LineNr">1019 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1020" class="LineNr">1020 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1021" class="LineNr">1021 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1021" class="LineNr">1021 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1022" class="LineNr">1022 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1023" class="LineNr">1023 </span>  <span class="Delimiter">{</span>
 <span id="L1024" class="LineNr">1024 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1025" class="LineNr">1025 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;sgn needs 1 arg but got 0&quot;</span>
+<span id="L1025" class="LineNr">1025 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;sgn needs 1 arg but got 0&quot;</span>
 <span id="L1026" class="LineNr">1026 </span>    <span class="PreProc">return</span>
 <span id="L1027" class="LineNr">1027 </span>  <span class="Delimiter">}</span>
 <span id="L1028" class="LineNr">1028 </span>  <span class="muComment"># args-&gt;left-&gt;value</span>
@@ -1091,7 +1091,7 @@ if ('onhashchange' in window) {
 <span id="L1032" class="LineNr">1032 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L1033" class="LineNr">1033 </span>  <span class="Delimiter">{</span>
 <span id="L1034" class="LineNr">1034 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1035" class="LineNr">1035 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;arg for <a href='../506math.mu.html#L10'>sgn</a> is not a number&quot;</span>
+<span id="L1035" class="LineNr">1035 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;arg for <a href='../506math.mu.html#L10'>sgn</a> is not a number&quot;</span>
 <span id="L1036" class="LineNr">1036 </span>    <span class="PreProc">return</span>
 <span id="L1037" class="LineNr">1037 </span>  <span class="Delimiter">}</span>
 <span id="L1038" class="LineNr">1038 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -1118,16 +1118,16 @@ if ('onhashchange' in window) {
 <span id="L1059" class="LineNr">1059 </span><span class="Delimiter">}</span>
 <span id="L1060" class="LineNr">1060 </span>
 <span id="L1061" class="LineNr">1061 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1061'>apply-car</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1062" class="LineNr">1062 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply car&quot;</span>
+<span id="L1062" class="LineNr">1062 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply car&quot;</span>
 <span id="L1063" class="LineNr">1063 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1064" class="LineNr">1064 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1065" class="LineNr">1065 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1066" class="LineNr">1066 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1067" class="LineNr">1067 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1067" class="LineNr">1067 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1068" class="LineNr">1068 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1069" class="LineNr">1069 </span>  <span class="Delimiter">{</span>
 <span id="L1070" class="LineNr">1070 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1071" class="LineNr">1071 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;car needs 1 arg but got 0&quot;</span>
+<span id="L1071" class="LineNr">1071 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;car needs 1 arg but got 0&quot;</span>
 <span id="L1072" class="LineNr">1072 </span>    <span class="PreProc">return</span>
 <span id="L1073" class="LineNr">1073 </span>  <span class="Delimiter">}</span>
 <span id="L1074" class="LineNr">1074 </span>  <span class="muComment"># args-&gt;left</span>
@@ -1137,7 +1137,7 @@ if ('onhashchange' in window) {
 <span id="L1078" class="LineNr">1078 </span>  compare *first-type, <span class="Constant">0</span>/pair
 <span id="L1079" class="LineNr">1079 </span>  <span class="Delimiter">{</span>
 <span id="L1080" class="LineNr">1080 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1081" class="LineNr">1081 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;arg for <a href='evaluate.mu.html#L981'>car</a> is not a pair&quot;</span>
+<span id="L1081" class="LineNr">1081 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;arg for <a href='evaluate.mu.html#L1130'>car</a> is not a pair&quot;</span>
 <span id="L1082" class="LineNr">1082 </span>    <span class="PreProc">return</span>
 <span id="L1083" class="LineNr">1083 </span>  <span class="Delimiter">}</span>
 <span id="L1084" class="LineNr">1084 </span>  <span class="muComment"># car</span>
@@ -1146,16 +1146,16 @@ if ('onhashchange' in window) {
 <span id="L1087" class="LineNr">1087 </span><span class="Delimiter">}</span>
 <span id="L1088" class="LineNr">1088 </span>
 <span id="L1089" class="LineNr">1089 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1089'>apply-cdr</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1090" class="LineNr">1090 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply cdr&quot;</span>
+<span id="L1090" class="LineNr">1090 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply cdr&quot;</span>
 <span id="L1091" class="LineNr">1091 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1092" class="LineNr">1092 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1093" class="LineNr">1093 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1094" class="LineNr">1094 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1095" class="LineNr">1095 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1095" class="LineNr">1095 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1096" class="LineNr">1096 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1097" class="LineNr">1097 </span>  <span class="Delimiter">{</span>
 <span id="L1098" class="LineNr">1098 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1099" class="LineNr">1099 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;cdr needs 1 arg but got 0&quot;</span>
+<span id="L1099" class="LineNr">1099 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;cdr needs 1 arg but got 0&quot;</span>
 <span id="L1100" class="LineNr">1100 </span>    <span class="PreProc">return</span>
 <span id="L1101" class="LineNr">1101 </span>  <span class="Delimiter">}</span>
 <span id="L1102" class="LineNr">1102 </span>  <span class="muComment"># args-&gt;left</span>
@@ -1165,7 +1165,7 @@ if ('onhashchange' in window) {
 <span id="L1106" class="LineNr">1106 </span>  compare *first-type, <span class="Constant">0</span>/pair
 <span id="L1107" class="LineNr">1107 </span>  <span class="Delimiter">{</span>
 <span id="L1108" class="LineNr">1108 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1109" class="LineNr">1109 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;arg for <a href='evaluate.mu.html#L1009'>cdr</a> is not a pair&quot;</span>
+<span id="L1109" class="LineNr">1109 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;arg for <a href='evaluate.mu.html#L1158'>cdr</a> is not a pair&quot;</span>
 <span id="L1110" class="LineNr">1110 </span>    <span class="PreProc">return</span>
 <span id="L1111" class="LineNr">1111 </span>  <span class="Delimiter">}</span>
 <span id="L1112" class="LineNr">1112 </span>  <span class="muComment"># cdr</span>
@@ -1174,16 +1174,16 @@ if ('onhashchange' in window) {
 <span id="L1115" class="LineNr">1115 </span><span class="Delimiter">}</span>
 <span id="L1116" class="LineNr">1116 </span>
 <span id="L1117" class="LineNr">1117 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1117'>apply-cons</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1118" class="LineNr">1118 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply cons&quot;</span>
+<span id="L1118" class="LineNr">1118 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply cons&quot;</span>
 <span id="L1119" class="LineNr">1119 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1120" class="LineNr">1120 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1121" class="LineNr">1121 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1122" class="LineNr">1122 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1123" class="LineNr">1123 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1123" class="LineNr">1123 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1124" class="LineNr">1124 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1125" class="LineNr">1125 </span>  <span class="Delimiter">{</span>
 <span id="L1126" class="LineNr">1126 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1127" class="LineNr">1127 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;cons needs 2 args but got 0&quot;</span>
+<span id="L1127" class="LineNr">1127 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;cons needs 2 args but got 0&quot;</span>
 <span id="L1128" class="LineNr">1128 </span>    <span class="PreProc">return</span>
 <span id="L1129" class="LineNr">1129 </span>  <span class="Delimiter">}</span>
 <span id="L1130" class="LineNr">1130 </span>  <span class="muComment"># args-&gt;left</span>
@@ -1198,16 +1198,16 @@ if ('onhashchange' in window) {
 <span id="L1139" class="LineNr">1139 </span><span class="Delimiter">}</span>
 <span id="L1140" class="LineNr">1140 </span>
 <span id="L1141" class="LineNr">1141 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1141'>apply-structurally-equal</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1142" class="LineNr">1142 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '='&quot;</span>
+<span id="L1142" class="LineNr">1142 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '='&quot;</span>
 <span id="L1143" class="LineNr">1143 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1144" class="LineNr">1144 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1145" class="LineNr">1145 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1146" class="LineNr">1146 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1147" class="LineNr">1147 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1147" class="LineNr">1147 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1148" class="LineNr">1148 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1149" class="LineNr">1149 </span>  <span class="Delimiter">{</span>
 <span id="L1150" class="LineNr">1150 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1151" class="LineNr">1151 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'=' needs 2 args but got 0&quot;</span>
+<span id="L1151" class="LineNr">1151 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'=' needs 2 args but got 0&quot;</span>
 <span id="L1152" class="LineNr">1152 </span>    <span class="PreProc">return</span>
 <span id="L1153" class="LineNr">1153 </span>  <span class="Delimiter">}</span>
 <span id="L1154" class="LineNr">1154 </span>  <span class="muComment"># args-&gt;left</span>
@@ -1221,7 +1221,7 @@ if ('onhashchange' in window) {
 <span id="L1162" class="LineNr">1162 </span>  <span class="PreProc">var</span> _first/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *first-ah
 <span id="L1163" class="LineNr">1163 </span>  <span class="PreProc">var</span> first/<span class="Constant">ecx</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _first
 <span id="L1164" class="LineNr">1164 </span>  <span class="PreProc">var</span> second/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *second-ah
-<span id="L1165" class="LineNr">1165 </span>  <span class="PreProc">var</span> match?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='evaluate.mu.html#L1037'>cell-isomorphic?</a> first, second, trace
+<span id="L1165" class="LineNr">1165 </span>  <span class="PreProc">var</span> match?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='evaluate.mu.html#L1186'>cell-isomorphic?</a> first, second, trace
 <span id="L1166" class="LineNr">1166 </span>  compare match?, <span class="Constant">0</span>/false
 <span id="L1167" class="LineNr">1167 </span>  <span class="Delimiter">{</span>
 <span id="L1168" class="LineNr">1168 </span>    <span class="PreProc">break-if-!=</span>
@@ -1232,24 +1232,24 @@ if ('onhashchange' in window) {
 <span id="L1173" class="LineNr">1173 </span><span class="Delimiter">}</span>
 <span id="L1174" class="LineNr">1174 </span>
 <span id="L1175" class="LineNr">1175 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1175'>apply-not</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1176" class="LineNr">1176 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply not&quot;</span>
+<span id="L1176" class="LineNr">1176 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply not&quot;</span>
 <span id="L1177" class="LineNr">1177 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1178" class="LineNr">1178 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1179" class="LineNr">1179 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1180" class="LineNr">1180 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1181" class="LineNr">1181 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1181" class="LineNr">1181 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1182" class="LineNr">1182 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1183" class="LineNr">1183 </span>  <span class="Delimiter">{</span>
 <span id="L1184" class="LineNr">1184 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1185" class="LineNr">1185 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;not needs 1 arg but got 0&quot;</span>
+<span id="L1185" class="LineNr">1185 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;not needs 1 arg but got 0&quot;</span>
 <span id="L1186" class="LineNr">1186 </span>    <span class="PreProc">return</span>
 <span id="L1187" class="LineNr">1187 </span>  <span class="Delimiter">}</span>
 <span id="L1188" class="LineNr">1188 </span>  <span class="muComment"># args-&gt;left</span>
 <span id="L1189" class="LineNr">1189 </span>  <span class="PreProc">var</span> first-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get args, left
 <span id="L1190" class="LineNr">1190 </span>  <span class="PreProc">var</span> first/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *first-ah
 <span id="L1191" class="LineNr">1191 </span>  <span class="muComment"># not</span>
-<span id="L1192" class="LineNr">1192 </span>  <span class="PreProc">var</span> <a href='print.mu.html#L236'>nil?</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> first
-<span id="L1193" class="LineNr">1193 </span>  compare <a href='print.mu.html#L236'>nil?</a>, <span class="Constant">0</span>/false
+<span id="L1192" class="LineNr">1192 </span>  <span class="PreProc">var</span> <a href='print.mu.html#L347'>nil?</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> first
+<span id="L1193" class="LineNr">1193 </span>  compare <a href='print.mu.html#L347'>nil?</a>, <span class="Constant">0</span>/false
 <span id="L1194" class="LineNr">1194 </span>  <span class="Delimiter">{</span>
 <span id="L1195" class="LineNr">1195 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L1196" class="LineNr">1196 </span>    <a href='cell.mu.html#L121'>nil</a> out
@@ -1259,21 +1259,21 @@ if ('onhashchange' in window) {
 <span id="L1200" class="LineNr">1200 </span><span class="Delimiter">}</span>
 <span id="L1201" class="LineNr">1201 </span>
 <span id="L1202" class="LineNr">1202 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1202'>apply-debug</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1203" class="LineNr">1203 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply debug&quot;</span>
+<span id="L1203" class="LineNr">1203 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply debug&quot;</span>
 <span id="L1204" class="LineNr">1204 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1205" class="LineNr">1205 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1206" class="LineNr">1206 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1207" class="LineNr">1207 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1208" class="LineNr">1208 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1208" class="LineNr">1208 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1209" class="LineNr">1209 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1210" class="LineNr">1210 </span>  <span class="Delimiter">{</span>
 <span id="L1211" class="LineNr">1211 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1212" class="LineNr">1212 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;not needs 1 arg but got 0&quot;</span>
+<span id="L1212" class="LineNr">1212 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;not needs 1 arg but got 0&quot;</span>
 <span id="L1213" class="LineNr">1213 </span>    <span class="PreProc">return</span>
 <span id="L1214" class="LineNr">1214 </span>  <span class="Delimiter">}</span>
 <span id="L1215" class="LineNr">1215 </span>  <span class="muComment"># dump args-&gt;left uglily to screen and wait for a keypress</span>
 <span id="L1216" class="LineNr">1216 </span>  <span class="PreProc">var</span> first-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get args, left
-<span id="L1217" class="LineNr">1217 </span>  <a href='print.mu.html#L94'>dump-cell-from-cursor-over-full-screen</a> first-ah
+<span id="L1217" class="LineNr">1217 </span>  <a href='print.mu.html#L136'>dump-cell-from-cursor-over-full-screen</a> first-ah
 <span id="L1218" class="LineNr">1218 </span>  <span class="Delimiter">{</span>
 <span id="L1219" class="LineNr">1219 </span>    <span class="PreProc">var</span> foo/<span class="Constant">eax</span>: byte <span class="Special">&lt;-</span> <a href='../102keyboard.subx.html#L21'>read-key</a> <span class="Constant">0</span>/keyboard
 <span id="L1220" class="LineNr">1220 </span>    compare foo, <span class="Constant">0</span>
@@ -1283,16 +1283,16 @@ if ('onhashchange' in window) {
 <span id="L1224" class="LineNr">1224 </span><span class="Delimiter">}</span>
 <span id="L1225" class="LineNr">1225 </span>
 <span id="L1226" class="LineNr">1226 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1226'>apply-&lt;</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1227" class="LineNr">1227 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '&lt;'&quot;</span>
+<span id="L1227" class="LineNr">1227 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '&lt;'&quot;</span>
 <span id="L1228" class="LineNr">1228 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1229" class="LineNr">1229 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1230" class="LineNr">1230 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1231" class="LineNr">1231 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1232" class="LineNr">1232 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1232" class="LineNr">1232 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1233" class="LineNr">1233 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1234" class="LineNr">1234 </span>  <span class="Delimiter">{</span>
 <span id="L1235" class="LineNr">1235 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1236" class="LineNr">1236 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'&lt;' needs 2 args but got 0&quot;</span>
+<span id="L1236" class="LineNr">1236 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'&lt;' needs 2 args but got 0&quot;</span>
 <span id="L1237" class="LineNr">1237 </span>    <span class="PreProc">return</span>
 <span id="L1238" class="LineNr">1238 </span>  <span class="Delimiter">}</span>
 <span id="L1239" class="LineNr">1239 </span>  <span class="muComment"># args-&gt;left</span>
@@ -1309,7 +1309,7 @@ if ('onhashchange' in window) {
 <span id="L1250" class="LineNr">1250 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L1251" class="LineNr">1251 </span>  <span class="Delimiter">{</span>
 <span id="L1252" class="LineNr">1252 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1253" class="LineNr">1253 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for '&lt;' is not a number&quot;</span>
+<span id="L1253" class="LineNr">1253 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for '&lt;' is not a number&quot;</span>
 <span id="L1254" class="LineNr">1254 </span>    <span class="PreProc">return</span>
 <span id="L1255" class="LineNr">1255 </span>  <span class="Delimiter">}</span>
 <span id="L1256" class="LineNr">1256 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -1319,7 +1319,7 @@ if ('onhashchange' in window) {
 <span id="L1260" class="LineNr">1260 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L1261" class="LineNr">1261 </span>  <span class="Delimiter">{</span>
 <span id="L1262" class="LineNr">1262 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1263" class="LineNr">1263 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for '&lt;' is not a number&quot;</span>
+<span id="L1263" class="LineNr">1263 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for '&lt;' is not a number&quot;</span>
 <span id="L1264" class="LineNr">1264 </span>    <span class="PreProc">return</span>
 <span id="L1265" class="LineNr">1265 </span>  <span class="Delimiter">}</span>
 <span id="L1266" class="LineNr">1266 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">eax</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -1333,16 +1333,16 @@ if ('onhashchange' in window) {
 <span id="L1274" class="LineNr">1274 </span><span class="Delimiter">}</span>
 <span id="L1275" class="LineNr">1275 </span>
 <span id="L1276" class="LineNr">1276 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1276'>apply-&gt;</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1277" class="LineNr">1277 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '&gt;'&quot;</span>
+<span id="L1277" class="LineNr">1277 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '&gt;'&quot;</span>
 <span id="L1278" class="LineNr">1278 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1279" class="LineNr">1279 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1280" class="LineNr">1280 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1281" class="LineNr">1281 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1282" class="LineNr">1282 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1282" class="LineNr">1282 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1283" class="LineNr">1283 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1284" class="LineNr">1284 </span>  <span class="Delimiter">{</span>
 <span id="L1285" class="LineNr">1285 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1286" class="LineNr">1286 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'&gt;' needs 2 args but got 0&quot;</span>
+<span id="L1286" class="LineNr">1286 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'&gt;' needs 2 args but got 0&quot;</span>
 <span id="L1287" class="LineNr">1287 </span>    <span class="PreProc">return</span>
 <span id="L1288" class="LineNr">1288 </span>  <span class="Delimiter">}</span>
 <span id="L1289" class="LineNr">1289 </span>  <span class="muComment"># args-&gt;left</span>
@@ -1359,7 +1359,7 @@ if ('onhashchange' in window) {
 <span id="L1300" class="LineNr">1300 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L1301" class="LineNr">1301 </span>  <span class="Delimiter">{</span>
 <span id="L1302" class="LineNr">1302 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1303" class="LineNr">1303 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for '&gt;' is not a number&quot;</span>
+<span id="L1303" class="LineNr">1303 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for '&gt;' is not a number&quot;</span>
 <span id="L1304" class="LineNr">1304 </span>    <span class="PreProc">return</span>
 <span id="L1305" class="LineNr">1305 </span>  <span class="Delimiter">}</span>
 <span id="L1306" class="LineNr">1306 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -1369,7 +1369,7 @@ if ('onhashchange' in window) {
 <span id="L1310" class="LineNr">1310 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L1311" class="LineNr">1311 </span>  <span class="Delimiter">{</span>
 <span id="L1312" class="LineNr">1312 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1313" class="LineNr">1313 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for '&gt;' is not a number&quot;</span>
+<span id="L1313" class="LineNr">1313 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for '&gt;' is not a number&quot;</span>
 <span id="L1314" class="LineNr">1314 </span>    <span class="PreProc">return</span>
 <span id="L1315" class="LineNr">1315 </span>  <span class="Delimiter">}</span>
 <span id="L1316" class="LineNr">1316 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">eax</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -1383,16 +1383,16 @@ if ('onhashchange' in window) {
 <span id="L1324" class="LineNr">1324 </span><span class="Delimiter">}</span>
 <span id="L1325" class="LineNr">1325 </span>
 <span id="L1326" class="LineNr">1326 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1326'>apply-&lt;=</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1327" class="LineNr">1327 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '&lt;='&quot;</span>
+<span id="L1327" class="LineNr">1327 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '&lt;='&quot;</span>
 <span id="L1328" class="LineNr">1328 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1329" class="LineNr">1329 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1330" class="LineNr">1330 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1331" class="LineNr">1331 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1332" class="LineNr">1332 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1332" class="LineNr">1332 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1333" class="LineNr">1333 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1334" class="LineNr">1334 </span>  <span class="Delimiter">{</span>
 <span id="L1335" class="LineNr">1335 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1336" class="LineNr">1336 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'&lt;=' needs 2 args but got 0&quot;</span>
+<span id="L1336" class="LineNr">1336 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'&lt;=' needs 2 args but got 0&quot;</span>
 <span id="L1337" class="LineNr">1337 </span>    <span class="PreProc">return</span>
 <span id="L1338" class="LineNr">1338 </span>  <span class="Delimiter">}</span>
 <span id="L1339" class="LineNr">1339 </span>  <span class="muComment"># args-&gt;left</span>
@@ -1409,7 +1409,7 @@ if ('onhashchange' in window) {
 <span id="L1350" class="LineNr">1350 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L1351" class="LineNr">1351 </span>  <span class="Delimiter">{</span>
 <span id="L1352" class="LineNr">1352 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1353" class="LineNr">1353 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for '&lt;=' is not a number&quot;</span>
+<span id="L1353" class="LineNr">1353 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for '&lt;=' is not a number&quot;</span>
 <span id="L1354" class="LineNr">1354 </span>    <span class="PreProc">return</span>
 <span id="L1355" class="LineNr">1355 </span>  <span class="Delimiter">}</span>
 <span id="L1356" class="LineNr">1356 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -1419,7 +1419,7 @@ if ('onhashchange' in window) {
 <span id="L1360" class="LineNr">1360 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L1361" class="LineNr">1361 </span>  <span class="Delimiter">{</span>
 <span id="L1362" class="LineNr">1362 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1363" class="LineNr">1363 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for '&lt;=' is not a number&quot;</span>
+<span id="L1363" class="LineNr">1363 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for '&lt;=' is not a number&quot;</span>
 <span id="L1364" class="LineNr">1364 </span>    <span class="PreProc">return</span>
 <span id="L1365" class="LineNr">1365 </span>  <span class="Delimiter">}</span>
 <span id="L1366" class="LineNr">1366 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">eax</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -1433,16 +1433,16 @@ if ('onhashchange' in window) {
 <span id="L1374" class="LineNr">1374 </span><span class="Delimiter">}</span>
 <span id="L1375" class="LineNr">1375 </span>
 <span id="L1376" class="LineNr">1376 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1376'>apply-&gt;=</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1377" class="LineNr">1377 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '&gt;='&quot;</span>
+<span id="L1377" class="LineNr">1377 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply '&gt;='&quot;</span>
 <span id="L1378" class="LineNr">1378 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1379" class="LineNr">1379 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1380" class="LineNr">1380 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1381" class="LineNr">1381 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1382" class="LineNr">1382 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1382" class="LineNr">1382 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1383" class="LineNr">1383 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1384" class="LineNr">1384 </span>  <span class="Delimiter">{</span>
 <span id="L1385" class="LineNr">1385 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1386" class="LineNr">1386 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'&gt;=' needs 2 args but got 0&quot;</span>
+<span id="L1386" class="LineNr">1386 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'&gt;=' needs 2 args but got 0&quot;</span>
 <span id="L1387" class="LineNr">1387 </span>    <span class="PreProc">return</span>
 <span id="L1388" class="LineNr">1388 </span>  <span class="Delimiter">}</span>
 <span id="L1389" class="LineNr">1389 </span>  <span class="muComment"># args-&gt;left</span>
@@ -1459,7 +1459,7 @@ if ('onhashchange' in window) {
 <span id="L1400" class="LineNr">1400 </span>  compare *first-type, <span class="Constant">1</span>/number
 <span id="L1401" class="LineNr">1401 </span>  <span class="Delimiter">{</span>
 <span id="L1402" class="LineNr">1402 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1403" class="LineNr">1403 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for '&gt;=' is not a number&quot;</span>
+<span id="L1403" class="LineNr">1403 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for '&gt;=' is not a number&quot;</span>
 <span id="L1404" class="LineNr">1404 </span>    <span class="PreProc">return</span>
 <span id="L1405" class="LineNr">1405 </span>  <span class="Delimiter">}</span>
 <span id="L1406" class="LineNr">1406 </span>  <span class="PreProc">var</span> first-value/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> get first, number-data
@@ -1469,7 +1469,7 @@ if ('onhashchange' in window) {
 <span id="L1410" class="LineNr">1410 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L1411" class="LineNr">1411 </span>  <span class="Delimiter">{</span>
 <span id="L1412" class="LineNr">1412 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1413" class="LineNr">1413 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for '&gt;=' is not a number&quot;</span>
+<span id="L1413" class="LineNr">1413 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for '&gt;=' is not a number&quot;</span>
 <span id="L1414" class="LineNr">1414 </span>    <span class="PreProc">return</span>
 <span id="L1415" class="LineNr">1415 </span>  <span class="Delimiter">}</span>
 <span id="L1416" class="LineNr">1416 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">eax</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -1483,16 +1483,16 @@ if ('onhashchange' in window) {
 <span id="L1424" class="LineNr">1424 </span><span class="Delimiter">}</span>
 <span id="L1425" class="LineNr">1425 </span>
 <span id="L1426" class="LineNr">1426 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1426'>apply-print</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1427" class="LineNr">1427 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply print&quot;</span>
+<span id="L1427" class="LineNr">1427 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply print&quot;</span>
 <span id="L1428" class="LineNr">1428 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1429" class="LineNr">1429 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1430" class="LineNr">1430 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1431" class="LineNr">1431 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1432" class="LineNr">1432 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1432" class="LineNr">1432 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1433" class="LineNr">1433 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1434" class="LineNr">1434 </span>  <span class="Delimiter">{</span>
 <span id="L1435" class="LineNr">1435 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1436" class="LineNr">1436 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;print needs 2 args but got 0&quot;</span>
+<span id="L1436" class="LineNr">1436 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;print needs 2 args but got 0&quot;</span>
 <span id="L1437" class="LineNr">1437 </span>    <span class="PreProc">return</span>
 <span id="L1438" class="LineNr">1438 </span>  <span class="Delimiter">}</span>
 <span id="L1439" class="LineNr">1439 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1502,7 +1502,7 @@ if ('onhashchange' in window) {
 <span id="L1443" class="LineNr">1443 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1444" class="LineNr">1444 </span>  <span class="Delimiter">{</span>
 <span id="L1445" class="LineNr">1445 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1446" class="LineNr">1446 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'print' is not a screen&quot;</span>
+<span id="L1446" class="LineNr">1446 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'print' is not a screen&quot;</span>
 <span id="L1447" class="LineNr">1447 </span>    <span class="PreProc">return</span>
 <span id="L1448" class="LineNr">1448 </span>  <span class="Delimiter">}</span>
 <span id="L1449" class="LineNr">1449 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1515,23 +1515,23 @@ if ('onhashchange' in window) {
 <span id="L1456" class="LineNr">1456 </span>  <span class="PreProc">var</span> second-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get right, left
 <span id="L1457" class="LineNr">1457 </span>  <span class="PreProc">var</span> stream-storage: (stream byte <span class="Constant">0x100</span>)
 <span id="L1458" class="LineNr">1458 </span>  <span class="PreProc">var</span> stream/<span class="Constant">edi</span>: (addr stream byte) <span class="Special">&lt;-</span> address stream-storage
-<span id="L1459" class="LineNr">1459 </span>  <a href='print.mu.html#L1'>print-cell</a> second-ah, stream, trace
-<span id="L1460" class="LineNr">1460 </span>  <a href='../501draw-text.mu.html#L214'>draw-stream-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, stream, <span class="Constant">7</span>/fg, <span class="Constant">0</span>/bg
+<span id="L1459" class="LineNr">1459 </span>  <a href='print.mu.html#L7'>print-cell</a> second-ah, stream, trace
+<span id="L1460" class="LineNr">1460 </span>  <a href='../501draw-text.mu.html#L235'>draw-stream-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, stream, <span class="Constant">7</span>/fg, <span class="Constant">0</span>/bg
 <span id="L1461" class="LineNr">1461 </span>  <span class="muComment"># return what was printed</span>
 <span id="L1462" class="LineNr">1462 </span>  copy-object second-ah, out
 <span id="L1463" class="LineNr">1463 </span><span class="Delimiter">}</span>
 <span id="L1464" class="LineNr">1464 </span>
 <span id="L1465" class="LineNr">1465 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1465'>apply-clear</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1466" class="LineNr">1466 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply clear&quot;</span>
+<span id="L1466" class="LineNr">1466 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply clear&quot;</span>
 <span id="L1467" class="LineNr">1467 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1468" class="LineNr">1468 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1469" class="LineNr">1469 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1470" class="LineNr">1470 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1471" class="LineNr">1471 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1471" class="LineNr">1471 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1472" class="LineNr">1472 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1473" class="LineNr">1473 </span>  <span class="Delimiter">{</span>
 <span id="L1474" class="LineNr">1474 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1475" class="LineNr">1475 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'clear' needs 1 arg but got 0&quot;</span>
+<span id="L1475" class="LineNr">1475 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'clear' needs 1 arg but got 0&quot;</span>
 <span id="L1476" class="LineNr">1476 </span>    <span class="PreProc">return</span>
 <span id="L1477" class="LineNr">1477 </span>  <span class="Delimiter">}</span>
 <span id="L1478" class="LineNr">1478 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1541,27 +1541,27 @@ if ('onhashchange' in window) {
 <span id="L1482" class="LineNr">1482 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1483" class="LineNr">1483 </span>  <span class="Delimiter">{</span>
 <span id="L1484" class="LineNr">1484 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1485" class="LineNr">1485 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'clear' is not a screen&quot;</span>
+<span id="L1485" class="LineNr">1485 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'clear' is not a screen&quot;</span>
 <span id="L1486" class="LineNr">1486 </span>    <span class="PreProc">return</span>
 <span id="L1487" class="LineNr">1487 </span>  <span class="Delimiter">}</span>
 <span id="L1488" class="LineNr">1488 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
 <span id="L1489" class="LineNr">1489 </span>  <span class="PreProc">var</span> _screen/<span class="Constant">eax</span>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *screen-ah
 <span id="L1490" class="LineNr">1490 </span>  <span class="PreProc">var</span> <a href='../500fake-screen.mu.html#L14'>screen</a>/<span class="Constant">ecx</span>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
 <span id="L1491" class="LineNr">1491 </span>  <span class="muComment">#</span>
-<span id="L1492" class="LineNr">1492 </span>  <a href='../500fake-screen.mu.html#L230'>clear-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>
+<span id="L1492" class="LineNr">1492 </span>  <a href='../500fake-screen.mu.html#L231'>clear-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>
 <span id="L1493" class="LineNr">1493 </span><span class="Delimiter">}</span>
 <span id="L1494" class="LineNr">1494 </span>
 <span id="L1495" class="LineNr">1495 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1495'>apply-up</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1496" class="LineNr">1496 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply up&quot;</span>
+<span id="L1496" class="LineNr">1496 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply up&quot;</span>
 <span id="L1497" class="LineNr">1497 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1498" class="LineNr">1498 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1499" class="LineNr">1499 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1500" class="LineNr">1500 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1501" class="LineNr">1501 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1501" class="LineNr">1501 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1502" class="LineNr">1502 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1503" class="LineNr">1503 </span>  <span class="Delimiter">{</span>
 <span id="L1504" class="LineNr">1504 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1505" class="LineNr">1505 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'up' needs 1 arg but got 0&quot;</span>
+<span id="L1505" class="LineNr">1505 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'up' needs 1 arg but got 0&quot;</span>
 <span id="L1506" class="LineNr">1506 </span>    <span class="PreProc">return</span>
 <span id="L1507" class="LineNr">1507 </span>  <span class="Delimiter">}</span>
 <span id="L1508" class="LineNr">1508 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1571,7 +1571,7 @@ if ('onhashchange' in window) {
 <span id="L1512" class="LineNr">1512 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1513" class="LineNr">1513 </span>  <span class="Delimiter">{</span>
 <span id="L1514" class="LineNr">1514 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1515" class="LineNr">1515 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'up' is not a screen&quot;</span>
+<span id="L1515" class="LineNr">1515 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'up' is not a screen&quot;</span>
 <span id="L1516" class="LineNr">1516 </span>    <span class="PreProc">return</span>
 <span id="L1517" class="LineNr">1517 </span>  <span class="Delimiter">}</span>
 <span id="L1518" class="LineNr">1518 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1582,16 +1582,16 @@ if ('onhashchange' in window) {
 <span id="L1523" class="LineNr">1523 </span><span class="Delimiter">}</span>
 <span id="L1524" class="LineNr">1524 </span>
 <span id="L1525" class="LineNr">1525 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1525'>apply-down</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1526" class="LineNr">1526 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply 'down'&quot;</span>
+<span id="L1526" class="LineNr">1526 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply 'down'&quot;</span>
 <span id="L1527" class="LineNr">1527 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1528" class="LineNr">1528 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1529" class="LineNr">1529 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1530" class="LineNr">1530 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1531" class="LineNr">1531 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1531" class="LineNr">1531 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1532" class="LineNr">1532 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1533" class="LineNr">1533 </span>  <span class="Delimiter">{</span>
 <span id="L1534" class="LineNr">1534 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1535" class="LineNr">1535 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'down' needs 1 arg but got 0&quot;</span>
+<span id="L1535" class="LineNr">1535 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'down' needs 1 arg but got 0&quot;</span>
 <span id="L1536" class="LineNr">1536 </span>    <span class="PreProc">return</span>
 <span id="L1537" class="LineNr">1537 </span>  <span class="Delimiter">}</span>
 <span id="L1538" class="LineNr">1538 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1601,7 +1601,7 @@ if ('onhashchange' in window) {
 <span id="L1542" class="LineNr">1542 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1543" class="LineNr">1543 </span>  <span class="Delimiter">{</span>
 <span id="L1544" class="LineNr">1544 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1545" class="LineNr">1545 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'down' is not a screen&quot;</span>
+<span id="L1545" class="LineNr">1545 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'down' is not a screen&quot;</span>
 <span id="L1546" class="LineNr">1546 </span>    <span class="PreProc">return</span>
 <span id="L1547" class="LineNr">1547 </span>  <span class="Delimiter">}</span>
 <span id="L1548" class="LineNr">1548 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1612,16 +1612,16 @@ if ('onhashchange' in window) {
 <span id="L1553" class="LineNr">1553 </span><span class="Delimiter">}</span>
 <span id="L1554" class="LineNr">1554 </span>
 <span id="L1555" class="LineNr">1555 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1555'>apply-left</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1556" class="LineNr">1556 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply 'left'&quot;</span>
+<span id="L1556" class="LineNr">1556 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply 'left'&quot;</span>
 <span id="L1557" class="LineNr">1557 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1558" class="LineNr">1558 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1559" class="LineNr">1559 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1560" class="LineNr">1560 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1561" class="LineNr">1561 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1561" class="LineNr">1561 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1562" class="LineNr">1562 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1563" class="LineNr">1563 </span>  <span class="Delimiter">{</span>
 <span id="L1564" class="LineNr">1564 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1565" class="LineNr">1565 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'left' needs 1 arg but got 0&quot;</span>
+<span id="L1565" class="LineNr">1565 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'left' needs 1 arg but got 0&quot;</span>
 <span id="L1566" class="LineNr">1566 </span>    <span class="PreProc">return</span>
 <span id="L1567" class="LineNr">1567 </span>  <span class="Delimiter">}</span>
 <span id="L1568" class="LineNr">1568 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1631,7 +1631,7 @@ if ('onhashchange' in window) {
 <span id="L1572" class="LineNr">1572 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1573" class="LineNr">1573 </span>  <span class="Delimiter">{</span>
 <span id="L1574" class="LineNr">1574 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1575" class="LineNr">1575 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'left' is not a screen&quot;</span>
+<span id="L1575" class="LineNr">1575 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'left' is not a screen&quot;</span>
 <span id="L1576" class="LineNr">1576 </span>    <span class="PreProc">return</span>
 <span id="L1577" class="LineNr">1577 </span>  <span class="Delimiter">}</span>
 <span id="L1578" class="LineNr">1578 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1642,16 +1642,16 @@ if ('onhashchange' in window) {
 <span id="L1583" class="LineNr">1583 </span><span class="Delimiter">}</span>
 <span id="L1584" class="LineNr">1584 </span>
 <span id="L1585" class="LineNr">1585 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1585'>apply-right</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1586" class="LineNr">1586 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply 'right'&quot;</span>
+<span id="L1586" class="LineNr">1586 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply 'right'&quot;</span>
 <span id="L1587" class="LineNr">1587 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1588" class="LineNr">1588 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1589" class="LineNr">1589 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1590" class="LineNr">1590 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1591" class="LineNr">1591 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1591" class="LineNr">1591 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1592" class="LineNr">1592 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1593" class="LineNr">1593 </span>  <span class="Delimiter">{</span>
 <span id="L1594" class="LineNr">1594 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1595" class="LineNr">1595 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'right' needs 1 arg but got 0&quot;</span>
+<span id="L1595" class="LineNr">1595 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'right' needs 1 arg but got 0&quot;</span>
 <span id="L1596" class="LineNr">1596 </span>    <span class="PreProc">return</span>
 <span id="L1597" class="LineNr">1597 </span>  <span class="Delimiter">}</span>
 <span id="L1598" class="LineNr">1598 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1661,7 +1661,7 @@ if ('onhashchange' in window) {
 <span id="L1602" class="LineNr">1602 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1603" class="LineNr">1603 </span>  <span class="Delimiter">{</span>
 <span id="L1604" class="LineNr">1604 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1605" class="LineNr">1605 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'right' is not a screen&quot;</span>
+<span id="L1605" class="LineNr">1605 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'right' is not a screen&quot;</span>
 <span id="L1606" class="LineNr">1606 </span>    <span class="PreProc">return</span>
 <span id="L1607" class="LineNr">1607 </span>  <span class="Delimiter">}</span>
 <span id="L1608" class="LineNr">1608 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1672,16 +1672,16 @@ if ('onhashchange' in window) {
 <span id="L1613" class="LineNr">1613 </span><span class="Delimiter">}</span>
 <span id="L1614" class="LineNr">1614 </span>
 <span id="L1615" class="LineNr">1615 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1615'>apply-cr</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1616" class="LineNr">1616 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply 'cr'&quot;</span>
+<span id="L1616" class="LineNr">1616 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply 'cr'&quot;</span>
 <span id="L1617" class="LineNr">1617 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1618" class="LineNr">1618 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1619" class="LineNr">1619 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1620" class="LineNr">1620 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1621" class="LineNr">1621 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1621" class="LineNr">1621 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1622" class="LineNr">1622 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1623" class="LineNr">1623 </span>  <span class="Delimiter">{</span>
 <span id="L1624" class="LineNr">1624 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1625" class="LineNr">1625 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;'cr' needs 1 arg but got 0&quot;</span>
+<span id="L1625" class="LineNr">1625 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;'cr' needs 1 arg but got 0&quot;</span>
 <span id="L1626" class="LineNr">1626 </span>    <span class="PreProc">return</span>
 <span id="L1627" class="LineNr">1627 </span>  <span class="Delimiter">}</span>
 <span id="L1628" class="LineNr">1628 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1691,7 +1691,7 @@ if ('onhashchange' in window) {
 <span id="L1632" class="LineNr">1632 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1633" class="LineNr">1633 </span>  <span class="Delimiter">{</span>
 <span id="L1634" class="LineNr">1634 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1635" class="LineNr">1635 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'cr' is not a screen&quot;</span>
+<span id="L1635" class="LineNr">1635 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'cr' is not a screen&quot;</span>
 <span id="L1636" class="LineNr">1636 </span>    <span class="PreProc">return</span>
 <span id="L1637" class="LineNr">1637 </span>  <span class="Delimiter">}</span>
 <span id="L1638" class="LineNr">1638 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1702,16 +1702,16 @@ if ('onhashchange' in window) {
 <span id="L1643" class="LineNr">1643 </span><span class="Delimiter">}</span>
 <span id="L1644" class="LineNr">1644 </span>
 <span id="L1645" class="LineNr">1645 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1645'>apply-pixel</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1646" class="LineNr">1646 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply pixel&quot;</span>
+<span id="L1646" class="LineNr">1646 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply pixel&quot;</span>
 <span id="L1647" class="LineNr">1647 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1648" class="LineNr">1648 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1649" class="LineNr">1649 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1650" class="LineNr">1650 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1651" class="LineNr">1651 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1651" class="LineNr">1651 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1652" class="LineNr">1652 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1653" class="LineNr">1653 </span>  <span class="Delimiter">{</span>
 <span id="L1654" class="LineNr">1654 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1655" class="LineNr">1655 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;pixel needs 4 args but got 0&quot;</span>
+<span id="L1655" class="LineNr">1655 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;pixel needs 4 args but got 0&quot;</span>
 <span id="L1656" class="LineNr">1656 </span>    <span class="PreProc">return</span>
 <span id="L1657" class="LineNr">1657 </span>  <span class="Delimiter">}</span>
 <span id="L1658" class="LineNr">1658 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1721,7 +1721,7 @@ if ('onhashchange' in window) {
 <span id="L1662" class="LineNr">1662 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1663" class="LineNr">1663 </span>  <span class="Delimiter">{</span>
 <span id="L1664" class="LineNr">1664 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1665" class="LineNr">1665 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'pixel' is not a screen&quot;</span>
+<span id="L1665" class="LineNr">1665 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'pixel' is not a screen&quot;</span>
 <span id="L1666" class="LineNr">1666 </span>    <span class="PreProc">return</span>
 <span id="L1667" class="LineNr">1667 </span>  <span class="Delimiter">}</span>
 <span id="L1668" class="LineNr">1668 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1738,7 +1738,7 @@ if ('onhashchange' in window) {
 <span id="L1679" class="LineNr">1679 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L1680" class="LineNr">1680 </span>  <span class="Delimiter">{</span>
 <span id="L1681" class="LineNr">1681 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1682" class="LineNr">1682 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;second arg for 'pixel' is not an int (x coordinate)&quot;</span>
+<span id="L1682" class="LineNr">1682 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;second arg for 'pixel' is not an int (x coordinate)&quot;</span>
 <span id="L1683" class="LineNr">1683 </span>    <span class="PreProc">return</span>
 <span id="L1684" class="LineNr">1684 </span>  <span class="Delimiter">}</span>
 <span id="L1685" class="LineNr">1685 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">eax</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -1754,7 +1754,7 @@ if ('onhashchange' in window) {
 <span id="L1695" class="LineNr">1695 </span>  compare *third-type, <span class="Constant">1</span>/number
 <span id="L1696" class="LineNr">1696 </span>  <span class="Delimiter">{</span>
 <span id="L1697" class="LineNr">1697 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1698" class="LineNr">1698 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;third arg for 'pixel' is not an int (y coordinate)&quot;</span>
+<span id="L1698" class="LineNr">1698 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;third arg for 'pixel' is not an int (y coordinate)&quot;</span>
 <span id="L1699" class="LineNr">1699 </span>    <span class="PreProc">return</span>
 <span id="L1700" class="LineNr">1700 </span>  <span class="Delimiter">}</span>
 <span id="L1701" class="LineNr">1701 </span>  <span class="PreProc">var</span> third-value/<span class="Constant">eax</span>: (addr float) <span class="Special">&lt;-</span> get third, number-data
@@ -1770,26 +1770,26 @@ if ('onhashchange' in window) {
 <span id="L1711" class="LineNr">1711 </span>  compare *fourth-type, <span class="Constant">1</span>/number
 <span id="L1712" class="LineNr">1712 </span>  <span class="Delimiter">{</span>
 <span id="L1713" class="LineNr">1713 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1714" class="LineNr">1714 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;fourth arg for 'pixel' is not an int (color; 0..0xff)&quot;</span>
+<span id="L1714" class="LineNr">1714 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;fourth arg for 'pixel' is not an int (color; 0..0xff)&quot;</span>
 <span id="L1715" class="LineNr">1715 </span>    <span class="PreProc">return</span>
 <span id="L1716" class="LineNr">1716 </span>  <span class="Delimiter">}</span>
 <span id="L1717" class="LineNr">1717 </span>  <span class="PreProc">var</span> fourth-value/<span class="Constant">eax</span>: (addr float) <span class="Special">&lt;-</span> get fourth, number-data
 <span id="L1718" class="LineNr">1718 </span>  <span class="PreProc">var</span> color/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> convert *fourth-value
-<span id="L1719" class="LineNr">1719 </span>  <a href='../500fake-screen.mu.html#L462'>pixel</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, x, y, color
+<span id="L1719" class="LineNr">1719 </span>  <a href='../500fake-screen.mu.html#L463'>pixel</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, x, y, color
 <span id="L1720" class="LineNr">1720 </span>  <span class="muComment"># return nothing</span>
 <span id="L1721" class="LineNr">1721 </span><span class="Delimiter">}</span>
 <span id="L1722" class="LineNr">1722 </span>
 <span id="L1723" class="LineNr">1723 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1723'>apply-wait-for-key</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1724" class="LineNr">1724 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply key&quot;</span>
+<span id="L1724" class="LineNr">1724 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply key&quot;</span>
 <span id="L1725" class="LineNr">1725 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1726" class="LineNr">1726 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1727" class="LineNr">1727 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1728" class="LineNr">1728 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1729" class="LineNr">1729 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1729" class="LineNr">1729 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1730" class="LineNr">1730 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1731" class="LineNr">1731 </span>  <span class="Delimiter">{</span>
 <span id="L1732" class="LineNr">1732 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1733" class="LineNr">1733 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;key needs 1 arg but got 0&quot;</span>
+<span id="L1733" class="LineNr">1733 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;key needs 1 arg but got 0&quot;</span>
 <span id="L1734" class="LineNr">1734 </span>    <span class="PreProc">return</span>
 <span id="L1735" class="LineNr">1735 </span>  <span class="Delimiter">}</span>
 <span id="L1736" class="LineNr">1736 </span>  <span class="muComment"># keyboard = args-&gt;left</span>
@@ -1799,7 +1799,7 @@ if ('onhashchange' in window) {
 <span id="L1740" class="LineNr">1740 </span>  compare *first-type, <span class="Constant">6</span>/keyboard
 <span id="L1741" class="LineNr">1741 </span>  <span class="Delimiter">{</span>
 <span id="L1742" class="LineNr">1742 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1743" class="LineNr">1743 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'key' is not a keyboard&quot;</span>
+<span id="L1743" class="LineNr">1743 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'key' is not a keyboard&quot;</span>
 <span id="L1744" class="LineNr">1744 </span>    <span class="PreProc">return</span>
 <span id="L1745" class="LineNr">1745 </span>  <span class="Delimiter">}</span>
 <span id="L1746" class="LineNr">1746 </span>  <span class="PreProc">var</span> keyboard-ah/<span class="Constant">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get first, keyboard-data
@@ -1826,21 +1826,21 @@ if ('onhashchange' in window) {
 <span id="L1767" class="LineNr">1767 </span><span class="Delimiter">}</span>
 <span id="L1768" class="LineNr">1768 </span>
 <span id="L1769" class="LineNr">1769 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1769'>apply-stream</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1770" class="LineNr">1770 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply stream&quot;</span>
+<span id="L1770" class="LineNr">1770 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply stream&quot;</span>
 <span id="L1771" class="LineNr">1771 </span>  <a href='cell.mu.html#L58'>allocate-stream</a> out
 <span id="L1772" class="LineNr">1772 </span><span class="Delimiter">}</span>
 <span id="L1773" class="LineNr">1773 </span>
 <span id="L1774" class="LineNr">1774 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1774'>apply-write</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1775" class="LineNr">1775 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply write&quot;</span>
+<span id="L1775" class="LineNr">1775 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply write&quot;</span>
 <span id="L1776" class="LineNr">1776 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1777" class="LineNr">1777 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1778" class="LineNr">1778 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1779" class="LineNr">1779 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1780" class="LineNr">1780 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1780" class="LineNr">1780 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1781" class="LineNr">1781 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1782" class="LineNr">1782 </span>  <span class="Delimiter">{</span>
 <span id="L1783" class="LineNr">1783 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1784" class="LineNr">1784 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;write needs 2 args but got 0&quot;</span>
+<span id="L1784" class="LineNr">1784 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;write needs 2 args but got 0&quot;</span>
 <span id="L1785" class="LineNr">1785 </span>    <span class="PreProc">return</span>
 <span id="L1786" class="LineNr">1786 </span>  <span class="Delimiter">}</span>
 <span id="L1787" class="LineNr">1787 </span>  <span class="muComment"># stream = args-&gt;left</span>
@@ -1850,7 +1850,7 @@ if ('onhashchange' in window) {
 <span id="L1791" class="LineNr">1791 </span>  compare *first-type, <span class="Constant">3</span>/stream
 <span id="L1792" class="LineNr">1792 </span>  <span class="Delimiter">{</span>
 <span id="L1793" class="LineNr">1793 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1794" class="LineNr">1794 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'write' is not a stream&quot;</span>
+<span id="L1794" class="LineNr">1794 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'write' is not a stream&quot;</span>
 <span id="L1795" class="LineNr">1795 </span>    <span class="PreProc">return</span>
 <span id="L1796" class="LineNr">1796 </span>  <span class="Delimiter">}</span>
 <span id="L1797" class="LineNr">1797 </span>  <span class="PreProc">var</span> stream-data-ah/<span class="Constant">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get first, text-data
@@ -1866,7 +1866,7 @@ if ('onhashchange' in window) {
 <span id="L1807" class="LineNr">1807 </span>  compare *second-type, <span class="Constant">1</span>/number
 <span id="L1808" class="LineNr">1808 </span>  <span class="Delimiter">{</span>
 <span id="L1809" class="LineNr">1809 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1810" class="LineNr">1810 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;second arg for stream is not a number/grapheme&quot;</span>
+<span id="L1810" class="LineNr">1810 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;second arg for stream is not a number/grapheme&quot;</span>
 <span id="L1811" class="LineNr">1811 </span>    <span class="PreProc">return</span>
 <span id="L1812" class="LineNr">1812 </span>  <span class="Delimiter">}</span>
 <span id="L1813" class="LineNr">1813 </span>  <span class="PreProc">var</span> second-value/<span class="Constant">eax</span>: (addr float) <span class="Special">&lt;-</span> get second, number-data
@@ -1879,16 +1879,16 @@ if ('onhashchange' in window) {
 <span id="L1820" class="LineNr">1820 </span><span class="Delimiter">}</span>
 <span id="L1821" class="LineNr">1821 </span>
 <span id="L1822" class="LineNr">1822 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1822'>apply-lines</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1823" class="LineNr">1823 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply lines&quot;</span>
+<span id="L1823" class="LineNr">1823 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply lines&quot;</span>
 <span id="L1824" class="LineNr">1824 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1825" class="LineNr">1825 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1826" class="LineNr">1826 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1827" class="LineNr">1827 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1828" class="LineNr">1828 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1828" class="LineNr">1828 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1829" class="LineNr">1829 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1830" class="LineNr">1830 </span>  <span class="Delimiter">{</span>
 <span id="L1831" class="LineNr">1831 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1832" class="LineNr">1832 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;lines needs 1 arg but got 0&quot;</span>
+<span id="L1832" class="LineNr">1832 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;lines needs 1 arg but got 0&quot;</span>
 <span id="L1833" class="LineNr">1833 </span>    <span class="PreProc">return</span>
 <span id="L1834" class="LineNr">1834 </span>  <span class="Delimiter">}</span>
 <span id="L1835" class="LineNr">1835 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1898,7 +1898,7 @@ if ('onhashchange' in window) {
 <span id="L1839" class="LineNr">1839 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1840" class="LineNr">1840 </span>  <span class="Delimiter">{</span>
 <span id="L1841" class="LineNr">1841 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1842" class="LineNr">1842 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'lines' is not a screen&quot;</span>
+<span id="L1842" class="LineNr">1842 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'lines' is not a screen&quot;</span>
 <span id="L1843" class="LineNr">1843 </span>    <span class="PreProc">return</span>
 <span id="L1844" class="LineNr">1844 </span>  <span class="Delimiter">}</span>
 <span id="L1845" class="LineNr">1845 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1917,16 +1917,16 @@ if ('onhashchange' in window) {
 <span id="L1858" class="LineNr">1858 </span><span class="Delimiter">}</span>
 <span id="L1859" class="LineNr">1859 </span>
 <span id="L1860" class="LineNr">1860 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1860'>apply-columns</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1861" class="LineNr">1861 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply columns&quot;</span>
+<span id="L1861" class="LineNr">1861 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply columns&quot;</span>
 <span id="L1862" class="LineNr">1862 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1863" class="LineNr">1863 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1864" class="LineNr">1864 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1865" class="LineNr">1865 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1866" class="LineNr">1866 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1866" class="LineNr">1866 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1867" class="LineNr">1867 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1868" class="LineNr">1868 </span>  <span class="Delimiter">{</span>
 <span id="L1869" class="LineNr">1869 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1870" class="LineNr">1870 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;columns needs 1 arg but got 0&quot;</span>
+<span id="L1870" class="LineNr">1870 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;columns needs 1 arg but got 0&quot;</span>
 <span id="L1871" class="LineNr">1871 </span>    <span class="PreProc">return</span>
 <span id="L1872" class="LineNr">1872 </span>  <span class="Delimiter">}</span>
 <span id="L1873" class="LineNr">1873 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1936,7 +1936,7 @@ if ('onhashchange' in window) {
 <span id="L1877" class="LineNr">1877 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1878" class="LineNr">1878 </span>  <span class="Delimiter">{</span>
 <span id="L1879" class="LineNr">1879 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1880" class="LineNr">1880 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'columns' is not a screen&quot;</span>
+<span id="L1880" class="LineNr">1880 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'columns' is not a screen&quot;</span>
 <span id="L1881" class="LineNr">1881 </span>    <span class="PreProc">return</span>
 <span id="L1882" class="LineNr">1882 </span>  <span class="Delimiter">}</span>
 <span id="L1883" class="LineNr">1883 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1951,16 +1951,16 @@ if ('onhashchange' in window) {
 <span id="L1892" class="LineNr">1892 </span><span class="Delimiter">}</span>
 <span id="L1893" class="LineNr">1893 </span>
 <span id="L1894" class="LineNr">1894 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1894'>apply-width</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1895" class="LineNr">1895 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply width&quot;</span>
+<span id="L1895" class="LineNr">1895 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply width&quot;</span>
 <span id="L1896" class="LineNr">1896 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1897" class="LineNr">1897 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1898" class="LineNr">1898 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1899" class="LineNr">1899 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1900" class="LineNr">1900 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1900" class="LineNr">1900 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1901" class="LineNr">1901 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1902" class="LineNr">1902 </span>  <span class="Delimiter">{</span>
 <span id="L1903" class="LineNr">1903 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1904" class="LineNr">1904 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;width needs 1 arg but got 0&quot;</span>
+<span id="L1904" class="LineNr">1904 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;width needs 1 arg but got 0&quot;</span>
 <span id="L1905" class="LineNr">1905 </span>    <span class="PreProc">return</span>
 <span id="L1906" class="LineNr">1906 </span>  <span class="Delimiter">}</span>
 <span id="L1907" class="LineNr">1907 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -1970,7 +1970,7 @@ if ('onhashchange' in window) {
 <span id="L1911" class="LineNr">1911 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1912" class="LineNr">1912 </span>  <span class="Delimiter">{</span>
 <span id="L1913" class="LineNr">1913 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1914" class="LineNr">1914 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'width' is not a screen&quot;</span>
+<span id="L1914" class="LineNr">1914 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'width' is not a screen&quot;</span>
 <span id="L1915" class="LineNr">1915 </span>    <span class="PreProc">return</span>
 <span id="L1916" class="LineNr">1916 </span>  <span class="Delimiter">}</span>
 <span id="L1917" class="LineNr">1917 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
@@ -1986,16 +1986,16 @@ if ('onhashchange' in window) {
 <span id="L1927" class="LineNr">1927 </span><span class="Delimiter">}</span>
 <span id="L1928" class="LineNr">1928 </span>
 <span id="L1929" class="LineNr">1929 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='global.mu.html#L1929'>apply-height</a></span> _args-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), out: (addr handle <a href='cell.mu.html#L1'>cell</a>), trace: (addr trace) <span class="Delimiter">{</span>
-<span id="L1930" class="LineNr">1930 </span>  <a href='trace.mu.html#L120'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply height&quot;</span>
+<span id="L1930" class="LineNr">1930 </span>  <a href='trace.mu.html#L174'>trace-text</a> trace, <span class="Constant">&quot;eval&quot;</span>, <span class="Constant">&quot;apply height&quot;</span>
 <span id="L1931" class="LineNr">1931 </span>  <span class="PreProc">var</span> args-ah/<span class="Constant">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args-ah
 <span id="L1932" class="LineNr">1932 </span>  <span class="PreProc">var</span> _args/<span class="Constant">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *args-ah
 <span id="L1933" class="LineNr">1933 </span>  <span class="PreProc">var</span> args/<span class="Constant">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _args
 <span id="L1934" class="LineNr">1934 </span>  <span class="muComment"># TODO: check that args is a pair</span>
-<span id="L1935" class="LineNr">1935 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L236'>nil?</a> args
+<span id="L1935" class="LineNr">1935 </span>  <span class="PreProc">var</span> empty-args?/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='print.mu.html#L347'>nil?</a> args
 <span id="L1936" class="LineNr">1936 </span>  compare empty-args?, <span class="Constant">0</span>/false
 <span id="L1937" class="LineNr">1937 </span>  <span class="Delimiter">{</span>
 <span id="L1938" class="LineNr">1938 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1939" class="LineNr">1939 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;height needs 1 arg but got 0&quot;</span>
+<span id="L1939" class="LineNr">1939 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;height needs 1 arg but got 0&quot;</span>
 <span id="L1940" class="LineNr">1940 </span>    <span class="PreProc">return</span>
 <span id="L1941" class="LineNr">1941 </span>  <span class="Delimiter">}</span>
 <span id="L1942" class="LineNr">1942 </span>  <span class="muComment"># screen = args-&gt;left</span>
@@ -2005,7 +2005,7 @@ if ('onhashchange' in window) {
 <span id="L1946" class="LineNr">1946 </span>  compare *first-type, <span class="Constant">5</span>/screen
 <span id="L1947" class="LineNr">1947 </span>  <span class="Delimiter">{</span>
 <span id="L1948" class="LineNr">1948 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1949" class="LineNr">1949 </span>    <span class="Special"><a href='trace.mu.html#L129'>error</a></span> trace, <span class="Constant">&quot;first arg for 'height' is not a screen&quot;</span>
+<span id="L1949" class="LineNr">1949 </span>    <span class="Special"><a href='trace.mu.html#L186'>error</a></span> trace, <span class="Constant">&quot;first arg for 'height' is not a screen&quot;</span>
 <span id="L1950" class="LineNr">1950 </span>    <span class="PreProc">return</span>
 <span id="L1951" class="LineNr">1951 </span>  <span class="Delimiter">}</span>
 <span id="L1952" class="LineNr">1952 </span>  <span class="PreProc">var</span> screen-ah/<span class="Constant">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get first, screen-data
