@@ -162,8 +162,6 @@ fn render-globals screen: (addr screen), _self: (addr global-table) {
     abort "render globals"
     return
   }
-  # render primitives
-  render-primitives screen, 1/xmin=padding-left, 0x55/xmax, 0x2f/ymax
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
   var curr-index/edx: int <- copy 1
@@ -220,11 +218,15 @@ fn render-globals screen: (addr screen), _self: (addr global-table) {
     curr-index <- decrement
     loop
   }
+  # render primitives on top
+  render-primitives screen, 1/xmin=padding-left, 0x55/xmax, 0x2f/ymax
 }
 
 fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var y/ecx: int <- copy ymax
-  y <- subtract 0xf
+  y <- subtract 0x10
+  clear-rect screen, xmin, y, xmax, ymax, 0xdc/bg=green-bg
+  y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "cursor graphics", tmpx, xmax, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
