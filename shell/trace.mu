@@ -983,11 +983,11 @@ fn expand _self: (addr trace) {
   var cursor-line-visible?/eax: (addr boolean) <- get cursor-line, visible?
   var cursor-line-depth/ebx: (addr int) <- get cursor-line, depth
   var target-depth/ebx: int <- copy *cursor-line-depth
-  # if cursor-line is already visible, increment target-depth
+  # if cursor-line is already visible, do nothing
   compare *cursor-line-visible?, 0/false
   {
     break-if-=
-    target-depth <- increment
+    return
   }
   # reveal the run of lines starting at cursor-line-index with depth target-depth
   var i/ecx: int <- copy cursor-line-index
