@@ -45,6 +45,17 @@ type trace-line {
   visible?: boolean
 }
 
+# when we recreate the trace this data structure will help stabilize our view into it
+# we can shallowly copy handles because lines are not reused across reruns
+type trace-index-stash {
+  cursor-line-depth: int
+  cursor-line-label: (handle array byte)
+  cursor-line-data: (handle array byte)
+  top-line-depth: int
+  top-line-label: (handle array byte)
+  top-line-data: (handle array byte)
+}
+
 ## generating traces
 
 fn initialize-trace _self: (addr trace), max-depth: int, capacity: int, visible-capacity: int {
@@ -77,7 +88,7 @@ fn clear-trace _self: (addr trace) {
   copy-to *curr-depth-addr, 1
   var len/edx: (addr int) <- get self, first-free
   copy-to *len, 0
-  # might leak memory; existing elements won't be used anymore
+  # leak: nested handles within trace-lines
 }
 
 fn has-errors? _self: (addr trace) -> _/eax: boolean {
@@ -298,7 +309,6 @@ fn test-trace-contains {
 }
 
 # this is super-inefficient, string comparing every trace line
-# against every visible line on every render
 fn trace-contains? _self: (addr trace), label: (addr array byte), data: (addr array byte), start: int -> _/eax: boolean {
   var self/esi: (addr trace) <- copy _self
   var candidates-ah/eax: (addr handle array trace-line) <- get self, data
@@ -987,6 +997,7 @@ fn expand _self: (addr trace) {
   compare *cursor-line-visible?, 0/false
   {
     break-if-=
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "visible", 7/fg 0/bg
     return
   }
   # reveal the run of lines starting at cursor-line-index with depth target-depth
@@ -2079,4 +2090,129 @@ fn test-trace-scroll {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "           ", "F - test-trace-scroll/up2-2/cursor"
   check-screen-row screen,                                  3/y, "1 line 3   ", "F - test-trace-scroll/up2-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "           ", "F - test-trace-scroll/up2-3/cursor"
+}
+
+# saving and restoring trace indices
+
+fn save-indices _self: (addr trace), _out: (addr trace-index-stash) {
+  var self/esi: (addr trace) <- copy _self
+  var out/edi: (addr trace-index-stash) <- copy _out
+  var data-ah/eax: (addr handle array trace-line) <- get self, data
+  var _data/eax: (addr array trace-line) <- lookup *data-ah
+  var data/ebx: (addr array trace-line) <- copy _data
+  # cursor
+  var cursor-line-index-addr/eax: (addr int) <- get self, cursor-line-index
+  var cursor-line-index/eax: int <- copy *cursor-line-index-addr
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, cursor-line-index, 2/fg 0/bg
+  var offset/eax: (offset trace-line) <- compute-offset data, cursor-line-index
+  var cursor-line/ecx: (addr trace-line) <- index data, offset
+  var src/eax: (addr int) <- get cursor-line, depth
+  var dest/edx: (addr int) <- get out, cursor-line-depth
+  copy-object src, dest
+  var src/eax: (addr handle array byte) <- get cursor-line, label
+  var dest/edx: (addr handle array byte) <- get out, cursor-line-label
+  copy-object src, dest
+  src <- get cursor-line, data
+#?   {
+#?     var foo/eax: (addr array byte) <- lookup *src
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 7/fg 0/bg
+#?     var cursor-line-visible-addr/eax: (addr boolean) <- get cursor-line, visible?
+#?     var cursor-line-visible?/eax: boolean <- copy *cursor-line-visible-addr
+#?     var foo/eax: int <- copy cursor-line-visible?
+#?     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 5/fg 0/bg
+#?   }
+  dest <- get out, cursor-line-data
+  copy-object src, dest
+  # top of screen
+  var top-line-index-addr/eax: (addr int) <- get self, top-line-index
+  var top-line-index/eax: int <- copy *top-line-index-addr
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, top-line-index, 2/fg 0/bg
+  var offset/eax: (offset trace-line) <- compute-offset data, top-line-index
+  var top-line/ecx: (addr trace-line) <- index data, offset
+  var src/eax: (addr int) <- get top-line, depth
+  var dest/edx: (addr int) <- get out, top-line-depth
+  copy-object src, dest
+  var src/eax: (addr handle array byte) <- get top-line, label
+  var dest/edx: (addr handle array byte) <- get out, top-line-label
+  copy-object src, dest
+  src <- get top-line, data
+  dest <- get out, top-line-data
+  copy-object src, dest
+}
+
+fn restore-indices _self: (addr trace), _in: (addr trace-index-stash) {
+  var self/edi: (addr trace) <- copy _self
+  var in/esi: (addr trace-index-stash) <- copy _in
+  var data-ah/eax: (addr handle array trace-line) <- get self, data
+  var _data/eax: (addr array trace-line) <- lookup *data-ah
+  var data/ebx: (addr array trace-line) <- copy _data
+  # cursor
+  var cursor-depth/edx: (addr int) <- get in, cursor-line-depth
+  var cursor-line-label-ah/eax: (addr handle array byte) <- get in, cursor-line-label
+  var _cursor-line-label/eax: (addr array byte) <- lookup *cursor-line-label-ah
+  var cursor-line-label/ecx: (addr array byte) <- copy _cursor-line-label
+  var cursor-line-data-ah/eax: (addr handle array byte) <- get in, cursor-line-data
+  var cursor-line-data/eax: (addr array byte) <- lookup *cursor-line-data-ah
+  var new-cursor-line-index/eax: int <- find-in-trace self, *cursor-depth, cursor-line-label, cursor-line-data
+  var dest/edx: (addr int) <- get self, cursor-line-index
+  copy-to *dest, new-cursor-line-index
+  # top of screen
+  var top-depth/edx: (addr int) <- get in, top-line-depth
+  var top-line-label-ah/eax: (addr handle array byte) <- get in, top-line-label
+  var _top-line-label/eax: (addr array byte) <- lookup *top-line-label-ah
+  var top-line-label/ecx: (addr array byte) <- copy _top-line-label
+  var top-line-data-ah/eax: (addr handle array byte) <- get in, top-line-data
+  var top-line-data/eax: (addr array byte) <- lookup *top-line-data-ah
+  var new-top-line-index/eax: int <- find-in-trace self, *top-depth, top-line-label, top-line-data
+  var dest/edx: (addr int) <- get self, top-line-index
+  copy-to *dest, new-top-line-index
+}
+
+# like trace-contains? but stateless
+# this is super-inefficient, string comparing every trace line
+fn find-in-trace _self: (addr trace), depth: int, label: (addr array byte), data: (addr array byte) -> _/eax: int {
+  var self/esi: (addr trace) <- copy _self
+  var candidates-ah/eax: (addr handle array trace-line) <- get self, data
+  var candidates/eax: (addr array trace-line) <- lookup *candidates-ah
+  var i/ecx: int <- copy 0
+  var max/edx: (addr int) <- get self, first-free
+  {
+    compare i, *max
+    break-if->=
+    {
+      var curr-offset/edx: (offset trace-line) <- compute-offset candidates, i
+      var curr/edx: (addr trace-line) <- index candidates, curr-offset
+      # if curr->depth does not match, continue
+      var curr-depth-addr/eax: (addr int) <- get curr, depth
+      var curr-depth/eax: int <- copy *curr-depth-addr
+      compare curr-depth, depth
+      break-if-!=
+      # if curr->label does not match, continue
+      var curr-label-ah/eax: (addr handle array byte) <- get curr, label
+      var curr-label/eax: (addr array byte) <- lookup *curr-label-ah
+      var match?/eax: boolean <- string-equal? curr-label, label
+      compare match?, 0/false
+      break-if-=
+      # if curr->data does not match, continue
+      var curr-data-ah/eax: (addr handle array byte) <- get curr, data
+      var curr-data/eax: (addr array byte) <- lookup *curr-data-ah
+      {
+        var match?/eax: boolean <- string-equal? curr-data, data
+        compare match?, 0/false
+      }
+      break-if-=
+#?       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " => ", 7/fg 0/bg
+#? #?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, i, 4/fg 0/bg
+#?       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, curr-data, 7/fg 0/bg
+#?       var curr-visible-addr/eax: (addr boolean) <- get curr, visible?
+#?       var curr-visible?/eax: boolean <- copy *curr-visible-addr
+#?       var foo/eax: int <- copy curr-visible?
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 2/fg 0/bg
+      return i
+    }
+    i <- increment
+    loop
+  }
+  abort "not in trace"
+  return -1
 }
