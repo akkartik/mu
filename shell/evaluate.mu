@@ -529,8 +529,21 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     trace-higher trace
     return
   }
-  trace-text trace, "eval", "function call"
-  trace-text trace, "eval", "evaluating list elements"
+  # trace "evaluate function call elements in " in {{{
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x300)
+    var stream/ecx: (addr stream byte) <- address stream-storage
+    write stream, "evaluate function call elements in "
+    var nested-trace-storage: trace
+    var nested-trace/edi: (addr trace) <- address nested-trace-storage
+    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
+    print-cell in-ah, stream, nested-trace
+    trace trace, "eval", stream
+  }
+  # }}}
   trace-lower trace
   var evaluated-list-storage: (handle cell)
   var evaluated-list-ah/esi: (addr handle cell) <- address evaluated-list-storage
