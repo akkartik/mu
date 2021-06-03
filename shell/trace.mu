@@ -894,12 +894,11 @@ fn render-trace-menu screen: (addr screen) {
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " enter/bksp ", width, 0/fg, 0x5c/bg=black
   draw-text-rightward-from-cursor screen, " expand/collapse  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " ctrl+... ", width, 0xf/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " r ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " ^r ", width, 0/fg, 0x5c/bg=black
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " m ", width, 0/fg, 3/bg=keyboard
+  draw-text-rightward-from-cursor screen, " ^m ", width, 0/fg, 3/bg=keyboard
   draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " s ", width, 0/fg, 3/bg=keyboard
+  draw-text-rightward-from-cursor screen, " ^s ", width, 0/fg, 3/bg=keyboard
   draw-text-rightward-from-cursor screen, " show whole line  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
