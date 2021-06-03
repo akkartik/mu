@@ -1,12 +1,12 @@
+type global-table {
+  data: (handle array global)
+  final-index: int
+}
+
 type global {
   name: (handle array byte)
   input: (handle gap-buffer)
   value: (handle cell)
-}
-
-type global-table {
-  data: (handle array global)
-  final-index: int
 }
 
 fn initialize-globals _self: (addr global-table) {
