@@ -1,12 +1,12 @@
 type sandbox {
   data: (handle gap-buffer)
   value: (handle stream byte)
+  trace: (handle trace)
   screen-var: (handle cell)
   keyboard-var: (handle cell)
-  trace: (handle trace)
   cursor-in-data?: boolean
-  cursor-in-keyboard?: boolean
   cursor-in-trace?: boolean
+  cursor-in-keyboard?: boolean
 }
 
 fn initialize-sandbox _self: (addr sandbox), fake-screen-and-keyboard?: boolean {
