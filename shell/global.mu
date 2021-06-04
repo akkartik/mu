@@ -387,12 +387,12 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _definition-a
     break-if-=
     return
   }
-  # if definition->left is neither "def" nor "set", return
+  # if definition->left is neither "define" nor "set", return
   var left-ah/eax: (addr handle cell) <- get definition, left
   var _left/eax: (addr cell) <- lookup *left-ah
   var left/ecx: (addr cell) <- copy _left
   {
-    var def?/eax: boolean <- symbol-equal? left, "def"
+    var def?/eax: boolean <- symbol-equal? left, "define"
     compare def?, 0/false
     break-if-!=
     var set?/eax: boolean <- symbol-equal? left, "set"
@@ -449,12 +449,12 @@ fn move-gap-buffer-to-global _globals: (addr global-table), _definition-ah: (add
     break-if-=
     return
   }
-  # if definition->left is neither "def" nor "set", return
+  # if definition->left is neither "define" nor "set", return
   var left-ah/eax: (addr handle cell) <- get definition, left
   var _left/eax: (addr cell) <- lookup *left-ah
   var left/ecx: (addr cell) <- copy _left
   {
-    var def?/eax: boolean <- symbol-equal? left, "def"
+    var def?/eax: boolean <- symbol-equal? left, "define"
     compare def?, 0/false
     break-if-!=
     var set?/eax: boolean <- symbol-equal? left, "set"

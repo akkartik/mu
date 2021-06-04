@@ -217,18 +217,18 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     trace-higher trace
     return
   }
-  $evaluate:def: {
-    # trees starting with "def" define globals
+  $evaluate:define: {
+    # trees starting with "define" define globals
     var expr/esi: (addr cell) <- copy in
-    # if its first elem is not "def", break
+    # if its first elem is not "define", break
     var first-ah/ecx: (addr handle cell) <- get in, left
     var rest-ah/edx: (addr handle cell) <- get in, right
     var first/eax: (addr cell) <- lookup *first-ah
-    var def?/eax: boolean <- symbol-equal? first, "def"
-    compare def?, 0/false
+    var define?/eax: boolean <- symbol-equal? first, "define"
+    compare define?, 0/false
     break-if-=
     #
-    trace-text trace, "eval", "def"
+    trace-text trace, "eval", "define"
     trace-text trace, "eval", "evaluating second arg"
     var rest/eax: (addr cell) <- lookup *rest-ah
     var first-arg-ah/ecx: (addr handle cell) <- get rest, left
@@ -237,7 +237,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       var first-arg-type/eax: (addr int) <- get first-arg, type
       compare *first-arg-type, 2/symbol
       break-if-=
-      error trace, "first arg to def must be a symbol"
+      error trace, "first arg to define must be a symbol"
       trace-higher trace
       return
     }

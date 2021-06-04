@@ -179,27 +179,27 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
-  $macroexpand-iter:def: {
-    # trees starting with "def" define globals
-    var def?/eax: boolean <- symbol-equal? first, "def"
-    compare def?, 0/false
+  $macroexpand-iter:define: {
+    # trees starting with "define" define globals
+    var define?/eax: boolean <- symbol-equal? first, "define"
+    compare define?, 0/false
     break-if-=
     #
-    trace-text trace, "mac", "def"
+    trace-text trace, "mac", "define"
     var rest/eax: (addr cell) <- lookup *rest-ah
     rest-ah <- get rest, right  # skip name
     rest <- lookup *rest-ah
     var val-ah/edx: (addr handle cell) <- get rest, left
     var macro-found?/eax: boolean <- macroexpand-iter val-ah, globals, trace
     trace-higher trace
-    # trace "def=> " _expr-ah {{{
+    # trace "define=> " _expr-ah {{{
     {
       var should-trace?/eax: boolean <- should-trace? trace
       compare should-trace?, 0/false
       break-if-=
       var stream-storage: (stream byte 0x200)
       var stream/ecx: (addr stream byte) <- address stream-storage
-      write stream, "def=> "
+      write stream, "define=> "
       var nested-trace-storage: trace
       var nested-trace/edi: (addr trace) <- address nested-trace-storage
       initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
@@ -401,7 +401,7 @@ fn test-macroexpand {
   # new macro: m
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
+  initialize-sandbox-with sandbox, "(define m (litmac litfn () (a b) `(+ ,a ,b)))"
   edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "(m 3 4)"
@@ -440,7 +440,7 @@ fn test-macroexpand-inside-anonymous-fn {
   # new macro: m
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
+  initialize-sandbox-with sandbox, "(define m (litmac litfn () (a b) `(+ ,a ,b)))"
   edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "(fn() (m 3 4))"
@@ -478,7 +478,7 @@ fn test-macroexpand-inside-fn-call {
   # new macro: m
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
+  initialize-sandbox-with sandbox, "(define m (litmac litfn () (a b) `(+ ,a ,b)))"
   edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "((fn() (m 3 4)))"
@@ -547,7 +547,7 @@ fn pending-test-macroexpand-inside-backquote-unquote {
   # new macro: m
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
+  initialize-sandbox-with sandbox, "(define m (litmac litfn () (a b) `(+ ,a ,b)))"
   edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "`(print [result is ] ,(m 3 4)))"
@@ -585,7 +585,7 @@ fn pending-test-macroexpand-inside-nested-backquote-unquote {
   # new macro: m
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
-  initialize-sandbox-with sandbox, "(def m (litmac litfn () (a b) `(+ ,a ,b)))"
+  initialize-sandbox-with sandbox, "(define m (litmac litfn () (a b) `(+ ,a ,b)))"
   edit-sandbox sandbox, 0x13/ctrl-s, globals, 0/no-disk, 0/no-tweak-screen
   # invoke macro
   initialize-sandbox-with sandbox, "`(a ,(m 3 4) `(b ,(m 3 4) ,,(m 3 4)))"
