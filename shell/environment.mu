@@ -1,6 +1,7 @@
 type environment {
   globals: global-table
   sandbox: sandbox
+  cursor-in-globals?: boolean
 }
 
 fn initialize-environment _self: (addr environment) {
@@ -24,6 +25,7 @@ fn render-environment screen: (addr screen), _self: (addr environment) {
 
 fn edit-environment _self: (addr environment), key: byte, data-disk: (addr disk) {
   var self/esi: (addr environment) <- copy _self
+  var cursor-in-globals?/ecx: (addr boolean) <- get self, cursor-in-globals?
   var globals/edi: (addr global-table) <- get self, globals
   var sandbox/esi: (addr sandbox) <- get self, sandbox
   # ctrl-r
@@ -76,7 +78,14 @@ fn edit-environment _self: (addr environment), key: byte, data-disk: (addr disk)
     #
     return
   }
-  edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
+  # dispatch the key to either sandbox or globals
+  {
+    compare *cursor-in-globals?, 0/false
+    break-if-!=
+    edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
+    return
+  }
+  edit-globals globals, key, data-disk
 }
 
 # Gotcha: some saved state may not load.

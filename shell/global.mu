@@ -181,6 +181,9 @@ fn render-globals screen: (addr screen), _self: (addr global-table) {
   render-primitives screen, 1/xmin=padding-left, 0x55/xmax, 0x2f/ymax
 }
 
+fn edit-globals _self: (addr global-table), key: byte, data-disk: (addr disk) {
+}
+
 fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {
   var self/esi: (addr global-table) <- copy _self
   compare self, 0
