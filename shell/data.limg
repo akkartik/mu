@@ -1,13 +1,13 @@
 (
   (globals . (
-    (mac . [(define mac (litmac litfn () (name params . body)
+    (mac . [(define mac (litmac litfn () ((name . params) . body)
   `(define ,name (litmac litfn () ,params ,@body))))])
-    (def . [(mac def ((name . params) . body)
+    (def . [(mac (def (name . params) . body)
   `(define ,name (fn ,params ,@body)))])
-    (do . [(mac do body `((fn () ,@body)))])
-    (let . [(mac let (var val . body)
+    (do . [(mac (do . body) `((fn () ,@body)))])
+    (let . [(mac (let var val . body)
   `((fn (,var) ,@body) ,val))])
-    (when . [(mac when (cond . body)
+    (when . [(mac (when cond . body)
   `(if ,cond (do ,@body) ()))])
     (hline1 . [(def (hline1 screen y x xmax color)
   (while (< x xmax)
