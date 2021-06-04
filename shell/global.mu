@@ -181,6 +181,9 @@ fn render-globals screen: (addr screen), _self: (addr global-table) {
   render-primitives screen, 1/xmin=padding-left, 0x55/xmax, 0x2f/ymax
 }
 
+fn render-globals-menu screen: (addr screen), _self: (addr global-table) {
+}
+
 fn edit-globals _self: (addr global-table), key: byte, data-disk: (addr disk) {
 }
 

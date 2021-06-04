@@ -119,12 +119,15 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   }
   y <- add 2  # padding
   y <- maybe-render-screen screen, self, xmin, y
-  # render menu
+}
+
+fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
+  var self/esi: (addr sandbox) <- copy _self
   var cursor-in-data?/eax: (addr boolean) <- get self, cursor-in-data?
   compare *cursor-in-data?, 0/false
   {
     break-if-=
-    render-sandbox-menu screen, self
+    render-sandbox-edit-menu screen, self
     return
   }
   var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
@@ -401,7 +404,7 @@ fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen
   draw-grapheme-at-cursor screen, *src-grapheme, *src-color, *src-background-color
 }
 
-fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
+fn render-sandbox-edit-menu screen: (addr screen), _self: (addr sandbox) {
   var _width/eax: int <- copy 0
   var height/ecx: int <- copy 0
   _width, height <- screen-size screen
@@ -414,7 +417,7 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " ^r ", width, 0/fg, 0x5c/bg=black
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
-  $render-sandbox-menu:render-ctrl-m: {
+  $render-sandbox-edit-menu:render-ctrl-m: {
     var self/eax: (addr sandbox) <- copy _self
     var has-trace?/eax: boolean <- has-trace? self
     compare has-trace?, 0/false
@@ -422,7 +425,7 @@ fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
       break-if-=
       draw-text-rightward-from-cursor screen, " ^m ", width, 0/fg, 0x38/bg=trace
       draw-text-rightward-from-cursor screen, " to trace  ", width, 7/fg, 0xc5/bg=blue-bg
-      break $render-sandbox-menu:render-ctrl-m
+      break $render-sandbox-edit-menu:render-ctrl-m
     }
     draw-text-rightward-from-cursor screen, " ^m ", width, 0/fg, 3/bg=keyboard
     draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0xc5/bg=blue-bg
