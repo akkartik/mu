@@ -24,6 +24,22 @@ fn clear-gap-buffer _self: (addr gap-buffer) {
   clear-grapheme-stack right
 }
 
+fn gap-buffer-empty? _self: (addr gap-buffer) -> _/eax: boolean {
+  var self/esi: (addr gap-buffer) <- copy _self
+  # if !empty?(left) return false
+  {
+    var left/eax: (addr grapheme-stack) <- get self, left
+    var result/eax: boolean <- grapheme-stack-empty? left
+    compare result, 0/false
+    break-if-!=
+    return 0/false
+  }
+  # return empty?(right)
+  var left/eax: (addr grapheme-stack) <- get self, left
+  var result/eax: boolean <- grapheme-stack-empty? left
+  return result
+}
+
 fn gap-buffer-capacity _gap: (addr gap-buffer) -> _/ecx: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
   var left/eax: (addr grapheme-stack) <- get gap, left
