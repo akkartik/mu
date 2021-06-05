@@ -1,7 +1,9 @@
 type environment {
   globals: global-table
   sandbox: sandbox
+  partial-function-name: (handle gap-buffer)
   cursor-in-globals?: boolean
+  cursor-in-function-modal?: boolean
 }
 
 fn initialize-environment _self: (addr environment) {
@@ -10,6 +12,10 @@ fn initialize-environment _self: (addr environment) {
   initialize-globals globals
   var sandbox/eax: (addr sandbox) <- get self, sandbox
   initialize-sandbox sandbox, 1/with-screen
+  var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
+  allocate partial-function-name-ah
+  var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
+  initialize-gap-buffer partial-function-name, 0x40/capacity
 }
 
 fn render-environment screen: (addr screen), _self: (addr environment) {
@@ -84,6 +90,54 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       loop-if-=
     }
     #
+    return
+  }
+  # ctrl-g: go to a function (or the repl)
+  {
+    compare key, 7/ctrl-g
+    break-if-!=
+    var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+    copy-to *cursor-in-function-modal-a, 1/true
+    return
+  }
+  # dispatch to function modal if necessary
+  {
+    var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+    compare *cursor-in-function-modal-a, 0/false
+    break-if-=
+    # nested events for modal dialog
+    # ignore spaces
+    {
+      compare key, 0x20/space
+      break-if-!=
+      return
+    }
+    # esc = exit modal dialog
+    {
+      compare key, 0x1b/escape
+      break-if-!=
+      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+      copy-to *cursor-in-function-modal-a, 0/false
+      return
+    }
+    # enter = switch to function name and exit modal dialog
+    {
+      compare key, 0xa/newline
+      break-if-!=
+      var cursor-in-globals-a/eax: (addr boolean) <- get self, cursor-in-globals?
+      copy-to *cursor-in-globals-a, 1/true
+      # TODO: use function name
+      var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
+      var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
+      clear-gap-buffer partial-function-name
+      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+      copy-to *cursor-in-function-modal-a, 0/false
+      return
+    }
+    # otherwise process like a regular gap-buffer
+    var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
+    var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
+    edit-gap-buffer partial-function-name, key
     return
   }
   # dispatch the key to either sandbox or globals
