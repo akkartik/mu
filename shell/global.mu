@@ -1,6 +1,7 @@
 type global-table {
   data: (handle array global)
   final-index: int
+  cursor-index: int
 }
 
 type global {
@@ -151,6 +152,15 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
       break $render-globals:loop
     }
     {
+      var show-cursor?/edi: boolean <- copy show-cursor?
+      {
+        compare show-cursor?, 0/false
+        break-if-=
+        var cursor-index/eax: (addr int) <- get self, cursor-index
+        compare *cursor-index, curr-index
+        break-if-=
+        show-cursor? <- copy 0/false
+      }
       var curr-offset/edx: (offset global) <- compute-offset data, curr-index
       var curr/edx: (addr global) <- index data, curr-offset
       var curr-input-ah/edx: (addr handle gap-buffer) <- get curr, input
@@ -174,7 +184,6 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
         copy-to y2, y
       }
     }
-    copy-to show-cursor?, 0/false
     curr-index <- decrement
     loop
   }
