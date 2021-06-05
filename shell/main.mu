@@ -13,6 +13,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       var key/eax: byte <- read-key keyboard
       compare key, 0
       loop-if-=
+      var key/eax: grapheme <- copy key
       edit-environment env, key, data-disk
     }
     loop

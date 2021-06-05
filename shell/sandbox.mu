@@ -460,12 +460,11 @@ fn render-keyboard-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
-fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), data-disk: (addr disk), tweak-real-screen?: boolean {
+fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-table), data-disk: (addr disk), tweak-real-screen?: boolean {
   var self/esi: (addr sandbox) <- copy _self
-  var g/edx: grapheme <- copy key
   # ctrl-s
   {
-    compare g, 0x13/ctrl-s
+    compare key, 0x13/ctrl-s
     break-if-!=
     # if cursor is in trace, skip
     var cursor-in-trace?/eax: (addr boolean) <- get self, cursor-in-trace?
@@ -480,7 +479,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
   }
   # ctrl-m
   {
-    compare g, 0xd/ctrl-m
+    compare key, 0xd/ctrl-m
     break-if-!=
     # if cursor in data, switch to trace or fall through to keyboard
     {
@@ -544,7 +543,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     break-if-=
     var data-ah/eax: (addr handle gap-buffer) <- get self, data
     var data/eax: (addr gap-buffer) <- lookup *data-ah
-    edit-gap-buffer data, g
+    edit-gap-buffer data, key
     return
   }
   # if cursor in keyboard, send key to keyboard
@@ -567,7 +566,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     }
     var keyboard-ah/eax: (addr handle gap-buffer) <- get keyboard-cell, keyboard-data
     var keyboard/eax: (addr gap-buffer) <- lookup *keyboard-ah
-    edit-gap-buffer keyboard, g
+    edit-gap-buffer keyboard, key
     return
   }
   # if cursor in trace, send key to trace
@@ -579,7 +578,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
     var trace/eax: (addr trace) <- lookup *trace-ah
     # if expanding the trace, first check if we need to run the sandbox again with a deeper trace
     {
-      compare g, 0xa/newline
+      compare key, 0xa/newline
       break-if-!=
       {
         var need-rerun?/eax: boolean <- cursor-too-deep? trace
@@ -600,7 +599,7 @@ fn edit-sandbox _self: (addr sandbox), key: byte, globals: (addr global-table), 
       var save-addr/ecx: (addr trace-index-stash) <- address save
       restore-indices trace, save-addr
     }
-    edit-trace trace, g
+    edit-trace trace, key
     return
   }
 }

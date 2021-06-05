@@ -184,7 +184,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table) {
 fn render-globals-menu screen: (addr screen), _self: (addr global-table) {
 }
 
-fn edit-globals _self: (addr global-table), key: byte, data-disk: (addr disk) {
+fn edit-globals _self: (addr global-table), key: grapheme, data-disk: (addr disk) {
 }
 
 fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {

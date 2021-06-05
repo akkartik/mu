@@ -32,7 +32,7 @@ fn render-environment screen: (addr screen), _self: (addr environment) {
   render-globals-menu screen, globals
 }
 
-fn edit-environment _self: (addr environment), key: byte, data-disk: (addr disk) {
+fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr disk) {
   var self/esi: (addr environment) <- copy _self
   var globals/edi: (addr global-table) <- get self, globals
   var sandbox/ecx: (addr sandbox) <- get self, sandbox
