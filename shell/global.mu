@@ -502,3 +502,13 @@ fn move-gap-buffer-to-global _globals: (addr global-table), _definition-ah: (add
   var dest-ah/eax: (addr handle gap-buffer) <- get dest-global, input
   copy-object gap, dest-ah
 }
+
+fn set-global-cursor-index _globals: (addr global-table), name-gap: (addr gap-buffer) {
+  var globals/esi: (addr global-table) <- copy _globals
+  var name-storage: (stream byte 0x40)
+  var name/ecx: (addr stream byte) <- address name-storage
+  emit-gap-buffer name-gap, name
+  var index/ecx: int <- find-symbol-in-globals globals, name
+  var dest/edi: (addr int) <- get globals, cursor-index
+  copy-to *dest, index
+}
