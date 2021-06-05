@@ -28,14 +28,14 @@ fn render-environment screen: (addr screen), _self: (addr environment) {
   var sandbox/edx: (addr sandbox) <- get self, sandbox
   render-sandbox screen, sandbox, 0x55/sandbox-left-margin, 0/sandbox-top-margin, 0x80/screen-width, 0x2f/screen-height-without-menu
   # render menu
-  var cursor-in-globals?/eax: (addr boolean) <- get self, cursor-in-globals?
   {
+    var cursor-in-globals?/eax: (addr boolean) <- get self, cursor-in-globals?
     compare *cursor-in-globals?, 0/false
-    break-if-!=
-    render-sandbox-menu screen, sandbox
+    break-if-=
+    render-globals-menu screen, globals
     return
   }
-  render-globals-menu screen, globals
+  render-sandbox-menu screen, sandbox
 }
 
 fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr disk) {
