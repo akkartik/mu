@@ -117,6 +117,18 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     compare key, 7/ctrl-g
     break-if-!=
     var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+    compare *cursor-in-function-modal-a, 0/false
+    break-if-!=
+    # look for a word to prepopulate the modal
+    var current-word-storage: (stream byte 0x40)
+    var current-word/edi: (addr stream byte) <- address current-word-storage
+    word-at-cursor self, current-word
+    var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
+    var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
+    clear-gap-buffer partial-function-name
+    load-gap-buffer-from-stream partial-function-name, current-word
+    # enable the modal
+    var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
     copy-to *cursor-in-function-modal-a, 1/true
     return
   }
@@ -184,6 +196,39 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     return
   }
   edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
+}
+
+fn word-at-cursor _self: (addr environment), out: (addr stream byte) {
+  var self/esi: (addr environment) <- copy _self
+  var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+  compare *cursor-in-function-modal-a, 0/false
+  {
+    break-if-=
+    # cursor in function modal
+    return
+  }
+  var cursor-in-globals-a/edx: (addr boolean) <- get self, cursor-in-globals?
+  compare *cursor-in-globals-a, 0/false
+  {
+    break-if-=
+    # cursor in some function editor
+    var globals/eax: (addr global-table) <- get self, globals
+    var cursor-index-addr/ecx: (addr int) <- get globals, cursor-index
+    var cursor-index/ecx: int <- copy *cursor-index-addr
+    var globals-data-ah/eax: (addr handle array global) <- get globals, data
+    var globals-data/eax: (addr array global) <- lookup *globals-data-ah
+    var cursor-offset/ecx: (offset global) <- compute-offset globals-data, cursor-index
+    var curr-global/eax: (addr global) <- index globals-data, cursor-offset
+    var curr-global-data-ah/eax: (addr handle gap-buffer) <- get curr-global, input
+    var curr-global-data/eax: (addr gap-buffer) <- lookup *curr-global-data-ah
+    word-at-gap curr-global-data, out
+    return
+  }
+  # cursor in sandbox
+  var sandbox/ecx: (addr sandbox) <- get self, sandbox
+  var sandbox-data-ah/eax: (addr handle gap-buffer) <- get sandbox, data
+  var sandbox-data/eax: (addr gap-buffer) <- lookup *sandbox-data-ah
+  word-at-gap sandbox-data, out
 }
 
 fn render-function-modal screen: (addr screen), _self: (addr environment) {

@@ -134,6 +134,245 @@ fn emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte) {
   }
 }
 
+fn word-at-gap _self: (addr gap-buffer), out: (addr stream byte) {
+  var self/esi: (addr gap-buffer) <- copy _self
+  clear-stream out
+  var left/ecx: (addr grapheme-stack) <- get self, left
+  var left-index/eax: int <- top-most-word left
+  emit-stack-from-index left, left-index, out
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "|" 7/fg 0/bg
+  var right/ecx: (addr grapheme-stack) <- get self, right
+  var right-index/eax: int <- top-most-word right
+  draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, right-index, 4/fg 0/bg
+  emit-stack-to-index right, right-index, out
+}
+
+fn test-word-at-gap-single-word-with-gap-at-end {
+  var _g: gap-buffer
+  var g/esi: (addr gap-buffer) <- address _g
+  initialize-gap-buffer-with g, "abc"
+  # gap is at end (right is empty)
+  var out-storage: (stream byte 0x10)
+  var out/eax: (addr stream byte) <- address out-storage
+  word-at-gap g, out
+  check-stream-equal out, "abc", "F - test-word-at-gap-single-word-with-gap-at-end"
+}
+
+fn test-word-at-gap-single-word-with-gap-at-start {
+  var _g: gap-buffer
+  var g/esi: (addr gap-buffer) <- address _g
+  initialize-gap-buffer-with g, "abc"
+  gap-to-start g
+  #
+  var out-storage: (stream byte 0x10)
+  var out/eax: (addr stream byte) <- address out-storage
+  word-at-gap g, out
+  check-stream-equal out, "abc", "F - test-word-at-gap-single-word-with-gap-at-start"
+}
+
+fn test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-end {
+  var _g: gap-buffer
+  var g/esi: (addr gap-buffer) <- address _g
+  initialize-gap-buffer-with g, "abc "
+  # gap is at end (right is empty)
+  var out-storage: (stream byte 0x10)
+  var out/eax: (addr stream byte) <- address out-storage
+  word-at-gap g, out
+  check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-end"
+}
+
+fn test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-start {
+  var _g: gap-buffer
+  var g/esi: (addr gap-buffer) <- address _g
+  initialize-gap-buffer-with g, " abc"
+  gap-to-start g
+  #
+  var out-storage: (stream byte 0x10)
+  var out/eax: (addr stream byte) <- address out-storage
+  word-at-gap g, out
+  rewind-stream out
+  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, out, 5/fg 0/bg
+  check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-start"
+}
+
+fn test-word-at-gap-multiple-words-with-gap-at-end {
+  var _g: gap-buffer
+  var g/esi: (addr gap-buffer) <- address _g
+  initialize-gap-buffer-with g, "a bc d"
+  # gap is at end (right is empty)
+  var out-storage: (stream byte 0x10)
+  var out/eax: (addr stream byte) <- address out-storage
+  word-at-gap g, out
+  check-stream-equal out, "d", "F - test-word-at-gap-multiple-words-with-gap-at-end"
+}
+
+fn test-word-at-gap-multiple-words-with-gap-at-initial-word {
+  var _g: gap-buffer
+  var g/esi: (addr gap-buffer) <- address _g
+  initialize-gap-buffer-with g, "a bc d"
+  gap-to-start g
+  #
+  var out-storage: (stream byte 0x10)
+  var out/eax: (addr stream byte) <- address out-storage
+  word-at-gap g, out
+  check-stream-equal out, "a", "F - test-word-at-gap-multiple-words-with-gap-at-initial-word"
+}
+
+fn test-word-at-gap-multiple-words-with-gap-at-final-word {
+  var _g: gap-buffer
+  var g/esi: (addr gap-buffer) <- address _g
+  initialize-gap-buffer-with g, "a bc d"
+  var dummy/eax: grapheme <- gap-left g
+  # gap is at final word
+  var out-storage: (stream byte 0x10)
+  var out/eax: (addr stream byte) <- address out-storage
+  word-at-gap g, out
+  check-stream-equal out, "d", "F - test-word-at-gap-multiple-words-with-gap-at-final-word"
+}
+
+fn test-word-at-gap-multiple-words-with-gap-at-final-non-word {
+  var _g: gap-buffer
+  var g/esi: (addr gap-buffer) <- address _g
+  initialize-gap-buffer-with g, "abc "
+  var dummy/eax: grapheme <- gap-left g
+  # gap is at final word
+  var out-storage: (stream byte 0x10)
+  var out/eax: (addr stream byte) <- address out-storage
+  word-at-gap g, out
+  check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-final-non-word"
+}
+
+fn top-most-word _self: (addr grapheme-stack) -> _/eax: int {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var data-ah/edi: (addr handle array grapheme) <- get self, data
+  var _data/eax: (addr array grapheme) <- lookup *data-ah
+  var data/edi: (addr array grapheme) <- copy _data
+  var top-addr/ecx: (addr int) <- get self, top
+  var i/ebx: int <- copy *top-addr
+  i <- decrement
+  {
+    compare i, 0
+    break-if-<
+    var g/edx: (addr grapheme) <- index data, i
+    {
+      var foo/eax: int <- copy *g
+      draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 7/fg 0/bg
+    }
+    var is-word?/eax: boolean <- is-ascii-word-grapheme? *g
+    {
+      var foo/eax: int <- copy is-word?
+      draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 1/fg 0/bg
+    }
+    compare is-word?, 0/false
+    break-if-=
+    i <- decrement
+    loop
+  }
+  i <- increment
+  return i
+}
+
+fn bottom-most-word _self: (addr grapheme-stack) -> _/eax: int {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var data-ah/edi: (addr handle array grapheme) <- get self, data
+  var _data/eax: (addr array grapheme) <- lookup *data-ah
+  var data/edi: (addr array grapheme) <- copy _data
+  var top-addr/ecx: (addr int) <- get self, top
+  var i/ebx: int <- copy 0
+  {
+    compare i, *top-addr
+    break-if->=
+    var g/edx: (addr grapheme) <- index data, i
+    {
+      var foo/eax: int <- copy *g
+      draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 4/fg 0/bg
+    }
+    var is-word?/eax: boolean <- is-ascii-word-grapheme? *g
+    compare is-word?, 0/false
+    break-if-=
+    i <- decrement
+    loop
+  }
+  return i
+}
+
+fn emit-stack-from-index _self: (addr grapheme-stack), start: int, out: (addr stream byte) {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var data-ah/edi: (addr handle array grapheme) <- get self, data
+  var _data/eax: (addr array grapheme) <- lookup *data-ah
+  var data/edi: (addr array grapheme) <- copy _data
+  var top-addr/ecx: (addr int) <- get self, top
+  var i/eax: int <- copy start
+  {
+    compare i, *top-addr
+    break-if->=
+    var g/edx: (addr grapheme) <- index data, i
+    write-grapheme out, *g
+    i <- increment
+    loop
+  }
+}
+
+fn emit-stack-to-index _self: (addr grapheme-stack), end: int, out: (addr stream byte) {
+  var self/esi: (addr grapheme-stack) <- copy _self
+  var data-ah/edi: (addr handle array grapheme) <- get self, data
+  var _data/eax: (addr array grapheme) <- lookup *data-ah
+  var data/edi: (addr array grapheme) <- copy _data
+  var top-addr/ecx: (addr int) <- get self, top
+  var i/eax: int <- copy *top-addr
+  draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, i, 3/fg 0/bg
+  i <- decrement
+  {
+    compare i, 0
+    break-if-<
+    compare i, end
+    break-if-<
+    var g/edx: (addr grapheme) <- index data, i
+    write-grapheme out, *g
+    i <- decrement
+    loop
+  }
+}
+
+fn is-ascii-word-grapheme? g: grapheme -> _/eax: boolean {
+  compare g, 0x21/!
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x3f/?
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x41/A
+  {
+    break-if->=
+    return 0/false
+  }
+  compare g, 0x5a/Z
+  {
+    break-if->=
+    return 1/true
+  }
+  compare g, 0x5f/_
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x61/a
+  {
+    break-if->=
+    return 0/false
+  }
+  compare g, 0x7a/z
+  {
+    break-if->=
+    return 1/true
+  }
+  return 0/false
+}
+
 # We implicitly render everything editable in a single color, and assume the
 # cursor is a single other color.
 fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int {
