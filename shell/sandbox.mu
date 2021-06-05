@@ -415,9 +415,9 @@ fn render-sandbox-edit-menu screen: (addr screen), _self: (addr sandbox) {
   height <- increment
   clear-rect screen, 0/x, y, width, height, 0xc5/bg=blue-bg
   set-cursor-position screen, 0/x, y
-  draw-text-rightward-from-cursor screen, " ^r ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " ^r ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " ^s ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " ^s ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
   $render-sandbox-edit-menu:render-ctrl-m: {
     var self/eax: (addr sandbox) <- copy _self
@@ -432,13 +432,13 @@ fn render-sandbox-edit-menu screen: (addr screen), _self: (addr sandbox) {
     draw-text-rightward-from-cursor screen, " ^m ", width, 0/fg, 3/bg=keyboard
     draw-text-rightward-from-cursor screen, " to keyboard  ", width, 7/fg, 0xc5/bg=blue-bg
   }
-  draw-text-rightward-from-cursor screen, " ^a ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " ^a ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " <<  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " <word  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " word>  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " ^e ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " ^e ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " >>  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
@@ -452,9 +452,9 @@ fn render-keyboard-menu screen: (addr screen) {
   height <- increment
   clear-rect screen, 0/x, y, width, height, 0xc5/bg=blue-bg
   set-cursor-position screen, 0/x, y
-  draw-text-rightward-from-cursor screen, " ^r ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " ^r ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " ^s ", width, 0/fg, 0x5c/bg=black
+  draw-text-rightward-from-cursor screen, " ^s ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " ^m ", width, 0/fg, 7/bg
   draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
