@@ -88,8 +88,8 @@ fn edit-environment _self: (addr environment), key: byte, data-disk: (addr disk)
   }
   # dispatch the key to either sandbox or globals
   {
-    var cursor-in-globals?/eax: (addr boolean) <- get self, cursor-in-globals?
-    compare *cursor-in-globals?, 0/false
+    var cursor-in-globals-a/eax: (addr boolean) <- get self, cursor-in-globals?
+    compare *cursor-in-globals-a, 0/false
     break-if-=
     edit-globals globals, key, data-disk
     return
