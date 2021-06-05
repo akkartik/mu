@@ -192,6 +192,30 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
 }
 
 fn render-globals-menu screen: (addr screen), _self: (addr global-table) {
+  var _width/eax: int <- copy 0
+  var height/ecx: int <- copy 0
+  _width, height <- screen-size screen
+  var width/edx: int <- copy _width
+  var y/ecx: int <- copy height
+  y <- decrement
+  var height/ebx: int <- copy y
+  height <- increment
+  clear-rect screen, 0/x, y, width, height, 0xc5/bg=blue-bg
+  set-cursor-position screen, 0/x, y
+  draw-text-rightward-from-cursor screen, " ^r ", width, 0/fg, 0x5c/bg=menu-highlight
+  draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " ^s ", width, 0/fg, 0x5c/bg=menu-highlight
+  draw-text-rightward-from-cursor screen, " run sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " ^g ", width, 0/fg, 0x5c/bg=menu-highlight
+  draw-text-rightward-from-cursor screen, " go to  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " ^a ", width, 0/fg, 0x5c/bg=menu-highlight
+  draw-text-rightward-from-cursor screen, " <<  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg, 0x5c/bg=menu-highlight
+  draw-text-rightward-from-cursor screen, " <word  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg, 0x5c/bg=menu-highlight
+  draw-text-rightward-from-cursor screen, " word>  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " ^e ", width, 0/fg, 0x5c/bg=menu-highlight
+  draw-text-rightward-from-cursor screen, " >>  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
 fn edit-globals _self: (addr global-table), key: grapheme, data-disk: (addr disk) {
