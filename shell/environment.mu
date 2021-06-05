@@ -34,9 +34,8 @@ fn render-environment screen: (addr screen), _self: (addr environment) {
 
 fn edit-environment _self: (addr environment), key: byte, data-disk: (addr disk) {
   var self/esi: (addr environment) <- copy _self
-  var cursor-in-globals?/ecx: (addr boolean) <- get self, cursor-in-globals?
   var globals/edi: (addr global-table) <- get self, globals
-  var sandbox/esi: (addr sandbox) <- get self, sandbox
+  var sandbox/ecx: (addr sandbox) <- get self, sandbox
   # ctrl-r
   # Assumption: 'real-screen' and 'real-keyboard' are 0
   {
@@ -89,6 +88,7 @@ fn edit-environment _self: (addr environment), key: byte, data-disk: (addr disk)
   }
   # dispatch the key to either sandbox or globals
   {
+    var cursor-in-globals?/eax: (addr boolean) <- get self, cursor-in-globals?
     compare *cursor-in-globals?, 0/false
     break-if-!=
     edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
