@@ -137,13 +137,18 @@ fn emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte) {
 fn word-at-gap _self: (addr gap-buffer), out: (addr stream byte) {
   var self/esi: (addr gap-buffer) <- copy _self
   clear-stream out
+  {
+    var g/eax: grapheme <- grapheme-at-gap self
+    var at-word?/eax: boolean <- is-ascii-word-grapheme? g
+    compare at-word?, 0/false
+    break-if-!=
+    return
+  }
   var left/ecx: (addr grapheme-stack) <- get self, left
   var left-index/eax: int <- top-most-word left
   emit-stack-from-index left, left-index, out
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen "|" 7/fg 0/bg
   var right/ecx: (addr grapheme-stack) <- get self, right
   var right-index/eax: int <- top-most-word right
-  draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, right-index, 4/fg 0/bg
   emit-stack-to-index right, right-index, out
 }
 
@@ -190,8 +195,6 @@ fn test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-start {
   var out-storage: (stream byte 0x10)
   var out/eax: (addr stream byte) <- address out-storage
   word-at-gap g, out
-  rewind-stream out
-  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, out, 5/fg 0/bg
   check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-start"
 }
 
@@ -242,6 +245,38 @@ fn test-word-at-gap-multiple-words-with-gap-at-final-non-word {
   check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-final-non-word"
 }
 
+fn grapheme-at-gap _self: (addr gap-buffer) -> _/eax: grapheme {
+  # send top of right most of the time
+  var self/esi: (addr gap-buffer) <- copy _self
+  var right/edi: (addr grapheme-stack) <- get self, right
+  var data-ah/eax: (addr handle array grapheme) <- get right, data
+  var data/eax: (addr array grapheme) <- lookup *data-ah
+  var top-addr/ecx: (addr int) <- get right, top
+  {
+    compare *top-addr, 0
+    break-if-<=
+    var top/ecx: int <- copy *top-addr
+    top <- decrement
+    var result/eax: (addr grapheme) <- index data, top
+    return *result
+  }
+  # send top of left only if right is empty
+  var left/edi: (addr grapheme-stack) <- get self, left
+  var data-ah/eax: (addr handle array grapheme) <- get left, data
+  var data/eax: (addr array grapheme) <- lookup *data-ah
+  var top-addr/ecx: (addr int) <- get left, top
+  {
+    compare *top-addr, 0
+    break-if-<=
+    var top/ecx: int <- copy *top-addr
+    top <- decrement
+    var result/eax: (addr grapheme) <- index data, top
+    return *result
+  }
+  # send null if everything is empty
+  return 0
+}
+
 fn top-most-word _self: (addr grapheme-stack) -> _/eax: int {
   var self/esi: (addr grapheme-stack) <- copy _self
   var data-ah/edi: (addr handle array grapheme) <- get self, data
@@ -254,45 +289,13 @@ fn top-most-word _self: (addr grapheme-stack) -> _/eax: int {
     compare i, 0
     break-if-<
     var g/edx: (addr grapheme) <- index data, i
-    {
-      var foo/eax: int <- copy *g
-      draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 7/fg 0/bg
-    }
     var is-word?/eax: boolean <- is-ascii-word-grapheme? *g
-    {
-      var foo/eax: int <- copy is-word?
-      draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 1/fg 0/bg
-    }
     compare is-word?, 0/false
     break-if-=
     i <- decrement
     loop
   }
   i <- increment
-  return i
-}
-
-fn bottom-most-word _self: (addr grapheme-stack) -> _/eax: int {
-  var self/esi: (addr grapheme-stack) <- copy _self
-  var data-ah/edi: (addr handle array grapheme) <- get self, data
-  var _data/eax: (addr array grapheme) <- lookup *data-ah
-  var data/edi: (addr array grapheme) <- copy _data
-  var top-addr/ecx: (addr int) <- get self, top
-  var i/ebx: int <- copy 0
-  {
-    compare i, *top-addr
-    break-if->=
-    var g/edx: (addr grapheme) <- index data, i
-    {
-      var foo/eax: int <- copy *g
-      draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 4/fg 0/bg
-    }
-    var is-word?/eax: boolean <- is-ascii-word-grapheme? *g
-    compare is-word?, 0/false
-    break-if-=
-    i <- decrement
-    loop
-  }
   return i
 }
 
@@ -320,7 +323,6 @@ fn emit-stack-to-index _self: (addr grapheme-stack), end: int, out: (addr stream
   var data/edi: (addr array grapheme) <- copy _data
   var top-addr/ecx: (addr int) <- get self, top
   var i/eax: int <- copy *top-addr
-  draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, i, 3/fg 0/bg
   i <- decrement
   {
     compare i, 0
