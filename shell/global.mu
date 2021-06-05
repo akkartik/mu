@@ -135,8 +135,8 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
     loop
   }
   var lowest-index/edi: int <- copy curr-index
-  var final-index/edx: (addr int) <- get self, final-index
-  var curr-index/edx: int <- copy *final-index
+  var cursor-index/edx: (addr int) <- get self, cursor-index
+  var curr-index/edx: int <- copy *cursor-index
   var y1: int
   copy-to y1, 1/padding-top
   var y2: int
@@ -212,6 +212,8 @@ fn assign-or-create-global _self: (addr global-table), name: (addr array byte), 
     var final-index-addr/eax: (addr int) <- get self, final-index
     increment *final-index-addr
     curr-index <- copy *final-index-addr
+    var cursor-index-addr/eax: (addr int) <- get self, cursor-index
+    copy-to *cursor-index-addr, curr-index
   }
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
