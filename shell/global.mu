@@ -112,7 +112,7 @@ fn write-globals out: (addr stream byte), _self: (addr global-table) {
 }
 
 # globals layout: 1 char padding, 41 code, 1 padding, 41 code, 1 padding =  85 chars
-fn render-globals screen: (addr screen), _self: (addr global-table) {
+fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor?: boolean {
   clear-rect screen, 0/xmin, 0/ymin, 0x55/xmax, 0x2f/ymax=screen-height-without-menu, 0xdc/bg=green-bg
   var self/esi: (addr global-table) <- copy _self
   compare self, 0
@@ -164,16 +164,17 @@ fn render-globals screen: (addr screen), _self: (addr global-table) {
         compare y, y2
         {
           break-if->=
-          x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 1/padding-left, y1, 0x2a/xmax, 0x2f/ymax, 0/no-cursor, 7/fg=definition, 0xc5/bg=blue-bg
+          x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 1/padding-left, y1, 0x2a/xmax, 0x2f/ymax, show-cursor?, 7/fg=definition, 0xc5/bg=blue-bg
           y <- add 2
           copy-to y1, y
           break $render-globals:render-global
         }
-        x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 0x2b/xmin, y2, 0x54/xmax, 0x2f/ymax, 0/no-cursor, 7/fg=definition, 0xc5/bg=blue-bg
+        x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 0x2b/xmin, y2, 0x54/xmax, 0x2f/ymax, show-cursor?, 7/fg=definition, 0xc5/bg=blue-bg
         y <- add 2
         copy-to y2, y
       }
     }
+    copy-to show-cursor?, 0/false
     curr-index <- decrement
     loop
   }

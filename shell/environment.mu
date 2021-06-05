@@ -26,7 +26,7 @@ fn render-environment screen: (addr screen), _self: (addr environment) {
   var cursor-in-globals-a/eax: (addr boolean) <- get self, cursor-in-globals?
   var cursor-in-globals?/eax: boolean <- copy *cursor-in-globals-a
   var globals/ecx: (addr global-table) <- get self, globals
-  render-globals screen, globals
+  render-globals screen, globals, cursor-in-globals?
   var sandbox/edx: (addr sandbox) <- get self, sandbox
   var cursor-in-sandbox?/ebx: boolean <- copy 1/true
   cursor-in-sandbox? <- subtract cursor-in-globals?
