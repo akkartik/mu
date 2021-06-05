@@ -78,7 +78,7 @@ fn write-sandbox out: (addr stream byte), _self: (addr sandbox) {
 
 ##
 
-fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int, xmax: int, ymax: int {
+fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int, xmax: int, ymax: int, show-cursor?: boolean {
   clear-rect screen, xmin, ymin, xmax, ymax, 0xc5/bg=blue-bg
   add-to xmin, 1/padding-left
   add-to ymin, 1/padding-top
@@ -92,8 +92,14 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
   var y/ecx: int <- copy ymin
   y <- maybe-render-empty-screen screen, self, xmin, y
   y <- maybe-render-keyboard screen, self, xmin, y
-  var cursor-in-sandbox?/ebx: (addr boolean) <- get self, cursor-in-data?
-  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, *cursor-in-sandbox?, 7/fg, 0xc5/bg=blue-bg
+  var cursor-in-editor?/ebx: boolean <- copy show-cursor?
+  {
+    compare cursor-in-editor?, 0/false
+    break-if-=
+    var cursor-in-data-a/eax: (addr boolean) <- get self, cursor-in-data?
+    cursor-in-editor? <- copy *cursor-in-data-a
+  }
+  x, y <- render-gap-buffer-wrapping-right-then-down screen, data, x, y, xmax, ymax, cursor-in-editor?, 7/fg, 0xc5/bg=blue-bg
   y <- increment
   # trace
   var trace-ah/eax: (addr handle trace) <- get self, trace
@@ -727,7 +733,7 @@ fn test-run-integer {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen, 1/y, " 1    ", "F - test-run-integer/0"
   check-screen-row screen, 2/y, " ...  ", "F - test-run-integer/1"
@@ -745,7 +751,7 @@ fn test-run-error-invalid-integer {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row            screen,               1/y, " 1a             ", "F - test-run-error-invalid-integer/0"
   check-screen-row            screen,               2/y, " ...            ", "F - test-run-error-invalid-integer/1"
@@ -763,7 +769,7 @@ fn test-run-error-unknown-symbol {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row            screen,               1/y, " a                  ", "F - test-run-error-unknown-symbol/0"
   check-screen-row            screen,               2/y, " ...                ", "F - test-run-error-unknown-symbol/1"
@@ -781,7 +787,7 @@ fn test-run-with-spaces {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen, 1/y, "  1   ", "F - test-run-with-spaces/0"
   check-screen-row screen, 2/y, "      ", "F - test-run-with-spaces/1"
@@ -800,7 +806,7 @@ fn test-run-quote {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen, 1/y, " 'a   ", "F - test-run-quote/0"
   check-screen-row screen, 2/y, " ...  ", "F - test-run-quote/1"
@@ -818,7 +824,7 @@ fn test-run-dotted-list {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen, 1/y, " '(a . b)   ", "F - test-run-dotted-list/0"
   check-screen-row screen, 2/y, " ...        ", "F - test-run-dotted-list/1"
@@ -836,7 +842,7 @@ fn test-run-dot-and-list {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen, 1/y, " '(a . (b)) ", "F - test-run-dot-and-list/0"
   check-screen-row screen, 2/y, " ...        ", "F - test-run-dot-and-list/1"
@@ -854,7 +860,7 @@ fn test-run-final-dot {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen, 1/y, " '(a .)               ", "F - test-run-final-dot/0"
   check-screen-row screen, 2/y, " ...                  ", "F - test-run-final-dot/1"
@@ -873,7 +879,7 @@ fn test-run-double-dot {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen, 1/y, " '(a . .)             ", "F - test-run-double-dot/0"
   check-screen-row screen, 2/y, " ...                  ", "F - test-run-double-dot/1"
@@ -892,7 +898,7 @@ fn test-run-multiple-expressions-after-dot {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen, 1/y, " '(a . b c)                                           ", "F - test-run-multiple-expressions-after-dot/0"
   check-screen-row screen, 2/y, " ...                                                  ", "F - test-run-multiple-expressions-after-dot/1"
@@ -911,7 +917,7 @@ fn test-run-stream {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen, 1/y, " [a b]    ", "F - test-run-stream/0"
   check-screen-row screen, 2/y, " ...      ", "F - test-run-stream/1"
@@ -929,7 +935,7 @@ fn test-run-move-cursor-into-trace {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-move-cursor-into-trace/pre-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   |   ", "F - test-run-move-cursor-into-trace/pre-0/cursor"
@@ -940,7 +946,7 @@ fn test-run-move-cursor-into-trace {
   # move cursor into trace
   edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-move-cursor-into-trace/trace-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-move-cursor-into-trace/trace-0/cursor"
@@ -951,7 +957,7 @@ fn test-run-move-cursor-into-trace {
   # move cursor into input
   edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-move-cursor-into-trace/input-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   |   ", "F - test-run-move-cursor-into-trace/input-0/cursor"
@@ -991,7 +997,7 @@ fn test-run-expand-trace {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-expand-trace/pre0-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   |   ", "F - test-run-expand-trace/pre0-0/cursor"
@@ -1002,7 +1008,7 @@ fn test-run-expand-trace {
   # move cursor into trace
   edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-expand-trace/pre1-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-expand-trace/pre1-0/cursor"
@@ -1014,7 +1020,7 @@ fn test-run-expand-trace {
   edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
   #
   clear-screen screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-expand-trace/expand-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-expand-trace/expand-0/cursor"
@@ -1038,7 +1044,7 @@ fn test-run-can-rerun-when-expanding-trace {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-can-rerun-when-expanding-trace/pre0-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   |   ", "F - test-run-can-rerun-when-expanding-trace/pre0-0/cursor"
@@ -1049,7 +1055,7 @@ fn test-run-can-rerun-when-expanding-trace {
   # move cursor into trace
   edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-can-rerun-when-expanding-trace/pre1-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre1-0/cursor"
@@ -1061,7 +1067,7 @@ fn test-run-can-rerun-when-expanding-trace {
   edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
   #
   clear-screen screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-can-rerun-when-expanding-trace/pre2-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre2-0/cursor"
@@ -1073,11 +1079,11 @@ fn test-run-can-rerun-when-expanding-trace {
   check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre2-2/cursor"
   # move cursor down and expand
   edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
   #
   clear-screen screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # screen looks same as if trace max-depth was really high
   check-screen-row screen,                                  1/y, " 12    ", "F - test-run-can-rerun-when-expanding-trace/expand-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "       ", "F - test-run-can-rerun-when-expanding-trace/expand-0/cursor"
@@ -1103,7 +1109,7 @@ fn test-run-preserves-trace-view-on-rerun {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   #
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
   check-screen-row screen,                                  1/y, " 7                     ", "F - test-run-preserves-trace-view-on-rerun/pre0-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "  |                    ", "F - test-run-preserves-trace-view-on-rerun/pre0-0/cursor"
@@ -1113,7 +1119,7 @@ fn test-run-preserves-trace-view-on-rerun {
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre0-2/cursor"
   # move cursor into trace
   edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   #
   check-screen-row screen,                                  1/y, " 7                     ", "F - test-run-preserves-trace-view-on-rerun/pre1-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre1-0/cursor"
@@ -1124,7 +1130,7 @@ fn test-run-preserves-trace-view-on-rerun {
   # expand
   edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
   clear-screen screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   #
   check-screen-row screen,                                  1/y, " 7                     ", "F - test-run-preserves-trace-view-on-rerun/pre2-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-0/cursor"
@@ -1144,15 +1150,15 @@ fn test-run-preserves-trace-view-on-rerun {
   check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-7/cursor"
   # move cursor down below the macroexpand line and expand
   edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   #
   check-screen-row screen,                                  1/y, " 7                     ", "F - test-run-preserves-trace-view-on-rerun/pre3-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-0/cursor"
@@ -1173,7 +1179,7 @@ fn test-run-preserves-trace-view-on-rerun {
   # expand
   edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
   clear-screen screen
-  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # cursor line is expanded
   check-screen-row screen,                                  1/y, " 7                     ", "F - test-run-preserves-trace-view-on-rerun/expand-0"
   check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/expand-0/cursor"

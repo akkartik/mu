@@ -23,10 +23,14 @@ fn render-environment screen: (addr screen), _self: (addr environment) {
   # sandbox layout: 1 padding, 41 code, 1 padding                          =  43
   #                                                                  total = 128 chars
   var self/esi: (addr environment) <- copy _self
+  var cursor-in-globals-a/eax: (addr boolean) <- get self, cursor-in-globals?
+  var cursor-in-globals?/eax: boolean <- copy *cursor-in-globals-a
   var globals/ecx: (addr global-table) <- get self, globals
   render-globals screen, globals
   var sandbox/edx: (addr sandbox) <- get self, sandbox
-  render-sandbox screen, sandbox, 0x55/sandbox-left-margin, 0/sandbox-top-margin, 0x80/screen-width, 0x2f/screen-height-without-menu
+  var cursor-in-sandbox?/ebx: boolean <- copy 1/true
+  cursor-in-sandbox? <- subtract cursor-in-globals?
+  render-sandbox screen, sandbox, 0x55/sandbox-left-margin, 0/sandbox-top-margin, 0x80/screen-width, 0x2f/screen-height-without-menu, cursor-in-sandbox?
   # modal if necessary
   {
     var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
