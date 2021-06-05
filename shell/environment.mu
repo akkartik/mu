@@ -105,6 +105,13 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     #
     return
   }
+  # ctrl-s: always send to repl
+  {
+    compare key, 0x13/ctrl-s
+    break-if-!=
+    edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
+    return
+  }
   # ctrl-g: go to a function (or the repl)
   {
     compare key, 7/ctrl-g
