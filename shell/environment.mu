@@ -90,11 +90,11 @@ fn edit-environment _self: (addr environment), key: byte, data-disk: (addr disk)
   {
     var cursor-in-globals?/eax: (addr boolean) <- get self, cursor-in-globals?
     compare *cursor-in-globals?, 0/false
-    break-if-!=
-    edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
+    break-if-=
+    edit-globals globals, key, data-disk
     return
   }
-  edit-globals globals, key, data-disk
+  edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
 }
 
 # Gotcha: some saved state may not load.
