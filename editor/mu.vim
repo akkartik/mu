@@ -70,7 +70,22 @@ syntax match muTest "\(fn\s\+\)\@<=\(test-\S\+\)"
 highlight link muTest Identifier
 
 syntax match muData "^type\>"
-syntax match muData "\<eax\>\|\<ecx\>\|\<edx\>\|\<ebx\>\|\<esi\>\|\<edi\>\|\<xmm[0-7]\>"
+syntax match muData "\<xmm[0-7]\>"
 highlight link muData Constant
+
+" Some hacky colors
+" TODO: This should really be theme-dependent.
+syntax match muRegEax "\<eax\>"
+highlight muRegEax ctermfg=94
+syntax match muRegEcx "\<ecx\>"
+highlight muRegEcx ctermfg=137
+syntax match muRegEdx "\<edx\>"
+highlight muRegEdx ctermfg=100
+syntax match muRegEbx "\<ebx\>"
+highlight muRegEbx ctermfg=103
+syntax match muRegEsi "\<esi\>"
+highlight muRegEsi ctermfg=114
+syntax match muRegEdi "\<edi\>"
+highlight muRegEdi ctermfg=122
 
 let &cpo = s:save_cpo
