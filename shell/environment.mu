@@ -180,7 +180,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     var cursor-in-globals-a/eax: (addr boolean) <- get self, cursor-in-globals?
     compare *cursor-in-globals-a, 0/false
     break-if-=
-    edit-globals globals, key, data-disk
+    edit-globals globals, key
     return
   }
   edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen

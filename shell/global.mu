@@ -218,7 +218,17 @@ fn render-globals-menu screen: (addr screen), _self: (addr global-table) {
   draw-text-rightward-from-cursor screen, " >>  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
-fn edit-globals _self: (addr global-table), key: grapheme, data-disk: (addr disk) {
+fn edit-globals _self: (addr global-table), key: grapheme {
+  var self/esi: (addr global-table) <- copy _self
+  var cursor-index-addr/ecx: (addr int) <- get self, cursor-index
+  var cursor-index/ecx: int <- copy *cursor-index-addr
+  var data-ah/eax: (addr handle array global) <- get self, data
+  var data/eax: (addr array global) <- lookup *data-ah
+  var cursor-offset/ecx: (offset global) <- compute-offset data, cursor-index
+  var curr-global/eax: (addr global) <- index data, cursor-offset
+  var curr-editor-ah/eax: (addr handle gap-buffer) <- get curr-global, input
+  var curr-editor/eax: (addr gap-buffer) <- lookup *curr-editor-ah
+  edit-gap-buffer curr-editor, key
 }
 
 fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {
