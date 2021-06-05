@@ -141,7 +141,14 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       copy-to *cursor-in-globals-a, 1/true
       var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
       var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
-      set-global-cursor-index globals, partial-function-name
+      {
+        {
+          var empty?/eax: boolean <- gap-buffer-empty? partial-function-name
+          compare empty?, 0/false
+        }
+        break-if-!=
+        set-global-cursor-index globals, partial-function-name
+      }
       var cursor-in-globals-a/ecx: (addr boolean) <- get self, cursor-in-globals?
       copy-to *cursor-in-globals-a, 1/true
       {
