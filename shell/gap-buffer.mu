@@ -342,6 +342,16 @@ fn is-ascii-word-grapheme? g: grapheme -> _/eax: boolean {
     break-if-!=
     return 1/true
   }
+  compare g, 0x30/0
+  {
+    break-if->=
+    return 0/false
+  }
+  compare g, 0x39/9
+  {
+    break-if->
+    return 1/true
+  }
   compare g, 0x3f/?
   {
     break-if-!=
@@ -354,7 +364,7 @@ fn is-ascii-word-grapheme? g: grapheme -> _/eax: boolean {
   }
   compare g, 0x5a/Z
   {
-    break-if->=
+    break-if->
     return 1/true
   }
   compare g, 0x5f/_
@@ -369,7 +379,7 @@ fn is-ascii-word-grapheme? g: grapheme -> _/eax: boolean {
   }
   compare g, 0x7a/z
   {
-    break-if->=
+    break-if->
     return 1/true
   }
   return 0/false
