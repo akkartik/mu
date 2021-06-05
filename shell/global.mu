@@ -220,6 +220,14 @@ fn render-globals-menu screen: (addr screen), _self: (addr global-table) {
 
 fn edit-globals _self: (addr global-table), key: grapheme {
   var self/esi: (addr global-table) <- copy _self
+  # ctrl-s
+  {
+    compare key, 0x13/ctrl-s
+    break-if-!=
+    #
+    refresh-cursor-definition self
+    return
+  }
   var cursor-index-addr/ecx: (addr int) <- get self, cursor-index
   var cursor-index/ecx: int <- copy *cursor-index-addr
   var data-ah/eax: (addr handle array global) <- get self, data
@@ -229,6 +237,39 @@ fn edit-globals _self: (addr global-table), key: grapheme {
   var curr-editor-ah/eax: (addr handle gap-buffer) <- get curr-global, input
   var curr-editor/eax: (addr gap-buffer) <- lookup *curr-editor-ah
   edit-gap-buffer curr-editor, key
+}
+
+fn refresh-cursor-definition _self: (addr global-table) {
+  var self/esi: (addr global-table) <- copy _self
+  var cursor-index/edx: (addr int) <- get self, cursor-index
+  refresh-definition self, *cursor-index
+}
+
+fn refresh-definition _self: (addr global-table), _index: int {
+  var self/esi: (addr global-table) <- copy _self
+  var data-ah/eax: (addr handle array global) <- get self, data
+  var data/eax: (addr array global) <- lookup *data-ah
+  var index/ecx: int <- copy _index
+  var offset/ecx: (offset global) <- compute-offset data, index
+  var curr-global/ecx: (addr global) <- index data, offset
+  var curr-input-ah/eax: (addr handle gap-buffer) <- get curr-global, input
+  var curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
+  var read-result-h: (handle cell)
+  var read-result-ah/edx: (addr handle cell) <- address read-result-h
+  var trace-storage: trace
+  var trace/ebx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell curr-input, read-result-ah, trace
+  macroexpand read-result-ah, self, trace
+  var nil-h: (handle cell)
+  {
+    var nil-ah/eax: (addr handle cell) <- address nil-h
+    allocate-pair nil-ah
+  }
+  var curr-value-ah/eax: (addr handle cell) <- get curr-global, value
+  debug-print "GL", 4/fg, 0/bg
+  evaluate read-result-ah, curr-value-ah, nil-h, self, trace, 0/no-screen-cell, 0/no-keyboard-cell, 1/call-number
+  debug-print "GZ", 4/fg, 0/bg
 }
 
 fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {

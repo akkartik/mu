@@ -105,11 +105,25 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     #
     return
   }
-  # ctrl-s: always send to repl
+  # ctrl-s: send multiple places
   {
     compare key, 0x13/ctrl-s
     break-if-!=
-    edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
+    {
+      # cursor in function modal? do nothing
+      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+      compare *cursor-in-function-modal-a, 0/false
+      break-if-!=
+      {
+        # cursor in globals? update current definition
+        var cursor-in-globals-a/edx: (addr boolean) <- get self, cursor-in-globals?
+        compare *cursor-in-globals-a, 0/false
+        break-if-=
+        edit-globals globals, key
+      }
+      # update sandbox whether the cursor is in globals or sandbox
+      edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
+    }
     return
   }
   # ctrl-g: go to a function (or the repl)
