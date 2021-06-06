@@ -220,6 +220,11 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
     var dest/edi: (addr float) <- get out-addr, number-data
     copy-to *dest, val-float
     {
+      {
+        var should-trace?/eax: boolean <- should-trace? trace
+        compare should-trace?, 0/false
+      }
+      break-if-=
       var stream-storage: (stream byte 0x400)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> number "
@@ -251,6 +256,11 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
   var dest-ah/edx: (addr handle stream byte) <- get out-addr, text-data
   copy-object curr-token-data-ah, dest-ah
   {
+    {
+      var should-trace?/eax: boolean <- should-trace? trace
+      compare should-trace?, 0/false
+    }
+    break-if-=
     var stream-storage: (stream byte 0x400)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "=> symbol "
