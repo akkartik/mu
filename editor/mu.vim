@@ -9,8 +9,10 @@
 "   autocmd BufReadPost,BufNewFile *.mu set filetype=mu
 "
 " Some highlight groups you might want to select colors for in your vimrc:
-"   muFunction
-"   muTest
+highlight link CommentedCode Comment
+highlight link SalientComment Comment
+highlight link muFunction Identifier
+highlight link muTest Identifier
 
 let s:save_cpo = &cpo
 set cpo&vim
