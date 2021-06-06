@@ -97,4 +97,4 @@ inoremap <Leader>o <Esc>F<Space>a(offset <Esc>A)
 inoremap ,- <-
 inoremap -. ->
 
-autocmd BufReadPost,BufNewFile *.limg call matchadd('String', '\[\([^\]]*\_$\_s\)*[^\]]*\]')
+autocmd BufReadPost,BufNewFile *.limg set filetype=mulisp |call matchadd('String', '\[\([^\]]*\_$\_s\)*[^\]]*\]')
