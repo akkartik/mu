@@ -740,6 +740,24 @@ fn test-run-integer {
   check-screen-row screen, 3/y, " => 1 ", "F - test-run-integer/2"
 }
 
+fn test-run-negative-integer {
+  var sandbox-storage: sandbox
+  var sandbox/esi: (addr sandbox) <- address sandbox-storage
+  initialize-sandbox-with sandbox, "-1"
+  # eval
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
+  #
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
+  # skip one line of padding
+  check-screen-row screen, 1/y, " -1    ", "F - test-run-negative-integer/0"
+  check-screen-row screen, 2/y, " ...   ", "F - test-run-negative-integer/1"
+  check-screen-row screen, 3/y, " => -1 ", "F - test-run-negative-integer/2"
+}
+
 fn test-run-error-invalid-integer {
   var sandbox-storage: sandbox
   var sandbox/esi: (addr sandbox) <- address sandbox-storage

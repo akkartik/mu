@@ -1115,6 +1115,25 @@ fn read-from-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme {
   return 0/nul
 }
 
+fn put-back-from-gap-buffer _self: (addr gap-buffer) {
+  var self/esi: (addr gap-buffer) <- copy _self
+  # more in right?
+  var right/eax: (addr grapheme-stack) <- get self, right
+  var right-size/eax: int <- grapheme-stack-length right
+  var right-read-index-a/eax: (addr int) <- get self, right-read-index
+  compare *right-read-index-a, 0
+  {
+    break-if-<=
+    decrement *right-read-index-a
+    return
+  }
+  # more in left?
+  var left/eax: (addr grapheme-stack) <- get self, left
+  var left-size/eax: int <- grapheme-stack-length left
+  var left-read-index-a/eax: (addr int) <- get self, left-read-index
+  decrement *left-read-index-a
+}
+
 fn test-read-from-gap-buffer {
   var gap-storage: gap-buffer
   var gap/esi: (addr gap-buffer) <- address gap-storage

@@ -30,6 +30,75 @@ fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) 
   trace-higher trace
 }
 
+fn test-tokenize-number {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "123 a"
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var number?/eax: boolean <- number-token? curr-token
+  check number?, "F - test-tokenize-number"
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  check-stream-equal curr-token-data, "123", "F - test-tokenize-number: value"
+}
+
+fn test-tokenize-negative-number {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "-123 a"
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var number?/eax: boolean <- number-token? curr-token
+  check number?, "F - test-tokenize-negative-number"
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  check-stream-equal curr-token-data, "-123", "F - test-tokenize-negative-number: value"
+}
+
+fn test-tokenize-number-followed-by-hyphen {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "123-4 a"
+  #
+  var stream-storage: (stream cell 0x10)
+  var stream/edi: (addr stream cell) <- address stream-storage
+  #
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
+  #
+  var curr-token-storage: cell
+  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var number?/eax: boolean <- number-token? curr-token
+  check number?, "F - test-tokenize-number-followed-by-hyphen"
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  check-stream-equal curr-token-data, "123", "F - test-tokenize-number-followed-by-hyphen: value"
+}
+
 fn test-tokenize-quote {
   var in-storage: gap-buffer
   var in/esi: (addr gap-buffer) <- address in-storage
@@ -273,6 +342,19 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       rest-of-line in, out, trace
       break $next-token:case
     }
+    # special-case: '-'
+    {
+      compare g, 0x2d/minus
+      break-if-!=
+      var dummy/eax: grapheme <- read-from-gap-buffer in  # skip '-'
+      var g2/eax: grapheme <- peek-from-gap-buffer in
+      put-back-from-gap-buffer in
+      var digit?/eax: boolean <- decimal-digit? g2
+      compare digit?, 0/false
+      break-if-=
+      next-number-token in, out, trace
+      break $next-token:case
+    }
     # digit
     {
       var digit?/eax: boolean <- decimal-digit? g
@@ -458,6 +540,12 @@ fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (a
 fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
   trace-text trace, "tokenize", "looking for a number"
   trace-lower trace
+  $next-number-token:check-minus: {
+    var g/eax: grapheme <- peek-from-gap-buffer in
+    compare g, 0x2d/minus
+    g <- read-from-gap-buffer in  # consume
+    write-grapheme out, g
+  }
   $next-number-token:loop: {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
@@ -889,9 +977,16 @@ fn operator-grapheme? g: grapheme -> _/eax: boolean {
 fn number-token? _in: (addr cell) -> _/eax: boolean {
   var in/eax: (addr cell) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
-  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
+  var in-data/ecx: (addr stream byte) <- copy _in-data
   rewind-stream in-data
   var g/eax: grapheme <- read-grapheme in-data
+  # if '-', read another
+  {
+    compare g, 0x2d/minus
+    break-if-!=
+    g <- read-grapheme in-data
+  }
   var result/eax: boolean <- decimal-digit? g
   return result
 }
