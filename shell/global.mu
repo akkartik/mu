@@ -19,7 +19,7 @@ fn initialize-globals _self: (addr global-table) {
     return
   }
   var data-ah/eax: (addr handle array global) <- get self, data
-  populate data-ah, 0x40
+  populate data-ah, 0x80
   initialize-primitives self
 }
 
