@@ -80,13 +80,9 @@ fn load-gap-buffer-from-stream self: (addr gap-buffer), in: (addr stream byte) {
   }
 }
 
-fn emit-gap-buffer _self: (addr gap-buffer), out: (addr stream byte) {
-  var self/esi: (addr gap-buffer) <- copy _self
+fn emit-gap-buffer self: (addr gap-buffer), out: (addr stream byte) {
   clear-stream out
-  var left/eax: (addr grapheme-stack) <- get self, left
-  emit-stack-from-bottom left, out
-  var right/eax: (addr grapheme-stack) <- get self, right
-  emit-stack-from-top right, out
+  append-gap-buffer self, out
 }
 
 fn append-gap-buffer _self: (addr gap-buffer), out: (addr stream byte) {
