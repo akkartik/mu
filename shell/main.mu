@@ -1,5 +1,5 @@
 # Experimental Mu shell
-# A Lisp with indent-sensitivity and infix.
+# Currently based on Lisp.
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var env-storage: environment
