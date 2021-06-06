@@ -103,9 +103,9 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   tmpx <- draw-text-rightward screen, ": stream grapheme -> stream", tmpx, xmax, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "fn def set if while = no(t) car cdr cons  ", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, "num: ", tmpx, xmax, y, 7/fg=grey, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, "+ - * / sqrt abs sgn < > <= >=   ", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, "fn set if while cons car cdr no not and or = ", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  # numbers
+  tmpx <- draw-text-rightward screen, "< > <= >= + - * / sqrt abs sgn", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
 }
 
 fn primitive-global? _x: (addr global) -> _/eax: boolean {
