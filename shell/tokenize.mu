@@ -223,6 +223,9 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
   var _g/eax: grapheme <- peek-from-gap-buffer in
   var g/ecx: grapheme <- copy _g
   {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
     var stream-storage: (stream byte 0x40)
     var stream/esi: (addr stream byte) <- address stream-storage
     write stream, "next: "
@@ -345,12 +348,17 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     abort "unknown token type"
   }
   trace-higher trace
-  var stream-storage: (stream byte 0x400)  # maximum possible token size (next-stream-token)
-  var stream/eax: (addr stream byte) <- address stream-storage
-  write stream, "=> "
-  rewind-stream out
-  write-stream stream, out
-  trace trace, "tokenize", stream
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x400)  # maximum possible token size (next-stream-token)
+    var stream/eax: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    rewind-stream out
+    write-stream stream, out
+    trace trace, "tokenize", stream
+  }
 }
 
 fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
@@ -362,6 +370,11 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     break-if-!=
     var g/eax: grapheme <- peek-from-gap-buffer in
     {
+      {
+        var should-trace?/eax: boolean <- should-trace? trace
+        compare should-trace?, 0/false
+      }
+      break-if-=
       var stream-storage: (stream byte 0x40)
       var stream/esi: (addr stream byte) <- address stream-storage
       write stream, "next: "
@@ -382,12 +395,17 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     loop
   }
   trace-higher trace
-  var stream-storage: (stream byte 0x40)
-  var stream/esi: (addr stream byte) <- address stream-storage
-  write stream, "=> "
-  rewind-stream out
-  write-stream stream, out
-  trace trace, "tokenize", stream
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x40)
+    var stream/esi: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    rewind-stream out
+    write-stream stream, out
+    trace trace, "tokenize", stream
+  }
 }
 
 fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
@@ -399,6 +417,11 @@ fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (a
     break-if-!=
     var g/eax: grapheme <- peek-from-gap-buffer in
     {
+      {
+        var should-trace?/eax: boolean <- should-trace? trace
+        compare should-trace?, 0/false
+      }
+      break-if-=
       var stream-storage: (stream byte 0x40)
       var stream/esi: (addr stream byte) <- address stream-storage
       write stream, "next: "
@@ -419,12 +442,17 @@ fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (a
     loop
   }
   trace-higher trace
-  var stream-storage: (stream byte 0x40)
-  var stream/esi: (addr stream byte) <- address stream-storage
-  write stream, "=> "
-  rewind-stream out
-  write-stream stream, out
-  trace trace, "tokenize", stream
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x40)
+    var stream/esi: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    rewind-stream out
+    write-stream stream, out
+    trace trace, "tokenize", stream
+  }
 }
 
 fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
@@ -436,6 +464,11 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     break-if-!=
     var g/eax: grapheme <- peek-from-gap-buffer in
     {
+      {
+        var should-trace?/eax: boolean <- should-trace? trace
+        compare should-trace?, 0/false
+      }
+      break-if-=
       var stream-storage: (stream byte 0x40)
       var stream/esi: (addr stream byte) <- address stream-storage
       write stream, "next: "
@@ -483,23 +516,33 @@ fn next-stream-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     write-grapheme out, g
     loop
   }
-  var stream-storage: (stream byte 0x400)  # max-definition-size
-  var stream/esi: (addr stream byte) <- address stream-storage
-  write stream, "=> "
-  rewind-stream out
-  write-stream stream, out
-  trace trace, "tokenize", stream
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x400)  # max-definition-size
+    var stream/esi: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    rewind-stream out
+    write-stream stream, out
+    trace trace, "tokenize", stream
+  }
 }
 
 fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) {
   trace-text trace, "tokenize", "bracket"
   write-grapheme out, g
-  var stream-storage: (stream byte 0x40)
-  var stream/esi: (addr stream byte) <- address stream-storage
-  write stream, "=> "
-  rewind-stream out
-  write-stream stream, out
-  trace trace, "tokenize", stream
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x40)
+    var stream/esi: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    rewind-stream out
+    write-stream stream, out
+    trace trace, "tokenize", stream
+  }
 }
 
 fn rest-of-line in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
@@ -517,12 +560,17 @@ fn rest-of-line in: (addr gap-buffer), out: (addr stream byte), trace: (addr tra
     write-grapheme out, g
     loop
   }
-  var stream-storage: (stream byte 0x80)
-  var stream/esi: (addr stream byte) <- address stream-storage
-  write stream, "=> "
-  rewind-stream out
-  write-stream stream, out
-  trace trace, "tokenize", stream
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x80)
+    var stream/esi: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    rewind-stream out
+    write-stream stream, out
+    trace trace, "tokenize", stream
+  }
 }
 
 fn symbol-grapheme? g: grapheme -> _/eax: boolean {
