@@ -5,6 +5,7 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "-"
   append-primitive self, "*"
   append-primitive self, "/"
+  append-primitive self, "%"
   append-primitive self, "sqrt"
   append-primitive self, "abs"
   append-primitive self, "sgn"
@@ -105,7 +106,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "fn set if while cons car cdr no not and or = ", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
   # numbers
-  tmpx <- draw-text-rightward screen, "< > <= >= + - * / sqrt abs sgn", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, "< > <= >= + - * / % sqrt abs sgn", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
 }
 
 fn primitive-global? _x: (addr global) -> _/eax: boolean {
@@ -191,6 +192,19 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare divide?, 0/false
     break-if-=
     apply-divide args-ah, out, trace
+    return
+  }
+  # '%' is the remainder operator, because modulo isn't really meaningful for
+  # non-integers
+  #
+  # I considered calling this operator 'rem', but I want to follow Arc in
+  # using 'rem' for filtering out elements from lists.
+  #   https://arclanguage.github.io/ref/list.html#rem
+  {
+    var remainder?/eax: boolean <- string-equal? f-name, "%"
+    compare remainder?, 0/false
+    break-if-=
+    apply-remainder args-ah, out, trace
     return
   }
   {
@@ -581,6 +595,56 @@ fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   # divide
   var result/xmm0: float <- copy *first-value
   result <- divide *second-value
+  new-float out, result
+}
+
+fn apply-remainder _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply %"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  # TODO: check that args is a pair
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "% needs 2 args but got 0"
+    return
+  }
+  # args->left->value
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 1/number
+  {
+    break-if-=
+    error trace, "first arg for % is not a number"
+    return
+  }
+  var first-value/ecx: (addr float) <- get first, number-data
+  # args->right->left->value
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  # TODO: check that right is a pair
+  var second-ah/eax: (addr handle cell) <- get right, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  var second-type/edx: (addr int) <- get second, type
+  compare *second-type, 1/number
+  {
+    break-if-=
+    error trace, "second arg for % is not a number"
+    return
+  }
+  var second-value/edx: (addr float) <- get second, number-data
+  # divide
+  var quotient/xmm0: float <- copy *first-value
+  quotient <- divide *second-value
+  var quotient-int/eax: int <- truncate quotient
+  quotient <- convert quotient-int
+  var sub-result/xmm1: float <- copy quotient
+  sub-result <- multiply *second-value
+  var result/xmm0: float <- copy *first-value
+  result <- subtract sub-result
   new-float out, result
 }
 
