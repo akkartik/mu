@@ -886,12 +886,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   # check car
   var env-head-storage: (handle cell)
   var env-head-ah/eax: (addr handle cell) <- address env-head-storage
-  {
-    var nested-trace-storage: trace
-    var nested-trace/edi: (addr trace) <- address nested-trace-storage
-    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
-    car env, env-head-ah, nested-trace
-  }
+  car env, env-head-ah, trace
   var _env-head/eax: (addr cell) <- lookup *env-head-ah
   var env-head/ecx: (addr cell) <- copy _env-head
   # if car is not a list, abort
@@ -922,10 +917,7 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
   compare match?, 0/false
   {
     break-if-=
-    var nested-trace-storage: trace
-    var nested-trace/edi: (addr trace) <- address nested-trace-storage
-    initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
-    cdr env-head, out, nested-trace
+    cdr env-head, out, trace
     # trace "=> " out " (match)" {{{
     {
       var should-trace?/eax: boolean <- should-trace? trace
@@ -937,7 +929,9 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       var stream-storage: (stream byte 0x800)
       var stream/ecx: (addr stream byte) <- address stream-storage
       write stream, "=> "
-      clear-trace nested-trace
+      var nested-trace-storage: trace
+      var nested-trace/edi: (addr trace) <- address nested-trace-storage
+      initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
       print-cell out, stream, nested-trace
       write stream, " (match)"
       trace trace, "eval", stream
@@ -1098,10 +1092,7 @@ fn mutate-binding name: (addr stream byte), val: (addr handle cell), env-h: (han
   # check car
   var env-head-storage: (handle cell)
   var env-head-ah/eax: (addr handle cell) <- address env-head-storage
-  var nested-trace-storage: trace
-  var nested-trace/edi: (addr trace) <- address nested-trace-storage
-  initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
-  car env, env-head-ah, nested-trace
+  car env, env-head-ah, trace
   var _env-head/eax: (addr cell) <- lookup *env-head-ah
   var env-head/ecx: (addr cell) <- copy _env-head
   # if car is not a list, abort
