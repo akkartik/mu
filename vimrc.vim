@@ -96,5 +96,3 @@ inoremap <Leader>ahs <Esc>F<Space>a(addr handle stream <Esc>A)
 inoremap <Leader>o <Esc>F<Space>a(offset <Esc>A)
 inoremap ,- <-
 inoremap -. ->
-
-autocmd BufReadPost,BufNewFile *.limg set filetype=mulisp |call matchadd('String', '\[\([^\]]*\_$\_s\)*[^\]]*\]')

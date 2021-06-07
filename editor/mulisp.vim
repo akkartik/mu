@@ -17,7 +17,7 @@ setlocal iskeyword=@,48-57,?,!,_,$
 " colorscheme-independent color suggestions for them.
 highlight Normal ctermfg=245
 highlight muLispNormal ctermfg=0
-highlight muLispOuterKeyword ctermfg=2
+highlight muLispOuterKeyword ctermfg=160
 highlight link muLispKeyword Type
 
 syntax region String   start=+"+  skip=+\\"+  end=+"+
