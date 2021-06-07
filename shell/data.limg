@@ -89,12 +89,6 @@
      (while ,test
        ,@body
        ,update)))])
-    (up . [(mac (up var init max . body)
-  `(for ,var ,init (<= ,var ,max) (++ ,var)
-     ,@body))])
-    (down . [(mac (down var init min . body)
-  `(for ,var ,init (>= ,var ,min) (-- ,var)
-     ,@body))])
     (hline1 . [(def (hline1 screen y x xmax color)
   (while (< x xmax)
     (pixel screen x y color)
@@ -208,8 +202,11 @@
     (for x r (< x xmax) (+= x side)
       (circle_rainbow screen x y (- r 100) 10)))))))])
     (task . [(def (task screen keyboard)
-  (up i 0 (- (/ (height screen) 3) 1)
-    (hline screen (* i 3) (color i))))])
+  (let (y c) '(0 0)
+    (while (< y (height screen))
+      (hline screen y (color c))
+      (+= y 3)
+      (++ c))))])
     (color . [(def (color i)
   (let palette
       # greyscale
