@@ -21,6 +21,10 @@
   (if (no l)
     0
     (+ 1 (len (cdr l)))))])
+    (nth . [(def (nth n xs)
+  (if (<= n 0)
+    (car xs)
+    (nth (- n 1) (cdr xs))))])
     (map1 . [(def (map1 f xs)
   (if (no xs)
     ()
@@ -63,12 +67,6 @@
   (when xs
     (f (car xs))
     (walk (cdr xs) f))) ])
-    (up . [(mac (up var init max . body)
-  `(for ,var ,init (<= ,var ,max) (++ ,var)
-     ,@body))])
-    (down . [(mac (down var init min . body)
-  `(for ,var ,init (>= ,var ,min) (-- ,var)
-     ,@body))])
     (rem . [(def (rem f xs)
   (if (no xs)
     ()
@@ -91,6 +89,12 @@
      (while ,test
        ,@body
        ,update)))])
+    (up . [(mac (up var init max . body)
+  `(for ,var ,init (<= ,var ,max) (++ ,var)
+     ,@body))])
+    (down . [(mac (down var init min . body)
+  `(for ,var ,init (>= ,var ,min) (-- ,var)
+     ,@body))])
     (hline1 . [(def (hline1 screen y x xmax color)
   (while (< x xmax)
     (pixel screen x y color)
@@ -204,14 +208,20 @@
     (for x r (< x xmax) (+= x side)
       (circle_rainbow screen x y (- r 100) 10)))))))])
     (task . [(def (task screen keyboard)
-  (let xmax (width screen)
-  (let ymax (height screen)
-  (for y 0 (< y ymax) (+= y 4)
-    #(wait keyboard)
-    (for x 0 (< x xmax) (+= x 1)
-      (pixel screen x y
-             # color
-             (+ 16 (+ (/ x 4) (cube (/ y 4))))))))))])
+  (up i 0 (- (/ (height screen) 3) 1)
+    (hline screen (* i 3) (color i))))])
+    (color . [(def (color i)
+  (let palette
+      # greyscale
+#      '(16 17 18 19 20 21 22 23
+#        24 25 26 27 28 29 30 31)
+      # pink
+      '(13 5 36 37 59 60 61 84
+        85 108 132)
+      # pink sorted
+      '(84 85 59 60 61 13 36 37
+        5 108)
+    (nth (% i (len palette)) palette)))])
     (main . [(def (main screen keyboard)
   (task screen keyboard))])
   ))
