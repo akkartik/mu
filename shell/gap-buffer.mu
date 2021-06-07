@@ -395,6 +395,7 @@ fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr
   var right/edx: (addr grapheme-stack) <- get gap, right
   x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, right, xmin, ymin, xmax, ymax, x2, y2, render-cursor?, color, background-color
   # decide whether we still need to print a cursor
+  var fg/edi: int <- copy color
   var bg/ebx: int <- copy background-color
   compare render-cursor?, 0/false
   {
@@ -403,11 +404,13 @@ fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr
     var empty?/eax: boolean <- grapheme-stack-empty? right
     compare empty?, 0/false
     break-if-=
-    bg <- copy 7/cursor
+    # swap foreground and background
+    fg <- copy background-color
+    bg <- copy color
   }
   # print a grapheme either way so that cursor position doesn't affect printed width
   var space/edx: grapheme <- copy 0x20
-  x2, y2 <- render-grapheme screen, space, xmin, ymin, xmax, ymax, x2, y2, color, bg
+  x2, y2 <- render-grapheme screen, space, xmin, ymin, xmax, ymax, x2, y2, fg, bg
   return x2, y2
 }
 
@@ -823,7 +826,7 @@ fn test-render-gap-buffer-without-cursor {
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-without-cursor"
   check-ints-equal x, 4, "F - test-render-gap-buffer-without-cursor: result"
                                                                 # abc
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "    ", "F - test-render-gap-buffer-without-cursor: bg"
+  check-background-color-in-screen-row screen, 3/bg=reverse, 0/y, "    ", "F - test-render-gap-buffer-without-cursor: bg"
 }
 
 fn test-render-gap-buffer-with-cursor-at-end {
@@ -842,7 +845,7 @@ fn test-render-gap-buffer-with-cursor-at-end {
   # we've drawn one extra grapheme for the cursor
   check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-at-end: result"
                                                                 # abc
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "   |", "F - test-render-gap-buffer-with-cursor-at-end: bg"
+  check-background-color-in-screen-row screen, 3/bg=reverse, 0/y, "   |", "F - test-render-gap-buffer-with-cursor-at-end: bg"
 }
 
 fn test-render-gap-buffer-with-cursor-in-middle {
@@ -861,7 +864,7 @@ fn test-render-gap-buffer-with-cursor-in-middle {
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-in-middle"
   check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-in-middle: result"
                                                                 # abc
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "  | ", "F - test-render-gap-buffer-with-cursor-in-middle: bg"
+  check-background-color-in-screen-row screen, 3/bg=reverse, 0/y, "  | ", "F - test-render-gap-buffer-with-cursor-in-middle: bg"
 }
 
 fn test-render-gap-buffer-with-cursor-at-start {
@@ -878,7 +881,7 @@ fn test-render-gap-buffer-with-cursor-at-start {
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-at-start"
   check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-at-start: result"
                                                                 # abc
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "|   ", "F - test-render-gap-buffer-with-cursor-at-start: bg"
+  check-background-color-in-screen-row screen, 3/bg=reverse, 0/y, "|   ", "F - test-render-gap-buffer-with-cursor-at-start: bg"
 }
 
 fn test-render-gap-buffer-highlight-matching-close-paren {
@@ -894,7 +897,7 @@ fn test-render-gap-buffer-highlight-matching-close-paren {
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-close-paren"
   check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-close-paren: result"
-  check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "|   ", "F - test-render-gap-buffer-highlight-matching-close-paren: cursor"
+  check-background-color-in-screen-row screen, 3/bg=reverse,      0/y, "|   ", "F - test-render-gap-buffer-highlight-matching-close-paren: cursor"
   check-screen-row-in-color            screen, 0xf/fg=highlight, 0/y, "  ) ", "F - test-render-gap-buffer-highlight-matching-close-paren: matching paren"
 }
 
@@ -912,7 +915,7 @@ fn test-render-gap-buffer-highlight-matching-open-paren {
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-open-paren"
   check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-open-paren: result"
-  check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "  | ", "F - test-render-gap-buffer-highlight-matching-open-paren: cursor"
+  check-background-color-in-screen-row screen, 3/bg=reverse,      0/y, "  | ", "F - test-render-gap-buffer-highlight-matching-open-paren: cursor"
   check-screen-row-in-color            screen, 0xf/fg=highlight, 0/y, "(   ", "F - test-render-gap-buffer-highlight-matching-open-paren: matching paren"
 }
 
@@ -929,7 +932,7 @@ fn test-render-gap-buffer-highlight-matching-open-paren-of-end {
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
   check-screen-row                     screen, 0/y,                   "(a) ", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end"
   check-ints-equal x, 4, "F - test-render-gap-buffer-highlight-matching-open-paren-of-end: result"
-  check-background-color-in-screen-row screen, 7/bg=cursor,      0/y, "   |", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end: cursor"
+  check-background-color-in-screen-row screen, 3/bg=reverse,      0/y, "   |", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end: cursor"
   check-screen-row-in-color            screen, 0xf/fg=highlight, 0/y, "(   ", "F - test-render-gap-buffer-highlight-matching-open-paren-of-end: matching paren"
 }
 

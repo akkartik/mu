@@ -153,7 +153,7 @@ fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: 
     compare i, 0
     break-if-<
     var g/esi: (addr grapheme) <- index data, i
-    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, color, 7/bg=cursor
+    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, background-color, color
     i <- decrement
   }
   # remaining iterations
@@ -212,17 +212,17 @@ fn test-render-grapheme-stack {
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 0/y, 0/no-highlight-matching-open-paren, 0/open-paren-depth
   check-screen-row screen, 0/y, "abc ", "F - test-render-grapheme-stack from bottom"
   check-ints-equal x, 3, "F - test-render-grapheme-stack from bottom: result"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 0/y, "   ", "F - test-render-grapheme-stack from bottom: bg"
+  check-background-color-in-screen-row screen, 3/bg=reverse, 0/y, "   ", "F - test-render-grapheme-stack from bottom: bg"
   #
   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 1/y, 0/cursor=false
   check-screen-row screen, 1/y, "cba ", "F - test-render-grapheme-stack from top without cursor"
   check-ints-equal x, 3, "F - test-render-grapheme-stack from top without cursor: result"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 1/y, "   ", "F - test-render-grapheme-stack from top without cursor: bg"
+  check-background-color-in-screen-row screen, 3/bg=reverse, 1/y, "   ", "F - test-render-grapheme-stack from top without cursor: bg"
   #
   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
   check-screen-row screen, 2/y, "cba ", "F - test-render-grapheme-stack from top with cursor"
   check-ints-equal x, 3, "F - test-render-grapheme-stack from top with cursor: result"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "|   ", "F - test-render-grapheme-stack from top with cursor: bg"
+  check-background-color-in-screen-row screen, 3/bg=reverse, 2/y, "|   ", "F - test-render-grapheme-stack from top with cursor: bg"
 }
 
 fn test-render-grapheme-stack-while-highlighting-matching-close-paren {
@@ -243,7 +243,7 @@ fn test-render-grapheme-stack-while-highlighting-matching-close-paren {
   #
   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
   check-screen-row                      screen,               2/y, "(b) ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren"
-  check-background-color-in-screen-row  screen, 7/bg=cursor,  2/y, "|   ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren: cursor"
+  check-background-color-in-screen-row  screen, 3/bg=reverse,  2/y, "|   ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren: cursor"
   check-screen-row-in-color             screen, 0xf/fg=white, 2/y, "  ) ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren: matching paren"
 }
 
@@ -277,7 +277,7 @@ fn test-render-grapheme-stack-while-highlighting-matching-close-paren-2 {
   #
   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
   check-screen-row                      screen,               2/y, "(a (b)) c ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren-2"
-  check-background-color-in-screen-row  screen, 7/bg=cursor,  2/y, "|         ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren-2: cursor"
+  check-background-color-in-screen-row  screen, 3/bg=reverse,  2/y, "|         ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren-2: cursor"
   check-screen-row-in-color             screen, 0xf/fg=white, 2/y, "      )   ", "F - test-render-grapheme-stack-while-highlighting-matching-close-paren-2: matching paren"
 }
 
