@@ -170,29 +170,38 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     {
       compare key, 0xa/newline
       break-if-!=
-      var cursor-in-globals-a/edx: (addr boolean) <- get self, cursor-in-globals?
-      copy-to *cursor-in-globals-a, 1/true
+      # done with function modal
+      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+      copy-to *cursor-in-function-modal-a, 0/false
+      # if no function name typed in, switch to sandbox
       var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
       var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
-      {
-        {
-          var empty?/eax: boolean <- gap-buffer-empty? partial-function-name
-          compare empty?, 0/false
-        }
-        break-if-!=
-        set-global-cursor-index globals, partial-function-name
-      }
-      var cursor-in-globals-a/ecx: (addr boolean) <- get self, cursor-in-globals?
-      copy-to *cursor-in-globals-a, 1/true
       {
         var empty?/eax: boolean <- gap-buffer-empty? partial-function-name
         compare empty?, 0/false
         break-if-=
+        var cursor-in-globals-a/eax: (addr boolean) <- get self, cursor-in-globals?
         copy-to *cursor-in-globals-a, 0/false
+        return
       }
+      # turn function name into a stream
+      var name-storage: (stream byte 0x40)
+      var name/ecx: (addr stream byte) <- address name-storage
+      emit-gap-buffer partial-function-name, name
       clear-gap-buffer partial-function-name
-      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-      copy-to *cursor-in-function-modal-a, 0/false
+      # compute function index
+      var index/ecx: int <- find-symbol-in-globals globals, name
+      # if function not found, return
+      {
+        compare index, 0
+        break-if->=
+        return
+      }
+      # otherwise switch focus to function at index
+      var globals-cursor-index/eax: (addr int) <- get globals, cursor-index
+      copy-to *globals-cursor-index, index
+      var cursor-in-globals-a/ecx: (addr boolean) <- get self, cursor-in-globals?
+      copy-to *cursor-in-globals-a, 1/true
       return
     }
     # otherwise process like a regular gap-buffer
