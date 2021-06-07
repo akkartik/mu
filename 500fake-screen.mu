@@ -18,8 +18,10 @@ type screen {
   data: (handle array screen-cell)
   cursor-x: int  # [0..width)
   cursor-y: int  # [0..height)
+  invalid-cell-index: int
   # pixel graphics
   pixels: (handle array byte)
+  invalid-pixel-index: int
 }
 
 type screen-cell {
@@ -45,7 +47,14 @@ fn initialize-screen _screen: (addr screen), width: int, height: int, pixel-grap
     var data-ah/edi: (addr handle array screen-cell) <- get screen, data
     var capacity/eax: int <- copy width
     capacity <- multiply height
+    # add 1 for sentinel
+    capacity <- increment
+    #
     populate data-ah, capacity
+    # save sentinel index
+    capacity <- decrement
+    var dest/ecx: (addr int) <- get screen, invalid-cell-index
+    copy-to *dest, capacity
   }
   # if necessary, populate screen->pixels
   {
@@ -56,7 +65,14 @@ fn initialize-screen _screen: (addr screen), width: int, height: int, pixel-grap
     capacity <- shift-left 3/log2-font-width
     capacity <- multiply height
     capacity <- shift-left 4/log2-font-height
+    # add 1 for sentinel
+    capacity <- increment
+    #
     populate pixels-ah, capacity
+    # save sentinel index
+    capacity <- decrement
+    var dest/ecx: (addr int) <- get screen, invalid-pixel-index
+    copy-to *dest, capacity
   }
   # screen->cursor-x = 0
   dest <- get screen, cursor-x
@@ -119,30 +135,34 @@ fn draw-code-point screen: (addr screen), c: code-point, x: int, y: int, color: 
 # fake screens only
 fn screen-cell-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
   var screen/esi: (addr screen) <- copy _screen
-  # some bounds checks that aren't needed for a real screen, but might help catch problems
+  # if out of bounds, silently return a pixel that's never checked
   {
     compare x, 0
     break-if->=
-    abort "screen-cell-index: negative x"
+    var invalid/eax: (addr int) <- get screen, invalid-cell-index
+    return *invalid
   }
   {
     var xmax/eax: (addr int) <- get screen, width
     var xcurr/ecx: int <- copy x
     compare xcurr, *xmax
     break-if-<
-    abort "screen-cell-index: x too high"
+    var invalid/eax: (addr int) <- get screen, invalid-cell-index
+    return *invalid
   }
   {
     compare y, 0
     break-if->=
-    abort "screen-cell-index: negative y"
+    var invalid/eax: (addr int) <- get screen, invalid-cell-index
+    return *invalid
   }
   {
     var ymax/eax: (addr int) <- get screen, height
     var ycurr/ecx: int <- copy y
     compare ycurr, *ymax
     break-if-<
-    abort "screen-cell-index: y too high"
+    var invalid/eax: (addr int) <- get screen, invalid-cell-index
+    return *invalid
   }
   var width-addr/eax: (addr int) <- get screen, width
   var result/ecx: int <- copy y
@@ -487,7 +507,8 @@ fn pixel-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
   {
     compare x, 0
     break-if->=
-    abort "screen-cell-index: negative x"
+    var invalid/eax: (addr int) <- get screen, invalid-pixel-index
+    return *invalid
   }
   {
     var xmax-a/eax: (addr int) <- get screen, width
@@ -495,12 +516,14 @@ fn pixel-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
     xmax <- shift-left 3/log2-font-width
     compare x, xmax
     break-if-<
-    abort "screen-cell-index: x too high"
+    var invalid/eax: (addr int) <- get screen, invalid-pixel-index
+    return *invalid
   }
   {
     compare y, 0
     break-if->=
-    abort "screen-cell-index: negative y"
+    var invalid/eax: (addr int) <- get screen, invalid-pixel-index
+    return *invalid
   }
   {
     var ymax-a/eax: (addr int) <- get screen, height
@@ -508,7 +531,8 @@ fn pixel-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
     ymax <- shift-left 4/log2-font-height
     compare y, ymax
     break-if-<
-    abort "screen-cell-index: y too high"
+    var invalid/eax: (addr int) <- get screen, invalid-pixel-index
+    return *invalid
   }
   var width-addr/eax: (addr int) <- get screen, width
   var result/ecx: int <- copy y
