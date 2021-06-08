@@ -19,6 +19,7 @@ sig read-mouse-event -> _/eax: int, _/ecx: int
 # tests
 sig count-test-failure
 sig num-test-failures -> _/eax: int
+sig running-tests? -> _/eax: boolean
 
 sig string-equal? s: (addr array byte), benchmark: (addr array byte) -> _/eax: boolean
 sig string-starts-with? s: (addr array byte), benchmark: (addr array byte) -> _/eax: boolean

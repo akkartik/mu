@@ -1,9 +1,9 @@
 # The top-level data structure for the Mu shell.
 #
 # vim:textwidth&
-# It would be nice for this test to use a narrower screen than the standard
-# 0x80 of 1024 pixels with 8px-wide graphemes. But it complicates rendering
-# logic, so we need longer lines than usual.
+# It would be nice for tests to use a narrower screen than the standard 0x80 of
+# 1024 pixels with 8px-wide graphemes. But it complicates rendering logic to
+# make width configurable, so we just use longer lines than usual.
 
 type environment {
   globals: global-table
@@ -23,9 +23,7 @@ fn test-environment {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   #
-  edit-environment env, 0x61/a, 0/no-disk
-  render-environment screen, env
-#?   type-into-repl env, screen, "(define fn1 (fn() 42))"
+  type-into-repl env, screen, "(+ 3 4)"  # we don't have any global definitions here, so no macros
   #                                                         | global function definitions                                                        | sandbox
   # top row blank for now
   check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-environment/0"
@@ -38,16 +36,42 @@ fn test-environment {
   check-screen-row                     screen,         5/y, "                                                                                      keyboard:                                 ", "F - test-environment/5"
   check-background-color-in-screen-row screen, 0/bg,   5/y, "                                                                                                ................                ", "F - test-environment/5-2"
   check-screen-row                     screen,         6/y, "                                                                                                                                ", "F - test-environment/6"
-  check-screen-row                     screen,         7/y, "                                                                                      a                                         ", "F - test-environment/7"
-  check-screen-row                     screen,         8/y, "                                                                                                                                ", "F - test-environment/8"
-  check-screen-row                     screen,         9/y, "                                                                                                                                ", "F - test-environment/9"
+  check-screen-row                     screen,         7/y, "                                                                                      (+ 3 4)                                   ", "F - test-environment/7"
+  check-screen-row                     screen,         8/y, "                                                                                      ...                       trace depth: 4  ", "F - test-environment/8"
+  check-screen-row                     screen,         9/y, "                                                                                      => 7                                      ", "F - test-environment/9"
   check-screen-row                     screen,       0xa/y, "                                                                                                                                ", "F - test-environment/0xa"
   check-screen-row                     screen,       0xb/y, "                                                                                                                                ", "F - test-environment/0xb"
   check-screen-row                     screen,       0xc/y, "                                                                                                                                ", "F - test-environment/0xc"
   check-screen-row                     screen,       0xd/y, "                                                                                                                                ", "F - test-environment/0xd"
   check-screen-row                     screen,       0xe/y, "                                                                                                                                ", "F - test-environment/0xe"
   # bottom row is for a wordstar-style menu
-  check-screen-row                     screen,       0xf/y, " ^r  run main   ^s  run sandbox   ^g  go to   ^m  to keyboard   ^a  <<   ^b  <word   ^f  word>   ^e  >>                         ", "F - test-environment/0xf"
+  check-screen-row                     screen,       0xf/y, " ^r  run main   ^s  run sandbox   ^g  go to   ^m  to trace   ^a  <<   ^b  <word   ^f  word>   ^e  >>                            ", "F - test-environment/0xf"
+}
+
+fn test-definition-in-environment {
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment env
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  # define a function on the right (sandbox) side
+  type-into-repl env, screen, "(define fn1 (fn() 42))"  # we don't have any global definitions here, so no macros
+  #                                                         | global function definitions                                                        | sandbox
+  check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-definition-in-environment/0"
+  # function definition is now on the left side
+  check-screen-row                     screen,         1/y, "                                           (define fn1 (fn() 42))                     screen:                                   ", "F - test-definition-in-environment/1"
+  check-background-color-in-screen-row screen, 0/bg,   1/y, "                                                                                                ........                        ", "F - test-definition-in-environment/1-2"
+  check-background-color-in-screen-row screen, 0/bg,   2/y, "                                                                                                ........                        ", "F - test-definition-in-environment/2"
+  check-background-color-in-screen-row screen, 0/bg,   3/y, "                                                                                                ........                        ", "F - test-definition-in-environment/3"
+  check-screen-row                     screen,         4/y, "                                                                                                                                ", "F - test-definition-in-environment/4"
+  check-screen-row                     screen,         5/y, "                                                                                      keyboard:                                 ", "F - test-definition-in-environment/5"
+  check-background-color-in-screen-row screen, 0/bg,   5/y, "                                                                                                ................                ", "F - test-definition-in-environment/5-2"
+  check-screen-row                     screen,         6/y, "                                                                                                                                ", "F - test-definition-in-environment/6"
+  check-screen-row                     screen,         7/y, "                                                                                                                                ", "F - test-definition-in-environment/7"
+  # you can still see the trace on the right for what you just added to the left
+  check-screen-row                     screen,         8/y, "                                                                                      ...                       trace depth: 4  ", "F - test-definition-in-environment/8"
 }
 
 # helper for testing
@@ -68,8 +92,8 @@ fn type-into-repl self: (addr environment), screen: (addr screen), keys: (addr a
     render-environment screen, self
     loop
   }
-  # hit 'enter'
-  edit-environment self, 0xa/newline, 0/no-disk
+  # submit
+  edit-environment self, 0x13/ctrl-s, 0/no-disk
   render-environment screen, self
 }
 
@@ -191,7 +215,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
         edit-globals globals, key
       }
       # update sandbox whether the cursor is in globals or sandbox
-      edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
+      edit-sandbox sandbox, key, globals, data-disk
     }
     return
   }
@@ -287,7 +311,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     edit-globals globals, key
     return
   }
-  edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
+  edit-sandbox sandbox, key, globals, data-disk
 }
 
 ## details

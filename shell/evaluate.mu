@@ -9,13 +9,9 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
   # stack overflow?   # disable when enabling Really-debug-print
   check-stack
   {
-    var screen-cell/eax: (addr handle cell) <- copy screen-cell
-    compare screen-cell, 0
-    break-if-=
-    var screen-cell-addr/eax: (addr cell) <- lookup *screen-cell
-    compare screen-cell-addr, 0
-    break-if-=
-    # if screen-cell exists, we're probably not in a test
+    var running-tests?/eax: boolean <- running-tests?
+    compare running-tests?, 0/false
+    break-if-!=
     show-stack-state
   }
   # show intermediate progress on screen if necessary

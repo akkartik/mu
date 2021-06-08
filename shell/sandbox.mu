@@ -470,7 +470,7 @@ fn render-keyboard-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
-fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-table), data-disk: (addr disk), tweak-real-screen?: boolean {
+fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-table), data-disk: (addr disk) {
   var self/esi: (addr sandbox) <- copy _self
   # ctrl-s
   {
@@ -484,7 +484,7 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
     # persisted until the next call to ctrl-s.
     store-state data-disk, self, globals
     #
-    run-sandbox self, globals, tweak-real-screen?
+    run-sandbox self, globals
     return
   }
   # ctrl-m
@@ -603,7 +603,7 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
       # rerun at higher depth
       var max-depth-addr/ecx: (addr int) <- get trace, max-depth
       increment *max-depth-addr
-      run-sandbox self, globals, tweak-real-screen?
+      run-sandbox self, globals
       # recompute cached indices
       recompute-all-visible-lines trace
       var save-addr/ecx: (addr trace-index-stash) <- address save
@@ -615,7 +615,7 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
 }
 
 # hack: tweak-real-screen guards things there are no tests for
-fn run-sandbox _self: (addr sandbox), globals: (addr global-table), tweak-real-screen?: boolean {
+fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   var self/esi: (addr sandbox) <- copy _self
   var data-ah/ecx: (addr handle gap-buffer) <- get self, data
   var value-ah/eax: (addr handle stream byte) <- get self, value
@@ -625,20 +625,10 @@ fn run-sandbox _self: (addr sandbox), globals: (addr global-table), tweak-real-s
   var _trace/eax: (addr trace) <- lookup *trace-ah
   var trace/ebx: (addr trace) <- copy _trace
   clear-trace trace
-  {
-    compare tweak-real-screen?, 0/false
-    break-if-=
-    clear-sandbox-output 0/screen, self, 0x56/sandbox-left-margin, 1/y, 0x80/screen-width, 0x2f/screen-height-without-menu
-  }
   var screen-cell/eax: (addr handle cell) <- get self, screen-var
   clear-screen-cell screen-cell
   var keyboard-cell/esi: (addr handle cell) <- get self, keyboard-var
   rewind-keyboard-cell keyboard-cell  # don't clear keys from before
-  {
-    compare tweak-real-screen?, 0/false
-    break-if-=
-    set-cursor-position 0/screen, 0/x, 0/y  # for any debug prints during evaluation
-  }
   run data-ah, value, globals, trace, screen-cell, keyboard-cell
 }
 
@@ -727,7 +717,7 @@ fn test-run-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "1"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -745,7 +735,7 @@ fn test-run-negative-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "-1"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -763,7 +753,7 @@ fn test-run-error-invalid-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "1a"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -781,7 +771,7 @@ fn test-run-error-unknown-symbol {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "a"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -799,7 +789,7 @@ fn test-run-with-spaces {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, " 1 \n"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -818,7 +808,7 @@ fn test-run-quote {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'a"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -836,7 +826,7 @@ fn test-run-dotted-list {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a . b)"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -854,7 +844,7 @@ fn test-run-dot-and-list {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a . (b))"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -872,7 +862,7 @@ fn test-run-final-dot {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a .)"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -891,7 +881,7 @@ fn test-run-double-dot {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a . .)"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -910,7 +900,7 @@ fn test-run-multiple-expressions-after-dot {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a . b c)"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -929,7 +919,7 @@ fn test-run-stream {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "[a b]"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -947,7 +937,7 @@ fn test-run-move-cursor-into-trace {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "12"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -962,7 +952,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-move-cursor-into-trace/pre-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-move-cursor-into-trace/pre-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
@@ -973,7 +963,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-move-cursor-into-trace/trace-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-move-cursor-into-trace/trace-2/cursor"
   # move cursor into input
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
@@ -1009,7 +999,7 @@ fn test-run-expand-trace {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "12"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -1024,7 +1014,7 @@ fn test-run-expand-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-expand-trace/pre0-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-expand-trace/pre0-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
@@ -1035,7 +1025,7 @@ fn test-run-expand-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-expand-trace/pre1-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-expand-trace/pre1-2/cursor"
   # expand
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   #
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
@@ -1056,7 +1046,7 @@ fn test-run-can-rerun-when-expanding-trace {
   # initialize sandbox with a max-depth of 3
   initialize-sandbox-with sandbox, "12"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -1071,7 +1061,7 @@ fn test-run-can-rerun-when-expanding-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-can-rerun-when-expanding-trace/pre0-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre0-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
@@ -1082,7 +1072,7 @@ fn test-run-can-rerun-when-expanding-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-can-rerun-when-expanding-trace/pre1-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre1-2/cursor"
   # expand
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   #
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
@@ -1096,9 +1086,9 @@ fn test-run-can-rerun-when-expanding-trace {
   check-screen-row screen,                                  4/y, " 1 pars", "F - test-run-can-rerun-when-expanding-trace/pre2-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre2-2/cursor"
   # move cursor down and expand
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   #
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
@@ -1121,7 +1111,7 @@ fn test-run-preserves-trace-view-on-rerun {
   # initialize sandbox with a max-depth of 3
   initialize-sandbox-with sandbox, "7"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -1136,7 +1126,7 @@ fn test-run-preserves-trace-view-on-rerun {
   check-screen-row screen,                                  3/y, " => 7                  ", "F - test-run-preserves-trace-view-on-rerun/pre0-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre0-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   #
   check-screen-row screen,                                  1/y, " 7                     ", "F - test-run-preserves-trace-view-on-rerun/pre1-0"
@@ -1146,7 +1136,7 @@ fn test-run-preserves-trace-view-on-rerun {
   check-screen-row screen,                                  3/y, " => 7                  ", "F - test-run-preserves-trace-view-on-rerun/pre1-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre1-2/cursor"
   # expand
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   #
@@ -1167,15 +1157,15 @@ fn test-run-preserves-trace-view-on-rerun {
   check-screen-row screen,                                  8/y, " 1 => 7                ", "F - test-run-preserves-trace-view-on-rerun/pre2-7"
   check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-7/cursor"
   # move cursor down below the macroexpand line and expand
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   #
   check-screen-row screen,                                  1/y, " 7                     ", "F - test-run-preserves-trace-view-on-rerun/pre3-0"
@@ -1195,7 +1185,7 @@ fn test-run-preserves-trace-view-on-rerun {
   check-screen-row screen,                                  8/y, " 1 => 7                ", "F - test-run-preserves-trace-view-on-rerun/pre3-7"
   check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-7/cursor"
   # expand
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/no-tweak-screen
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # cursor line is expanded
