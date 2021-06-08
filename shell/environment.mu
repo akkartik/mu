@@ -39,13 +39,13 @@ fn test-environment {
   check-screen-row                     screen,         7/y, "                                                                                      (+ 3 4)                                   ", "F - test-environment/7"
   check-screen-row                     screen,         8/y, "                                                                                      ...                       trace depth: 4  ", "F - test-environment/8"
   check-screen-row                     screen,         9/y, "                                                                                      => 7                                      ", "F - test-environment/9"
-  check-screen-row                     screen,       0xa/y, "                                                                                                                                ", "F - test-environment/0xa"
-  check-screen-row                     screen,       0xb/y, "                                                                                                                                ", "F - test-environment/0xb"
-  check-screen-row                     screen,       0xc/y, "                                                                                                                                ", "F - test-environment/0xc"
-  check-screen-row                     screen,       0xd/y, "                                                                                                                                ", "F - test-environment/0xd"
-  check-screen-row                     screen,       0xe/y, "                                                                                                                                ", "F - test-environment/0xe"
+  check-screen-row                     screen,       0xa/y, "                                                                                                                                ", "F - test-environment/10"
+  check-screen-row                     screen,       0xb/y, "                                                                                                                                ", "F - test-environment/11"
+  check-screen-row                     screen,       0xc/y, "                                                                                                                                ", "F - test-environment/12"
+  check-screen-row                     screen,       0xd/y, "                                                                                                                                ", "F - test-environment/13"
+  check-screen-row                     screen,       0xe/y, "                                                                                                                                ", "F - test-environment/14"
   # bottom row is for a wordstar-style menu
-  check-screen-row                     screen,       0xf/y, " ^r  run main   ^s  run sandbox   ^g  go to   ^m  to trace   ^a  <<   ^b  <word   ^f  word>   ^e  >>                            ", "F - test-environment/0xf"
+  check-screen-row                     screen,       0xf/y, " ^r  run main   ^s  run sandbox   ^g  go to   ^m  to trace   ^a  <<   ^b  <word   ^f  word>   ^e  >>                            ", "F - test-environment/15"
 }
 
 fn test-definition-in-environment {
@@ -310,6 +310,41 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     return
   }
   edit-sandbox sandbox, key, globals, data-disk
+}
+
+fn test-function-modal {
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment env
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  # hit ctrl-g
+  edit-environment env, 0x7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  #
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-function-modal/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-function-modal/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-function-modal/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-function-modal/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-function-modal/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-function-modal/5"
+  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-function-modal/6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-function-modal/6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-function-modal/7"
+  # cursor is in the modal
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                |                                                                                               ", "F - test-function-modal/8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                 ...............................................................                                ", "F - test-function-modal/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-function-modal/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-function-modal/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-function-modal/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-function-modal/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-function-modal/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-function-modal/14"
+  # menu at bottom is correct in context
+  check-screen-row                     screen,               0xf/y, " ^r  run main   enter  submit   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                           ", "F - test-function-modal/15-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal/15"
 }
 
 fn render-function-modal screen: (addr screen), _self: (addr environment) {
