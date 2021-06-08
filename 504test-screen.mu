@@ -10,6 +10,7 @@ fn check-screen-row screen: (addr screen), y: int, expected: (addr array byte), 
 
 fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
+  var failure-count/edi: int <- copy 0
   var idx/ecx: int <- screen-cell-index screen, x, y
   # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
   var e: (stream byte 0x100)
@@ -33,13 +34,9 @@ fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expecte
       }
       # if (g == expected-grapheme) print "."
       compare g, expected-grapheme
-      {
-        break-if-!=
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
-        break $check-screen-row-from:compare-graphemes
-      }
+      break-if-=
       # otherwise print an error
-      count-test-failure
+      failure-count <- increment
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
       draw-grapheme-at-cursor 0/screen, expected-grapheme, 3/cyan, 0/bg
@@ -58,6 +55,15 @@ fn check-screen-row-from screen-on-stack: (addr screen), x: int, y: int, expecte
     increment x
     loop
   }
+  # if any assertions failed, count the test as failed
+  compare failure-count, 0
+  {
+    break-if-=
+    count-test-failure
+    return
+  }
+  # otherwise print a "."
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
 }
 
 # various variants by screen-cell attribute; spaces in the 'expected' data should not match the attribute
