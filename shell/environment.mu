@@ -1,3 +1,10 @@
+# The top-level data structure for the Mu shell.
+#
+# vim:textwidth&
+# It would be nice for this test to use a narrower screen than the standard
+# 0x80 of 1024 pixels with 8px-wide graphemes. But it complicates rendering
+# logic, so we need longer lines than usual.
+
 type environment {
   globals: global-table
   sandbox: sandbox
@@ -5,6 +12,68 @@ type environment {
   cursor-in-globals?: boolean
   cursor-in-function-modal?: boolean
 }
+
+# Here's a sample usage session and what it will look like on the screen.
+fn test-environment {
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment env
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  #
+  edit-environment env, 0x61/a, 0/no-disk
+  render-environment screen, env
+#?   type-into-repl env, screen, "(define fn1 (fn() 42))"
+  #                                                         | global function definitions                                                        | sandbox
+  # top row blank for now
+  check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-environment/0"
+  check-screen-row                     screen,         1/y, "                                                                                      screen:                                   ", "F - test-environment/1"
+  # starting at the same screen row, render the fake screen that exists within the sandbox within env
+  check-background-color-in-screen-row screen, 0/bg,   1/y, "                                                                                                ........                        ", "F - test-environment/1-2"
+  check-background-color-in-screen-row screen, 0/bg,   2/y, "                                                                                                ........                        ", "F - test-environment/2"
+  check-background-color-in-screen-row screen, 0/bg,   3/y, "                                                                                                ........                        ", "F - test-environment/3"
+  check-screen-row                     screen,         4/y, "                                                                                                                                ", "F - test-environment/4"
+  check-screen-row                     screen,         5/y, "                                                                                      keyboard:                                 ", "F - test-environment/5"
+  check-background-color-in-screen-row screen, 0/bg,   5/y, "                                                                                                ................                ", "F - test-environment/5-2"
+  check-screen-row                     screen,         6/y, "                                                                                                                                ", "F - test-environment/6"
+  check-screen-row                     screen,         7/y, "                                                                                      a                                         ", "F - test-environment/7"
+  check-screen-row                     screen,         8/y, "                                                                                                                                ", "F - test-environment/8"
+  check-screen-row                     screen,         9/y, "                                                                                                                                ", "F - test-environment/9"
+  check-screen-row                     screen,       0xa/y, "                                                                                                                                ", "F - test-environment/0xa"
+  check-screen-row                     screen,       0xb/y, "                                                                                                                                ", "F - test-environment/0xb"
+  check-screen-row                     screen,       0xc/y, "                                                                                                                                ", "F - test-environment/0xc"
+  check-screen-row                     screen,       0xd/y, "                                                                                                                                ", "F - test-environment/0xd"
+  check-screen-row                     screen,       0xe/y, "                                                                                                                                ", "F - test-environment/0xe"
+  # bottom row is for a wordstar-style menu
+  check-screen-row                     screen,       0xf/y, " ^r  run main   ^s  run sandbox   ^g  go to   ^m  to keyboard   ^a  <<   ^b  <word   ^f  word>   ^e  >>                         ", "F - test-environment/0xf"
+}
+
+# helper for testing
+fn type-into-repl self: (addr environment), screen: (addr screen), keys: (addr array byte) {
+  # clear the buffer
+  edit-environment self, 0x15/ctrl-u, 0/no-disk
+  render-environment screen, self
+  # type in all the keys
+  var input-stream-storage: (stream byte 0x40/capacity)
+  var input-stream/ecx: (addr stream byte) <- address input-stream-storage
+  write input-stream, keys
+  {
+    var done?/eax: boolean <- stream-empty? input-stream
+    compare done?, 0/false
+    break-if-!=
+    var key/eax: grapheme <- read-grapheme input-stream
+    edit-environment self, key, 0/no-disk
+    render-environment screen, self
+    loop
+  }
+  # hit 'enter'
+  edit-environment self, 0xa/newline, 0/no-disk
+  render-environment screen, self
+}
+
+## interface
 
 fn initialize-environment _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
@@ -220,6 +289,8 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
   }
   edit-sandbox sandbox, key, globals, data-disk, 1/tweak-real-screen
 }
+
+## details
 
 fn word-at-cursor _self: (addr environment), out: (addr stream byte) {
   var self/esi: (addr environment) <- copy _self

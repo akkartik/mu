@@ -50,16 +50,16 @@ fn gap-buffer-capacity _gap: (addr gap-buffer) -> _/ecx: int {
 }
 
 # just for tests
-fn initialize-gap-buffer-with self: (addr gap-buffer), s: (addr array byte) {
+fn initialize-gap-buffer-with self: (addr gap-buffer), keys: (addr array byte) {
   initialize-gap-buffer self, 0x40/capacity
-  var stream-storage: (stream byte 0x40/capacity)
-  var stream/ecx: (addr stream byte) <- address stream-storage
-  write stream, s
+  var input-stream-storage: (stream byte 0x40/capacity)
+  var input-stream/ecx: (addr stream byte) <- address input-stream-storage
+  write input-stream, keys
   {
-    var done?/eax: boolean <- stream-empty? stream
+    var done?/eax: boolean <- stream-empty? input-stream
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme stream
+    var g/eax: grapheme <- read-grapheme input-stream
     add-grapheme-at-gap self, g
     loop
   }
