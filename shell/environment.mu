@@ -222,26 +222,6 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     }
     return
   }
-  # ctrl-g: go to a function (or the repl)
-  {
-    compare key, 7/ctrl-g
-    break-if-!=
-    var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-    compare *cursor-in-function-modal-a, 0/false
-    break-if-!=
-    # look for a word to prepopulate the modal
-    var current-word-storage: (stream byte 0x40)
-    var current-word/edi: (addr stream byte) <- address current-word-storage
-    word-at-cursor self, current-word
-    var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
-    var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
-    clear-gap-buffer partial-function-name
-    load-gap-buffer-from-stream partial-function-name, current-word
-    # enable the modal
-    var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-    copy-to *cursor-in-function-modal-a, 1/true
-    return
-  }
   # dispatch to function modal if necessary
   {
     var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
@@ -317,6 +297,23 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
     var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
     edit-gap-buffer partial-function-name, key
+    return
+  }
+  # ctrl-g: go to a function (or the repl)
+  {
+    compare key, 7/ctrl-g
+    break-if-!=
+    # look for a word to prepopulate the modal
+    var current-word-storage: (stream byte 0x40)
+    var current-word/edi: (addr stream byte) <- address current-word-storage
+    word-at-cursor self, current-word
+    var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
+    var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
+    clear-gap-buffer partial-function-name
+    load-gap-buffer-from-stream partial-function-name, current-word
+    # enable the modal
+    var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+    copy-to *cursor-in-function-modal-a, 1/true
     return
   }
   # dispatch the key to either sandbox or globals
