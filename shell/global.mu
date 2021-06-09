@@ -482,19 +482,19 @@ fn mutate-binding-in-globals name: (addr stream byte), val: (addr handle cell), 
 # Accepts an input s-expression, naively checks if it is a definition, and if
 # so saves the gap-buffer to the appropriate global, spinning up a new empty
 # one to replace it with.
-fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _definition-ah: (addr handle cell), gap: (addr handle gap-buffer) {
-  # if 'definition' is not a pair, return
-  var definition-ah/eax: (addr handle cell) <- copy _definition-ah
-  var _definition/eax: (addr cell) <- lookup *definition-ah
-  var definition/esi: (addr cell) <- copy _definition
-  var definition-type/eax: (addr int) <- get definition, type
-  compare *definition-type, 0/pair
+fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (addr handle cell), gap: (addr handle gap-buffer) {
+  # if 'expr' is not a pair, return
+  var expr-ah/eax: (addr handle cell) <- copy _expr-ah
+  var _expr/eax: (addr cell) <- lookup *expr-ah
+  var expr/esi: (addr cell) <- copy _expr
+  var expr-type/eax: (addr int) <- get expr, type
+  compare *expr-type, 0/pair
   {
     break-if-=
     return
   }
-  # if definition->left is neither "define" nor "set", return
-  var left-ah/eax: (addr handle cell) <- get definition, left
+  # if expr->left is neither "define" nor "set", return
+  var left-ah/eax: (addr handle cell) <- get expr, left
   var _left/eax: (addr cell) <- lookup *left-ah
   var left/ecx: (addr cell) <- copy _left
   {
@@ -506,8 +506,8 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _definition-a
     break-if-!=
     return
   }
-  # locate the global for definition->right->left
-  var right-ah/eax: (addr handle cell) <- get definition, right
+  # locate the global for expr->right->left
+  var right-ah/eax: (addr handle cell) <- get expr, right
   var right/eax: (addr cell) <- lookup *right-ah
   var defined-symbol-ah/eax: (addr handle cell) <- get right, left
   var defined-symbol/eax: (addr cell) <- lookup *defined-symbol-ah
