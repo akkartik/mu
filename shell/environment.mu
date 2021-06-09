@@ -767,7 +767,7 @@ fn test-create-nonexistent-global {
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-15"
 }
 
-fn test-create-function-with-new-name {
+fn pending-test-create-function-with-new-name {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env

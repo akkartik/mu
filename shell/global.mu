@@ -103,6 +103,11 @@ fn write-globals out: (addr stream byte), _self: (addr global-table) {
       write out, " . ["
       var curr-input-ah/eax: (addr handle gap-buffer) <- get curr, input
       var curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
+      {
+        compare curr-input, 0
+        break-if-!=
+        abort "null gap buffer"
+      }
       append-gap-buffer curr-input, out
       write out, "])\n"
     }
