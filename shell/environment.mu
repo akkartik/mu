@@ -8,7 +8,10 @@
 type environment {
   globals: global-table
   sandbox: sandbox
+  # some state for a modal dialog for navigating between functions
   partial-function-name: (handle gap-buffer)
+  function-not-found?: boolean
+  #
   cursor-in-globals?: boolean
   cursor-in-function-modal?: boolean
 }
@@ -257,15 +260,14 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       break-if-!=
       var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
       copy-to *cursor-in-function-modal-a, 0/false
+      var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
+      copy-to *function-not-found? 0/false
       return
     }
     # enter = switch to function name and exit modal dialog
     {
       compare key, 0xa/newline
       break-if-!=
-      # done with function modal
-      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-      copy-to *cursor-in-function-modal-a, 0/false
       # if no function name typed in, switch to sandbox
       var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
       var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
@@ -275,26 +277,40 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
         break-if-=
         var cursor-in-globals-a/eax: (addr boolean) <- get self, cursor-in-globals?
         copy-to *cursor-in-globals-a, 0/false
+        # reset error state
+        var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
+        copy-to *function-not-found? 0/false
+        # done with function modal
+        var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+        copy-to *cursor-in-function-modal-a, 0/false
         return
       }
       # turn function name into a stream
       var name-storage: (stream byte 0x40)
       var name/ecx: (addr stream byte) <- address name-storage
       emit-gap-buffer partial-function-name, name
-      clear-gap-buffer partial-function-name
       # compute function index
       var index/ecx: int <- find-symbol-in-globals globals, name
-      # if function not found, return
+      # if function not found, set error and return
       {
         compare index, 0
         break-if->=
+        var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
+        copy-to *function-not-found? 1/true
         return
       }
-      # otherwise switch focus to function at index
+      # otherwise clear modal state
+      clear-gap-buffer partial-function-name
+      var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
+      copy-to *function-not-found? 0/false
+      # switch focus to function at index
       var globals-cursor-index/eax: (addr int) <- get globals, cursor-index
       copy-to *globals-cursor-index, index
       var cursor-in-globals-a/ecx: (addr boolean) <- get self, cursor-in-globals?
       copy-to *cursor-in-globals-a, 1/true
+      # done with function modal
+      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
+      copy-to *cursor-in-function-modal-a, 0/false
       return
     }
     # otherwise process like a regular gap-buffer
@@ -526,6 +542,77 @@ fn test-function-modal-prepopulates-word-at-cursor {
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-15"
 }
 
+fn test-jump-to-nonexistent-function {
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment env
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  # type in any (nonexistent) function name
+  type-in env, screen, "f"
+  # hit ctrl-g
+  edit-environment env, 7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  # submit
+  edit-environment env, 0xa/newline, 0/no-disk
+  render-environment screen, env
+  # modal now shows an error
+  #                                                                 | global function definitions                                                        | sandbox
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/5"
+  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-jump-to-nonexistent-function/6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-function/6"
+  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                no such function                                                                                ", "F - test-jump-to-nonexistent-function/7-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-function/7"
+  check-screen-row                     screen,                 8/y, "                                f                                                                                               ", "F - test-jump-to-nonexistent-function/8-text"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-jump-to-nonexistent-function/8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-jump-to-nonexistent-function/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/14"
+  # menu at bottom is correct in context
+  check-screen-row                     screen,               0xf/y, " ^r  run main   enter  submit   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                           ", "F - test-jump-to-nonexistent-function/15-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/15"
+  # cancel
+  edit-environment env, 0x1b/escape, 0/no-disk
+  render-environment screen, env
+  # hit ctrl-g again
+  edit-environment env, 7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  # word prepopulated like before, but no error
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-5"
+  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-jump-to-nonexistent-function/test2-6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-function/test2-6"
+  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-7-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-function/test2-7"
+  # same word at cursor
+  check-screen-row                     screen,                 8/y, "                                f                                                                                               ", "F - test-jump-to-nonexistent-function/test2-8-text"
+  # new cursor position
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-jump-to-nonexistent-function/test2-8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-jump-to-nonexistent-function/test2-8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-15"
+}
+
 fn render-function-modal screen: (addr screen), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var width/eax: int <- copy 0
@@ -572,7 +659,14 @@ fn render-function-modal screen: (addr screen), _self: (addr environment) {
   var _partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
   var partial-function-name/edx: (addr gap-buffer) <- copy _partial-function-name
   subtract-from xmin, 4
-  add-to ymin 2
+  increment ymin
+  {
+    var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
+    compare *function-not-found?, 0/false
+    break-if-=
+    var dummy/eax: int <- draw-text-rightward screen, "no such function", xmin, xmax, ymin, 4/fg=error, 0xf/bg=modal
+  }
+  increment ymin
   var dummy/eax: int <- copy 0
   var dummy2/ecx: int <- copy 0
   dummy, dummy2 <- render-gap-buffer-wrapping-right-then-down screen, partial-function-name, xmin, ymin, xmax, ymax, 1/always-render-cursor, 0/fg=black, 0xf/bg=modal
