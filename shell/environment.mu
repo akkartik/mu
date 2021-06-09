@@ -8,12 +8,12 @@
 type environment {
   globals: global-table
   sandbox: sandbox
-  # some state for a modal dialog for navigating between functions
-  partial-function-name: (handle gap-buffer)
-  function-modal-error: (handle array byte)
+  # some state for a modal dialog for navigating between globals
+  partial-global-name: (handle gap-buffer)
+  go-modal-error: (handle array byte)
   #
   cursor-in-globals?: boolean
-  cursor-in-function-modal?: boolean
+  cursor-in-go-modal?: boolean
 }
 
 # Here's a sample usage session and what it will look like on the screen.
@@ -30,7 +30,7 @@ fn test-environment {
   # run code in sandbox
   edit-environment env, 0x13/ctrl-s, 0/no-disk
   render-environment screen, env
-  #                                                         | global function definitions                                                        | sandbox
+  #                                                         | global definitions                                                                 | sandbox
   # top row blank for now
   check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-environment/0"
   check-screen-row                     screen,         1/y, "                                                                                      screen:                                   ", "F - test-environment/1"
@@ -62,14 +62,14 @@ fn test-definition-in-environment {
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
-  # define a function on the right (sandbox) side
-  type-in env, screen, "(define fn1 (fn() 42))"  # we don't have any global definitions here, so no macros
+  # define a global on the right (sandbox) side
+  type-in env, screen, "(define f 42)"
   edit-environment env, 0x13/ctrl-s, 0/no-disk
   render-environment screen, env
-  #                                                         | global function definitions                                                        | sandbox
+  #                                                         | global definitions                                                                 | sandbox
   check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-definition-in-environment/0"
-  # function definition is now on the left side
-  check-screen-row                     screen,         1/y, "                                           (define fn1 (fn() 42))                     screen:                                   ", "F - test-definition-in-environment/1"
+  # global definition is now on the left side
+  check-screen-row                     screen,         1/y, "                                           (define f 42)                              screen:                                   ", "F - test-definition-in-environment/1"
   check-background-color-in-screen-row screen, 0/bg,   1/y, "                                                                                                ........                        ", "F - test-definition-in-environment/1-2"
   check-background-color-in-screen-row screen, 0/bg,   2/y, "                                                                                                ........                        ", "F - test-definition-in-environment/2"
   check-background-color-in-screen-row screen, 0/bg,   3/y, "                                                                                                ........                        ", "F - test-definition-in-environment/3"
@@ -108,10 +108,10 @@ fn initialize-environment _self: (addr environment) {
   initialize-globals globals
   var sandbox/eax: (addr sandbox) <- get self, sandbox
   initialize-sandbox sandbox, 1/with-screen
-  var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
-  allocate partial-function-name-ah
-  var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
-  initialize-gap-buffer partial-function-name, 0x40/function-name-capacity
+  var partial-global-name-ah/eax: (addr handle gap-buffer) <- get self, partial-global-name
+  allocate partial-global-name-ah
+  var partial-global-name/eax: (addr gap-buffer) <- lookup *partial-global-name-ah
+  initialize-gap-buffer partial-global-name, 0x40/global-name-capacity
 }
 
 fn render-environment screen: (addr screen), _self: (addr environment) {
@@ -129,11 +129,11 @@ fn render-environment screen: (addr screen), _self: (addr environment) {
   render-sandbox screen, sandbox, 0x55/sandbox-left-margin, 0/sandbox-top-margin, 0x80/screen-width, 0x2f/screen-height-without-menu, cursor-in-sandbox?
   # modal if necessary
   {
-    var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-    compare *cursor-in-function-modal-a, 0/false
+    var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
+    compare *cursor-in-go-modal-a, 0/false
     break-if-=
-    render-function-modal screen, self
-    render-function-modal-menu screen, self
+    render-go-modal screen, self
+    render-go-modal-menu screen, self
     return
   }
   # render menu
@@ -206,9 +206,9 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     compare key, 0x13/ctrl-s
     break-if-!=
     {
-      # cursor in function modal? do nothing
-      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-      compare *cursor-in-function-modal-a, 0/false
+      # cursor in go modal? do nothing
+      var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
+      compare *cursor-in-go-modal-a, 0/false
       break-if-!=
       {
         # cursor in globals? update current definition
@@ -222,10 +222,10 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     }
     return
   }
-  # dispatch to function modal if necessary
+  # dispatch to go modal if necessary
   {
-    var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-    compare *cursor-in-function-modal-a, 0/false
+    var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
+    compare *cursor-in-go-modal-a, 0/false
     break-if-=
     # nested events for modal dialog
     # ignore spaces
@@ -238,96 +238,96 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     {
       compare key, 0x1b/escape
       break-if-!=
-      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-      copy-to *cursor-in-function-modal-a, 0/false
-      var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
-      clear-object function-modal-error-ah
+      var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
+      copy-to *cursor-in-go-modal-a, 0/false
+      var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
+      clear-object go-modal-error-ah
       return
     }
-    # enter = switch to function name and exit modal dialog
+    # enter = switch to global name and exit modal dialog
     {
       compare key, 0xa/newline
       break-if-!=
-      # if no function name typed in, switch to sandbox
-      var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
-      var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
+      # if no global name typed in, switch to sandbox
+      var partial-global-name-ah/eax: (addr handle gap-buffer) <- get self, partial-global-name
+      var partial-global-name/eax: (addr gap-buffer) <- lookup *partial-global-name-ah
       {
-        var empty?/eax: boolean <- gap-buffer-empty? partial-function-name
+        var empty?/eax: boolean <- gap-buffer-empty? partial-global-name
         compare empty?, 0/false
         break-if-=
         var cursor-in-globals-a/eax: (addr boolean) <- get self, cursor-in-globals?
         copy-to *cursor-in-globals-a, 0/false
         # reset error state
-        var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
-        clear-object function-modal-error-ah
-        # done with function modal
-        var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-        copy-to *cursor-in-function-modal-a, 0/false
+        var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
+        clear-object go-modal-error-ah
+        # done with go modal
+        var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
+        copy-to *cursor-in-go-modal-a, 0/false
         return
       }
-      # turn function name into a stream
+      # turn global name into a stream
       var name-storage: (stream byte 0x40)
       var name/ecx: (addr stream byte) <- address name-storage
-      emit-gap-buffer partial-function-name, name
-      # compute function index
+      emit-gap-buffer partial-global-name, name
+      # compute global index
       var index/ecx: int <- find-symbol-in-globals globals, name
-      # if function not found, set error and return
+      # if global not found, set error and return
       {
         compare index, 0
         break-if->=
-        var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
-        copy-array-object "no such function", function-modal-error-ah
+        var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
+        copy-array-object "no such global", go-modal-error-ah
         return
       }
       # otherwise clear modal state
-      clear-gap-buffer partial-function-name
-      var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
-      clear-object function-modal-error-ah
-      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-      copy-to *cursor-in-function-modal-a, 0/false
-      # switch focus to function at index
+      clear-gap-buffer partial-global-name
+      var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
+      clear-object go-modal-error-ah
+      var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
+      copy-to *cursor-in-go-modal-a, 0/false
+      # switch focus to global at index
       var globals-cursor-index/eax: (addr int) <- get globals, cursor-index
       copy-to *globals-cursor-index, index
       var cursor-in-globals-a/ecx: (addr boolean) <- get self, cursor-in-globals?
       copy-to *cursor-in-globals-a, 1/true
       return
     }
-    # ctrl-m = create given function name and exit modal dialog
+    # ctrl-m = create given global name and exit modal dialog
     {
       compare key, 0xd/ctrl-m
       break-if-!=
-      # if no function name typed in, set error and return
-      var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
-      var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
+      # if no global name typed in, set error and return
+      var partial-global-name-ah/eax: (addr handle gap-buffer) <- get self, partial-global-name
+      var partial-global-name/eax: (addr gap-buffer) <- lookup *partial-global-name-ah
       {
-        var empty?/eax: boolean <- gap-buffer-empty? partial-function-name
+        var empty?/eax: boolean <- gap-buffer-empty? partial-global-name
         compare empty?, 0/false
         break-if-=
-        var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
-        copy-array-object "create what?", function-modal-error-ah
+        var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
+        copy-array-object "create what?", go-modal-error-ah
         return
       }
-      # turn function name into a stream
+      # turn global name into a stream
       var name-storage: (stream byte 0x40)
       var name/edx: (addr stream byte) <- address name-storage
-      emit-gap-buffer partial-function-name, name
-      # compute function index
+      emit-gap-buffer partial-global-name, name
+      # compute global index
       var index/ecx: int <- find-symbol-in-globals globals, name
-      # if function found, set error and return
+      # if global found, set error and return
       {
         compare index, 0
         break-if-<
-        var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
-        copy-array-object "already exists", function-modal-error-ah
+        var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
+        copy-array-object "already exists", go-modal-error-ah
         return
       }
       # otherwise clear modal state
-      clear-gap-buffer partial-function-name
-      var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
-      clear-object function-modal-error-ah
-      var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-      copy-to *cursor-in-function-modal-a, 0/false
-      # create new function
+      clear-gap-buffer partial-global-name
+      var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
+      clear-object go-modal-error-ah
+      var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
+      copy-to *cursor-in-go-modal-a, 0/false
+      # create new global
       create-empty-global globals, name, 0x2000/default-gap-buffer-size=8KB
       var globals-final-index/eax: (addr int) <- get globals, final-index
       var new-index/ecx: int <- copy *globals-final-index
@@ -338,12 +338,12 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       return
     }
     # otherwise process like a regular gap-buffer
-    var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
-    var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
-    edit-gap-buffer partial-function-name, key
+    var partial-global-name-ah/eax: (addr handle gap-buffer) <- get self, partial-global-name
+    var partial-global-name/eax: (addr gap-buffer) <- lookup *partial-global-name-ah
+    edit-gap-buffer partial-global-name, key
     return
   }
-  # ctrl-g: go to a function (or the repl)
+  # ctrl-g: go to a global (or the repl)
   {
     compare key, 7/ctrl-g
     break-if-!=
@@ -351,13 +351,13 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     var current-word-storage: (stream byte 0x40)
     var current-word/edi: (addr stream byte) <- address current-word-storage
     word-at-cursor self, current-word
-    var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
-    var partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
-    clear-gap-buffer partial-function-name
-    load-gap-buffer-from-stream partial-function-name, current-word
+    var partial-global-name-ah/eax: (addr handle gap-buffer) <- get self, partial-global-name
+    var partial-global-name/eax: (addr gap-buffer) <- lookup *partial-global-name-ah
+    clear-gap-buffer partial-global-name
+    load-gap-buffer-from-stream partial-global-name, current-word
     # enable the modal
-    var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-    copy-to *cursor-in-function-modal-a, 1/true
+    var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
+    copy-to *cursor-in-go-modal-a, 1/true
     return
   }
   # dispatch the key to either sandbox or globals
@@ -371,7 +371,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
   edit-sandbox sandbox, key, globals, data-disk
 }
 
-fn test-function-modal {
+fn test-go-modal {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
@@ -383,30 +383,30 @@ fn test-function-modal {
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   #
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-function-modal/0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-function-modal/1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-function-modal/2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-function-modal/3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-function-modal/4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-function-modal/5"
-  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-function-modal/6-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-function-modal/6"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-function-modal/7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-go-modal/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-go-modal/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-go-modal/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-go-modal/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-go-modal/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-go-modal/5"
+  check-screen-row                     screen,                 6/y, "                                    go to global (or leave blank to go to REPL)                                                 ", "F - test-go-modal/6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-go-modal/6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-go-modal/7"
   # cursor is in the modal
-  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                |                                                                                               ", "F - test-function-modal/8-cursor"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                 ...............................................................                                ", "F - test-function-modal/8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-function-modal/9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-function-modal/10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-function-modal/11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-function-modal/12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-function-modal/13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-function-modal/14"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                |                                                                                               ", "F - test-go-modal/8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                 ...............................................................                                ", "F - test-go-modal/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-go-modal/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-go-modal/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-go-modal/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-go-modal/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-go-modal/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-go-modal/14"
   # menu at bottom is correct in context
-  check-screen-row                     screen,               0xf/y, " ^r  run main   enter  jump   ^m  create   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                ", "F - test-function-modal/15-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal/15"
+  check-screen-row                     screen,               0xf/y, " ^r  run main   enter  go   ^m  create   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                  ", "F - test-go-modal/15-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-go-modal/15"
 }
 
-fn test-leave-function-modal {
+fn test-leave-go-modal {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
@@ -421,25 +421,25 @@ fn test-leave-function-modal {
   edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
   # no modal
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-leave-function-modal/0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-leave-function-modal/1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-leave-function-modal/2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-leave-function-modal/3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-leave-function-modal/4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-leave-function-modal/5"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                                                                                                                ", "F - test-leave-function-modal/6"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                                                                                                                ", "F - test-leave-function-modal/7"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                                                                                                                ", "F - test-leave-function-modal/8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-leave-function-modal/9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-leave-function-modal/10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-leave-function-modal/11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-leave-function-modal/12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-leave-function-modal/13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-leave-function-modal/14"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-leave-function-modal/15"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-leave-go-modal/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-leave-go-modal/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-leave-go-modal/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-leave-go-modal/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-leave-go-modal/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-leave-go-modal/5"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                                                                                                                ", "F - test-leave-go-modal/6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                                                                                                                ", "F - test-leave-go-modal/7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                                                                                                                ", "F - test-leave-go-modal/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-leave-go-modal/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-leave-go-modal/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-leave-go-modal/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-leave-go-modal/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-leave-go-modal/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-leave-go-modal/14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-leave-go-modal/15"
 }
 
-fn test-jump-to-function {
+fn test-jump-to-global {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
@@ -447,42 +447,42 @@ fn test-jump-to-function {
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
-  # define a function
-  type-in env, screen, "(define fn1 (fn() 42))"  # we don't have any global definitions here, so no macros
+  # define a global
+  type-in env, screen, "(define f 42)"
   edit-environment env, 0x13/ctrl-s, 0/no-disk
   render-environment screen, env
   # hit ctrl-g
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
-  # type function name
-  type-in env, screen, "fn1"
+  # type global name
+  type-in env, screen, "f"
   # submit
   edit-environment env, 0xa/newline, 0/no-disk
   render-environment screen, env
-  #                                                                 | global function definitions                                                        | sandbox
-  # cursor now in function definition
-  check-screen-row                     screen,                 1/y, "                                           (define fn1 (fn() 42))                     screen:                                   ", "F - test-jump-to-function/1"
-  check-background-color-in-screen-row screen,   7/bg=cursor,  1/y, "                                                                 |                                                              ", "F - test-jump-to-function/1-cursor"
+  #                                                                 | global definitions                                                                 | sandbox
+  # cursor now in global definition
+  check-screen-row                     screen,                 1/y, "                                           (define f 42)                              screen:                                   ", "F - test-jump-to-global/1"
+  check-background-color-in-screen-row screen,   7/bg=cursor,  1/y, "                                                        |                                                                       ", "F - test-jump-to-global/1-cursor"
   # no modal
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-function/bg0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-jump-to-function/bg1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-jump-to-function/bg2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-jump-to-function/bg3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-jump-to-function/bg4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-jump-to-function/bg5"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                                                                                                                ", "F - test-jump-to-function/bg6"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                                                                                                                ", "F - test-jump-to-function/bg7"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                                                                                                                ", "F - test-jump-to-function/bg8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-jump-to-function/bg9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-jump-to-function/bg10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-jump-to-function/bg11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-jump-to-function/bg12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-function/bg13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-function/bg14"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-function/bg15"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-global/bg0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-jump-to-global/bg1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-jump-to-global/bg2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-jump-to-global/bg3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-jump-to-global/bg4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-jump-to-global/bg5"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                                                                                                                ", "F - test-jump-to-global/bg6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                                                                                                                ", "F - test-jump-to-global/bg7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                                                                                                                ", "F - test-jump-to-global/bg8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-jump-to-global/bg9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-jump-to-global/bg10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-jump-to-global/bg11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-jump-to-global/bg12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-global/bg13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-global/bg14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-global/bg15"
 }
 
-fn test-function-modal-prepopulates-word-at-cursor {
+fn test-go-modal-prepopulates-word-at-cursor {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
@@ -496,27 +496,27 @@ fn test-function-modal-prepopulates-word-at-cursor {
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # modal prepopulates word at cursor
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/5"
-  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-function-modal-prepopulates-word-at-cursor/6-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/6"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/5"
+  check-screen-row                     screen,                 6/y, "                                    go to global (or leave blank to go to REPL)                                                 ", "F - test-go-modal-prepopulates-word-at-cursor/6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-go-modal-prepopulates-word-at-cursor/6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-go-modal-prepopulates-word-at-cursor/7"
   # word at cursor
-  check-screen-row                     screen,                 8/y, "                                fn1                                                                                             ", "F - test-function-modal-prepopulates-word-at-cursor/8-text"
+  check-screen-row                     screen,                 8/y, "                                fn1                                                                                             ", "F - test-go-modal-prepopulates-word-at-cursor/8-text"
   # new cursor position
-  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                   |                                                                                            ", "F - test-function-modal-prepopulates-word-at-cursor/8-cursor"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                ... ............................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/14"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/15"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                   |                                                                                            ", "F - test-go-modal-prepopulates-word-at-cursor/8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                ... ............................................................                                ", "F - test-go-modal-prepopulates-word-at-cursor/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/15"
   # cancel
   edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
@@ -527,27 +527,27 @@ fn test-function-modal-prepopulates-word-at-cursor {
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # no word prepopulated since cursor is not on the word
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-5"
-  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-function-modal-prepopulates-word-at-cursor/test2-6-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-6"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-5"
+  check-screen-row                     screen,                 6/y, "                                    go to global (or leave blank to go to REPL)                                                 ", "F - test-go-modal-prepopulates-word-at-cursor/test2-6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-7"
   # no word at cursor
-  check-screen-row                     screen,                 8/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-8-text"
+  check-screen-row                     screen,                 8/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-8-text"
   # new cursor position
-  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                |                                                                                               ", "F - test-function-modal-prepopulates-word-at-cursor/test2-8-cursor"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                 ...............................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-14"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-15"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                |                                                                                               ", "F - test-go-modal-prepopulates-word-at-cursor/test2-8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                 ...............................................................                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-15"
   # cancel
   edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
@@ -560,30 +560,30 @@ fn test-function-modal-prepopulates-word-at-cursor {
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # word prepopulated like before
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-5"
-  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-function-modal-prepopulates-word-at-cursor/test3-6-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-6"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-5"
+  check-screen-row                     screen,                 6/y, "                                    go to global (or leave blank to go to REPL)                                                 ", "F - test-go-modal-prepopulates-word-at-cursor/test3-6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-7"
   # word at cursor
-  check-screen-row                     screen,                 8/y, "                                fn1                                                                                             ", "F - test-function-modal-prepopulates-word-at-cursor/test3-8-text"
+  check-screen-row                     screen,                 8/y, "                                fn1                                                                                             ", "F - test-go-modal-prepopulates-word-at-cursor/test3-8-text"
   # new cursor position
-  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                   |                                                                                            ", "F - test-function-modal-prepopulates-word-at-cursor/test3-8-cursor"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                ... ............................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-14"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-15"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                   |                                                                                            ", "F - test-go-modal-prepopulates-word-at-cursor/test3-8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                ... ............................................................                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-15"
 }
 
-fn test-jump-to-nonexistent-function {
+fn test-jump-to-nonexistent-global {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
@@ -591,7 +591,7 @@ fn test-jump-to-nonexistent-function {
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
-  # type in any (nonexistent) function name
+  # type in any (nonexistent) global name
   type-in env, screen, "f"
   # hit ctrl-g
   edit-environment env, 7/ctrl-g, 0/no-disk
@@ -600,29 +600,29 @@ fn test-jump-to-nonexistent-function {
   edit-environment env, 0xa/newline, 0/no-disk
   render-environment screen, env
   # modal now shows an error
-  #                                                                 | global function definitions                                                        | sandbox
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/5"
-  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-jump-to-nonexistent-function/6-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-function/6"
-  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                no such function                                                                                ", "F - test-jump-to-nonexistent-function/7-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-function/7"
-  check-screen-row                     screen,                 8/y, "                                f                                                                                               ", "F - test-jump-to-nonexistent-function/8-text"
-  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-jump-to-nonexistent-function/8-cursor"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-jump-to-nonexistent-function/8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/14"
+  #                                                                 | global definitions                                                                 | sandbox
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/5"
+  check-screen-row                     screen,                 6/y, "                                    go to global (or leave blank to go to REPL)                                                 ", "F - test-jump-to-nonexistent-global/6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-global/6"
+  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                no such global                                                                                  ", "F - test-jump-to-nonexistent-global/7-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-global/7"
+  check-screen-row                     screen,                 8/y, "                                f                                                                                               ", "F - test-jump-to-nonexistent-global/8-text"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-jump-to-nonexistent-global/8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-jump-to-nonexistent-global/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/14"
   # menu at bottom is correct in context
-  check-screen-row                     screen,               0xf/y, " ^r  run main   enter  jump   ^m  create   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                ", "F - test-jump-to-nonexistent-function/15-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/15"
+  check-screen-row                     screen,               0xf/y, " ^r  run main   enter  go   ^m  create   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                  ", "F - test-jump-to-nonexistent-global/15-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/15"
   # cancel
   edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
@@ -630,31 +630,31 @@ fn test-jump-to-nonexistent-function {
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # word prepopulated like before, but no error
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-5"
-  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-jump-to-nonexistent-function/test2-6-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-function/test2-6"
-  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-7-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-function/test2-7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-5"
+  check-screen-row                     screen,                 6/y, "                                    go to global (or leave blank to go to REPL)                                                 ", "F - test-jump-to-nonexistent-global/test2-6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-global/test2-6"
+  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-7-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-jump-to-nonexistent-global/test2-7"
   # same word at cursor
-  check-screen-row                     screen,                 8/y, "                                f                                                                                               ", "F - test-jump-to-nonexistent-function/test2-8-text"
+  check-screen-row                     screen,                 8/y, "                                f                                                                                               ", "F - test-jump-to-nonexistent-global/test2-8-text"
   # new cursor position
-  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-jump-to-nonexistent-function/test2-8-cursor"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-jump-to-nonexistent-function/test2-8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-14"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-function/test2-15"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-jump-to-nonexistent-global/test2-8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-jump-to-nonexistent-global/test2-8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-15"
 }
 
-fn test-create-function {
+fn test-create-global {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
@@ -665,34 +665,34 @@ fn test-create-function {
   # hit ctrl-g
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
-  # type function name
+  # type global name
   type-in env, screen, "fn1"
   # create
   edit-environment env, 0xd/ctrl-m, 0/no-disk
   render-environment screen, env
-  #                                                                 | global function definitions                                                        | sandbox
-  # cursor now on function side
-  check-background-color-in-screen-row screen,   7/bg=cursor,  1/y, "                                           |                                                                                    ", "F - test-create-function/1-cursor"
+  #                                                                 | global definitions                                                                 | sandbox
+  # cursor now on global side
+  check-background-color-in-screen-row screen,   7/bg=cursor,  1/y, "                                           |                                                                                    ", "F - test-create-global/1-cursor"
   # no modal
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-create-function/bg0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-create-function/bg1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-create-function/bg2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-create-function/bg3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-create-function/bg4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-create-function/bg5"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                                                                                                                ", "F - test-create-function/bg6"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                                                                                                                ", "F - test-create-function/bg7"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                                                                                                                ", "F - test-create-function/bg8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-create-function/bg9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-create-function/bg10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-create-function/bg11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-create-function/bg12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-create-function/bg13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-create-function/bg14"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-create-function/bg15"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-create-global/bg0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-create-global/bg1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-create-global/bg2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-create-global/bg3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-create-global/bg4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-create-global/bg5"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                                                                                                                ", "F - test-create-global/bg6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                                                                                                                ", "F - test-create-global/bg7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                                                                                                                ", "F - test-create-global/bg8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-create-global/bg9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-create-global/bg10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-create-global/bg11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-create-global/bg12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-create-global/bg13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-create-global/bg14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-create-global/bg15"
 }
 
-fn test-create-nonexistent-function {
+fn test-create-nonexistent-global {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
   initialize-environment env
@@ -700,11 +700,11 @@ fn test-create-nonexistent-function {
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
-  # define a function
-  type-in env, screen, "(define f (fn() 42))"  # we don't have any global definitions here, so no macros
+  # define a global
+  type-in env, screen, "(define f 42)"
   edit-environment env, 0x13/ctrl-s, 0/no-disk
   render-environment screen, env
-  # type in any (nonexistent) function name
+  # type in its name
   type-in env, screen, "f"
   # hit ctrl-g
   edit-environment env, 7/ctrl-g, 0/no-disk
@@ -713,29 +713,29 @@ fn test-create-nonexistent-function {
   edit-environment env, 0xd/ctrl-m, 0/no-disk
   render-environment screen, env
   # modal now shows an error
-  #                                                                 | global function definitions                                                        | sandbox
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-create-nonexistent-function/0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-create-nonexistent-function/1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-create-nonexistent-function/2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-create-nonexistent-function/3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-create-nonexistent-function/4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-create-nonexistent-function/5"
-  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-create-nonexistent-function/6-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-create-nonexistent-function/6"
-  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                already exists                                                                                  ", "F - test-create-nonexistent-function/7-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-create-nonexistent-function/7"
-  check-screen-row-in-color            screen, 0/fg,           8/y, "                                f                                                                                               ", "F - test-create-nonexistent-function/8-text"
-  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-create-nonexistent-function/8-cursor"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-create-nonexistent-function/8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-create-nonexistent-function/9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-create-nonexistent-function/10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-create-nonexistent-function/11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-create-nonexistent-function/12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-create-nonexistent-function/13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-create-nonexistent-function/14"
+  #                                                                 | global definitions                                                                 | sandbox
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-create-nonexistent-global/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-create-nonexistent-global/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-create-nonexistent-global/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-create-nonexistent-global/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-create-nonexistent-global/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-create-nonexistent-global/5"
+  check-screen-row                     screen,                 6/y, "                                    go to global (or leave blank to go to REPL)                                                 ", "F - test-create-nonexistent-global/6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-create-nonexistent-global/6"
+  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                already exists                                                                                  ", "F - test-create-nonexistent-global/7-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-create-nonexistent-global/7"
+  check-screen-row-in-color            screen, 0/fg,           8/y, "                                f                                                                                               ", "F - test-create-nonexistent-global/8-text"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-create-nonexistent-global/8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-create-nonexistent-global/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-create-nonexistent-global/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-create-nonexistent-global/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-create-nonexistent-global/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-create-nonexistent-global/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-create-nonexistent-global/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-create-nonexistent-global/14"
   # menu at bottom is correct in context
-  check-screen-row                     screen,               0xf/y, " ^r  run main   enter  jump   ^m  create   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                ", "F - test-create-nonexistent-function/15-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-create-nonexistent-function/15"
+  check-screen-row                     screen,               0xf/y, " ^r  run main   enter  go   ^m  create   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                  ", "F - test-create-nonexistent-global/15-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-create-nonexistent-global/15"
   # cancel
   edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
@@ -743,31 +743,31 @@ fn test-create-nonexistent-function {
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # word prepopulated like before, but no error
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-0"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-1"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-2"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-3"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-4"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-5"
-  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-create-nonexistent-function/test2-6-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-create-nonexistent-function/test2-6"
-  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-7-text"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-create-nonexistent-function/test2-7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-5"
+  check-screen-row                     screen,                 6/y, "                                    go to global (or leave blank to go to REPL)                                                 ", "F - test-create-nonexistent-global/test2-6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-create-nonexistent-global/test2-6"
+  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-7-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-create-nonexistent-global/test2-7"
   # same word at cursor
-  check-screen-row-in-color            screen, 0/fg,           8/y, "                                f                                                                                               ", "F - test-create-nonexistent-function/test2-8-text"
+  check-screen-row-in-color            screen, 0/fg,           8/y, "                                f                                                                                               ", "F - test-create-nonexistent-global/test2-8-text"
   # new cursor position
-  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-create-nonexistent-function/test2-8-cursor"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-create-nonexistent-function/test2-8"
-  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-9"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-10"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-11"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-12"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-13"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-14"
-  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-create-nonexistent-function/test2-15"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-create-nonexistent-global/test2-8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-create-nonexistent-global/test2-8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-15"
 }
 
-fn render-function-modal screen: (addr screen), _self: (addr environment) {
+fn render-go-modal screen: (addr screen), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var width/eax: int <- copy 0
   var height/ecx: int <- copy 0
@@ -776,7 +776,7 @@ fn render-function-modal screen: (addr screen), _self: (addr environment) {
   var xmin: int
   var tmp/edx: int <- copy width
   tmp <- shift-right 1
-  tmp <- subtract 0x20/half-function-name-capacity
+  tmp <- subtract 0x20/half-global-name-capacity
   {
     compare tmp, 0
     break-if->=
@@ -787,7 +787,7 @@ fn render-function-modal screen: (addr screen), _self: (addr environment) {
   var xmax: int
   tmp <- copy width
   tmp <- shift-right 1
-  tmp <- add 0x20/half-function-name-capacity
+  tmp <- add 0x20/half-global-name-capacity
   {
     compare tmp, width
     break-if-<=
@@ -808,26 +808,26 @@ fn render-function-modal screen: (addr screen), _self: (addr environment) {
   clear-rect screen, xmin, ymin, xmax, ymax, 0xf/bg=modal
   add-to xmin, 4
   set-cursor-position screen, xmin, ymin
-  draw-text-rightward-from-cursor screen, "go to function (or leave blank to go to REPL)", xmax, 8/fg=dark-grey, 0xf/bg=modal
-  var partial-function-name-ah/eax: (addr handle gap-buffer) <- get self, partial-function-name
-  var _partial-function-name/eax: (addr gap-buffer) <- lookup *partial-function-name-ah
-  var partial-function-name/edx: (addr gap-buffer) <- copy _partial-function-name
+  draw-text-rightward-from-cursor screen, "go to global (or leave blank to go to REPL)", xmax, 8/fg=dark-grey, 0xf/bg=modal
+  var partial-global-name-ah/eax: (addr handle gap-buffer) <- get self, partial-global-name
+  var _partial-global-name/eax: (addr gap-buffer) <- lookup *partial-global-name-ah
+  var partial-global-name/edx: (addr gap-buffer) <- copy _partial-global-name
   subtract-from xmin, 4
   increment ymin
   {
-    var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
-    var function-modal-error/eax: (addr array byte) <- lookup *function-modal-error-ah
-    compare function-modal-error, 0
+    var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
+    var go-modal-error/eax: (addr array byte) <- lookup *go-modal-error-ah
+    compare go-modal-error, 0
     break-if-=
-    var dummy/eax: int <- draw-text-rightward screen, function-modal-error, xmin, xmax, ymin, 4/fg=error, 0xf/bg=modal
+    var dummy/eax: int <- draw-text-rightward screen, go-modal-error, xmin, xmax, ymin, 4/fg=error, 0xf/bg=modal
   }
   increment ymin
   var dummy/eax: int <- copy 0
   var dummy2/ecx: int <- copy 0
-  dummy, dummy2 <- render-gap-buffer-wrapping-right-then-down screen, partial-function-name, xmin, ymin, xmax, ymax, 1/always-render-cursor, 0/fg=black, 0xf/bg=modal
+  dummy, dummy2 <- render-gap-buffer-wrapping-right-then-down screen, partial-global-name, xmin, ymin, xmax, ymax, 1/always-render-cursor, 0/fg=black, 0xf/bg=modal
 }
 
-fn render-function-modal-menu screen: (addr screen), _self: (addr environment) {
+fn render-go-modal-menu screen: (addr screen), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var _width/eax: int <- copy 0
   var height/ecx: int <- copy 0
@@ -841,9 +841,9 @@ fn render-function-modal-menu screen: (addr screen), _self: (addr environment) {
   set-cursor-position screen, 0/x, y
   draw-text-rightward-from-cursor screen, " ^r ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " run main  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " enter ", width, 0/fg, 0x5c/bg=menu-highlight
-  draw-text-rightward-from-cursor screen, " jump  ", width, 7/fg, 0xc5/bg=blue-bg
-  draw-text-rightward-from-cursor screen, " ^m ", width, 0/fg, 0x5c/bg=menu-highlight
+  draw-text-rightward-from-cursor screen, " enter ", width, 0/fg, 0xc/bg=menu-really-highlight
+  draw-text-rightward-from-cursor screen, " go  ", width, 7/fg, 0xc5/bg=blue-bg
+  draw-text-rightward-from-cursor screen, " ^m ", width, 0/fg, 0xc/bg=menu-really-highlight
   draw-text-rightward-from-cursor screen, " create  ", width, 7/fg, 0xc5/bg=blue-bg
   draw-text-rightward-from-cursor screen, " esc ", width, 0/fg, 0x5c/bg=menu-highlight
   draw-text-rightward-from-cursor screen, " cancel  ", width, 7/fg, 0xc5/bg=blue-bg
@@ -859,18 +859,18 @@ fn render-function-modal-menu screen: (addr screen), _self: (addr environment) {
 
 fn word-at-cursor _self: (addr environment), out: (addr stream byte) {
   var self/esi: (addr environment) <- copy _self
-  var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
-  compare *cursor-in-function-modal-a, 0/false
+  var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
+  compare *cursor-in-go-modal-a, 0/false
   {
     break-if-=
-    # cursor in function modal
+    # cursor in go modal
     return
   }
   var cursor-in-globals-a/edx: (addr boolean) <- get self, cursor-in-globals?
   compare *cursor-in-globals-a, 0/false
   {
     break-if-=
-    # cursor in some function editor
+    # cursor in some global editor
     var globals/eax: (addr global-table) <- get self, globals
     var cursor-index-addr/ecx: (addr int) <- get globals, cursor-index
     var cursor-index/ecx: int <- copy *cursor-index-addr
