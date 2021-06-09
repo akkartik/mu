@@ -10,7 +10,7 @@ type environment {
   sandbox: sandbox
   # some state for a modal dialog for navigating between functions
   partial-function-name: (handle gap-buffer)
-  function-not-found?: boolean
+  function-modal-error: (handle array byte)
   #
   cursor-in-globals?: boolean
   cursor-in-function-modal?: boolean
@@ -240,8 +240,8 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       break-if-!=
       var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
       copy-to *cursor-in-function-modal-a, 0/false
-      var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
-      copy-to *function-not-found? 0/false
+      var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
+      clear-object function-modal-error-ah
       return
     }
     # enter = switch to function name and exit modal dialog
@@ -258,8 +258,8 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
         var cursor-in-globals-a/eax: (addr boolean) <- get self, cursor-in-globals?
         copy-to *cursor-in-globals-a, 0/false
         # reset error state
-        var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
-        copy-to *function-not-found? 0/false
+        var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
+        clear-object function-modal-error-ah
         # done with function modal
         var cursor-in-function-modal-a/eax: (addr boolean) <- get self, cursor-in-function-modal?
         copy-to *cursor-in-function-modal-a, 0/false
@@ -275,14 +275,14 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       {
         compare index, 0
         break-if->=
-        var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
-        copy-to *function-not-found? 1/true
+        var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
+        copy-array-object "no such function", function-modal-error-ah
         return
       }
       # otherwise clear modal state
       clear-gap-buffer partial-function-name
-      var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
-      copy-to *function-not-found? 0/false
+      var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
+      clear-object function-modal-error-ah
       # switch focus to function at index
       var globals-cursor-index/eax: (addr int) <- get globals, cursor-index
       copy-to *globals-cursor-index, index
@@ -658,10 +658,11 @@ fn render-function-modal screen: (addr screen), _self: (addr environment) {
   subtract-from xmin, 4
   increment ymin
   {
-    var function-not-found?/eax: (addr boolean) <- get self, function-not-found?
-    compare *function-not-found?, 0/false
+    var function-modal-error-ah/eax: (addr handle array byte) <- get self, function-modal-error
+    var function-modal-error/eax: (addr array byte) <- lookup *function-modal-error-ah
+    compare function-modal-error, 0
     break-if-=
-    var dummy/eax: int <- draw-text-rightward screen, "no such function", xmin, xmax, ymin, 4/fg=error, 0xf/bg=modal
+    var dummy/eax: int <- draw-text-rightward screen, function-modal-error, xmin, xmax, ymin, 4/fg=error, 0xf/bg=modal
   }
   increment ymin
   var dummy/eax: int <- copy 0

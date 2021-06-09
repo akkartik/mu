@@ -2264,6 +2264,29 @@ test-convert-function-call-with-literal-string-arg:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-call-with-literal-string-arg-and-type-parameter-in-signature:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  string-func \"abc\"\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "sig string-func in: (addr array _)\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    # no errors
+    # not bothering checking output
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-call-with-null-addr:
     # . prologue
     55/push-ebp
@@ -26417,7 +26440,7 @@ type-match?:  # def: (addr type-tree), call: (addr type-tree), type-parameters: 
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # if (call is literal and def is numberlike) return true
+    # if call is literal and def is numberlike, return true
     {
 $type-match?:check-literal-int:
       (simple-mu-type? *(ebp+0xc) 0)  # literal => eax
@@ -26429,16 +26452,13 @@ $type-match?:check-literal-int:
       b8/copy-to-eax 1/imm32/true
       e9/jump $type-match?:end/disp32
     }
-    # if (call is literal-string and def is string) return true
+    # if call is literal-string, match against (addr array byte)
     {
 $type-match?:check-literal-string:
       (simple-mu-type? *(ebp+0xc) 0x10)  # literal-string => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
-      (mu-string-type? *(ebp+8))  # => eax
-      3d/compare-eax-and 0/imm32/false
-      74/jump-if-= break/disp8
-      b8/copy-to-eax 1/imm32/true
+      (type-component-match? *(ebp+8) Addr-type-string *(ebp+0x10))  # => eax
       e9/jump $type-match?:end/disp32
     }
 $type-match?:baseline:
@@ -28795,7 +28815,6 @@ $emit-subx-stmt:primitive:
       e9/jump $emit-subx-stmt:end/disp32
     }
     # - otherwise emit a call
-    # TODO: type-checking
 $emit-subx-stmt:call:
     (emit-call *(ebp+8) *(ebp+0xc))
 $emit-subx-stmt:end:
@@ -35255,6 +35274,14 @@ Type-addr:  # (payload type-tree)
     0/imm32/right:null
     0/imm32/right:null
 
+Type-array:  # (payload type-tree)
+    0x11/imm32/alloc-id:fake:payload
+    1/imm32/is-atom
+    3/imm32/value:array
+    0/imm32/left:unused
+    0/imm32/right:null
+    0/imm32/right:null
+
 Type-byte:  # (payload type-tree)
     0x11/imm32/alloc-id:fake:payload
     1/imm32/is-atom
@@ -35270,6 +35297,27 @@ Type-float:  # (payload type-tree)
     0/imm32/left:unused
     0/imm32/right:null
     0/imm32/right:null
+
+Addr-type-string:  # (addr type-tree)
+  0/imm32/not-atom
+  0x11/imm32/alloc-id:fake
+  Type-addr/imm32/left
+  0x11/imm32/alloc-id:fake
+  _Addr-type-string:array/imm32/right
+_Addr-type-string:array:  # (payload type-tree)
+  0x11/imm32/alloc-id:fake:payload
+  0/imm32/not-atom
+  0x11/imm32/alloc-id:fake
+  Type-array/imm32/left
+  0x11/imm32/alloc-id:fake
+  _Addr-type-string:byte/imm32/right
+_Addr-type-string:byte:  # (payload type-tree)
+  0x11/imm32/alloc-id:fake:payload
+  0/imm32/not-atom
+  0x11/imm32/alloc-id:fake
+  Type-byte/imm32/left
+  0/imm32/right:null
+  0/imm32/right:null
 
 == code
 emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive: (addr primitive), err: (addr buffered-file), ed: (addr exit-descriptor)
