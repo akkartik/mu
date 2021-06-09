@@ -323,7 +323,7 @@ fn test-function-modal {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   # hit ctrl-g
-  edit-environment env, 0x7/ctrl-g, 0/no-disk
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   #
   check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-function-modal/0"
@@ -358,7 +358,7 @@ fn test-leave-function-modal {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   # hit ctrl-g
-  edit-environment env, 0x7/ctrl-g, 0/no-disk
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # cancel
   edit-environment env, 0x1b/escape, 0/no-disk
@@ -395,7 +395,7 @@ fn test-jump-to-function {
   edit-environment env, 0x13/ctrl-s, 0/no-disk
   render-environment screen, env
   # hit ctrl-g
-  edit-environment env, 0x7/ctrl-g, 0/no-disk
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # type function name
   type-in env, screen, "fn1"
@@ -423,6 +423,107 @@ fn test-jump-to-function {
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-function/bg13"
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-function/bg14"
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-function/bg15"
+}
+
+fn test-function-modal-prepopulates-word-at-cursor {
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment env
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  # type a word at the cursor
+  type-in env, screen, "fn1"
+  # hit ctrl-g
+  edit-environment env, 7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  # modal prepopulates word at cursor
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/5"
+  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-function-modal-prepopulates-word-at-cursor/6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/7"
+  # word at cursor
+  check-screen-row                     screen,                 8/y, "                                fn1                                                                                             ", "F - test-function-modal-prepopulates-word-at-cursor/8-text"
+  # new cursor position
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                   |                                                                                            ", "F - test-function-modal-prepopulates-word-at-cursor/8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                ... ............................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/15"
+  # cancel
+  edit-environment env, 0x1b/escape, 0/no-disk
+  render-environment screen, env
+  # type one more space
+  edit-environment env, 0x20/space, 0/no-disk
+  render-environment screen, env
+  # hit ctrl-g again
+  edit-environment env, 7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  # no word prepopulated since cursor is not on the word
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-5"
+  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-function-modal-prepopulates-word-at-cursor/test2-6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-7"
+  # no word at cursor
+  check-screen-row                     screen,                 8/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-8-text"
+  # new cursor position
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                |                                                                                               ", "F - test-function-modal-prepopulates-word-at-cursor/test2-8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                 ...............................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test2-15"
+  # cancel
+  edit-environment env, 0x1b/escape, 0/no-disk
+  render-environment screen, env
+  # move cursor to the left until it's on the word again
+  edit-environment env, 0x80/left-arrow, 0/no-disk
+  render-environment screen, env
+  edit-environment env, 0x80/left-arrow, 0/no-disk
+  render-environment screen, env
+  # hit ctrl-g again
+  edit-environment env, 7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  # word prepopulated like before
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-5"
+  check-screen-row                     screen,                 6/y, "                                    go to function (or leave blank to go to REPL)                                               ", "F - test-function-modal-prepopulates-word-at-cursor/test3-6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-7"
+  # word at cursor
+  check-screen-row                     screen,                 8/y, "                                fn1                                                                                             ", "F - test-function-modal-prepopulates-word-at-cursor/test3-8-text"
+  # new cursor position
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                   |                                                                                            ", "F - test-function-modal-prepopulates-word-at-cursor/test3-8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                ... ............................................................                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal-prepopulates-word-at-cursor/test3-15"
 }
 
 fn render-function-modal screen: (addr screen), _self: (addr environment) {

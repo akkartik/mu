@@ -136,6 +136,20 @@
   cd/syscall 0x13/imm8/bios-disk-services
   0f 82/jump-if-carry disk_error/disp16
 
+  # load two more tracks of disk into addresses [0x56800, 0x66400)
+  b4/copy-to-ah 2/imm8/read-drive
+  # dl comes conveniently initialized at boot time with the index of the device being booted
+  b5/copy-to-ch 0/imm8/cylinder
+  b6/copy-to-dh 0xa/imm8/head                 # <====
+  b1/copy-to-cl 1/imm8/sector  # 1-based
+  b0/copy-to-al 0x7e/imm8/num-sectors  # 2*63 = 126
+  # address to write sectors to = es:bx = 0x56800, contiguous with boot segment
+  bb/copy-to-bx 0x5680/imm16                  # <====
+  8e/->seg 3/mod/direct 3/rm32/bx 0/r32/es
+  bb/copy-to-bx 0/imm16
+  cd/syscall 0x13/imm8/bios-disk-services
+  0f 82/jump-if-carry disk_error/disp16
+
   # reset es
   bb/copy-to-bx 0/imm16
   8e/->seg 3/mod/direct 3/rm32/bx 0/r32/es
@@ -162,7 +176,7 @@
   # We can't refer to the label directly because SubX doesn't do the right
   # thing for lgdt, so rather than make errors worse in most places we instead
   # pin gdt_descriptor below.
-  0f 01 2/subop/lgdt 0/mod/indirect 6/rm32/use-disp16 0x7ce0/disp16/gdt_descriptor
+  0f 01 2/subop/lgdt 0/mod/indirect 6/rm32/use-disp16 0x7de0/disp16/gdt_descriptor
   # enable paging
   0f 20/<-cr 3/mod/direct 0/rm32/eax 0/r32/cr0
   66 83 1/subop/or 3/mod/direct 0/rm32/eax 1/imm8  # eax <- or 0x1
@@ -170,7 +184,7 @@
   # far jump to initialize_32bit_mode that sets cs to offset 8 in the gdt in the process
   # We can't refer to the label directly because SubX doesn't have syntax for
   # segment selectors. So we instead pin initialize_32bit_mode below.
-  ea/jump-far-absolute 0x00087d00/disp32  # address 0x7d00 in offset 8 of the gdt
+  ea/jump-far-absolute 0x00087e00/disp32  # address 0x7e00 in offset 8 of the gdt
 
 disk_error:
   # print 'D' to top-left of screen to indicate disk error
@@ -187,7 +201,7 @@ disk_error:
   }
 
 ## GDT: 3 records of 8 bytes each
-== data 0x7ce0
+== data 0x7de0
 gdt_descriptor:
   0x17/imm16  # final index of gdt = size of gdt - 1
   gdt_start/imm32/start
@@ -212,9 +226,15 @@ gdt_start:
   00  # base[24:32]
 # gdt_end:
 
+== boot-sector-marker 0x7dfe
+# final 2 bytes of boot sector
+55 aa
+
+## sector 2 onwards loaded by load_disk, not automatically on boot
+
 ## 32-bit code from this point
 
-== code 0x7d00
+== code 0x7e00
 initialize_32bit_mode:
   66 b8/copy-to-ax 0x10/imm16  # offset 16 from gdt_start
   8e/->seg 3/mod/direct 0/rm32/ax 3/r32/ds
@@ -229,7 +249,7 @@ initialize_32bit_mode:
   # We can't refer to the label directly because SubX doesn't do the right
   # thing for lidt, so rather than make errors worse in most places we instead
   # pin idt_descriptor below.
-  0f 01 3/subop/lidt 0/mod/indirect 5/rm32/use-disp32 0x7e00/disp32/idt_descriptor
+  0f 01 3/subop/lidt 0/mod/indirect 5/rm32/use-disp32 0x7f00/disp32/idt_descriptor
 
   # For now, not bothering reprogramming the IRQ to not conflict with software
   # exceptions.
@@ -259,13 +279,7 @@ initialize_32bit_mode:
 
   e9/jump Entry/disp32
 
-== boot-sector-marker 0x7dfe
-# final 2 bytes of boot sector
-55 aa
-
-## sector 2 onwards loaded by load_disk, not automatically on boot
-
-== data 0x7e00
+== data 0x7f00
 idt_descriptor:
   ff 03  # final index of idt = size of idt - 1
   idt_start/imm32/start
