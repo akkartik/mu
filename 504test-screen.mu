@@ -260,6 +260,7 @@ fn check-background-color-in-screen-row screen: (addr screen), bg: int, y: int, 
 
 fn check-background-color-in-screen-row-from screen-on-stack: (addr screen), bg: int, y: int, x: int, expected-bitmap: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
+  var failure-count: int
   var idx/ecx: int <- screen-cell-index screen, x, y
   # compare background color where 'expected-bitmap' is a non-space
   var e: (stream byte 0x100)
@@ -279,7 +280,7 @@ fn check-background-color-in-screen-row-from screen-on-stack: (addr screen), bg:
         break-if-!=
         compare background-color, bg
         break-if-!= $check-background-color-in-screen-row-from:compare-cells
-        count-test-failure
+        increment failure-count
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected (", 3/fg/cyan, 0/bg
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
@@ -293,7 +294,7 @@ fn check-background-color-in-screen-row-from screen-on-stack: (addr screen), bg:
       # otherwise assert that background IS bg
       compare background-color, bg
       break-if-= $check-background-color-in-screen-row-from:compare-cells
-      count-test-failure
+      increment failure-count
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected (", 3/fg/cyan, 0/bg
       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
@@ -309,6 +310,15 @@ fn check-background-color-in-screen-row-from screen-on-stack: (addr screen), bg:
     increment x
     loop
   }
+  # if any assertions failed, count the test as failed
+  compare failure-count, 0
+  {
+    break-if-=
+    count-test-failure
+    return
+  }
+  # otherwise print a "."
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
 }
 
 fn test-draw-single-grapheme {
