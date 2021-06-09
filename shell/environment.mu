@@ -22,8 +22,11 @@ fn test-environment {
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
-  #
-  type-into-repl env, screen, "(+ 3 4)"  # we don't have any global definitions here, so no macros
+  # type some code into sandbox
+  type-in env, screen, "(+ 3 4)"  # we don't have any global definitions here, so no macros
+  # run code in sandbox
+  edit-environment env, 0x13/ctrl-s, 0/no-disk
+  render-environment screen, env
   #                                                         | global function definitions                                                        | sandbox
   # top row blank for now
   check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-environment/0"
@@ -57,7 +60,9 @@ fn test-definition-in-environment {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   # define a function on the right (sandbox) side
-  type-into-repl env, screen, "(define fn1 (fn() 42))"  # we don't have any global definitions here, so no macros
+  type-in env, screen, "(define fn1 (fn() 42))"  # we don't have any global definitions here, so no macros
+  edit-environment env, 0x13/ctrl-s, 0/no-disk
+  render-environment screen, env
   #                                                         | global function definitions                                                        | sandbox
   check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-definition-in-environment/0"
   # function definition is now on the left side
@@ -75,7 +80,7 @@ fn test-definition-in-environment {
 }
 
 # helper for testing
-fn type-into-repl self: (addr environment), screen: (addr screen), keys: (addr array byte) {
+fn type-in self: (addr environment), screen: (addr screen), keys: (addr array byte) {
   # clear the buffer
   edit-environment self, 0x15/ctrl-u, 0/no-disk
   render-environment screen, self
@@ -92,9 +97,6 @@ fn type-into-repl self: (addr environment), screen: (addr screen), keys: (addr a
     render-environment screen, self
     loop
   }
-  # submit
-  edit-environment self, 0x13/ctrl-s, 0/no-disk
-  render-environment screen, self
 }
 
 fn initialize-environment _self: (addr environment) {
@@ -345,6 +347,82 @@ fn test-function-modal {
   # menu at bottom is correct in context
   check-screen-row                     screen,               0xf/y, " ^r  run main   enter  submit   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                           ", "F - test-function-modal/15-text"
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-function-modal/15"
+}
+
+fn test-leave-function-modal {
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment env
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  # hit ctrl-g
+  edit-environment env, 0x7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  # cancel
+  edit-environment env, 0x1b/escape, 0/no-disk
+  render-environment screen, env
+  # no modal
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-leave-function-modal/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-leave-function-modal/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-leave-function-modal/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-leave-function-modal/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-leave-function-modal/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-leave-function-modal/5"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                                                                                                                ", "F - test-leave-function-modal/6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                                                                                                                ", "F - test-leave-function-modal/7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                                                                                                                ", "F - test-leave-function-modal/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-leave-function-modal/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-leave-function-modal/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-leave-function-modal/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-leave-function-modal/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-leave-function-modal/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-leave-function-modal/14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-leave-function-modal/15"
+}
+
+fn test-jump-to-function {
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment env
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  # define a function
+  type-in env, screen, "(define fn1 (fn() 42))"  # we don't have any global definitions here, so no macros
+  edit-environment env, 0x13/ctrl-s, 0/no-disk
+  render-environment screen, env
+  # hit ctrl-g
+  edit-environment env, 0x7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  # type function name
+  type-in env, screen, "fn1"
+  # submit
+  edit-environment env, 0xa/newline, 0/no-disk
+  render-environment screen, env
+  #                                                                 | global function definitions                                                        | sandbox
+  # cursor now in function definition
+  check-screen-row                     screen,                 1/y, "                                           (define fn1 (fn() 42))                     screen:                                   ", "F - test-jump-to-function/1"
+  check-background-color-in-screen-row screen,   7/bg=cursor,  1/y, "                                                                 |                                                              ", "F - test-jump-to-function/1-cursor"
+  # no modal
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-function/bg0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-jump-to-function/bg1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-jump-to-function/bg2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-jump-to-function/bg3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-jump-to-function/bg4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-jump-to-function/bg5"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                                                                                                                ", "F - test-jump-to-function/bg6"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                                                                                                                ", "F - test-jump-to-function/bg7"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                                                                                                                ", "F - test-jump-to-function/bg8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-jump-to-function/bg9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-jump-to-function/bg10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-jump-to-function/bg11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-jump-to-function/bg12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-jump-to-function/bg13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-jump-to-function/bg14"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-function/bg15"
 }
 
 fn render-function-modal screen: (addr screen), _self: (addr environment) {
