@@ -239,6 +239,25 @@ fn edit-globals _self: (addr global-table), key: grapheme {
   edit-gap-buffer curr-editor, key
 }
 
+fn create-empty-global _self: (addr global-table), name-stream: (addr stream byte), capacity: int {
+  var self/esi: (addr global-table) <- copy _self
+  var final-index-addr/ecx: (addr int) <- get self, final-index
+  increment *final-index-addr
+  var curr-index/ecx: int <- copy *final-index-addr
+  var cursor-index-addr/eax: (addr int) <- get self, cursor-index
+  copy-to *cursor-index-addr, curr-index
+  var data-ah/eax: (addr handle array global) <- get self, data
+  var data/eax: (addr array global) <- lookup *data-ah
+  var curr-offset/ecx: (offset global) <- compute-offset data, curr-index
+  var curr/esi: (addr global) <- index data, curr-offset
+  var curr-name-ah/eax: (addr handle array byte) <- get curr, name
+  stream-to-array name-stream, curr-name-ah
+  var curr-input-ah/eax: (addr handle gap-buffer) <- get curr, input
+  allocate curr-input-ah
+  var curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
+  initialize-gap-buffer curr-input, capacity
+}
+
 fn refresh-cursor-definition _self: (addr global-table) {
   var self/esi: (addr global-table) <- copy _self
   var cursor-index/edx: (addr int) <- get self, cursor-index

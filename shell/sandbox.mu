@@ -14,7 +14,7 @@ fn initialize-sandbox _self: (addr sandbox), fake-screen-and-keyboard?: boolean 
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
   allocate data-ah
   var data/eax: (addr gap-buffer) <- lookup *data-ah
-  initialize-gap-buffer data, 0x2000/8KB
+  initialize-gap-buffer data, 0x2000/default-gap-buffer-size=8KB
   #
   var value-ah/eax: (addr handle stream byte) <- get self, value
   populate-stream value-ah, 0x1000/4KB
