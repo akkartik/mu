@@ -285,10 +285,41 @@ fn refresh-definition _self: (addr global-table), _index: int {
     var nil-ah/eax: (addr handle cell) <- address nil-h
     allocate-pair nil-ah
   }
-  var curr-value-ah/eax: (addr handle cell) <- get curr-global, value
+  var curr-value-ah/edi: (addr handle cell) <- get curr-global, value
   debug-print "GL", 4/fg, 0/bg
   evaluate read-result-ah, curr-value-ah, nil-h, self, trace, 0/no-screen-cell, 0/no-keyboard-cell, 1/call-number
   debug-print "GZ", 4/fg, 0/bg
+  {
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-=
+    return
+  }
+  # update definition name if necessary
+  var curr-global-name-ah/ecx: (addr handle array byte) <- get curr-global, name
+  var _curr-global-name/eax: (addr array byte) <- lookup *curr-global-name-ah
+  var curr-global-name/ebx: (addr array byte) <- copy _curr-global-name
+  var read-result/eax: (addr cell) <- lookup *read-result-ah
+  {
+    var is-definition?/eax: boolean <- is-definition? read-result
+    compare is-definition?, 0/false
+    break-if-!=
+    return
+  }
+  # (no error checking since it's a definition and there were no errors)
+  var rest-ah/eax: (addr handle cell) <- get read-result, right
+  var rest/eax: (addr cell) <- lookup *rest-ah
+  var correct-definition-symbol-ah/eax: (addr handle cell) <- get rest, left
+  var correct-definition-symbol/eax: (addr cell) <- lookup *correct-definition-symbol-ah
+  var correct-definition-name-ah/eax: (addr handle stream byte) <- get correct-definition-symbol, text-data
+  var correct-definition-name/eax: (addr stream byte) <- lookup *correct-definition-name-ah
+  {
+    var still-matches?/eax: boolean <- stream-data-equal? correct-definition-name, curr-global-name
+    compare still-matches?, 0/false
+    break-if-=
+    return
+  }
+  stream-to-array correct-definition-name, curr-global-name-ah
 }
 
 fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {
@@ -493,20 +524,14 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (ad
     break-if-=
     return
   }
-  # if expr->left is neither "define" nor "set", return
-  var left-ah/eax: (addr handle cell) <- get expr, left
-  var _left/eax: (addr cell) <- lookup *left-ah
-  var left/ecx: (addr cell) <- copy _left
+  # if expr is not a definition, return
   {
-    var def?/eax: boolean <- symbol-equal? left, "define"
-    compare def?, 0/false
-    break-if-!=
-    var set?/eax: boolean <- symbol-equal? left, "set"
-    compare set?, 0/false
+    var is-definition?/eax: boolean <- is-definition? expr
+    compare is-definition?, 0/false
     break-if-!=
     return
   }
-  # locate the global for expr->right->left
+  # locate the global for definition->right->left
   var right-ah/eax: (addr handle cell) <- get expr, right
   var right/eax: (addr cell) <- lookup *right-ah
   var defined-symbol-ah/eax: (addr handle cell) <- get right, left
@@ -540,6 +565,27 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (ad
   allocate gap2
   var gap-addr/eax: (addr gap-buffer) <- lookup *gap2
   initialize-gap-buffer gap-addr, capacity
+}
+
+fn is-definition? _expr: (addr cell) -> _/eax: boolean {
+  var expr/eax: (addr cell) <- copy _expr
+  # if expr->left is neither "define" nor "set", return
+  var left-ah/eax: (addr handle cell) <- get expr, left
+  var _left/eax: (addr cell) <- lookup *left-ah
+  var left/ecx: (addr cell) <- copy _left
+  {
+    var def?/eax: boolean <- symbol-equal? left, "define"
+    compare def?, 0/false
+    break-if-=
+    return 1/true
+  }
+  {
+    var set?/eax: boolean <- symbol-equal? left, "set"
+    compare set?, 0/false
+    break-if-=
+    return 1/true
+  }
+  return 0/false
 }
 
 # Accepts an input s-expression, naively checks if it is a definition, and if

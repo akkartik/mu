@@ -767,6 +767,70 @@ fn test-create-nonexistent-global {
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-15"
 }
 
+fn test-create-function-with-new-name {
+  var env-storage: environment
+  var env/esi: (addr environment) <- address env-storage
+  initialize-environment env
+  # setup: screen
+  var screen-on-stack: screen
+  var screen/edi: (addr screen) <- address screen-on-stack
+  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  # claim to create a definition for 'f'
+  edit-environment env, 7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  type-in env, screen, "f"
+  edit-environment env, 0xd/ctrl-m, 0/no-disk
+  render-environment screen, env
+  # actually create definition for 'g'
+  type-in env, screen, "(define g 42)"
+  edit-environment env, 0x13/ctrl-s, 0/no-disk
+  render-environment screen, env
+  # return to sandbox
+  edit-environment env, 7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  edit-environment env, 0xa/newline, 0/no-disk
+  render-environment screen, env
+  # try to jump to 'f'
+  edit-environment env, 7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  type-in env, screen, "f"
+  edit-environment env, 0xa/newline, 0/no-disk
+  render-environment screen, env
+  # fails
+  #                                                                 | global definitions                                                                 | sandbox
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-create-function-with-new-name/0"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   1/y, "                                                                                                                                ", "F - test-create-function-with-new-name/1"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   2/y, "                                                                                                                                ", "F - test-create-function-with-new-name/2"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   3/y, "                                                                                                                                ", "F - test-create-function-with-new-name/3"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   4/y, "                                                                                                                                ", "F - test-create-function-with-new-name/4"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   5/y, "                                                                                                                                ", "F - test-create-function-with-new-name/5"
+  check-screen-row                     screen,                 6/y, "                                    go to global (or leave blank to go to REPL)                                                 ", "F - test-create-function-with-new-name/6-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   6/y, "                                ................................................................                                ", "F - test-create-function-with-new-name/6"
+  check-screen-row-in-color            screen, 4/fg=error,     7/y, "                                no such global                                                                                  ", "F - test-create-function-with-new-name/7-text"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   7/y, "                                ................................................................                                ", "F - test-create-function-with-new-name/7"
+  check-screen-row                     screen,                 8/y, "                                f                                                                                               ", "F - test-create-function-with-new-name/8-text"
+  check-background-color-in-screen-row screen,   0/bg=cursor,  8/y, "                                 |                                                                                              ", "F - test-create-function-with-new-name/8-cursor"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   8/y, "                                . ..............................................................                                ", "F - test-create-function-with-new-name/8"
+  check-background-color-in-screen-row screen, 0xf/bg=modal,   9/y, "                                                                                                                                ", "F - test-create-function-with-new-name/9"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xa/y, "                                                                                                                                ", "F - test-create-function-with-new-name/10"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xb/y, "                                                                                                                                ", "F - test-create-function-with-new-name/11"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xc/y, "                                                                                                                                ", "F - test-create-function-with-new-name/12"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xd/y, "                                                                                                                                ", "F - test-create-function-with-new-name/13"
+  check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-create-function-with-new-name/14"
+  # jump to 'g'
+  edit-environment env, 0x1b/escape, 0/no-disk
+  render-environment screen, env
+  edit-environment env, 7/ctrl-g, 0/no-disk
+  render-environment screen, env
+  type-in env, screen, "g"
+  edit-environment env, 0xa/newline, 0/no-disk
+  render-environment screen, env
+  # succeeds
+  #                                                                 | global function definitions                                                        | sandbox
+  check-screen-row                     screen,                 1/y, "                                g                                                                                               ", "F - test-create-function-with-new-name/test2"
+  check-background-color-in-screen-row screen,   7/bg=cursor,  1/y, "                                 |                                                                                              ", "F - test-create-function-with-new-name/test2-cursor"
+}
+
 fn render-go-modal screen: (addr screen), _self: (addr environment) {
   var self/esi: (addr environment) <- copy _self
   var width/eax: int <- copy 0
