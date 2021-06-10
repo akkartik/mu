@@ -667,13 +667,14 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
     break-if-=
     return
   }
+  clear-stream out
+  print-cell eval-result-ah, out, trace
+  # refresh various rendering caches
+  mark-lines-dirty trace
   # if there was no error and the read-result starts with "set" or "def", save
   # the gap buffer in the modified global, then create a new one for the next
   # command.
   maybe-stash-gap-buffer-to-global globals, read-result-ah, _in-ah
-  clear-stream out
-  print-cell eval-result-ah, out, trace
-  mark-lines-dirty trace
 }
 
 fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: (addr global-table), definition-name: (addr stream byte) {
