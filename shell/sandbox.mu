@@ -659,7 +659,9 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
 #?   set-cursor-position 0/screen, 0 0
 #?   turn-on-debug-print
   debug-print "^", 4/fg, 0/bg
-  evaluate read-result-ah, eval-result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, 0/definitions-created, 1/call-number
+  var definitions-created-storage: (stream int 0x10)
+  var definitions-created/ecx: (addr stream int) <- address definitions-created-storage
+  evaluate read-result-ah, eval-result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, definitions-created, 1/call-number
   debug-print "$", 4/fg, 0/bg
   var error?/eax: boolean <- has-errors? trace
   {
@@ -671,14 +673,19 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
   print-cell eval-result-ah, out, trace
   # refresh various rendering caches
   mark-lines-dirty trace
-  # if there was no error and the read-result starts with "set" or "def", save
-  # the gap buffer in the modified global, then create a new one for the next
-  # command.
-  var stashed?/eax: boolean <- maybe-stash-gap-buffer-to-global globals, read-result-ah, _in-ah
+  # If any definitions were created or modified in the process, link this gap
+  # buffer to them.
+  # TODO: detect and create UI for conflicts.
+  stash-gap-buffer-to-globals globals, definitions-created, _in-ah
   # if necessary, initialize a new gap-buffer in 'gap'
   {
-    compare stashed?, 0/false
+    compare globals, 0
     break-if-=
+    rewind-stream definitions-created
+    var no-definitions?/eax: boolean <- stream-empty? definitions-created
+    compare no-definitions?, 0/false
+    break-if-!=
+    # some definitions were created; clear the gap buffer
     var in-ah/edi: (addr handle gap-buffer) <- copy _in-ah
     var in/eax: (addr gap-buffer) <- lookup *in-ah
     var capacity/ecx: int <- gap-buffer-capacity in

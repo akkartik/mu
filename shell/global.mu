@@ -516,54 +516,32 @@ fn mutate-binding-in-globals name: (addr stream byte), val: (addr handle cell), 
   error-stream trace, stream
 }
 
-# Accepts an input s-expression, naively checks if it is a definition, and if
-# so saves the gap-buffer to the appropriate global.
-# Return true if stashed.
-fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (addr handle cell), gap: (addr handle gap-buffer) -> _/eax: boolean {
-  # if 'expr' is not a pair, return
-  var expr-ah/eax: (addr handle cell) <- copy _expr-ah
-  var _expr/eax: (addr cell) <- lookup *expr-ah
-  var expr/esi: (addr cell) <- copy _expr
-  var expr-type/eax: (addr int) <- get expr, type
-  compare *expr-type, 0/pair
-  {
-    break-if-=
-    return 0/false
-  }
-  # if expr is not a definition, return
-  {
-    var is-definition?/eax: boolean <- is-definition? expr
-    compare is-definition?, 0/false
-    break-if-!=
-    return 0/false
-  }
-  # locate the global for definition->right->left
-  var right-ah/eax: (addr handle cell) <- get expr, right
-  var right/eax: (addr cell) <- lookup *right-ah
-  var defined-symbol-ah/eax: (addr handle cell) <- get right, left
-  var defined-symbol/eax: (addr cell) <- lookup *defined-symbol-ah
-  var defined-symbol-name-ah/eax: (addr handle stream byte) <- get defined-symbol, text-data
-  var defined-symbol-name/eax: (addr stream byte) <- lookup *defined-symbol-name-ah
-  var index/ecx: int <- find-symbol-in-globals _globals, defined-symbol-name
-  {
-    compare index, -1/not-found
-    break-if-!=
-    return 0/false
-  }
-  # stash 'gap' to it
+fn stash-gap-buffer-to-globals _globals: (addr global-table), definitions: (addr stream int), gap: (addr handle gap-buffer) {
   var globals/eax: (addr global-table) <- copy _globals
   compare globals, 0
   {
     break-if-!=
-    abort "stash to globals"
+    return
   }
   var global-data-ah/eax: (addr handle array global) <- get globals, data
   var global-data/eax: (addr array global) <- lookup *global-data-ah
-  var offset/ebx: (offset global) <- compute-offset global-data, index
-  var dest-global/eax: (addr global) <- index global-data, offset
-  var dest-ah/eax: (addr handle gap-buffer) <- get dest-global, input
-  copy-object gap, dest-ah
-  return 1/true
+  rewind-stream definitions
+  {
+    {
+      var done?/eax: boolean <- stream-empty? definitions
+      compare done?, 0/false
+    }
+    break-if-!=
+    var index: int
+    var index-addr/ecx: (addr int) <- address index
+    read-from-stream definitions, index-addr
+    var index/ecx: int <- copy *index-addr
+    var offset/ebx: (offset global) <- compute-offset global-data, index
+    var dest-global/eax: (addr global) <- index global-data, offset
+    var dest-ah/eax: (addr handle gap-buffer) <- get dest-global, input
+    copy-object gap, dest-ah
+    loop
+  }
 }
 
 fn is-definition? _expr: (addr cell) -> _/eax: boolean {
