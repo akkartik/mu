@@ -565,6 +565,42 @@ fn is-definition? _expr: (addr cell) -> _/eax: boolean {
   return 0/false
 }
 
+fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: (addr global-table), definition-name: (addr stream byte) {
+  var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
+  var in/eax: (addr gap-buffer) <- lookup *in-ah
+  var read-result-h: (handle cell)
+  var read-result-ah/esi: (addr handle cell) <- address read-result-h
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  read-cell in, read-result-ah, trace
+  macroexpand read-result-ah, globals, trace
+  var nil-storage: (handle cell)
+  var nil-ah/eax: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  var eval-result-storage: (handle cell)
+  var eval-result/edi: (addr handle cell) <- address eval-result-storage
+  debug-print "^", 4/fg, 0/bg
+  evaluate read-result-ah, eval-result, *nil-ah, globals, trace, 0/no-screen-cell, 0/no-keyboard-cell, 0/definitions-created, 1/call-number
+  {
+    var error?/eax: boolean <- has-errors? trace
+    compare error?, 0/false
+    break-if-=
+    set-cursor-position 0/screen, 0x40/x, 0x18/y
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "error when loading definition for ", 4/fg 0/bg
+    rewind-stream definition-name
+    draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, definition-name, 3/fg 0/bg
+    set-cursor-position 0/screen, 0x40/x, 0x19/y
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "see trace in grey at top-left", 7/fg 0/bg
+    dump-trace trace  # will print from 0, 0
+    {
+      loop
+    }
+  }
+  debug-print "$", 4/fg, 0/bg
+  move-gap-buffer-to-global globals, read-result-ah, _in-ah
+}
+
 # Accepts an input s-expression, naively checks if it is a definition, and if
 # so saves the gap-buffer to the appropriate global.
 fn move-gap-buffer-to-global _globals: (addr global-table), _definition-ah: (addr handle cell), gap: (addr handle gap-buffer) {
