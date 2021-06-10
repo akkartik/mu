@@ -327,13 +327,12 @@ fn refresh-definition _self: (addr global-table), _index: int {
   stream-to-array correct-definition-name, curr-global-name-ah
 }
 
-fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) {
+fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) -> _/eax: int {
   var self/esi: (addr global-table) <- copy _self
   compare self, 0
   {
     break-if-!=
     abort "assign global"
-    return
   }
   var curr-index/ecx: int <- find-symbol-name-in-globals self, name
   {
@@ -353,6 +352,7 @@ fn assign-or-create-global _self: (addr global-table), name: (addr array byte), 
   copy-array-object name, curr-name-ah
   var curr-value-ah/eax: (addr handle cell) <- get curr, value
   copy-handle value, curr-value-ah
+  return curr-index
 }
 
 fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {

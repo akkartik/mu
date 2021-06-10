@@ -262,7 +262,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     stream-to-array first-arg-data, tmp-ah
     var first-arg-data-string/eax: (addr array byte) <- lookup *tmp-ah
     var out-ah/edi: (addr handle cell) <- copy _out-ah
-    assign-or-create-global globals, first-arg-data-string, *out-ah, trace
+    var defined-index/eax: int <- assign-or-create-global globals, first-arg-data-string, *out-ah, trace
     trace-higher trace
     return
   }
