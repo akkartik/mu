@@ -292,7 +292,7 @@ fn refresh-definition _self: (addr global-table), _index: int {
   }
   var curr-value-ah/edi: (addr handle cell) <- get curr-global, value
   debug-print "GL", 4/fg, 0/bg
-  evaluate read-result-ah, curr-value-ah, nil-h, self, trace, 0/no-screen-cell, 0/no-keyboard-cell, 1/call-number
+  evaluate read-result-ah, curr-value-ah, nil-h, self, trace, 0/no-screen-cell, 0/no-keyboard-cell, 0/definitions-created, 1/call-number
   debug-print "GZ", 4/fg, 0/bg
   {
     var error?/eax: boolean <- has-errors? trace
@@ -327,7 +327,7 @@ fn refresh-definition _self: (addr global-table), _index: int {
   stream-to-array correct-definition-name, curr-global-name-ah
 }
 
-fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), trace: (addr trace) -> _/eax: int {
+fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), index-updated: (addr int), trace: (addr trace) {
   var self/esi: (addr global-table) <- copy _self
   compare self, 0
   {
@@ -352,7 +352,8 @@ fn assign-or-create-global _self: (addr global-table), name: (addr array byte), 
   copy-array-object name, curr-name-ah
   var curr-value-ah/eax: (addr handle cell) <- get curr, value
   copy-handle value, curr-value-ah
-  return curr-index
+  var index-updated/edi: (addr int) <- copy index-updated
+  copy-to *index-updated, curr-index
 }
 
 fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {

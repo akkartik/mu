@@ -659,7 +659,7 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
 #?   set-cursor-position 0/screen, 0 0
 #?   turn-on-debug-print
   debug-print "^", 4/fg, 0/bg
-  evaluate read-result-ah, eval-result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, 1/call-number
+  evaluate read-result-ah, eval-result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, 0/definitions-created, 1/call-number
   debug-print "$", 4/fg, 0/bg
   var error?/eax: boolean <- has-errors? trace
   {
@@ -692,7 +692,7 @@ fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: 
   var eval-result-storage: (handle cell)
   var eval-result/edi: (addr handle cell) <- address eval-result-storage
   debug-print "^", 4/fg, 0/bg
-  evaluate read-result-ah, eval-result, *nil-ah, globals, trace, 0/no-screen-cell, 0/no-keyboard-cell, 1/call-number
+  evaluate read-result-ah, eval-result, *nil-ah, globals, trace, 0/no-screen-cell, 0/no-keyboard-cell, 0/definitions-created, 1/call-number
   {
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false

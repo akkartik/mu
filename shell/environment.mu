@@ -191,7 +191,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     var trace-storage: trace
     var trace/ebx: (addr trace) <- address trace-storage
     initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
-    evaluate tmp, out-ah, nil, globals, trace, 0/no-fake-screen, 0/no-fake-keyboard, 0/call-number
+    evaluate tmp, out-ah, nil, globals, trace, 0/no-fake-screen, 0/no-fake-keyboard, 0/definitions-created, 0/call-number
     # wait for a keypress
     {
       var tmp/eax: byte <- read-key 0/keyboard
