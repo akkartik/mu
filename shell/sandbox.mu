@@ -674,7 +674,18 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
   # if there was no error and the read-result starts with "set" or "def", save
   # the gap buffer in the modified global, then create a new one for the next
   # command.
-  maybe-stash-gap-buffer-to-global globals, read-result-ah, _in-ah
+  var stashed?/eax: boolean <- maybe-stash-gap-buffer-to-global globals, read-result-ah, _in-ah
+  # if necessary, initialize a new gap-buffer in 'gap'
+  {
+    compare stashed?, 0/false
+    break-if-=
+    var in-ah/edi: (addr handle gap-buffer) <- copy _in-ah
+    var in/eax: (addr gap-buffer) <- lookup *in-ah
+    var capacity/ecx: int <- gap-buffer-capacity in
+    allocate in-ah
+    var new-gap/eax: (addr gap-buffer) <- lookup *in-ah
+    initialize-gap-buffer new-gap, capacity
+  }
 }
 
 fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: (addr global-table), definition-name: (addr stream byte) {

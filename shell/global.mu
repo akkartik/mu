@@ -517,9 +517,9 @@ fn mutate-binding-in-globals name: (addr stream byte), val: (addr handle cell), 
 }
 
 # Accepts an input s-expression, naively checks if it is a definition, and if
-# so saves the gap-buffer to the appropriate global, spinning up a new empty
-# one to replace it with.
-fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (addr handle cell), gap: (addr handle gap-buffer) {
+# so saves the gap-buffer to the appropriate global.
+# Return true if stashed.
+fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (addr handle cell), gap: (addr handle gap-buffer) -> _/eax: boolean {
   # if 'expr' is not a pair, return
   var expr-ah/eax: (addr handle cell) <- copy _expr-ah
   var _expr/eax: (addr cell) <- lookup *expr-ah
@@ -528,14 +528,14 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (ad
   compare *expr-type, 0/pair
   {
     break-if-=
-    return
+    return 0/false
   }
   # if expr is not a definition, return
   {
     var is-definition?/eax: boolean <- is-definition? expr
     compare is-definition?, 0/false
     break-if-!=
-    return
+    return 0/false
   }
   # locate the global for definition->right->left
   var right-ah/eax: (addr handle cell) <- get expr, right
@@ -548,7 +548,7 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (ad
   {
     compare index, -1/not-found
     break-if-!=
-    return
+    return 0/false
   }
   # stash 'gap' to it
   var globals/eax: (addr global-table) <- copy _globals
@@ -556,7 +556,6 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (ad
   {
     break-if-!=
     abort "stash to globals"
-    return
   }
   var global-data-ah/eax: (addr handle array global) <- get globals, data
   var global-data/eax: (addr array global) <- lookup *global-data-ah
@@ -564,13 +563,7 @@ fn maybe-stash-gap-buffer-to-global _globals: (addr global-table), _expr-ah: (ad
   var dest-global/eax: (addr global) <- index global-data, offset
   var dest-ah/eax: (addr handle gap-buffer) <- get dest-global, input
   copy-object gap, dest-ah
-  # initialize a new gap-buffer in 'gap'
-  var dest/eax: (addr gap-buffer) <- lookup *dest-ah
-  var capacity/ecx: int <- gap-buffer-capacity dest
-  var gap2/eax: (addr handle gap-buffer) <- copy gap
-  allocate gap2
-  var gap-addr/eax: (addr gap-buffer) <- lookup *gap2
-  initialize-gap-buffer gap-addr, capacity
+  return 1/true
 }
 
 fn is-definition? _expr: (addr cell) -> _/eax: boolean {
