@@ -281,6 +281,7 @@ fn refresh-cursor-definition _self: (addr global-table) {
   refresh-definition self, *cursor-index
 }
 
+# HERE: reconcile what happens here
 fn refresh-definition _self: (addr global-table), _index: int {
   var self/esi: (addr global-table) <- copy _self
   var data-ah/eax: (addr handle array global) <- get self, data
@@ -594,6 +595,7 @@ fn is-definition? _expr: (addr cell) -> _/eax: boolean {
   return 0/false
 }
 
+# HERE: ..and this
 fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: (addr global-table), definition-name: (addr stream byte) {
   var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
   var in/eax: (addr gap-buffer) <- lookup *in-ah
@@ -632,19 +634,19 @@ fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: 
 
 # Accepts an input s-expression, naively checks if it is a definition, and if
 # so saves the gap-buffer to the appropriate global.
-fn move-gap-buffer-to-global _globals: (addr global-table), _definition-ah: (addr handle cell), gap: (addr handle gap-buffer) {
-  # if 'definition' is not a pair, return
-  var definition-ah/eax: (addr handle cell) <- copy _definition-ah
-  var _definition/eax: (addr cell) <- lookup *definition-ah
-  var definition/esi: (addr cell) <- copy _definition
-  var definition-type/eax: (addr int) <- get definition, type
-  compare *definition-type, 0/pair
+fn move-gap-buffer-to-global _globals: (addr global-table), _read-result-ah: (addr handle cell), gap: (addr handle gap-buffer) {
+  # if 'read-result' is not a pair, return
+  var read-result-ah/eax: (addr handle cell) <- copy _read-result-ah
+  var _read-result/eax: (addr cell) <- lookup *read-result-ah
+  var read-result/esi: (addr cell) <- copy _read-result
+  var read-result-type/eax: (addr int) <- get read-result, type
+  compare *read-result-type, 0/pair
   {
     break-if-=
     return
   }
-  # if definition->left is neither "define" nor "set", return
-  var left-ah/eax: (addr handle cell) <- get definition, left
+  # if read-result->left is neither "define" nor "set", return
+  var left-ah/eax: (addr handle cell) <- get read-result, left
   var _left/eax: (addr cell) <- lookup *left-ah
   var left/ecx: (addr cell) <- copy _left
   {
@@ -656,8 +658,8 @@ fn move-gap-buffer-to-global _globals: (addr global-table), _definition-ah: (add
     break-if-!=
     return
   }
-  # locate the global for definition->right->left
-  var right-ah/eax: (addr handle cell) <- get definition, right
+  # locate the global for read-result->right->left
+  var right-ah/eax: (addr handle cell) <- get read-result, right
   var right/eax: (addr cell) <- lookup *right-ah
   var defined-symbol-ah/eax: (addr handle cell) <- get right, left
   var defined-symbol/eax: (addr cell) <- lookup *defined-symbol-ah
