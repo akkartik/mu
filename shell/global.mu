@@ -158,18 +158,18 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
       break $render-globals:loop
     }
     {
-      var show-cursor?/edi: boolean <- copy show-cursor?
+      var cursor-in-current-line?: boolean
       {
         compare show-cursor?, 0/false
         break-if-=
         var cursor-index/eax: (addr int) <- get self, cursor-index
         compare *cursor-index, curr-index
-        break-if-=
-        show-cursor? <- copy 0/false
+        break-if-!=
+        copy-to cursor-in-current-line?, 1/true
       }
       var curr-offset/edx: (offset global) <- compute-offset data, curr-index
       var curr/edx: (addr global) <- index data, curr-offset
-      var curr-input-ah/edx: (addr handle gap-buffer) <- get curr, input
+      var curr-input-ah/eax: (addr handle gap-buffer) <- get curr, input
       var _curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
       var curr-input/ebx: (addr gap-buffer) <- copy _curr-input
       compare curr-input, 0
@@ -180,12 +180,12 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
         compare y, y2
         {
           break-if->=
-          x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 1/padding-left, y1, 0x2a/xmax, 0x2f/ymax, show-cursor?, 7/fg=definition, 0xc5/bg=blue-bg
+          x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 1/padding-left, y1, 0x2a/xmax, 0x2f/ymax, cursor-in-current-line?, 7/fg=definition, 0xc5/bg=blue-bg
           y <- add 2
           copy-to y1, y
           break $render-globals:render-global
         }
-        x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 0x2b/xmin, y2, 0x54/xmax, 0x2f/ymax, show-cursor?, 7/fg=definition, 0xc5/bg=blue-bg
+        x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 0x2b/xmin, y2, 0x54/xmax, 0x2f/ymax, cursor-in-current-line?, 7/fg=definition, 0xc5/bg=blue-bg
         y <- add 2
         copy-to y2, y
       }
