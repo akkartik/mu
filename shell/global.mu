@@ -629,62 +629,58 @@ fn read-evaluate-and-move-to-globals _in-ah: (addr handle gap-buffer), globals: 
     }
   }
   debug-print "$", 4/fg, 0/bg
-  move-gap-buffer-to-global globals, read-result-ah, _in-ah
-}
-
-# Accepts an input s-expression, naively checks if it is a definition, and if
-# so saves the gap-buffer to the appropriate global.
-fn move-gap-buffer-to-global _globals: (addr global-table), _read-result-ah: (addr handle cell), gap: (addr handle gap-buffer) {
-  # if 'read-result' is not a pair, return
-  var read-result-ah/eax: (addr handle cell) <- copy _read-result-ah
-  var _read-result/eax: (addr cell) <- lookup *read-result-ah
-  var read-result/esi: (addr cell) <- copy _read-result
-  var read-result-type/eax: (addr int) <- get read-result, type
-  compare *read-result-type, 0/pair
+  # Naively check if read-result is a definition, and if so save the gap-buffer
+  # to the appropriate global.
   {
-    break-if-=
-    return
+    var _read-result/eax: (addr cell) <- lookup *read-result-ah
+    var read-result/esi: (addr cell) <- copy _read-result
+    var read-result-type/eax: (addr int) <- get read-result, type
+    compare *read-result-type, 0/pair
+    {
+      break-if-=
+      return
+    }
+    # if read-result->left is neither "define" nor "set", return
+    var left-ah/eax: (addr handle cell) <- get read-result, left
+    var _left/eax: (addr cell) <- lookup *left-ah
+    var left/ecx: (addr cell) <- copy _left
+    {
+      var def?/eax: boolean <- symbol-equal? left, "define"
+      compare def?, 0/false
+      break-if-!=
+      var set?/eax: boolean <- symbol-equal? left, "set"
+      compare set?, 0/false
+      break-if-!=
+      return
+    }
+    # locate the global for read-result->right->left
+    var right-ah/eax: (addr handle cell) <- get read-result, right
+    var right/eax: (addr cell) <- lookup *right-ah
+    var defined-symbol-ah/eax: (addr handle cell) <- get right, left
+    var defined-symbol/eax: (addr cell) <- lookup *defined-symbol-ah
+    var defined-symbol-name-ah/eax: (addr handle stream byte) <- get defined-symbol, text-data
+    var defined-symbol-name/eax: (addr stream byte) <- lookup *defined-symbol-name-ah
+    var index/ecx: int <- find-symbol-in-globals globals, defined-symbol-name
+    {
+      compare index, -1/not-found
+      break-if-!=
+      return
+    }
+    # move 'gap' to it
+    var globals/eax: (addr global-table) <- copy globals
+    compare globals, 0
+    {
+      break-if-!=
+      abort "move to globals"
+      return
+    }
+    var global-data-ah/eax: (addr handle array global) <- get globals, data
+    var global-data/eax: (addr array global) <- lookup *global-data-ah
+    var offset/ebx: (offset global) <- compute-offset global-data, index
+    var dest-global/eax: (addr global) <- index global-data, offset
+    var dest-ah/eax: (addr handle gap-buffer) <- get dest-global, input
+    copy-object _in-ah, dest-ah
   }
-  # if read-result->left is neither "define" nor "set", return
-  var left-ah/eax: (addr handle cell) <- get read-result, left
-  var _left/eax: (addr cell) <- lookup *left-ah
-  var left/ecx: (addr cell) <- copy _left
-  {
-    var def?/eax: boolean <- symbol-equal? left, "define"
-    compare def?, 0/false
-    break-if-!=
-    var set?/eax: boolean <- symbol-equal? left, "set"
-    compare set?, 0/false
-    break-if-!=
-    return
-  }
-  # locate the global for read-result->right->left
-  var right-ah/eax: (addr handle cell) <- get read-result, right
-  var right/eax: (addr cell) <- lookup *right-ah
-  var defined-symbol-ah/eax: (addr handle cell) <- get right, left
-  var defined-symbol/eax: (addr cell) <- lookup *defined-symbol-ah
-  var defined-symbol-name-ah/eax: (addr handle stream byte) <- get defined-symbol, text-data
-  var defined-symbol-name/eax: (addr stream byte) <- lookup *defined-symbol-name-ah
-  var index/ecx: int <- find-symbol-in-globals _globals, defined-symbol-name
-  {
-    compare index, -1/not-found
-    break-if-!=
-    return
-  }
-  # move 'gap' to it
-  var globals/eax: (addr global-table) <- copy _globals
-  compare globals, 0
-  {
-    break-if-!=
-    abort "move to globals"
-    return
-  }
-  var global-data-ah/eax: (addr handle array global) <- get globals, data
-  var global-data/eax: (addr array global) <- lookup *global-data-ah
-  var offset/ebx: (offset global) <- compute-offset global-data, index
-  var dest-global/eax: (addr global) <- index global-data, offset
-  var dest-ah/eax: (addr handle gap-buffer) <- get dest-global, input
-  copy-object gap, dest-ah
 }
 
 fn set-global-cursor-index _globals: (addr global-table), name-gap: (addr gap-buffer) {
