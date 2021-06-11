@@ -8,6 +8,7 @@ type global {
   name: (handle array byte)
   input: (handle gap-buffer)
   value: (handle cell)
+  trace: (handle trace)
 }
 
 fn initialize-globals _self: (addr global-table) {
@@ -261,6 +262,10 @@ fn create-empty-global _self: (addr global-table), name-stream: (addr stream byt
   allocate curr-input-ah
   var curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
   initialize-gap-buffer curr-input, capacity
+  var trace-ah/eax: (addr handle trace) <- get curr, trace
+  allocate trace-ah
+  var trace/eax: (addr trace) <- lookup *trace-ah
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
 }
 
 fn refresh-cursor-definition _self: (addr global-table) {
@@ -273,18 +278,30 @@ fn refresh-definition _self: (addr global-table), _index: int {
   var self/esi: (addr global-table) <- copy _self
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
-  var index/ecx: int <- copy _index
-  var offset/ecx: (offset global) <- compute-offset data, index
-  var curr-global/ecx: (addr global) <- index data, offset
+  var index/ebx: int <- copy _index
+  var offset/ebx: (offset global) <- compute-offset data, index
+  var curr-global/ebx: (addr global) <- index data, offset
   var curr-input-ah/eax: (addr handle gap-buffer) <- get curr-global, input
-  var curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
+  var _curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
+  var curr-input/edx: (addr gap-buffer) <- copy _curr-input
+  var curr-trace-ah/eax: (addr handle trace) <- get curr-global, trace
+  var curr-trace/eax: (addr trace) <- lookup *curr-trace-ah
   var read-result-h: (handle cell)
-  var read-result-ah/edx: (addr handle cell) <- address read-result-h
-  var trace-storage: trace
-  var trace/ebx: (addr trace) <- address trace-storage
-  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
-  read-cell curr-input, read-result-ah, trace
-  macroexpand read-result-ah, self, trace
+  var read-result-ah/ecx: (addr handle cell) <- address read-result-h
+  read-cell curr-input, read-result-ah, curr-trace
+  {
+    var error?/eax: boolean <- has-errors? curr-trace
+    compare error?, 0/false
+    break-if-=
+    return
+  }
+  macroexpand read-result-ah, self, curr-trace
+  {
+    var error?/eax: boolean <- has-errors? curr-trace
+    compare error?, 0/false
+    break-if-=
+    return
+  }
   var nil-h: (handle cell)
   {
     var nil-ah/eax: (addr handle cell) <- address nil-h
@@ -292,16 +309,16 @@ fn refresh-definition _self: (addr global-table), _index: int {
   }
   var curr-value-ah/edi: (addr handle cell) <- get curr-global, value
   debug-print "GL", 4/fg, 0/bg
-  evaluate read-result-ah, curr-value-ah, nil-h, self, trace, 0/no-screen-cell, 0/no-keyboard-cell, 0/definitions-created, 1/call-number
+  evaluate read-result-ah, curr-value-ah, nil-h, self, curr-trace, 0/no-screen-cell, 0/no-keyboard-cell, 0/definitions-created, 1/call-number
   debug-print "GZ", 4/fg, 0/bg
   {
-    var error?/eax: boolean <- has-errors? trace
+    var error?/eax: boolean <- has-errors? curr-trace
     compare error?, 0/false
     break-if-=
     return
   }
   # update definition name if necessary
-  var curr-global-name-ah/ecx: (addr handle array byte) <- get curr-global, name
+  var curr-global-name-ah/edx: (addr handle array byte) <- get curr-global, name
   var _curr-global-name/eax: (addr array byte) <- lookup *curr-global-name-ah
   var curr-global-name/ebx: (addr array byte) <- copy _curr-global-name
   var read-result/eax: (addr cell) <- lookup *read-result-ah
@@ -354,6 +371,10 @@ fn assign-or-create-global _self: (addr global-table), name: (addr array byte), 
   copy-handle value, curr-value-ah
   var index-updated/edi: (addr int) <- copy index-updated
   copy-to *index-updated, curr-index
+  var trace-ah/eax: (addr handle trace) <- get curr, trace
+  allocate trace-ah
+  var trace/eax: (addr trace) <- lookup *trace-ah
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
 }
 
 fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
