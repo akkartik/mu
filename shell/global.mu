@@ -174,6 +174,9 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
       var curr-input/ebx: (addr gap-buffer) <- copy _curr-input
       compare curr-input, 0
       break-if-=
+      var curr-trace-ah/eax: (addr handle trace) <- get curr, trace
+      var _curr-trace/eax: (addr trace) <- lookup *curr-trace-ah
+      var curr-trace/edx: (addr trace) <- copy _curr-trace
       $render-globals:render-global: {
         var x/eax: int <- copy 0
         var y/ecx: int <- copy y1
@@ -181,12 +184,16 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
         {
           break-if->=
           x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 1/padding-left, y1, 0x2a/xmax, 0x2f/ymax, cursor-in-current-line?, 7/fg=definition, 0xc5/bg=blue-bg
-          y <- add 2
+          y <- increment
+          y <- render-trace screen, curr-trace, 1/padding-left, y, 0x2a/xmax, 0x2f/ymax, 0/no-cursor
+          y <- increment
           copy-to y1, y
           break $render-globals:render-global
         }
         x, y <- render-gap-buffer-wrapping-right-then-down screen, curr-input, 0x2b/xmin, y2, 0x54/xmax, 0x2f/ymax, cursor-in-current-line?, 7/fg=definition, 0xc5/bg=blue-bg
-        y <- add 2
+        y <- increment
+        y <- render-trace screen, curr-trace, 0x2b/xmin, y, 0x54/xmax, 0x2f/ymax, 0/no-cursor
+        y <- increment
         copy-to y2, y
       }
     }
@@ -286,6 +293,7 @@ fn refresh-definition _self: (addr global-table), _index: int {
   var curr-input/edx: (addr gap-buffer) <- copy _curr-input
   var curr-trace-ah/eax: (addr handle trace) <- get curr-global, trace
   var curr-trace/eax: (addr trace) <- lookup *curr-trace-ah
+  clear-trace curr-trace
   var read-result-h: (handle cell)
   var read-result-ah/ecx: (addr handle cell) <- address read-result-h
   read-cell curr-input, read-result-ah, curr-trace
