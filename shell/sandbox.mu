@@ -632,7 +632,7 @@ fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   var keyboard-cell/eax: (addr handle cell) <- get self, keyboard-var
   rewind-keyboard-cell keyboard-cell  # don't clear keys from before
   #
-  read-evaluate-and-save-gap-buffer-to-globals data-ah, eval-result-ah, globals, definitions-created, trace, screen-cell, keyboard-cell
+  read-and-evaluate-and-save-gap-buffer-to-globals data-ah, eval-result-ah, globals, definitions-created, trace, screen-cell, keyboard-cell
   # if necessary, initialize a new gap-buffer for sandbox
   {
     compare globals, 0
