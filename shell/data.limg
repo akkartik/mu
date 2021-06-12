@@ -208,35 +208,15 @@
                 13 36 37 5 108))])
     (palette . [(def (palette p i)
   (nth (% i (len p)) p))])
-    (task . [(def (task screen keyboard)
-  (let width (width screen)
-  (let t (/ width 3)
-  (let height (height screen)
-  (let (i y) '(1 0)
-    (while (< y height)
-      (hline1 screen y 0 t
-          # color
-          (if (= 0 (% i 3))
-            10
-            7))
-      (hline1 screen y t (* 2 t)
-          # color
-          (if (= 0 (% i 5))
-            12
-            7))
-      (hline1 screen y (* 2 t) (* 3 t)
-          # color
-          (if (= 0 (% i 3))
-            (if (= 0 (% i 5))
-              14
-              10)
-            (if (= 0 (% i 5))
-              12
-              7)))
-      (+= y 3)
-      (++ i)))))))])
+    (task . [(def (task screen)
+  (let w (width screen)
+  (let h (height screen)
+  (for y 0 (< y h) (++ y)
+    (for x 0 (< x w) (++ x)
+      (pixel screen x y
+             (palette Pinks (+ (sq x) (cube y)))))))))])
     (main . [(def (main screen keyboard)
-  (task screen keyboard))])
+  (task screen))])
   ))
-  (sandbox . (task screen keyboard))
+  (sandbox . (task screen))
 )
