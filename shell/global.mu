@@ -290,7 +290,7 @@ fn refresh-definition _self: (addr global-table), _index: int {
   var curr-value-ah/edi: (addr handle cell) <- get curr-global, value
   var definitions-created-storage: (stream int 0x10)
   var definitions-created/ecx: (addr stream int) <- address definitions-created-storage
-  read-and-evaluate-and-save-gap-buffer-to-globals curr-input-ah, curr-value-ah, self, definitions-created, curr-trace, 0/no-screen, 0/no-keyboard
+  read-and-evaluate-and-save-gap-buffer-to-globals curr-input-ah, curr-value-ah, self, definitions-created, curr-trace, 0/no-inner-screen-var, 0/no-inner-keyboard-var, 0/unused-outer-screen, 0/unused-outer-keyboard
 }
 
 fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), index-updated: (addr int), trace: (addr trace) {
@@ -547,7 +547,7 @@ fn load-lexical-scope in-ah: (addr handle gap-buffer), _globals: (addr global-ta
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   var dummy-result-h: (handle cell)
   var dummy-result-ah/ecx: (addr handle cell) <- address dummy-result-h
-  read-and-evaluate-and-save-gap-buffer-to-globals in-ah, dummy-result-ah, globals, definitions-created, trace, 0/no-inner-screen-var, 0/no-inner-keyboard-var
+  read-and-evaluate-and-save-gap-buffer-to-globals in-ah, dummy-result-ah, globals, definitions-created, trace, 0/no-inner-screen-var, 0/no-inner-keyboard-var, 0/unused-outer-screen, 0/unused-outer-keyboard
   #
   # save trace to all needed globals as well
   rewind-stream definitions-created
