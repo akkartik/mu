@@ -592,91 +592,15 @@ fn is-definition? _expr: (addr cell) -> _/eax: boolean {
 }
 
 # HERE: ..and this
-fn read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals _in-ah: (addr handle gap-buffer), globals: (addr global-table), definition-name: (addr stream byte) {
-  var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
-  var in/eax: (addr gap-buffer) <- lookup *in-ah
-  var read-result-h: (handle cell)
-  var read-result-ah/esi: (addr handle cell) <- address read-result-h
+fn read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals in-ah: (addr handle gap-buffer), globals: (addr global-table), definition-name: (addr stream byte) {
+  var definitions-created-storage: (stream int 0x10)
+  var definitions-created/ebx: (addr stream int) <- address definitions-created-storage
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
-  read-cell in, read-result-ah, trace
-  macroexpand read-result-ah, globals, trace
-  var nil-storage: (handle cell)
-  var nil-ah/eax: (addr handle cell) <- address nil-storage
-  allocate-pair nil-ah
-  var eval-result-storage: (handle cell)
-  var eval-result/edi: (addr handle cell) <- address eval-result-storage
-  debug-print "^", 4/fg, 0/bg
-  evaluate read-result-ah, eval-result, *nil-ah, globals, trace, 0/no-screen-cell, 0/no-keyboard-cell, 0/definitions-created, 1/call-number
-  {
-    var error?/eax: boolean <- has-errors? trace
-    compare error?, 0/false
-    break-if-=
-    set-cursor-position 0/screen, 0x40/x, 0x18/y
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "error when loading definition for ", 4/fg 0/bg
-    rewind-stream definition-name
-    draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, definition-name, 3/fg 0/bg
-    set-cursor-position 0/screen, 0x40/x, 0x19/y
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "see trace in grey at top-left", 7/fg 0/bg
-    dump-trace trace  # will print from 0, 0
-    {
-      loop
-    }
-  }
-  debug-print "$", 4/fg, 0/bg
-  # Naively check if read-result is a definition, and if so save the gap-buffer
-  # to the appropriate global.
-  {
-    var _read-result/eax: (addr cell) <- lookup *read-result-ah
-    var read-result/esi: (addr cell) <- copy _read-result
-    var read-result-type/eax: (addr int) <- get read-result, type
-    compare *read-result-type, 0/pair
-    {
-      break-if-=
-      return
-    }
-    # if read-result->left is neither "define" nor "set", return
-    var left-ah/eax: (addr handle cell) <- get read-result, left
-    var _left/eax: (addr cell) <- lookup *left-ah
-    var left/ecx: (addr cell) <- copy _left
-    {
-      var def?/eax: boolean <- symbol-equal? left, "define"
-      compare def?, 0/false
-      break-if-!=
-      var set?/eax: boolean <- symbol-equal? left, "set"
-      compare set?, 0/false
-      break-if-!=
-      return
-    }
-    # locate the global for read-result->right->left
-    var right-ah/eax: (addr handle cell) <- get read-result, right
-    var right/eax: (addr cell) <- lookup *right-ah
-    var defined-symbol-ah/eax: (addr handle cell) <- get right, left
-    var defined-symbol/eax: (addr cell) <- lookup *defined-symbol-ah
-    var defined-symbol-name-ah/eax: (addr handle stream byte) <- get defined-symbol, text-data
-    var defined-symbol-name/eax: (addr stream byte) <- lookup *defined-symbol-name-ah
-    var index/ecx: int <- find-symbol-in-globals globals, defined-symbol-name
-    {
-      compare index, -1/not-found
-      break-if-!=
-      return
-    }
-    # move 'gap' to it
-    var globals/eax: (addr global-table) <- copy globals
-    compare globals, 0
-    {
-      break-if-!=
-      abort "move to globals"
-      return
-    }
-    var global-data-ah/eax: (addr handle array global) <- get globals, data
-    var global-data/eax: (addr array global) <- lookup *global-data-ah
-    var offset/ebx: (offset global) <- compute-offset global-data, index
-    var dest-global/eax: (addr global) <- index global-data, offset
-    var dest-ah/eax: (addr handle gap-buffer) <- get dest-global, input
-    copy-object _in-ah, dest-ah
-  }
+  var dummy-result-h: (handle cell)
+  var dummy-result-ah/ecx: (addr handle cell) <- address dummy-result-h
+  read-and-evaluate-and-save-gap-buffer-to-globals in-ah, dummy-result-ah, globals, definitions-created, trace, 0/no-screen-cell, 0/no-keyboard-cell
 }
 
 fn set-global-cursor-index _globals: (addr global-table), name-gap: (addr gap-buffer) {
