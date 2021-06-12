@@ -774,13 +774,21 @@ fn apply-car _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
     return
   }
   # args->left
-  var first-ah/eax: (addr handle cell) <- get args, left
+  var first-ah/edx: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
   var first-type/ecx: (addr int) <- get first, type
   compare *first-type, 0/pair
   {
     break-if-=
     error trace, "arg for car is not a pair"
+    return
+  }
+  # nil? return nil
+  {
+    var nil?/eax: boolean <- nil? first
+    compare nil?, 0/false
+    break-if-=
+    copy-object first-ah, out
     return
   }
   # car
@@ -802,13 +810,21 @@ fn apply-cdr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
     return
   }
   # args->left
-  var first-ah/eax: (addr handle cell) <- get args, left
+  var first-ah/edx: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
   var first-type/ecx: (addr int) <- get first, type
   compare *first-type, 0/pair
   {
     break-if-=
     error trace, "arg for cdr is not a pair"
+    return
+  }
+  # nil? return nil
+  {
+    var nil?/eax: boolean <- nil? first
+    compare nil?, 0/false
+    break-if-=
+    copy-object first-ah, out
     return
   }
   # cdr
