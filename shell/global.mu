@@ -56,7 +56,7 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     var value-gap-buffer/eax: (addr gap-buffer) <- lookup *value-gap-buffer-ah
     initialize-gap-buffer value-gap-buffer, 0x1000/4KB
     load-gap-buffer-from-stream value-gap-buffer, value-data
-    read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals value-gap-buffer-ah, self, name-data
+    read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals value-gap-buffer-ah, self
     loop
   }
   move-cursor-to-left-margin-of-next-line 0/screen
@@ -592,7 +592,7 @@ fn is-definition? _expr: (addr cell) -> _/eax: boolean {
 }
 
 # HERE: ..and this
-fn read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals in-ah: (addr handle gap-buffer), globals: (addr global-table), definition-name: (addr stream byte) {
+fn read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals in-ah: (addr handle gap-buffer), globals: (addr global-table) {
   var definitions-created-storage: (stream int 0x10)
   var definitions-created/ebx: (addr stream int) <- address definitions-created-storage
   var trace-storage: trace
