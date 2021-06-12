@@ -614,7 +614,6 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
   }
 }
 
-# hack: tweak-real-screen guards things there are no tests for
 fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   var self/esi: (addr sandbox) <- copy _self
   var data-ah/ecx: (addr handle gap-buffer) <- get self, data
