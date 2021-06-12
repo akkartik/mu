@@ -591,15 +591,37 @@ fn is-definition? _expr: (addr cell) -> _/eax: boolean {
 }
 
 # HERE: ..and this
-fn read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals in-ah: (addr handle gap-buffer), globals: (addr global-table) {
+fn read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals in-ah: (addr handle gap-buffer), _globals: (addr global-table) {
+  var globals/esi: (addr global-table) <- copy _globals
   var definitions-created-storage: (stream int 0x10)
   var definitions-created/ebx: (addr stream int) <- address definitions-created-storage
-  var trace-storage: trace
-  var trace/edx: (addr trace) <- address trace-storage
+  var trace-h: (handle trace)
+  var trace-ah/edx: (addr handle trace) <- address trace-h
+  allocate trace-ah
+  var trace/eax: (addr trace) <- lookup *trace-ah
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   var dummy-result-h: (handle cell)
   var dummy-result-ah/ecx: (addr handle cell) <- address dummy-result-h
   read-and-evaluate-and-save-gap-buffer-to-globals in-ah, dummy-result-ah, globals, definitions-created, trace, 0/no-screen-cell, 0/no-keyboard-cell
+  #
+  # save trace to all needed globals as well
+  rewind-stream definitions-created
+  var globals-data-ah/eax: (addr handle array global) <- get globals, data
+  var _globals-data/eax: (addr array global) <- lookup *globals-data-ah
+  var globals-data/edi: (addr array global) <- copy _globals-data
+  {
+    var no-definitions?/eax: boolean <- stream-empty? definitions-created
+    compare no-definitions?, 0/false
+    break-if-!=
+    var curr-index: int
+    var curr-index-a/eax: (addr int) <- address curr-index
+    read-from-stream definitions-created, curr-index-a
+    var curr-offset/eax: (offset global) <- compute-offset globals-data, curr-index
+    var curr-global/ecx: (addr global) <- index globals-data, curr-offset
+    var curr-trace-ah/eax: (addr handle trace) <- get curr-global, trace
+    copy-object trace-ah, curr-trace-ah
+    loop
+  }
 }
 
 fn set-global-cursor-index _globals: (addr global-table), name-gap: (addr gap-buffer) {
