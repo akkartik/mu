@@ -371,6 +371,47 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
   edit-sandbox sandbox, key, globals, data-disk
 }
 
+fn read-evaluate-and-save-to-globals _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), definitions-created: (addr stream int), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+  var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
+  var in/eax: (addr gap-buffer) <- lookup *in-ah
+  var read-result-h: (handle cell)
+  var read-result-ah/esi: (addr handle cell) <- address read-result-h
+  read-cell in, read-result-ah, trace
+  var error?/eax: boolean <- has-errors? trace
+  {
+    compare error?, 0/false
+    break-if-=
+    return
+  }
+  macroexpand read-result-ah, globals, trace
+  var error?/eax: boolean <- has-errors? trace
+  {
+    compare error?, 0/false
+    break-if-=
+    return
+  }
+  var nil-h: (handle cell)
+  var nil-ah/eax: (addr handle cell) <- address nil-h
+  allocate-pair nil-ah
+#?   set-cursor-position 0/screen, 0 0
+#?   turn-on-debug-print
+  debug-print "^", 4/fg, 0/bg
+  evaluate read-result-ah, result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, definitions-created, 1/call-number
+  debug-print "$", 4/fg, 0/bg
+  var error?/eax: boolean <- has-errors? trace
+  {
+    compare error?, 0/false
+    break-if-=
+    return
+  }
+  # refresh various rendering caches
+  mark-lines-dirty trace
+  # If any definitions were created or modified in the process, link this gap
+  # buffer to them.
+  # TODO: detect and create UI for conflicts.
+  stash-gap-buffer-to-globals globals, definitions-created, _in-ah
+}
+
 fn test-go-modal {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
