@@ -56,7 +56,7 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     var value-gap-buffer/eax: (addr gap-buffer) <- lookup *value-gap-buffer-ah
     initialize-gap-buffer value-gap-buffer, 0x1000/4KB
     load-gap-buffer-from-stream value-gap-buffer, value-data
-    read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals value-gap-buffer-ah, self
+    load-lexical-scope value-gap-buffer-ah, self
     loop
   }
   move-cursor-to-left-margin-of-next-line 0/screen
@@ -535,7 +535,8 @@ fn is-definition? _expr: (addr cell) -> _/eax: boolean {
   return 0/false
 }
 
-fn read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals in-ah: (addr handle gap-buffer), _globals: (addr global-table) {
+# load all bindings in a single lexical scope, aka gap buffer of the environment, aka file of the file system
+fn load-lexical-scope in-ah: (addr handle gap-buffer), _globals: (addr global-table) {
   var globals/esi: (addr global-table) <- copy _globals
   var definitions-created-storage: (stream int 0x10)
   var definitions-created/ebx: (addr stream int) <- address definitions-created-storage
