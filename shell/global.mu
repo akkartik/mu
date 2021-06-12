@@ -276,7 +276,6 @@ fn refresh-cursor-definition _self: (addr global-table) {
   refresh-definition self, *cursor-index
 }
 
-# HERE: reconcile what happens here
 fn refresh-definition _self: (addr global-table), _index: int {
   var self/esi: (addr global-table) <- copy _self
   var data-ah/eax: (addr handle array global) <- get self, data
@@ -284,68 +283,14 @@ fn refresh-definition _self: (addr global-table), _index: int {
   var index/ebx: int <- copy _index
   var offset/ebx: (offset global) <- compute-offset data, index
   var curr-global/ebx: (addr global) <- index data, offset
-  var curr-input-ah/eax: (addr handle gap-buffer) <- get curr-global, input
-  var _curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
-  var curr-input/edx: (addr gap-buffer) <- copy _curr-input
+  var curr-input-ah/edx: (addr handle gap-buffer) <- get curr-global, input
   var curr-trace-ah/eax: (addr handle trace) <- get curr-global, trace
   var curr-trace/eax: (addr trace) <- lookup *curr-trace-ah
   clear-trace curr-trace
-  var read-result-h: (handle cell)
-  var read-result-ah/ecx: (addr handle cell) <- address read-result-h
-  read-cell curr-input, read-result-ah, curr-trace
-  {
-    var error?/eax: boolean <- has-errors? curr-trace
-    compare error?, 0/false
-    break-if-=
-    return
-  }
-  macroexpand read-result-ah, self, curr-trace
-  {
-    var error?/eax: boolean <- has-errors? curr-trace
-    compare error?, 0/false
-    break-if-=
-    return
-  }
-  var nil-h: (handle cell)
-  {
-    var nil-ah/eax: (addr handle cell) <- address nil-h
-    allocate-pair nil-ah
-  }
   var curr-value-ah/edi: (addr handle cell) <- get curr-global, value
-  debug-print "GL", 4/fg, 0/bg
-  evaluate read-result-ah, curr-value-ah, nil-h, self, curr-trace, 0/no-screen-cell, 0/no-keyboard-cell, 0/definitions-created, 1/call-number
-  debug-print "GZ", 4/fg, 0/bg
-  {
-    var error?/eax: boolean <- has-errors? curr-trace
-    compare error?, 0/false
-    break-if-=
-    return
-  }
-  # update definition name if necessary
-  var curr-global-name-ah/edx: (addr handle array byte) <- get curr-global, name
-  var _curr-global-name/eax: (addr array byte) <- lookup *curr-global-name-ah
-  var curr-global-name/ebx: (addr array byte) <- copy _curr-global-name
-  var read-result/eax: (addr cell) <- lookup *read-result-ah
-  {
-    var is-definition?/eax: boolean <- is-definition? read-result
-    compare is-definition?, 0/false
-    break-if-!=
-    return
-  }
-  # (no error checking since it's a definition and there were no errors)
-  var rest-ah/eax: (addr handle cell) <- get read-result, right
-  var rest/eax: (addr cell) <- lookup *rest-ah
-  var correct-definition-symbol-ah/eax: (addr handle cell) <- get rest, left
-  var correct-definition-symbol/eax: (addr cell) <- lookup *correct-definition-symbol-ah
-  var correct-definition-name-ah/eax: (addr handle stream byte) <- get correct-definition-symbol, text-data
-  var correct-definition-name/eax: (addr stream byte) <- lookup *correct-definition-name-ah
-  {
-    var still-matches?/eax: boolean <- stream-data-equal? correct-definition-name, curr-global-name
-    compare still-matches?, 0/false
-    break-if-=
-    return
-  }
-  stream-to-array correct-definition-name, curr-global-name-ah
+  var definitions-created-storage: (stream int 0x10)
+  var definitions-created/ecx: (addr stream int) <- address definitions-created-storage
+  read-and-evaluate-and-save-gap-buffer-to-globals curr-input-ah, curr-value-ah, self, definitions-created, curr-trace, 0/no-screen, 0/no-keyboard
 }
 
 fn assign-or-create-global _self: (addr global-table), name: (addr array byte), value: (handle cell), index-updated: (addr int), trace: (addr trace) {
@@ -590,7 +535,6 @@ fn is-definition? _expr: (addr cell) -> _/eax: boolean {
   return 0/false
 }
 
-# HERE: ..and this
 fn read-and-evaluate-and-save-gap-buffer-and-save-trace-to-globals in-ah: (addr handle gap-buffer), _globals: (addr global-table) {
   var globals/esi: (addr global-table) <- copy _globals
   var definitions-created-storage: (stream int 0x10)
