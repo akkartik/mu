@@ -161,7 +161,7 @@ fn new-fake-screen _out: (addr handle cell), width: int, height: int, pixel-grap
   initialize-screen dest-addr, width, height, pixel-graphics?
 }
 
-fn clear-screen-cell _self-ah: (addr handle cell) {
+fn clear-screen-var _self-ah: (addr handle cell) {
   var self-ah/eax: (addr handle cell) <- copy _self-ah
   var self/eax: (addr cell) <- lookup *self-ah
   compare self, 0
@@ -192,7 +192,7 @@ fn new-fake-keyboard _out: (addr handle cell), capacity: int {
   initialize-gap-buffer dest-addr, capacity
 }
 
-fn rewind-keyboard-cell _self-ah: (addr handle cell) {
+fn rewind-keyboard-var _self-ah: (addr handle cell) {
   var self-ah/eax: (addr handle cell) <- copy _self-ah
   var self/eax: (addr cell) <- lookup *self-ah
   compare self, 0

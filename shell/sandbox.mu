@@ -567,20 +567,20 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
     var cursor-in-keyboard?/eax: (addr boolean) <- get self, cursor-in-keyboard?
     compare *cursor-in-keyboard?, 0/false
     break-if-=
-    var keyboard-cell-ah/eax: (addr handle cell) <- get self, keyboard-var
-    var keyboard-cell/eax: (addr cell) <- lookup *keyboard-cell-ah
-    compare keyboard-cell, 0
+    var inner-keyboard-var-ah/eax: (addr handle cell) <- get self, keyboard-var
+    var inner-keyboard-var/eax: (addr cell) <- lookup *inner-keyboard-var-ah
+    compare inner-keyboard-var, 0
     {
       break-if-!=
       return
     }
-    var keyboard-cell-type/ecx: (addr int) <- get keyboard-cell, type
-    compare *keyboard-cell-type, 6/keyboard
+    var inner-keyboard-var-type/ecx: (addr int) <- get inner-keyboard-var, type
+    compare *inner-keyboard-var-type, 6/keyboard
     {
       break-if-=
       return
     }
-    var keyboard-ah/eax: (addr handle gap-buffer) <- get keyboard-cell, keyboard-data
+    var keyboard-ah/eax: (addr handle gap-buffer) <- get inner-keyboard-var, keyboard-data
     var keyboard/eax: (addr gap-buffer) <- lookup *keyboard-ah
     edit-gap-buffer keyboard, key
     return
@@ -632,13 +632,13 @@ fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   var trace/ebx: (addr trace) <- copy _trace
   clear-trace trace
   var tmp/eax: (addr handle cell) <- get self, screen-var
-  var screen-cell: (addr handle cell)
-  copy-to screen-cell, tmp
-  clear-screen-cell screen-cell
-  var keyboard-cell/eax: (addr handle cell) <- get self, keyboard-var
-  rewind-keyboard-cell keyboard-cell  # don't clear keys from before
+  var inner-screen-var: (addr handle cell)
+  copy-to inner-screen-var, tmp
+  clear-screen-var inner-screen-var
+  var inner-keyboard-var/eax: (addr handle cell) <- get self, keyboard-var
+  rewind-keyboard-var inner-keyboard-var  # don't clear keys from before
   #
-  read-and-evaluate-and-save-gap-buffer-to-globals data-ah, eval-result-ah, globals, definitions-created, trace, screen-cell, keyboard-cell
+  read-and-evaluate-and-save-gap-buffer-to-globals data-ah, eval-result-ah, globals, definitions-created, trace, inner-screen-var, inner-keyboard-var
   # if necessary, initialize a new gap-buffer for sandbox
   {
     compare globals, 0

@@ -326,7 +326,7 @@ fn assign-or-create-global _self: (addr global-table), name: (addr array byte), 
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
 }
 
-fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell) {
   var sym/eax: (addr cell) <- copy _sym
   var sym-name-ah/eax: (addr handle stream byte) <- get sym, text-data
   var _sym-name/eax: (addr stream byte) <- lookup *sym-name-ah
@@ -346,24 +346,24 @@ fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals
     copy-object curr-value, out
     return
   }
-  # if sym is "screen" and screen-cell exists, return it
+  # if sym is "screen" and inner-screen-var exists, return it
   {
     var sym-is-screen?/eax: boolean <- stream-data-equal? sym-name, "screen"
     compare sym-is-screen?, 0/false
     break-if-=
-    compare screen-cell, 0
+    compare inner-screen-var, 0
     break-if-=
-    copy-object screen-cell, out
+    copy-object inner-screen-var, out
     return
   }
-  # if sym is "keyboard" and keyboard-cell exists, return it
+  # if sym is "keyboard" and inner-keyboard-var exists, return it
   {
     var sym-is-keyboard?/eax: boolean <- stream-data-equal? sym-name, "keyboard"
     compare sym-is-keyboard?, 0/false
     break-if-=
-    compare keyboard-cell, 0
+    compare inner-keyboard-var, 0
     break-if-=
-    copy-object keyboard-cell, out
+    copy-object inner-keyboard-var, out
     return
   }
   # otherwise error "unbound symbol: ", sym
@@ -547,7 +547,7 @@ fn load-lexical-scope in-ah: (addr handle gap-buffer), _globals: (addr global-ta
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   var dummy-result-h: (handle cell)
   var dummy-result-ah/ecx: (addr handle cell) <- address dummy-result-h
-  read-and-evaluate-and-save-gap-buffer-to-globals in-ah, dummy-result-ah, globals, definitions-created, trace, 0/no-screen-cell, 0/no-keyboard-cell
+  read-and-evaluate-and-save-gap-buffer-to-globals in-ah, dummy-result-ah, globals, definitions-created, trace, 0/no-inner-screen-var, 0/no-inner-keyboard-var
   #
   # save trace to all needed globals as well
   rewind-stream definitions-created
