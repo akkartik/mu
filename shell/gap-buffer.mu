@@ -40,7 +40,7 @@ fn gap-buffer-empty? _self: (addr gap-buffer) -> _/eax: boolean {
   return result
 }
 
-fn gap-buffer-capacity _gap: (addr gap-buffer) -> _/ecx: int {
+fn gap-buffer-capacity _gap: (addr gap-buffer) -> _/edx: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
   var left/eax: (addr grapheme-stack) <- get gap, left
   var left-data-ah/eax: (addr handle array grapheme) <- get left, data

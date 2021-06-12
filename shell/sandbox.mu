@@ -619,22 +619,43 @@ fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   var data-ah/ecx: (addr handle gap-buffer) <- get self, data
   var eval-result-h: (handle cell)
   var eval-result-ah/edi: (addr handle cell) <- address eval-result-h
+  var definitions-created-storage: (stream int 0x10)
+  var definitions-created/edx: (addr stream int) <- address definitions-created-storage
   var trace-ah/eax: (addr handle trace) <- get self, trace
   var _trace/eax: (addr trace) <- lookup *trace-ah
   var trace/ebx: (addr trace) <- copy _trace
   clear-trace trace
-  var screen-cell/edx: (addr handle cell) <- get self, screen-var
+  var tmp/eax: (addr handle cell) <- get self, screen-var
+  var screen-cell: (addr handle cell)
+  copy-to screen-cell, tmp
   clear-screen-cell screen-cell
   var keyboard-cell/eax: (addr handle cell) <- get self, keyboard-var
   rewind-keyboard-cell keyboard-cell  # don't clear keys from before
-  run data-ah, eval-result-ah, globals, trace, screen-cell, keyboard-cell
+  # read, eval, save gap buffer
+  run data-ah, eval-result-ah, globals, definitions-created, trace, screen-cell, keyboard-cell
+  # if necessary, initialize a new gap-buffer for sandbox
+  {
+    compare globals, 0
+    break-if-=
+    rewind-stream definitions-created
+    var no-definitions?/eax: boolean <- stream-empty? definitions-created
+    compare no-definitions?, 0/false
+    break-if-!=
+    # some definitions were created; clear the gap buffer
+    var data/eax: (addr gap-buffer) <- lookup *data-ah
+    var capacity/edx: int <- gap-buffer-capacity data
+    allocate data-ah
+    var new-data/eax: (addr gap-buffer) <- lookup *data-ah
+    initialize-gap-buffer new-data, capacity
+  }
+  # print
   var value-ah/eax: (addr handle stream byte) <- get self, value
   var value/eax: (addr stream byte) <- lookup *value-ah
   clear-stream value
   print-cell eval-result-ah, value, trace
 }
 
-fn run _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+fn run _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), definitions-created: (addr stream int), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
   var in/eax: (addr gap-buffer) <- lookup *in-ah
   var read-result-h: (handle cell)
@@ -659,8 +680,6 @@ fn run _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals:
 #?   set-cursor-position 0/screen, 0 0
 #?   turn-on-debug-print
   debug-print "^", 4/fg, 0/bg
-  var definitions-created-storage: (stream int 0x10)
-  var definitions-created/ecx: (addr stream int) <- address definitions-created-storage
   evaluate read-result-ah, result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, definitions-created, 1/call-number
   debug-print "$", 4/fg, 0/bg
   var error?/eax: boolean <- has-errors? trace
@@ -675,22 +694,6 @@ fn run _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals:
   # buffer to them.
   # TODO: detect and create UI for conflicts.
   stash-gap-buffer-to-globals globals, definitions-created, _in-ah
-  # if necessary, initialize a new gap-buffer in 'gap'
-  {
-    compare globals, 0
-    break-if-=
-    rewind-stream definitions-created
-    var no-definitions?/eax: boolean <- stream-empty? definitions-created
-    compare no-definitions?, 0/false
-    break-if-!=
-    # some definitions were created; clear the gap buffer
-    var in-ah/edi: (addr handle gap-buffer) <- copy _in-ah
-    var in/eax: (addr gap-buffer) <- lookup *in-ah
-    var capacity/ecx: int <- gap-buffer-capacity in
-    allocate in-ah
-    var new-gap/eax: (addr gap-buffer) <- lookup *in-ah
-    initialize-gap-buffer new-gap, capacity
-  }
 }
 
 fn test-run-integer {
