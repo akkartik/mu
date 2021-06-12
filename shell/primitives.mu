@@ -425,7 +425,13 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to + are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -446,10 +452,21 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var first-value/ecx: (addr float) <- get first, number-data
   # args->right->left->value
   var right-ah/eax: (addr handle cell) <- get args, right
-#?   dump-cell right-ah
-#?   abort "aaa"
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "+ encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "+ needs 2 args but got 1"
+    return
+  }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
   var second-type/edx: (addr int) <- get second, type
@@ -466,12 +483,47 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   new-float out, result
 }
 
+fn test-evaluate-missing-arg-in-add {
+  var t-storage: trace
+  var t/edi: (addr trace) <- address t-storage
+  initialize-trace t, 0x100/max-depth, 0x100/capacity, 0/visible  # we don't use trace UI
+  #
+  var nil-storage: (handle cell)
+  var nil-ah/ecx: (addr handle cell) <- address nil-storage
+  allocate-pair nil-ah
+  var one-storage: (handle cell)
+  var one-ah/edx: (addr handle cell) <- address one-storage
+  new-integer one-ah, 1
+  var add-storage: (handle cell)
+  var add-ah/ebx: (addr handle cell) <- address add-storage
+  new-symbol add-ah, "+"
+  # input is (+ 1)
+  var tmp-storage: (handle cell)
+  var tmp-ah/esi: (addr handle cell) <- address tmp-storage
+  new-pair tmp-ah, *one-ah, *nil-ah
+  new-pair tmp-ah, *add-ah, *tmp-ah
+#?   dump-cell tmp-ah
+  #
+  var globals-storage: global-table
+  var globals/edx: (addr global-table) <- address globals-storage
+  initialize-globals globals
+  #
+  evaluate tmp-ah, tmp-ah, *nil-ah, globals, t, 0/no-screen, 0/no-keyboard, 0/definitions-created, 0/call-number
+  # no crash
+}
+
 fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply -"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to - are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -493,7 +545,20 @@ fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   # args->right->left->value
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "- encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "- needs 2 args but got 1"
+    return
+  }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
   var second-type/edx: (addr int) <- get second, type
@@ -515,7 +580,13 @@ fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to * are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -537,7 +608,20 @@ fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   # args->right->left->value
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "* encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "* needs 2 args but got 1"
+    return
+  }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
   var second-type/edx: (addr int) <- get second, type
@@ -559,7 +643,13 @@ fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to / are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -581,7 +671,20 @@ fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   # args->right->left->value
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "/ encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "/ needs 2 args but got 1"
+    return
+  }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
   var second-type/edx: (addr int) <- get second, type
@@ -603,7 +706,13 @@ fn apply-remainder _args-ah: (addr handle cell), out: (addr handle cell), trace:
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to % are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -625,7 +734,20 @@ fn apply-remainder _args-ah: (addr handle cell), out: (addr handle cell), trace:
   # args->right->left->value
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "% encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "% needs 2 args but got 1"
+    return
+  }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
   var second-type/edx: (addr int) <- get second, type
@@ -653,7 +775,13 @@ fn apply-square-root _args-ah: (addr handle cell), out: (addr handle cell), trac
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to sqrt are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -682,7 +810,13 @@ fn apply-abs _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to abs are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -719,7 +853,13 @@ fn apply-sgn _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to sgn are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -765,7 +905,13 @@ fn apply-car _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to car are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -801,7 +947,13 @@ fn apply-cdr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to cdr are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -837,7 +989,13 @@ fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'cons' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -850,7 +1008,20 @@ fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   # args->right->left
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'cons' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'cons' needs 2 args but got 1"
+    return
+  }
   var second-ah/eax: (addr handle cell) <- get right, left
   # cons
   new-pair out, *first-ah, *second-ah
@@ -861,7 +1032,13 @@ fn apply-structurally-equal _args-ah: (addr handle cell), out: (addr handle cell
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to '=' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -874,7 +1051,20 @@ fn apply-structurally-equal _args-ah: (addr handle cell), out: (addr handle cell
   # args->right->left
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'=' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'=' needs 2 args but got 1"
+    return
+  }
   var second-ah/edx: (addr handle cell) <- get right, left
   # compare
   var _first/eax: (addr cell) <- lookup *first-ah
@@ -891,16 +1081,22 @@ fn apply-structurally-equal _args-ah: (addr handle cell), out: (addr handle cell
 }
 
 fn apply-not _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply not"
+  trace-text trace, "eval", "apply 'not'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'not' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "not needs 1 arg but got 0"
+    error trace, "'not' needs 1 arg but got 0"
     return
   }
   # args->left
@@ -918,16 +1114,22 @@ fn apply-not _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
 }
 
 fn apply-debug _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply debug"
+  trace-text trace, "eval", "apply 'debug'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'debug' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "not needs 1 arg but got 0"
+    error trace, "'debug' needs 1 arg but got 0"
     return
   }
   # dump args->left uglily to screen and wait for a keypress
@@ -946,7 +1148,13 @@ fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to '<' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -959,7 +1167,20 @@ fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   # args->right->left
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'<' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'<' needs 2 args but got 1"
+    return
+  }
   var second-ah/edx: (addr handle cell) <- get right, left
   # compare
   var _first/eax: (addr cell) <- lookup *first-ah
@@ -978,7 +1199,7 @@ fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   compare *second-type, 1/number
   {
     break-if-=
-    error trace, "first arg for '<' is not a number"
+    error trace, "second arg for '<' is not a number"
     return
   }
   var second-value/eax: (addr float) <- get second, number-data
@@ -996,7 +1217,13 @@ fn apply-> _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to '>' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -1009,7 +1236,20 @@ fn apply-> _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   # args->right->left
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'>' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'>' needs 2 args but got 1"
+    return
+  }
   var second-ah/edx: (addr handle cell) <- get right, left
   # compare
   var _first/eax: (addr cell) <- lookup *first-ah
@@ -1028,7 +1268,7 @@ fn apply-> _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   compare *second-type, 1/number
   {
     break-if-=
-    error trace, "first arg for '>' is not a number"
+    error trace, "second arg for '>' is not a number"
     return
   }
   var second-value/eax: (addr float) <- get second, number-data
@@ -1046,7 +1286,13 @@ fn apply-<= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to '<=' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -1059,7 +1305,20 @@ fn apply-<= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   # args->right->left
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'<=' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'<=' needs 2 args but got 1"
+    return
+  }
   var second-ah/edx: (addr handle cell) <- get right, left
   # compare
   var _first/eax: (addr cell) <- lookup *first-ah
@@ -1078,7 +1337,7 @@ fn apply-<= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   compare *second-type, 1/number
   {
     break-if-=
-    error trace, "first arg for '<=' is not a number"
+    error trace, "second arg for '<=' is not a number"
     return
   }
   var second-value/eax: (addr float) <- get second, number-data
@@ -1096,7 +1355,13 @@ fn apply->= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to '>=' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -1109,7 +1374,20 @@ fn apply->= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   # args->right->left
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'>=' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'>=' needs 2 args but got 1"
+    return
+  }
   var second-ah/edx: (addr handle cell) <- get right, left
   # compare
   var _first/eax: (addr cell) <- lookup *first-ah
@@ -1128,7 +1406,7 @@ fn apply->= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   compare *second-type, 1/number
   {
     break-if-=
-    error trace, "first arg for '>=' is not a number"
+    error trace, "second arg for '>=' is not a number"
     return
   }
   var second-value/eax: (addr float) <- get second, number-data
@@ -1142,16 +1420,22 @@ fn apply->= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
 }
 
 fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply print"
+  trace-text trace, "eval", "apply 'print'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'print' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "print needs 2 args but got 0"
+    error trace, "'print' needs 2 args but got 0"
     return
   }
   # screen = args->left
@@ -1170,7 +1454,20 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   # args->right->left
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'print' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'print' needs 2 args but got 1"
+    return
+  }
   var second-ah/eax: (addr handle cell) <- get right, left
   var stream-storage: (stream byte 0x100)
   var stream/edi: (addr stream byte) <- address stream-storage
@@ -1181,11 +1478,17 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
 }
 
 fn apply-clear _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply clear"
+  trace-text trace, "eval", "apply 'clear'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'clear' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -1211,11 +1514,17 @@ fn apply-clear _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
 }
 
 fn apply-up _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply up"
+  trace-text trace, "eval", "apply 'up'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'up' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -1245,7 +1554,13 @@ fn apply-down _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'down' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -1275,7 +1590,13 @@ fn apply-left _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'left' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -1305,7 +1626,13 @@ fn apply-right _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'right' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -1335,7 +1662,13 @@ fn apply-cr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'cr' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
@@ -1361,16 +1694,22 @@ fn apply-cr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
 }
 
 fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply pixel"
+  trace-text trace, "eval", "apply 'pixel'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'pixel' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "pixel needs 4 args but got 0"
+    error trace, "'pixel' needs 4 args but got 0"
     return
   }
   # screen = args->left
@@ -1390,7 +1729,20 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var rest-ah/eax: (addr handle cell) <- get args, right
   var _rest/eax: (addr cell) <- lookup *rest-ah
   var rest/esi: (addr cell) <- copy _rest
-  # TODO: check that rest is a pair
+  {
+    var rest-type/ecx: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'pixel' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'pixel' needs 4 args but got 1"
+    return
+  }
   var second-ah/eax: (addr handle cell) <- get rest, left
   var second/eax: (addr cell) <- lookup *second-ah
   var second-type/ecx: (addr int) <- get second, type
@@ -1406,7 +1758,20 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var rest-ah/eax: (addr handle cell) <- get rest, right
   var _rest/eax: (addr cell) <- lookup *rest-ah
   rest <- copy _rest
-  # TODO: check that rest is a pair
+  {
+    var rest-type/ecx: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'pixel' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'pixel' needs 4 args but got 2"
+    return
+  }
   var third-ah/eax: (addr handle cell) <- get rest, left
   var third/eax: (addr cell) <- lookup *third-ah
   var third-type/ecx: (addr int) <- get third, type
@@ -1422,7 +1787,20 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var rest-ah/eax: (addr handle cell) <- get rest, right
   var _rest/eax: (addr cell) <- lookup *rest-ah
   rest <- copy _rest
-  # TODO: check that rest is a pair
+  {
+    var rest-type/ecx: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'pixel' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'pixel' needs 4 args but got 3"
+    return
+  }
   var fourth-ah/eax: (addr handle cell) <- get rest, left
   var fourth/eax: (addr cell) <- lookup *fourth-ah
   var fourth-type/ecx: (addr int) <- get fourth, type
@@ -1439,16 +1817,22 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
 }
 
 fn apply-wait-for-key _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply key"
+  trace-text trace, "eval", "apply 'key'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'key' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "key needs 1 arg but got 0"
+    error trace, "'key' needs 1 arg but got 0"
     return
   }
   # keyboard = args->left
@@ -1490,16 +1874,22 @@ fn apply-stream _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
 }
 
 fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply write"
+  trace-text trace, "eval", "apply 'write'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'write' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "write needs 2 args but got 0"
+    error trace, "'write' needs 2 args but got 0"
     return
   }
   # stream = args->left
@@ -1518,14 +1908,27 @@ fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   # args->right->left
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
-  # TODO: check that right is a pair
+  {
+    var right-type/ecx: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'write' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'write' needs 2 args but got 1"
+    return
+  }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
   var second-type/ecx: (addr int) <- get second, type
   compare *second-type, 1/number
   {
     break-if-=
-    error trace, "second arg for stream is not a number/grapheme"
+    error trace, "second arg for 'write' is not a number/grapheme"
     return
   }
   var second-value/eax: (addr float) <- get second, number-data
@@ -1538,16 +1941,22 @@ fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
 }
 
 fn apply-lines _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply lines"
+  trace-text trace, "eval", "apply 'lines'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'lines' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "lines needs 1 arg but got 0"
+    error trace, "'lines' needs 1 arg but got 0"
     return
   }
   # screen = args->left
@@ -1576,16 +1985,22 @@ fn apply-abort _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
 }
 
 fn apply-columns _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply columns"
+  trace-text trace, "eval", "apply 'columns'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'columns' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "columns needs 1 arg but got 0"
+    error trace, "'columns' needs 1 arg but got 0"
     return
   }
   # screen = args->left
@@ -1610,16 +2025,22 @@ fn apply-columns _args-ah: (addr handle cell), out: (addr handle cell), trace: (
 }
 
 fn apply-width _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply width"
+  trace-text trace, "eval", "apply 'width'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'width' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "width needs 1 arg but got 0"
+    error trace, "'width' needs 1 arg but got 0"
     return
   }
   # screen = args->left
@@ -1645,16 +2066,22 @@ fn apply-width _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
 }
 
 fn apply-height _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  trace-text trace, "eval", "apply height"
+  trace-text trace, "eval", "apply 'height'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
-  # TODO: check that args is a pair
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'height' are not a list"
+    return
+  }
   var empty-args?/eax: boolean <- nil? args
   compare empty-args?, 0/false
   {
     break-if-=
-    error trace, "height needs 1 arg but got 0"
+    error trace, "'height' needs 1 arg but got 0"
     return
   }
   # screen = args->left
