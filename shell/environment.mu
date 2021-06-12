@@ -371,7 +371,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
   edit-sandbox sandbox, key, globals, data-disk
 }
 
-fn read-evaluate-and-save-to-globals _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), definitions-created: (addr stream int), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+fn read-evaluate-and-save-gap-buffer-to-globals _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), definitions-created: (addr stream int), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
   var in/eax: (addr gap-buffer) <- lookup *in-ah
   var read-result-h: (handle cell)
