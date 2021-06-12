@@ -60,7 +60,6 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     loop
   }
   move-cursor-to-left-margin-of-next-line 0/screen
-#?   abort "zz"
 }
 
 fn write-globals out: (addr stream byte), _self: (addr global-table) {
