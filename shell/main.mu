@@ -4,7 +4,7 @@
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 0x20/fake-screen-width, 8/fake-screen-height
   load-state env, data-disk
   $main:loop: {
     render-environment screen, env

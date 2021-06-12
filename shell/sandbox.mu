@@ -9,7 +9,7 @@ type sandbox {
   cursor-in-keyboard?: boolean
 }
 
-fn initialize-sandbox _self: (addr sandbox), fake-screen-and-keyboard?: boolean {
+fn initialize-sandbox _self: (addr sandbox), fake-screen-width: int, fake-screen-height: int {
   var self/esi: (addr sandbox) <- copy _self
   var data-ah/eax: (addr handle gap-buffer) <- get self, data
   allocate data-ah
@@ -20,10 +20,10 @@ fn initialize-sandbox _self: (addr sandbox), fake-screen-and-keyboard?: boolean 
   populate-stream value-ah, 0x1000/4KB
   #
   {
-    compare fake-screen-and-keyboard?, 0/false
+    compare fake-screen-width, 0
     break-if-=
     var screen-ah/eax: (addr handle cell) <- get self, screen-var
-    new-fake-screen screen-ah, 8/width, 3/height, 1/enable-pixel-graphics
+    new-fake-screen screen-ah, fake-screen-width, fake-screen-height, 1/enable-pixel-graphics
     var keyboard-ah/eax: (addr handle cell) <- get self, keyboard-var
     new-fake-keyboard keyboard-ah, 0x10/keyboard-capacity
   }
@@ -188,6 +188,9 @@ fn maybe-render-empty-screen screen: (addr screen), _self: (addr sandbox), xmin:
   var _screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
   var screen-obj/edx: (addr screen) <- copy _screen-obj
   var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, y, 0x17/fg, 0xc5/bg=blue-bg
+  x <- copy xmin
+  x <- add 2
+  y <- increment
   y <- render-empty-screen screen, screen-obj, x, y
   return y
 }
@@ -217,7 +220,10 @@ fn maybe-render-screen screen: (addr screen), _self: (addr sandbox), xmin: int, 
     return ymin
   }
   var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, ymin, 0x17/fg, 0xc5/bg=blue-bg
+  x <- copy xmin
+  x <- add 2
   var y/ecx: int <- copy ymin
+  y <- increment
   y <- render-screen screen, screen-obj, x, y
   return y
 }

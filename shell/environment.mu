@@ -20,7 +20,7 @@ type environment {
 fn test-environment {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 8/fake-screen-width, 3/fake-screen-height
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -34,18 +34,16 @@ fn test-environment {
   # top row blank for now
   check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-environment/0"
   check-screen-row                     screen,         1/y, "                                                                                      screen:                                   ", "F - test-environment/1"
-  # starting at the same screen row, render the fake screen that exists within the sandbox within env
-  check-background-color-in-screen-row screen, 0/bg,   1/y, "                                                                                                ........                        ", "F - test-environment/1-2"
-  check-background-color-in-screen-row screen, 0/bg,   2/y, "                                                                                                ........                        ", "F - test-environment/2"
-  check-background-color-in-screen-row screen, 0/bg,   3/y, "                                                                                                ........                        ", "F - test-environment/3"
-  check-screen-row                     screen,         4/y, "                                                                                                                                ", "F - test-environment/4"
-  check-screen-row                     screen,         5/y, "                                                                                      keyboard:                                 ", "F - test-environment/5"
-  check-background-color-in-screen-row screen, 0/bg,   5/y, "                                                                                                ................                ", "F - test-environment/5-2"
-  check-screen-row                     screen,         6/y, "                                                                                                                                ", "F - test-environment/6"
-  check-screen-row                     screen,         7/y, "                                                                                      (+ 3 4)                                   ", "F - test-environment/7"
-  check-screen-row                     screen,         8/y, "                                                                                      ...                       trace depth: 4  ", "F - test-environment/8"
-  check-screen-row                     screen,         9/y, "                                                                                      => 7                                      ", "F - test-environment/9"
-  check-screen-row                     screen,       0xa/y, "                                                                                                                                ", "F - test-environment/10"
+  check-background-color-in-screen-row screen, 0/bg,   2/y, "                                                                                        ........                                ", "F - test-environment/2"
+  check-background-color-in-screen-row screen, 0/bg,   3/y, "                                                                                        ........                                ", "F - test-environment/3"
+  check-background-color-in-screen-row screen, 0/bg,   4/y, "                                                                                        ........                                ", "F - test-environment/4"
+  check-screen-row                     screen,         5/y, "                                                                                                                                ", "F - test-environment/5"
+  check-screen-row                     screen,         6/y, "                                                                                      keyboard:                                 ", "F - test-environment/6"
+  check-background-color-in-screen-row screen, 0/bg,   6/y, "                                                                                                ................                ", "F - test-environment/6-2"
+  check-screen-row                     screen,         7/y, "                                                                                                                                ", "F - test-environment/7"
+  check-screen-row                     screen,         8/y, "                                                                                      (+ 3 4)                                   ", "F - test-environment/8"
+  check-screen-row                     screen,         9/y, "                                                                                      ...                       trace depth: 4  ", "F - test-environment/9"
+  check-screen-row                     screen,       0xa/y, "                                                                                      => 7                                      ", "F - test-environment/10"
   check-screen-row                     screen,       0xb/y, "                                                                                                                                ", "F - test-environment/11"
   check-screen-row                     screen,       0xc/y, "                                                                                                                                ", "F - test-environment/12"
   check-screen-row                     screen,       0xd/y, "                                                                                                                                ", "F - test-environment/13"
@@ -57,7 +55,7 @@ fn test-environment {
 fn test-definition-in-environment {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 8/fake-screen-width, 3/fake-screen-height
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -70,16 +68,16 @@ fn test-definition-in-environment {
   check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-definition-in-environment/0"
   # global definition is now on the left side
   check-screen-row                     screen,         1/y, "                                           (define f 42)                              screen:                                   ", "F - test-definition-in-environment/1"
-  check-background-color-in-screen-row screen, 0/bg,   1/y, "                                                                                                ........                        ", "F - test-definition-in-environment/1-2"
-  check-background-color-in-screen-row screen, 0/bg,   2/y, "                                                                                                ........                        ", "F - test-definition-in-environment/2"
-  check-background-color-in-screen-row screen, 0/bg,   3/y, "                                                                                                ........                        ", "F - test-definition-in-environment/3"
-  check-screen-row                     screen,         4/y, "                                                                                                                                ", "F - test-definition-in-environment/4"
-  check-screen-row                     screen,         5/y, "                                                                                      keyboard:                                 ", "F - test-definition-in-environment/5"
-  check-background-color-in-screen-row screen, 0/bg,   5/y, "                                                                                                ................                ", "F - test-definition-in-environment/5-2"
-  check-screen-row                     screen,         6/y, "                                                                                                                                ", "F - test-definition-in-environment/6"
-  check-screen-row                     screen,         7/y, "                                                                                                                                ", "F - test-definition-in-environment/7"
+  check-background-color-in-screen-row screen, 0/bg,   2/y, "                                                                                        ........                                ", "F - test-environment/2"
+  check-background-color-in-screen-row screen, 0/bg,   3/y, "                                                                                        ........                                ", "F - test-environment/3"
+  check-background-color-in-screen-row screen, 0/bg,   4/y, "                                                                                        ........                                ", "F - test-environment/4"
+  check-screen-row                     screen,         5/y, "                                                                                                                                ", "F - test-definition-in-environment/4"
+  check-screen-row                     screen,         6/y, "                                                                                      keyboard:                                 ", "F - test-definition-in-environment/5"
+  check-background-color-in-screen-row screen, 0/bg,   6/y, "                                                                                                ................                ", "F - test-definition-in-environment/5-2"
+  check-screen-row                     screen,         7/y, "                                                                                                                                ", "F - test-definition-in-environment/6"
+  check-screen-row                     screen,         8/y, "                                                                                                                                ", "F - test-definition-in-environment/7"
   # you can still see the trace on the right for what you just added to the left
-  check-screen-row                     screen,         8/y, "                                                                                      ...                       trace depth: 4  ", "F - test-definition-in-environment/8"
+  check-screen-row                     screen,         9/y, "                                                                                      ...                       trace depth: 4  ", "F - test-definition-in-environment/8"
 }
 
 # helper for testing
@@ -102,12 +100,12 @@ fn type-in self: (addr environment), screen: (addr screen), keys: (addr array by
   }
 }
 
-fn initialize-environment _self: (addr environment) {
+fn initialize-environment _self: (addr environment), fake-screen-width: int, fake-screen-height: int {
   var self/esi: (addr environment) <- copy _self
   var globals/eax: (addr global-table) <- get self, globals
   initialize-globals globals
   var sandbox/eax: (addr sandbox) <- get self, sandbox
-  initialize-sandbox sandbox, 1/with-screen
+  initialize-sandbox sandbox, fake-screen-width, fake-screen-height
   var partial-global-name-ah/eax: (addr handle gap-buffer) <- get self, partial-global-name
   allocate partial-global-name-ah
   var partial-global-name/eax: (addr gap-buffer) <- lookup *partial-global-name-ah
@@ -415,7 +413,7 @@ fn read-and-evaluate-and-save-gap-buffer-to-globals _in-ah: (addr handle gap-buf
 fn test-go-modal {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 8/fake-screen-width, 3/fake-screen-height
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -450,7 +448,7 @@ fn test-go-modal {
 fn test-leave-go-modal {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 8/fake-screen-width, 3/fake-screen-height
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -483,7 +481,7 @@ fn test-leave-go-modal {
 fn test-jump-to-global {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 8/fake-screen-width, 3/fake-screen-height
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -526,7 +524,7 @@ fn test-jump-to-global {
 fn test-go-modal-prepopulates-word-at-cursor {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 8/fake-screen-width, 3/fake-screen-height
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -627,7 +625,7 @@ fn test-go-modal-prepopulates-word-at-cursor {
 fn test-jump-to-nonexistent-global {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 8/fake-screen-width, 3/fake-screen-height
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -698,7 +696,7 @@ fn test-jump-to-nonexistent-global {
 fn test-create-global {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 8/fake-screen-width, 3/fake-screen-height
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -736,7 +734,7 @@ fn test-create-global {
 fn test-create-nonexistent-global {
   var env-storage: environment
   var env/esi: (addr environment) <- address env-storage
-  initialize-environment env
+  initialize-environment env, 8/fake-screen-width, 3/fake-screen-height
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
