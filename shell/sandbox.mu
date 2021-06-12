@@ -631,8 +631,8 @@ fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   clear-screen-cell screen-cell
   var keyboard-cell/eax: (addr handle cell) <- get self, keyboard-var
   rewind-keyboard-cell keyboard-cell  # don't clear keys from before
-  # read, eval, save gap buffer
-  run data-ah, eval-result-ah, globals, definitions-created, trace, screen-cell, keyboard-cell
+  #
+  read-evaluate-and-save-to-globals data-ah, eval-result-ah, globals, definitions-created, trace, screen-cell, keyboard-cell
   # if necessary, initialize a new gap-buffer for sandbox
   {
     compare globals, 0
@@ -655,7 +655,7 @@ fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   print-cell eval-result-ah, value, trace
 }
 
-fn run _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), definitions-created: (addr stream int), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+fn read-evaluate-and-save-to-globals _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), definitions-created: (addr stream int), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
   var in/eax: (addr gap-buffer) <- lookup *in-ah
   var read-result-h: (handle cell)
