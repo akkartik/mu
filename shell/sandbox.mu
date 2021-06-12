@@ -618,21 +618,24 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
 fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   var self/esi: (addr sandbox) <- copy _self
   var data-ah/ecx: (addr handle gap-buffer) <- get self, data
-  var value-ah/eax: (addr handle stream byte) <- get self, value
-  var _value/eax: (addr stream byte) <- lookup *value-ah
-  var value/edx: (addr stream byte) <- copy _value
+  var eval-result-h: (handle cell)
+  var eval-result-ah/edi: (addr handle cell) <- address eval-result-h
   var trace-ah/eax: (addr handle trace) <- get self, trace
   var _trace/eax: (addr trace) <- lookup *trace-ah
   var trace/ebx: (addr trace) <- copy _trace
   clear-trace trace
-  var screen-cell/eax: (addr handle cell) <- get self, screen-var
+  var screen-cell/edx: (addr handle cell) <- get self, screen-var
   clear-screen-cell screen-cell
-  var keyboard-cell/esi: (addr handle cell) <- get self, keyboard-var
+  var keyboard-cell/eax: (addr handle cell) <- get self, keyboard-var
   rewind-keyboard-cell keyboard-cell  # don't clear keys from before
-  run data-ah, value, globals, trace, screen-cell, keyboard-cell
+  run data-ah, eval-result-ah, globals, trace, screen-cell, keyboard-cell
+  var value-ah/eax: (addr handle stream byte) <- get self, value
+  var value/eax: (addr stream byte) <- lookup *value-ah
+  clear-stream value
+  print-cell eval-result-ah, value, trace
 }
 
-fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
+fn run _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), trace: (addr trace), screen-cell: (addr handle cell), keyboard-cell: (addr handle cell) {
   var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
   var in/eax: (addr gap-buffer) <- lookup *in-ah
   var read-result-h: (handle cell)
@@ -654,14 +657,12 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
   var nil-h: (handle cell)
   var nil-ah/eax: (addr handle cell) <- address nil-h
   allocate-pair nil-ah
-  var eval-result-h: (handle cell)
-  var eval-result-ah/edi: (addr handle cell) <- address eval-result-h
 #?   set-cursor-position 0/screen, 0 0
 #?   turn-on-debug-print
   debug-print "^", 4/fg, 0/bg
   var definitions-created-storage: (stream int 0x10)
   var definitions-created/ecx: (addr stream int) <- address definitions-created-storage
-  evaluate read-result-ah, eval-result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, definitions-created, 1/call-number
+  evaluate read-result-ah, result-ah, *nil-ah, globals, trace, screen-cell, keyboard-cell, definitions-created, 1/call-number
   debug-print "$", 4/fg, 0/bg
   var error?/eax: boolean <- has-errors? trace
   {
@@ -669,8 +670,6 @@ fn run _in-ah: (addr handle gap-buffer), out: (addr stream byte), globals: (addr
     break-if-=
     return
   }
-  clear-stream out
-  print-cell eval-result-ah, out, trace
   # refresh various rendering caches
   mark-lines-dirty trace
   # If any definitions were created or modified in the process, link this gap
