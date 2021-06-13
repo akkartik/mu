@@ -257,27 +257,27 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
 
 fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
   var target-screen/esi: (addr screen) <- copy _target-screen
-  var screen-y/edi: int <- copy ymin
+  var to-y/edi: int <- copy ymin
   # text data
   {
     var height/edx: (addr int) <- get target-screen, height
-    var y/ecx: int <- copy 0
+    var from-y/ecx: int <- copy 0
     {
-      compare y, *height
+      compare from-y, *height
       break-if->=
-      set-cursor-position screen, xmin, screen-y
       var width/edx: (addr int) <- get target-screen, width
-      var x/ebx: int <- copy 0
+      var from-x/ebx: int <- copy 0
+      var to-x/eax: int <- copy xmin
       {
-        compare x, *width
+        compare from-x, *width
         break-if->=
-        print-screen-cell-of-fake-screen screen, target-screen, x, y
-        move-cursor-right screen
-        x <- increment
+        print-screen-cell-of-fake-screen screen, target-screen, from-x, from-y, to-x, to-y
+        from-x <- increment
+        to-x <- increment
         loop
       }
-      y <- increment
-      screen-y <- increment
+      from-y <- increment
+      to-y <- increment
       loop
     }
   }
@@ -331,7 +331,7 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
       loop
     }
   }
-  return screen-y
+  return to-y
 }
 
 fn has-keyboard? _self: (addr sandbox) -> _/eax: boolean {
@@ -403,7 +403,7 @@ fn render-keyboard screen: (addr screen), _keyboard: (addr gap-buffer), xmin: in
   return y
 }
 
-fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen), x: int, y: int {
+fn print-screen-cell-of-fake-screen-at-cursor screen: (addr screen), _target: (addr screen), x: int, y: int {
   var target/ecx: (addr screen) <- copy _target
   var data-ah/eax: (addr handle array screen-cell) <- get target, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -414,6 +414,19 @@ fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen
   var src-color/ecx: (addr int) <- get src-cell, color
   var src-background-color/edx: (addr int) <- get src-cell, background-color
   draw-grapheme-at-cursor screen, *src-grapheme, *src-color, *src-background-color
+}
+
+fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen), from-x: int, from-y: int, to-x: int, to-y: int {
+  var target/ecx: (addr screen) <- copy _target
+  var data-ah/eax: (addr handle array screen-cell) <- get target, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var index/ecx: int <- screen-cell-index target, from-x, from-y
+  var offset/ecx: (offset screen-cell) <- compute-offset data, index
+  var src-cell/esi: (addr screen-cell) <- index data, offset
+  var src-grapheme/eax: (addr grapheme) <- get src-cell, data
+  var src-fg/ecx: (addr int) <- get src-cell, color
+  var src-bg/edx: (addr int) <- get src-cell, background-color
+  draw-grapheme screen, *src-grapheme, to-x, to-y, *src-fg, *src-bg
 }
 
 fn render-sandbox-edit-menu screen: (addr screen), _self: (addr sandbox) {
