@@ -259,27 +259,25 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
   var target-screen/esi: (addr screen) <- copy _target-screen
   var to-y/edi: int <- copy ymin
   # text data
+  var width/ebx: (addr int) <- get target-screen, width
+  var height/edx: (addr int) <- get target-screen, height
+  var from-y/ecx: int <- copy 0
   {
-    var height/edx: (addr int) <- get target-screen, height
-    var from-y/ecx: int <- copy 0
+    compare from-y, *height
+    break-if->=
+    var from-x/edx: int <- copy 0
+    var to-x/eax: int <- copy xmin
     {
-      compare from-y, *height
+      compare from-x, *width
       break-if->=
-      var width/edx: (addr int) <- get target-screen, width
-      var from-x/ebx: int <- copy 0
-      var to-x/eax: int <- copy xmin
-      {
-        compare from-x, *width
-        break-if->=
-        print-screen-cell-of-fake-screen screen, target-screen, from-x, from-y, to-x, to-y
-        from-x <- increment
-        to-x <- increment
-        loop
-      }
-      from-y <- increment
-      to-y <- increment
+      print-screen-cell-of-fake-screen screen, target-screen, from-x, from-y, to-x, to-y
+      from-x <- increment
+      to-x <- increment
       loop
     }
+    from-y <- increment
+    to-y <- increment
+    loop
   }
   # pixel data
   {
