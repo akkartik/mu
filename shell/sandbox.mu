@@ -257,25 +257,54 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
 
 fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
   var target-screen/esi: (addr screen) <- copy _target-screen
-  var to-y/edi: int <- copy ymin
   # text data
-  var width/ebx: (addr int) <- get target-screen, width
-  var height/edx: (addr int) <- get target-screen, height
-  var from-y/ecx: int <- copy 0
+  var width-a/eax: (addr int) <- get target-screen, width
+  var width/eax: int <- copy *width-a
+  var xmax: int
+  copy-to xmax, width
+  var tmp/eax: int <- copy xmin
+  add-to xmax, tmp
+  var height-a/eax: (addr int) <- get target-screen, height
+  var height/eax: int <- copy *height-a
+  var ymax: int
+  copy-to ymax, height
+  var tmp/eax: int <- copy ymin
+  add-to ymax, tmp
+  clear-rect screen, xmin, ymin, xmax, ymax, 0/bg
+  var data-ah/eax: (addr handle array screen-cell) <- get target-screen, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var index/ecx: int <- copy 0
+  var to-y/edi: int <- copy ymin
   {
-    compare from-y, *height
+    compare to-y, ymax
     break-if->=
-    var from-x/edx: int <- copy 0
-    var to-x/eax: int <- copy xmin
+    var to-x/ebx: int <- copy xmin
     {
-      compare from-x, *width
+      compare to-x, xmax
       break-if->=
-      print-screen-cell-of-fake-screen screen, target-screen, from-x, from-y, to-x, to-y
-      from-x <- increment
+      $render-screen:iter: {
+        var offset/ecx: (offset screen-cell) <- compute-offset data, index
+        var src-cell/edx: (addr screen-cell) <- index data, offset
+        var src-grapheme/eax: (addr grapheme) <- get src-cell, data
+        var src-fg/ecx: (addr int) <- get src-cell, color
+        var src-bg/edx: (addr int) <- get src-cell, background-color
+        {
+          compare *src-grapheme, 0x20
+          break-if-!=
+          compare *src-bg, 0
+          break-if-!=
+          break $render-screen:iter
+        }
+        abort "aa"
+        draw-grapheme-on-real-screen *src-grapheme, to-x, to-y, *src-fg, *src-bg
+#?         var foo/eax: int <- count-of-events
+#?         draw-grapheme-on-real-screen 0x20/space, to-x, to-y, *src-fg, foo
+#?         count-event
+      }
+      index <- increment
       to-x <- increment
       loop
     }
-    from-y <- increment
     to-y <- increment
     loop
   }
@@ -329,7 +358,7 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
       loop
     }
   }
-  return to-y
+  return ymax
 }
 
 fn has-keyboard? _self: (addr sandbox) -> _/eax: boolean {

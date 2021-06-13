@@ -545,8 +545,36 @@ fn pixel-index _screen: (addr screen), x: int, y: int -> _/ecx: int {
 # double-buffering primitive
 # 'screen' must be a fake screen. 'target-screen' is usually real.
 # Both screens must have the same size.
-fn copy-pixels _screen: (addr screen), target-screen: (addr screen) {
+fn copy-screen _screen: (addr screen), target-screen: (addr screen) {
   var screen/esi: (addr screen) <- copy _screen
+  # copy graphemes
+  var width-a/edi: (addr int) <- get screen, width
+  var height-a/ebx: (addr int) <- get screen, height
+  var y/edx: int <- copy 0
+  {
+    compare y, *height-a
+    break-if->=
+    var x/ecx: int <- copy 0
+    {
+      compare x, *width-a
+      break-if->=
+      var g: grapheme
+      var tmp/eax: grapheme <- screen-grapheme-at screen, x, y
+      copy-to g, tmp
+      var fg: int
+      var tmp/eax: int <- screen-color-at screen, x, y
+      copy-to fg, tmp
+      var bg: int
+      tmp <- screen-background-color-at screen, x, y
+      copy-to bg, tmp
+      draw-grapheme target-screen, g, x, y, fg, bg
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+  # copy pixels
   var pixels-ah/eax: (addr handle array byte) <- get screen, pixels
   var _pixels/eax: (addr array byte) <- lookup *pixels-ah
   var pixels/edi: (addr array byte) <- copy _pixels
