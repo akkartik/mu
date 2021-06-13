@@ -24,13 +24,14 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int, backgr
     52/push-edx
     53/push-ebx
     56/push-esi
-    # var letter-bitmap/esi = font[g]
+    # esi = g
     8b/-> *(ebp+8) 6/r32/esi
+    # if (g >= 128) return  # characters beyond ASCII currently not supported
+    81 7/subop/compare %esi 0x80/imm32
+    7d/jump-if->= $draw-grapheme-on-real-screen:end/disp8
+    # var letter-bitmap/esi = font[g]
     c1 4/subop/shift-left %esi 4/imm8
     81 0/subop/add %esi Font/imm32
-    # if (letter-bitmap >= 0x9400) return  # characters beyond ASCII currently not supported
-    81 7/subop/compare %esi 0x9400/imm32
-    7d/jump-if->= $draw-grapheme-on-real-screen:end/disp8
     # var ycurr/edx: int = y*16
     8b/-> *(ebp+0x10) 2/r32/edx
     c1 4/subop/shift-left %edx 4/imm8
