@@ -18,6 +18,19 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int, backgr
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    #
+    (draw-grapheme-on-screen-buffer *Video-memory-addr *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
+$draw-grapheme-on-real-screen:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# 'buffer' here is not a valid Mu type: a naked address without a length.
+draw-grapheme-on-screen-buffer:  # buffer: (addr byte), g: grapheme, x: int, y: int, color: int, background-color: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
     51/push-ecx
@@ -25,17 +38,17 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int, backgr
     53/push-ebx
     56/push-esi
     # var letter-bitmap/esi = font[g]
-    8b/-> *(ebp+8) 6/r32/esi
+    8b/-> *(ebp+0xc) 6/r32/esi
     c1 4/subop/shift-left %esi 4/imm8
     81 0/subop/add %esi Font/imm32
     # if (letter-bitmap >= 0x9400) return  # characters beyond ASCII currently not supported
     81 7/subop/compare %esi 0x9400/imm32
-    7d/jump-if->= $draw-grapheme-on-real-screen:end/disp8
+    7d/jump-if->= $draw-grapheme-on-screen-buffer:end/disp8
     # var ycurr/edx: int = y*16
-    8b/-> *(ebp+0x10) 2/r32/edx
+    8b/-> *(ebp+0x14) 2/r32/edx
     c1 4/subop/shift-left %edx 4/imm8
     # var ymax/ebx: int = ycurr + 16
-    8b/-> *(ebp+0x10) 3/r32/ebx
+    8b/-> *(ebp+0x14) 3/r32/ebx
     c1 4/subop/shift-left %ebx 4/imm8
     81 0/subop/add %ebx 0x10/imm32
     {
@@ -43,11 +56,11 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int, backgr
       39/compare %edx 3/r32/ebx
       7d/jump-if->= break/disp8
       # var xcurr/eax: int = x*8 + 7
-      8b/-> *(ebp+0xc) 0/r32/eax  # font-width - 1
+      8b/-> *(ebp+0x10) 0/r32/eax  # font-width - 1
       c1 4/subop/shift-left %eax 3/imm8
       05/add-to-eax 7/imm32
       # var xmin/ecx: int = x*8
-      8b/-> *(ebp+0xc) 1/r32/ecx
+      8b/-> *(ebp+0x10) 1/r32/ecx
       c1 4/subop/shift-left %ecx 3/imm8
       # var row-bitmap/ebx: int = *letter-bitmap
       53/push-ebx
@@ -61,12 +74,12 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int, backgr
         # if LSB, draw a pixel in the given color
         {
           73/jump-if-not-CF break/disp8
-          (pixel-on-real-screen %eax %edx *(ebp+0x14))
-          eb/jump $draw-grapheme-on-real-screen:continue/disp8
+          (pixel-on-screen-buffer *(ebp+8) %eax %edx *(ebp+0x18))
+          eb/jump $draw-grapheme-on-screen-buffer:continue/disp8
         }
         # otherwise use the background color
-        (pixel-on-real-screen %eax %edx *(ebp+0x18))
-$draw-grapheme-on-real-screen:continue:
+        (pixel-on-screen-buffer *(ebp+8) %eax %edx *(ebp+0x1c))
+$draw-grapheme-on-screen-buffer:continue:
         # --x
         48/decrement-eax
         #
@@ -81,7 +94,7 @@ $draw-grapheme-on-real-screen:continue:
       #
       eb/jump loop/disp8
     }
-$draw-grapheme-on-real-screen:end:
+$draw-grapheme-on-screen-buffer:end:
     # . restore registers
     5e/pop-to-esi
     5b/pop-to-ebx
