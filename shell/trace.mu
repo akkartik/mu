@@ -417,10 +417,10 @@ fn dump-trace-with-label _self: (addr trace), label: (addr array byte) {
   var i/edx: int <- copy 0
   var max-addr/ebx: (addr int) <- get self, first-free
   var max/ebx: int <- copy *max-addr
-  $dump-trace:loop: {
+  $dump-trace-with-label:loop: {
     compare i, max
     break-if->=
-    $dump-trace:iter: {
+    $dump-trace-with-label:iter: {
       var offset/ebx: (offset trace-line) <- compute-offset trace, i
       var curr/ebx: (addr trace-line) <- index trace, offset
       var curr-label-ah/eax: (addr handle array byte) <- get curr, label

@@ -141,7 +141,7 @@ try-write:  # f: (addr stream byte), s: (addr array byte) -> overflow?/eax: bool
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # if (s == 0) return
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       0/imm32           # compare *(ebp+12)
-    74/jump-if-=  $write:end/disp8
+    74/jump-if-=  $try-write:end/disp8
     # . save registers
     51/push-ecx
     # if (f->size - f->write < s->size) return
@@ -202,7 +202,7 @@ stream-size:  # f: (addr stream byte) -> n/eax: int
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
     # . restore registers
     59/pop-to-ecx
-$space-remaining-in-stream:end:
+$stream-size:end:
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
