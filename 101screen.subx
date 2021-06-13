@@ -9,30 +9,43 @@ pixel-on-real-screen:  # x: int, y: int, color: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    #
+    (pixel-on-screen-buffer *Video-memory-addr *(ebp+8) *(ebp+0xc) *(ebp+0x10) 0x400 0x300)
+$pixel-on-real-screen:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# 'buffer' here is not a valid Mu type: a naked address without a length.
+pixel-on-screen-buffer:  # buffer: (addr byte), x: int, y: int, color: int, width: int, height: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
     51/push-ecx
     # bounds checks
-    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *(ebp+0xc) 0/r32/eax  # foo
     3d/compare-eax-and 0/imm32
-    7c/jump-if-< $pixel-on-real-screen:end/disp8
-    3d/compare-eax-and 0x400/imm32/screen-width=1024
-    7d/jump-if->= $pixel-on-real-screen:end/disp8
-    8b/-> *(ebp+0xc) 0/r32/eax
+    7c/jump-if-< $pixel-on-screen-buffer:end/disp8
+    3b/compare 0/r32/eax *(ebp+0x18)
+    7d/jump-if->= $pixel-on-screen-buffer:end/disp8
+    8b/-> *(ebp+0x10) 0/r32/eax
     3d/compare-eax-and 0/imm32
-    7c/jump-if-< $pixel-on-real-screen:end/disp8
-    3d/compare-eax-and 0x300/imm32/screen-height=768
-    7d/jump-if->= $pixel-on-real-screen:end/disp8
-    # eax = y*1024 + x
-    8b/-> *(ebp+0xc) 0/r32/eax
-    c1/shift 4/subop/left %eax 0xa/imm8
-    03/add-> *(ebp+8) 0/r32/eax
+    7c/jump-if-< $pixel-on-screen-buffer:end/disp8
+    3b/compare 0/r32/eax *(ebp+0x1c)
+    7d/jump-if->= $pixel-on-screen-buffer:end/disp8
+    # eax = y*width + x
+    8b/-> *(ebp+0x10) 0/r32/eax
+    0f af/multiply-> *(ebp+0x18) 0/r32/eax
+    03/add-> *(ebp+0xc) 0/r32/eax
     # eax += location of frame buffer
-    03/add-> *Video-memory-addr 0/r32/eax
+    03/add-> *(ebp+8) 0/r32/eax
     # *eax = color
-    8b/-> *(ebp+0x10) 1/r32/ecx
+    8b/-> *(ebp+0x14) 1/r32/ecx
     88/byte<- *eax 1/r32/CL
-$pixel-on-real-screen:end:
+$pixel-on-screen-buffer:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
