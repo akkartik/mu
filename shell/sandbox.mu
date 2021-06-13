@@ -257,56 +257,29 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
 
 fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
   var target-screen/esi: (addr screen) <- copy _target-screen
+  var screen-y/edi: int <- copy ymin
   # text data
-  var width-a/eax: (addr int) <- get target-screen, width
-  var width/eax: int <- copy *width-a
-  var xmax: int
-  copy-to xmax, width
-  var tmp/eax: int <- copy xmin
-  add-to xmax, tmp
-  var height-a/eax: (addr int) <- get target-screen, height
-  var height/eax: int <- copy *height-a
-  var ymax: int
-  copy-to ymax, height
-  var tmp/eax: int <- copy ymin
-  add-to ymax, tmp
-  clear-rect screen, xmin, ymin, xmax, ymax, 0/bg
-  var data-ah/eax: (addr handle array screen-cell) <- get target-screen, data
-  var data/eax: (addr array screen-cell) <- lookup *data-ah
-  var index/ecx: int <- copy 0
-  var to-y/edi: int <- copy ymin
   {
-    compare to-y, ymax
-    break-if->=
-    var to-x/ebx: int <- copy xmin
+    var height/edx: (addr int) <- get target-screen, height
+    var y/ecx: int <- copy 0
     {
-      compare to-x, xmax
+      compare y, *height
       break-if->=
-      $render-screen:iter: {
-        var offset/ecx: (offset screen-cell) <- compute-offset data, index
-        var src-cell/edx: (addr screen-cell) <- index data, offset
-        var src-grapheme/eax: (addr grapheme) <- get src-cell, data
-        var src-fg/ecx: (addr int) <- get src-cell, color
-        var src-bg/edx: (addr int) <- get src-cell, background-color
-        {
-          compare *src-grapheme, 0x20
-          break-if-!=
-          compare *src-bg, 0
-          break-if-!=
-          break $render-screen:iter
-        }
-        abort "aa"
-        draw-grapheme-on-real-screen *src-grapheme, to-x, to-y, *src-fg, *src-bg
-#?         var foo/eax: int <- count-of-events
-#?         draw-grapheme-on-real-screen 0x20/space, to-x, to-y, *src-fg, foo
-#?         count-event
+      set-cursor-position screen, xmin, screen-y
+      var width/edx: (addr int) <- get target-screen, width
+      var x/ebx: int <- copy 0
+      {
+        compare x, *width
+        break-if->=
+        print-screen-cell-of-fake-screen screen, target-screen, x, y
+        move-cursor-right screen
+        x <- increment
+        loop
       }
-      index <- increment
-      to-x <- increment
+      y <- increment
+      screen-y <- increment
       loop
     }
-    to-y <- increment
-    loop
   }
   # pixel data
   {
@@ -358,7 +331,7 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
       loop
     }
   }
-  return ymax
+  return screen-y
 }
 
 fn has-keyboard? _self: (addr sandbox) -> _/eax: boolean {
@@ -430,7 +403,7 @@ fn render-keyboard screen: (addr screen), _keyboard: (addr gap-buffer), xmin: in
   return y
 }
 
-fn print-screen-cell-of-fake-screen-at-cursor screen: (addr screen), _target: (addr screen), x: int, y: int {
+fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen), x: int, y: int {
   var target/ecx: (addr screen) <- copy _target
   var data-ah/eax: (addr handle array screen-cell) <- get target, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -441,19 +414,6 @@ fn print-screen-cell-of-fake-screen-at-cursor screen: (addr screen), _target: (a
   var src-color/ecx: (addr int) <- get src-cell, color
   var src-background-color/edx: (addr int) <- get src-cell, background-color
   draw-grapheme-at-cursor screen, *src-grapheme, *src-color, *src-background-color
-}
-
-fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen), from-x: int, from-y: int, to-x: int, to-y: int {
-  var target/ecx: (addr screen) <- copy _target
-  var data-ah/eax: (addr handle array screen-cell) <- get target, data
-  var data/eax: (addr array screen-cell) <- lookup *data-ah
-  var index/ecx: int <- screen-cell-index target, from-x, from-y
-  var offset/ecx: (offset screen-cell) <- compute-offset data, index
-  var src-cell/esi: (addr screen-cell) <- index data, offset
-  var src-grapheme/eax: (addr grapheme) <- get src-cell, data
-  var src-fg/ecx: (addr int) <- get src-cell, color
-  var src-bg/edx: (addr int) <- get src-cell, background-color
-  draw-grapheme screen, *src-grapheme, to-x, to-y, *src-fg, *src-bg
 }
 
 fn render-sandbox-edit-menu screen: (addr screen), _self: (addr sandbox) {
@@ -516,7 +476,7 @@ fn render-keyboard-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
-fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-table), data-disk: (addr disk), outer-screen: (addr screen), outer-keyboard: (addr keyboard) {
+fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-table), data-disk: (addr disk) {
   var self/esi: (addr sandbox) <- copy _self
   # ctrl-s
   {
@@ -530,7 +490,7 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
     # persisted until the next call to ctrl-s.
     store-state data-disk, self, globals
     #
-    run-sandbox self, globals, outer-screen, outer-keyboard
+    run-sandbox self, globals
     return
   }
   # ctrl-m
@@ -649,7 +609,7 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
       # rerun at higher depth
       var max-depth-addr/ecx: (addr int) <- get trace, max-depth
       increment *max-depth-addr
-      run-sandbox self, globals, outer-screen, outer-keyboard
+      run-sandbox self, globals
       # recompute cached indices
       recompute-all-visible-lines trace
       var save-addr/ecx: (addr trace-index-stash) <- address save
@@ -660,7 +620,7 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
   }
 }
 
-fn run-sandbox _self: (addr sandbox), globals: (addr global-table), outer-screen: (addr screen), outer-keyboard: (addr keyboard) {
+fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   var self/esi: (addr sandbox) <- copy _self
   var data-ah/ecx: (addr handle gap-buffer) <- get self, data
   var eval-result-h: (handle cell)
@@ -678,7 +638,7 @@ fn run-sandbox _self: (addr sandbox), globals: (addr global-table), outer-screen
   var inner-keyboard-var/eax: (addr handle cell) <- get self, keyboard-var
   rewind-keyboard-var inner-keyboard-var  # don't clear keys from before
   #
-  read-and-evaluate-and-save-gap-buffer-to-globals data-ah, eval-result-ah, globals, definitions-created, trace, inner-screen-var, inner-keyboard-var, outer-screen, outer-keyboard
+  read-and-evaluate-and-save-gap-buffer-to-globals data-ah, eval-result-ah, globals, definitions-created, trace, inner-screen-var, inner-keyboard-var
   # if necessary, initialize a new gap-buffer for sandbox
   {
     compare globals, 0
@@ -706,7 +666,7 @@ fn test-run-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "1"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -724,7 +684,7 @@ fn test-run-negative-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "-1"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -742,7 +702,7 @@ fn test-run-error-invalid-integer {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "1a"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -760,7 +720,7 @@ fn test-run-error-unknown-symbol {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "a"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -778,7 +738,7 @@ fn test-run-with-spaces {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, " 1 \n"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -797,7 +757,7 @@ fn test-run-quote {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'a"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -815,7 +775,7 @@ fn test-run-dotted-list {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a . b)"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -833,7 +793,7 @@ fn test-run-dot-and-list {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a . (b))"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -851,7 +811,7 @@ fn test-run-final-dot {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a .)"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -870,7 +830,7 @@ fn test-run-double-dot {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a . .)"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -889,7 +849,7 @@ fn test-run-multiple-expressions-after-dot {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "'(a . b c)"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -908,7 +868,7 @@ fn test-run-stream {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "[a b]"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -926,7 +886,7 @@ fn test-run-move-cursor-into-trace {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "12"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -941,7 +901,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-move-cursor-into-trace/pre-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-move-cursor-into-trace/pre-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
@@ -952,7 +912,7 @@ fn test-run-move-cursor-into-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-move-cursor-into-trace/trace-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-move-cursor-into-trace/trace-2/cursor"
   # move cursor into input
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
@@ -988,7 +948,7 @@ fn test-run-expand-trace {
   var sandbox/esi: (addr sandbox) <- address sandbox-storage
   initialize-sandbox-with sandbox, "12"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -1003,7 +963,7 @@ fn test-run-expand-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-expand-trace/pre0-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-expand-trace/pre0-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
@@ -1014,7 +974,7 @@ fn test-run-expand-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-expand-trace/pre1-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-expand-trace/pre1-2/cursor"
   # expand
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   #
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
@@ -1035,7 +995,7 @@ fn test-run-can-rerun-when-expanding-trace {
   # initialize sandbox with a max-depth of 3
   initialize-sandbox-with sandbox, "12"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -1050,7 +1010,7 @@ fn test-run-can-rerun-when-expanding-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-can-rerun-when-expanding-trace/pre0-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre0-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
@@ -1061,7 +1021,7 @@ fn test-run-can-rerun-when-expanding-trace {
   check-screen-row screen,                                  3/y, " => 12 ", "F - test-run-can-rerun-when-expanding-trace/pre1-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre1-2/cursor"
   # expand
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   #
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
@@ -1075,9 +1035,9 @@ fn test-run-can-rerun-when-expanding-trace {
   check-screen-row screen,                                  4/y, " 1 pars", "F - test-run-can-rerun-when-expanding-trace/pre2-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre2-2/cursor"
   # move cursor down and expand
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   #
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
@@ -1100,7 +1060,7 @@ fn test-run-preserves-trace-view-on-rerun {
   # initialize sandbox with a max-depth of 3
   initialize-sandbox-with sandbox, "7"
   # eval
-  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x13/ctrl-s, 0/no-globals, 0/no-disk
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
@@ -1115,7 +1075,7 @@ fn test-run-preserves-trace-view-on-rerun {
   check-screen-row screen,                                  3/y, " => 7                  ", "F - test-run-preserves-trace-view-on-rerun/pre0-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre0-2/cursor"
   # move cursor into trace
-  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xd/ctrl-m, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   #
   check-screen-row screen,                                  1/y, " 7                     ", "F - test-run-preserves-trace-view-on-rerun/pre1-0"
@@ -1125,7 +1085,7 @@ fn test-run-preserves-trace-view-on-rerun {
   check-screen-row screen,                                  3/y, " => 7                  ", "F - test-run-preserves-trace-view-on-rerun/pre1-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre1-2/cursor"
   # expand
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   #
@@ -1146,15 +1106,15 @@ fn test-run-preserves-trace-view-on-rerun {
   check-screen-row screen,                                  8/y, " 1 => 7                ", "F - test-run-preserves-trace-view-on-rerun/pre2-7"
   check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-7/cursor"
   # move cursor down below the macroexpand line and expand
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
-  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   #
   check-screen-row screen,                                  1/y, " 7                     ", "F - test-run-preserves-trace-view-on-rerun/pre3-0"
@@ -1174,7 +1134,7 @@ fn test-run-preserves-trace-view-on-rerun {
   check-screen-row screen,                                  8/y, " 1 => 7                ", "F - test-run-preserves-trace-view-on-rerun/pre3-7"
   check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-7/cursor"
   # expand
-  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   clear-screen screen
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # cursor line is expanded

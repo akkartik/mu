@@ -28,7 +28,7 @@ fn test-environment {
   # type some code into sandbox
   type-in env, screen, "(+ 3 4)"  # we don't have any global definitions here, so no macros
   # run code in sandbox
-  edit-environment env, 0x13/ctrl-s, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x13/ctrl-s, 0/no-disk
   render-environment screen, env
   #                                                         | global definitions                                                                 | sandbox
   # top row blank for now
@@ -62,7 +62,7 @@ fn test-definition-in-environment {
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   # define a global on the right (sandbox) side
   type-in env, screen, "(define f 42)"
-  edit-environment env, 0x13/ctrl-s, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x13/ctrl-s, 0/no-disk
   render-environment screen, env
   #                                                         | global definitions                                                                 | sandbox
   check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-definition-in-environment/0"
@@ -83,7 +83,7 @@ fn test-definition-in-environment {
 # helper for testing
 fn type-in self: (addr environment), screen: (addr screen), keys: (addr array byte) {
   # clear the buffer
-  edit-environment self, 0x15/ctrl-u, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment self, 0x15/ctrl-u, 0/no-disk
   render-environment screen, self
   # type in all the keys
   var input-stream-storage: (stream byte 0x40/capacity)
@@ -94,7 +94,7 @@ fn type-in self: (addr environment), screen: (addr screen), keys: (addr array by
     compare done?, 0/false
     break-if-!=
     var key/eax: grapheme <- read-grapheme input-stream
-    edit-environment self, key, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+    edit-environment self, key, 0/no-disk
     render-environment screen, self
     loop
   }
@@ -145,7 +145,7 @@ fn render-environment screen: (addr screen), _self: (addr environment) {
   render-sandbox-menu screen, sandbox
 }
 
-fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr disk), outer-screen: (addr screen), outer-keyboard: (addr keyboard) {
+fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr disk) {
   var self/esi: (addr environment) <- copy _self
   var globals/edi: (addr global-table) <- get self, globals
   var sandbox/ecx: (addr sandbox) <- get self, sandbox
@@ -189,7 +189,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     var trace-storage: trace
     var trace/ebx: (addr trace) <- address trace-storage
     initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
-    evaluate tmp, out-ah, nil, globals, trace, 0/no-fake-screen, 0/no-fake-keyboard, 0/definitions-created, 0/no-outer-screen, 0/no-outer-keyboard, 0/call-number
+    evaluate tmp, out-ah, nil, globals, trace, 0/no-fake-screen, 0/no-fake-keyboard, 0/definitions-created, 0/call-number
     # wait for a keypress
     {
       var tmp/eax: byte <- read-key 0/keyboard
@@ -216,7 +216,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
         edit-globals globals, key
       }
       # update sandbox whether the cursor is in globals or sandbox
-      edit-sandbox sandbox, key, globals, data-disk, outer-screen, outer-keyboard
+      edit-sandbox sandbox, key, globals, data-disk
     }
     return
   }
@@ -366,10 +366,10 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
     edit-globals globals, key
     return
   }
-  edit-sandbox sandbox, key, globals, data-disk, outer-screen, outer-keyboard
+  edit-sandbox sandbox, key, globals, data-disk
 }
 
-fn read-and-evaluate-and-save-gap-buffer-to-globals _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), definitions-created: (addr stream int), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), outer-screen: (addr screen), outer-keyboard: (addr keyboard) {
+fn read-and-evaluate-and-save-gap-buffer-to-globals _in-ah: (addr handle gap-buffer), result-ah: (addr handle cell), globals: (addr global-table), definitions-created: (addr stream int), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell) {
   var in-ah/eax: (addr handle gap-buffer) <- copy _in-ah
   var in/eax: (addr gap-buffer) <- lookup *in-ah
   var read-result-h: (handle cell)
@@ -394,7 +394,7 @@ fn read-and-evaluate-and-save-gap-buffer-to-globals _in-ah: (addr handle gap-buf
 #?   set-cursor-position 0/screen, 0 0
 #?   turn-on-debug-print
   debug-print "^", 4/fg, 0/bg
-  evaluate read-result-ah, result-ah, *nil-ah, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, outer-screen, outer-keyboard, 1/call-number
+  evaluate read-result-ah, result-ah, *nil-ah, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, 1/call-number
   debug-print "$", 4/fg, 0/bg
   var error?/eax: boolean <- has-errors? trace
   {
@@ -419,7 +419,7 @@ fn test-go-modal {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   # hit ctrl-g
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   #
   check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-go-modal/0"
@@ -454,10 +454,10 @@ fn test-leave-go-modal {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   # hit ctrl-g
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # cancel
-  edit-environment env, 0x1b/escape, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
   # no modal
   check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-leave-go-modal/0"
@@ -488,15 +488,15 @@ fn test-jump-to-global {
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   # define a global
   type-in env, screen, "(define f 42)"
-  edit-environment env, 0x13/ctrl-s, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x13/ctrl-s, 0/no-disk
   render-environment screen, env
   # hit ctrl-g
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # type global name
   type-in env, screen, "f"
   # submit
-  edit-environment env, 0xa/newline, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0xa/newline, 0/no-disk
   render-environment screen, env
   #                                                                 | global definitions                                                                 | sandbox
   # cursor now in global definition
@@ -532,7 +532,7 @@ fn test-go-modal-prepopulates-word-at-cursor {
   # type a word at the cursor
   type-in env, screen, "fn1"
   # hit ctrl-g
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # modal prepopulates word at cursor
   check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/0"
@@ -557,13 +557,13 @@ fn test-go-modal-prepopulates-word-at-cursor {
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/14"
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/15"
   # cancel
-  edit-environment env, 0x1b/escape, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
   # type one more space
-  edit-environment env, 0x20/space, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x20/space, 0/no-disk
   render-environment screen, env
   # hit ctrl-g again
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # no word prepopulated since cursor is not on the word
   check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-0"
@@ -588,15 +588,15 @@ fn test-go-modal-prepopulates-word-at-cursor {
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xe/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-14"
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test2-15"
   # cancel
-  edit-environment env, 0x1b/escape, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
   # move cursor to the left until it's on the word again
-  edit-environment env, 0x80/left-arrow, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x80/left-arrow, 0/no-disk
   render-environment screen, env
-  edit-environment env, 0x80/left-arrow, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x80/left-arrow, 0/no-disk
   render-environment screen, env
   # hit ctrl-g again
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # word prepopulated like before
   check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-go-modal-prepopulates-word-at-cursor/test3-0"
@@ -633,10 +633,10 @@ fn test-jump-to-nonexistent-global {
   # type in any (nonexistent) global name
   type-in env, screen, "f"
   # hit ctrl-g
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # submit
-  edit-environment env, 0xa/newline, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0xa/newline, 0/no-disk
   render-environment screen, env
   # modal now shows an error
   #                                                                 | global definitions                                                                 | sandbox
@@ -663,10 +663,10 @@ fn test-jump-to-nonexistent-global {
   check-screen-row                     screen,               0xf/y, " ^r  run main   enter  go   ^m  create   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                  ", "F - test-jump-to-nonexistent-global/15-text"
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/15"
   # cancel
-  edit-environment env, 0x1b/escape, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
   # hit ctrl-g again
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # word prepopulated like before, but no error
   check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-jump-to-nonexistent-global/test2-0"
@@ -702,12 +702,12 @@ fn test-create-global {
   var screen/edi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   # hit ctrl-g
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # type global name
   type-in env, screen, "fn1"
   # create
-  edit-environment env, 0xd/ctrl-m, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0xd/ctrl-m, 0/no-disk
   render-environment screen, env
   #                                                                 | global definitions                                                                 | sandbox
   # cursor now on global side
@@ -741,15 +741,15 @@ fn test-create-nonexistent-global {
   initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
   # define a global
   type-in env, screen, "(define f 42)"
-  edit-environment env, 0x13/ctrl-s, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x13/ctrl-s, 0/no-disk
   render-environment screen, env
   # type in its name
   type-in env, screen, "f"
   # hit ctrl-g
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # submit
-  edit-environment env, 0xd/ctrl-m, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0xd/ctrl-m, 0/no-disk
   render-environment screen, env
   # modal now shows an error
   #                                                                 | global definitions                                                                 | sandbox
@@ -776,10 +776,10 @@ fn test-create-nonexistent-global {
   check-screen-row                     screen,               0xf/y, " ^r  run main   enter  go   ^m  create   esc  cancel   ^a  <<   ^b  <word   ^f  word>   ^e  >>                                  ", "F - test-create-nonexistent-global/15-text"
   check-background-color-in-screen-row screen, 0xf/bg=modal, 0xf/y, "                                                                                                                                ", "F - test-create-nonexistent-global/15"
   # cancel
-  edit-environment env, 0x1b/escape, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 0x1b/escape, 0/no-disk
   render-environment screen, env
   # hit ctrl-g again
-  edit-environment env, 7/ctrl-g, 0/no-disk, 0/unused-outer-screen, 0/unused-outer-keyboard
+  edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
   # word prepopulated like before, but no error
   check-background-color-in-screen-row screen, 0xf/bg=modal,   0/y, "                                                                                                                                ", "F - test-create-nonexistent-global/test2-0"

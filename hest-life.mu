@@ -28,7 +28,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var second-screen/edi: (addr screen) <- address second-buffer
   initialize-screen second-screen, 0x80, 0x30, 1/include-pixels
   render second-screen, env
-  copy-screen second-screen, screen
+  copy-pixels second-screen, screen
   {
     edit keyboard, env
     var play?/eax: (addr boolean) <- get env, play?

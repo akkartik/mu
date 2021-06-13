@@ -14,7 +14,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       compare key, 0
       loop-if-=
       var key/eax: grapheme <- copy key
-      edit-environment env, key, data-disk, screen, keyboard
+      edit-environment env, key, data-disk
     }
     loop
   }

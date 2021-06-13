@@ -508,7 +508,7 @@ fn test-evaluate-missing-arg-in-add {
   var globals/edx: (addr global-table) <- address globals-storage
   initialize-globals globals
   #
-  evaluate tmp-ah, tmp-ah, *nil-ah, globals, t, 0/no-screen, 0/no-keyboard, 0/definitions-created, 0/unused-outer-screen, 0/unused-outer-keyboard, 0/call-number
+  evaluate tmp-ah, tmp-ah, *nil-ah, globals, t, 0/no-screen, 0/no-keyboard, 0/definitions-created, 0/call-number
   # no crash
 }
 
