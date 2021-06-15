@@ -293,8 +293,6 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
           var color-addr/ecx: (addr byte) <- index pixels, idx
           var color/ecx: byte <- copy-byte *color-addr
           var color2/ecx: int <- copy color
-          compare color2, 0
-          break-if-=
           var x2/eax: int <- copy x
           x2 <- add left
           var y2/ebx: int <- copy y
