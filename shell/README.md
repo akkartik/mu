@@ -27,7 +27,7 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
   $ qemu-system-i386 -m 2G -hda code.img -hdb data.img
   ```
 
-  <img alt='screenshot of the Mu shell' src='../html/20210531-mu-shell.png'>
+  <img alt='screenshot of the Mu shell' src='../html/20210615-shell.png'>
 
   The Mu computer has a fixed-size screen, which the shell environment
   partitions into two major regions, with a context-sensitive menu of keyboard
