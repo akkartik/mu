@@ -114,6 +114,13 @@ Mu programs can be written for two very different environments:
   Individual programs typically run tests if given a command-line argument
   called `test`.
 
+The largest program built in Mu today is its prototyping environment for
+writing slow, interpreted programs in a Lisp-based high-level language.
+
+<img alt='screenshot of the Mu shell' widht='600px' src='html/20210531-mu-shell.png'>
+
+(For more details, see [the `shell/` directory.](https://github.com/akkartik/mu/tree/main/shell#readme))
+
 While I currently focus on programs without an OS, the `linux/` sub-directory
 is fairly ergonomic. There's a couple of dozen example programs to try out
 there. It is likely to be the option for a network stack in the foreseeable
