@@ -34,7 +34,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     var screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
     compare screen-obj, 0
     break-if-=
-    var y/ecx: int <- render-screen 0/screen, screen-obj, 0x58/xmin, 2/ymin
+    render-screen 0/screen, screen-obj, 0x58/xmin, 2/ymin
     var key/eax: byte <- read-key 0/keyboard
     compare key, 0
     break-if-=

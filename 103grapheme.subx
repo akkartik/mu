@@ -26,6 +26,50 @@ $draw-grapheme-on-real-screen:end:
     5d/pop-to-ebp
     c3/return
 
+draw-grapheme-on-screen-array:  # screen-data: (addr array byte), g: grapheme, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    # if screen-width*screen-height > len(screen-data) abort
+    {
+      # ecx = len(screen-data)
+      8b/-> *(ebp+8) 1/r32/ecx
+      8b/-> *ecx 1/r32/ecx
+      # eax = screen-width*screen-height
+      ba/copy-to-edx 0/imm32
+      8b/-> *(ebp+0x20) 0/r32/eax
+      f7 4/subop/multiply-into-eax *(ebp+0x24)
+      81 7/subop/compare %edx 0/imm32
+      0f 85/jump-if-!= $draw-grapheme-on-screen-array:overflow/disp32
+      # if (eax > ecx) abort
+      39/compare %eax 1/r32/ecx
+      0f 8f/jump-if-> $draw-grapheme-on-screen-array:abort/disp32
+    }
+    # eax = screen-data+4   (skip length)
+    8b/-> *(ebp+8) 0/r32/eax
+    05/add-to-eax 4/imm32
+    #
+    (draw-grapheme-on-screen-buffer %eax *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+$draw-grapheme-on-screen-array:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$draw-grapheme-on-screen-array:overflow:
+    (abort "draw-grapheme-on-screen-array: screen dimensions too large")
+
+$draw-grapheme-on-screen-array:abort:
+    (abort "draw-grapheme-on-screen-array: coordinates are off the screen. Are the screen dimensions correct?")
+
 # 'buffer' here is not a valid Mu type: a naked address without a length.
 draw-grapheme-on-screen-buffer:  # buffer: (addr byte), g: grapheme, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
     # . prologue

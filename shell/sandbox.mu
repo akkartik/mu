@@ -124,7 +124,7 @@ fn render-sandbox screen: (addr screen), _self: (addr sandbox), xmin: int, ymin:
     var dummy/eax: int <- draw-stream-rightward screen, value, x2, xmax, y, 7/fg=grey, 0xc5/bg=blue-bg
   }
   y <- add 2  # padding
-  y <- maybe-render-screen screen, self, xmin, y
+  maybe-render-screen screen, self, xmin, y
 }
 
 fn render-sandbox-menu screen: (addr screen), _self: (addr sandbox) {
@@ -195,20 +195,20 @@ fn maybe-render-empty-screen screen: (addr screen), _self: (addr sandbox), xmin:
   return y
 }
 
-fn maybe-render-screen screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int -> _/ecx: int {
+fn maybe-render-screen screen: (addr screen), _self: (addr sandbox), xmin: int, ymin: int {
   var self/esi: (addr sandbox) <- copy _self
   var screen-obj-cell-ah/eax: (addr handle cell) <- get self, screen-var
   var screen-obj-cell/eax: (addr cell) <- lookup *screen-obj-cell-ah
   compare screen-obj-cell, 0
   {
     break-if-!=
-    return ymin
+    return
   }
   var screen-obj-cell-type/ecx: (addr int) <- get screen-obj-cell, type
   compare *screen-obj-cell-type, 5/screen
   {
     break-if-=
-    return ymin  # silently give up on rendering the screen
+    return  # silently give up on rendering the screen
   }
   var screen-obj-ah/eax: (addr handle screen) <- get screen-obj-cell, screen-data
   var _screen-obj/eax: (addr screen) <- lookup *screen-obj-ah
@@ -217,15 +217,14 @@ fn maybe-render-screen screen: (addr screen), _self: (addr sandbox), xmin: int, 
     var screen-empty?/eax: boolean <- fake-screen-empty? screen-obj
     compare screen-empty?, 0/false
     break-if-=
-    return ymin
+    return
   }
   var x/eax: int <- draw-text-rightward screen, "screen:   ", xmin, 0x99/xmax, ymin, 0x17/fg, 0xc5/bg=blue-bg
   x <- copy xmin
   x <- add 2
   var y/ecx: int <- copy ymin
   y <- increment
-  y <- render-screen screen, screen-obj, x, y
-  return y
+  render-screen screen, screen-obj, x, y
 }
 
 fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
@@ -255,32 +254,10 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
   return screen-y
 }
 
-fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int -> _/ecx: int {
+fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int {
   var target-screen/esi: (addr screen) <- copy _target-screen
-  var screen-y/edi: int <- copy ymin
-  # text data
-  {
-    var height/edx: (addr int) <- get target-screen, height
-    var y/ecx: int <- copy 0
-    {
-      compare y, *height
-      break-if->=
-      set-cursor-position screen, xmin, screen-y
-      var width/edx: (addr int) <- get target-screen, width
-      var x/ebx: int <- copy 0
-      {
-        compare x, *width
-        break-if->=
-        print-screen-cell-of-fake-screen screen, target-screen, x, y
-        move-cursor-right screen
-        x <- increment
-        loop
-      }
-      y <- increment
-      screen-y <- increment
-      loop
-    }
-  }
+  convert-graphemes-to-pixels target-screen  # might overwrite existing pixel data with graphemes
+                                             # overlapping the two is not supported
   # pixel data
   {
     # screen top left pixels x y width height
@@ -331,7 +308,6 @@ fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int
       loop
     }
   }
-  return screen-y
 }
 
 fn has-keyboard? _self: (addr sandbox) -> _/eax: boolean {

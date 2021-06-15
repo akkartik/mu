@@ -268,7 +268,7 @@ fn clear-screen _screen: (addr screen) {
     {
       compare x, *width
       break-if->=
-      draw-code-point screen, 0x20/space, x, y, 0/fg=black, 0/bg=black
+      draw-code-point screen, 0/nul, x, y, 0/fg=black, 0/bg=black
       x <- increment
       loop
     }
@@ -574,6 +574,50 @@ fn copy-pixels _screen: (addr screen), target-screen: (addr screen) {
       }
       x <- increment
       i <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+}
+
+# It turns out double-buffering graphemes is useless because rendering fonts
+# takes too long. (At least under Qemu.)
+# So we'll instead convert graphemes to pixels when double-buffering.
+# 'screen' must be a fake screen.
+fn convert-graphemes-to-pixels _screen: (addr screen) {
+  var screen/esi: (addr screen) <- copy _screen
+  var width-a/ebx: (addr int) <- get screen, width
+  var height-a/edx: (addr int) <- get screen, height
+  var data-ah/eax: (addr handle array byte) <- get screen, pixels
+  var _data/eax: (addr array byte) <- lookup *data-ah
+  var data: (addr array byte)
+  copy-to data, _data
+  var y/ecx: int <- copy 0
+  {
+    compare y, *height-a
+    break-if->=
+    var x/edi: int <- copy 0
+    {
+      compare x, *width-a
+      break-if->=
+      {
+        var tmp/eax: grapheme <- screen-grapheme-at screen, x, y
+        # skip null graphemes that only get created when clearing screen
+        # there may be other pixels drawn there, and we don't want to clobber them
+        # this is a situation where fake screens aren't faithful to real screens; we don't support overlap between graphemes and raw pixels
+        compare tmp, 0
+        break-if-=
+        abort "bb"
+        var g: grapheme
+        copy-to g, tmp
+        var tmp/eax: int <- screen-color-at screen, x, y
+        var fg: int
+        copy-to fg, tmp
+        var bg/eax: int <- screen-background-color-at screen, x, y
+        draw-grapheme-on-screen-array data, g, x, y, fg, bg, *width-a, *height-a
+      }
+      x <- increment
       loop
     }
     y <- increment

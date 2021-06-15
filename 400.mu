@@ -1,6 +1,7 @@
 # screen
 sig pixel-on-real-screen x: int, y: int, color: int
 sig draw-grapheme-on-real-screen g: grapheme, x: int, y: int, color: int, background-color: int
+sig draw-grapheme-on-screen-array screen-data: (addr array byte), g: grapheme, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
 sig cursor-position-on-real-screen -> _/eax: int, _/ecx: int
 sig set-cursor-position-on-real-screen x: int, y: int
 sig draw-cursor-on-real-screen g: grapheme
