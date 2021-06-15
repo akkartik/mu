@@ -27,7 +27,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     break-if-=
     increment *call-number
     var tmp/eax: int <- copy *call-number
-    tmp <- and 0xf  # every 16 calls to evaluate
+    tmp <- and 0xffff/responsiveness  # every 64k calls to evaluate
     compare tmp, 0
     break-if-!=
     var inner-screen-var/eax: (addr handle cell) <- copy inner-screen-var
