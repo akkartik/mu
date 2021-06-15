@@ -19,7 +19,7 @@ draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int, backgr
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (draw-grapheme-on-screen-buffer *Video-memory-addr *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) 0x400 0x300)
+    (draw-grapheme-on-screen-buffer *Video-memory-addr *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) 0x80 0x30)
 $draw-grapheme-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -27,8 +27,6 @@ $draw-grapheme-on-real-screen:end:
     c3/return
 
 # 'buffer' here is not a valid Mu type: a naked address without a length.
-# 'x' and 'y' are in graphemes
-# 'screen-width' and 'screen-height' are in pixels
 draw-grapheme-on-screen-buffer:  # buffer: (addr byte), g: grapheme, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
     # . prologue
     55/push-ebp
@@ -39,6 +37,9 @@ draw-grapheme-on-screen-buffer:  # buffer: (addr byte), g: grapheme, x: int, y: 
     52/push-edx
     53/push-ebx
     56/push-esi
+    # switch screen-width and screen-height from grapheme to pixel units
+    c1 4/subop/shift-left *(ebp+20) 3/imm8/log2-font-width
+    c1 4/subop/shift-left *(ebp+24) 4/imm8/log2-font-height
     # esi = g
     8b/-> *(ebp+0xc) 6/r32/esi
     # if (g >= 128) return  # characters beyond ASCII currently not supported
