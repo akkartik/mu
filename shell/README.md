@@ -8,7 +8,7 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
   $ ./translate shell/*.mu      # generates code.img
   ```
 
-  You can now already run it:
+  You can now already run it (under emulation):
   ```sh
   $ qemu-system-i386 code.img
   ```
@@ -27,10 +27,19 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
   $ qemu-system-i386 -m 2G -hda code.img -hdb data.img
   ```
 
-  Try typing in some expressions and hitting `ctrl-s` to see their results.
-  Hit `ctrl-m` to focus on the `...` after a run, and browse how the results
-  were computed. [Here's a demo.](https://archive.org/details/akkartik-2min-2021-02-24)
-  The bottom of the screen shows context-dependent keyboard shortcuts.
+  <img alt='screenshot of the Mu shell' src='../html/20210531-mu-shell.png'>
+
+  The Mu computer has a fixed-size screen, which the shell environment
+  partitions into two major regions, with a context-sensitive menu of keyboard
+  shortcuts along the bottom. (No mouse support at the moment.) On the left,
+  two-thirds of the screen is for editing functions and viewing documentation
+  on available primitives. On the right is a REPL where you can try out
+  expressions and see their output. The REPL also has a little toy screen and
+  keyboard for interactively playing with side effects of expressions.
+
+  Try typing in some expressions at the REPL and hitting `ctrl-s` to see their
+  results. Hit `ctrl-m` to focus on the `...` after a run, and browse how the
+  _trace_ of how the results were computed. [Here's a 2-minute demo](https://archive.org/details/akkartik-mu-2021-05-31).
 
 3. If your Qemu installation supports them, one of these commandline arguments
    may speed up emulation:
