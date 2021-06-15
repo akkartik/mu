@@ -393,8 +393,10 @@ fn read-and-evaluate-and-save-gap-buffer-to-globals _in-ah: (addr handle gap-buf
   allocate-pair nil-ah
 #?   set-cursor-position 0/screen, 0 0
 #?   turn-on-debug-print
+  var call-number-storage: int
+  var call-number/edi: (addr int) <- address call-number-storage
   debug-print "^", 4/fg, 0/bg
-  evaluate read-result-ah, result-ah, *nil-ah, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, 1/call-number
+  evaluate read-result-ah, result-ah, *nil-ah, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
   debug-print "$", 4/fg, 0/bg
   var error?/eax: boolean <- has-errors? trace
   {

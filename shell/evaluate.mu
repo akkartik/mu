@@ -8,7 +8,7 @@
 #   stops if a keypress is encountered
 # Inner screen is what Lisp programs modify. Outer screen is shows the program
 # and its inner screen to the environment.
-fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: int {
+fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: (addr int) {
   # stack overflow?   # disable when enabling Really-debug-print
   check-stack
   {
@@ -22,7 +22,11 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
   {
     compare inner-screen-var, 0
     break-if-=
-    var tmp/eax: int <- copy call-number
+    var call-number/eax: (addr int) <- copy call-number
+    compare call-number, 0
+    break-if-=
+    increment *call-number
+    var tmp/eax: int <- copy *call-number
     tmp <- and 0xf  # every 16 calls to evaluate
     compare tmp, 0
     break-if-!=
@@ -244,7 +248,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     rest <- lookup *rest-ah
     var second-arg-ah/edx: (addr handle cell) <- get rest, left
     debug-print "P", 4/fg, 0/bg
-    increment call-number
     evaluate second-arg-ah, _out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print "Q", 4/fg, 0/bg
     # errors? skip
@@ -304,7 +307,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     rest <- lookup *rest-ah
     var second-arg-ah/edx: (addr handle cell) <- get rest, left
     debug-print "P", 4/fg, 0/bg
-    increment call-number
     evaluate second-arg-ah, _out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print "Q", 4/fg, 0/bg
     # errors? skip
@@ -338,7 +340,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     var rest/eax: (addr cell) <- lookup *rest-ah
     var first-arg-ah/ecx: (addr handle cell) <- get rest, left
     debug-print "R2", 4/fg, 0/bg
-    increment call-number
     evaluate first-arg-ah, _out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print "S2", 4/fg, 0/bg
     # errors? skip
@@ -364,7 +365,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     rest <- lookup *rest-ah
     var second-ah/eax: (addr handle cell) <- get rest, left
     debug-print "T2", 4/fg, 0/bg
-    increment call-number
     evaluate second-ah, _out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print "U2", 4/fg, 0/bg
     trace-higher trace
@@ -385,7 +385,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     var rest/eax: (addr cell) <- lookup *rest-ah
     var first-arg-ah/ecx: (addr handle cell) <- get rest, left
     debug-print "R2", 4/fg, 0/bg
-    increment call-number
     evaluate first-arg-ah, _out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print "S2", 4/fg, 0/bg
     # errors? skip
@@ -411,7 +410,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     rest <- lookup *rest-ah
     var second-ah/eax: (addr handle cell) <- get rest, left
     debug-print "T2", 4/fg, 0/bg
-    increment call-number
     evaluate second-ah, _out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print "U2", 4/fg, 0/bg
     # errors? skip
@@ -443,7 +441,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     var guard-h: (handle cell)
     var guard-ah/esi: (addr handle cell) <- address guard-h
     debug-print "R", 4/fg, 0/bg
-    increment call-number
     evaluate first-arg-ah, guard-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print "S", 4/fg, 0/bg
     # errors? skip
@@ -469,7 +466,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       branch-ah <- get rest, left
     }
     debug-print "T", 4/fg, 0/bg
-    increment call-number
     evaluate branch-ah, _out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print "U", 4/fg, 0/bg
     trace-higher trace
@@ -505,7 +501,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       }
       trace-text trace, "eval", "loop termination check"
       debug-print "V", 4/fg, 0/bg
-      increment call-number
       evaluate first-arg-ah, guard-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
       debug-print "W", 4/fg, 0/bg
       # errors? skip
@@ -565,7 +560,6 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     var left-out-ah/edi: (addr handle cell) <- get curr-out, left
     var left-ah/esi: (addr handle cell) <- get curr, left
     debug-print "A", 4/fg, 0/bg
-    increment call-number
     evaluate left-ah, left-out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print "B", 4/fg, 0/bg
     # errors? skip
@@ -610,7 +604,7 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
   debug-print "Z", 4/fg, 0/bg
 }
 
-fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: int {
+fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: (addr int) {
   var f-ah/eax: (addr handle cell) <- copy _f-ah
   var _f/eax: (addr cell) <- lookup *f-ah
   var f/esi: (addr cell) <- copy _f
@@ -668,7 +662,7 @@ fn apply _f-ah: (addr handle cell), args-ah: (addr handle cell), out: (addr hand
   error trace, "unknown function"
 }
 
-fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: int {
+fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), body-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: (addr int) {
   # push bindings for params to env
   var new-env-h: (handle cell)
   var new-env-ah/esi: (addr handle cell) <- address new-env-h
@@ -684,7 +678,7 @@ fn apply-function params-ah: (addr handle cell), args-ah: (addr handle cell), bo
   evaluate-exprs body-ah, out, new-env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
 }
 
-fn evaluate-exprs _exprs-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: int {
+fn evaluate-exprs _exprs-ah: (addr handle cell), out: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: (addr int) {
   # eval all exprs, writing result to `out` each time
   var exprs-ah/ecx: (addr handle cell) <- copy _exprs-ah
   $evaluate-exprs:loop: {
@@ -699,7 +693,6 @@ fn evaluate-exprs _exprs-ah: (addr handle cell), out: (addr handle cell), env-h:
     {
       var curr-ah/eax: (addr handle cell) <- get exprs, left
       debug-print "E", 7/fg, 0/bg
-      increment call-number
       evaluate curr-ah, out, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
       debug-print "X", 7/fg, 0/bg
       # errors? skip
@@ -1595,7 +1588,7 @@ fn test-evaluate-backquote {
   check sym?, "F - test-evaluate-backquote/1"
 }
 
-fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: int {
+fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (handle cell), globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell), definitions-created: (addr stream int), call-number: (addr int) {
   # stack overflow?   # disable when enabling Really-debug-print
 #?   dump-cell-from-cursor-over-full-screen _in-ah
   check-stack
@@ -1655,7 +1648,6 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     break-if-=
     trace-text trace, "eval", "unquote"
     var rest-ah/eax: (addr handle cell) <- get in, right
-    increment call-number
     debug-print ",", 3/fg, 0/bg
     evaluate rest-ah, _out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     debug-print ",)", 3/fg, 0/bg
@@ -1692,7 +1684,6 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
     debug-print "17", 4/fg, 0/bg
     trace-text trace, "eval", "unquote-splice"
     var in-unquote-payload-ah/eax: (addr handle cell) <- get in-left, right
-    increment call-number
     evaluate in-unquote-payload-ah, out-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
     # errors? skip
     {
