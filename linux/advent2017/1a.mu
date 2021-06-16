@@ -1,3 +1,19 @@
+# Advent of code 2017, problem 1a
+#   https://adventofcode.com/2017/day/1
+#
+# Mu solution by Sumeet Agarwal and Kartik Agaram
+#   https://github.com/akkartik/mu/blob/main/linux/advent2017/1a.mu
+#   https://archive.org/details/2021-06-02-akkartik-sumeet
+#
+# To build on Linux:
+#   $ git clone https://github.com/akkartik/mu
+#   $ cd mu/linux
+#   $ ./translate advent2017/1a.mu            # emits a.elf
+# To run on Linux:
+#   Download https://adventofcode.com/2017/day/1/input
+#   $ ./a.elf < input
+# Type in the number returned at https://adventofcode.com/2017/day/1
+
 fn main -> _/ebx: int {
   var input_stream: (stream byte 0x8000)
   var input_stream_addr/esi: (addr stream byte) <- address input_stream
