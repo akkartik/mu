@@ -14,14 +14,20 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #a8a8a8; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.PreProc { color: #c000c0; }
-.Special { color: #ff6060; }
 .LineNr { }
 .Delimiter { color: #c000c0; }
 .CommentedCode { color: #8a8a8a; }
+.muRegEdx { color: #878700; }
+.muRegEbx { color: #8787af; }
+.muRegEsi { color: #87d787; }
+.muRegEdi { color: #87ffd7; }
 .Constant { color: #008787; }
+.Special { color: #ff6060; }
+.PreProc { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
 .muComment { color: #005faf; }
+.muRegEax { color: #875f00; }
+.muRegEcx { color: #af875f; }
 -->
 </style>
 
@@ -64,7 +70,7 @@ if ('onhashchange' in window) {
 <span id="L5" class="LineNr">  5 </span><span class="muComment"># To run:</span>
 <span id="L6" class="LineNr">  6 </span><span class="muComment">#   $ qemu-system-i386 code.img</span>
 <span id="L7" class="LineNr">  7 </span>
-<span id="L8" class="LineNr">  8 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='life.mu.html#L8'>state</a></span> _grid: (addr array boolean), x: int, y: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L8" class="LineNr">  8 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='life.mu.html#L8'>state</a></span> _grid: (addr array boolean), x: int, y: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: boolean <span class="Delimiter">{</span>
 <span id="L9" class="LineNr">  9 </span>  <span class="muComment"># clip at the edge</span>
 <span id="L10" class="LineNr"> 10 </span>  compare x, <span class="Constant">0</span>
 <span id="L11" class="LineNr"> 11 </span>  <span class="Delimiter">{</span>
@@ -86,31 +92,31 @@ if ('onhashchange' in window) {
 <span id="L27" class="LineNr"> 27 </span>    <span class="PreProc">break-if-&lt;</span>
 <span id="L28" class="LineNr"> 28 </span>    <span class="PreProc">return</span> <span class="Constant">0</span>/false
 <span id="L29" class="LineNr"> 29 </span>  <span class="Delimiter">}</span>
-<span id="L30" class="LineNr"> 30 </span>  <span class="PreProc">var</span> idx/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy y
+<span id="L30" class="LineNr"> 30 </span>  <span class="PreProc">var</span> idx/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy y
 <span id="L31" class="LineNr"> 31 </span>  idx <span class="Special">&lt;-</span> shift-left <span class="Constant">8</span>/log2width
 <span id="L32" class="LineNr"> 32 </span>  idx <span class="Special">&lt;-</span> add x
-<span id="L33" class="LineNr"> 33 </span>  <span class="PreProc">var</span> grid/<span class="Constant">esi</span>: (addr array boolean) <span class="Special">&lt;-</span> copy _grid
-<span id="L34" class="LineNr"> 34 </span>  <span class="PreProc">var</span> result/<span class="Constant">eax</span>: (addr boolean) <span class="Special">&lt;-</span> index grid, idx
+<span id="L33" class="LineNr"> 33 </span>  <span class="PreProc">var</span> grid/<span class="muRegEsi">esi</span>: (addr array boolean) <span class="Special">&lt;-</span> copy _grid
+<span id="L34" class="LineNr"> 34 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> index grid, idx
 <span id="L35" class="LineNr"> 35 </span>  <span class="PreProc">return</span> *result
 <span id="L36" class="LineNr"> 36 </span><span class="Delimiter">}</span>
 <span id="L37" class="LineNr"> 37 </span>
 <span id="L38" class="LineNr"> 38 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='life.mu.html#L38'>set-state</a></span> _grid: (addr array boolean), x: int, y: int, val: boolean <span class="Delimiter">{</span>
 <span id="L39" class="LineNr"> 39 </span>  <span class="muComment"># don't bother checking bounds</span>
-<span id="L40" class="LineNr"> 40 </span>  <span class="PreProc">var</span> idx/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy y
+<span id="L40" class="LineNr"> 40 </span>  <span class="PreProc">var</span> idx/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy y
 <span id="L41" class="LineNr"> 41 </span>  idx <span class="Special">&lt;-</span> shift-left <span class="Constant">8</span>/log2width
 <span id="L42" class="LineNr"> 42 </span>  idx <span class="Special">&lt;-</span> add x
-<span id="L43" class="LineNr"> 43 </span>  <span class="PreProc">var</span> grid/<span class="Constant">esi</span>: (addr array boolean) <span class="Special">&lt;-</span> copy _grid
-<span id="L44" class="LineNr"> 44 </span>  <span class="PreProc">var</span> result/<span class="Constant">eax</span>: (addr boolean) <span class="Special">&lt;-</span> index grid, idx
-<span id="L45" class="LineNr"> 45 </span>  <span class="PreProc">var</span> src/<span class="Constant">ecx</span>: boolean <span class="Special">&lt;-</span> copy val
+<span id="L43" class="LineNr"> 43 </span>  <span class="PreProc">var</span> grid/<span class="muRegEsi">esi</span>: (addr array boolean) <span class="Special">&lt;-</span> copy _grid
+<span id="L44" class="LineNr"> 44 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> index grid, idx
+<span id="L45" class="LineNr"> 45 </span>  <span class="PreProc">var</span> src/<span class="muRegEcx">ecx</span>: boolean <span class="Special">&lt;-</span> copy val
 <span id="L46" class="LineNr"> 46 </span>  copy-to *result, src
 <span id="L47" class="LineNr"> 47 </span><span class="Delimiter">}</span>
 <span id="L48" class="LineNr"> 48 </span>
-<span id="L49" class="LineNr"> 49 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='life.mu.html#L49'>num-live-neighbors</a></span> grid: (addr array boolean), x: int, y: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
-<span id="L50" class="LineNr"> 50 </span>  <span class="PreProc">var</span> result/<span class="Constant">edi</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L49" class="LineNr"> 49 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='life.mu.html#L49'>num-live-neighbors</a></span> grid: (addr array boolean), x: int, y: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L50" class="LineNr"> 50 </span>  <span class="PreProc">var</span> result/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L51" class="LineNr"> 51 </span>  <span class="muComment"># row above: zig</span>
 <span id="L52" class="LineNr"> 52 </span>  decrement y
 <span id="L53" class="LineNr"> 53 </span>  decrement x
-<span id="L54" class="LineNr"> 54 </span>  <span class="PreProc">var</span> s/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='life.mu.html#L8'>state</a> grid, x, y
+<span id="L54" class="LineNr"> 54 </span>  <span class="PreProc">var</span> s/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='life.mu.html#L8'>state</a> grid, x, y
 <span id="L55" class="LineNr"> 55 </span>  <span class="Delimiter">{</span>
 <span id="L56" class="LineNr"> 56 </span>    compare s, <span class="Constant">0</span>/false
 <span id="L57" class="LineNr"> 57 </span>    <span class="PreProc">break-if-=</span>
@@ -171,15 +177,15 @@ if ('onhashchange' in window) {
 <span id="L112" class="LineNr">112 </span><span class="Delimiter">}</span>
 <span id="L113" class="LineNr">113 </span>
 <span id="L114" class="LineNr">114 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='life.mu.html#L114'>step</a></span> old-grid: (addr array boolean), new-grid: (addr array boolean) <span class="Delimiter">{</span>
-<span id="L115" class="LineNr">115 </span>  <span class="PreProc">var</span> y/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L115" class="LineNr">115 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L116" class="LineNr">116 </span>  <span class="Delimiter">{</span>
 <span id="L117" class="LineNr">117 </span>    compare y, <span class="Constant">0xc0</span>/height
 <span id="L118" class="LineNr">118 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L119" class="LineNr">119 </span>    <span class="PreProc">var</span> x/<span class="Constant">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L119" class="LineNr">119 </span>    <span class="PreProc">var</span> x/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L120" class="LineNr">120 </span>    <span class="Delimiter">{</span>
 <span id="L121" class="LineNr">121 </span>      compare x, <span class="Constant">0x100</span>/width
 <span id="L122" class="LineNr">122 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L123" class="LineNr">123 </span>      <span class="PreProc">var</span> n/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='life.mu.html#L49'>num-live-neighbors</a> old-grid, x, y
+<span id="L123" class="LineNr">123 </span>      <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='life.mu.html#L49'>num-live-neighbors</a> old-grid, x, y
 <span id="L124" class="LineNr">124 </span>      <span class="muComment"># if neighbors &lt; 2, die of loneliness</span>
 <span id="L125" class="LineNr">125 </span>      <span class="Delimiter">{</span>
 <span id="L126" class="LineNr">126 </span>        compare n, <span class="Constant">2</span>
@@ -196,7 +202,7 @@ if ('onhashchange' in window) {
 <span id="L137" class="LineNr">137 </span>      <span class="Delimiter">{</span>
 <span id="L138" class="LineNr">138 </span>        compare n, <span class="Constant">2</span>
 <span id="L139" class="LineNr">139 </span>        <span class="PreProc">break-if-!=</span>
-<span id="L140" class="LineNr">140 </span>        <span class="PreProc">var</span> old-state/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='life.mu.html#L8'>state</a> old-grid, x, y
+<span id="L140" class="LineNr">140 </span>        <span class="PreProc">var</span> old-state/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='life.mu.html#L8'>state</a> old-grid, x, y
 <span id="L141" class="LineNr">141 </span>        <a href='life.mu.html#L38'>set-state</a> new-grid, x, y, old-state
 <span id="L142" class="LineNr">142 </span>      <span class="Delimiter">}</span>
 <span id="L143" class="LineNr">143 </span>      <span class="muComment"># if neighbors = 3, cell quickens to life</span>
@@ -215,19 +221,19 @@ if ('onhashchange' in window) {
 <span id="L156" class="LineNr">156 </span>
 <span id="L157" class="LineNr">157 </span><span class="muComment"># color a square of size 'side' starting at x*side, y*side</span>
 <span id="L158" class="LineNr">158 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='life.mu.html#L158'>render-square</a></span> _x: int, _y: int, color: int <span class="Delimiter">{</span>
-<span id="L159" class="LineNr">159 </span>  <span class="PreProc">var</span> y/<span class="Constant">edx</span>: int <span class="Special">&lt;-</span> copy _y
+<span id="L159" class="LineNr">159 </span>  <span class="PreProc">var</span> y/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy _y
 <span id="L160" class="LineNr">160 </span>  y <span class="Special">&lt;-</span> shift-left <span class="Constant">2</span>/log2side
-<span id="L161" class="LineNr">161 </span>  <span class="PreProc">var</span> side/<span class="Constant">ebx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">1</span>
+<span id="L161" class="LineNr">161 </span>  <span class="PreProc">var</span> side/<span class="muRegEbx">ebx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">1</span>
 <span id="L162" class="LineNr">162 </span>  side <span class="Special">&lt;-</span> shift-left <span class="Constant">2</span>/log2side
-<span id="L163" class="LineNr">163 </span>  <span class="PreProc">var</span> ymax/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy y
+<span id="L163" class="LineNr">163 </span>  <span class="PreProc">var</span> ymax/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy y
 <span id="L164" class="LineNr">164 </span>  ymax <span class="Special">&lt;-</span> add side
 <span id="L165" class="LineNr">165 </span>  <span class="Delimiter">{</span>
 <span id="L166" class="LineNr">166 </span>    compare y, ymax
 <span id="L167" class="LineNr">167 </span>    <span class="PreProc">break-if-&gt;=</span>
 <span id="L168" class="LineNr">168 </span>    <span class="Delimiter">{</span>
-<span id="L169" class="LineNr">169 </span>      <span class="PreProc">var</span> x/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> copy _x
+<span id="L169" class="LineNr">169 </span>      <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy _x
 <span id="L170" class="LineNr">170 </span>      x <span class="Special">&lt;-</span> shift-left <span class="Constant">2</span>/log2side
-<span id="L171" class="LineNr">171 </span>      <span class="PreProc">var</span> xmax/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy x
+<span id="L171" class="LineNr">171 </span>      <span class="PreProc">var</span> xmax/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy x
 <span id="L172" class="LineNr">172 </span>      xmax <span class="Special">&lt;-</span> add side
 <span id="L173" class="LineNr">173 </span>      <span class="Delimiter">{</span>
 <span id="L174" class="LineNr">174 </span>        compare x, xmax
@@ -243,15 +249,15 @@ if ('onhashchange' in window) {
 <span id="L184" class="LineNr">184 </span><span class="Delimiter">}</span>
 <span id="L185" class="LineNr">185 </span>
 <span id="L186" class="LineNr">186 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='life.mu.html#L186'>render</a></span> grid: (addr array boolean) <span class="Delimiter">{</span>
-<span id="L187" class="LineNr">187 </span>  <span class="PreProc">var</span> y/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L187" class="LineNr">187 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L188" class="LineNr">188 </span>  <span class="Delimiter">{</span>
 <span id="L189" class="LineNr">189 </span>    compare y, <span class="Constant">0xc0</span>/height
 <span id="L190" class="LineNr">190 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L191" class="LineNr">191 </span>    <span class="PreProc">var</span> x/<span class="Constant">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L191" class="LineNr">191 </span>    <span class="PreProc">var</span> x/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L192" class="LineNr">192 </span>    <span class="Delimiter">{</span>
 <span id="L193" class="LineNr">193 </span>      compare x, <span class="Constant">0x100</span>/width
 <span id="L194" class="LineNr">194 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L195" class="LineNr">195 </span>      <span class="PreProc">var</span> <a href='life.mu.html#L8'>state</a>/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='life.mu.html#L8'>state</a> grid, x, y
+<span id="L195" class="LineNr">195 </span>      <span class="PreProc">var</span> <a href='life.mu.html#L8'>state</a>/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='life.mu.html#L8'>state</a> grid, x, y
 <span id="L196" class="LineNr">196 </span>      compare <a href='life.mu.html#L8'>state</a>, <span class="Constant">0</span>/false
 <span id="L197" class="LineNr">197 </span>      <span class="Delimiter">{</span>
 <span id="L198" class="LineNr">198 </span>        <span class="PreProc">break-if-=</span>
@@ -278,15 +284,15 @@ if ('onhashchange' in window) {
 <span id="L219" class="LineNr">219 </span><span class="CommentedCode">#?   var grid2/edi: (addr array boolean) &lt;- address grid2-storage</span>
 <span id="L220" class="LineNr">220 </span>  <span class="muComment"># allocate on the heap</span>
 <span id="L221" class="LineNr">221 </span>  <span class="PreProc">var</span> grid1-storage: (handle array boolean)
-<span id="L222" class="LineNr">222 </span>  <span class="PreProc">var</span> grid1-ah/<span class="Constant">eax</span>: (addr handle array boolean) <span class="Special">&lt;-</span> address grid1-storage
+<span id="L222" class="LineNr">222 </span>  <span class="PreProc">var</span> grid1-ah/<span class="muRegEax">eax</span>: (addr handle array boolean) <span class="Special">&lt;-</span> address grid1-storage
 <span id="L223" class="LineNr">223 </span>  populate grid1-ah, <span class="Constant">0xc000</span>  <span class="muComment"># width * height</span>
-<span id="L224" class="LineNr">224 </span>  <span class="PreProc">var</span> _grid1/<span class="Constant">eax</span>: (addr array boolean) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *grid1-ah
-<span id="L225" class="LineNr">225 </span>  <span class="PreProc">var</span> grid1/<span class="Constant">esi</span>: (addr array boolean) <span class="Special">&lt;-</span> copy _grid1
+<span id="L224" class="LineNr">224 </span>  <span class="PreProc">var</span> _grid1/<span class="muRegEax">eax</span>: (addr array boolean) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *grid1-ah
+<span id="L225" class="LineNr">225 </span>  <span class="PreProc">var</span> grid1/<span class="muRegEsi">esi</span>: (addr array boolean) <span class="Special">&lt;-</span> copy _grid1
 <span id="L226" class="LineNr">226 </span>  <span class="PreProc">var</span> grid2-storage: (handle array boolean)
-<span id="L227" class="LineNr">227 </span>  <span class="PreProc">var</span> grid2-ah/<span class="Constant">eax</span>: (addr handle array boolean) <span class="Special">&lt;-</span> address grid2-storage
+<span id="L227" class="LineNr">227 </span>  <span class="PreProc">var</span> grid2-ah/<span class="muRegEax">eax</span>: (addr handle array boolean) <span class="Special">&lt;-</span> address grid2-storage
 <span id="L228" class="LineNr">228 </span>  populate grid2-ah, <span class="Constant">0xc000</span>  <span class="muComment"># width * height</span>
-<span id="L229" class="LineNr">229 </span>  <span class="PreProc">var</span> _grid2/<span class="Constant">eax</span>: (addr array boolean) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *grid2-ah
-<span id="L230" class="LineNr">230 </span>  <span class="PreProc">var</span> grid2/<span class="Constant">edi</span>: (addr array boolean) <span class="Special">&lt;-</span> copy _grid2
+<span id="L229" class="LineNr">229 </span>  <span class="PreProc">var</span> _grid2/<span class="muRegEax">eax</span>: (addr array boolean) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *grid2-ah
+<span id="L230" class="LineNr">230 </span>  <span class="PreProc">var</span> grid2/<span class="muRegEdi">edi</span>: (addr array boolean) <span class="Special">&lt;-</span> copy _grid2
 <span id="L231" class="LineNr">231 </span>  <span class="muComment"># initialize grid1</span>
 <span id="L232" class="LineNr">232 </span>  <a href='life.mu.html#L38'>set-state</a> grid1, <span class="Constant">0x80</span>, <span class="Constant">0x5f</span>, <span class="Constant">1</span>/live
 <span id="L233" class="LineNr">233 </span>  <a href='life.mu.html#L38'>set-state</a> grid1, <span class="Constant">0x81</span>, <span class="Constant">0x5f</span>, <span class="Constant">1</span>/live
@@ -296,7 +302,7 @@ if ('onhashchange' in window) {
 <span id="L237" class="LineNr">237 </span>  <span class="muComment"># render grid1</span>
 <span id="L238" class="LineNr">238 </span>  <a href='life.mu.html#L186'>render</a> grid1
 <span id="L239" class="LineNr">239 </span>  <span class="Delimiter">{</span>
-<span id="L240" class="LineNr">240 </span>    <span class="PreProc">var</span> key/<span class="Constant">eax</span>: byte <span class="Special">&lt;-</span> <a href='102keyboard.subx.html#L21'>read-key</a> keyboard
+<span id="L240" class="LineNr">240 </span>    <span class="PreProc">var</span> key/<span class="muRegEax">eax</span>: byte <span class="Special">&lt;-</span> <a href='102keyboard.subx.html#L21'>read-key</a> keyboard
 <span id="L241" class="LineNr">241 </span>    compare key, <span class="Constant">0</span>
 <span id="L242" class="LineNr">242 </span><span class="CommentedCode">#?     loop-if-=  # press key to step</span>
 <span id="L243" class="LineNr">243 </span>    <span class="PreProc">break-if-!=</span>  <span class="muComment"># press key to quit  # comment this out to run under bochs; I'm not sure why there's a newline in the keyboard buffer</span>
