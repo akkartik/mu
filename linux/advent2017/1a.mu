@@ -15,7 +15,9 @@ fn main -> _/ebx: int {
     break-if-=
 
     var next_digit/eax: int <- read_digit input_stream_addr
-    var next_digit/eax: int <- copy next_digit
+    # hacky newline check
+    compare next_digit, 0
+    break-if-<
 
     {
       compare this_digit, next_digit
