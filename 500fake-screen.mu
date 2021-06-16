@@ -608,7 +608,6 @@ fn convert-graphemes-to-pixels _screen: (addr screen) {
         # this is a situation where fake screens aren't faithful to real screens; we don't support overlap between graphemes and raw pixels
         compare tmp, 0
         break-if-=
-        abort "bb"
         var g: grapheme
         copy-to g, tmp
         var tmp/eax: int <- screen-color-at screen, x, y
