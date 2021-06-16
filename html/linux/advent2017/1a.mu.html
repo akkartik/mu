@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/play/mu/linux/advent2017/1a.mu.html</title>
+<meta name="Generator" content="Vim/8.1">
+<meta name="plugin-version" content="vim8.1_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal-dark">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #a8a8a8; }
+body { font-family: monospace; color: #000000; background-color: #a8a8a8; }
+* { font-size: 1em; }
+.PreProc { color: #c000c0; }
+.muRegEax { color: #875f00; }
+.muComment { color: #005faf; }
+.Constant { color: #008787; }
+.muRegEdx { color: #878700; }
+.muRegEbx { color: #8787af; }
+.muRegEsi { color: #87d787; }
+.muRegEdi { color: #87ffd7; }
+.Delimiter { color: #c000c0; }
+.muFunction { color: #af5f00; text-decoration: underline; }
+.Special { color: #ff6060; }
+-->
+</style>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="PreProc">fn</span> <span class="muFunction">main</span><span class="PreProc"> -&gt; </span>_/<span class="muRegEbx">ebx</span>: int <span class="Delimiter">{</span>
+  <span class="PreProc">var</span> input_stream: (stream byte <span class="Constant">0x8000</span>)
+  <span class="PreProc">var</span> input_stream_addr/<span class="muRegEsi">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> address input_stream
+
+  <span class="PreProc">var</span> sum/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+  read-line-from-real-keyboard input_stream_addr
+
+  <span class="PreProc">var</span> temp/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> read_digit input_stream_addr
+  <span class="PreProc">var</span> first_digit/<span class="muRegEbx">ebx</span>: int <span class="Special">&lt;-</span> copy temp
+  <span class="PreProc">var</span> this_digit/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy temp
+
+  <span class="Delimiter">{</span>
+    <span class="PreProc">var</span> done?/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> stream-empty? input_stream_addr
+    compare done?, <span class="Constant">1</span>
+    <span class="PreProc">break-if-=</span>
+
+    <span class="PreProc">var</span> next_digit/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> read_digit input_stream_addr
+    <span class="muComment"># hacky newline check</span>
+    compare next_digit, <span class="Constant">0</span>
+    <span class="PreProc">break-if-&lt;</span>
+
+    <span class="Delimiter">{</span>
+      compare this_digit, next_digit
+      <span class="PreProc">break-if-!=</span>
+      sum <span class="Special">&lt;-</span> add this_digit
+    <span class="Delimiter">}</span>
+
+    this_digit <span class="Special">&lt;-</span> copy next_digit
+
+    <span class="PreProc">loop</span>
+  <span class="Delimiter">}</span>
+
+  <span class="muComment"># the last iteration will need to compare the last number to the first</span>
+  <span class="Delimiter">{</span>
+    compare this_digit, first_digit
+    <span class="PreProc">break-if-!=</span>
+    sum <span class="Special">&lt;-</span> add this_digit
+  <span class="Delimiter">}</span>
+
+  print-int32-decimal <span class="Constant">0</span>, sum
+
+  <span class="PreProc">return</span> <span class="Constant">0</span>/ok
+<span class="Delimiter">}</span>
+
+<span class="PreProc">fn</span> <span class="muFunction">read_digit</span> input_stream_addr: (addr stream byte)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+  <span class="PreProc">var</span> next_digit/<span class="muRegEax">eax</span>: byte <span class="Special">&lt;-</span> read-byte input_stream_addr
+  next_digit <span class="Special">&lt;-</span> subtract <span class="Constant">0x30</span>
+  <span class="PreProc">var</span> next_digit/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy next_digit
+  <span class="PreProc">return</span> next_digit
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
