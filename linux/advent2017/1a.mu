@@ -2,7 +2,6 @@
 #   https://adventofcode.com/2017/day/1
 #
 # Mu solution by Sumeet Agarwal and Kartik Agaram
-#   https://github.com/akkartik/mu/blob/main/linux/advent2017/1a.mu
 #   https://archive.org/details/2021-06-02-akkartik-sumeet
 #
 # To build on Linux:
