@@ -1,4 +1,4 @@
-fn parse-input tokens: (addr stream cell), out: (addr handle cell), trace: (addr trace) {
+fn parse-input tokens: (addr stream token), out: (addr handle cell), trace: (addr trace) {
   rewind-stream tokens
   var empty?/eax: boolean <- stream-empty? tokens
   compare empty?, 0/false
@@ -27,11 +27,11 @@ fn parse-input tokens: (addr stream cell), out: (addr handle cell), trace: (addr
 # return values:
 #   unmatched close-paren encountered?
 #   dot encountered? (only used internally by recursive calls)
-fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) -> _/eax: boolean, _/ecx: boolean {
+fn parse-sexpression tokens: (addr stream token), _out: (addr handle cell), trace: (addr trace) -> _/eax: boolean, _/ecx: boolean {
   trace-text trace, "parse", "parse"
   trace-lower trace
-  var curr-token-storage: cell
-  var curr-token/ecx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ecx: (addr token) <- address curr-token-storage
   var empty?/eax: boolean <- stream-empty? tokens
   compare empty?, 0/false
   {
@@ -198,9 +198,9 @@ fn parse-sexpression tokens: (addr stream cell), _out: (addr handle cell), trace
   return 0/false, 0/false
 }
 
-fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr trace) {
+fn parse-atom _curr-token: (addr token), _out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "parse", "parse atom"
-  var curr-token/ecx: (addr cell) <- copy _curr-token
+  var curr-token/ecx: (addr token) <- copy _curr-token
   var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
   var _curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
   var curr-token-data/esi: (addr stream byte) <- copy _curr-token-data
@@ -272,7 +272,7 @@ fn parse-atom _curr-token: (addr cell), _out: (addr handle cell), trace: (addr t
   }
 }
 
-fn parse-dot-tail tokens: (addr stream cell), _out: (addr handle cell), trace: (addr trace) {
+fn parse-dot-tail tokens: (addr stream token), _out: (addr handle cell), trace: (addr trace) {
   var out/edi: (addr handle cell) <- copy _out
   var close-paren?/eax: boolean <- copy 0/false
   var dot?/ecx: boolean <- copy 0/false

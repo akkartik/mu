@@ -1,13 +1,17 @@
-# We reuse the cell data structure for tokenization
-# Token cells are special, though. They have no type, they're always atoms,
-# they always have text-data.
+# tokens are like cells, but not recursive
+type token {
+  type: int
+  # type 2: symbol
+  # type 3: stream
+  text-data: (handle stream byte)
+}
 
-fn tokenize in: (addr gap-buffer), out: (addr stream cell), trace: (addr trace) {
+fn tokenize in: (addr gap-buffer), out: (addr stream token), trace: (addr trace) {
   trace-text trace, "tokenize", "tokenize"
   trace-lower trace
   rewind-gap-buffer in
-  var token-storage: cell
-  var token/edx: (addr cell) <- address token-storage
+  var token-storage: token
+  var token/edx: (addr token) <- address token-storage
   {
     skip-whitespace-from-gap-buffer in
     var done?/eax: boolean <- gap-buffer-scan-done? in
@@ -35,16 +39,16 @@ fn test-tokenize-number {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "123 a"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var number?/eax: boolean <- number-token? curr-token
   check number?, "F - test-tokenize-number"
@@ -58,16 +62,16 @@ fn test-tokenize-negative-number {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "-123 a"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var number?/eax: boolean <- number-token? curr-token
   check number?, "F - test-tokenize-negative-number"
@@ -81,16 +85,16 @@ fn test-tokenize-number-followed-by-hyphen {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "123-4 a"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var number?/eax: boolean <- number-token? curr-token
   check number?, "F - test-tokenize-number-followed-by-hyphen"
@@ -104,16 +108,16 @@ fn test-tokenize-quote {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "'(a)"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var quote?/eax: boolean <- quote-token? curr-token
   check quote?, "F - test-tokenize-quote: quote"
@@ -131,16 +135,16 @@ fn test-tokenize-backquote {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "`(a)"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var backquote?/eax: boolean <- backquote-token? curr-token
   check backquote?, "F - test-tokenize-backquote: backquote"
@@ -158,16 +162,16 @@ fn test-tokenize-unquote {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, ",(a)"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var unquote?/eax: boolean <- unquote-token? curr-token
   check unquote?, "F - test-tokenize-unquote: unquote"
@@ -185,16 +189,16 @@ fn test-tokenize-unquote-splice {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, ",@a"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var unquote-splice?/eax: boolean <- unquote-splice-token? curr-token
   check unquote-splice?, "F - test-tokenize-unquote-splice: unquote-splice"
@@ -205,16 +209,16 @@ fn test-tokenize-dotted-list {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "(a . b)"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var open-paren?/eax: boolean <- open-paren-token? curr-token
   check open-paren?, "F - test-tokenize-dotted-list: open paren"
@@ -233,16 +237,16 @@ fn test-tokenize-stream-literal {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "[abc def]"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var stream?/eax: boolean <- stream-token? curr-token
   check stream?, "F - test-tokenize-stream-literal: type"
@@ -259,16 +263,16 @@ fn test-tokenize-stream-literal-in-tree {
   var in/esi: (addr gap-buffer) <- address in-storage
   initialize-gap-buffer-with in, "([abc def])"
   #
-  var stream-storage: (stream cell 0x10)
-  var stream/edi: (addr stream cell) <- address stream-storage
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
   #
   var trace-storage: trace
   var trace/edx: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   tokenize in, stream, trace
   #
-  var curr-token-storage: cell
-  var curr-token/ebx: (addr cell) <- address curr-token-storage
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
   var bracket?/eax: boolean <- bracket-token? curr-token
   check bracket?, "F - test-tokenize-stream-literal-in-tree: open paren"
@@ -286,7 +290,7 @@ fn test-tokenize-stream-literal-in-tree {
   check empty?, "F - test-tokenize-stream-literal-in-tree: empty?"
 }
 
-fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace) {
+fn next-token in: (addr gap-buffer), _out-token: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "next-token"
   trace-lower trace
   var _g/eax: grapheme <- peek-from-gap-buffer in
@@ -302,12 +306,12 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
     write-int32-hex stream, gval
     trace trace, "tokenize", stream
   }
-  var out-cell/eax: (addr cell) <- copy _out-cell
+  var out-token/eax: (addr token) <- copy _out-token
   {
-    var out-cell-type/eax: (addr int) <- get out-cell, type
-    copy-to *out-cell-type, 0/uninitialized
+    var out-token-type/eax: (addr int) <- get out-token, type
+    copy-to *out-token-type, 0/uninitialized
   }
-  var out-ah/edi: (addr handle stream byte) <- get out-cell, text-data
+  var out-ah/edi: (addr handle stream byte) <- get out-token, text-data
   $next-token:allocate: {
     # Allocate a large buffer if it's a stream.
     # Sometimes a whole function definition will need to fit in it.
@@ -329,10 +333,10 @@ fn next-token in: (addr gap-buffer), _out-cell: (addr cell), trace: (addr trace)
       break-if-!=
       var dummy/eax: grapheme <- read-from-gap-buffer in  # skip open bracket
       next-stream-token in, out, trace
-      var out-cell/eax: (addr cell) <- copy _out-cell
+      var out-token/eax: (addr token) <- copy _out-token
       # streams set the type
-      var out-cell-type/eax: (addr int) <- get out-cell, type
-      copy-to *out-cell-type, 3/stream
+      var out-token-type/eax: (addr int) <- get out-token, type
+      copy-to *out-token-type, 3/stream
       break $next-token:case
     }
     # comment
@@ -974,8 +978,8 @@ fn operator-grapheme? g: grapheme -> _/eax: boolean {
   return 0/false
 }
 
-fn number-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn number-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
@@ -991,8 +995,8 @@ fn number-token? _in: (addr cell) -> _/eax: boolean {
   return result
 }
 
-fn bracket-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn bracket-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   {
     var in-type/eax: (addr int) <- get in, type
     compare *in-type, 3/stream
@@ -1008,8 +1012,8 @@ fn bracket-token? _in: (addr cell) -> _/eax: boolean {
   return result
 }
 
-fn quote-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn quote-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
@@ -1017,8 +1021,8 @@ fn quote-token? _in: (addr cell) -> _/eax: boolean {
   return result
 }
 
-fn backquote-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn backquote-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
@@ -1026,8 +1030,8 @@ fn backquote-token? _in: (addr cell) -> _/eax: boolean {
   return result
 }
 
-fn unquote-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn unquote-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
@@ -1035,8 +1039,8 @@ fn unquote-token? _in: (addr cell) -> _/eax: boolean {
   return result
 }
 
-fn unquote-splice-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn unquote-splice-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
@@ -1044,8 +1048,8 @@ fn unquote-splice-token? _in: (addr cell) -> _/eax: boolean {
   return result
 }
 
-fn open-paren-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn open-paren-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
@@ -1060,8 +1064,8 @@ fn open-paren-token? _in: (addr cell) -> _/eax: boolean {
   return 0/false
 }
 
-fn close-paren-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn close-paren-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
@@ -1076,8 +1080,8 @@ fn close-paren-token? _in: (addr cell) -> _/eax: boolean {
   return 0/false
 }
 
-fn dot-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn dot-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
@@ -1093,16 +1097,16 @@ fn dot-token? _in: (addr cell) -> _/eax: boolean {
 }
 
 fn test-dot-token {
-  var tmp-storage: (handle cell)
-  var tmp-ah/eax: (addr handle cell) <- address tmp-storage
-  new-symbol tmp-ah, "."
-  var tmp/eax: (addr cell) <- lookup *tmp-ah
+  var tmp-storage: (handle token)
+  var tmp-ah/eax: (addr handle token) <- address tmp-storage
+  new-token tmp-ah, "."
+  var tmp/eax: (addr token) <- lookup *tmp-ah
   var result/eax: boolean <- dot-token? tmp
   check result, "F - test-dot-token"
 }
 
-fn stream-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn stream-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-type/eax: (addr int) <- get in, type
   compare *in-type, 3/stream
   {
@@ -1112,8 +1116,8 @@ fn stream-token? _in: (addr cell) -> _/eax: boolean {
   return 1/true
 }
 
-fn comment-token? _in: (addr cell) -> _/eax: boolean {
-  var in/eax: (addr cell) <- copy _in
+fn comment-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
   var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
@@ -1124,4 +1128,27 @@ fn comment-token? _in: (addr cell) -> _/eax: boolean {
     return 0/false
   }
   return 1/true
+}
+
+fn allocate-token _out: (addr handle token) {
+  var out/eax: (addr handle token) <- copy _out
+  allocate out
+  var out-addr/eax: (addr token) <- lookup *out
+  var type/ecx: (addr int) <- get out-addr, type
+  copy-to *type, 2/symbol
+  var dest-ah/eax: (addr handle stream byte) <- get out-addr, text-data
+  populate-stream dest-ah, 0x40/max-symbol-size
+}
+
+fn initialize-token _out: (addr handle token), val: (addr array byte) {
+  var out/eax: (addr handle token) <- copy _out
+  var out-addr/eax: (addr token) <- lookup *out
+  var dest-ah/eax: (addr handle stream byte) <- get out-addr, text-data
+  var dest/eax: (addr stream byte) <- lookup *dest-ah
+  write dest, val
+}
+
+fn new-token out: (addr handle token), val: (addr array byte) {
+  allocate-token out
+  initialize-token out, val
 }
