@@ -217,7 +217,7 @@ fn print-number _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   }
   var in/esi: (addr cell) <- copy _in
   var val/eax: (addr float) <- get in, number-data
-  write-float-decimal-approximate out, *val, 3/precision
+  write-float-decimal-approximate out, *val, 0x10/precision
   # trace
   {
     var should-trace?/eax: boolean <- should-trace? trace
@@ -228,7 +228,7 @@ fn print-number _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   var stream-storage: (stream byte 0x40)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, "=> number "
-  write-float-decimal-approximate stream, *val, 3/precision
+  write-float-decimal-approximate stream, *val, 0x10/precision
   trace trace, "print", stream
 }
 
