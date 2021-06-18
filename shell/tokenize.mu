@@ -1,8 +1,8 @@
 # tokens are like cells, but not recursive
 type token {
   type: int
-  # type 2: symbol
-  # type 3: stream
+  # type 0: default
+  # type 1: stream
   text-data: (handle stream byte)
 }
 
@@ -309,7 +309,7 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), trace: (addr trac
   var out-token/eax: (addr token) <- copy _out-token
   {
     var out-token-type/eax: (addr int) <- get out-token, type
-    copy-to *out-token-type, 0/uninitialized
+    copy-to *out-token-type, 0/default
   }
   var out-ah/edi: (addr handle stream byte) <- get out-token, text-data
   $next-token:allocate: {
@@ -336,7 +336,7 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), trace: (addr trac
       var out-token/eax: (addr token) <- copy _out-token
       # streams set the type
       var out-token-type/eax: (addr int) <- get out-token, type
-      copy-to *out-token-type, 3/stream
+      copy-to *out-token-type, 1/stream
       break $next-token:case
     }
     # comment
@@ -999,7 +999,7 @@ fn bracket-token? _in: (addr token) -> _/eax: boolean {
   var in/eax: (addr token) <- copy _in
   {
     var in-type/eax: (addr int) <- get in, type
-    compare *in-type, 3/stream
+    compare *in-type, 1/stream
     break-if-!=
     # streams are never paren tokens
     return 0/false
@@ -1108,7 +1108,7 @@ fn test-dot-token {
 fn stream-token? _in: (addr token) -> _/eax: boolean {
   var in/eax: (addr token) <- copy _in
   var in-type/eax: (addr int) <- get in, type
-  compare *in-type, 3/stream
+  compare *in-type, 1/stream
   {
     break-if-=
     return 0/false
@@ -1134,8 +1134,6 @@ fn allocate-token _out: (addr handle token) {
   var out/eax: (addr handle token) <- copy _out
   allocate out
   var out-addr/eax: (addr token) <- lookup *out
-  var type/ecx: (addr int) <- get out-addr, type
-  copy-to *type, 2/symbol
   var dest-ah/eax: (addr handle stream byte) <- get out-addr, text-data
   populate-stream dest-ah, 0x40/max-symbol-size
 }
