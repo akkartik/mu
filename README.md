@@ -10,10 +10,10 @@ Running the code you want to run, and nothing else.
 Here's the Mu computer running [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
 
 ```sh
-$ git clone https://github.com/akkartik/mu
-$ cd mu
-$ ./translate life.mu  # emit a bootable code.img
-$ qemu-system-i386 code.img
+git clone https://github.com/akkartik/mu
+cd mu
+./translate life.mu  # emit a bootable code.img
+qemu-system-i386 code.img
 ```
 
 <img alt='screenshot of Game of Life running on the Mu computer' src='html/baremetal-life.png'>
@@ -94,7 +94,7 @@ Mu programs build natively either on Linux or on Windows using [WSL 2](https://d
 For Macs and other Unix-like systems, use the (much slower) emulator:
 
 ```sh
-$ ./translate_emulated ex2.mu  # ~2 mins to emit code.img
+./translate_emulated ex2.mu  # ~2 mins to emit code.img
 ```
 
 Mu programs can be written for two very different environments:
@@ -203,9 +203,9 @@ If you're still reading, here are some more things to check out:
   for a postfix language that I might work on again one day:
 
   ```sh
-  $ cd linux
-  $ ./translate tile/*.mu
-  $ ./a.elf screen
+  cd linux
+  ./translate tile/*.mu
+  ./a.elf screen
   ```
 
 - [A summary](mu_instructions) of how the Mu compiler translates statements

@@ -5,12 +5,12 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
 1. Build it:
 
   ```sh
-  $ ./translate shell/*.mu      # generates code.img
+  ./translate shell/*.mu      # generates code.img
   ```
 
   You can now already run it (under emulation):
   ```sh
-  $ qemu-system-i386 code.img
+  qemu-system-i386 code.img
   ```
 
   But let's add some more 'meat' to play with.
@@ -18,13 +18,13 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
 2. Create a data disk with a library of functions.
 
   ```sh
-  $ dd if=/dev/zero of=data.img count=20160
-  $ cat shell/data.limg |dd of=data.img conv=notrunc
+  dd if=/dev/zero of=data.img count=20160
+  cat shell/data.limg |dd of=data.img conv=notrunc
   ```
 
   Run with data disk (and 2GB of RAM):
   ```sh
-  $ qemu-system-i386 -m 2G -hda code.img -hdb data.img
+  qemu-system-i386 -m 2G -hda code.img -hdb data.img
   ```
 
   <img alt='screenshot of the Mu shell' src='../html/20210615-shell.png'>
@@ -59,7 +59,7 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
   Putting it all together, here's the command I typically use on Linux:
 
   ```
-  $ qemu-system-i386 -m 2G -enable-kvm -hda code.img -hdb data.img
+  qemu-system-i386 -m 2G -enable-kvm -hda code.img -hdb data.img
   ```
 
 *Known issues*
