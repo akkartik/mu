@@ -1004,9 +1004,9 @@ fn operator-grapheme? g: grapheme -> _/eax: boolean {
   return 0/false
 }
 
-fn number-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+fn number-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
   rewind-stream in-data
@@ -1021,16 +1021,16 @@ fn number-token? _in: (addr token) -> _/eax: boolean {
   return result
 }
 
-fn bracket-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
+fn bracket-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
   {
-    var in-type/eax: (addr int) <- get in, type
+    var in-type/eax: (addr int) <- get self, type
     compare *in-type, 1/stream
     break-if-!=
     # streams are never paren tokens
     return 0/false
   }
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
   var g/eax: grapheme <- read-grapheme in-data
@@ -1038,45 +1038,45 @@ fn bracket-token? _in: (addr token) -> _/eax: boolean {
   return result
 }
 
-fn quote-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+fn quote-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
   var result/eax: boolean <- stream-data-equal? in-data, "'"
   return result
 }
 
-fn backquote-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+fn backquote-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
   var result/eax: boolean <- stream-data-equal? in-data, "`"
   return result
 }
 
-fn unquote-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+fn unquote-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
   var result/eax: boolean <- stream-data-equal? in-data, ","
   return result
 }
 
-fn unquote-splice-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+fn unquote-splice-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
   var result/eax: boolean <- stream-data-equal? in-data, ",@"
   return result
 }
 
-fn open-paren-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+fn open-paren-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
   rewind-stream in-data
@@ -1090,9 +1090,9 @@ fn open-paren-token? _in: (addr token) -> _/eax: boolean {
   return 0/false
 }
 
-fn close-paren-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+fn close-paren-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
   rewind-stream in-data
@@ -1106,9 +1106,9 @@ fn close-paren-token? _in: (addr token) -> _/eax: boolean {
   return 0/false
 }
 
-fn dot-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+fn dot-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
   rewind-stream in-data
@@ -1131,9 +1131,9 @@ fn test-dot-token {
   check result, "F - test-dot-token"
 }
 
-fn stream-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-type/eax: (addr int) <- get in, type
+fn stream-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-type/eax: (addr int) <- get self, type
   compare *in-type, 1/stream
   {
     break-if-=
@@ -1142,9 +1142,9 @@ fn stream-token? _in: (addr token) -> _/eax: boolean {
   return 1/true
 }
 
-fn comment-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-data-ah/eax: (addr handle stream byte) <- get in, text-data
+fn comment-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
   var g/eax: grapheme <- read-grapheme in-data
@@ -1156,9 +1156,9 @@ fn comment-token? _in: (addr token) -> _/eax: boolean {
   return 1/true
 }
 
-fn skip-token? _in: (addr token) -> _/eax: boolean {
-  var in/eax: (addr token) <- copy _in
-  var in-type/eax: (addr int) <- get in, type
+fn skip-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-type/eax: (addr int) <- get self, type
   compare *in-type, 2/skip
   {
     break-if-=
@@ -1167,23 +1167,23 @@ fn skip-token? _in: (addr token) -> _/eax: boolean {
   return 1/true
 }
 
-fn allocate-token _out: (addr handle token) {
-  var out/eax: (addr handle token) <- copy _out
-  allocate out
-  var out-addr/eax: (addr token) <- lookup *out
-  var dest-ah/eax: (addr handle stream byte) <- get out-addr, text-data
+fn allocate-token _self-ah: (addr handle token) {
+  var self-ah/eax: (addr handle token) <- copy _self-ah
+  allocate self-ah
+  var self/eax: (addr token) <- lookup *self-ah
+  var dest-ah/eax: (addr handle stream byte) <- get self, text-data
   populate-stream dest-ah, 0x40/max-symbol-size
 }
 
-fn initialize-token _out: (addr handle token), val: (addr array byte) {
-  var out/eax: (addr handle token) <- copy _out
-  var out-addr/eax: (addr token) <- lookup *out
-  var dest-ah/eax: (addr handle stream byte) <- get out-addr, text-data
+fn initialize-token _self-ah: (addr handle token), val: (addr array byte) {
+  var self-ah/eax: (addr handle token) <- copy _self-ah
+  var self/eax: (addr token) <- lookup *self-ah
+  var dest-ah/eax: (addr handle stream byte) <- get self, text-data
   var dest/eax: (addr stream byte) <- lookup *dest-ah
   write dest, val
 }
 
-fn new-token out: (addr handle token), val: (addr array byte) {
-  allocate-token out
-  initialize-token out, val
+fn new-token self-ah: (addr handle token), val: (addr array byte) {
+  allocate-token self-ah
+  initialize-token self-ah, val
 }
