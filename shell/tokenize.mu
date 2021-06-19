@@ -296,7 +296,7 @@ fn test-tokenize-stream-literal-in-tree {
 
 # caller is responsible for threading start-of-line? between calls to next-token
 # 'in' may contain whitespace if start-of-line?
-fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean, trace: (addr trace) -> _/edi: boolean {
+fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean, trace: (addr trace) -> _/edi: boolean {
   trace-text trace, "tokenize", "next-token"
   trace-lower trace
   skip-spaces-from-gap-buffer in
@@ -306,9 +306,7 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
     break-if-!=
     trace-text trace, "tokenize", "newline"
     g <- read-from-gap-buffer in
-    var out/eax: (addr token) <- copy _out
-    var out-type/eax: (addr int) <- get out, type
-    copy-to *out-type, 2/skip
+    initialize-skip-token out
     return 1/at-start-of-line
   }
   {
@@ -316,9 +314,7 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
     compare done?, 0/false
     break-if-=
     trace-text trace, "tokenize", "end"
-    var out/eax: (addr token) <- copy _out
-    var out-type/eax: (addr int) <- get out, type
-    copy-to *out-type, 2/skip
+    initialize-skip-token out
     return 1/at-start-of-line
   }
   var _g/eax: grapheme <- peek-from-gap-buffer in
@@ -334,40 +330,20 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
     write-int32-hex stream, gval
     trace trace, "tokenize", stream
   }
-  var out/eax: (addr token) <- copy _out
-  var out-data-ah/edi: (addr handle stream byte) <- get out, text-data
-  $next-token:allocate: {
-    # Allocate a large buffer if it's a stream.
-    # Sometimes a whole function definition will need to fit in it.
-    compare g, 0x5b/open-square-bracket
-    {
-      break-if-!=
-      populate-stream out-data-ah, 0x400/max-definition-size=1KB
-      break $next-token:allocate
-    }
-    populate-stream out-data-ah, 0x40
-  }
-  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
-  var out-data/edi: (addr stream byte) <- copy _out-data
-  clear-stream out-data
   $next-token:case: {
     # open square brackets begin streams
     {
       compare g, 0x5b/open-square-bracket
       break-if-!=
       var dummy/eax: grapheme <- read-from-gap-buffer in  # skip open bracket
-      next-stream-token in, out-data, trace
-      var out/eax: (addr token) <- copy _out
-      # streams set the type
-      var out-type/eax: (addr int) <- get out, type
-      copy-to *out-type, 1/stream
+      next-stream-token in, out, trace
       break $next-token:case
     }
     # comment
     {
       compare g, 0x23/comment
       break-if-!=
-      rest-of-line in, out-data, trace
+      rest-of-line in, out, trace
       copy-to start-of-line?, 1/true
       break $next-token:case
     }
@@ -381,7 +357,7 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
       var digit?/eax: boolean <- decimal-digit? g2
       compare digit?, 0/false
       break-if-=
-      next-number-token in, out-data, trace
+      next-number-token in, out, trace
       break $next-token:case
     }
     # digit
@@ -389,7 +365,7 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
       var digit?/eax: boolean <- decimal-digit? g
       compare digit?, 0/false
       break-if-=
-      next-number-token in, out-data, trace
+      next-number-token in, out, trace
       break $next-token:case
     }
     # other symbol char
@@ -397,7 +373,7 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
       var symbol?/eax: boolean <- symbol-grapheme? g
       compare symbol?, 0/false
       break-if-=
-      next-symbol-token in, out-data, trace
+      next-symbol-token in, out, trace
       break $next-token:case
     }
     # unbalanced close square brackets are errors
@@ -413,7 +389,7 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
       compare bracket?, 0/false
       break-if-=
       var g/eax: grapheme <- read-from-gap-buffer in
-      next-bracket-token g, out-data, trace
+      next-bracket-token g, out, trace
       break $next-token:case
     }
     # non-symbol operators
@@ -421,7 +397,7 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
       var operator?/eax: boolean <- operator-grapheme? g
       compare operator?, 0/false
       break-if-=
-      next-operator-token in, out-data, trace
+      next-operator-token in, out, trace
       break $next-token:case
     }
     # quote
@@ -429,7 +405,7 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
       compare g, 0x27/single-quote
       break-if-!=
       var g/eax: grapheme <- read-from-gap-buffer in  # consume
-      write-grapheme out-data, g
+      initialize-token out, "'"
       break $next-token:case
     }
     # backquote
@@ -437,7 +413,7 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
       compare g, 0x60/backquote
       break-if-!=
       var g/eax: grapheme <- read-from-gap-buffer in  # consume
-      write-grapheme out-data, g
+      initialize-token out, "`"
       break $next-token:case
     }
     # unquote
@@ -445,15 +421,16 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
       compare g, 0x2c/comma
       break-if-!=
       var g/eax: grapheme <- read-from-gap-buffer in  # consume
-      write-grapheme out-data, g
       # check for unquote-splice
       {
-        var g2/eax: grapheme <- peek-from-gap-buffer in
-        compare g2, 0x40/at-sign
+        g <- peek-from-gap-buffer in
+        compare g, 0x40/at-sign
         break-if-!=
-        g2 <- read-from-gap-buffer in
-        write-grapheme out-data, g2
+        g <- read-from-gap-buffer in
+        initialize-token out, ",@"
+        break $next-token:case
       }
+      initialize-token out, ","
       break $next-token:case
     }
     abort "unknown token type"
@@ -466,16 +443,20 @@ fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean
     var stream-storage: (stream byte 0x400)  # maximum possible token size (next-stream-token)
     var stream/eax: (addr stream byte) <- address stream-storage
     write stream, "=> "
-    rewind-stream out-data
-    write-stream stream, out-data
+    write-token-text-data stream, out
     trace trace, "tokenize", stream
   }
   return start-of-line?
 }
 
-fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+fn next-symbol-token in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "looking for a symbol"
   trace-lower trace
+  var out/eax: (addr token) <- copy _out
+  var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
+  populate-stream out-data-ah, 0x40
+  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
+  var out-data/edi: (addr stream byte) <- copy _out-data
   $next-symbol-token:loop: {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
@@ -503,7 +484,7 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
       break $next-symbol-token:loop
     }
     var g/eax: grapheme <- read-from-gap-buffer in
-    write-grapheme out, g
+    write-grapheme out-data, g
     loop
   }
   trace-higher trace
@@ -514,15 +495,20 @@ fn next-symbol-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     var stream-storage: (stream byte 0x40)
     var stream/esi: (addr stream byte) <- address stream-storage
     write stream, "=> "
-    rewind-stream out
-    write-stream stream, out
+    rewind-stream out-data
+    write-stream stream, out-data
     trace trace, "tokenize", stream
   }
 }
 
-fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+fn next-operator-token in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "looking for a operator"
   trace-lower trace
+  var out/eax: (addr token) <- copy _out
+  var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
+  populate-stream out-data-ah, 0x40
+  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
+  var out-data/edi: (addr stream byte) <- copy _out-data
   $next-operator-token:loop: {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
@@ -550,7 +536,7 @@ fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (a
       break $next-operator-token:loop
     }
     var g/eax: grapheme <- read-from-gap-buffer in
-    write-grapheme out, g
+    write-grapheme out-data, g
     loop
   }
   trace-higher trace
@@ -561,20 +547,25 @@ fn next-operator-token in: (addr gap-buffer), out: (addr stream byte), trace: (a
     var stream-storage: (stream byte 0x40)
     var stream/esi: (addr stream byte) <- address stream-storage
     write stream, "=> "
-    rewind-stream out
-    write-stream stream, out
+    rewind-stream out-data
+    write-stream stream, out-data
     trace trace, "tokenize", stream
   }
 }
 
-fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+fn next-number-token in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "looking for a number"
   trace-lower trace
+  var out/eax: (addr token) <- copy _out
+  var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
+  populate-stream out-data-ah, 0x40
+  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
+  var out-data/edi: (addr stream byte) <- copy _out-data
   $next-number-token:check-minus: {
     var g/eax: grapheme <- peek-from-gap-buffer in
     compare g, 0x2d/minus
     g <- read-from-gap-buffer in  # consume
-    write-grapheme out, g
+    write-grapheme out-data, g
   }
   $next-number-token:loop: {
     var done?/eax: boolean <- gap-buffer-scan-done? in
@@ -612,14 +603,23 @@ fn next-number-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     }
     trace-text trace, "tokenize", "append"
     var g/eax: grapheme <- read-from-gap-buffer in
-    write-grapheme out, g
+    write-grapheme out-data, g
     loop
   }
   trace-higher trace
 }
 
-fn next-stream-token in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+fn next-stream-token in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "stream"
+  var out/edi: (addr token) <- copy _out
+  var out-type/eax: (addr int) <- get out, type
+  copy-to *out-type, 1/stream
+  var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
+  # stream tokens contain whole function definitions on boot, so we always
+  # give them plenty of space
+  populate-stream out-data-ah, 0x400/max-definition-size=1KB
+  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
+  var out-data/edi: (addr stream byte) <- copy _out-data
   {
     var empty?/eax: boolean <- gap-buffer-scan-done? in
     compare empty?, 0/false
@@ -631,7 +631,7 @@ fn next-stream-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     var g/eax: grapheme <- read-from-gap-buffer in
     compare g, 0x5d/close-square-bracket
     break-if-=
-    write-grapheme out, g
+    write-grapheme out-data, g
     loop
   }
   {
@@ -641,15 +641,20 @@ fn next-stream-token in: (addr gap-buffer), out: (addr stream byte), trace: (add
     var stream-storage: (stream byte 0x400)  # max-definition-size
     var stream/esi: (addr stream byte) <- address stream-storage
     write stream, "=> "
-    rewind-stream out
-    write-stream stream, out
+    rewind-stream out-data
+    write-stream stream, out-data
     trace trace, "tokenize", stream
   }
 }
 
-fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) {
+fn next-bracket-token g: grapheme, _out: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "bracket"
-  write-grapheme out, g
+  var out/eax: (addr token) <- copy _out
+  var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
+  populate-stream out-data-ah, 0x40
+  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
+  var out-data/edi: (addr stream byte) <- copy _out-data
+  write-grapheme out-data, g
   {
     var should-trace?/eax: boolean <- should-trace? trace
     compare should-trace?, 0/false
@@ -657,14 +662,19 @@ fn next-bracket-token g: grapheme, out: (addr stream byte), trace: (addr trace) 
     var stream-storage: (stream byte 0x40)
     var stream/esi: (addr stream byte) <- address stream-storage
     write stream, "=> "
-    rewind-stream out
-    write-stream stream, out
+    rewind-stream out-data
+    write-stream stream, out-data
     trace trace, "tokenize", stream
   }
 }
 
-fn rest-of-line in: (addr gap-buffer), out: (addr stream byte), trace: (addr trace) {
+fn rest-of-line in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "comment"
+  var out/eax: (addr token) <- copy _out
+  var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
+  populate-stream out-data-ah, 0x40
+  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
+  var out-data/edi: (addr stream byte) <- copy _out-data
   {
     var empty?/eax: boolean <- gap-buffer-scan-done? in
     compare empty?, 0/false
@@ -675,7 +685,7 @@ fn rest-of-line in: (addr gap-buffer), out: (addr stream byte), trace: (addr tra
     var g/eax: grapheme <- read-from-gap-buffer in
     compare g, 0xa/newline
     break-if-=
-    write-grapheme out, g
+    write-grapheme out-data, g
     loop
   }
   {
@@ -685,8 +695,8 @@ fn rest-of-line in: (addr gap-buffer), out: (addr stream byte), trace: (addr tra
     var stream-storage: (stream byte 0x80)
     var stream/esi: (addr stream byte) <- address stream-storage
     write stream, "=> "
-    rewind-stream out
-    write-stream stream, out
+    rewind-stream out-data
+    write-stream stream, out-data
     trace trace, "tokenize", stream
   }
 }
@@ -1125,8 +1135,9 @@ fn dot-token? _self: (addr token) -> _/eax: boolean {
 fn test-dot-token {
   var tmp-storage: (handle token)
   var tmp-ah/eax: (addr handle token) <- address tmp-storage
-  new-token tmp-ah, "."
+  allocate-token tmp-ah
   var tmp/eax: (addr token) <- lookup *tmp-ah
+  initialize-token tmp, "."
   var result/eax: boolean <- dot-token? tmp
   check result, "F - test-dot-token"
 }
@@ -1175,15 +1186,24 @@ fn allocate-token _self-ah: (addr handle token) {
   populate-stream dest-ah, 0x40/max-symbol-size
 }
 
-fn initialize-token _self-ah: (addr handle token), val: (addr array byte) {
-  var self-ah/eax: (addr handle token) <- copy _self-ah
-  var self/eax: (addr token) <- lookup *self-ah
+fn initialize-token _self: (addr token), val: (addr array byte) {
+  var self/eax: (addr token) <- copy _self
   var dest-ah/eax: (addr handle stream byte) <- get self, text-data
+  populate-stream dest-ah, 0x40
   var dest/eax: (addr stream byte) <- lookup *dest-ah
   write dest, val
 }
 
-fn new-token self-ah: (addr handle token), val: (addr array byte) {
-  allocate-token self-ah
-  initialize-token self-ah, val
+fn initialize-skip-token _self: (addr token) {
+  var self/eax: (addr token) <- copy _self
+  var self-type/eax: (addr int) <- get self, type
+  copy-to *self-type, 2/skip
+}
+
+fn write-token-text-data out: (addr stream byte), _self: (addr token) {
+  var self/eax: (addr token) <- copy _self
+  var data-ah/eax: (addr handle stream byte) <- get self, text-data
+  var data/eax: (addr stream byte) <- lookup *data-ah
+  rewind-stream data
+  write-stream out, data
 }
