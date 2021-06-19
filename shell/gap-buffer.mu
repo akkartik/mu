@@ -1187,15 +1187,13 @@ fn test-read-from-gap-buffer {
   check-ints-equal x, 0/nul, "F - test-read-from-gap-buffer/right-4"
 }
 
-fn skip-whitespace-from-gap-buffer self: (addr gap-buffer) {
+fn skip-spaces-from-gap-buffer self: (addr gap-buffer) {
   var done?/eax: boolean <- gap-buffer-scan-done? self
   compare done?, 0/false
   break-if-!=
   var g/eax: grapheme <- peek-from-gap-buffer self
   {
     compare g, 0x20/space
-    break-if-=
-    compare g, 0xa/newline
     break-if-=
     return
   }

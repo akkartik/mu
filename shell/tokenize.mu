@@ -296,7 +296,17 @@ fn test-tokenize-stream-literal-in-tree {
 fn next-token in: (addr gap-buffer), _out-token: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "next-token"
   trace-lower trace
-  skip-whitespace-from-gap-buffer in
+  skip-spaces-from-gap-buffer in
+  {
+    var g/eax: grapheme <- peek-from-gap-buffer in
+    compare g, 0xa/newline
+    break-if-!=
+    g <- read-from-gap-buffer in
+    var out-token/eax: (addr token) <- copy _out-token
+    var out-token-type/eax: (addr int) <- get out-token, type
+    copy-to *out-token-type, 2/skip
+    return
+  }
   {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
