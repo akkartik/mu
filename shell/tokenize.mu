@@ -1,10 +1,13 @@
-# tokens are like cells, but not recursive
+# The language is indent-sensitive.
+# Each line consists of an initial indent token followed by other tokens.
 type token {
   type: int
   # type 0: default
   # type 1: stream
   text-data: (handle stream byte)
   # type 2: skip (end of line or end of file)
+  # type 3: indent
+  number-data: int
 }
 
 fn tokenize in: (addr gap-buffer), out: (addr stream token), trace: (addr trace) {
@@ -54,6 +57,11 @@ fn test-tokenize-number {
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-number/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-number/before-indent"
+  read-from-stream stream, curr-token
   var number?/eax: boolean <- number-token? curr-token
   check number?, "F - test-tokenize-number"
   var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
@@ -76,6 +84,11 @@ fn test-tokenize-negative-number {
   #
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-negative-number/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-negative-number/before-indent"
   read-from-stream stream, curr-token
   var number?/eax: boolean <- number-token? curr-token
   check number?, "F - test-tokenize-negative-number"
@@ -100,6 +113,11 @@ fn test-tokenize-number-followed-by-hyphen {
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-number-followed-by-hyphen/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-number-followed-by-hyphen/before-indent"
+  read-from-stream stream, curr-token
   var number?/eax: boolean <- number-token? curr-token
   check number?, "F - test-tokenize-number-followed-by-hyphen"
   var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
@@ -122,6 +140,11 @@ fn test-tokenize-quote {
   #
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-quote/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-quote/before-indent"
   read-from-stream stream, curr-token
   var quote?/eax: boolean <- quote-token? curr-token
   check quote?, "F - test-tokenize-quote: quote"
@@ -150,6 +173,11 @@ fn test-tokenize-backquote {
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-backquote/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-backquote/before-indent"
+  read-from-stream stream, curr-token
   var backquote?/eax: boolean <- backquote-token? curr-token
   check backquote?, "F - test-tokenize-backquote: backquote"
   read-from-stream stream, curr-token
@@ -176,6 +204,11 @@ fn test-tokenize-unquote {
   #
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-unquote/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-unquote/before-indent"
   read-from-stream stream, curr-token
   var unquote?/eax: boolean <- unquote-token? curr-token
   check unquote?, "F - test-tokenize-unquote: unquote"
@@ -204,6 +237,11 @@ fn test-tokenize-unquote-splice {
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-unquote-splice/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-unquote-splice/before-indent"
+  read-from-stream stream, curr-token
   var unquote-splice?/eax: boolean <- unquote-splice-token? curr-token
   check unquote-splice?, "F - test-tokenize-unquote-splice: unquote-splice"
 }
@@ -223,6 +261,11 @@ fn test-tokenize-dotted-list {
   #
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-dotted-list/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-dotted-list/before-indent"
   read-from-stream stream, curr-token
   var open-paren?/eax: boolean <- open-paren-token? curr-token
   check open-paren?, "F - test-tokenize-dotted-list: open paren"
@@ -252,6 +295,11 @@ fn test-tokenize-stream-literal {
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-stream-literal/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-stream-literal/before-indent"
+  read-from-stream stream, curr-token
   var stream?/eax: boolean <- stream-token? curr-token
   check stream?, "F - test-tokenize-stream-literal: type"
   var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
@@ -278,6 +326,11 @@ fn test-tokenize-stream-literal-in-tree {
   var curr-token-storage: token
   var curr-token/ebx: (addr token) <- address curr-token-storage
   read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-stream-literal-in-tree/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-stream-literal-in-tree/before-indent"
+  read-from-stream stream, curr-token
   var bracket?/eax: boolean <- bracket-token? curr-token
   check bracket?, "F - test-tokenize-stream-literal-in-tree: open paren"
   read-from-stream stream, curr-token
@@ -294,11 +347,55 @@ fn test-tokenize-stream-literal-in-tree {
   check empty?, "F - test-tokenize-stream-literal-in-tree: empty?"
 }
 
+fn test-tokenize-indent {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "abc\n  def"
+  #
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
+  #
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
+  #
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-indent/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-indent/before-indent"
+  read-from-stream stream, curr-token
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  check-stream-equal curr-token-data, "abc", "F - test-tokenize-indent/before"
+  #
+  read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-indent/type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 2/spaces, "F - test-tokenize-indent"
+  #
+  read-from-stream stream, curr-token
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  check-stream-equal curr-token-data, "def", "F - test-tokenize-indent/after"
+}
+
 # caller is responsible for threading start-of-line? between calls to next-token
 # 'in' may contain whitespace if start-of-line?
 fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean, trace: (addr trace) -> _/edi: boolean {
   trace-text trace, "tokenize", "next-token"
   trace-lower trace
+  {
+    compare start-of-line?, 0/false
+    break-if-=
+    next-indent-token in, out, trace
+    trace-higher trace
+    return 0/not-at-start-of-line
+  }
   skip-spaces-from-gap-buffer in
   {
     var g/eax: grapheme <- peek-from-gap-buffer in
@@ -697,6 +794,52 @@ fn rest-of-line in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
     write stream, "=> "
     rewind-stream out-data
     write-stream stream, out-data
+    trace trace, "tokenize", stream
+  }
+}
+
+fn next-indent-token in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
+  trace-text trace, "tokenize", "indent"
+  trace-lower trace
+  var out/edi: (addr token) <- copy _out
+  var out-type/eax: (addr int) <- get out, type
+  copy-to *out-type, 3/indent
+  var dest/edi: (addr int) <- get out, number-data
+  copy-to *dest, 0
+  {
+    var done?/eax: boolean <- gap-buffer-scan-done? in
+    compare done?, 0/false
+    break-if-!=
+    var g/eax: grapheme <- peek-from-gap-buffer in
+    {
+      {
+        var should-trace?/eax: boolean <- should-trace? trace
+        compare should-trace?, 0/false
+      }
+      break-if-=
+      var stream-storage: (stream byte 0x40)
+      var stream/esi: (addr stream byte) <- address stream-storage
+      write stream, "next: "
+      var gval/eax: int <- copy g
+      write-int32-hex stream, gval
+      trace trace, "tokenize", stream
+    }
+    # if non-space, break
+    compare g, 0x20/space
+    break-if-!=
+    g <- read-from-gap-buffer in
+    increment *dest
+    loop
+  }
+  trace-higher trace
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x40)
+    var stream/esi: (addr stream byte) <- address stream-storage
+    write stream, "=> indent "
+    write-int32-hex stream, *dest
     trace trace, "tokenize", stream
   }
 }
@@ -1171,6 +1314,17 @@ fn skip-token? _self: (addr token) -> _/eax: boolean {
   var self/eax: (addr token) <- copy _self
   var in-type/eax: (addr int) <- get self, type
   compare *in-type, 2/skip
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
+}
+
+fn indent-token? _self: (addr token) -> _/eax: boolean {
+  var self/eax: (addr token) <- copy _self
+  var in-type/eax: (addr int) <- get self, type
+  compare *in-type, 3/indent
   {
     break-if-=
     return 0/false

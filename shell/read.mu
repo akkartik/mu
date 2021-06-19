@@ -1,8 +1,7 @@
 fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace) {
-  # TODO: we may be able to generate tokens lazily and drop this stream.
-  # Depends on how we implement indent-sensitivity and infix.
+  # eagerly tokenize everything so that the phases are easier to see in the trace
   var tokens-storage: (stream token 0x400)
-  var tokens/ecx: (addr stream token) <- address tokens-storage
+  var tokens/edx: (addr stream token) <- address tokens-storage
   tokenize in, tokens, trace
   var error?/eax: boolean <- has-errors? trace
   compare error?, 0/false
@@ -10,7 +9,16 @@ fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace)
     break-if-=
     return
   }
-  # TODO: insert parens
+  # insert more parens based on indentation
+  var parenthesized-tokens-storage: (stream token 0x400)
+  var parenthesized-tokens/ecx: (addr stream token) <- address parenthesized-tokens-storage
+  parenthesize tokens, parenthesized-tokens, trace
+  var error?/eax: boolean <- has-errors? trace
+  compare error?, 0/false
+  {
+    break-if-=
+    return
+  }
   # TODO: transform infix
-  parse-input tokens, out, trace
+  parse-input parenthesized-tokens, out, trace
 }

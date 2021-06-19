@@ -959,8 +959,8 @@ fn test-run-expand-trace {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, " ||||||", "F - test-run-expand-trace/expand-1/cursor"
   check-screen-row screen,                                  3/y, " ...   ", "F - test-run-expand-trace/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-expand-trace/expand-2/cursor"
-  check-screen-row screen,                                  4/y, " 1 pars", "F - test-run-expand-trace/expand-2"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-expand-trace/expand-2/cursor"
+  check-screen-row screen,                                  4/y, " 1 inse", "F - test-run-expand-trace/expand-3"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-expand-trace/expand-3/cursor"
 }
 
 fn test-run-can-rerun-when-expanding-trace {
@@ -1006,7 +1006,7 @@ fn test-run-can-rerun-when-expanding-trace {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, " ||||||", "F - test-run-can-rerun-when-expanding-trace/pre2-1/cursor"
   check-screen-row screen,                                  3/y, " ...   ", "F - test-run-can-rerun-when-expanding-trace/pre2-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre2-2/cursor"
-  check-screen-row screen,                                  4/y, " 1 pars", "F - test-run-can-rerun-when-expanding-trace/pre2-2"
+  check-screen-row screen,                                  4/y, " 1 inse", "F - test-run-can-rerun-when-expanding-trace/pre2-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-can-rerun-when-expanding-trace/pre2-2/cursor"
   # move cursor down and expand
   edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
@@ -1024,8 +1024,12 @@ fn test-run-can-rerun-when-expanding-trace {
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, " ||||||", "F - test-run-can-rerun-when-expanding-trace/expand-2/cursor"
   check-screen-row screen,                                  4/y, " ...   ", "F - test-run-can-rerun-when-expanding-trace/expand-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "       ", "F - test-run-can-rerun-when-expanding-trace/expand-3/cursor"
-  check-screen-row screen,                                  5/y, " 2 => 1", "F - test-run-can-rerun-when-expanding-trace/expand-4"
+  check-screen-row screen,                                  5/y, " 2 next", "F - test-run-can-rerun-when-expanding-trace/expand-4"
   check-background-color-in-screen-row screen, 7/bg=cursor, 5/y, "       ", "F - test-run-can-rerun-when-expanding-trace/expand-4/cursor"
+  check-screen-row screen,                                  6/y, " ...   ", "F - test-run-can-rerun-when-expanding-trace/expand-5"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 6/y, "       ", "F - test-run-can-rerun-when-expanding-trace/expand-5/cursor"
+  check-screen-row screen,                                  7/y, " 2 => 1", "F - test-run-can-rerun-when-expanding-trace/expand-6"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 7/y, "       ", "F - test-run-can-rerun-when-expanding-trace/expand-6/cursor"
 }
 
 fn test-run-preserves-trace-view-on-rerun {
@@ -1069,17 +1073,21 @@ fn test-run-preserves-trace-view-on-rerun {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, " ||||||||||            ", "F - test-run-preserves-trace-view-on-rerun/pre2-1/cursor"
   check-screen-row screen,                                  3/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre2-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-2/cursor"
-  check-screen-row screen,                                  4/y, " 1 parse               ", "F - test-run-preserves-trace-view-on-rerun/pre2-3"
+  check-screen-row screen,                                  4/y, " 1 insert parens       ", "F - test-run-preserves-trace-view-on-rerun/pre2-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-3/cursor"
-  check-screen-row screen,                                  5/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre2-4"
+  check-screen-row screen,                                  5/y, " 1 parse               ", "F - test-run-preserves-trace-view-on-rerun/pre2-4"
   check-background-color-in-screen-row screen, 7/bg=cursor, 5/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-4/cursor"
-  check-screen-row screen,                                  6/y, " 1 macroexpand 7       ", "F - test-run-preserves-trace-view-on-rerun/pre2-5"
+  check-screen-row screen,                                  6/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre2-5"
   check-background-color-in-screen-row screen, 7/bg=cursor, 6/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-5/cursor"
-  check-screen-row screen,                                  7/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre2-6"
+  check-screen-row screen,                                  7/y, " 1 macroexpand 7       ", "F - test-run-preserves-trace-view-on-rerun/pre2-6"
   check-background-color-in-screen-row screen, 7/bg=cursor, 7/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-6/cursor"
-  check-screen-row screen,                                  8/y, " 1 => 7                ", "F - test-run-preserves-trace-view-on-rerun/pre2-7"
+  check-screen-row screen,                                  8/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre2-7"
   check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-7/cursor"
+  check-screen-row screen,                                  9/y, " 1 => 7                ", "F - test-run-preserves-trace-view-on-rerun/pre2-8"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 9/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre2-8/cursor"
   # move cursor down below the macroexpand line and expand
+  edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
+  render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   edit-sandbox sandbox, 0x6a/j, 0/no-globals, 0/no-disk
@@ -1097,16 +1105,18 @@ fn test-run-preserves-trace-view-on-rerun {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-1/cursor"
   check-screen-row screen,                                  3/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre3-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-2/cursor"
-  check-screen-row screen,                                  4/y, " 1 parse               ", "F - test-run-preserves-trace-view-on-rerun/pre3-3"
+  check-screen-row screen,                                  4/y, " 1 insert parens       ", "F - test-run-preserves-trace-view-on-rerun/pre3-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-3/cursor"
-  check-screen-row screen,                                  5/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre3-4"
+  check-screen-row screen,                                  5/y, " 1 parse               ", "F - test-run-preserves-trace-view-on-rerun/pre3-4"
   check-background-color-in-screen-row screen, 7/bg=cursor, 5/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-4/cursor"
-  check-screen-row screen,                                  6/y, " 1 macroexpand 7       ", "F - test-run-preserves-trace-view-on-rerun/pre3-5"
+  check-screen-row screen,                                  6/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre3-5"
   check-background-color-in-screen-row screen, 7/bg=cursor, 6/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-5/cursor"
-  check-screen-row screen,                                  7/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre3-6"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 7/y, " |||                   ", "F - test-run-preserves-trace-view-on-rerun/pre3-6/cursor"
-  check-screen-row screen,                                  8/y, " 1 => 7                ", "F - test-run-preserves-trace-view-on-rerun/pre3-7"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-7/cursor"
+  check-screen-row screen,                                  7/y, " 1 macroexpand 7       ", "F - test-run-preserves-trace-view-on-rerun/pre3-6"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 7/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-6/cursor"
+  check-screen-row screen,                                  8/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/pre3-7"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, " |||                   ", "F - test-run-preserves-trace-view-on-rerun/pre3-7/cursor"
+  check-screen-row screen,                                  9/y, " 1 => 7                ", "F - test-run-preserves-trace-view-on-rerun/pre3-8"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 9/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/pre3-8/cursor"
   # expand
   edit-sandbox sandbox, 0xa/newline, 0/no-globals, 0/no-disk
   clear-screen screen
@@ -1118,14 +1128,16 @@ fn test-run-preserves-trace-view-on-rerun {
   check-background-color-in-screen-row screen, 7/bg=cursor, 2/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/expand-1/cursor"
   check-screen-row screen,                                  3/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/expand-2"
   check-background-color-in-screen-row screen, 7/bg=cursor, 3/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/expand-2/cursor"
-  check-screen-row screen,                                  4/y, " 1 parse               ", "F - test-run-preserves-trace-view-on-rerun/expand-3"
+  check-screen-row screen,                                  4/y, " 1 insert parens       ", "F - test-run-preserves-trace-view-on-rerun/expand-3"
   check-background-color-in-screen-row screen, 7/bg=cursor, 4/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/expand-3/cursor"
-  check-screen-row screen,                                  5/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/expand-4"
+  check-screen-row screen,                                  5/y, " 1 parse               ", "F - test-run-preserves-trace-view-on-rerun/expand-4"
   check-background-color-in-screen-row screen, 7/bg=cursor, 5/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/expand-4/cursor"
-  check-screen-row screen,                                  6/y, " 1 macroexpand 7       ", "F - test-run-preserves-trace-view-on-rerun/expand-5"
+  check-screen-row screen,                                  6/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/expand-5"
   check-background-color-in-screen-row screen, 7/bg=cursor, 6/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/expand-5/cursor"
-  check-screen-row screen,                                  7/y, " 2 macroexpand-iter 7  ", "F - test-run-preserves-trace-view-on-rerun/expand-6"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 7/y, " ||||||||||||||||||||  ", "F - test-run-preserves-trace-view-on-rerun/expand-6/cursor"
-  check-screen-row screen,                                  8/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/expand-7"
-  check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/expand-7/cursor"
+  check-screen-row screen,                                  7/y, " 1 macroexpand 7       ", "F - test-run-preserves-trace-view-on-rerun/expand-6"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 7/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/expand-6/cursor"
+  check-screen-row screen,                                  8/y, " 2 macroexpand-iter 7  ", "F - test-run-preserves-trace-view-on-rerun/expand-7"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 8/y, " ||||||||||||||||||||  ", "F - test-run-preserves-trace-view-on-rerun/expand-7/cursor"
+  check-screen-row screen,                                  9/y, " ...                   ", "F - test-run-preserves-trace-view-on-rerun/expand-8"
+  check-background-color-in-screen-row screen, 7/bg=cursor, 9/y, "                       ", "F - test-run-preserves-trace-view-on-rerun/expand-8/cursor"
 }
