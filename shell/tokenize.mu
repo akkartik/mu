@@ -296,7 +296,7 @@ fn test-tokenize-stream-literal-in-tree {
 
 # caller is responsible for threading start-of-line? between calls to next-token
 # 'in' may contain whitespace if start-of-line?
-fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: boolean, trace: (addr trace) -> _/edi: boolean {
+fn next-token in: (addr gap-buffer), _out: (addr token), start-of-line?: boolean, trace: (addr trace) -> _/edi: boolean {
   trace-text trace, "tokenize", "next-token"
   trace-lower trace
   skip-spaces-from-gap-buffer in
@@ -306,9 +306,9 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
     break-if-!=
     trace-text trace, "tokenize", "newline"
     g <- read-from-gap-buffer in
-    var out-token/eax: (addr token) <- copy _out-token
-    var out-token-type/eax: (addr int) <- get out-token, type
-    copy-to *out-token-type, 2/skip
+    var out/eax: (addr token) <- copy _out
+    var out-type/eax: (addr int) <- get out, type
+    copy-to *out-type, 2/skip
     return 1/at-start-of-line
   }
   {
@@ -316,9 +316,9 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
     compare done?, 0/false
     break-if-=
     trace-text trace, "tokenize", "end"
-    var out-token/eax: (addr token) <- copy _out-token
-    var out-token-type/eax: (addr int) <- get out-token, type
-    copy-to *out-token-type, 2/skip
+    var out/eax: (addr token) <- copy _out
+    var out-type/eax: (addr int) <- get out, type
+    copy-to *out-type, 2/skip
     return 1/at-start-of-line
   }
   var _g/eax: grapheme <- peek-from-gap-buffer in
@@ -334,40 +334,40 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
     write-int32-hex stream, gval
     trace trace, "tokenize", stream
   }
-  var out-token/eax: (addr token) <- copy _out-token
-  var out-ah/edi: (addr handle stream byte) <- get out-token, text-data
+  var out/eax: (addr token) <- copy _out
+  var out-data-ah/edi: (addr handle stream byte) <- get out, text-data
   $next-token:allocate: {
     # Allocate a large buffer if it's a stream.
     # Sometimes a whole function definition will need to fit in it.
     compare g, 0x5b/open-square-bracket
     {
       break-if-!=
-      populate-stream out-ah, 0x400/max-definition-size=1KB
+      populate-stream out-data-ah, 0x400/max-definition-size=1KB
       break $next-token:allocate
     }
-    populate-stream out-ah, 0x40
+    populate-stream out-data-ah, 0x40
   }
-  var _out/eax: (addr stream byte) <- lookup *out-ah
-  var out/edi: (addr stream byte) <- copy _out
-  clear-stream out
+  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
+  var out-data/edi: (addr stream byte) <- copy _out-data
+  clear-stream out-data
   $next-token:case: {
     # open square brackets begin streams
     {
       compare g, 0x5b/open-square-bracket
       break-if-!=
       var dummy/eax: grapheme <- read-from-gap-buffer in  # skip open bracket
-      next-stream-token in, out, trace
-      var out-token/eax: (addr token) <- copy _out-token
+      next-stream-token in, out-data, trace
+      var out/eax: (addr token) <- copy _out
       # streams set the type
-      var out-token-type/eax: (addr int) <- get out-token, type
-      copy-to *out-token-type, 1/stream
+      var out-type/eax: (addr int) <- get out, type
+      copy-to *out-type, 1/stream
       break $next-token:case
     }
     # comment
     {
       compare g, 0x23/comment
       break-if-!=
-      rest-of-line in, out, trace
+      rest-of-line in, out-data, trace
       copy-to start-of-line?, 1/true
       break $next-token:case
     }
@@ -381,7 +381,7 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
       var digit?/eax: boolean <- decimal-digit? g2
       compare digit?, 0/false
       break-if-=
-      next-number-token in, out, trace
+      next-number-token in, out-data, trace
       break $next-token:case
     }
     # digit
@@ -389,7 +389,7 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
       var digit?/eax: boolean <- decimal-digit? g
       compare digit?, 0/false
       break-if-=
-      next-number-token in, out, trace
+      next-number-token in, out-data, trace
       break $next-token:case
     }
     # other symbol char
@@ -397,7 +397,7 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
       var symbol?/eax: boolean <- symbol-grapheme? g
       compare symbol?, 0/false
       break-if-=
-      next-symbol-token in, out, trace
+      next-symbol-token in, out-data, trace
       break $next-token:case
     }
     # unbalanced close square brackets are errors
@@ -413,7 +413,7 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
       compare bracket?, 0/false
       break-if-=
       var g/eax: grapheme <- read-from-gap-buffer in
-      next-bracket-token g, out, trace
+      next-bracket-token g, out-data, trace
       break $next-token:case
     }
     # non-symbol operators
@@ -421,7 +421,7 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
       var operator?/eax: boolean <- operator-grapheme? g
       compare operator?, 0/false
       break-if-=
-      next-operator-token in, out, trace
+      next-operator-token in, out-data, trace
       break $next-token:case
     }
     # quote
@@ -429,7 +429,7 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
       compare g, 0x27/single-quote
       break-if-!=
       var g/eax: grapheme <- read-from-gap-buffer in  # consume
-      write-grapheme out, g
+      write-grapheme out-data, g
       break $next-token:case
     }
     # backquote
@@ -437,7 +437,7 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
       compare g, 0x60/backquote
       break-if-!=
       var g/eax: grapheme <- read-from-gap-buffer in  # consume
-      write-grapheme out, g
+      write-grapheme out-data, g
       break $next-token:case
     }
     # unquote
@@ -445,14 +445,14 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
       compare g, 0x2c/comma
       break-if-!=
       var g/eax: grapheme <- read-from-gap-buffer in  # consume
-      write-grapheme out, g
+      write-grapheme out-data, g
       # check for unquote-splice
       {
         var g2/eax: grapheme <- peek-from-gap-buffer in
         compare g2, 0x40/at-sign
         break-if-!=
         g2 <- read-from-gap-buffer in
-        write-grapheme out, g2
+        write-grapheme out-data, g2
       }
       break $next-token:case
     }
@@ -466,8 +466,8 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), start-of-line?: b
     var stream-storage: (stream byte 0x400)  # maximum possible token size (next-stream-token)
     var stream/eax: (addr stream byte) <- address stream-storage
     write stream, "=> "
-    rewind-stream out
-    write-stream stream, out
+    rewind-stream out-data
+    write-stream stream, out-data
     trace trace, "tokenize", stream
   }
   return start-of-line?
