@@ -10,14 +10,14 @@ fn tokenize in: (addr gap-buffer), out: (addr stream token), trace: (addr trace)
   trace-text trace, "tokenize", "tokenize"
   trace-lower trace
   rewind-gap-buffer in
-  var token-storage: token
-  var token/edx: (addr token) <- address token-storage
   {
     skip-whitespace-from-gap-buffer in
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
     #
+    var token-storage: token
+    var token/edx: (addr token) <- address token-storage
     next-token in, token, trace
     var error?/eax: boolean <- has-errors? trace
     compare error?, 0/false
@@ -307,10 +307,6 @@ fn next-token in: (addr gap-buffer), _out-token: (addr token), trace: (addr trac
     trace trace, "tokenize", stream
   }
   var out-token/eax: (addr token) <- copy _out-token
-  {
-    var out-token-type/eax: (addr int) <- get out-token, type
-    copy-to *out-token-type, 0/default
-  }
   var out-ah/edi: (addr handle stream byte) <- get out-token, text-data
   $next-token:allocate: {
     # Allocate a large buffer if it's a stream.
