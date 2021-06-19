@@ -4,6 +4,7 @@ type token {
   # type 0: default
   # type 1: stream
   text-data: (handle stream byte)
+  # type 2: skip (end of line or end of file)
 }
 
 fn tokenize in: (addr gap-buffer), out: (addr stream token), trace: (addr trace) {
@@ -11,7 +12,6 @@ fn tokenize in: (addr gap-buffer), out: (addr stream token), trace: (addr trace)
   trace-lower trace
   rewind-gap-buffer in
   {
-    skip-whitespace-from-gap-buffer in
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
@@ -25,7 +25,10 @@ fn tokenize in: (addr gap-buffer), out: (addr stream token), trace: (addr trace)
       break-if-=
       return
     }
-    var skip?/eax: boolean <- comment-token? token
+    var comment?/eax: boolean <- comment-token? token
+    compare comment?, 0/false
+    loop-if-!=
+    var skip?/eax: boolean <- skip-token? token
     compare skip?, 0/false
     loop-if-!=
     write-to-stream out, token  # shallow-copy text-data
@@ -293,6 +296,16 @@ fn test-tokenize-stream-literal-in-tree {
 fn next-token in: (addr gap-buffer), _out-token: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "next-token"
   trace-lower trace
+  skip-whitespace-from-gap-buffer in
+  {
+    var done?/eax: boolean <- gap-buffer-scan-done? in
+    compare done?, 0/false
+    break-if-=
+    var out-token/eax: (addr token) <- copy _out-token
+    var out-token-type/eax: (addr int) <- get out-token, type
+    copy-to *out-token-type, 2/skip
+    return
+  }
   var _g/eax: grapheme <- peek-from-gap-buffer in
   var g/ecx: grapheme <- copy _g
   {
@@ -1119,6 +1132,17 @@ fn comment-token? _in: (addr token) -> _/eax: boolean {
   rewind-stream in-data
   var g/eax: grapheme <- read-grapheme in-data
   compare g, 0x23/hash
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
+}
+
+fn skip-token? _in: (addr token) -> _/eax: boolean {
+  var in/eax: (addr token) <- copy _in
+  var in-type/eax: (addr int) <- get in, type
+  compare *in-type, 2/skip
   {
     break-if-=
     return 0/false
