@@ -220,6 +220,50 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     trace-higher trace
     return
   }
+  $evaluate:apply: {
+    var expr/esi: (addr cell) <- copy in
+    # if its first elem is not "apply", break
+    var first-ah/ecx: (addr handle cell) <- get in, left
+    var rest-ah/edx: (addr handle cell) <- get in, right
+    var first/eax: (addr cell) <- lookup *first-ah
+    var apply?/eax: boolean <- symbol-equal? first, "apply"
+    compare apply?, 0/false
+    break-if-=
+    #
+    trace-text trace, "eval", "apply"
+    trace-text trace, "eval", "evaluating first arg"
+    var first-arg-value-h: (handle cell)
+    var first-arg-value-ah/esi: (addr handle cell) <- address first-arg-value-h
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    var first-arg-ah/ecx: (addr handle cell) <- get rest, left
+    debug-print "A2", 4/fg, 0/bg
+    evaluate first-arg-ah, first-arg-value-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
+    debug-print "Y2", 4/fg, 0/bg
+    # errors? skip
+    {
+      var error?/eax: boolean <- has-errors? trace
+      compare error?, 0/false
+      break-if-=
+      trace-higher trace
+      return
+    }
+    #
+    trace-text trace, "eval", "evaluating second arg"
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    rest-ah <- get rest, right
+    rest <- lookup *rest-ah
+    var second-ah/eax: (addr handle cell) <- get rest, left
+    var second-arg-value-h: (handle cell)
+    var second-arg-value-ah/edi: (addr handle cell) <- address second-arg-value-h
+    debug-print "T2", 4/fg, 0/bg
+    evaluate second-ah, second-arg-value-ah, env-h, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
+    debug-print "U2", 4/fg, 0/bg
+    # apply
+    apply first-arg-value-ah, second-arg-value-ah, _out-ah, globals, trace, inner-screen-var, inner-keyboard-var, definitions-created, call-number
+    #
+    trace-higher trace
+    return
+  }
   $evaluate:define: {
     # trees starting with "define" define globals
     var expr/esi: (addr cell) <- copy in
@@ -360,6 +404,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       trace-higher trace
       return
     }
+    #
+    trace-text trace, "eval", "evaluating second arg"
     var rest/eax: (addr cell) <- lookup *rest-ah
     rest-ah <- get rest, right
     rest <- lookup *rest-ah
@@ -405,6 +451,8 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
       trace-higher trace
       return
     }
+    #
+    trace-text trace, "eval", "evaluating second arg"
     var rest/eax: (addr cell) <- lookup *rest-ah
     rest-ah <- get rest, right
     rest <- lookup *rest-ah

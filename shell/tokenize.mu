@@ -386,7 +386,7 @@ fn test-tokenize-indent {
 fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean, trace: (addr trace) -> _/edi: boolean {
   trace-text trace, "tokenize", "next-token"
   trace-lower trace
-  # first save an indent token
+  # save an indent token if necessary
   {
     compare start-of-line?, 0/false
     break-if-=
@@ -406,12 +406,13 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     trace-text trace, "tokenize", "newline"
     g <- read-from-gap-buffer in
     initialize-skip-token out  # might drop indent if that's all there was in this line
+    trace-higher trace
     return 1/at-start-of-line
   }
   {
     compare start-of-line?, 0/false
     break-if-=
-    # still here? no comment or newline?
+    # still here? no comment or newline? return saved indent
     trace-higher trace
     return 0/not-at-start-of-line
   }
@@ -421,6 +422,7 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     break-if-=
     trace-text trace, "tokenize", "end"
     initialize-skip-token out
+    trace-higher trace
     return 1/at-start-of-line
   }
   var _g/eax: grapheme <- peek-from-gap-buffer in
