@@ -208,7 +208,7 @@ $stream-final:end:
     c3/return
 
 # compare all the data in two streams (ignoring the read pointer)
-streams-data-equal?:  # f: (addr stream byte), s: (addr array byte) -> result/eax: boolean
+streams-data-equal?:  # a: (addr stream byte), b: (addr array byte) -> result/eax: boolean
     # pseudocode:
     #   awrite = a->write
     #   if (awrite != b->write) return false
@@ -291,6 +291,24 @@ $streams-data-equal?:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# helper for tests
+check-streams-data-equal:  # s: (addr stream _), expected: (addr array _), msg: (addr array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    #
+    (streams-data-equal? *(ebp+8) *(ebp+0xc))  # => eax
+    (check-ints-equal %eax 1 *(ebp+0x10))
+$check-streams-equal:end:
+    # . restore registers
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp

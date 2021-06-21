@@ -43,8 +43,9 @@ sig count-of-events -> _/eax: int
 sig clear-stream f: (addr stream _)
 sig rewind-stream f: (addr stream _)
 sig stream-data-equal? f: (addr stream byte), s: (addr array byte) -> _/eax: boolean
-sig streams-data-equal? f: (addr stream byte), s: (addr stream byte) -> _/eax: boolean
+sig streams-data-equal? a: (addr stream byte), b: (addr stream byte) -> _/eax: boolean
 sig check-stream-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
+sig check-streams-data-equal s: (addr stream _), expected: (addr stream _), msg: (addr array byte)
 sig next-stream-line-equal? f: (addr stream byte), s: (addr array byte) -> _/eax: boolean
 sig check-next-stream-line-equal f: (addr stream byte), s: (addr array byte), msg: (addr array byte)
 sig write f: (addr stream byte), s: (addr array byte)

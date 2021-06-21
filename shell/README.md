@@ -62,7 +62,63 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
   qemu-system-i386 -m 2G -enable-kvm -hda code.img -hdb data.img
   ```
 
-*Known issues*
+### Indent-sensitivity
+
+The Mu shell is a Lisp under the hood. However, you'll see a lot fewer
+parentheses than most Lisps because it can often automatically insert them
+based on indentation.
+
+If you're already used to Lisp and always type in all parens, everything will
+continue to work. In particular, paren-insertion is disabled inside explicitly
+added parens. Once Mu sees a `(`, it stops trying to be smart until it sees a
+`)`.
+
+I recommend tastefully only removing parens from top-level (`def`, `mac`,
+`define`) and control-flow words (`if`, `while`, `for`, etc.) Continue using
+parens for most real function calls. When in doubt, insert parens.
+
+The rule for when parens are inserted is:
+
+> Multi-word lines without leading parens are implicitly grouped with later
+> indented lines
+
+For example:
+
+```
+if (> n 0)      =>      (if (> n 0)
+  34                      34)
+```
+
+No indented lines after? Parens go around a single line:
+
+```
+f a             =>      (f a)
+f b                     (f b)
+```
+
+Lines with a single word are never wrapped in parens:
+
+```
+def (foo)       =>      (def (foo)
+  42                      42)
+```
+
+Lines with a leading paren never get more parens:
+
+```
+def (foo x)     =>      (def (foo x)
+  (print x) x             (print x) x)
+```
+
+Putting these rules together, parens are not required around the `if` in:
+
+```
+if (= 1 (% x 2))
+  'odd
+  'even
+```
+
+### Known issues
 
 * No mouse support.
 

@@ -1361,3 +1361,58 @@ fn write-token-text-data out: (addr stream byte), _self: (addr token) {
   rewind-stream data
   write-stream out, data
 }
+
+fn tokens-equal? _a: (addr token), _b: (addr token) -> _/eax: boolean {
+  var a/edx: (addr token) <- copy _a
+  var b/ebx: (addr token) <- copy _b
+  var a-type-addr/eax: (addr int) <- get a, type
+  var a-type/eax: int <- copy *a-type-addr
+  var b-type-addr/ecx: (addr int) <- get b, type
+  compare a-type, *b-type-addr
+  {
+    break-if-=
+    return 0/false
+  }
+  compare a-type, 2/skip
+  {
+    break-if-!=
+    # skip tokens have no other data
+    return 1/true
+  }
+  compare a-type, 3/indent
+  {
+    break-if-!=
+    # indent tokens have no other data
+    var a-number-data-addr/eax: (addr int) <- get a, number-data
+    var a-number-data/eax: int <- copy *a-number-data-addr
+    var b-number-data-addr/ecx: (addr int) <- get b, number-data
+    compare a-number-data, *b-number-data-addr
+    {
+      break-if-=
+      return 0/false
+    }
+    return 1/true
+  }
+  var b-data-ah/eax: (addr handle stream byte) <- get b, text-data
+  var _b-data/eax: (addr stream byte) <- lookup *b-data-ah
+  var b-data/ebx: (addr stream byte) <- copy _b-data
+  var a-data-ah/eax: (addr handle stream byte) <- get a, text-data
+  var a-data/eax: (addr stream byte) <- lookup *a-data-ah
+  var data-match?/eax: boolean <- streams-data-equal? a-data, b-data
+  return data-match?
+}
+
+fn dump-token-from-cursor _t: (addr token) {
+  var t/esi: (addr token) <- copy _t
+  var type/eax: (addr int) <- get t, type
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, *type, 7/fg 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 7/fg 0/bg
+  var text-ah/eax: (addr handle stream byte) <- get t, text-data
+  var text/eax: (addr stream byte) <- lookup *text-ah
+  rewind-stream text
+  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, text, 7/fg 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 7/fg 0/bg
+  var num/eax: (addr int) <- get t, number-data
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, *num, 7/fg 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "\n", 7/fg 0/bg
+}
