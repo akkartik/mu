@@ -18,6 +18,8 @@
     (list . [def (list . args)
   # we should probably make a copy here
   args])
+    (ret . [mac (ret var val . body)
+  `(let ,var ,val ,@body ,var)])
     (len . [def (len l)
   if (no l)
     0
@@ -125,12 +127,11 @@
              dx
              0)))))))))))])
     (read_line . [def (read_line keyboard)
-  (let str (stream)
-  (let c (key keyboard)
-    (while (not (or (= c 0) (= c 10)))
-      (write str c)
-      (set c (key keyboard))))
-  str)])
+  ret str (stream)
+    let c (key keyboard)
+      while (not (or (= c 0) (= c 10)))
+        (write str c)
+        (set c (key keyboard))])
     (wait . [def (wait keyboard)
   while (= 0 (key keyboard))
     ()])
