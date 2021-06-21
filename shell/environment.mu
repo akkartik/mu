@@ -998,14 +998,14 @@ fn load-state _self: (addr environment), data-disk: (addr disk) {
   {
     compare sandbox-cell, 0
     break-if-=
-    # print: cell -> stream
-    clear-trace trace
-    print-cell sandbox-cell-ah, s, trace
+    var sandbox-data-ah/eax: (addr handle stream byte) <- get sandbox-cell, text-data
+    var _sandbox-data/eax: (addr stream byte) <- lookup *sandbox-data-ah
+    var sandbox-data/ecx: (addr stream byte) <- copy _sandbox-data
     # stream -> gap-buffer
     var sandbox/eax: (addr sandbox) <- get self, sandbox
     var data-ah/eax: (addr handle gap-buffer) <- get sandbox, data
     var data/eax: (addr gap-buffer) <- lookup *data-ah
-    load-gap-buffer-from-stream data, s
+    load-gap-buffer-from-stream data, sandbox-data
   }
 }
 

@@ -71,9 +71,9 @@ fn write-sandbox out: (addr stream byte), _self: (addr sandbox) {
     break-if-!=
     return
   }
-  write out, "  (sandbox . "
+  write out, "  (sandbox . ["
   append-gap-buffer data, out
-  write out, ")\n"
+  write out, "])\n"
 }
 
 ##
