@@ -29,9 +29,6 @@ fn tokenize in: (addr gap-buffer), out: (addr stream token), trace: (addr trace)
       break-if-=
       return
     }
-    var comment?/eax: boolean <- comment-token? token
-    compare comment?, 0/false
-    loop-if-!=
     var skip?/eax: boolean <- skip-token? token
     compare skip?, 0/false
     loop-if-!=
@@ -389,22 +386,34 @@ fn test-tokenize-indent {
 fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean, trace: (addr trace) -> _/edi: boolean {
   trace-text trace, "tokenize", "next-token"
   trace-lower trace
+  # first save an indent token
   {
     compare start-of-line?, 0/false
     break-if-=
-    next-indent-token in, out, trace
-    trace-higher trace
-    return 0/not-at-start-of-line
+    next-indent-token in, out, trace  # might not be returned
   }
   skip-spaces-from-gap-buffer in
+  var g/eax: grapheme <- peek-from-gap-buffer in
   {
-    var g/eax: grapheme <- peek-from-gap-buffer in
+    compare g, 0x23/comment
+    break-if-!=
+    skip-rest-of-line in
+  }
+  var g/eax: grapheme <- peek-from-gap-buffer in
+  {
     compare g, 0xa/newline
     break-if-!=
     trace-text trace, "tokenize", "newline"
     g <- read-from-gap-buffer in
-    initialize-skip-token out
+    initialize-skip-token out  # might drop indent if that's all there was in this line
     return 1/at-start-of-line
+  }
+  {
+    compare start-of-line?, 0/false
+    break-if-=
+    # still here? no comment or newline?
+    trace-higher trace
+    return 0/not-at-start-of-line
   }
   {
     var done?/eax: boolean <- gap-buffer-scan-done? in
@@ -434,14 +443,6 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
       break-if-!=
       var dummy/eax: grapheme <- read-from-gap-buffer in  # skip open bracket
       next-stream-token in, out, trace
-      break $next-token:case
-    }
-    # comment
-    {
-      compare g, 0x23/comment
-      break-if-!=
-      rest-of-line in, out, trace
-      copy-to start-of-line?, 1/true
       break $next-token:case
     }
     # special-case: '-'
@@ -529,6 +530,11 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
       }
       initialize-token out, ","
       break $next-token:case
+    }
+    set-cursor-position 0/screen, 0x40 0x20
+    {
+      var foo/eax: int <- copy g
+      draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 7/fg 0/bg
     }
     abort "unknown token type"
   }
@@ -765,36 +771,16 @@ fn next-bracket-token g: grapheme, _out: (addr token), trace: (addr trace) {
   }
 }
 
-fn rest-of-line in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
-  trace-text trace, "tokenize", "comment"
-  var out/eax: (addr token) <- copy _out
-  var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
-  populate-stream out-data-ah, 0x40
-  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
-  var out-data/edi: (addr stream byte) <- copy _out-data
+fn skip-rest-of-line in: (addr gap-buffer) {
   {
-    var empty?/eax: boolean <- gap-buffer-scan-done? in
-    compare empty?, 0/false
-    {
-      break-if-=
-      return
-    }
-    var g/eax: grapheme <- read-from-gap-buffer in
+    var done?/eax: boolean <- gap-buffer-scan-done? in
+    compare done?, 0/false
+    break-if-!=
+    var g/eax: grapheme <- peek-from-gap-buffer in
     compare g, 0xa/newline
     break-if-=
-    write-grapheme out-data, g
+    g <- read-from-gap-buffer in  # consume
     loop
-  }
-  {
-    var should-trace?/eax: boolean <- should-trace? trace
-    compare should-trace?, 0/false
-    break-if-=
-    var stream-storage: (stream byte 0x80)
-    var stream/esi: (addr stream byte) <- address stream-storage
-    write stream, "=> "
-    rewind-stream out-data
-    write-stream stream, out-data
-    trace trace, "tokenize", stream
   }
 }
 
@@ -1289,20 +1275,6 @@ fn stream-token? _self: (addr token) -> _/eax: boolean {
   var self/eax: (addr token) <- copy _self
   var in-type/eax: (addr int) <- get self, type
   compare *in-type, 1/stream
-  {
-    break-if-=
-    return 0/false
-  }
-  return 1/true
-}
-
-fn comment-token? _self: (addr token) -> _/eax: boolean {
-  var self/eax: (addr token) <- copy _self
-  var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
-  var in-data/eax: (addr stream byte) <- lookup *in-data-ah
-  rewind-stream in-data
-  var g/eax: grapheme <- read-grapheme in-data
-  compare g, 0x23/hash
   {
     break-if-=
     return 0/false

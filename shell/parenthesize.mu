@@ -219,7 +219,8 @@ fn emit t: (addr token), out: (addr stream token), explicit-open-parens: (addr i
   }
 }
 
-fn emit-non-indent-tokens in: (addr stream token), out: (addr stream token) {
+# helper for checking parenthesize
+fn emit-salient-tokens in: (addr stream token), out: (addr stream token) {
   rewind-stream in
   {
     var done?/eax: boolean <- stream-empty? in
@@ -228,12 +229,15 @@ fn emit-non-indent-tokens in: (addr stream token), out: (addr stream token) {
     var token-storage: token
     var token/edx: (addr token) <- address token-storage
     read-from-stream in, token
+    # skip tokens should be skipped
     var is-skip?/eax: boolean <- skip-token? token
     compare is-skip?, 0/false
     loop-if-!=
+    # indent tokens should be skipped
     var is-indent?/eax: boolean <- indent-token? token
     compare is-indent?, 0/false
     loop-if-!=
+    #
     write-to-stream out, token  # shallow copy
     loop
   }
@@ -250,7 +254,18 @@ fn test-parenthesize {
   check-parenthesize "a b c\n  (d ef)\n  g", "(a b c (d ef) g)", "F - test-parenthesize/8-indented"
   check-parenthesize "a b c\n  d e\n    f\ny", "(a b c (d e f)) y", "F - test-parenthesize/9-indented"
   check-parenthesize "#a\na b", "(a b)", "F - test-parenthesize/10-initial-comment"
+#? a b c
+#?     d ef
+#? 
+#?   g
+#?   check-parenthesize "a b c\n    d ef\n\n  g", "(a b c (d ef) g)", "F - test-parenthesize/11-comments"
+#?   check-parenthesize "a b c\n    d ef\n\n  g #abc", "(a b c (d ef)) g", "F - test-parenthesize/11-comments"
   check-parenthesize "a b c\n    d ef\n\n  g #abc", "(a b c (d ef) g)", "F - test-parenthesize/11-comments"
+#? a b c
+#?   '(d ef)
+#? 
+#?   g #abc
+#?   check-parenthesize "a b c\n  '(d ef)\n  g #abc", "(a b c '(d ef) g)", "F - test-parenthesize/12-quotes-and-comments"
   check-parenthesize "a b c\n  '(d ef)\n\n  g #abc", "(a b c '(d ef) g)", "F - test-parenthesize/12-quotes-and-comments"
   check-parenthesize "  a b c", "(a b c)", "F - test-parenthesize/13-initial-indent"
   check-parenthesize "    a b c\n  34", "(a b c) 34", "F - test-parenthesize/14-initial-indent"
@@ -261,7 +276,7 @@ fn test-parenthesize {
   check-parenthesize ",a b c", "(,a b c)", "F - test-parenthesize/18-unquote"
   check-parenthesize ",@a b c", "(,@a b c)", "F - test-parenthesize/19-unquote-splice"
   check-parenthesize "a b\n  'c\n  ,d\n  e", "(a b 'c ,d e)", "F - test-parenthesize/20-quotes-are-not-words"
-  check-parenthesize "def foo\n#a b c\n  de\nnew", "(def foo (d e)) new", "F - test-parenthesize/21-group-across-comments"
+  check-parenthesize "def foo\n#a b c\n  d e\nnew", "(def foo (d e)) new", "F - test-parenthesize/21-group-across-comments"
 }
 
 fn test-parenthesize-skips-lines-with-initial-parens {
@@ -306,7 +321,7 @@ fn check-parenthesize actual: (addr array byte), expected: (addr array byte), me
   initialize-gap-buffer-with expected-buffer, expected
   var expected-tokens-storage: (stream token 0x40)
   var expected-tokens/edi: (addr stream token) <- address expected-tokens-storage
-  tokenize-and-strip-indent expected-buffer, expected-tokens, trace
+  tokenize-salient expected-buffer, expected-tokens, trace
   #
   rewind-stream actual-tokens
   check-token-streams-data-equal actual-tokens, expected-tokens, message
@@ -348,9 +363,11 @@ fn check-token-streams-data-equal actual: (addr stream token), expected: (addr s
     var curr-token-storage: token
     var curr-token/ecx: (addr token) <- address curr-token-storage
     read-from-stream actual, curr-token
+#?     dump-token-from-cursor curr-token
     var expected-token-storage: token
     var expected-token/edx: (addr token) <- address expected-token-storage
     read-from-stream expected, expected-token
+#?     dump-token-from-cursor expected-token
     var match?/eax: boolean <- tokens-equal? curr-token, expected-token
     compare match?, 0/false
     {
@@ -376,7 +393,7 @@ fn tokenize-and-parenthesize in: (addr gap-buffer), out: (addr stream token), tr
   parenthesize tokens, out, trace
 }
 
-fn tokenize-and-strip-indent in: (addr gap-buffer), out: (addr stream token), trace: (addr trace) {
+fn tokenize-salient in: (addr gap-buffer), out: (addr stream token), trace: (addr trace) {
   var tokens-storage: (stream token 0x400)
   var tokens/edx: (addr stream token) <- address tokens-storage
   tokenize in, tokens, trace
@@ -386,5 +403,5 @@ fn tokenize-and-strip-indent in: (addr gap-buffer), out: (addr stream token), tr
     break-if-=
     return
   }
-  emit-non-indent-tokens tokens, out
+  emit-salient-tokens tokens, out
 }
