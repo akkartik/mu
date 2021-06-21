@@ -1,7 +1,9 @@
 (
   (globals . (
-    (mac . [define mac (litmac litfn () ((name . params) . body)
-  `(define ,name (litmac litfn () ,params ,@body)))])
+    (mac . [define mac
+  (litmac litfn () ((m . params) . body)
+    `(define ,m
+       (litmac litfn () ,params ,@body)))])
     (def . [mac (def (name . params) . body)
   `(define ,name (fn ,params ,@body))])
     (do . [mac (do . body)
@@ -111,10 +113,10 @@
   while (< y ymax)
     (pixel screen x y color)
     (++ y)])
-    (hline . [def (hline screen y color)
-  (hline1 screen y 0 (width screen) color)])
-    (vline . [def (vline screen x color)
-  (vline1 screen x 0 (height screen) color)])
+    (hline . [def (hline scr y color)
+  (hline1 scr y 0 (width scr) color)])
+    (vline . [def (vline scr x color)
+  (vline1 scr x 0 (height scr) color)])
     (line . [def (line screen x0 y0 x1 y1 color)
   with (x x0
         y y0
@@ -152,16 +154,16 @@
     (fill_rect . [def (fill_rect screen x1 y1 x2 y2 color)
   for y y1 (< y y2) (++ y)
     (hline1 screen y x1 x2 color)])
-    (circle . [def (circle screen cx cy r clr)
+    (circle . [def (circle scr cx cy r clr)
   with (x (- 0 r)
         y 0
         err (- 2 (* 2 r))
         continue 1)
     while continue
-      (pixel screen (- cx x) (+ cy y) clr)
-      (pixel screen (- cx y) (- cy x) clr)
-      (pixel screen (+ cx x) (- cy y) clr)
-      (pixel screen (+ cx y) (+ cy x) clr)
+      (pixel scr (- cx x) (+ cy y) clr)
+      (pixel scr (- cx y) (- cy x) clr)
+      (pixel scr (+ cx x) (- cy y) clr)
+      (pixel scr (+ cx y) (+ cy x) clr)
       (set r err)
       when (<= r y)
         (++ y)
@@ -179,7 +181,7 @@
   (map1 (fn(n) (+ n 15))
         (seq 16))])
     (Pinks . [define Pinks '(84 85 59 60 61
-                13 36 37 5 108)])
+               13 36 37 5 108)])
     (palette . [def (palette p i)
   (nth (% i (len p)) p)])
     (pat . [def (pat screen)
