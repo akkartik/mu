@@ -116,27 +116,28 @@
     (vline . [def (vline screen x color)
   (vline1 screen x 0 (height screen) color)])
     (line . [def (line screen x0 y0 x1 y1 color)
-  (let (x y) `(,x0 ,y0)
-  (let dx (abs (- x1 x0))
-  (let dy (- 0 (abs (- y1 y0)))
-  (let sx (sgn (- x1 x0))
-  (let sy (sgn (- y1 y0))
-  (let err (+ dx dy)
-  (while (not (and (= x x1)
-                   (= y y1)))
-    (pixel screen x y color)
-    (let e2 (* err 2)
-    (when (>= e2 dy)
-      (+= x sx))
-    (when (<= e2 dx)
-      (+= y sy))
-    (+= err
-        (+ (if (>= e2 dy)
-             dy
-             0)
-           (if (<= e2 dx)
-             dx
-             0)))))))))))])
+  with (x x0
+        y y0
+        dx (abs (- x1 x0))
+        dy (- 0 (abs (- y1 y0)))
+        sx (sgn (- x1 x0))
+        sy (sgn (- y1 y0)))
+    let err (+ dx dy)
+      while (not (and (= x x1)
+                      (= y y1)))
+        (pixel screen x y color)
+        let e2 (* err 2)
+          when (>= e2 dy)
+            (+= x sx)
+          when (<= e2 dx)
+            (+= y sy)
+          (+= err
+              (+ (if (>= e2 dy)
+                   dy
+                   0)
+                 (if (<= e2 dx)
+                   dx
+                   0)))])
     (read_line . [def (read_line keyboard)
   ret str (stream)
     let c (key keyboard)
@@ -152,25 +153,25 @@
   for y y1 (< y y2) (++ y)
     (hline1 screen y x1 x2 color)])
     (circle . [def (circle screen cx cy r clr)
-  (let x (- 0 r)
-  (let y 0
-  (let err (- 2 (* 2 r))
-  (let continue 1
-  (while continue
-    (pixel screen (- cx x) (+ cy y) clr)
-    (pixel screen (- cx y) (- cy x) clr)
-    (pixel screen (+ cx x) (- cy y) clr)
-    (pixel screen (+ cx y) (+ cy x) clr)
-    (set r err)
-    (when (<= r y)
-      (++ y)
-      (+= err
-          (+ 1 (* 2 y))))
-    (when (or (> r x) (> err y))
-      (++ x)
-      (+= err
-          (+ 1 (* 2 x))))
-    (set continue (< x 0)))))))])
+  with (x (- 0 r)
+        y 0
+        err (- 2 (* 2 r))
+        continue 1)
+    while continue
+      (pixel screen (- cx x) (+ cy y) clr)
+      (pixel screen (- cx y) (- cy x) clr)
+      (pixel screen (+ cx x) (- cy y) clr)
+      (pixel screen (+ cx y) (+ cy x) clr)
+      (set r err)
+      when (<= r y)
+        (++ y)
+        (+= err
+            (+ 1 (* 2 y)))
+      when (or (> r x) (> err y))
+        (++ x)
+        (+= err
+            (+ 1 (* 2 x)))
+      (set continue (< x 0))])
     (ring . [def (ring screen cx cy r0 w clr)
   for r r0 (< r (+ r0 w)) (++ r)
     (circle screen cx cy r clr)])
