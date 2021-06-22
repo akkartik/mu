@@ -94,34 +94,6 @@ fn test-tokenize-negative-number {
   check-stream-equal curr-token-data, "-123", "F - test-tokenize-negative-number: value"
 }
 
-fn test-tokenize-number-followed-by-hyphen {
-  var in-storage: gap-buffer
-  var in/esi: (addr gap-buffer) <- address in-storage
-  initialize-gap-buffer-with in, "123-4 a"
-  #
-  var stream-storage: (stream token 0x10)
-  var stream/edi: (addr stream token) <- address stream-storage
-  #
-  var trace-storage: trace
-  var trace/edx: (addr trace) <- address trace-storage
-  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
-  tokenize in, stream, trace
-  #
-  var curr-token-storage: token
-  var curr-token/ebx: (addr token) <- address curr-token-storage
-  read-from-stream stream, curr-token
-  var curr-token-type/eax: (addr int) <- get curr-token, type
-  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-number-followed-by-hyphen/before-indent-type"
-  var curr-token-data/eax: (addr int) <- get curr-token, number-data
-  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-number-followed-by-hyphen/before-indent"
-  read-from-stream stream, curr-token
-  var number?/eax: boolean <- number-token? curr-token
-  check number?, "F - test-tokenize-number-followed-by-hyphen"
-  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
-  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
-  check-stream-equal curr-token-data, "123", "F - test-tokenize-number-followed-by-hyphen: value"
-}
-
 fn test-tokenize-quote {
   var in-storage: gap-buffer
   var in/esi: (addr gap-buffer) <- address in-storage
@@ -492,14 +464,6 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
       next-bracket-token g, out, trace
       break $next-token:case
     }
-    # non-symbol operators
-    {
-      var operator?/eax: boolean <- operator-grapheme? g
-      compare operator?, 0/false
-      break-if-=
-      next-operator-token in, out, trace
-      break $next-token:case
-    }
     # quote
     {
       compare g, 0x27/single-quote
@@ -587,58 +551,6 @@ fn next-symbol-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
       break-if-!=
       trace-text trace, "tokenize", "stop"
       break $next-symbol-token:loop
-    }
-    var g/eax: grapheme <- read-from-gap-buffer in
-    write-grapheme out-data, g
-    loop
-  }
-  trace-higher trace
-  {
-    var should-trace?/eax: boolean <- should-trace? trace
-    compare should-trace?, 0/false
-    break-if-=
-    var stream-storage: (stream byte 0x40)
-    var stream/esi: (addr stream byte) <- address stream-storage
-    write stream, "=> "
-    rewind-stream out-data
-    write-stream stream, out-data
-    trace trace, "tokenize", stream
-  }
-}
-
-fn next-operator-token in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
-  trace-text trace, "tokenize", "looking for a operator"
-  trace-lower trace
-  var out/eax: (addr token) <- copy _out
-  var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
-  populate-stream out-data-ah, 0x40
-  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
-  var out-data/edi: (addr stream byte) <- copy _out-data
-  $next-operator-token:loop: {
-    var done?/eax: boolean <- gap-buffer-scan-done? in
-    compare done?, 0/false
-    break-if-!=
-    var g/eax: grapheme <- peek-from-gap-buffer in
-    {
-      {
-        var should-trace?/eax: boolean <- should-trace? trace
-        compare should-trace?, 0/false
-      }
-      break-if-=
-      var stream-storage: (stream byte 0x40)
-      var stream/esi: (addr stream byte) <- address stream-storage
-      write stream, "next: "
-      var gval/eax: int <- copy g
-      write-int32-hex stream, gval
-      trace trace, "tokenize", stream
-    }
-    # if non-operator, return
-    {
-      var operator-grapheme?/eax: boolean <- operator-grapheme? g
-      compare operator-grapheme?, 0/false
-      break-if-!=
-      trace-text trace, "tokenize", "stop"
-      break $next-operator-token:loop
     }
     var g/eax: grapheme <- read-from-gap-buffer in
     write-grapheme out-data, g
@@ -891,24 +803,7 @@ fn symbol-grapheme? g: grapheme -> _/eax: boolean {
     break-if-!=
     return 0/false
   }
-  # - other punctuation
-  # '!' is a symbol char
-  compare g, 0x23/hash
-  {
-    break-if-!=
-    return 0/false
-  }
-  # '$' is a symbol char
-  compare g, 0x25/percent
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x26/ampersand
-  {
-    break-if-!=
-    return 0/false
-  }
+  # quotes and unquotes
   compare g, 0x27/single-quote
   {
     break-if-!=
@@ -929,74 +824,8 @@ fn symbol-grapheme? g: grapheme -> _/eax: boolean {
     break-if-!=
     return 0/false
   }
-  compare g, 0x2a/asterisk
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x2b/plus
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x2d/dash  # '-' not allowed in symbols
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x2e/period
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x2f/slash
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x3a/colon
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x3b/semi-colon
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x3c/less-than
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x3d/equal
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x3e/greater-than
-  {
-    break-if-!=
-    return 0/false
-  }
-  # '?' is a symbol char
-  compare g, 0x5c/backslash
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x5e/caret
-  {
-    break-if-!=
-    return 0/false
-  }
-  # '_' is a symbol char
-  compare g, 0x7c/vertical-line
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x7e/tilde
+  # - other punctuation
+  compare g, 0x23/hash
   {
     break-if-!=
     return 0/false
@@ -1031,113 +860,6 @@ fn bracket-grapheme? g: grapheme -> _/eax: boolean {
     return 1/true
   }
   compare g, 0x7d/close-curly-bracket
-  {
-    break-if-!=
-    return 1/true
-  }
-  return 0/false
-}
-
-fn operator-grapheme? g: grapheme -> _/eax: boolean {
-  # '$' is a symbol char
-  compare g, 0x25/percent
-  {
-    break-if-!=
-    return 1/false
-  }
-  compare g, 0x26/ampersand
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x27/single-quote
-  {
-    break-if-!=
-    return 0/true
-  }
-  compare g, 0x60/backquote
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x2c/comma
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x40/at-sign
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x2a/asterisk
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x2b/plus
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x2d/dash  # '-' not allowed in symbols
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x2e/period
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x2f/slash
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x3a/colon
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x3b/semi-colon
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x3c/less-than
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x3d/equal
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x3e/greater-than
-  {
-    break-if-!=
-    return 1/true
-  }
-  # '?' is a symbol char
-  compare g, 0x5c/backslash
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x5e/caret
-  {
-    break-if-!=
-    return 1/true
-  }
-  # '_' is a symbol char
-  compare g, 0x7c/vertical-line
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x7e/tilde
   {
     break-if-!=
     return 1/true
