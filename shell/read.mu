@@ -19,6 +19,6 @@ fn read-cell in: (addr gap-buffer), out: (addr handle cell), trace: (addr trace)
     break-if-=
     return
   }
-  # TODO: transform infix
   parse-input parenthesized-tokens, out, trace
+  transform-infix out, trace
 }
