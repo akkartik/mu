@@ -416,7 +416,7 @@ fn test-macroexpand {
   var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
   var error?/eax: boolean <- has-errors? trace
   check-not error?, "F - test-macroexpand/error"
-#?   dump-cell-from-cursor-over-full-screen result-ah
+#?   dump-cell-from-cursor-over-full-screen result-ah, 4/fg 0/bg
   var _result/eax: (addr cell) <- lookup *result-ah
   var result/edi: (addr cell) <- copy _result
   # expected

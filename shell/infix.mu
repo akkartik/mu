@@ -169,6 +169,11 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace), at-head-of-
     # scan past first three elements
     var first-ah/ecx: (addr handle cell) <- get x, left
     var rest-ah/esi: (addr handle cell) <- get x, right
+    {
+      var quote-or-unquote?/eax: boolean <- quote-or-unquote? first-ah
+      compare quote-or-unquote?, 0/false
+    }
+    break-if-!=
     var rest/eax: (addr cell) <- lookup *rest-ah
     {
       var continue?/eax: boolean <- not-null-not-nil-pair? rest
@@ -392,6 +397,7 @@ fn test-infix {
   check-infix "~a+b", "(+ (~ a) b)", "F - test-infix/unary-complement"
   check-infix "(n * n-1)", "(* n (- n 1))", "F - test-infix/no-spaces-over-spaces"
   check-infix "`(a + b)", "`(+ a b)", "F - test-infix/backquote"
+  check-infix "`(+ a b)", "`(+ a b)", "F - test-infix/backquote-2"
   check-infix ",@a+b", ",@(+ a b)", "F - test-infix/unquote-splice"
   check-infix ",@(a + b)", ",@(+ a b)", "F - test-infix/unquote-splice-2"
 }
