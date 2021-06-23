@@ -161,9 +161,11 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace) {
     new-pair result-ah, *x-ah, saved-rest-h
     # save
     copy-object result-ah, x-ah
+    # there was a mutation; rerun
+    transform-infix-2 x-ah, trace
+    return
   }
-  # recurse after any pinching
-  var x/eax: (addr cell) <- lookup *x-ah  # refresh
+  # no infix found; recurse
 #?   dump-cell-from-cursor-over-full-screen x-ah, 1/fg 0/bg
   var left-ah/ecx: (addr handle cell) <- get x, left
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "x", 1/fg 0/bg
@@ -232,7 +234,7 @@ fn test-infix {
   check-infix "((a + b))", "((+ a b))", "F - test-infix/nested-list"
   check-infix "(do (a + b))", "(do (+ a b))", "F - test-infix/nested-list-2"
   check-infix "(a = (a + 1))", "(= a (+ a 1))", "F - test-infix/nested-list-3"
-#?   check-infix "(a + b + c)", "(+ (+ a b) c)", "F - test-infix/left-associative"
+  check-infix "(a + b + c)", "(+ (+ a b) c)", "F - test-infix/left-associative"
 #?   check-infix "(f a + b)", "(f (+ a b))", "F - test-infix/higher-precedence-than-call"
 #?   check-infix "(f a + b c + d)", "(f (+ a b) (+ c d))", "F - test-infix/multiple"
 #?   check-infix "+a", "(+ a)", "F - test-infix/unary-operator-2"
