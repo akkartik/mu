@@ -1,6 +1,7 @@
 fn transform-infix x-ah: (addr handle cell), trace: (addr trace) {
   trace-text trace, "infix", "transform infix"
   trace-lower trace
+#?   trace-text trace, "infix", "todo"
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "a:", 2/fg 0/bg
 #?   dump-cell-from-cursor-over-full-screen x-ah, 7/fg 0/bg
   transform-infix-2 x-ah, trace
@@ -316,91 +317,18 @@ fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
 }
 
 fn non-operator-grapheme? g: grapheme -> _/eax: boolean {
-  ## whitespace
-  compare g, 9/tab
+  var operator?/eax: boolean <- operator-grapheme? g
+  compare operator?, 0/false
   {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0xa/newline
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x20/space
-  {
-    break-if-!=
-    return 0/false
-  }
-  ## we don't really use double quotes
-  compare g, 0x22/double-quote
-  {
-    break-if-!=
-    return 1/true
-  }
-  ## brackets
-  compare g, 0x28/open-paren
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x29/close-paren
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x5b/open-square-bracket
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x5d/close-square-bracket
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x7b/open-curly-bracket
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x7d/close-curly-bracket
-  {
-    break-if-!=
-    return 0/false
-  }
-  # quotes and unquotes are like symbols for this purpose
-  compare g, 0x27/single-quote
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x60/backquote
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x2c/comma
-  {
-    break-if-!=
-    return 1/true
-  }
-  compare g, 0x40/at-sign
-  {
-    break-if-!=
-    return 1/true
-  }
-  # - other punctuation
-  compare g, 0x23/hash
-  {
-    break-if-!=
+    break-if-=
     return 0/false
   }
   return 1/true
 }
 
+# just a short list of operator graphemes for now
 fn operator-grapheme? g: grapheme -> _/eax: boolean {
-  # '$' is a symbol char
+  # '$' is special and can be in either a symbol or operator
   compare g, 0x25/percent
   {
     break-if-!=
@@ -410,26 +338,6 @@ fn operator-grapheme? g: grapheme -> _/eax: boolean {
   {
     break-if-!=
     return 1/true
-  }
-  compare g, 0x27/single-quote
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x60/backquote
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x2c/comma
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x40/at-sign
-  {
-    break-if-!=
-    return 0/false
   }
   compare g, 0x2a/asterisk
   {

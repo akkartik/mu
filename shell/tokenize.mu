@@ -744,93 +744,91 @@ fn next-indent-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
   }
 }
 
+# Mu carves up the space of graphemes into 4 categories:
+#   whitespace
+#   quotes and unquotes (from a Lisp perspective; doesn't include double
+#                        quotes or other Unicode quotes)
+#   operators
+#   symbols
+# (Numbers have their own parsing rules that don't fit cleanly in this
+# partition.)
+#
+# During tokenization operators and symbols are treated identically.
+# A later phase digs into that nuance.
+
 fn symbol-grapheme? g: grapheme -> _/eax: boolean {
-  ## whitespace
-  compare g, 9/tab
+  var whitespace?/eax: boolean <- whitespace-grapheme? g
+  compare whitespace?, 0/false
+  {
+    break-if-=
+    return 0/false
+  }
+  var quote-or-unquote?/eax: boolean <- quote-or-unquote-grapheme? g
+  compare quote-or-unquote?, 0/false
+  {
+    break-if-=
+    return 0/false
+  }
+  var bracket?/eax: boolean <- bracket-grapheme? g
+  compare bracket?, 0/false
+  {
+    break-if-=
+    return 0/false
+  }
+  compare g, 0x23/hash  # comments get filtered out
   {
     break-if-!=
     return 0/false
   }
-  compare g, 0xa/newline
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x20/space
-  {
-    break-if-!=
-    return 0/false
-  }
-  ## quotes
-  compare g, 0x22/double-quote
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x60/backquote
-  {
-    break-if-!=
-    return 0/false
-  }
-  ## brackets
-  compare g, 0x28/open-paren
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x29/close-paren
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x5b/open-square-bracket
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x5d/close-square-bracket
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x7b/open-curly-bracket
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x7d/close-curly-bracket
-  {
-    break-if-!=
-    return 0/false
-  }
-  # quotes and unquotes
-  compare g, 0x27/single-quote
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x60/backquote
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x2c/comma
-  {
-    break-if-!=
-    return 0/false
-  }
-  compare g, 0x40/at-sign
-  {
-    break-if-!=
-    return 0/false
-  }
-  # - other punctuation
-  compare g, 0x23/hash
+  compare g, 0x22/double-quote  # double quotes reserved for now
   {
     break-if-!=
     return 0/false
   }
   return 1/true
+}
+
+fn whitespace-grapheme? g: grapheme -> _/eax: boolean {
+  compare g, 9/tab
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0xa/newline
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x20/space
+  {
+    break-if-!=
+    return 1/true
+  }
+  return 0/false
+}
+
+fn quote-or-unquote-grapheme? g: grapheme -> _/eax: boolean {
+  compare g, 0x27/single-quote
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x60/backquote
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x2c/comma
+  {
+    break-if-!=
+    return 1/true
+  }
+  compare g, 0x40/at-sign
+  {
+    break-if-!=
+    return 1/true
+  }
+  return 0/false
 }
 
 fn bracket-grapheme? g: grapheme -> _/eax: boolean {
