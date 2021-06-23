@@ -122,7 +122,7 @@ if (= 1 (% x 2))
 
 The Mu shell supports infix operators:
 ```
-3 + 1
+(3 + 1)
 => 4
 ```
 
