@@ -404,7 +404,7 @@ if ('onhashchange' in window) {
 <span id="L338" class="LineNr"> 338 </span>    <span class="muComment"># otherwise process like a regular gap-buffer</span>
 <span id="L339" class="LineNr"> 339 </span>    <span class="PreProc">var</span> partial-global-name-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, partial-global-name
 <span id="L340" class="LineNr"> 340 </span>    <span class="PreProc">var</span> partial-global-name/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *partial-global-name-ah
-<span id="L341" class="LineNr"> 341 </span>    <a href='gap-buffer.mu.html#L1206'>edit-gap-buffer</a> partial-global-name, key
+<span id="L341" class="LineNr"> 341 </span>    <a href='gap-buffer.mu.html#L1204'>edit-gap-buffer</a> partial-global-name, key
 <span id="L342" class="LineNr"> 342 </span>    <span class="PreProc">return</span>
 <span id="L343" class="LineNr"> 343 </span>  <span class="Delimiter">}</span>
 <span id="L344" class="LineNr"> 344 </span>  <span class="muComment"># ctrl-g: go to a global (or the repl)</span>
@@ -1042,7 +1042,7 @@ if ('onhashchange' in window) {
 <span id="L976" class="LineNr"> 976 </span>  <span class="PreProc">var</span> globals-cell-storage: (handle <a href='cell.mu.html#L1'>cell</a>)
 <span id="L977" class="LineNr"> 977 </span>  <span class="PreProc">var</span> globals-cell-ah/<span class="muRegEdx">edx</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> address globals-cell-storage
 <span id="L978" class="LineNr"> 978 </span>  <a href='trace.mu.html#L80'>clear-trace</a> trace
-<span id="L979" class="LineNr"> 979 </span>  <a href='evaluate.mu.html#L820'>lookup-symbol</a> globals-literal, globals-cell-ah, *initial-root, <span class="Constant">0</span>/no-globals, trace, <span class="Constant">0</span>/no-screen, <span class="Constant">0</span>/no-keyboard
+<span id="L979" class="LineNr"> 979 </span>  <a href='evaluate.mu.html#L868'>lookup-symbol</a> globals-literal, globals-cell-ah, *initial-root, <span class="Constant">0</span>/no-globals, trace, <span class="Constant">0</span>/no-screen, <span class="Constant">0</span>/no-keyboard
 <span id="L980" class="LineNr"> 980 </span>  <span class="PreProc">var</span> globals-cell/<span class="muRegEax">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *globals-cell-ah
 <span id="L981" class="LineNr"> 981 </span>  <span class="Delimiter">{</span>
 <span id="L982" class="LineNr"> 982 </span>    compare globals-cell, <span class="Constant">0</span>
@@ -1059,19 +1059,19 @@ if ('onhashchange' in window) {
 <span id="L993" class="LineNr"> 993 </span>  <span class="PreProc">var</span> sandbox-cell-storage: (handle <a href='cell.mu.html#L1'>cell</a>)
 <span id="L994" class="LineNr"> 994 </span>  <span class="PreProc">var</span> sandbox-cell-ah/<span class="muRegEdx">edx</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> address sandbox-cell-storage
 <span id="L995" class="LineNr"> 995 </span>  <a href='trace.mu.html#L80'>clear-trace</a> trace
-<span id="L996" class="LineNr"> 996 </span>  <a href='evaluate.mu.html#L820'>lookup-symbol</a> sandbox-literal, sandbox-cell-ah, *initial-root, <span class="Constant">0</span>/no-globals, trace, <span class="Constant">0</span>/no-screen, <span class="Constant">0</span>/no-keyboard
+<span id="L996" class="LineNr"> 996 </span>  <a href='evaluate.mu.html#L868'>lookup-symbol</a> sandbox-literal, sandbox-cell-ah, *initial-root, <span class="Constant">0</span>/no-globals, trace, <span class="Constant">0</span>/no-screen, <span class="Constant">0</span>/no-keyboard
 <span id="L997" class="LineNr"> 997 </span>  <span class="PreProc">var</span> sandbox-cell/<span class="muRegEax">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *sandbox-cell-ah
 <span id="L998" class="LineNr"> 998 </span>  <span class="Delimiter">{</span>
 <span id="L999" class="LineNr"> 999 </span>    compare sandbox-cell, <span class="Constant">0</span>
 <span id="L1000" class="LineNr">1000 </span>    <span class="PreProc">break-if-=</span>
-<span id="L1001" class="LineNr">1001 </span>    <span class="muComment"># print: cell -&gt; stream</span>
-<span id="L1002" class="LineNr">1002 </span>    <a href='trace.mu.html#L80'>clear-trace</a> trace
-<span id="L1003" class="LineNr">1003 </span>    <a href='print.mu.html#L7'>print-cell</a> sandbox-cell-ah, s, trace
+<span id="L1001" class="LineNr">1001 </span>    <span class="PreProc">var</span> sandbox-data-ah/<span class="muRegEax">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get sandbox-cell, text-data
+<span id="L1002" class="LineNr">1002 </span>    <span class="PreProc">var</span> _sandbox-data/<span class="muRegEax">eax</span>: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *sandbox-data-ah
+<span id="L1003" class="LineNr">1003 </span>    <span class="PreProc">var</span> sandbox-data/<span class="muRegEcx">ecx</span>: (addr stream byte) <span class="Special">&lt;-</span> copy _sandbox-data
 <span id="L1004" class="LineNr">1004 </span>    <span class="muComment"># stream -&gt; gap-buffer</span>
 <span id="L1005" class="LineNr">1005 </span>    <span class="PreProc">var</span> <a href='sandbox.mu.html#L1'>sandbox</a>/<span class="muRegEax">eax</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> get self, <a href='sandbox.mu.html#L1'>sandbox</a>
 <span id="L1006" class="LineNr">1006 </span>    <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get <a href='sandbox.mu.html#L1'>sandbox</a>, data
 <span id="L1007" class="LineNr">1007 </span>    <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
-<span id="L1008" class="LineNr">1008 </span>    <a href='gap-buffer.mu.html#L68'>load-gap-buffer-from-stream</a> data, s
+<span id="L1008" class="LineNr">1008 </span>    <a href='gap-buffer.mu.html#L68'>load-gap-buffer-from-stream</a> data, sandbox-data
 <span id="L1009" class="LineNr">1009 </span>  <span class="Delimiter">}</span>
 <span id="L1010" class="LineNr">1010 </span><span class="Delimiter">}</span>
 <span id="L1011" class="LineNr">1011 </span>

@@ -264,7 +264,7 @@ if ('onhashchange' in window) {
 <span id="L208" class="LineNr">208 </span>    c3/return
 <span id="L209" class="LineNr">209 </span>
 <span id="L210" class="LineNr">210 </span><span class="subxComment"># compare all the data in two streams (ignoring the read pointer)</span>
-<span id="L211" class="LineNr">211 </span><span class="subxFunction">streams-data-equal?</span>:  <span class="subxComment"># f: (addr stream byte), s: (addr array byte) -&gt; result/eax: boolean</span>
+<span id="L211" class="LineNr">211 </span><span class="subxFunction">streams-data-equal?</span>:  <span class="subxComment"># a: (addr stream byte), b: (addr array byte) -&gt; result/eax: boolean</span>
 <span id="L212" class="LineNr">212 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L213" class="LineNr">213 </span>    <span class="subxComment">#   awrite = a-&gt;write</span>
 <span id="L214" class="LineNr">214 </span>    <span class="subxComment">#   if (awrite != b-&gt;write) return false</span>
@@ -351,6 +351,24 @@ if ('onhashchange' in window) {
 <span id="L295" class="LineNr">295 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L296" class="LineNr">296 </span>    5d/pop-to-ebp
 <span id="L297" class="LineNr">297 </span>    c3/return
+<span id="L298" class="LineNr">298 </span>
+<span id="L299" class="LineNr">299 </span><span class="subxComment"># helper for tests</span>
+<span id="L300" class="LineNr">300 </span><span class="subxFunction">check-streams-data-equal</span>:  <span class="subxComment"># s: (addr stream _), expected: (addr array _), msg: (addr array byte)</span>
+<span id="L301" class="LineNr">301 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L302" class="LineNr">302 </span>    55/push-ebp
+<span id="L303" class="LineNr">303 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L304" class="LineNr">304 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L305" class="LineNr">305 </span>    50/push-eax
+<span id="L306" class="LineNr">306 </span>    <span class="subxComment">#</span>
+<span id="L307" class="LineNr">307 </span>    (<a href='309stream.subx.html#L211'>streams-data-equal?</a> *(ebp+8) *(ebp+0xc))  <span class="subxComment"># =&gt; eax</span>
+<span id="L308" class="LineNr">308 </span>    (<a href='502test.mu.html#L2'>check-ints-equal</a> %eax 1 *(ebp+0x10))
+<span id="L309" class="LineNr">309 </span><span class="Constant">$check-streams-equal:end</span>:
+<span id="L310" class="LineNr">310 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L311" class="LineNr">311 </span>    58/pop-to-eax
+<span id="L312" class="LineNr">312 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L313" class="LineNr">313 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L314" class="LineNr">314 </span>    5d/pop-to-ebp
+<span id="L315" class="LineNr">315 </span>    c3/return
 </pre>
 </body>
 </html>

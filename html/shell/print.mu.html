@@ -197,14 +197,14 @@ if ('onhashchange' in window) {
 <span id="L133" class="LineNr">133 </span>  d1, d2 <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L202'>draw-stream-wrapping-right-then-down</a> <span class="Constant">0</span>/screen, stream, <span class="Constant">0</span>/xmin, <span class="Constant">0</span>/ymin, <span class="Constant">0x80</span>/xmax, <span class="Constant">0x30</span>/ymax, <span class="Constant">0</span>/x, <span class="Constant">0</span>/y, <span class="Constant">7</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
 <span id="L134" class="LineNr">134 </span><span class="Delimiter">}</span>
 <span id="L135" class="LineNr">135 </span>
-<span id="L136" class="LineNr">136 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='print.mu.html#L136'>dump-cell-from-cursor-over-full-screen</a></span> in-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Delimiter">{</span>
+<span id="L136" class="LineNr">136 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='print.mu.html#L136'>dump-cell-from-cursor-over-full-screen</a></span> in-ah: (addr handle <a href='cell.mu.html#L1'>cell</a>), fg: int, bg: int <span class="Delimiter">{</span>
 <span id="L137" class="LineNr">137 </span>  <span class="PreProc">var</span> stream-storage: (stream byte <span class="Constant">0x200</span>)
 <span id="L138" class="LineNr">138 </span>  <span class="PreProc">var</span> stream/<span class="muRegEdx">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address stream-storage
 <span id="L139" class="LineNr">139 </span>  <span class="PreProc">var</span> trace-storage: trace
 <span id="L140" class="LineNr">140 </span>  <span class="PreProc">var</span> trace/<span class="muRegEdi">edi</span>: (addr trace) <span class="Special">&lt;-</span> address trace-storage
 <span id="L141" class="LineNr">141 </span>  <a href='trace.mu.html#L61'>initialize-trace</a> trace, <span class="Constant">1</span>/only-errors, <span class="Constant">0x10</span>/capacity, <span class="Constant">0</span>/visible
 <span id="L142" class="LineNr">142 </span>  <a href='print.mu.html#L7'>print-cell</a> in-ah, stream, trace
-<span id="L143" class="LineNr">143 </span>  <a href='../501draw-text.mu.html#L235'>draw-stream-wrapping-right-then-down-from-cursor-over-full-screen</a> <span class="Constant">0</span>/screen, stream, <span class="Constant">7</span>/fg, <span class="Constant">0</span>/bg
+<span id="L143" class="LineNr">143 </span>  <a href='../501draw-text.mu.html#L235'>draw-stream-wrapping-right-then-down-from-cursor-over-full-screen</a> <span class="Constant">0</span>/screen, stream, fg, bg
 <span id="L144" class="LineNr">144 </span><span class="Delimiter">}</span>
 <span id="L145" class="LineNr">145 </span>
 <span id="L146" class="LineNr">146 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='print.mu.html#L146'>print-symbol</a></span> _in: (addr <a href='cell.mu.html#L1'>cell</a>), out: (addr stream byte), trace: (addr trace) <span class="Delimiter">{</span>
@@ -281,7 +281,7 @@ if ('onhashchange' in window) {
 <span id="L217" class="LineNr">217 </span>  <span class="Delimiter">}</span>
 <span id="L218" class="LineNr">218 </span>  <span class="PreProc">var</span> in/<span class="muRegEsi">esi</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> copy _in
 <span id="L219" class="LineNr">219 </span>  <span class="PreProc">var</span> val/<span class="muRegEax">eax</span>: (addr float) <span class="Special">&lt;-</span> get in, number-data
-<span id="L220" class="LineNr">220 </span>  <a href='../412render-float-decimal.mu.html#L163'>write-float-decimal-approximate</a> out, *val, <span class="Constant">3</span>/precision
+<span id="L220" class="LineNr">220 </span>  <a href='../412render-float-decimal.mu.html#L163'>write-float-decimal-approximate</a> out, *val, <span class="Constant">0x10</span>/precision
 <span id="L221" class="LineNr">221 </span>  <span class="muComment"># trace</span>
 <span id="L222" class="LineNr">222 </span>  <span class="Delimiter">{</span>
 <span id="L223" class="LineNr">223 </span>    <span class="PreProc">var</span> <a href='trace.mu.html#L123'>should-trace?</a>/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='trace.mu.html#L123'>should-trace?</a> trace
@@ -292,7 +292,7 @@ if ('onhashchange' in window) {
 <span id="L228" class="LineNr">228 </span>  <span class="PreProc">var</span> stream-storage: (stream byte <span class="Constant">0x40</span>)
 <span id="L229" class="LineNr">229 </span>  <span class="PreProc">var</span> stream/<span class="muRegEcx">ecx</span>: (addr stream byte) <span class="Special">&lt;-</span> address stream-storage
 <span id="L230" class="LineNr">230 </span>  <a href='../108write.subx.html#L11'>write</a> stream, <span class="Constant">&quot;=&gt; number &quot;</span>
-<span id="L231" class="LineNr">231 </span>  <a href='../412render-float-decimal.mu.html#L163'>write-float-decimal-approximate</a> stream, *val, <span class="Constant">3</span>/precision
+<span id="L231" class="LineNr">231 </span>  <a href='../412render-float-decimal.mu.html#L163'>write-float-decimal-approximate</a> stream, *val, <span class="Constant">0x10</span>/precision
 <span id="L232" class="LineNr">232 </span>  trace trace, <span class="Constant">&quot;print&quot;</span>, stream
 <span id="L233" class="LineNr">233 </span><span class="Delimiter">}</span>
 <span id="L234" class="LineNr">234 </span>
