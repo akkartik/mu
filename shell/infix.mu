@@ -184,10 +184,22 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace), at-head-of-
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "x", 1/fg 0/bg
 #?   dump-cell-from-cursor-over-full-screen left-ah, 2/fg 0/bg
   transform-infix-2 left-ah, trace, 1/at-head-of-list
-  var right-ah/ecx: (addr handle cell) <- get x, right
+  var right-ah/edx: (addr handle cell) <- get x, right
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y", 1/fg 0/bg
 #?   dump-cell-from-cursor-over-full-screen right-ah, 3/fg 0/bg
-  transform-infix-2 right-ah, trace, 0/not-at-head-of-list
+  var right-at-head-of-list?/eax: boolean <- copy at-head-of-list?
+  {
+    compare right-at-head-of-list?, 0/false
+    break-if-=
+    # if left is a quote or unquote, cdr is still head of list
+    {
+      var left-is-quote-or-unquote?/eax: boolean <- quote-or-unquote? left-ah
+      compare left-is-quote-or-unquote?, 0/false
+    }
+    break-if-!=
+    right-at-head-of-list? <- copy 0/false
+  }
+  transform-infix-2 right-ah, trace, right-at-head-of-list?
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "z", 1/fg 0/bg
   trace-higher trace
     # trace "=> " x-ah {{{
@@ -457,6 +469,36 @@ fn operator-grapheme? g: grapheme -> _/eax: boolean {
   compare g, 0x7e/tilde
   {
     break-if-!=
+    return 1/true
+  }
+  return 0/false
+}
+
+fn quote-or-unquote? _x-ah: (addr handle cell) -> _/eax: boolean {
+  var x-ah/eax: (addr handle cell) <- copy _x-ah
+  var x/eax: (addr cell) <- lookup *x-ah
+  {
+    var quote?/eax: boolean <- symbol-equal? x, "'"
+    compare quote?, 0/false
+    break-if-=
+    return 1/true
+  }
+  {
+    var backquote?/eax: boolean <- symbol-equal? x, "`"
+    compare backquote?, 0/false
+    break-if-=
+    return 1/true
+  }
+  {
+    var unquote?/eax: boolean <- symbol-equal? x, ","
+    compare unquote?, 0/false
+    break-if-=
+    return 1/true
+  }
+  {
+    var unquote-splice?/eax: boolean <- symbol-equal? x, ",@"
+    compare unquote-splice?, 0/false
+    break-if-=
     return 1/true
   }
   return 0/false
