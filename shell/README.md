@@ -110,14 +110,6 @@ def (foo x)     =>      (def (foo x)
   (print x) x             (print x) x)
 ```
 
-Putting these rules together, parens are not required around the `if` in:
-
-```
-if (= 1 (% x 2))
-  'odd
-  'even
-```
-
 ### Infix
 
 The Mu shell supports infix operators:
