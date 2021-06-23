@@ -123,13 +123,20 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace) {
     var first-ah/ecx: (addr handle cell) <- get x, left
     var rest-ah/esi: (addr handle cell) <- get x, right
     var rest/eax: (addr cell) <- lookup *rest-ah
-    compare rest, 0
+    {
+      var continue?/eax: boolean <- not-null-not-nil-pair? rest
+      compare continue?, 0/false
+    }
     break-if-=
 #?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "d", 4/fg 0/bg
+#?     dump-cell-from-cursor-over-full-screen rest-ah, 7/fg 0/bg
     var second-ah/edx: (addr handle cell) <- get rest, left
     rest-ah <- get rest, right
     var rest/eax: (addr cell) <- lookup *rest-ah
-    compare rest, 0
+    {
+      var continue?/eax: boolean <- not-null-not-nil-pair? rest
+      compare continue?, 0/false
+    }
     break-if-=
 #?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "e", 4/fg 0/bg
     var third-ah/ebx: (addr handle cell) <- get rest, left
@@ -194,6 +201,28 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace) {
     # }}}
 }
 
+fn not-null-not-nil-pair? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  compare x, 0
+  {
+    break-if-!=
+    return 0/false
+  }
+  var x-type/eax: (addr int) <- get x, type
+  compare *x-type, 0/pair
+  {
+    break-if-=
+    return 0/false
+  }
+  var nil?/eax: boolean <- nil? x
+  compare nil?, 0/false
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
+}
+
 fn swap-cells a-ah: (addr handle cell), b-ah: (addr handle cell) {
   var tmp-h: (handle cell)
   var tmp-ah/eax: (addr handle cell) <- address tmp-h
@@ -223,7 +252,7 @@ fn test-infix {
   check-infix "(= (+) 3)", "(= + 3)", "F - test-infix/operator-without-args-2"
   check-infix "($+)", "$+", "F - test-infix/dollar-operator-without-args"
   check-infix "',(a + b)", "',(+ a b)", "F - test-infix/nested-quotes"
-#?   check-infix "',(+)", "',+", "F - test-infix/nested-quotes-2"
+  check-infix "',(+)", "',+", "F - test-infix/nested-quotes-2"
   check-infix "(a + b)", "(+ a b)", "F - test-infix/simple-list"
   check-infix "(a (+) b)", "(a + b)", "F - test-infix/wrapped-operator"
   check-infix "(+ a b)", "(+ a b)", "F - test-infix/prefix-operator"
