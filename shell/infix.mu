@@ -55,7 +55,7 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace) {
   # symbol? maybe break it down into a pair
   {
     compare *x-type, 2/symbol
-    break-if-=
+    break-if-!=
     tokenize-infix x-ah, trace
   }
   # not a pair? return
@@ -233,14 +233,65 @@ fn swap-cells a-ah: (addr handle cell), b-ah: (addr handle cell) {
 }
 
 fn tokenize-infix _sym-ah: (addr handle cell), trace: (addr trace) {
-#?     # non-symbol operators
+  var sym-ah/eax: (addr handle cell) <- copy _sym-ah
+  var sym/eax: (addr cell) <- lookup *sym-ah
+  var sym-data-ah/eax: (addr handle stream byte) <- get sym, text-data
+  var _sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
+  var sym-data/esi: (addr stream byte) <- copy _sym-data
+  rewind-stream sym-data
+  # read sym into a gap buffer and insert spaces in a few places
+  var buffer-storage: gap-buffer
+  var buffer/edi: (addr gap-buffer) <- address buffer-storage
+  initialize-gap-buffer buffer, 0x40/max-symbol-size
+  # scan for first non-$
+  var g/eax: grapheme <- read-grapheme sym-data
+  add-grapheme-at-gap buffer, g
+  {
+    compare g, 0x24/dollar
+    break-if-!=
+    {
+      var done?/eax: boolean <- stream-empty? sym-data
+      compare done?, 0/false
+      break-if-=
+      return  # symbol is all '$'s; do nothing
+    }
+    g <- read-grapheme sym-data
+    add-grapheme-at-gap buffer, g
+    loop
+  }
+  var tokenization-needed?: boolean
+  var _operator-so-far?/eax: boolean <- operator-grapheme? g
+  var operator-so-far?/ecx: boolean <- copy _operator-so-far?
+  {
+    var done?/eax: boolean <- stream-empty? sym-data
+    compare done?, 0/false
+    break-if-!=
+    var g/eax: grapheme <- read-grapheme sym-data
+    {
+      var curr-operator?/eax: boolean <- operator-grapheme? g
+      compare curr-operator?, operator-so-far?
+      break-if-=
+      # if grapheme switches state, insert a space
+      add-grapheme-at-gap buffer, 0x20/space
+      operator-so-far? <- copy curr-operator?
+      copy-to tokenization-needed?, 1/true
+    }
+    add-grapheme-at-gap buffer, g
+    loop
+  }
+  compare tokenization-needed?, 0/false
+  break-if-=
+#?   {
+#?     var dummy1/eax: int <- copy 0
+#?     var dummy2/ecx: int <- copy 0
+#?     dummy1, dummy2 <- render-gap-buffer-wrapping-right-then-down 0/screen, buffer, 0x20/xmin 5/ymin, 0x80/xmax 0x30/ymax, 0/no-cursor, 3/fg 0/bg
 #?     {
-#?       var operator?/eax: boolean <- operator-grapheme? g
-#?       compare operator?, 0/false
-#?       break-if-=
-#?       next-operator-token in, out, trace
-#?       break $next-token:case
+#?       loop
 #?     }
+#?   }
+  # recursively process buffer
+  # this time we're guaranteed we won't enter tokenize-infix
+  read-cell buffer, _sym-ah, trace
 }
 
 fn test-infix {
@@ -269,17 +320,17 @@ fn test-infix {
   check-infix "(a + b + c)", "(+ (+ a b) c)", "F - test-infix/left-associative"
 #?   check-infix "(f a + b)", "(f (+ a b))", "F - test-infix/higher-precedence-than-call"
 #?   check-infix "(f a + b c + d)", "(f (+ a b) (+ c d))", "F - test-infix/multiple"
-#?   check-infix "+a", "(+ a)", "F - test-infix/unary-operator-2"
-#?   check-infix "-a", "(- a)", "F - test-infix/unary-operator-3"
-#?   check-infix "a+b", "(+ a b)", "F - test-infix/no-spaces"
-#?   check-infix "',a+b", "',(+ a b)", "F - test-infix/no-spaces-with-nested-quotes"
-#?   check-infix "$a+b", "(+ $a b)", "F - test-infix/no-spaces-2"
+  check-infix "+a", "(+ a)", "F - test-infix/unary-operator-2"
+  check-infix "-a", "(- a)", "F - test-infix/unary-operator-3"
+  check-infix "a+b", "(+ a b)", "F - test-infix/no-spaces"
+  check-infix "',a+b", "',(+ a b)", "F - test-infix/no-spaces-with-nested-quotes"
+  check-infix "$a+b", "(+ $a b)", "F - test-infix/no-spaces-2"
 #?   check-infix "-a+b", "(+ (- a) b)", "F - test-infix/unary-over-binary"
 #?   check-infix "~a+b", "(+ (~ a) b)", "F - test-infix/unary-complement"
-#?   check-infix "(n * n-1)", "(* n (- n 1))", "F - test-infix/no-spaces-over-spaces"
-#?   check-infix "`(a + b)", "`(+ a b)", "F - test-infix/backquote"
-#?   check-infix ",@a+b", ",@(+ a b)", "F - test-infix/unquote-splice"
-#?   check-infix ",@(a + b)", ",@(+ a b)", "F - test-infix/unquote-splice-2"
+  check-infix "(n * n-1)", "(* n (- n 1))", "F - test-infix/no-spaces-over-spaces"
+  check-infix "`(a + b)", "`(+ a b)", "F - test-infix/backquote"
+  check-infix ",@a+b", ",@(+ a b)", "F - test-infix/unquote-splice"
+  check-infix ",@(a + b)", ",@(+ a b)", "F - test-infix/unquote-splice-2"
 }
 
 # helpers

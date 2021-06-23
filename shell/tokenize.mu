@@ -523,7 +523,7 @@ fn next-symbol-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
   trace-lower trace
   var out/eax: (addr token) <- copy _out
   var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
-  populate-stream out-data-ah, 0x40
+  populate-stream out-data-ah, 0x40/max-symbol-size
   var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
   var out-data/edi: (addr stream byte) <- copy _out-data
   $next-symbol-token:loop: {
