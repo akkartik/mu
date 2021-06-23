@@ -392,6 +392,7 @@ fn test-infix {
   check-infix "(+a)", "((+ a))", "F - test-infix/unary-operator-3"
   check-infix "-a", "(- a)", "F - test-infix/unary-operator-4"
   check-infix "a+b", "(+ a b)", "F - test-infix/no-spaces"
+  check-infix "3+1", "(+ 3 1)", "F - test-infix/no-spaces-starting-with-digit"
   check-infix "',a+b", "',(+ a b)", "F - test-infix/no-spaces-with-nested-quotes"
   check-infix "$a+b", "(+ $a b)", "F - test-infix/no-spaces-2"
   check-infix "-a+b", "(+ (- a) b)", "F - test-infix/unary-over-binary"
@@ -584,7 +585,7 @@ fn check-infix actual: (addr array byte), expected: (addr array byte), message: 
   var actual-tree-ah/esi: (addr handle cell) <- address actual-tree-h
   read-cell actual-buffer, actual-tree-ah, trace
 #?   dump-trace-with-label trace, "infix"
-#?   dump-cell-from-cursor-over-full-screen actual-tree-ah, 7/fg 0/bg
+  dump-cell-from-cursor-over-full-screen actual-tree-ah, 7/fg 0/bg
   var _actual-tree/eax: (addr cell) <- lookup *actual-tree-ah
   var actual-tree/esi: (addr cell) <- copy _actual-tree
   #

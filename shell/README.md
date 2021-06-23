@@ -118,6 +118,65 @@ if (= 1 (% x 2))
   'even
 ```
 
+### Infix
+
+The Mu shell supports infix operators:
+```
+3 + 1
+=> 4
+```
+
+You don't need spaces around infix ops:
+```
+3+1
+=> 4
+```
+
+Operator precedence is not hardcoded. Instead, there is just one rule:
+operators surrounded by whitespace have lower precedence than operators that
+are not.
+
+To see how an expression is parsed, quote it:
+```
+'3+1
+=> (+ 3 1)
+```
+
+You can create your own infix ops:
+```
+def (a <> b)
+  (not (a = b))
+```
+
+To permit arbitrary infix operators, the Mu shell partitions the space of
+graphemes between operators and regular symbols. As a result, you can't define
+symbols mixing the two.
+```
+'*global*
+=> ((* global) . *)                   # probably not what you want
+
+'uppercase-char-p
+=> (- (- uppercase char) p)           # probably not what you want
+
+'(char> a p)
+=> ((char . >) a p)                   # probably not what you want
+```
+
+Infix operators also work in prefix position:
+```
+(+ 3 1)
+=> 4
+```
+
+To pass infix operators to higher-order functions, wrap them in parens. A
+silly example:
+```
+def (+++ x)          # silly name
+  x+1
+(map1 (+++) '(1 2 3))
+=> (2 3 4)
+```
+
 ### Known issues
 
 * No mouse support.

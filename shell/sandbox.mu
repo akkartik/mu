@@ -684,9 +684,9 @@ fn test-run-error-invalid-integer {
   #
   render-sandbox screen, sandbox, 0/x, 0/y, 0x80/width, 0x10/height, 1/show-cursor
   # skip one line of padding
-  check-screen-row            screen,               1/y, " 1a             ", "F - test-run-error-invalid-integer/0"
-  check-screen-row            screen,               2/y, " ...            ", "F - test-run-error-invalid-integer/1"
-  check-screen-row-in-color   screen, 0xc/fg=error, 3/y, " invalid number ", "F - test-run-error-invalid-integer/2"
+  check-screen-row            screen,               1/y, " 1a                       ", "F - test-run-error-invalid-integer/0"
+  check-screen-row            screen,               2/y, " ...                      ", "F - test-run-error-invalid-integer/1"
+  check-screen-row-in-color   screen, 0xc/fg=error, 3/y, " unbound symbol: 1a       ", "F - test-run-error-invalid-integer/2"
 }
 
 fn test-run-error-unknown-symbol {

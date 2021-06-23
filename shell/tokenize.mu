@@ -419,27 +419,6 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
       next-stream-token in, out, trace
       break $next-token:case
     }
-    # special-case: '-'
-    {
-      compare g, 0x2d/minus
-      break-if-!=
-      var dummy/eax: grapheme <- read-from-gap-buffer in  # skip '-'
-      var g2/eax: grapheme <- peek-from-gap-buffer in
-      put-back-from-gap-buffer in
-      var digit?/eax: boolean <- decimal-digit? g2
-      compare digit?, 0/false
-      break-if-=
-      next-number-token in, out, trace
-      break $next-token:case
-    }
-    # digit
-    {
-      var digit?/eax: boolean <- decimal-digit? g
-      compare digit?, 0/false
-      break-if-=
-      next-number-token in, out, trace
-      break $next-token:case
-    }
     # other symbol char
     {
       var symbol?/eax: boolean <- symbol-grapheme? g
@@ -878,8 +857,22 @@ fn number-token? _self: (addr token) -> _/eax: boolean {
     break-if-!=
     g <- read-grapheme in-data
   }
-  var result/eax: boolean <- decimal-digit? g
-  return result
+  {
+    {
+      var result/eax: boolean <- decimal-digit? g
+      compare result, 0/false
+      break-if-!=
+      return 0/false
+    }
+    {
+      var done?/eax: boolean <- stream-empty? in-data
+      compare done?, 0/false
+    }
+    break-if-!=
+    g <- read-grapheme in-data
+    loop
+  }
+  return 1/true
 }
 
 fn bracket-token? _self: (addr token) -> _/eax: boolean {
