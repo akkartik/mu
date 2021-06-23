@@ -585,7 +585,7 @@ fn check-infix actual: (addr array byte), expected: (addr array byte), message: 
   var actual-tree-ah/esi: (addr handle cell) <- address actual-tree-h
   read-cell actual-buffer, actual-tree-ah, trace
 #?   dump-trace-with-label trace, "infix"
-  dump-cell-from-cursor-over-full-screen actual-tree-ah, 7/fg 0/bg
+#?   dump-cell-from-cursor-over-full-screen actual-tree-ah, 7/fg 0/bg
   var _actual-tree/eax: (addr cell) <- lookup *actual-tree-ah
   var actual-tree/esi: (addr cell) <- copy _actual-tree
   #
