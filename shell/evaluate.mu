@@ -1689,7 +1689,7 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
   var in-left-ah/ecx: (addr handle cell) <- get in, left
   debug-print "10", 4/fg, 0/bg
   # check for unquote
-  $macroexpand-iter:unquote: {
+  $evaluate-backquote:unquote: {
     var in-left/eax: (addr cell) <- lookup *in-left-ah
     var unquote?/eax: boolean <- symbol-equal? in-left, ","
     compare unquote?, 0/false
@@ -1705,7 +1705,7 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
   # check for unquote-splice in in-left
   debug-print "11", 4/fg, 0/bg
   var out-ah/edi: (addr handle cell) <- copy _out-ah
-  $macroexpand-iter:unquote-splice: {
+  $evaluate-backquote:unquote-splice: {
 #?     dump-cell-from-cursor-over-full-screen in-left-ah
     var in-left/eax: (addr cell) <- lookup *in-left-ah
     {
@@ -1714,11 +1714,11 @@ fn evaluate-backquote _in-ah: (addr handle cell), _out-ah: (addr handle cell), e
         var in-left-is-nil?/eax: boolean <- nil? in-left
         compare in-left-is-nil?, 0/false
       }
-      break-if-!= $macroexpand-iter:unquote-splice
+      break-if-!= $evaluate-backquote:unquote-splice
       var in-left-type/ecx: (addr int) <- get in-left, type
       debug-print "13", 4/fg, 0/bg
       compare *in-left-type, 0/pair
-      break-if-!= $macroexpand-iter:unquote-splice
+      break-if-!= $evaluate-backquote:unquote-splice
       var in-left-left-ah/eax: (addr handle cell) <- get in-left, left
       debug-print "14", 4/fg, 0/bg
       var in-left-left/eax: (addr cell) <- lookup *in-left-left-ah

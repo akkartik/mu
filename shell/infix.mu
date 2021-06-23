@@ -389,7 +389,8 @@ fn test-infix {
   check-infix "(f a + b)", "(f (+ a b))", "F - test-infix/higher-precedence-than-call"
   check-infix "(f a + b c + d)", "(f (+ a b) (+ c d))", "F - test-infix/multiple"
   check-infix "+a", "(+ a)", "F - test-infix/unary-operator-2"
-  check-infix "-a", "(- a)", "F - test-infix/unary-operator-3"
+  check-infix "(+a)", "((+ a))", "F - test-infix/unary-operator-3"
+  check-infix "-a", "(- a)", "F - test-infix/unary-operator-4"
   check-infix "a+b", "(+ a b)", "F - test-infix/no-spaces"
   check-infix "',a+b", "',(+ a b)", "F - test-infix/no-spaces-with-nested-quotes"
   check-infix "$a+b", "(+ $a b)", "F - test-infix/no-spaces-2"
@@ -404,8 +405,6 @@ fn test-infix {
 
 # helpers
 
-# assumes symbol? is already fully tokenized,
-# consists entirely of either operator or non-operator graphemes
 fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
   var x/esi: (addr cell) <- copy _x
   {
@@ -434,8 +433,22 @@ fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
     g <- read-grapheme x-data
     loop
   }
-  var result/eax: boolean <- operator-grapheme? g
-  return result
+  {
+    {
+      var result/eax: boolean <- operator-grapheme? g
+      compare result, 0/false
+      break-if-!=
+      return 0/false
+    }
+    {
+      var done?/eax: boolean <- stream-empty? x-data
+      compare done?, 0/false
+    }
+    break-if-!=
+    g <- read-grapheme x-data
+    loop
+  }
+  return 1/true
 }
 
 # just a short list of operator graphemes for now
