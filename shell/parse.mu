@@ -8,12 +8,18 @@ fn parse-input tokens: (addr stream token), out: (addr handle cell), trace: (add
     return
   }
   var close-paren?/eax: boolean <- copy 0/false
-  var dummy?/ecx: boolean <- copy 0/false
-  close-paren?, dummy? <- parse-sexpression tokens, out, trace
+  var dot?/ecx: boolean <- copy 0/false
+  close-paren?, dot? <- parse-sexpression tokens, out, trace
   {
     compare close-paren?, 0/false
     break-if-=
     error trace, "')' is not a valid expression"
+    return
+  }
+  {
+    compare dot?, 0/false
+    break-if-=
+    error trace, "'.' is not a valid expression"
     return
   }
   {

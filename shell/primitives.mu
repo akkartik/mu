@@ -1135,7 +1135,7 @@ fn apply-debug _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   }
   # dump args->left uglily to screen and wait for a keypress
   var first-ah/eax: (addr handle cell) <- get args, left
-  dump-cell-from-cursor-over-full-screen first-ah
+  dump-cell-from-cursor-over-full-screen first-ah, 7/fg 0/bg
   {
     var foo/eax: byte <- read-key 0/keyboard
     compare foo, 0

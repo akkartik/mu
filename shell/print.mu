@@ -133,14 +133,14 @@ fn dump-cell-at-top-right in-ah: (addr handle cell) {
   d1, d2 <- draw-stream-wrapping-right-then-down 0/screen, stream, 0/xmin, 0/ymin, 0x80/xmax, 0x30/ymax, 0/x, 0/y, 7/fg, 0xc5/bg=blue-bg
 }
 
-fn dump-cell-from-cursor-over-full-screen in-ah: (addr handle cell) {
+fn dump-cell-from-cursor-over-full-screen in-ah: (addr handle cell), fg: int, bg: int {
   var stream-storage: (stream byte 0x200)
   var stream/edx: (addr stream byte) <- address stream-storage
   var trace-storage: trace
   var trace/edi: (addr trace) <- address trace-storage
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
   print-cell in-ah, stream, trace
-  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, stream, 7/fg, 0/bg
+  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, stream, fg, bg
 }
 
 fn print-symbol _in: (addr cell), out: (addr stream byte), trace: (addr trace) {

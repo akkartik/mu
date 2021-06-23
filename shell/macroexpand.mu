@@ -600,7 +600,7 @@ fn pending-test-macroexpand-inside-nested-backquote-unquote {
   var dummy/eax: boolean <- macroexpand-iter result-ah, globals, trace
   var error?/eax: boolean <- has-errors? trace
   check-not error?, "F - test-macroexpand-inside-nested-backquote-unquote/error"
-  dump-cell-from-cursor-over-full-screen result-ah
+#?   dump-cell-from-cursor-over-full-screen result-ah
   var _result/eax: (addr cell) <- lookup *result-ah
   var result/edi: (addr cell) <- copy _result
   # expected
@@ -610,7 +610,7 @@ fn pending-test-macroexpand-inside-nested-backquote-unquote {
   var expected-h: (handle cell)
   var expected-ah/edx: (addr handle cell) <- address expected-h
   read-cell expected-gap, expected-ah, trace
-  dump-cell-from-cursor-over-full-screen expected-ah
+#?   dump-cell-from-cursor-over-full-screen expected-ah
   var expected/eax: (addr cell) <- lookup *expected-ah
   #
   var assertion/eax: boolean <- cell-isomorphic? result, expected, trace
