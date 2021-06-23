@@ -118,7 +118,53 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace), at-head-of-
     return
   }
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "c", 4/fg 0/bg
-  # non-singleton pair. try to "pinch out" infix pattern at root
+  ## non-singleton pair
+  # try to "pinch out" (op expr op ...) into ((op expr) op ...)
+  # (op expr expr ...) => operator in prefix position; do nothing
+  {
+    compare at-head-of-list?, 0/false
+    break-if-=
+    var first-ah/ecx: (addr handle cell) <- get x, left
+    var rest-ah/esi: (addr handle cell) <- get x, right
+    var first/eax: (addr cell) <- lookup *first-ah
+    var first-infix?/eax: boolean <- operator-symbol? first
+    compare first-infix?, 0/false
+    break-if-=
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    {
+      var continue?/eax: boolean <- not-null-not-nil-pair? rest
+      compare continue?, 0/false
+    }
+    break-if-=
+    var second-ah/edx: (addr handle cell) <- get rest, left
+    rest-ah <- get rest, right
+    var rest/eax: (addr cell) <- lookup *rest-ah
+    {
+      var continue?/eax: boolean <- not-null-not-nil-pair? rest
+      compare continue?, 0/false
+    }
+    break-if-=
+    var third-ah/ebx: (addr handle cell) <- get rest, left
+    {
+      var third/eax: (addr cell) <- lookup *third-ah
+      var third-is-operator?/eax: boolean <- operator-symbol? third
+      compare third-is-operator?, 0/false
+    }
+    break-if-=
+    # if first and third are operators, bud out first two
+    var saved-rest-h: (handle cell)
+    var saved-rest-ah/eax: (addr handle cell) <- address saved-rest-h
+    copy-object rest-ah, saved-rest-ah
+    nil rest-ah
+    var result-h: (handle cell)
+    var result-ah/eax: (addr handle cell) <- address result-h
+    new-pair result-ah, *x-ah, saved-rest-h
+    # save
+    copy-object result-ah, x-ah
+    # there was a mutation; rerun
+    transform-infix-2 x-ah, trace, 1/at-head-of-list
+  }
+  # try to "pinch out" (... expr op expr ...) pattern
   $transform-infix-2:pinch: {
     # scan past first three elements
     var first-ah/ecx: (addr handle cell) <- get x, left
@@ -519,7 +565,7 @@ fn check-infix actual: (addr array byte), expected: (addr array byte), message: 
   var actual-tree-ah/esi: (addr handle cell) <- address actual-tree-h
   read-cell actual-buffer, actual-tree-ah, trace
 #?   dump-trace-with-label trace, "infix"
-  dump-cell-from-cursor-over-full-screen actual-tree-ah, 7/fg 0/bg
+#?   dump-cell-from-cursor-over-full-screen actual-tree-ah, 7/fg 0/bg
   var _actual-tree/eax: (addr cell) <- lookup *actual-tree-ah
   var actual-tree/esi: (addr cell) <- copy _actual-tree
   #
