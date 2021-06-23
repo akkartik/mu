@@ -4,14 +4,14 @@ fn transform-infix x-ah: (addr handle cell), trace: (addr trace) {
 #?   trace-text trace, "infix", "todo"
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "a:", 2/fg 0/bg
 #?   dump-cell-from-cursor-over-full-screen x-ah, 7/fg 0/bg
-  transform-infix-2 x-ah, trace
+  transform-infix-2 x-ah, trace, 1/at-head-of-list
   trace-higher trace
 }
 
 # Break any symbols containing operators down in place into s-expressions
 # Transform (... sym op sym ...) greedily in place into (... (op sym sym) ...)
 # Lisp code typed in at the keyboard will never have cycles
-fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace) {
+fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace), at-head-of-list?: boolean {
   var x-ah/edi: (addr handle cell) <- copy _x-ah
   var x/eax: (addr cell) <- lookup *x-ah
   # trace x-ah {{{
@@ -152,11 +152,16 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace) {
 #?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "f", 4/fg 0/bg
     # swap the top 2
     swap-cells first-ah, second-ah
-    # if there's more than three elements, perform a more complex 'rotation'
-    rest <- lookup *rest-ah
-    var rest-nil?/eax: boolean <- nil? rest
-    compare rest-nil?, 0/false
-    break-if-!=
+    ## if we're at the head of the list and there's just three elements, stop there
+    {
+      compare at-head-of-list?, 0/false
+      break-if-=
+      rest <- lookup *rest-ah
+      var rest-nil?/eax: boolean <- nil? rest
+      compare rest-nil?, 0/false
+      break-if-!= $transform-infix-2:pinch
+    }
+    ## otherwise perform a more complex 'rotation'
 #?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "g", 4/fg 0/bg
     # save and clear third->right
     var saved-rest-h: (handle cell)
@@ -170,19 +175,19 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace) {
     # save
     copy-object result-ah, x-ah
     # there was a mutation; rerun
-    transform-infix-2 x-ah, trace
+    transform-infix-2 x-ah, trace, 1/at-head-of-list
     return
   }
-  # no infix found; recurse
+  # recurse
 #?   dump-cell-from-cursor-over-full-screen x-ah, 1/fg 0/bg
   var left-ah/ecx: (addr handle cell) <- get x, left
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "x", 1/fg 0/bg
 #?   dump-cell-from-cursor-over-full-screen left-ah, 2/fg 0/bg
-  transform-infix-2 left-ah, trace
+  transform-infix-2 left-ah, trace, 1/at-head-of-list
   var right-ah/ecx: (addr handle cell) <- get x, right
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y", 1/fg 0/bg
 #?   dump-cell-from-cursor-over-full-screen right-ah, 3/fg 0/bg
-  transform-infix-2 right-ah, trace
+  transform-infix-2 right-ah, trace, 0/not-at-head-of-list
 #?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "z", 1/fg 0/bg
   trace-higher trace
     # trace "=> " x-ah {{{
@@ -271,7 +276,7 @@ fn tokenize-infix _sym-ah: (addr handle cell), trace: (addr trace) {
       var curr-operator?/eax: boolean <- operator-grapheme? g
       compare curr-operator?, operator-so-far?
       break-if-=
-      # if grapheme switches state, insert a space
+      # state change; insert a space
       add-grapheme-at-gap buffer, 0x20/space
       operator-so-far? <- copy curr-operator?
       copy-to tokenization-needed?, 1/true
@@ -318,15 +323,15 @@ fn test-infix {
   check-infix "(do (a + b))", "(do (+ a b))", "F - test-infix/nested-list-2"
   check-infix "(a = (a + 1))", "(= a (+ a 1))", "F - test-infix/nested-list-3"
   check-infix "(a + b + c)", "(+ (+ a b) c)", "F - test-infix/left-associative"
-#?   check-infix "(f a + b)", "(f (+ a b))", "F - test-infix/higher-precedence-than-call"
-#?   check-infix "(f a + b c + d)", "(f (+ a b) (+ c d))", "F - test-infix/multiple"
+  check-infix "(f a + b)", "(f (+ a b))", "F - test-infix/higher-precedence-than-call"
+  check-infix "(f a + b c + d)", "(f (+ a b) (+ c d))", "F - test-infix/multiple"
   check-infix "+a", "(+ a)", "F - test-infix/unary-operator-2"
   check-infix "-a", "(- a)", "F - test-infix/unary-operator-3"
   check-infix "a+b", "(+ a b)", "F - test-infix/no-spaces"
   check-infix "',a+b", "',(+ a b)", "F - test-infix/no-spaces-with-nested-quotes"
   check-infix "$a+b", "(+ $a b)", "F - test-infix/no-spaces-2"
-#?   check-infix "-a+b", "(+ (- a) b)", "F - test-infix/unary-over-binary"
-#?   check-infix "~a+b", "(+ (~ a) b)", "F - test-infix/unary-complement"
+  check-infix "-a+b", "(+ (- a) b)", "F - test-infix/unary-over-binary"
+  check-infix "~a+b", "(+ (~ a) b)", "F - test-infix/unary-complement"
   check-infix "(n * n-1)", "(* n (- n 1))", "F - test-infix/no-spaces-over-spaces"
   check-infix "`(a + b)", "`(+ a b)", "F - test-infix/backquote"
   check-infix ",@a+b", ",@(+ a b)", "F - test-infix/unquote-splice"
