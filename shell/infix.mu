@@ -247,6 +247,8 @@ fn test-infix {
   check-infix "abc", "abc", "F - test-infix/regular-symbol"
   check-infix "-3", "-3", "F - test-infix/negative-integer-literal"
   check-infix "[a b+c]", "[a b+c]", "F - test-infix/string-literal"
+  check-infix "$", "$", "F - test-infix/dollar-sym"
+  check-infix "$$", "$$", "F - test-infix/dollar-sym-2"
   check-infix "$a", "$a", "F - test-infix/dollar-var"
   check-infix "$+", "$+", "F - test-infix/dollar-operator"
   check-infix "(+)", "+", "F - test-infix/operator-without-args"
@@ -316,19 +318,9 @@ fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
   return result
 }
 
-fn non-operator-grapheme? g: grapheme -> _/eax: boolean {
-  var operator?/eax: boolean <- operator-grapheme? g
-  compare operator?, 0/false
-  {
-    break-if-=
-    return 0/false
-  }
-  return 1/true
-}
-
 # just a short list of operator graphemes for now
 fn operator-grapheme? g: grapheme -> _/eax: boolean {
-  # '$' is special and can be in either a symbol or operator
+  # '$' is special and can be in either a symbol or operator; here we treat it as a symbol
   compare g, 0x25/percent
   {
     break-if-!=
