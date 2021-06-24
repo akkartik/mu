@@ -117,7 +117,7 @@ Mu programs can be written for two very different environments:
 The largest program built in Mu today is its prototyping environment for
 writing slow, interpreted programs in a Lisp-based high-level language.
 
-<img alt='screenshot of the Mu shell' src='html/20210615-shell.png' width='600px'>
+<img alt='screenshot of the Mu shell' src='html/20210623-shell.png' width='600px'>
 
 (For more details, see [the `shell/` directory.](https://github.com/akkartik/mu/tree/main/shell#readme))
 
