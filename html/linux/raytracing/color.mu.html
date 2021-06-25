@@ -7,17 +7,21 @@
 <meta name="plugin-version" content="vim8.1_v1">
 <meta name="syntax" content="none">
 <meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
-<meta name="colorscheme" content="minimal-dark">
+<meta name="colorscheme" content="minimal-light">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #a8a8a8; }
-body { font-size:12pt; font-family: monospace; color: #000000; background-color: #a8a8a8; }
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #eeeeee; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #eeeeee; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .PreProc { color: #c000c0; }
 .Special { color: #ff6060; }
 .LineNr { }
 .Constant { color: #008787; }
+.muRegEdx { color: #878700; }
+.muRegEcx { color: #af875f; }
+.muRegEsi { color: #87d787; }
+.muRegEax { color: #875f00; }
 .Delimiter { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
 .muComment { color: #005faf; }
@@ -65,15 +69,15 @@ if ('onhashchange' in window) {
 <span id="L7" class="LineNr"> 7 </span>
 <span id="L8" class="LineNr"> 8 </span><span class="muComment"># print translating to [0, 256)</span>
 <span id="L9" class="LineNr"> 9 </span><span class="PreProc">fn</span> <span class="muFunction">print-rgb</span> <a href='../405screen.mu.html#L9'>screen</a>: (addr <a href='../405screen.mu.html#L9'>screen</a>), _c: (addr rgb) <span class="Delimiter">{</span>
-<span id="L10" class="LineNr">10 </span>  <span class="PreProc">var</span> c/<span class="Constant">esi</span>: (addr rgb) <span class="Special">&lt;-</span> copy _c
+<span id="L10" class="LineNr">10 </span>  <span class="PreProc">var</span> c/<span class="muRegEsi">esi</span>: (addr rgb) <span class="Special">&lt;-</span> copy _c
 <span id="L11" class="LineNr">11 </span>  <span class="PreProc">var</span> xn: float
-<span id="L12" class="LineNr">12 </span>  <span class="PreProc">var</span> xn-addr/<span class="Constant">ecx</span>: (addr float) <span class="Special">&lt;-</span> address xn
+<span id="L12" class="LineNr">12 </span>  <span class="PreProc">var</span> xn-addr/<span class="muRegEcx">ecx</span>: (addr float) <span class="Special">&lt;-</span> address xn
 <span id="L13" class="LineNr">13 </span>  <a href='../408float.mu.html#L3'>fill-in-rational</a> xn-addr, <span class="Constant">0x3e7ff</span>, <span class="Constant">0x3e8</span>  <span class="muComment"># 255999 / 1000</span>
 <span id="L14" class="LineNr">14 </span>  <span class="muComment"># print 255.999 * c-&gt;r</span>
 <span id="L15" class="LineNr">15 </span>  <span class="PreProc">var</span> result/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> copy xn
-<span id="L16" class="LineNr">16 </span>  <span class="PreProc">var</span> src-addr/<span class="Constant">eax</span>: (addr float) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> c, r
+<span id="L16" class="LineNr">16 </span>  <span class="PreProc">var</span> src-addr/<span class="muRegEax">eax</span>: (addr float) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> c, r
 <span id="L17" class="LineNr">17 </span>  result <span class="Special">&lt;-</span> multiply *src-addr
-<span id="L18" class="LineNr">18 </span>  <span class="PreProc">var</span> result-int/<span class="Constant">edx</span>: int <span class="Special">&lt;-</span> truncate result
+<span id="L18" class="LineNr">18 </span>  <span class="PreProc">var</span> result-int/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> truncate result
 <span id="L19" class="LineNr">19 </span>  <a href='../405screen.mu.html#L484'>print-int32-decimal</a> <a href='../405screen.mu.html#L9'>screen</a>, result-int
 <span id="L20" class="LineNr">20 </span>  <a href='../405screen.mu.html#L169'>print-string</a> <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot; &quot;</span>
 <span id="L21" class="LineNr">21 </span>  <span class="muComment"># print 255.999 * c-&gt;g</span>

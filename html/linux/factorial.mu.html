@@ -7,18 +7,21 @@
 <meta name="plugin-version" content="vim8.1_v1">
 <meta name="syntax" content="none">
 <meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
-<meta name="colorscheme" content="minimal-dark">
+<meta name="colorscheme" content="minimal-light">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #a8a8a8; }
-body { font-size:12pt; font-family: monospace; color: #000000; background-color: #a8a8a8; }
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #eeeeee; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #eeeeee; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .PreProc { color: #c000c0; }
+.muRegEcx { color: #af875f; }
 .Special { color: #ff6060; }
 .LineNr { }
-.Delimiter { color: #c000c0; }
+.muRegEbx { color: #8787af; }
 .Constant { color: #008787; }
+.muRegEax { color: #875f00; }
+.Delimiter { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
 .muTest { color: #5f8700; }
 .muComment { color: #005faf; }
@@ -75,7 +78,7 @@ if ('onhashchange' in window) {
 <span id="L16" class="LineNr">16 </span><span class="muComment">#</span>
 <span id="L17" class="LineNr">17 </span><span class="muComment"># Compare factorial4.subx</span>
 <span id="L18" class="LineNr">18 </span>
-<span id="L19" class="LineNr">19 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='factorial.mu.html#L19'>factorial</a></span> n: int<span class="PreProc"> -&gt; </span>_/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L19" class="LineNr">19 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='factorial.mu.html#L19'>factorial</a></span> n: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
 <span id="L20" class="LineNr">20 </span>  compare n, <span class="Constant">1</span>
 <span id="L21" class="LineNr">21 </span>  <span class="muComment"># if (n &lt;= 1) return 1</span>
 <span id="L22" class="LineNr">22 </span>  <span class="Delimiter">{</span>
@@ -83,32 +86,32 @@ if ('onhashchange' in window) {
 <span id="L24" class="LineNr">24 </span>    <span class="PreProc">return</span> <span class="Constant">1</span>
 <span id="L25" class="LineNr">25 </span>  <span class="Delimiter">}</span>
 <span id="L26" class="LineNr">26 </span>  <span class="muComment"># n &gt; 1; return n * factorial(n-1)</span>
-<span id="L27" class="LineNr">27 </span>  <span class="PreProc">var</span> tmp/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy n
+<span id="L27" class="LineNr">27 </span>  <span class="PreProc">var</span> tmp/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy n
 <span id="L28" class="LineNr">28 </span>  tmp <span class="Special">&lt;-</span> decrement
-<span id="L29" class="LineNr">29 </span>  <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='factorial.mu.html#L19'>factorial</a> tmp
+<span id="L29" class="LineNr">29 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='factorial.mu.html#L19'>factorial</a> tmp
 <span id="L30" class="LineNr">30 </span>  result <span class="Special">&lt;-</span> multiply n
 <span id="L31" class="LineNr">31 </span>  <span class="PreProc">return</span> result
 <span id="L32" class="LineNr">32 </span><span class="Delimiter">}</span>
 <span id="L33" class="LineNr">33 </span>
 <span id="L34" class="LineNr">34 </span><span class="PreProc">fn</span> <span class="muTest"><a href='factorial.mu.html#L34'>test-factorial</a></span> <span class="Delimiter">{</span>
-<span id="L35" class="LineNr">35 </span>  <span class="PreProc">var</span> result/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='factorial.mu.html#L19'>factorial</a> <span class="Constant">5</span>
+<span id="L35" class="LineNr">35 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='factorial.mu.html#L19'>factorial</a> <span class="Constant">5</span>
 <span id="L36" class="LineNr">36 </span>  <a href='102test.subx.html#L23'>check-ints-equal</a> result, <span class="Constant">0x78</span>, <span class="Constant">&quot;F - test-factorial&quot;</span>
 <span id="L37" class="LineNr">37 </span><span class="Delimiter">}</span>
 <span id="L38" class="LineNr">38 </span>
-<span id="L39" class="LineNr">39 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='factorial.mu.html#L39'>main</a></span> args-on-stack: (addr array addr array byte)<span class="PreProc"> -&gt; </span>_/<span class="Constant">ebx</span>: int <span class="Delimiter">{</span>
-<span id="L40" class="LineNr">40 </span>  <span class="PreProc">var</span> args/<span class="Constant">eax</span>: (addr array addr array byte) <span class="Special">&lt;-</span> copy args-on-stack
+<span id="L39" class="LineNr">39 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='factorial.mu.html#L39'>main</a></span> args-on-stack: (addr array addr array byte)<span class="PreProc"> -&gt; </span>_/<span class="muRegEbx">ebx</span>: int <span class="Delimiter">{</span>
+<span id="L40" class="LineNr">40 </span>  <span class="PreProc">var</span> args/<span class="muRegEax">eax</span>: (addr array addr array byte) <span class="Special">&lt;-</span> copy args-on-stack
 <span id="L41" class="LineNr">41 </span>  <span class="muComment"># len = length(args)</span>
-<span id="L42" class="LineNr">42 </span>  <span class="PreProc">var</span> len/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> length args
+<span id="L42" class="LineNr">42 </span>  <span class="PreProc">var</span> len/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> length args
 <span id="L43" class="LineNr">43 </span>  <span class="muComment"># if (len &lt;= 1) return factorial(5)</span>
 <span id="L44" class="LineNr">44 </span>  compare len, <span class="Constant">1</span>
 <span id="L45" class="LineNr">45 </span>  <span class="Delimiter">{</span>
 <span id="L46" class="LineNr">46 </span>    <span class="PreProc">break-if-&gt;</span>
-<span id="L47" class="LineNr">47 </span>    <span class="PreProc">var</span> exit-status/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> <a href='factorial.mu.html#L19'>factorial</a> <span class="Constant">5</span>
+<span id="L47" class="LineNr">47 </span>    <span class="PreProc">var</span> exit-status/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='factorial.mu.html#L19'>factorial</a> <span class="Constant">5</span>
 <span id="L48" class="LineNr">48 </span>    <span class="PreProc">return</span> exit-status
 <span id="L49" class="LineNr">49 </span>  <span class="Delimiter">}</span>
 <span id="L50" class="LineNr">50 </span>  <span class="muComment"># if (args[1] == &quot;test&quot;) run-tests()</span>
-<span id="L51" class="LineNr">51 </span>  <span class="PreProc">var</span> tmp2/<span class="Constant">ecx</span>: (addr addr array byte) <span class="Special">&lt;-</span> index args, <span class="Constant">1</span>
-<span id="L52" class="LineNr">52 </span>  <span class="PreProc">var</span> tmp3/<span class="Constant">eax</span>: boolean <span class="Special">&lt;-</span> <a href='105string-equal.subx.html#L15'>string-equal?</a> *tmp2, <span class="Constant">&quot;test&quot;</span>
+<span id="L51" class="LineNr">51 </span>  <span class="PreProc">var</span> tmp2/<span class="muRegEcx">ecx</span>: (addr addr array byte) <span class="Special">&lt;-</span> index args, <span class="Constant">1</span>
+<span id="L52" class="LineNr">52 </span>  <span class="PreProc">var</span> tmp3/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='105string-equal.subx.html#L15'>string-equal?</a> *tmp2, <span class="Constant">&quot;test&quot;</span>
 <span id="L53" class="LineNr">53 </span>  compare tmp3, <span class="Constant">0</span>
 <span id="L54" class="LineNr">54 </span>  <span class="Delimiter">{</span>
 <span id="L55" class="LineNr">55 </span>    <span class="PreProc">break-if-=</span>
