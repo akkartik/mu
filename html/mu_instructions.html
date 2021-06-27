@@ -10,20 +10,19 @@
 <meta name="colorscheme" content="minimal-light">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #000000; background-color: #eeeeee; }
-body { font-family: monospace; color: #000000; background-color: #eeeeee; }
+pre { font-family: monospace; color: #000000; background-color: #ffffd7; }
+body { font-family: monospace; color: #000000; background-color: #ffffd7; }
 * { font-size: 1em; }
-.muRegEdx { color: #878700; }
-.PreProc { color: #c000c0; }
-.muRegEsi { color: #87d787; }
+.muRegEbx { color: #5f00ff; }
+.muRegEdi { color: #00af00; }
 .muComment { color: #005faf; }
-.muRegEdi { color: #87ffd7; }
-.muRegEbx { color: #8787af; }
+.PreProc { color: #c000c0; }
+.muRegEsi { color: #005faf; }
 .Delimiter { color: #c000c0; }
 .Constant { color: #008787; }
 .Special { color: #ff6060; }
-.muRegEax { color: #875f00; }
-.muRegEcx { color: #af875f; }
+.muRegEcx { color: #870000; }
+.muRegEdx { color: #af5f00; }
 -->
 </style>
 </head>
@@ -48,7 +47,7 @@ the SubX instruction they're translated to.
 
 These instructions use the general-purpose registers.
 
-var/<span class="muRegEax">eax</span> <span class="Special">&lt;-</span> increment              =&gt; <span class="Constant">&quot;40/increment-eax&quot;</span>
+var/eax <span class="Special">&lt;-</span> increment              =&gt; <span class="Constant">&quot;40/increment-eax&quot;</span>
 var/<span class="muRegEcx">ecx</span> <span class="Special">&lt;-</span> increment              =&gt; <span class="Constant">&quot;41/increment-ecx&quot;</span>
 var/<span class="muRegEdx">edx</span> <span class="Special">&lt;-</span> increment              =&gt; <span class="Constant">&quot;42/increment-edx&quot;</span>
 var/<span class="muRegEbx">ebx</span> <span class="Special">&lt;-</span> increment              =&gt; <span class="Constant">&quot;43/increment-ebx&quot;</span>
@@ -57,7 +56,7 @@ var/<span class="muRegEdi">edi</span> <span class="Special">&lt;-</span> increme
 increment var                     =&gt; <span class="Constant">&quot;ff 0/subop/increment *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;)&quot;</span>
 increment *var/reg                =&gt; <span class="Constant">&quot;ff 0/subop/increment *&quot;</span> reg
 
-var/<span class="muRegEax">eax</span> <span class="Special">&lt;-</span> decrement              =&gt; <span class="Constant">&quot;48/decrement-eax&quot;</span>
+var/eax <span class="Special">&lt;-</span> decrement              =&gt; <span class="Constant">&quot;48/decrement-eax&quot;</span>
 var/<span class="muRegEcx">ecx</span> <span class="Special">&lt;-</span> decrement              =&gt; <span class="Constant">&quot;49/decrement-ecx&quot;</span>
 var/<span class="muRegEdx">edx</span> <span class="Special">&lt;-</span> decrement              =&gt; <span class="Constant">&quot;4a/decrement-edx&quot;</span>
 var/<span class="muRegEbx">ebx</span> <span class="Special">&lt;-</span> decrement              =&gt; <span class="Constant">&quot;4b/decrement-ebx&quot;</span>
@@ -71,7 +70,7 @@ var/reg <span class="Special">&lt;-</span> add var2               =&gt; <span cl
 var/reg <span class="Special">&lt;-</span> add *var2/reg2         =&gt; <span class="Constant">&quot;03/add *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 add-to var1, var2/reg             =&gt; <span class="Constant">&quot;01/add-to *(ebp+&quot;</span> var1.stack-offset <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 add-to *var1/reg1, var2/reg2      =&gt; <span class="Constant">&quot;01/add-to *&quot;</span> reg1 <span class="Constant">&quot; &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
-var/<span class="muRegEax">eax</span> <span class="Special">&lt;-</span> add n                  =&gt; <span class="Constant">&quot;05/add-to-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
+var/eax <span class="Special">&lt;-</span> add n                  =&gt; <span class="Constant">&quot;05/add-to-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/reg <span class="Special">&lt;-</span> add n                  =&gt; <span class="Constant">&quot;81 0/subop/add %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 add-to var, n                     =&gt; <span class="Constant">&quot;81 0/subop/add *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 add-to *var/reg, n                =&gt; <span class="Constant">&quot;81 0/subop/add *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
@@ -81,7 +80,7 @@ var/reg <span class="Special">&lt;-</span> subtract var2          =&gt; <span cl
 var/reg <span class="Special">&lt;-</span> subtract *var2/reg2    =&gt; <span class="Constant">&quot;2b/subtract *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg1 <span class="Constant">&quot;/r32&quot;</span>
 subtract-from var1, var2/reg2     =&gt; <span class="Constant">&quot;29/subtract-from *(ebp+&quot;</span> var1.stack-offset <span class="Constant">&quot;) &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
 subtract-from *var1/reg1, var2/reg2 =&gt; <span class="Constant">&quot;29/subtract-from *&quot;</span> reg1 <span class="Constant">&quot; &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
-var/<span class="muRegEax">eax</span> <span class="Special">&lt;-</span> subtract n             =&gt; <span class="Constant">&quot;2d/subtract-from-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
+var/eax <span class="Special">&lt;-</span> subtract n             =&gt; <span class="Constant">&quot;2d/subtract-from-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/reg <span class="Special">&lt;-</span> subtract n             =&gt; <span class="Constant">&quot;81 5/subop/subtract %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 subtract-from var, n              =&gt; <span class="Constant">&quot;81 5/subop/subtract *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 subtract-from *var/reg, n         =&gt; <span class="Constant">&quot;81 5/subop/subtract *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
@@ -91,7 +90,7 @@ var/reg <span class="Special">&lt;-</span> and var2               =&gt; <span cl
 var/reg <span class="Special">&lt;-</span> and *var2/reg2         =&gt; <span class="Constant">&quot;23/and *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 and-with var1, var2/reg           =&gt; <span class="Constant">&quot;21/and-with *(ebp+&quot;</span> var1.stack-offset <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 and-with *var1/reg1, var2/reg2    =&gt; <span class="Constant">&quot;21/and-with *&quot;</span> reg1 <span class="Constant">&quot; &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
-var/<span class="muRegEax">eax</span> <span class="Special">&lt;-</span> and n                  =&gt; <span class="Constant">&quot;25/and-with-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
+var/eax <span class="Special">&lt;-</span> and n                  =&gt; <span class="Constant">&quot;25/and-with-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/reg <span class="Special">&lt;-</span> and n                  =&gt; <span class="Constant">&quot;81 4/subop/and %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 and-with var, n                   =&gt; <span class="Constant">&quot;81 4/subop/and *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 and-with *var/reg, n              =&gt; <span class="Constant">&quot;81 4/subop/and *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
@@ -101,7 +100,7 @@ var/reg <span class="Special">&lt;-</span> or var2                =&gt; <span cl
 var/reg <span class="Special">&lt;-</span> or *var2/reg2          =&gt; <span class="Constant">&quot;0b/or *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 or-with var1, var2/reg2           =&gt; <span class="Constant">&quot;09/or-with *(ebp+&quot;</span> var1.stack-offset <span class="Constant">&quot; &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
 or-with *var1/reg1, var2/reg2     =&gt; <span class="Constant">&quot;09/or-with *&quot;</span> reg1 <span class="Constant">&quot; &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
-var/<span class="muRegEax">eax</span> <span class="Special">&lt;-</span> or n                   =&gt; <span class="Constant">&quot;0d/or-with-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
+var/eax <span class="Special">&lt;-</span> or n                   =&gt; <span class="Constant">&quot;0d/or-with-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/reg <span class="Special">&lt;-</span> or n                   =&gt; <span class="Constant">&quot;81 1/subop/or %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 or-with var, n                    =&gt; <span class="Constant">&quot;81 1/subop/or *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 or-with *var/reg, n               =&gt; <span class="Constant">&quot;81 1/subop/or *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
@@ -115,7 +114,7 @@ var/reg <span class="Special">&lt;-</span> xor var2               =&gt; <span cl
 var/reg <span class="Special">&lt;-</span> xor *var2/reg2         =&gt; <span class="Constant">&quot;33/xor *&quot;</span> reg2 <span class="Constant">&quot; &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 xor-with var1, var2/reg           =&gt; <span class="Constant">&quot;31/xor-with *(ebp+&quot;</span> var1.stack-offset <span class="Constant">&quot;) &quot;</span> reg <span class="Constant">&quot;/r32&quot;</span>
 xor-with *var1/reg1, var2/reg2    =&gt; <span class="Constant">&quot;31/xor-with *&quot;</span> reg1 <span class="Constant">&quot; &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
-var/<span class="muRegEax">eax</span> <span class="Special">&lt;-</span> xor n                  =&gt; <span class="Constant">&quot;35/xor-with-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
+var/eax <span class="Special">&lt;-</span> xor n                  =&gt; <span class="Constant">&quot;35/xor-with-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/reg <span class="Special">&lt;-</span> xor n                  =&gt; <span class="Constant">&quot;81 6/subop/xor %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 xor-with var, n                   =&gt; <span class="Constant">&quot;81 6/subop/xor *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 xor-with *var/reg, n              =&gt; <span class="Constant">&quot;81 6/subop/xor *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
@@ -134,7 +133,7 @@ shift-right *var/reg, n           =&gt; <span class="Constant">&quot;c1/shift 5/
 shift-right-signed var, n         =&gt; <span class="Constant">&quot;c1/shift 7/subop/right-signed *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 shift-right-signed *var/reg, n    =&gt; <span class="Constant">&quot;c1/shift 7/subop/right-signed *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 
-var/<span class="muRegEax">eax</span> <span class="Special">&lt;-</span> copy n                 =&gt; <span class="Constant">&quot;b8/copy-to-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
+var/eax <span class="Special">&lt;-</span> copy n                 =&gt; <span class="Constant">&quot;b8/copy-to-eax &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/<span class="muRegEcx">ecx</span> <span class="Special">&lt;-</span> copy n                 =&gt; <span class="Constant">&quot;b9/copy-to-ecx &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/<span class="muRegEdx">edx</span> <span class="Special">&lt;-</span> copy n                 =&gt; <span class="Constant">&quot;ba/copy-to-edx &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 var/<span class="muRegEbx">ebx</span> <span class="Special">&lt;-</span> copy n                 =&gt; <span class="Constant">&quot;bb/copy-to-ebx &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
@@ -159,7 +158,7 @@ compare var1, var2/reg2           =&gt; <span class="Constant">&quot;39/compare 
 compare *var1/reg1, var2/reg2     =&gt; <span class="Constant">&quot;39/compare *&quot;</span> reg1 <span class="Constant">&quot; &quot;</span> reg2 <span class="Constant">&quot;/r32&quot;</span>
 compare var1/reg1, var2           =&gt; <span class="Constant">&quot;3b/compare&lt;- *(ebp+&quot;</span> var2.stack-offset <span class="Constant">&quot;) &quot;</span> reg1 <span class="Constant">&quot;/r32&quot;</span>
 compare var/reg, *var2/reg2       =&gt; <span class="Constant">&quot;3b/compare&lt;- *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
-compare var/<span class="muRegEax">eax</span>, n                =&gt; <span class="Constant">&quot;3d/compare-eax-with &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
+compare var/eax, n                =&gt; <span class="Constant">&quot;3d/compare-eax-with &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 compare var/reg, n                =&gt; <span class="Constant">&quot;81 7/subop/compare %&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 compare var, n                    =&gt; <span class="Constant">&quot;81 7/subop/compare *(ebp+&quot;</span> var.stack-offset <span class="Constant">&quot;) &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
 compare *var/reg, n               =&gt; <span class="Constant">&quot;81 7/subop/compare *&quot;</span> reg <span class="Constant">&quot; &quot;</span> n <span class="Constant">&quot;/imm32&quot;</span>
@@ -414,8 +413,8 @@ var/reg: int <span class="Special">&lt;-</span> length arr/reg2: (addr array T)
          <span class="Constant">&quot;c1/shift 5/subop/logic-right %&quot;</span> reg <span class="Constant">&quot; &quot;</span> log2(size-of(T)) <span class="Constant">&quot;/imm8&quot;</span>
   | otherwise
       x86 has no instruction to divide by a literal, so
-      we need up to <span class="Constant">3</span> extra registers! <span class="muRegEax">eax</span>/<span class="muRegEdx">edx</span> for division and say <span class="muRegEcx">ecx</span>
-      =&gt; if reg is not <span class="muRegEax">eax</span>
+      we need up to <span class="Constant">3</span> extra registers! eax/<span class="muRegEdx">edx</span> for division and say <span class="muRegEcx">ecx</span>
+      =&gt; if reg is not eax
           <span class="Constant">&quot;50/push-eax&quot;</span>
          if reg is not <span class="muRegEcx">ecx</span>
           <span class="Constant">&quot;51/push-ecx&quot;</span>
@@ -425,13 +424,13 @@ var/reg: int <span class="Special">&lt;-</span> length arr/reg2: (addr array T)
          <span class="Constant">&quot;31/xor %edx 2/r32/edx&quot;</span>  <span class="muComment"># sign-extend, but array size can't be negative</span>
          <span class="Constant">&quot;b9/copy-to-ecx &quot;</span> size-of(T) <span class="Constant">&quot;/imm32&quot;</span>
          <span class="Constant">&quot;f7 7/subop/idiv-eax-edx-by %ecx&quot;</span>
-         if reg is not <span class="muRegEax">eax</span>
+         if reg is not eax
            <span class="Constant">&quot;89/&lt;- %&quot;</span> reg <span class="Constant">&quot; 0/r32/eax&quot;</span>
          if reg is not <span class="muRegEdx">edx</span>
           <span class="Constant">&quot;5a/pop-to-edx&quot;</span>
          if reg is not <span class="muRegEcx">ecx</span>
           <span class="Constant">&quot;59/pop-to-ecx&quot;</span>
-         if reg is not <span class="muRegEax">eax</span>
+         if reg is not eax
           <span class="Constant">&quot;58/pop-to-eax&quot;</span>
 
 <span class="muComment"># User-defined types</span>
