@@ -14,19 +14,18 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.muRegEdi { color: #87ffd7; }
-.muComment { color: #005faf; }
-.LineNr { }
-.muRegEcx { color: #af875f; }
+.PreProc { color: #c000c0; }
+.muRegEdx { color: #af5f00; }
 .Special { color: #ff6060; }
-.muRegEsi { color: #87d787; }
-.muRegEax { color: #875f00; }
+.LineNr { }
+.Constant { color: #008787; }
+.muRegEbx { color: #5f00ff; }
+.muRegEsi { color: #005faf; }
+.muRegEdi { color: #00af00; }
+.muRegEcx { color: #870000; }
 .Delimiter { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
-.muRegEbx { color: #8787af; }
-.Constant { color: #008787; }
-.PreProc { color: #c000c0; }
-.muRegEdx { color: #878700; }
+.muComment { color: #005faf; }
 -->
 </style>
 
@@ -96,7 +95,7 @@ if ('onhashchange' in window) {
 <span id="L32" class="LineNr"> 32 </span>
 <span id="L33" class="LineNr"> 33 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L33'>initialize-screen</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), width: int, height: int, pixel-graphics?: boolean <span class="Delimiter">{</span>
 <span id="L34" class="LineNr"> 34 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
-<span id="L35" class="LineNr"> 35 </span>  <span class="PreProc">var</span> tmp/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L35" class="LineNr"> 35 </span>  <span class="PreProc">var</span> tmp/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L36" class="LineNr"> 36 </span>  <span class="PreProc">var</span> dest/<span class="muRegEdi">edi</span>: (addr int) <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L37" class="LineNr"> 37 </span>  <span class="muComment"># screen-&gt;width = width</span>
 <span id="L38" class="LineNr"> 38 </span>  dest <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
@@ -109,7 +108,7 @@ if ('onhashchange' in window) {
 <span id="L45" class="LineNr"> 45 </span>  <span class="muComment"># populate screen-&gt;data</span>
 <span id="L46" class="LineNr"> 46 </span>  <span class="Delimiter">{</span>
 <span id="L47" class="LineNr"> 47 </span>    <span class="PreProc">var</span> data-ah/<span class="muRegEdi">edi</span>: (addr handle array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, data
-<span id="L48" class="LineNr"> 48 </span>    <span class="PreProc">var</span> capacity/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy width
+<span id="L48" class="LineNr"> 48 </span>    <span class="PreProc">var</span> capacity/eax: int <span class="Special">&lt;-</span> copy width
 <span id="L49" class="LineNr"> 49 </span>    capacity <span class="Special">&lt;-</span> multiply height
 <span id="L50" class="LineNr"> 50 </span>    <span class="muComment"># add 1 for sentinel</span>
 <span id="L51" class="LineNr"> 51 </span>    capacity <span class="Special">&lt;-</span> increment
@@ -125,7 +124,7 @@ if ('onhashchange' in window) {
 <span id="L61" class="LineNr"> 61 </span>    compare pixel-graphics?, <span class="Constant">0</span>/false
 <span id="L62" class="LineNr"> 62 </span>    <span class="PreProc">break-if-=</span>
 <span id="L63" class="LineNr"> 63 </span>    <span class="PreProc">var</span> pixels-ah/<span class="muRegEdi">edi</span>: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
-<span id="L64" class="LineNr"> 64 </span>    <span class="PreProc">var</span> capacity/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy width
+<span id="L64" class="LineNr"> 64 </span>    <span class="PreProc">var</span> capacity/eax: int <span class="Special">&lt;-</span> copy width
 <span id="L65" class="LineNr"> 65 </span>    capacity <span class="Special">&lt;-</span> shift-left <span class="Constant">3</span>/log2-font-width
 <span id="L66" class="LineNr"> 66 </span>    capacity <span class="Special">&lt;-</span> multiply height
 <span id="L67" class="LineNr"> 67 </span>    capacity <span class="Special">&lt;-</span> shift-left <span class="Constant">4</span>/log2-font-height
@@ -147,9 +146,9 @@ if ('onhashchange' in window) {
 <span id="L83" class="LineNr"> 83 </span><span class="Delimiter">}</span>
 <span id="L84" class="LineNr"> 84 </span>
 <span id="L85" class="LineNr"> 85 </span><span class="muComment"># in graphemes</span>
-<span id="L86" class="LineNr"> 86 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L86'>screen-size</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int, _/<span class="muRegEcx">ecx</span>: int <span class="Delimiter">{</span>
+<span id="L86" class="LineNr"> 86 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L86'>screen-size</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>)<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEcx">ecx</span>: int <span class="Delimiter">{</span>
 <span id="L87" class="LineNr"> 87 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
-<span id="L88" class="LineNr"> 88 </span>  <span class="PreProc">var</span> width/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L88" class="LineNr"> 88 </span>  <span class="PreProc">var</span> width/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L89" class="LineNr"> 89 </span>  <span class="PreProc">var</span> height/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L90" class="LineNr"> 90 </span>  compare <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>
 <span id="L91" class="LineNr"> 91 </span>  <span class="Delimiter">{</span>
@@ -175,14 +174,14 @@ if ('onhashchange' in window) {
 <span id="L111" class="LineNr">111 </span>  <span class="Delimiter">}</span>
 <span id="L112" class="LineNr">112 </span>  <span class="muComment"># fake screen</span>
 <span id="L113" class="LineNr">113 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L136'>screen-cell-index</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
-<span id="L114" class="LineNr">114 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, data
-<span id="L115" class="LineNr">115 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L114" class="LineNr">114 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, data
+<span id="L115" class="LineNr">115 </span>  <span class="PreProc">var</span> data/eax: (addr array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L116" class="LineNr">116 </span>  <span class="PreProc">var</span> offset/<span class="muRegEcx">ecx</span>: (offset <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> compute-offset data, idx
 <span id="L117" class="LineNr">117 </span>  <span class="PreProc">var</span> dest-cell/<span class="muRegEcx">ecx</span>: (addr <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
-<span id="L118" class="LineNr">118 </span>  <span class="PreProc">var</span> dest-grapheme/<span class="muRegEax">eax</span>: (addr grapheme) <span class="Special">&lt;-</span> get dest-cell, data
+<span id="L118" class="LineNr">118 </span>  <span class="PreProc">var</span> dest-grapheme/eax: (addr grapheme) <span class="Special">&lt;-</span> get dest-cell, data
 <span id="L119" class="LineNr">119 </span>  <span class="PreProc">var</span> g2/<span class="muRegEdx">edx</span>: grapheme <span class="Special">&lt;-</span> copy g
 <span id="L120" class="LineNr">120 </span>  copy-to *dest-grapheme, g2
-<span id="L121" class="LineNr">121 </span>  <span class="PreProc">var</span> dest-color/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get dest-cell, color
+<span id="L121" class="LineNr">121 </span>  <span class="PreProc">var</span> dest-color/eax: (addr int) <span class="Special">&lt;-</span> get dest-cell, color
 <span id="L122" class="LineNr">122 </span>  <span class="PreProc">var</span> src-color/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy color
 <span id="L123" class="LineNr">123 </span>  copy-to *dest-color, src-color
 <span id="L124" class="LineNr">124 </span>  dest-color <span class="Special">&lt;-</span> get dest-cell, background-color
@@ -192,7 +191,7 @@ if ('onhashchange' in window) {
 <span id="L128" class="LineNr">128 </span>
 <span id="L129" class="LineNr">129 </span><span class="muComment"># we can't really render non-ASCII yet, but when we do we'll be ready</span>
 <span id="L130" class="LineNr">130 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L130'>draw-code-point</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), c: code-point, x: int, y: int, color: int, background-color: int <span class="Delimiter">{</span>
-<span id="L131" class="LineNr">131 </span>  <span class="PreProc">var</span> g/<span class="muRegEax">eax</span>: grapheme <span class="Special">&lt;-</span> copy c
+<span id="L131" class="LineNr">131 </span>  <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> copy c
 <span id="L132" class="LineNr">132 </span>  <a href='500fake-screen.mu.html#L104'>draw-grapheme</a> <a href='500fake-screen.mu.html#L14'>screen</a>, g, x, y, color, background-color
 <span id="L133" class="LineNr">133 </span><span class="Delimiter">}</span>
 <span id="L134" class="LineNr">134 </span>
@@ -203,50 +202,50 @@ if ('onhashchange' in window) {
 <span id="L139" class="LineNr">139 </span>  <span class="Delimiter">{</span>
 <span id="L140" class="LineNr">140 </span>    compare x, <span class="Constant">0</span>
 <span id="L141" class="LineNr">141 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L142" class="LineNr">142 </span>    <span class="PreProc">var</span> invalid/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-cell-index
+<span id="L142" class="LineNr">142 </span>    <span class="PreProc">var</span> invalid/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-cell-index
 <span id="L143" class="LineNr">143 </span>    <span class="PreProc">return</span> *invalid
 <span id="L144" class="LineNr">144 </span>  <span class="Delimiter">}</span>
 <span id="L145" class="LineNr">145 </span>  <span class="Delimiter">{</span>
-<span id="L146" class="LineNr">146 </span>    <span class="PreProc">var</span> xmax/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
+<span id="L146" class="LineNr">146 </span>    <span class="PreProc">var</span> xmax/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
 <span id="L147" class="LineNr">147 </span>    <span class="PreProc">var</span> xcurr/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy x
 <span id="L148" class="LineNr">148 </span>    compare xcurr, *xmax
 <span id="L149" class="LineNr">149 </span>    <span class="PreProc">break-if-&lt;</span>
-<span id="L150" class="LineNr">150 </span>    <span class="PreProc">var</span> invalid/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-cell-index
+<span id="L150" class="LineNr">150 </span>    <span class="PreProc">var</span> invalid/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-cell-index
 <span id="L151" class="LineNr">151 </span>    <span class="PreProc">return</span> *invalid
 <span id="L152" class="LineNr">152 </span>  <span class="Delimiter">}</span>
 <span id="L153" class="LineNr">153 </span>  <span class="Delimiter">{</span>
 <span id="L154" class="LineNr">154 </span>    compare y, <span class="Constant">0</span>
 <span id="L155" class="LineNr">155 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L156" class="LineNr">156 </span>    <span class="PreProc">var</span> invalid/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-cell-index
+<span id="L156" class="LineNr">156 </span>    <span class="PreProc">var</span> invalid/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-cell-index
 <span id="L157" class="LineNr">157 </span>    <span class="PreProc">return</span> *invalid
 <span id="L158" class="LineNr">158 </span>  <span class="Delimiter">}</span>
 <span id="L159" class="LineNr">159 </span>  <span class="Delimiter">{</span>
-<span id="L160" class="LineNr">160 </span>    <span class="PreProc">var</span> ymax/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
+<span id="L160" class="LineNr">160 </span>    <span class="PreProc">var</span> ymax/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
 <span id="L161" class="LineNr">161 </span>    <span class="PreProc">var</span> ycurr/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy y
 <span id="L162" class="LineNr">162 </span>    compare ycurr, *ymax
 <span id="L163" class="LineNr">163 </span>    <span class="PreProc">break-if-&lt;</span>
-<span id="L164" class="LineNr">164 </span>    <span class="PreProc">var</span> invalid/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-cell-index
+<span id="L164" class="LineNr">164 </span>    <span class="PreProc">var</span> invalid/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-cell-index
 <span id="L165" class="LineNr">165 </span>    <span class="PreProc">return</span> *invalid
 <span id="L166" class="LineNr">166 </span>  <span class="Delimiter">}</span>
-<span id="L167" class="LineNr">167 </span>  <span class="PreProc">var</span> width-addr/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
+<span id="L167" class="LineNr">167 </span>  <span class="PreProc">var</span> width-addr/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
 <span id="L168" class="LineNr">168 </span>  <span class="PreProc">var</span> result/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy y
 <span id="L169" class="LineNr">169 </span>  result <span class="Special">&lt;-</span> multiply *width-addr
 <span id="L170" class="LineNr">170 </span>  result <span class="Special">&lt;-</span> add x
 <span id="L171" class="LineNr">171 </span>  <span class="PreProc">return</span> result
 <span id="L172" class="LineNr">172 </span><span class="Delimiter">}</span>
 <span id="L173" class="LineNr">173 </span>
-<span id="L174" class="LineNr">174 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L174'>cursor-position</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int, _/<span class="muRegEcx">ecx</span>: int <span class="Delimiter">{</span>
+<span id="L174" class="LineNr">174 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L174'>cursor-position</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>)<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEcx">ecx</span>: int <span class="Delimiter">{</span>
 <span id="L175" class="LineNr">175 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
 <span id="L176" class="LineNr">176 </span>  <span class="Delimiter">{</span>
 <span id="L177" class="LineNr">177 </span>    compare <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>
 <span id="L178" class="LineNr">178 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L179" class="LineNr">179 </span>    <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L179" class="LineNr">179 </span>    <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L180" class="LineNr">180 </span>    <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L181" class="LineNr">181 </span>    x, y <span class="Special">&lt;-</span> <a href='103grapheme.subx.html#L157'>cursor-position-on-real-screen</a>
 <span id="L182" class="LineNr">182 </span>    <span class="PreProc">return</span> x, y
 <span id="L183" class="LineNr">183 </span>  <span class="Delimiter">}</span>
 <span id="L184" class="LineNr">184 </span>  <span class="muComment"># fake screen</span>
-<span id="L185" class="LineNr">185 </span>  <span class="PreProc">var</span> cursor-x-addr/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, cursor-x
+<span id="L185" class="LineNr">185 </span>  <span class="PreProc">var</span> cursor-x-addr/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, cursor-x
 <span id="L186" class="LineNr">186 </span>  <span class="PreProc">var</span> cursor-y-addr/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, cursor-y
 <span id="L187" class="LineNr">187 </span>  <span class="PreProc">return</span> *cursor-x-addr, *cursor-y-addr
 <span id="L188" class="LineNr">188 </span><span class="Delimiter">}</span>
@@ -268,8 +267,8 @@ if ('onhashchange' in window) {
 <span id="L204" class="LineNr">204 </span>  <span class="Delimiter">}</span>
 <span id="L205" class="LineNr">205 </span>  <span class="muComment"># ignore x &gt;= width</span>
 <span id="L206" class="LineNr">206 </span>  <span class="Delimiter">{</span>
-<span id="L207" class="LineNr">207 </span>    <span class="PreProc">var</span> width-addr/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
-<span id="L208" class="LineNr">208 </span>    <span class="PreProc">var</span> width/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *width-addr
+<span id="L207" class="LineNr">207 </span>    <span class="PreProc">var</span> width-addr/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
+<span id="L208" class="LineNr">208 </span>    <span class="PreProc">var</span> width/eax: int <span class="Special">&lt;-</span> copy *width-addr
 <span id="L209" class="LineNr">209 </span>    compare x, width
 <span id="L210" class="LineNr">210 </span>    <span class="PreProc">break-if-&lt;=</span>
 <span id="L211" class="LineNr">211 </span>    <span class="PreProc">return</span>
@@ -282,15 +281,15 @@ if ('onhashchange' in window) {
 <span id="L218" class="LineNr">218 </span>  <span class="Delimiter">}</span>
 <span id="L219" class="LineNr">219 </span>  <span class="muComment"># ignore y &gt;= height</span>
 <span id="L220" class="LineNr">220 </span>  <span class="Delimiter">{</span>
-<span id="L221" class="LineNr">221 </span>    <span class="PreProc">var</span> height-addr/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
-<span id="L222" class="LineNr">222 </span>    <span class="PreProc">var</span> height/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *height-addr
+<span id="L221" class="LineNr">221 </span>    <span class="PreProc">var</span> height-addr/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
+<span id="L222" class="LineNr">222 </span>    <span class="PreProc">var</span> height/eax: int <span class="Special">&lt;-</span> copy *height-addr
 <span id="L223" class="LineNr">223 </span>    compare y, height
 <span id="L224" class="LineNr">224 </span>    <span class="PreProc">break-if-&lt;</span>
 <span id="L225" class="LineNr">225 </span>    <span class="PreProc">return</span>
 <span id="L226" class="LineNr">226 </span>  <span class="Delimiter">}</span>
 <span id="L227" class="LineNr">227 </span>  <span class="muComment"># screen-&gt;cursor-x = x</span>
 <span id="L228" class="LineNr">228 </span>  <span class="PreProc">var</span> dest/<span class="muRegEdi">edi</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, cursor-x
-<span id="L229" class="LineNr">229 </span>  <span class="PreProc">var</span> src/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy x
+<span id="L229" class="LineNr">229 </span>  <span class="PreProc">var</span> src/eax: int <span class="Special">&lt;-</span> copy x
 <span id="L230" class="LineNr">230 </span>  copy-to *dest, src
 <span id="L231" class="LineNr">231 </span>  <span class="muComment"># screen-&gt;cursor-y = y</span>
 <span id="L232" class="LineNr">232 </span>  dest <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, cursor-y
@@ -306,7 +305,7 @@ if ('onhashchange' in window) {
 <span id="L242" class="LineNr">242 </span>    <span class="PreProc">return</span>
 <span id="L243" class="LineNr">243 </span>  <span class="Delimiter">}</span>
 <span id="L244" class="LineNr">244 </span>  <span class="muComment"># fake screen</span>
-<span id="L245" class="LineNr">245 </span>  <span class="PreProc">var</span> cursor-x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L245" class="LineNr">245 </span>  <span class="PreProc">var</span> cursor-x/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L246" class="LineNr">246 </span>  <span class="PreProc">var</span> cursor-y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L247" class="LineNr">247 </span>  cursor-x, cursor-y <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L174'>cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>
 <span id="L248" class="LineNr">248 </span>  <a href='500fake-screen.mu.html#L104'>draw-grapheme</a> <a href='500fake-screen.mu.html#L14'>screen</a>, g, cursor-x, cursor-y, <span class="Constant">0</span>/fg, <span class="Constant">7</span>/bg
@@ -322,7 +321,7 @@ if ('onhashchange' in window) {
 <span id="L258" class="LineNr">258 </span>  <span class="Delimiter">}</span>
 <span id="L259" class="LineNr">259 </span>  <span class="muComment"># fake screen</span>
 <span id="L260" class="LineNr">260 </span>  <a href='500fake-screen.mu.html#L190'>set-cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>, <span class="Constant">0</span>
-<span id="L261" class="LineNr">261 </span>  <span class="PreProc">var</span> y/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L261" class="LineNr">261 </span>  <span class="PreProc">var</span> y/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L262" class="LineNr">262 </span>  <span class="PreProc">var</span> height/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
 <span id="L263" class="LineNr">263 </span>  <span class="Delimiter">{</span>
 <span id="L264" class="LineNr">264 </span>    compare y, *height
@@ -340,14 +339,14 @@ if ('onhashchange' in window) {
 <span id="L276" class="LineNr">276 </span>    <span class="PreProc">loop</span>
 <span id="L277" class="LineNr">277 </span>  <span class="Delimiter">}</span>
 <span id="L278" class="LineNr">278 </span>  <a href='500fake-screen.mu.html#L190'>set-cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>, <span class="Constant">0</span>
-<span id="L279" class="LineNr">279 </span>  <span class="PreProc">var</span> pixels-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
-<span id="L280" class="LineNr">280 </span>  <span class="PreProc">var</span> pixels/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *pixels-ah
+<span id="L279" class="LineNr">279 </span>  <span class="PreProc">var</span> pixels-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
+<span id="L280" class="LineNr">280 </span>  <span class="PreProc">var</span> pixels/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *pixels-ah
 <span id="L281" class="LineNr">281 </span>  <span class="PreProc">var</span> i/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L282" class="LineNr">282 </span>  <span class="PreProc">var</span> max/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> length pixels
 <span id="L283" class="LineNr">283 </span>  <span class="Delimiter">{</span>
 <span id="L284" class="LineNr">284 </span>    compare i, max
 <span id="L285" class="LineNr">285 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L286" class="LineNr">286 </span>    <span class="PreProc">var</span> curr/<span class="muRegEax">eax</span>: (addr byte) <span class="Special">&lt;-</span> index pixels, i
+<span id="L286" class="LineNr">286 </span>    <span class="PreProc">var</span> curr/eax: (addr byte) <span class="Special">&lt;-</span> index pixels, i
 <span id="L287" class="LineNr">287 </span>    <span class="PreProc">var</span> zero/<span class="muRegEbx">ebx</span>: byte <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L288" class="LineNr">288 </span>    copy-byte-to *curr, zero
 <span id="L289" class="LineNr">289 </span>    i <span class="Special">&lt;-</span> increment
@@ -355,9 +354,9 @@ if ('onhashchange' in window) {
 <span id="L291" class="LineNr">291 </span>  <span class="Delimiter">}</span>
 <span id="L292" class="LineNr">292 </span><span class="Delimiter">}</span>
 <span id="L293" class="LineNr">293 </span>
-<span id="L294" class="LineNr">294 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L294'>fake-screen-empty?</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L294" class="LineNr">294 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L294'>fake-screen-empty?</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>)<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
 <span id="L295" class="LineNr">295 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
-<span id="L296" class="LineNr">296 </span>  <span class="PreProc">var</span> y/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L296" class="LineNr">296 </span>  <span class="PreProc">var</span> y/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L297" class="LineNr">297 </span>  <span class="PreProc">var</span> height/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
 <span id="L298" class="LineNr">298 </span>  <span class="Delimiter">{</span>
 <span id="L299" class="LineNr">299 </span>    compare y, *height
@@ -367,7 +366,7 @@ if ('onhashchange' in window) {
 <span id="L303" class="LineNr">303 </span>    <span class="Delimiter">{</span>
 <span id="L304" class="LineNr">304 </span>      compare x, *width
 <span id="L305" class="LineNr">305 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L306" class="LineNr">306 </span>      <span class="PreProc">var</span> g/<span class="muRegEax">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L427'>screen-grapheme-at</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
+<span id="L306" class="LineNr">306 </span>      <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L427'>screen-grapheme-at</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
 <span id="L307" class="LineNr">307 </span>      <span class="Delimiter">{</span>
 <span id="L308" class="LineNr">308 </span>        compare g, <span class="Constant">0</span>
 <span id="L309" class="LineNr">309 </span>        <span class="PreProc">break-if-=</span>
@@ -381,8 +380,8 @@ if ('onhashchange' in window) {
 <span id="L317" class="LineNr">317 </span>    y <span class="Special">&lt;-</span> increment
 <span id="L318" class="LineNr">318 </span>    <span class="PreProc">loop</span>
 <span id="L319" class="LineNr">319 </span>  <span class="Delimiter">}</span>
-<span id="L320" class="LineNr">320 </span>  <span class="PreProc">var</span> pixels-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
-<span id="L321" class="LineNr">321 </span>  <span class="PreProc">var</span> pixels/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *pixels-ah
+<span id="L320" class="LineNr">320 </span>  <span class="PreProc">var</span> pixels-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
+<span id="L321" class="LineNr">321 </span>  <span class="PreProc">var</span> pixels/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *pixels-ah
 <span id="L322" class="LineNr">322 </span>  <span class="PreProc">var</span> y/<span class="muRegEbx">ebx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L323" class="LineNr">323 </span>  <span class="PreProc">var</span> height-addr/<span class="muRegEdx">edx</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
 <span id="L324" class="LineNr">324 </span>  <span class="PreProc">var</span> height/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy *height-addr
@@ -424,7 +423,7 @@ if ('onhashchange' in window) {
 <span id="L360" class="LineNr">360 </span>  <span class="Delimiter">}</span>
 <span id="L361" class="LineNr">361 </span>  <span class="muComment"># fake screen</span>
 <span id="L362" class="LineNr">362 </span>  <a href='500fake-screen.mu.html#L190'>set-cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0</span>, <span class="Constant">0</span>
-<span id="L363" class="LineNr">363 </span>  <span class="PreProc">var</span> y/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy ymin
+<span id="L363" class="LineNr">363 </span>  <span class="PreProc">var</span> y/eax: int <span class="Special">&lt;-</span> copy ymin
 <span id="L364" class="LineNr">364 </span>  <span class="PreProc">var</span> ymax/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy ymax
 <span id="L365" class="LineNr">365 </span>  <span class="Delimiter">{</span>
 <span id="L366" class="LineNr">366 </span>    compare y, ymax
@@ -447,7 +446,7 @@ if ('onhashchange' in window) {
 <span id="L383" class="LineNr">383 </span><span class="muComment"># there's no grapheme that guarantees to cover every pixel, so we'll bump down</span>
 <span id="L384" class="LineNr">384 </span><span class="muComment"># to pixels for a real screen</span>
 <span id="L385" class="LineNr">385 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L385'>clear-real-screen</a></span> <span class="Delimiter">{</span>
-<span id="L386" class="LineNr">386 </span>  <span class="PreProc">var</span> y/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L386" class="LineNr">386 </span>  <span class="PreProc">var</span> y/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L387" class="LineNr">387 </span>  <span class="Delimiter">{</span>
 <span id="L388" class="LineNr">388 </span>    compare y, <span class="Constant">0x300</span>/screen-height=<span class="Constant">768</span>
 <span id="L389" class="LineNr">389 </span>    <span class="PreProc">break-if-&gt;=</span>
@@ -465,7 +464,7 @@ if ('onhashchange' in window) {
 <span id="L401" class="LineNr">401 </span><span class="Delimiter">}</span>
 <span id="L402" class="LineNr">402 </span>
 <span id="L403" class="LineNr">403 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L403'>clear-rect-on-real-screen</a></span> xmin: int, ymin: int, xmax: int, ymax: int, background-color: int <span class="Delimiter">{</span>
-<span id="L404" class="LineNr">404 </span>  <span class="PreProc">var</span> y/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy ymin
+<span id="L404" class="LineNr">404 </span>  <span class="PreProc">var</span> y/eax: int <span class="Special">&lt;-</span> copy ymin
 <span id="L405" class="LineNr">405 </span>  y <span class="Special">&lt;-</span> shift-left <span class="Constant">4</span>/log2-font-height
 <span id="L406" class="LineNr">406 </span>  <span class="PreProc">var</span> ymax/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy ymax
 <span id="L407" class="LineNr">407 </span>  ymax <span class="Special">&lt;-</span> shift-left <span class="Constant">4</span>/log2-font-height
@@ -488,59 +487,59 @@ if ('onhashchange' in window) {
 <span id="L424" class="LineNr">424 </span>  <span class="Delimiter">}</span>
 <span id="L425" class="LineNr">425 </span><span class="Delimiter">}</span>
 <span id="L426" class="LineNr">426 </span>
-<span id="L427" class="LineNr">427 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L427'>screen-grapheme-at</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: grapheme <span class="Delimiter">{</span>
+<span id="L427" class="LineNr">427 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L427'>screen-grapheme-at</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/eax: grapheme <span class="Delimiter">{</span>
 <span id="L428" class="LineNr">428 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
 <span id="L429" class="LineNr">429 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L136'>screen-cell-index</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
-<span id="L430" class="LineNr">430 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L434'>screen-grapheme-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
+<span id="L430" class="LineNr">430 </span>  <span class="PreProc">var</span> result/eax: grapheme <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L434'>screen-grapheme-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L431" class="LineNr">431 </span>  <span class="PreProc">return</span> result
 <span id="L432" class="LineNr">432 </span><span class="Delimiter">}</span>
 <span id="L433" class="LineNr">433 </span>
-<span id="L434" class="LineNr">434 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L434'>screen-grapheme-at-idx</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), idx-on-stack: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: grapheme <span class="Delimiter">{</span>
+<span id="L434" class="LineNr">434 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L434'>screen-grapheme-at-idx</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), idx-on-stack: int<span class="PreProc"> -&gt; </span>_/eax: grapheme <span class="Delimiter">{</span>
 <span id="L435" class="LineNr">435 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
-<span id="L436" class="LineNr">436 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, data
-<span id="L437" class="LineNr">437 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L436" class="LineNr">436 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, data
+<span id="L437" class="LineNr">437 </span>  <span class="PreProc">var</span> data/eax: (addr array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L438" class="LineNr">438 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy idx-on-stack
 <span id="L439" class="LineNr">439 </span>  <span class="PreProc">var</span> offset/<span class="muRegEcx">ecx</span>: (offset <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> compute-offset data, idx
-<span id="L440" class="LineNr">440 </span>  <span class="PreProc">var</span> cell/<span class="muRegEax">eax</span>: (addr <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
-<span id="L441" class="LineNr">441 </span>  <span class="PreProc">var</span> src/<span class="muRegEax">eax</span>: (addr grapheme) <span class="Special">&lt;-</span> get cell, data
+<span id="L440" class="LineNr">440 </span>  <span class="PreProc">var</span> cell/eax: (addr <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
+<span id="L441" class="LineNr">441 </span>  <span class="PreProc">var</span> src/eax: (addr grapheme) <span class="Special">&lt;-</span> get cell, data
 <span id="L442" class="LineNr">442 </span>  <span class="PreProc">return</span> *src
 <span id="L443" class="LineNr">443 </span><span class="Delimiter">}</span>
 <span id="L444" class="LineNr">444 </span>
-<span id="L445" class="LineNr">445 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L445'>screen-color-at</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L445" class="LineNr">445 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L445'>screen-color-at</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L446" class="LineNr">446 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
 <span id="L447" class="LineNr">447 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L136'>screen-cell-index</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
-<span id="L448" class="LineNr">448 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L452'>screen-color-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
+<span id="L448" class="LineNr">448 </span>  <span class="PreProc">var</span> result/eax: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L452'>screen-color-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L449" class="LineNr">449 </span>  <span class="PreProc">return</span> result
 <span id="L450" class="LineNr">450 </span><span class="Delimiter">}</span>
 <span id="L451" class="LineNr">451 </span>
-<span id="L452" class="LineNr">452 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L452'>screen-color-at-idx</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), idx-on-stack: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L452" class="LineNr">452 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L452'>screen-color-at-idx</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), idx-on-stack: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L453" class="LineNr">453 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
-<span id="L454" class="LineNr">454 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, data
-<span id="L455" class="LineNr">455 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L454" class="LineNr">454 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, data
+<span id="L455" class="LineNr">455 </span>  <span class="PreProc">var</span> data/eax: (addr array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L456" class="LineNr">456 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy idx-on-stack
 <span id="L457" class="LineNr">457 </span>  <span class="PreProc">var</span> offset/<span class="muRegEcx">ecx</span>: (offset <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> compute-offset data, idx
-<span id="L458" class="LineNr">458 </span>  <span class="PreProc">var</span> cell/<span class="muRegEax">eax</span>: (addr <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
-<span id="L459" class="LineNr">459 </span>  <span class="PreProc">var</span> src/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get cell, color
-<span id="L460" class="LineNr">460 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *src
+<span id="L458" class="LineNr">458 </span>  <span class="PreProc">var</span> cell/eax: (addr <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
+<span id="L459" class="LineNr">459 </span>  <span class="PreProc">var</span> src/eax: (addr int) <span class="Special">&lt;-</span> get cell, color
+<span id="L460" class="LineNr">460 </span>  <span class="PreProc">var</span> result/eax: int <span class="Special">&lt;-</span> copy *src
 <span id="L461" class="LineNr">461 </span>  <span class="PreProc">return</span> result
 <span id="L462" class="LineNr">462 </span><span class="Delimiter">}</span>
 <span id="L463" class="LineNr">463 </span>
-<span id="L464" class="LineNr">464 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L464'>screen-background-color-at</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L464" class="LineNr">464 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L464'>screen-background-color-at</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L465" class="LineNr">465 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
 <span id="L466" class="LineNr">466 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L136'>screen-cell-index</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
-<span id="L467" class="LineNr">467 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L471'>screen-background-color-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
+<span id="L467" class="LineNr">467 </span>  <span class="PreProc">var</span> result/eax: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L471'>screen-background-color-at-idx</a> <a href='500fake-screen.mu.html#L14'>screen</a>, idx
 <span id="L468" class="LineNr">468 </span>  <span class="PreProc">return</span> result
 <span id="L469" class="LineNr">469 </span><span class="Delimiter">}</span>
 <span id="L470" class="LineNr">470 </span>
-<span id="L471" class="LineNr">471 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L471'>screen-background-color-at-idx</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), idx-on-stack: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L471" class="LineNr">471 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L471'>screen-background-color-at-idx</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), idx-on-stack: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L472" class="LineNr">472 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
-<span id="L473" class="LineNr">473 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, data
-<span id="L474" class="LineNr">474 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L473" class="LineNr">473 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, data
+<span id="L474" class="LineNr">474 </span>  <span class="PreProc">var</span> data/eax: (addr array <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L475" class="LineNr">475 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy idx-on-stack
 <span id="L476" class="LineNr">476 </span>  <span class="PreProc">var</span> offset/<span class="muRegEcx">ecx</span>: (offset <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> compute-offset data, idx
-<span id="L477" class="LineNr">477 </span>  <span class="PreProc">var</span> cell/<span class="muRegEax">eax</span>: (addr <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
-<span id="L478" class="LineNr">478 </span>  <span class="PreProc">var</span> src/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get cell, background-color
-<span id="L479" class="LineNr">479 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *src
+<span id="L477" class="LineNr">477 </span>  <span class="PreProc">var</span> cell/eax: (addr <a href='500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
+<span id="L478" class="LineNr">478 </span>  <span class="PreProc">var</span> src/eax: (addr int) <span class="Special">&lt;-</span> get cell, background-color
+<span id="L479" class="LineNr">479 </span>  <span class="PreProc">var</span> result/eax: int <span class="Special">&lt;-</span> copy *src
 <span id="L480" class="LineNr">480 </span>  <span class="PreProc">return</span> result
 <span id="L481" class="LineNr">481 </span><span class="Delimiter">}</span>
 <span id="L482" class="LineNr">482 </span>
@@ -553,8 +552,8 @@ if ('onhashchange' in window) {
 <span id="L489" class="LineNr">489 </span>  <span class="Delimiter">}</span>
 <span id="L490" class="LineNr">490 </span>  <span class="muComment"># fake screen</span>
 <span id="L491" class="LineNr">491 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy <a href='500fake-screen.mu.html#L14'>screen</a>
-<span id="L492" class="LineNr">492 </span>  <span class="PreProc">var</span> pixels-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
-<span id="L493" class="LineNr">493 </span>  <span class="PreProc">var</span> pixels/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *pixels-ah
+<span id="L492" class="LineNr">492 </span>  <span class="PreProc">var</span> pixels-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
+<span id="L493" class="LineNr">493 </span>  <span class="PreProc">var</span> pixels/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *pixels-ah
 <span id="L494" class="LineNr">494 </span>  <span class="Delimiter">{</span>
 <span id="L495" class="LineNr">495 </span>    compare pixels, <span class="Constant">0</span>
 <span id="L496" class="LineNr">496 </span>    <span class="PreProc">break-if-!=</span>
@@ -562,7 +561,7 @@ if ('onhashchange' in window) {
 <span id="L498" class="LineNr">498 </span>  <span class="Delimiter">}</span>
 <span id="L499" class="LineNr">499 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L505'>pixel-index</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
 <span id="L500" class="LineNr">500 </span>  <span class="PreProc">var</span> dest/<span class="muRegEcx">ecx</span>: (addr byte) <span class="Special">&lt;-</span> index pixels, idx
-<span id="L501" class="LineNr">501 </span>  <span class="PreProc">var</span> src/<span class="muRegEax">eax</span>: byte <span class="Special">&lt;-</span> copy-byte color
+<span id="L501" class="LineNr">501 </span>  <span class="PreProc">var</span> src/eax: byte <span class="Special">&lt;-</span> copy-byte color
 <span id="L502" class="LineNr">502 </span>  copy-byte-to *dest, src
 <span id="L503" class="LineNr">503 </span><span class="Delimiter">}</span>
 <span id="L504" class="LineNr">504 </span>
@@ -571,34 +570,34 @@ if ('onhashchange' in window) {
 <span id="L507" class="LineNr">507 </span>  <span class="Delimiter">{</span>
 <span id="L508" class="LineNr">508 </span>    compare x, <span class="Constant">0</span>
 <span id="L509" class="LineNr">509 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L510" class="LineNr">510 </span>    <span class="PreProc">var</span> invalid/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-pixel-index
+<span id="L510" class="LineNr">510 </span>    <span class="PreProc">var</span> invalid/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-pixel-index
 <span id="L511" class="LineNr">511 </span>    <span class="PreProc">return</span> *invalid
 <span id="L512" class="LineNr">512 </span>  <span class="Delimiter">}</span>
 <span id="L513" class="LineNr">513 </span>  <span class="Delimiter">{</span>
-<span id="L514" class="LineNr">514 </span>    <span class="PreProc">var</span> xmax-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
-<span id="L515" class="LineNr">515 </span>    <span class="PreProc">var</span> xmax/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *xmax-a
+<span id="L514" class="LineNr">514 </span>    <span class="PreProc">var</span> xmax-a/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
+<span id="L515" class="LineNr">515 </span>    <span class="PreProc">var</span> xmax/eax: int <span class="Special">&lt;-</span> copy *xmax-a
 <span id="L516" class="LineNr">516 </span>    xmax <span class="Special">&lt;-</span> shift-left <span class="Constant">3</span>/log2-font-width
 <span id="L517" class="LineNr">517 </span>    compare x, xmax
 <span id="L518" class="LineNr">518 </span>    <span class="PreProc">break-if-&lt;</span>
-<span id="L519" class="LineNr">519 </span>    <span class="PreProc">var</span> invalid/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-pixel-index
+<span id="L519" class="LineNr">519 </span>    <span class="PreProc">var</span> invalid/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-pixel-index
 <span id="L520" class="LineNr">520 </span>    <span class="PreProc">return</span> *invalid
 <span id="L521" class="LineNr">521 </span>  <span class="Delimiter">}</span>
 <span id="L522" class="LineNr">522 </span>  <span class="Delimiter">{</span>
 <span id="L523" class="LineNr">523 </span>    compare y, <span class="Constant">0</span>
 <span id="L524" class="LineNr">524 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L525" class="LineNr">525 </span>    <span class="PreProc">var</span> invalid/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-pixel-index
+<span id="L525" class="LineNr">525 </span>    <span class="PreProc">var</span> invalid/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-pixel-index
 <span id="L526" class="LineNr">526 </span>    <span class="PreProc">return</span> *invalid
 <span id="L527" class="LineNr">527 </span>  <span class="Delimiter">}</span>
 <span id="L528" class="LineNr">528 </span>  <span class="Delimiter">{</span>
-<span id="L529" class="LineNr">529 </span>    <span class="PreProc">var</span> ymax-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
-<span id="L530" class="LineNr">530 </span>    <span class="PreProc">var</span> ymax/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *ymax-a
+<span id="L529" class="LineNr">529 </span>    <span class="PreProc">var</span> ymax-a/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
+<span id="L530" class="LineNr">530 </span>    <span class="PreProc">var</span> ymax/eax: int <span class="Special">&lt;-</span> copy *ymax-a
 <span id="L531" class="LineNr">531 </span>    ymax <span class="Special">&lt;-</span> shift-left <span class="Constant">4</span>/log2-font-height
 <span id="L532" class="LineNr">532 </span>    compare y, ymax
 <span id="L533" class="LineNr">533 </span>    <span class="PreProc">break-if-&lt;</span>
-<span id="L534" class="LineNr">534 </span>    <span class="PreProc">var</span> invalid/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-pixel-index
+<span id="L534" class="LineNr">534 </span>    <span class="PreProc">var</span> invalid/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, invalid-pixel-index
 <span id="L535" class="LineNr">535 </span>    <span class="PreProc">return</span> *invalid
 <span id="L536" class="LineNr">536 </span>  <span class="Delimiter">}</span>
-<span id="L537" class="LineNr">537 </span>  <span class="PreProc">var</span> width-addr/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
+<span id="L537" class="LineNr">537 </span>  <span class="PreProc">var</span> width-addr/eax: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
 <span id="L538" class="LineNr">538 </span>  <span class="PreProc">var</span> result/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy y
 <span id="L539" class="LineNr">539 </span>  result <span class="Special">&lt;-</span> multiply *width-addr
 <span id="L540" class="LineNr">540 </span>  result <span class="Special">&lt;-</span> shift-left <span class="Constant">3</span>/log2-font-width
@@ -611,8 +610,8 @@ if ('onhashchange' in window) {
 <span id="L547" class="LineNr">547 </span><span class="muComment"># Both screens must have the same size.</span>
 <span id="L548" class="LineNr">548 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='500fake-screen.mu.html#L548'>copy-pixels</a></span> _screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), target-screen: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Delimiter">{</span>
 <span id="L549" class="LineNr">549 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
-<span id="L550" class="LineNr">550 </span>  <span class="PreProc">var</span> pixels-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
-<span id="L551" class="LineNr">551 </span>  <span class="PreProc">var</span> _pixels/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *pixels-ah
+<span id="L550" class="LineNr">550 </span>  <span class="PreProc">var</span> pixels-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
+<span id="L551" class="LineNr">551 </span>  <span class="PreProc">var</span> _pixels/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *pixels-ah
 <span id="L552" class="LineNr">552 </span>  <span class="PreProc">var</span> pixels/<span class="muRegEdi">edi</span>: (addr array byte) <span class="Special">&lt;-</span> copy _pixels
 <span id="L553" class="LineNr">553 </span>  <span class="PreProc">var</span> width-a/<span class="muRegEdx">edx</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
 <span id="L554" class="LineNr">554 </span>  <span class="PreProc">var</span> width/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy *width-a
@@ -626,7 +625,7 @@ if ('onhashchange' in window) {
 <span id="L562" class="LineNr">562 </span>    <span class="muComment"># screen top left pixels x y width height</span>
 <span id="L563" class="LineNr">563 </span>    compare y, height
 <span id="L564" class="LineNr">564 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L565" class="LineNr">565 </span>    <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L565" class="LineNr">565 </span>    <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L566" class="LineNr">566 </span>    <span class="Delimiter">{</span>
 <span id="L567" class="LineNr">567 </span>      compare x, width
 <span id="L568" class="LineNr">568 </span>      <span class="PreProc">break-if-&gt;=</span>
@@ -653,8 +652,8 @@ if ('onhashchange' in window) {
 <span id="L589" class="LineNr">589 </span>  <span class="PreProc">var</span> <a href='500fake-screen.mu.html#L14'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen
 <span id="L590" class="LineNr">590 </span>  <span class="PreProc">var</span> width-a/<span class="muRegEbx">ebx</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, width
 <span id="L591" class="LineNr">591 </span>  <span class="PreProc">var</span> height-a/<span class="muRegEdx">edx</span>: (addr int) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, height
-<span id="L592" class="LineNr">592 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
-<span id="L593" class="LineNr">593 </span>  <span class="PreProc">var</span> _data/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L592" class="LineNr">592 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> get <a href='500fake-screen.mu.html#L14'>screen</a>, pixels
+<span id="L593" class="LineNr">593 </span>  <span class="PreProc">var</span> _data/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L594" class="LineNr">594 </span>  <span class="PreProc">var</span> data: (addr array byte)
 <span id="L595" class="LineNr">595 </span>  copy-to data, _data
 <span id="L596" class="LineNr">596 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
@@ -666,7 +665,7 @@ if ('onhashchange' in window) {
 <span id="L602" class="LineNr">602 </span>      compare x, *width-a
 <span id="L603" class="LineNr">603 </span>      <span class="PreProc">break-if-&gt;=</span>
 <span id="L604" class="LineNr">604 </span>      <span class="Delimiter">{</span>
-<span id="L605" class="LineNr">605 </span>        <span class="PreProc">var</span> tmp/<span class="muRegEax">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L427'>screen-grapheme-at</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
+<span id="L605" class="LineNr">605 </span>        <span class="PreProc">var</span> tmp/eax: grapheme <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L427'>screen-grapheme-at</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
 <span id="L606" class="LineNr">606 </span>        <span class="muComment"># skip null graphemes that only get created when clearing screen</span>
 <span id="L607" class="LineNr">607 </span>        <span class="muComment"># there may be other pixels drawn there, and we don't want to clobber them</span>
 <span id="L608" class="LineNr">608 </span>        <span class="muComment"># this is a situation where fake screens aren't faithful to real screens; we don't support overlap between graphemes and raw pixels</span>
@@ -674,10 +673,10 @@ if ('onhashchange' in window) {
 <span id="L610" class="LineNr">610 </span>        <span class="PreProc">break-if-=</span>
 <span id="L611" class="LineNr">611 </span>        <span class="PreProc">var</span> g: grapheme
 <span id="L612" class="LineNr">612 </span>        copy-to g, tmp
-<span id="L613" class="LineNr">613 </span>        <span class="PreProc">var</span> tmp/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L445'>screen-color-at</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
+<span id="L613" class="LineNr">613 </span>        <span class="PreProc">var</span> tmp/eax: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L445'>screen-color-at</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
 <span id="L614" class="LineNr">614 </span>        <span class="PreProc">var</span> fg: int
 <span id="L615" class="LineNr">615 </span>        copy-to fg, tmp
-<span id="L616" class="LineNr">616 </span>        <span class="PreProc">var</span> bg/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L464'>screen-background-color-at</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
+<span id="L616" class="LineNr">616 </span>        <span class="PreProc">var</span> bg/eax: int <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L464'>screen-background-color-at</a> <a href='500fake-screen.mu.html#L14'>screen</a>, x, y
 <span id="L617" class="LineNr">617 </span>        <a href='103grapheme.subx.html#L29'>draw-grapheme-on-screen-array</a> data, g, x, y, fg, bg, *width-a, *height-a
 <span id="L618" class="LineNr">618 </span>      <span class="Delimiter">}</span>
 <span id="L619" class="LineNr">619 </span>      x <span class="Special">&lt;-</span> increment

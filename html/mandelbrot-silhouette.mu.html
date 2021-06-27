@@ -14,18 +14,17 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.muRegEsi { color: #87d787; }
-.muComment { color: #005faf; }
-.LineNr { }
-.muRegEdi { color: #87ffd7; }
-.muRegEcx { color: #af875f; }
+.PreProc { color: #c000c0; }
+.muRegEdx { color: #af5f00; }
 .Special { color: #ff6060; }
-.muRegEax { color: #875f00; }
+.LineNr { }
+.muRegEsi { color: #005faf; }
+.Constant { color: #008787; }
+.muRegEdi { color: #00af00; }
+.muRegEcx { color: #870000; }
 .Delimiter { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
-.Constant { color: #008787; }
-.PreProc { color: #c000c0; }
-.muRegEdx { color: #878700; }
+.muComment { color: #005faf; }
 -->
 </style>
 
@@ -78,7 +77,7 @@ if ('onhashchange' in window) {
 <span id="L15" class="LineNr"> 15 </span><span class="Delimiter">}</span>
 <span id="L16" class="LineNr"> 16 </span>
 <span id="L17" class="LineNr"> 17 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-silhouette.mu.html#L17'>mandelbrot</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>) <span class="Delimiter">{</span>
-<span id="L18" class="LineNr"> 18 </span>  <span class="PreProc">var</span> a/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L18" class="LineNr"> 18 </span>  <span class="PreProc">var</span> a/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L19" class="LineNr"> 19 </span>  <span class="PreProc">var</span> b/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L20" class="LineNr"> 20 </span>  a, b <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L86'>screen-size</a> <a href='500fake-screen.mu.html#L14'>screen</a>
 <span id="L21" class="LineNr"> 21 </span>  <span class="PreProc">var</span> width/<span class="muRegEsi">esi</span>: int <span class="Special">&lt;-</span> copy a
@@ -95,7 +94,7 @@ if ('onhashchange' in window) {
 <span id="L32" class="LineNr"> 32 </span>      compare x, width
 <span id="L33" class="LineNr"> 33 </span>      <span class="PreProc">break-if-&gt;=</span>
 <span id="L34" class="LineNr"> 34 </span>      <span class="PreProc">var</span> real/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> <a href='mandelbrot-silhouette.mu.html#L119'>viewport-to-real</a> x, width
-<span id="L35" class="LineNr"> 35 </span>      <span class="PreProc">var</span> iterations/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='mandelbrot-silhouette.mu.html#L54'>mandelbrot-iterations-for-point</a> real, imaginary, <span class="Constant">0x400</span>/max
+<span id="L35" class="LineNr"> 35 </span>      <span class="PreProc">var</span> iterations/eax: int <span class="Special">&lt;-</span> <a href='mandelbrot-silhouette.mu.html#L54'>mandelbrot-iterations-for-point</a> real, imaginary, <span class="Constant">0x400</span>/max
 <span id="L36" class="LineNr"> 36 </span>      compare iterations, <span class="Constant">0x400</span>/max
 <span id="L37" class="LineNr"> 37 </span>      <span class="Delimiter">{</span>
 <span id="L38" class="LineNr"> 38 </span>        <span class="PreProc">break-if-&gt;=</span>
@@ -114,13 +113,13 @@ if ('onhashchange' in window) {
 <span id="L51" class="LineNr"> 51 </span>  <span class="Delimiter">}</span>
 <span id="L52" class="LineNr"> 52 </span><span class="Delimiter">}</span>
 <span id="L53" class="LineNr"> 53 </span>
-<span id="L54" class="LineNr"> 54 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-silhouette.mu.html#L54'>mandelbrot-iterations-for-point</a></span> real: float, imaginary: float, max: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L54" class="LineNr"> 54 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-silhouette.mu.html#L54'>mandelbrot-iterations-for-point</a></span> real: float, imaginary: float, max: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L55" class="LineNr"> 55 </span>  <span class="PreProc">var</span> zero: float
 <span id="L56" class="LineNr"> 56 </span>  <span class="PreProc">var</span> x/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> copy zero
 <span id="L57" class="LineNr"> 57 </span>  <span class="PreProc">var</span> y/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> copy zero
 <span id="L58" class="LineNr"> 58 </span>  <span class="PreProc">var</span> iterations/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L59" class="LineNr"> 59 </span>  <span class="Delimiter">{</span>
-<span id="L60" class="LineNr"> 60 </span>    <span class="PreProc">var</span> done?/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='mandelbrot-silhouette.mu.html#L75'>mandelbrot-done?</a> x, y
+<span id="L60" class="LineNr"> 60 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='mandelbrot-silhouette.mu.html#L75'>mandelbrot-done?</a> x, y
 <span id="L61" class="LineNr"> 61 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L62" class="LineNr"> 62 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L63" class="LineNr"> 63 </span>    compare iterations, max
@@ -135,7 +134,7 @@ if ('onhashchange' in window) {
 <span id="L72" class="LineNr"> 72 </span>  <span class="PreProc">return</span> iterations
 <span id="L73" class="LineNr"> 73 </span><span class="Delimiter">}</span>
 <span id="L74" class="LineNr"> 74 </span>
-<span id="L75" class="LineNr"> 75 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-silhouette.mu.html#L75'>mandelbrot-done?</a></span> x: float, y: float<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L75" class="LineNr"> 75 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-silhouette.mu.html#L75'>mandelbrot-done?</a></span> x: float, y: float<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
 <span id="L76" class="LineNr"> 76 </span>  <span class="muComment"># x*x + y*y &gt; 4</span>
 <span id="L77" class="LineNr"> 77 </span>  <span class="PreProc">var</span> x2/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> copy x
 <span id="L78" class="LineNr"> 78 </span>  x2 <span class="Special">&lt;-</span> multiply x
@@ -143,7 +142,7 @@ if ('onhashchange' in window) {
 <span id="L80" class="LineNr"> 80 </span>  y2 <span class="Special">&lt;-</span> multiply y
 <span id="L81" class="LineNr"> 81 </span>  <span class="PreProc">var</span> sum/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> copy x2
 <span id="L82" class="LineNr"> 82 </span>  sum <span class="Special">&lt;-</span> add y2
-<span id="L83" class="LineNr"> 83 </span>  <span class="PreProc">var</span> four/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">4</span>
+<span id="L83" class="LineNr"> 83 </span>  <span class="PreProc">var</span> four/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">4</span>
 <span id="L84" class="LineNr"> 84 </span>  <span class="PreProc">var</span> four-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert four
 <span id="L85" class="LineNr"> 85 </span>  compare sum, four-f
 <span id="L86" class="LineNr"> 86 </span>  <span class="Delimiter">{</span>
@@ -167,7 +166,7 @@ if ('onhashchange' in window) {
 <span id="L104" class="LineNr">104 </span>
 <span id="L105" class="LineNr">105 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-silhouette.mu.html#L105'>mandelbrot-y</a></span> x: float, y: float, imaginary: float<span class="PreProc"> -&gt; </span>_/<span class="Constant">xmm3</span>: float <span class="Delimiter">{</span>
 <span id="L106" class="LineNr">106 </span>  <span class="muComment"># 2*x*y + imaginary</span>
-<span id="L107" class="LineNr">107 </span>  <span class="PreProc">var</span> two/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">2</span>
+<span id="L107" class="LineNr">107 </span>  <span class="PreProc">var</span> two/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">2</span>
 <span id="L108" class="LineNr">108 </span>  <span class="PreProc">var</span> result/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert two
 <span id="L109" class="LineNr">109 </span>  result <span class="Special">&lt;-</span> multiply x
 <span id="L110" class="LineNr">110 </span>  result <span class="Special">&lt;-</span> multiply y
@@ -183,12 +182,12 @@ if ('onhashchange' in window) {
 <span id="L120" class="LineNr">120 </span>  <span class="muComment"># (x - width/2)*4/width</span>
 <span id="L121" class="LineNr">121 </span>  <span class="PreProc">var</span> result/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert x
 <span id="L122" class="LineNr">122 </span>  <span class="PreProc">var</span> width-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert width
-<span id="L123" class="LineNr">123 </span>  <span class="PreProc">var</span> two/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">2</span>
+<span id="L123" class="LineNr">123 </span>  <span class="PreProc">var</span> two/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">2</span>
 <span id="L124" class="LineNr">124 </span>  <span class="PreProc">var</span> two-f/<span class="Constant">xmm2</span>: float <span class="Special">&lt;-</span> convert two
 <span id="L125" class="LineNr">125 </span>  <span class="PreProc">var</span> half-width-f/<span class="Constant">xmm2</span>: float <span class="Special">&lt;-</span> reciprocal two-f
 <span id="L126" class="LineNr">126 </span>  half-width-f <span class="Special">&lt;-</span> multiply width-f
 <span id="L127" class="LineNr">127 </span>  result <span class="Special">&lt;-</span> subtract half-width-f
-<span id="L128" class="LineNr">128 </span>  <span class="PreProc">var</span> four/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">4</span>
+<span id="L128" class="LineNr">128 </span>  <span class="PreProc">var</span> four/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">4</span>
 <span id="L129" class="LineNr">129 </span>  <span class="PreProc">var</span> four-f/<span class="Constant">xmm2</span>: float <span class="Special">&lt;-</span> convert four
 <span id="L130" class="LineNr">130 </span>  result <span class="Special">&lt;-</span> multiply four-f
 <span id="L131" class="LineNr">131 </span>  result <span class="Special">&lt;-</span> divide width-f
@@ -200,11 +199,11 @@ if ('onhashchange' in window) {
 <span id="L137" class="LineNr">137 </span>  <span class="PreProc">var</span> result/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert y
 <span id="L138" class="LineNr">138 </span>  <span class="PreProc">var</span> height-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert height
 <span id="L139" class="LineNr">139 </span>  <span class="PreProc">var</span> half-height-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> copy height-f
-<span id="L140" class="LineNr">140 </span>  <span class="PreProc">var</span> two/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">2</span>
+<span id="L140" class="LineNr">140 </span>  <span class="PreProc">var</span> two/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">2</span>
 <span id="L141" class="LineNr">141 </span>  <span class="PreProc">var</span> two-f/<span class="Constant">xmm2</span>: float <span class="Special">&lt;-</span> convert two
 <span id="L142" class="LineNr">142 </span>  half-height-f <span class="Special">&lt;-</span> divide two-f
 <span id="L143" class="LineNr">143 </span>  result <span class="Special">&lt;-</span> subtract half-height-f
-<span id="L144" class="LineNr">144 </span>  <span class="PreProc">var</span> four/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">4</span>
+<span id="L144" class="LineNr">144 </span>  <span class="PreProc">var</span> four/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">4</span>
 <span id="L145" class="LineNr">145 </span>  <span class="PreProc">var</span> four-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert four
 <span id="L146" class="LineNr">146 </span>  result <span class="Special">&lt;-</span> multiply four-f
 <span id="L147" class="LineNr">147 </span>  <span class="PreProc">var</span> width-f/<span class="Constant">xmm1</span>: float <span class="Special">&lt;-</span> convert width

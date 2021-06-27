@@ -14,19 +14,18 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.muRegEax { color: #875f00; }
-.muComment { color: #005faf; }
-.LineNr { }
-.muRegEdx { color: #878700; }
+.PreProc { color: #c000c0; }
+.muRegEdx { color: #af5f00; }
 .Special { color: #ff6060; }
-.muRegEsi { color: #87d787; }
+.LineNr { }
 .Constant { color: #008787; }
+.muRegEbx { color: #5f00ff; }
+.muRegEsi { color: #005faf; }
+.muRegEdi { color: #00af00; }
+.muRegEcx { color: #870000; }
 .Delimiter { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
-.muRegEbx { color: #8787af; }
-.muRegEcx { color: #af875f; }
-.PreProc { color: #c000c0; }
-.muRegEdi { color: #87ffd7; }
+.muComment { color: #005faf; }
 -->
 </style>
 
@@ -82,11 +81,11 @@ if ('onhashchange' in window) {
 <span id="L18" class="LineNr">18 </span>  <span class="Delimiter">}</span>
 <span id="L19" class="LineNr">19 </span>  <span class="muComment"># otherwise parse the first arg as an integer</span>
 <span id="L20" class="LineNr">20 </span>  <span class="PreProc">var</span> in/<span class="muRegEcx">ecx</span>: (addr addr array byte) <span class="Special">&lt;-</span> index args, <span class="Constant">1</span>
-<span id="L21" class="LineNr">21 </span>  <span class="PreProc">var</span> out/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='parse-int.mu.html#L25'>parse-int</a> *in
+<span id="L21" class="LineNr">21 </span>  <span class="PreProc">var</span> out/eax: int <span class="Special">&lt;-</span> <a href='parse-int.mu.html#L25'>parse-int</a> *in
 <span id="L22" class="LineNr">22 </span>  <span class="PreProc">return</span> out
 <span id="L23" class="LineNr">23 </span><span class="Delimiter">}</span>
 <span id="L24" class="LineNr">24 </span>
-<span id="L25" class="LineNr">25 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='parse-int.mu.html#L25'>parse-int</a></span> _in: (addr array byte)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L25" class="LineNr">25 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='parse-int.mu.html#L25'>parse-int</a></span> _in: (addr array byte)<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L26" class="LineNr">26 </span>  <span class="PreProc">var</span> in/<span class="muRegEsi">esi</span>: (addr array byte) <span class="Special">&lt;-</span> copy _in
 <span id="L27" class="LineNr">27 </span>  <span class="PreProc">var</span> len/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> length in
 <span id="L28" class="LineNr">28 </span>  <span class="PreProc">var</span> i/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
@@ -95,14 +94,14 @@ if ('onhashchange' in window) {
 <span id="L31" class="LineNr">31 </span>    compare i, len
 <span id="L32" class="LineNr">32 </span>    <span class="PreProc">break-if-&gt;=</span>
 <span id="L33" class="LineNr">33 </span>    <span class="muComment"># result *= 10</span>
-<span id="L34" class="LineNr">34 </span>    <span class="PreProc">var</span> ten/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0xa</span>
+<span id="L34" class="LineNr">34 </span>    <span class="PreProc">var</span> ten/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0xa</span>
 <span id="L35" class="LineNr">35 </span>    result <span class="Special">&lt;-</span> multiply ten
 <span id="L36" class="LineNr">36 </span>    <span class="muComment"># c = in[i]</span>
 <span id="L37" class="LineNr">37 </span>    <span class="PreProc">var</span> tmp/<span class="muRegEbx">ebx</span>: (addr byte) <span class="Special">&lt;-</span> index in, i
-<span id="L38" class="LineNr">38 </span>    <span class="PreProc">var</span> c/<span class="muRegEax">eax</span>: byte <span class="Special">&lt;-</span> copy-byte *tmp
+<span id="L38" class="LineNr">38 </span>    <span class="PreProc">var</span> c/eax: byte <span class="Special">&lt;-</span> copy-byte *tmp
 <span id="L39" class="LineNr">39 </span>    <span class="muComment">#</span>
-<span id="L40" class="LineNr">40 </span>    <span class="PreProc">var</span> g/<span class="muRegEax">eax</span>: grapheme <span class="Special">&lt;-</span> copy c
-<span id="L41" class="LineNr">41 </span>    <span class="PreProc">var</span> digit/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='126write-int-decimal.subx.html#L405'>to-decimal-digit</a> g
+<span id="L40" class="LineNr">40 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> copy c
+<span id="L41" class="LineNr">41 </span>    <span class="PreProc">var</span> digit/eax: int <span class="Special">&lt;-</span> <a href='126write-int-decimal.subx.html#L405'>to-decimal-digit</a> g
 <span id="L42" class="LineNr">42 </span>    result <span class="Special">&lt;-</span> add digit
 <span id="L43" class="LineNr">43 </span>    i <span class="Special">&lt;-</span> increment
 <span id="L44" class="LineNr">44 </span>    <span class="PreProc">loop</span>

@@ -14,20 +14,19 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.LineNr { }
-.Delimiter { color: #c000c0; }
-.CommentedCode { color: #8a8a8a; }
-.muRegEsi { color: #87d787; }
-.muRegEdi { color: #87ffd7; }
-.Constant { color: #008787; }
-.Special { color: #ff6060; }
 .PreProc { color: #c000c0; }
+.muRegEbx { color: #5f00ff; }
+.muRegEdx { color: #af5f00; }
+.Special { color: #ff6060; }
+.LineNr { }
+.Constant { color: #008787; }
+.CommentedCode { color: #8a8a8a; }
+.muRegEsi { color: #005faf; }
+.muRegEdi { color: #00af00; }
+.muRegEcx { color: #870000; }
+.Delimiter { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
 .muComment { color: #005faf; }
-.muRegEax { color: #875f00; }
-.muRegEcx { color: #af875f; }
-.muRegEdx { color: #878700; }
-.muRegEbx { color: #8787af; }
 -->
 </style>
 
@@ -97,7 +96,7 @@ if ('onhashchange' in window) {
 <span id="L32" class="LineNr">  32 </span>  <a href='500fake-screen.mu.html#L548'>copy-pixels</a> second-screen, <a href='500fake-screen.mu.html#L14'>screen</a>
 <span id="L33" class="LineNr">  33 </span>  <span class="Delimiter">{</span>
 <span id="L34" class="LineNr">  34 </span>    <a href='hest-life.mu.html#L595'>edit</a> keyboard, env
-<span id="L35" class="LineNr">  35 </span>    <span class="PreProc">var</span> play?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get env, play?
+<span id="L35" class="LineNr">  35 </span>    <span class="PreProc">var</span> play?/eax: (addr boolean) <span class="Special">&lt;-</span> get env, play?
 <span id="L36" class="LineNr">  36 </span>    compare *play?, <span class="Constant">0</span>/false
 <span id="L37" class="LineNr">  37 </span>    <span class="Delimiter">{</span>
 <span id="L38" class="LineNr">  38 </span>      <span class="PreProc">break-if-=</span>
@@ -127,7 +126,7 @@ if ('onhashchange' in window) {
 <span id="L62" class="LineNr">  62 </span>
 <span id="L63" class="LineNr">  63 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L63'>render</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), _self: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Delimiter">{</span>
 <span id="L64" class="LineNr">  64 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L65" class="LineNr">  65 </span>  <span class="PreProc">var</span> zoom/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, zoom
+<span id="L65" class="LineNr">  65 </span>  <span class="PreProc">var</span> zoom/eax: (addr int) <span class="Special">&lt;-</span> get self, zoom
 <span id="L66" class="LineNr">  66 </span>  compare *zoom, <span class="Constant">0</span>
 <span id="L67" class="LineNr">  67 </span>  <span class="Delimiter">{</span>
 <span id="L68" class="LineNr">  68 </span>    <span class="PreProc">break-if-!=</span>
@@ -146,7 +145,7 @@ if ('onhashchange' in window) {
 <span id="L81" class="LineNr">  81 </span>    <a href='hest-life.mu.html#L867'>render4</a> <a href='500fake-screen.mu.html#L14'>screen</a>, self
 <span id="L82" class="LineNr">  82 </span>  <span class="Delimiter">}</span>
 <span id="L83" class="LineNr">  83 </span>  <span class="muComment"># clock</span>
-<span id="L84" class="LineNr">  84 </span>  <span class="PreProc">var</span> tick-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, tick
+<span id="L84" class="LineNr">  84 </span>  <span class="PreProc">var</span> tick-a/eax: (addr int) <span class="Special">&lt;-</span> get self, tick
 <span id="L85" class="LineNr">  85 </span>  <a href='500fake-screen.mu.html#L190'>set-cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x78</span>/x, <span class="Constant">0</span>/y
 <span id="L86" class="LineNr">  86 </span>  <a href='501draw-text.mu.html#L387'>draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='500fake-screen.mu.html#L14'>screen</a>, *tick-a, <span class="Constant">7</span>/fg <span class="Constant">0</span>/bg
 <span id="L87" class="LineNr">  87 </span><span class="Delimiter">}</span>
@@ -162,7 +161,7 @@ if ('onhashchange' in window) {
 <span id="L97" class="LineNr">  97 </span>  <a href='507line.mu.html#L64'>draw-horizontal-line</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0x40</span>/y, <span class="Constant">0</span>/xmin, <span class="Constant">0x400</span>/xmax, <span class="Constant">0x16</span>/color=dark-grey
 <span id="L98" class="LineNr">  98 </span>  <a href='507line.mu.html#L64'>draw-horizontal-line</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2c0</span>/y, <span class="Constant">0</span>/xmin, <span class="Constant">0x400</span>/xmax, <span class="Constant">0x16</span>/color=dark-grey
 <span id="L99" class="LineNr">  99 </span>  <span class="muComment"># neighboring inputs, corners</span>
-<span id="L100" class="LineNr"> 100 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/cur-topleftx, <span class="Constant">0x5f</span>/cur-toplefty
+<span id="L100" class="LineNr"> 100 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/cur-topleftx, <span class="Constant">0x5f</span>/cur-toplefty
 <span id="L101" class="LineNr"> 101 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0x90</span>/xmin   <span class="Constant">0x10</span>/ymin,    <span class="Constant">0xb0</span>/xmax   <span class="Constant">0x30</span>/ymax,  color
 <span id="L102" class="LineNr"> 102 </span>  color <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x81</span>/cur-toprightx, <span class="Constant">0x5f</span>/cur-toprighty
 <span id="L103" class="LineNr"> 103 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x350</span>/xmin   <span class="Constant">0x10</span>/ymin,   <span class="Constant">0x370</span>/xmax   <span class="Constant">0x30</span>/ymax,  color
@@ -199,7 +198,7 @@ if ('onhashchange' in window) {
 <span id="L134" class="LineNr"> 134 </span>  <span class="muComment"># conveyor from sum node to filter node</span>
 <span id="L135" class="LineNr"> 135 </span>  <a href='507line.mu.html#L1'>draw-line</a> <a href='500fake-screen.mu.html#L14'>screen</a> <span class="Constant">0x180</span>/xs, <span class="Constant">0x150</span>/ys, <span class="Constant">0x210</span>/xf, <span class="Constant">0x1d0</span>/yf, <span class="Constant">0xa2</span>/color
 <span id="L136" class="LineNr"> 136 </span>  <span class="muComment"># cell outputs at corners</span>
-<span id="L137" class="LineNr"> 137 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x60</span>/cury
+<span id="L137" class="LineNr"> 137 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x60</span>/cury
 <span id="L138" class="LineNr"> 138 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xd0</span>/xmin  <span class="Constant">0x50</span>/ymin,  <span class="Constant">0xf0</span>/xmax  <span class="Constant">0x70</span>/ymax, color
 <span id="L139" class="LineNr"> 139 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x310</span>/xmin  <span class="Constant">0x50</span>/ymin, <span class="Constant">0x330</span>/xmax  <span class="Constant">0x70</span>/ymax, color
 <span id="L140" class="LineNr"> 140 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xd0</span>/xmin <span class="Constant">0x290</span>/ymin,  <span class="Constant">0xf0</span>/xmax <span class="Constant">0x2b0</span>/ymax, color
@@ -219,15 +218,15 @@ if ('onhashchange' in window) {
 <span id="L154" class="LineNr"> 154 </span>  <a href='509bezier.mu.html#L14'>draw-monotonic-bezier</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x210</span>/xf <span class="Constant">0x1d0</span>/yf,  <span class="Constant">0x320</span>/x1 <span class="Constant">0x1c0</span>/y1  <span class="Constant">0x320</span>/x2  <span class="Constant">0x180</span>/y2,  <span class="Constant">0x2a</span>/color
 <span id="L155" class="LineNr"> 155 </span>  <a href='509bezier.mu.html#L14'>draw-monotonic-bezier</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x210</span>/xf <span class="Constant">0x1d0</span>/yf,  <span class="Constant">0x320</span>/x1 <span class="Constant">0x230</span>/y1, <span class="Constant">0x320</span>/x2  <span class="Constant">0x2a0</span>/y2,  <span class="Constant">0x2a</span>/color
 <span id="L156" class="LineNr"> 156 </span>  <span class="muComment"># time-variant portion: 16 repeating steps</span>
-<span id="L157" class="LineNr"> 157 </span>  <span class="PreProc">var</span> tick-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, tick
-<span id="L158" class="LineNr"> 158 </span>  <span class="PreProc">var</span> progress/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *tick-a
+<span id="L157" class="LineNr"> 157 </span>  <span class="PreProc">var</span> tick-a/eax: (addr int) <span class="Special">&lt;-</span> get self, tick
+<span id="L158" class="LineNr"> 158 </span>  <span class="PreProc">var</span> progress/eax: int <span class="Special">&lt;-</span> copy *tick-a
 <span id="L159" class="LineNr"> 159 </span>  progress <span class="Special">&lt;-</span> and <span class="Constant">0xf</span>
 <span id="L160" class="LineNr"> 160 </span>  <span class="muComment"># 7 time steps for getting inputs to sum</span>
 <span id="L161" class="LineNr"> 161 </span>  <span class="Delimiter">{</span>
 <span id="L162" class="LineNr"> 162 </span>    compare progress, <span class="Constant">7</span>
 <span id="L163" class="LineNr"> 163 </span>    <span class="PreProc">break-if-&gt;=</span>
 <span id="L164" class="LineNr"> 164 </span>    <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L165" class="LineNr"> 165 </span>    <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L165" class="LineNr"> 165 </span>    <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L166" class="LineNr"> 166 </span>    <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L167" class="LineNr"> 167 </span>    u <span class="Special">&lt;-</span> divide six-f
 <span id="L168" class="LineNr"> 168 </span>    <span class="muComment"># points on conveyors from neighboring cells</span>
@@ -248,12 +247,12 @@ if ('onhashchange' in window) {
 <span id="L183" class="LineNr"> 183 </span>    <span class="PreProc">break-if-&gt;=</span>
 <span id="L184" class="LineNr"> 184 </span>    progress <span class="Special">&lt;-</span> increment  <span class="muComment"># (0, 1) =&gt; (1, 2)</span>
 <span id="L185" class="LineNr"> 185 </span>    <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L186" class="LineNr"> 186 </span>    <span class="PreProc">var</span> three/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">3</span>
+<span id="L186" class="LineNr"> 186 </span>    <span class="PreProc">var</span> three/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">3</span>
 <span id="L187" class="LineNr"> 187 </span>    <span class="PreProc">var</span> three-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert three
 <span id="L188" class="LineNr"> 188 </span>    u <span class="Special">&lt;-</span> divide three-f
 <span id="L189" class="LineNr"> 189 </span>    <a href='hest-life.mu.html#L588'>draw-linear-point</a> <a href='500fake-screen.mu.html#L14'>screen</a>, u, <span class="Constant">0x180</span>/xs, <span class="Constant">0x150</span>/ys, <span class="Constant">0x210</span>/xf, <span class="Constant">0x1d0</span>/yf, <span class="Constant">7</span>/color, <span class="Constant">4</span>/radius
 <span id="L190" class="LineNr"> 190 </span>    <a href='500fake-screen.mu.html#L190'>set-cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x3a</span>/scol, <span class="Constant">0x18</span>/srow
-<span id="L191" class="LineNr"> 191 </span>    <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x60</span>/cury
+<span id="L191" class="LineNr"> 191 </span>    <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x60</span>/cury
 <span id="L192" class="LineNr"> 192 </span>    <a href='501draw-text.mu.html#L387'>draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='500fake-screen.mu.html#L14'>screen</a>, n, <span class="Constant">0xf</span>/fg <span class="Constant">0</span>/bg
 <span id="L193" class="LineNr"> 193 </span>    <span class="PreProc">return</span>
 <span id="L194" class="LineNr"> 194 </span>  <span class="Delimiter">}</span>
@@ -261,7 +260,7 @@ if ('onhashchange' in window) {
 <span id="L196" class="LineNr"> 196 </span>  progress <span class="Special">&lt;-</span> subtract <span class="Constant">2</span>
 <span id="L197" class="LineNr"> 197 </span>  <span class="muComment"># points on conveyors to outputs</span>
 <span id="L198" class="LineNr"> 198 </span>  <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L199" class="LineNr"> 199 </span>  <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L199" class="LineNr"> 199 </span>  <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L200" class="LineNr"> 200 </span>  <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L201" class="LineNr"> 201 </span>  u <span class="Special">&lt;-</span> divide six-f
 <span id="L202" class="LineNr"> 202 </span>  <a href='hest-life.mu.html#L581'>draw-bezier-point</a> <a href='500fake-screen.mu.html#L14'>screen</a>, u, <span class="Constant">0x210</span>/xf <span class="Constant">0x1d0</span>/yf,  <span class="Constant">0x1c0</span>/x1  <span class="Constant">0x60</span>/y1,  <span class="Constant">0xe0</span>/x2   <span class="Constant">0x60</span>/y2, <span class="Constant">7</span>/color, <span class="Constant">4</span>/radius
@@ -284,7 +283,7 @@ if ('onhashchange' in window) {
 <span id="L219" class="LineNr"> 219 </span>  <a href='507line.mu.html#L64'>draw-horizontal-line</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x180</span>/y, <span class="Constant">0</span>/xmin, <span class="Constant">0x400</span>/xmax, <span class="Constant">0x16</span>/color=dark-grey
 <span id="L220" class="LineNr"> 220 </span>  <a href='507line.mu.html#L64'>draw-horizontal-line</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2a0</span>/y, <span class="Constant">0</span>/xmin, <span class="Constant">0x400</span>/xmax, <span class="Constant">0x16</span>/color=dark-grey
 <span id="L221" class="LineNr"> 221 </span>  <span class="muComment"># cell 0: outputs</span>
-<span id="L222" class="LineNr"> 222 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x60</span>/cury
+<span id="L222" class="LineNr"> 222 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x60</span>/cury
 <span id="L223" class="LineNr"> 223 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xe8</span>/xmin  <span class="Constant">0x68</span>/ymin, <span class="Constant">0x118</span>/xmax   <span class="Constant">0x98</span>/ymax, color
 <span id="L224" class="LineNr"> 224 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xe8</span>/xmin  <span class="Constant">0xd0</span>/ymin, <span class="Constant">0x118</span>/xmax  <span class="Constant">0x100</span>/ymax, color
 <span id="L225" class="LineNr"> 225 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xe8</span>/xmin <span class="Constant">0x148</span>/ymin, <span class="Constant">0x118</span>/xmax  <span class="Constant">0x178</span>/ymax, color
@@ -294,7 +293,7 @@ if ('onhashchange' in window) {
 <span id="L229" class="LineNr"> 229 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x1c8</span>/xmin  <span class="Constant">0xd0</span>/ymin, <span class="Constant">0x1f8</span>/xmax  <span class="Constant">0x100</span>/ymax, color
 <span id="L230" class="LineNr"> 230 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x1c8</span>/xmin <span class="Constant">0x148</span>/ymin, <span class="Constant">0x1f8</span>/xmax  <span class="Constant">0x178</span>/ymax, color
 <span id="L231" class="LineNr"> 231 </span>  <span class="muComment"># cell 1: outputs</span>
-<span id="L232" class="LineNr"> 232 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x60</span>/cury
+<span id="L232" class="LineNr"> 232 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x60</span>/cury
 <span id="L233" class="LineNr"> 233 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x208</span>/xmin  <span class="Constant">0x68</span>/ymin, <span class="Constant">0x238</span>/xmax   <span class="Constant">0x98</span>/ymax, color
 <span id="L234" class="LineNr"> 234 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x208</span>/xmin  <span class="Constant">0xd0</span>/ymin, <span class="Constant">0x238</span>/xmax  <span class="Constant">0x100</span>/ymax, color
 <span id="L235" class="LineNr"> 235 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x208</span>/xmin <span class="Constant">0x148</span>/ymin, <span class="Constant">0x238</span>/xmax  <span class="Constant">0x178</span>/ymax, color
@@ -304,7 +303,7 @@ if ('onhashchange' in window) {
 <span id="L239" class="LineNr"> 239 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2e8</span>/xmin  <span class="Constant">0xd0</span>/ymin, <span class="Constant">0x318</span>/xmax  <span class="Constant">0x100</span>/ymax, color
 <span id="L240" class="LineNr"> 240 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2e8</span>/xmin <span class="Constant">0x148</span>/ymin, <span class="Constant">0x318</span>/xmax  <span class="Constant">0x178</span>/ymax, color
 <span id="L241" class="LineNr"> 241 </span>  <span class="muComment"># cell 2: outputs</span>
-<span id="L242" class="LineNr"> 242 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x61</span>/cury
+<span id="L242" class="LineNr"> 242 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x61</span>/cury
 <span id="L243" class="LineNr"> 243 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xe8</span>/xmin <span class="Constant">0x188</span>/ymin, <span class="Constant">0x118</span>/xmax  <span class="Constant">0x1b8</span>/ymax, color
 <span id="L244" class="LineNr"> 244 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xe8</span>/xmin <span class="Constant">0x1f0</span>/ymin, <span class="Constant">0x118</span>/xmax  <span class="Constant">0x220</span>/ymax, color
 <span id="L245" class="LineNr"> 245 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xe8</span>/xmin <span class="Constant">0x268</span>/ymin, <span class="Constant">0x118</span>/xmax  <span class="Constant">0x298</span>/ymax, color
@@ -314,7 +313,7 @@ if ('onhashchange' in window) {
 <span id="L249" class="LineNr"> 249 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x1c8</span>/xmin <span class="Constant">0x1f0</span>/ymin, <span class="Constant">0x1f8</span>/xmax  <span class="Constant">0x220</span>/ymax, color
 <span id="L250" class="LineNr"> 250 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x1c8</span>/xmin <span class="Constant">0x268</span>/ymin, <span class="Constant">0x1f8</span>/xmax  <span class="Constant">0x298</span>/ymax, color
 <span id="L251" class="LineNr"> 251 </span>  <span class="muComment"># cell 3: outputs</span>
-<span id="L252" class="LineNr"> 252 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x61</span>/cury
+<span id="L252" class="LineNr"> 252 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x61</span>/cury
 <span id="L253" class="LineNr"> 253 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x208</span>/xmin <span class="Constant">0x188</span>/ymin, <span class="Constant">0x238</span>/xmax  <span class="Constant">0x1b8</span>/ymax, color
 <span id="L254" class="LineNr"> 254 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x208</span>/xmin <span class="Constant">0x1f0</span>/ymin, <span class="Constant">0x238</span>/xmax  <span class="Constant">0x220</span>/ymax, color
 <span id="L255" class="LineNr"> 255 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x208</span>/xmin <span class="Constant">0x268</span>/ymin, <span class="Constant">0x238</span>/xmax  <span class="Constant">0x298</span>/ymax, color
@@ -324,37 +323,37 @@ if ('onhashchange' in window) {
 <span id="L259" class="LineNr"> 259 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2e8</span>/xmin <span class="Constant">0x1f0</span>/ymin, <span class="Constant">0x318</span>/xmax  <span class="Constant">0x220</span>/ymax, color
 <span id="L260" class="LineNr"> 260 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2e8</span>/xmin <span class="Constant">0x268</span>/ymin, <span class="Constant">0x318</span>/xmax  <span class="Constant">0x298</span>/ymax, color
 <span id="L261" class="LineNr"> 261 </span>  <span class="muComment"># neighboring nodes</span>
-<span id="L262" class="LineNr"> 262 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/curx, <span class="Constant">0x5f</span>/cury
+<span id="L262" class="LineNr"> 262 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/curx, <span class="Constant">0x5f</span>/cury
 <span id="L263" class="LineNr"> 263 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xa8</span>/xmin  <span class="Constant">0x28</span>/ymin,  <span class="Constant">0xd8</span>/xmax   <span class="Constant">0x58</span>/ymax, color
-<span id="L264" class="LineNr"> 264 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x5f</span>/cury
+<span id="L264" class="LineNr"> 264 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x5f</span>/cury
 <span id="L265" class="LineNr"> 265 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x158</span>/xmin  <span class="Constant">0x28</span>/ymin, <span class="Constant">0x188</span>/xmax   <span class="Constant">0x58</span>/ymax, color
 <span id="L266" class="LineNr"> 266 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x1c8</span>/xmin  <span class="Constant">0x28</span>/ymin, <span class="Constant">0x1f8</span>/xmax   <span class="Constant">0x58</span>/ymax, color
-<span id="L267" class="LineNr"> 267 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x5f</span>/cury
+<span id="L267" class="LineNr"> 267 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x5f</span>/cury
 <span id="L268" class="LineNr"> 268 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x208</span>/xmin  <span class="Constant">0x28</span>/ymin, <span class="Constant">0x238</span>/xmax   <span class="Constant">0x58</span>/ymax, color
 <span id="L269" class="LineNr"> 269 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x278</span>/xmin  <span class="Constant">0x28</span>/ymin, <span class="Constant">0x2a8</span>/xmax   <span class="Constant">0x58</span>/ymax, color
-<span id="L270" class="LineNr"> 270 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x82</span>/curx, <span class="Constant">0x5f</span>/cury
+<span id="L270" class="LineNr"> 270 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x82</span>/curx, <span class="Constant">0x5f</span>/cury
 <span id="L271" class="LineNr"> 271 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x328</span>/xmin  <span class="Constant">0x28</span>/ymin, <span class="Constant">0x358</span>/xmax   <span class="Constant">0x58</span>/ymax, color
-<span id="L272" class="LineNr"> 272 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/curx, <span class="Constant">0x60</span>/cury
+<span id="L272" class="LineNr"> 272 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/curx, <span class="Constant">0x60</span>/cury
 <span id="L273" class="LineNr"> 273 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xa8</span>/xmin  <span class="Constant">0xd0</span>/ymin,  <span class="Constant">0xd8</span>/xmax  <span class="Constant">0x100</span>/ymax, color
 <span id="L274" class="LineNr"> 274 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xa8</span>/xmin <span class="Constant">0x148</span>/ymin,  <span class="Constant">0xd8</span>/xmax  <span class="Constant">0x178</span>/ymax, color
-<span id="L275" class="LineNr"> 275 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x82</span>/curx, <span class="Constant">0x60</span>/cury
+<span id="L275" class="LineNr"> 275 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x82</span>/curx, <span class="Constant">0x60</span>/cury
 <span id="L276" class="LineNr"> 276 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x328</span>/xmin  <span class="Constant">0xd0</span>/ymin, <span class="Constant">0x358</span>/xmax  <span class="Constant">0x100</span>/ymax, color
 <span id="L277" class="LineNr"> 277 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x328</span>/xmin <span class="Constant">0x148</span>/ymin, <span class="Constant">0x358</span>/xmax  <span class="Constant">0x178</span>/ymax, color
-<span id="L278" class="LineNr"> 278 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/curx, <span class="Constant">0x61</span>/cury
+<span id="L278" class="LineNr"> 278 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/curx, <span class="Constant">0x61</span>/cury
 <span id="L279" class="LineNr"> 279 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xa8</span>/xmin <span class="Constant">0x188</span>/ymin,  <span class="Constant">0xd8</span>/xmax  <span class="Constant">0x1b8</span>/ymax, color
 <span id="L280" class="LineNr"> 280 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xa8</span>/xmin <span class="Constant">0x1f0</span>/ymin,  <span class="Constant">0xd8</span>/xmax  <span class="Constant">0x220</span>/ymax, color
-<span id="L281" class="LineNr"> 281 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x82</span>/curx, <span class="Constant">0x61</span>/cury
+<span id="L281" class="LineNr"> 281 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x82</span>/curx, <span class="Constant">0x61</span>/cury
 <span id="L282" class="LineNr"> 282 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x328</span>/xmin <span class="Constant">0x188</span>/ymin, <span class="Constant">0x358</span>/xmax  <span class="Constant">0x1b8</span>/ymax, color
 <span id="L283" class="LineNr"> 283 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x328</span>/xmin <span class="Constant">0x1f0</span>/ymin, <span class="Constant">0x358</span>/xmax  <span class="Constant">0x220</span>/ymax, color
-<span id="L284" class="LineNr"> 284 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/curx, <span class="Constant">0x62</span>/cury
+<span id="L284" class="LineNr"> 284 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x7f</span>/curx, <span class="Constant">0x62</span>/cury
 <span id="L285" class="LineNr"> 285 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>,  <span class="Constant">0xa8</span>/xmin <span class="Constant">0x2a8</span>/ymin,  <span class="Constant">0xd8</span>/xmax  <span class="Constant">0x2d8</span>/ymax, color
-<span id="L286" class="LineNr"> 286 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x62</span>/cury
+<span id="L286" class="LineNr"> 286 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x62</span>/cury
 <span id="L287" class="LineNr"> 287 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x158</span>/xmin <span class="Constant">0x2a8</span>/ymin, <span class="Constant">0x188</span>/xmax  <span class="Constant">0x2d8</span>/ymax, color
 <span id="L288" class="LineNr"> 288 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x1c8</span>/xmin <span class="Constant">0x2a8</span>/ymin, <span class="Constant">0x1f8</span>/xmax  <span class="Constant">0x2d8</span>/ymax, color
-<span id="L289" class="LineNr"> 289 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x62</span>/cury
+<span id="L289" class="LineNr"> 289 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x62</span>/cury
 <span id="L290" class="LineNr"> 290 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x208</span>/xmin <span class="Constant">0x2a8</span>/ymin, <span class="Constant">0x238</span>/xmax  <span class="Constant">0x2d8</span>/ymax, color
 <span id="L291" class="LineNr"> 291 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x278</span>/xmin <span class="Constant">0x2a8</span>/ymin, <span class="Constant">0x2a8</span>/xmax  <span class="Constant">0x2d8</span>/ymax, color
-<span id="L292" class="LineNr"> 292 </span>  <span class="PreProc">var</span> color/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x82</span>/curx, <span class="Constant">0x62</span>/cury
+<span id="L292" class="LineNr"> 292 </span>  <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L825'>state-color</a> self, <span class="Constant">0x82</span>/curx, <span class="Constant">0x62</span>/cury
 <span id="L293" class="LineNr"> 293 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x328</span>/xmin <span class="Constant">0x2a8</span>/ymin, <span class="Constant">0x358</span>/xmax  <span class="Constant">0x2d8</span>/ymax, color
 <span id="L294" class="LineNr"> 294 </span>  <span class="muComment"># cell 0: sum and filter nodes</span>
 <span id="L295" class="LineNr"> 295 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x148</span>/xsmin  <span class="Constant">0xc8</span>/ysmin, <span class="Constant">0x158</span>/xsmax  <span class="Constant">0xd8</span>/ysmax, <span class="Constant">0x40</span>/color
@@ -369,16 +368,16 @@ if ('onhashchange' in window) {
 <span id="L304" class="LineNr"> 304 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x268</span>/xsmin <span class="Constant">0x1e8</span>/ysmin, <span class="Constant">0x278</span>/xsmax <span class="Constant">0x1f8</span>/ysmax, <span class="Constant">0x40</span>/color
 <span id="L305" class="LineNr"> 305 </span>  <a href='507line.mu.html#L86'>draw-rect</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2a0</span>/xfmin <span class="Constant">0x218</span>/yfmin, <span class="Constant">0x2b0</span>/xfmax <span class="Constant">0x228</span>/yfmax, <span class="Constant">0x31</span>/color
 <span id="L306" class="LineNr"> 306 </span>  <span class="muComment"># neighbor counts</span>
-<span id="L307" class="LineNr"> 307 </span>  <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x60</span>/cury
+<span id="L307" class="LineNr"> 307 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x60</span>/cury
 <span id="L308" class="LineNr"> 308 </span>  <a href='500fake-screen.mu.html#L190'>set-cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2d</span>, <span class="Constant">0xe</span>
 <span id="L309" class="LineNr"> 309 </span>  <a href='501draw-text.mu.html#L387'>draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='500fake-screen.mu.html#L14'>screen</a>, n, <span class="Constant">0xf</span>/fg <span class="Constant">0</span>/bg
-<span id="L310" class="LineNr"> 310 </span>  <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x60</span>/cury
+<span id="L310" class="LineNr"> 310 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x60</span>/cury
 <span id="L311" class="LineNr"> 311 </span>  <a href='500fake-screen.mu.html#L190'>set-cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x52</span>, <span class="Constant">0xe</span>
 <span id="L312" class="LineNr"> 312 </span>  <a href='501draw-text.mu.html#L387'>draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='500fake-screen.mu.html#L14'>screen</a>, n, <span class="Constant">0xf</span>/fg <span class="Constant">0</span>/bg
-<span id="L313" class="LineNr"> 313 </span>  <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x61</span>/cury
+<span id="L313" class="LineNr"> 313 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x80</span>/curx, <span class="Constant">0x61</span>/cury
 <span id="L314" class="LineNr"> 314 </span>  <a href='500fake-screen.mu.html#L190'>set-cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2d</span>, <span class="Constant">0x20</span>
 <span id="L315" class="LineNr"> 315 </span>  <a href='501draw-text.mu.html#L387'>draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='500fake-screen.mu.html#L14'>screen</a>, n, <span class="Constant">0xf</span>/fg <span class="Constant">0</span>/bg
-<span id="L316" class="LineNr"> 316 </span>  <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x61</span>/cury
+<span id="L316" class="LineNr"> 316 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, <span class="Constant">0x81</span>/curx, <span class="Constant">0x61</span>/cury
 <span id="L317" class="LineNr"> 317 </span>  <a href='500fake-screen.mu.html#L190'>set-cursor-position</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x52</span>, <span class="Constant">0x20</span>
 <span id="L318" class="LineNr"> 318 </span>  <a href='501draw-text.mu.html#L387'>draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen</a> <a href='500fake-screen.mu.html#L14'>screen</a>, n, <span class="Constant">0xf</span>/fg <span class="Constant">0</span>/bg
 <span id="L319" class="LineNr"> 319 </span>  <span class="muComment"># cell 0: conveyors from neighboring inputs to sum node</span>
@@ -401,15 +400,15 @@ if ('onhashchange' in window) {
 <span id="L336" class="LineNr"> 336 </span>  <a href='509bezier.mu.html#L14'>draw-monotonic-bezier</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x188</span>/xf <span class="Constant">0x100</span>/yf,  <span class="Constant">0x1e0</span>/x1 <span class="Constant">0x100</span>/y1, <span class="Constant">0x1e0</span>/x2 <span class="Constant">0x160</span>/y2,  <span class="Constant">0x2a</span>/color
 <span id="L337" class="LineNr"> 337 </span>  <span class="muComment"># cell 0: time-variant portion: 16 repeating steps</span>
 <span id="L338" class="LineNr"> 338 </span>  $render1:cell0: <span class="Delimiter">{</span>
-<span id="L339" class="LineNr"> 339 </span>    <span class="PreProc">var</span> tick-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, tick
-<span id="L340" class="LineNr"> 340 </span>    <span class="PreProc">var</span> progress/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *tick-a
+<span id="L339" class="LineNr"> 339 </span>    <span class="PreProc">var</span> tick-a/eax: (addr int) <span class="Special">&lt;-</span> get self, tick
+<span id="L340" class="LineNr"> 340 </span>    <span class="PreProc">var</span> progress/eax: int <span class="Special">&lt;-</span> copy *tick-a
 <span id="L341" class="LineNr"> 341 </span>    progress <span class="Special">&lt;-</span> and <span class="Constant">0xf</span>
 <span id="L342" class="LineNr"> 342 </span>    <span class="muComment"># cell 0: 7 time steps for getting inputs to sum</span>
 <span id="L343" class="LineNr"> 343 </span>    <span class="Delimiter">{</span>
 <span id="L344" class="LineNr"> 344 </span>      compare progress, <span class="Constant">7</span>
 <span id="L345" class="LineNr"> 345 </span>      <span class="PreProc">break-if-&gt;=</span>
 <span id="L346" class="LineNr"> 346 </span>      <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L347" class="LineNr"> 347 </span>      <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L347" class="LineNr"> 347 </span>      <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L348" class="LineNr"> 348 </span>      <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L349" class="LineNr"> 349 </span>      u <span class="Special">&lt;-</span> divide six-f
 <span id="L350" class="LineNr"> 350 </span>      <span class="muComment"># points on conveyors from neighboring cells</span>
@@ -434,7 +433,7 @@ if ('onhashchange' in window) {
 <span id="L369" class="LineNr"> 369 </span>    progress <span class="Special">&lt;-</span> subtract <span class="Constant">2</span>
 <span id="L370" class="LineNr"> 370 </span>    <span class="muComment"># cell 0: points on conveyors to outputs</span>
 <span id="L371" class="LineNr"> 371 </span>    <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L372" class="LineNr"> 372 </span>    <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L372" class="LineNr"> 372 </span>    <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L373" class="LineNr"> 373 </span>    <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L374" class="LineNr"> 374 </span>    u <span class="Special">&lt;-</span> divide six-f
 <span id="L375" class="LineNr"> 375 </span>    <a href='hest-life.mu.html#L581'>draw-bezier-point</a> <a href='500fake-screen.mu.html#L14'>screen</a>, u, <span class="Constant">0x188</span>/xf <span class="Constant">0x100</span>/yf,  <span class="Constant">0x160</span>/x1  <span class="Constant">0x8c</span>/y1, <span class="Constant">0x100</span>/x2  <span class="Constant">0x80</span>/y2, <span class="Constant">7</span>/color, <span class="Constant">4</span>/radius
@@ -466,15 +465,15 @@ if ('onhashchange' in window) {
 <span id="L401" class="LineNr"> 401 </span>  <a href='509bezier.mu.html#L14'>draw-monotonic-bezier</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2a8</span>/xf <span class="Constant">0x100</span>/yf,  <span class="Constant">0x300</span>/x1 <span class="Constant">0x100</span>/y1, <span class="Constant">0x300</span>/x2 <span class="Constant">0x160</span>/y2,  <span class="Constant">0x2a</span>/color
 <span id="L402" class="LineNr"> 402 </span>  <span class="muComment"># cell 1: time-variant portion: 16 repeating steps</span>
 <span id="L403" class="LineNr"> 403 </span>  $render1:cell1: <span class="Delimiter">{</span>
-<span id="L404" class="LineNr"> 404 </span>    <span class="PreProc">var</span> tick-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, tick
-<span id="L405" class="LineNr"> 405 </span>    <span class="PreProc">var</span> progress/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *tick-a
+<span id="L404" class="LineNr"> 404 </span>    <span class="PreProc">var</span> tick-a/eax: (addr int) <span class="Special">&lt;-</span> get self, tick
+<span id="L405" class="LineNr"> 405 </span>    <span class="PreProc">var</span> progress/eax: int <span class="Special">&lt;-</span> copy *tick-a
 <span id="L406" class="LineNr"> 406 </span>    progress <span class="Special">&lt;-</span> and <span class="Constant">0xf</span>
 <span id="L407" class="LineNr"> 407 </span>    <span class="muComment"># cell 1: 7 time steps for getting inputs to sum</span>
 <span id="L408" class="LineNr"> 408 </span>    <span class="Delimiter">{</span>
 <span id="L409" class="LineNr"> 409 </span>      compare progress, <span class="Constant">7</span>
 <span id="L410" class="LineNr"> 410 </span>      <span class="PreProc">break-if-&gt;=</span>
 <span id="L411" class="LineNr"> 411 </span>      <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L412" class="LineNr"> 412 </span>      <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L412" class="LineNr"> 412 </span>      <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L413" class="LineNr"> 413 </span>      <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L414" class="LineNr"> 414 </span>      u <span class="Special">&lt;-</span> divide six-f
 <span id="L415" class="LineNr"> 415 </span>      <span class="muComment"># points on conveyors from neighboring cells</span>
@@ -499,7 +498,7 @@ if ('onhashchange' in window) {
 <span id="L434" class="LineNr"> 434 </span>    progress <span class="Special">&lt;-</span> subtract <span class="Constant">2</span>
 <span id="L435" class="LineNr"> 435 </span>    <span class="muComment"># cell 1: points on conveyors to outputs</span>
 <span id="L436" class="LineNr"> 436 </span>    <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L437" class="LineNr"> 437 </span>    <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L437" class="LineNr"> 437 </span>    <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L438" class="LineNr"> 438 </span>    <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L439" class="LineNr"> 439 </span>    u <span class="Special">&lt;-</span> divide six-f
 <span id="L440" class="LineNr"> 440 </span>    <a href='hest-life.mu.html#L581'>draw-bezier-point</a> <a href='500fake-screen.mu.html#L14'>screen</a>, u, <span class="Constant">0x2a8</span>/xf <span class="Constant">0x100</span>/yf,  <span class="Constant">0x280</span>/x1  <span class="Constant">0x8c</span>/y1, <span class="Constant">0x220</span>/x2  <span class="Constant">0x80</span>/y2, <span class="Constant">7</span>/color, <span class="Constant">4</span>/radius
@@ -531,15 +530,15 @@ if ('onhashchange' in window) {
 <span id="L466" class="LineNr"> 466 </span>  <a href='509bezier.mu.html#L14'>draw-monotonic-bezier</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x188</span>/xf <span class="Constant">0x220</span>/yf,  <span class="Constant">0x1e0</span>/x1 <span class="Constant">0x220</span>/y1, <span class="Constant">0x1e0</span>/x2 <span class="Constant">0x280</span>/y2,  <span class="Constant">0x2a</span>/color
 <span id="L467" class="LineNr"> 467 </span>  <span class="muComment"># cell 2: time-variant portion: 16 repeating steps</span>
 <span id="L468" class="LineNr"> 468 </span>  $render1:cell2: <span class="Delimiter">{</span>
-<span id="L469" class="LineNr"> 469 </span>    <span class="PreProc">var</span> tick-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, tick
-<span id="L470" class="LineNr"> 470 </span>    <span class="PreProc">var</span> progress/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *tick-a
+<span id="L469" class="LineNr"> 469 </span>    <span class="PreProc">var</span> tick-a/eax: (addr int) <span class="Special">&lt;-</span> get self, tick
+<span id="L470" class="LineNr"> 470 </span>    <span class="PreProc">var</span> progress/eax: int <span class="Special">&lt;-</span> copy *tick-a
 <span id="L471" class="LineNr"> 471 </span>    progress <span class="Special">&lt;-</span> and <span class="Constant">0xf</span>
 <span id="L472" class="LineNr"> 472 </span>    <span class="muComment"># cell 2: 7 time steps for getting inputs to sum</span>
 <span id="L473" class="LineNr"> 473 </span>    <span class="Delimiter">{</span>
 <span id="L474" class="LineNr"> 474 </span>      compare progress, <span class="Constant">7</span>
 <span id="L475" class="LineNr"> 475 </span>      <span class="PreProc">break-if-&gt;=</span>
 <span id="L476" class="LineNr"> 476 </span>      <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L477" class="LineNr"> 477 </span>      <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L477" class="LineNr"> 477 </span>      <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L478" class="LineNr"> 478 </span>      <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L479" class="LineNr"> 479 </span>      u <span class="Special">&lt;-</span> divide six-f
 <span id="L480" class="LineNr"> 480 </span>      <span class="muComment"># points on conveyors from neighboring cells</span>
@@ -564,7 +563,7 @@ if ('onhashchange' in window) {
 <span id="L499" class="LineNr"> 499 </span>    progress <span class="Special">&lt;-</span> subtract <span class="Constant">2</span>
 <span id="L500" class="LineNr"> 500 </span>    <span class="muComment"># cell 2: points on conveyors to outputs</span>
 <span id="L501" class="LineNr"> 501 </span>    <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L502" class="LineNr"> 502 </span>    <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L502" class="LineNr"> 502 </span>    <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L503" class="LineNr"> 503 </span>    <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L504" class="LineNr"> 504 </span>    u <span class="Special">&lt;-</span> divide six-f
 <span id="L505" class="LineNr"> 505 </span>    <a href='hest-life.mu.html#L581'>draw-bezier-point</a> <a href='500fake-screen.mu.html#L14'>screen</a>, u, <span class="Constant">0x188</span>/xf <span class="Constant">0x220</span>/yf,  <span class="Constant">0x160</span>/x1 <span class="Constant">0x1ac</span>/y1, <span class="Constant">0x100</span>/x2 <span class="Constant">0x1a0</span>/y2, <span class="Constant">7</span>/color, <span class="Constant">4</span>/radius
@@ -596,15 +595,15 @@ if ('onhashchange' in window) {
 <span id="L531" class="LineNr"> 531 </span>  <a href='509bezier.mu.html#L14'>draw-monotonic-bezier</a> <a href='500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">0x2a8</span>/xf <span class="Constant">0x220</span>/yf,  <span class="Constant">0x300</span>/x1 <span class="Constant">0x220</span>/y1, <span class="Constant">0x300</span>/x2 <span class="Constant">0x280</span>/y2,  <span class="Constant">0x2a</span>/color
 <span id="L532" class="LineNr"> 532 </span>  <span class="muComment"># cell 3: time-variant portion: 16 repeating steps</span>
 <span id="L533" class="LineNr"> 533 </span>  $render1:cell3: <span class="Delimiter">{</span>
-<span id="L534" class="LineNr"> 534 </span>    <span class="PreProc">var</span> tick-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, tick
-<span id="L535" class="LineNr"> 535 </span>    <span class="PreProc">var</span> progress/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *tick-a
+<span id="L534" class="LineNr"> 534 </span>    <span class="PreProc">var</span> tick-a/eax: (addr int) <span class="Special">&lt;-</span> get self, tick
+<span id="L535" class="LineNr"> 535 </span>    <span class="PreProc">var</span> progress/eax: int <span class="Special">&lt;-</span> copy *tick-a
 <span id="L536" class="LineNr"> 536 </span>    progress <span class="Special">&lt;-</span> and <span class="Constant">0xf</span>
 <span id="L537" class="LineNr"> 537 </span>    <span class="muComment"># cell 3: 7 time steps for getting inputs to sum</span>
 <span id="L538" class="LineNr"> 538 </span>    <span class="Delimiter">{</span>
 <span id="L539" class="LineNr"> 539 </span>      compare progress, <span class="Constant">7</span>
 <span id="L540" class="LineNr"> 540 </span>      <span class="PreProc">break-if-&gt;=</span>
 <span id="L541" class="LineNr"> 541 </span>      <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L542" class="LineNr"> 542 </span>      <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L542" class="LineNr"> 542 </span>      <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L543" class="LineNr"> 543 </span>      <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L544" class="LineNr"> 544 </span>      u <span class="Special">&lt;-</span> divide six-f
 <span id="L545" class="LineNr"> 545 </span>      <span class="muComment"># points on conveyors from neighboring cells</span>
@@ -629,7 +628,7 @@ if ('onhashchange' in window) {
 <span id="L564" class="LineNr"> 564 </span>    progress <span class="Special">&lt;-</span> subtract <span class="Constant">2</span>
 <span id="L565" class="LineNr"> 565 </span>    <span class="muComment"># cell 3: points on conveyors to outputs</span>
 <span id="L566" class="LineNr"> 566 </span>    <span class="PreProc">var</span> u/<span class="Constant">xmm7</span>: float <span class="Special">&lt;-</span> convert progress
-<span id="L567" class="LineNr"> 567 </span>    <span class="PreProc">var</span> six/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
+<span id="L567" class="LineNr"> 567 </span>    <span class="PreProc">var</span> six/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">6</span>
 <span id="L568" class="LineNr"> 568 </span>    <span class="PreProc">var</span> six-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert six
 <span id="L569" class="LineNr"> 569 </span>    u <span class="Special">&lt;-</span> divide six-f
 <span id="L570" class="LineNr"> 570 </span>    <a href='hest-life.mu.html#L581'>draw-bezier-point</a> <a href='500fake-screen.mu.html#L14'>screen</a>, u, <span class="Constant">0x2a8</span>/xf <span class="Constant">0x220</span>/yf,  <span class="Constant">0x280</span>/x1 <span class="Constant">0x1ac</span>/y1, <span class="Constant">0x220</span>/x2 <span class="Constant">0x1a0</span>/y2, <span class="Constant">7</span>/color, <span class="Constant">4</span>/radius
@@ -644,27 +643,27 @@ if ('onhashchange' in window) {
 <span id="L579" class="LineNr"> 579 </span><span class="Delimiter">}</span>
 <span id="L580" class="LineNr"> 580 </span>
 <span id="L581" class="LineNr"> 581 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L581'>draw-bezier-point</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), u: float, x0: int, y0: int, x1: int, y1: int, x2: int, y2: int, color: int, radius: int <span class="Delimiter">{</span>
-<span id="L582" class="LineNr"> 582 </span>  <span class="PreProc">var</span> _cy/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='509bezier.mu.html#L298'>bezier-point</a> u, y0, y1, y2
+<span id="L582" class="LineNr"> 582 </span>  <span class="PreProc">var</span> _cy/eax: int <span class="Special">&lt;-</span> <a href='509bezier.mu.html#L298'>bezier-point</a> u, y0, y1, y2
 <span id="L583" class="LineNr"> 583 </span>  <span class="PreProc">var</span> cy/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy _cy
-<span id="L584" class="LineNr"> 584 </span>  <span class="PreProc">var</span> cx/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='509bezier.mu.html#L298'>bezier-point</a> u, x0, x1, x2
+<span id="L584" class="LineNr"> 584 </span>  <span class="PreProc">var</span> cx/eax: int <span class="Special">&lt;-</span> <a href='509bezier.mu.html#L298'>bezier-point</a> u, x0, x1, x2
 <span id="L585" class="LineNr"> 585 </span>  <a href='508circle.mu.html#L80'>draw-disc</a> <a href='500fake-screen.mu.html#L14'>screen</a>, cx, cy, radius, color, <span class="Constant">0xf</span>/border-color=white
 <span id="L586" class="LineNr"> 586 </span><span class="Delimiter">}</span>
 <span id="L587" class="LineNr"> 587 </span>
 <span id="L588" class="LineNr"> 588 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L588'>draw-linear-point</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), u: float, x0: int, y0: int, x1: int, y1: int, color: int, radius: int <span class="Delimiter">{</span>
-<span id="L589" class="LineNr"> 589 </span>  <span class="PreProc">var</span> _cy/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='507line.mu.html#L98'>line-point</a> u, y0, y1
+<span id="L589" class="LineNr"> 589 </span>  <span class="PreProc">var</span> _cy/eax: int <span class="Special">&lt;-</span> <a href='507line.mu.html#L98'>line-point</a> u, y0, y1
 <span id="L590" class="LineNr"> 590 </span>  <span class="PreProc">var</span> cy/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy _cy
-<span id="L591" class="LineNr"> 591 </span>  <span class="PreProc">var</span> cx/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='507line.mu.html#L98'>line-point</a> u, x0, x1
+<span id="L591" class="LineNr"> 591 </span>  <span class="PreProc">var</span> cx/eax: int <span class="Special">&lt;-</span> <a href='507line.mu.html#L98'>line-point</a> u, x0, x1
 <span id="L592" class="LineNr"> 592 </span>  <a href='508circle.mu.html#L80'>draw-disc</a> <a href='500fake-screen.mu.html#L14'>screen</a>, cx, cy, radius, color, <span class="Constant">0xf</span>/border-color=white
 <span id="L593" class="LineNr"> 593 </span><span class="Delimiter">}</span>
 <span id="L594" class="LineNr"> 594 </span>
 <span id="L595" class="LineNr"> 595 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L595'>edit</a></span> keyboard: (addr keyboard), _self: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Delimiter">{</span>
 <span id="L596" class="LineNr"> 596 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L597" class="LineNr"> 597 </span>  <span class="PreProc">var</span> key/<span class="muRegEax">eax</span>: byte <span class="Special">&lt;-</span> <a href='102keyboard.subx.html#L21'>read-key</a> keyboard
+<span id="L597" class="LineNr"> 597 </span>  <span class="PreProc">var</span> key/eax: byte <span class="Special">&lt;-</span> <a href='102keyboard.subx.html#L21'>read-key</a> keyboard
 <span id="L598" class="LineNr"> 598 </span>  <span class="muComment"># space: play/pause</span>
 <span id="L599" class="LineNr"> 599 </span>  <span class="Delimiter">{</span>
 <span id="L600" class="LineNr"> 600 </span>    compare key, <span class="Constant">0x20</span>/space
 <span id="L601" class="LineNr"> 601 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L602" class="LineNr"> 602 </span>    <span class="PreProc">var</span> play?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, play?
+<span id="L602" class="LineNr"> 602 </span>    <span class="PreProc">var</span> play?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, play?
 <span id="L603" class="LineNr"> 603 </span>    compare *play?, <span class="Constant">0</span>/false
 <span id="L604" class="LineNr"> 604 </span>    <span class="Delimiter">{</span>
 <span id="L605" class="LineNr"> 605 </span>      <span class="PreProc">break-if-=</span>
@@ -685,8 +684,8 @@ if ('onhashchange' in window) {
 <span id="L620" class="LineNr"> 620 </span>  <span class="Delimiter">{</span>
 <span id="L621" class="LineNr"> 621 </span>    compare key, <span class="Constant">0x6c</span>/l
 <span id="L622" class="LineNr"> 622 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L623" class="LineNr"> 623 </span>    <span class="PreProc">var</span> tick-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, tick
-<span id="L624" class="LineNr"> 624 </span>    <span class="PreProc">var</span> tick/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *tick-a
+<span id="L623" class="LineNr"> 623 </span>    <span class="PreProc">var</span> tick-a/eax: (addr int) <span class="Special">&lt;-</span> get self, tick
+<span id="L624" class="LineNr"> 624 </span>    <span class="PreProc">var</span> tick/eax: int <span class="Special">&lt;-</span> copy *tick-a
 <span id="L625" class="LineNr"> 625 </span>    <span class="PreProc">var</span> <span class="PreProc">loop</span>/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> get self, <span class="PreProc">loop</span>
 <span id="L626" class="LineNr"> 626 </span>    copy-to *<span class="PreProc">loop</span>, tick
 <span id="L627" class="LineNr"> 627 </span>    <span class="PreProc">return</span>
@@ -695,7 +694,7 @@ if ('onhashchange' in window) {
 <span id="L630" class="LineNr"> 630 </span>  <span class="Delimiter">{</span>
 <span id="L631" class="LineNr"> 631 </span>    compare key, <span class="Constant">0x4c</span>/L
 <span id="L632" class="LineNr"> 632 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L633" class="LineNr"> 633 </span>    <span class="PreProc">var</span> <span class="PreProc">loop</span>/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, <span class="PreProc">loop</span>
+<span id="L633" class="LineNr"> 633 </span>    <span class="PreProc">var</span> <span class="PreProc">loop</span>/eax: (addr int) <span class="Special">&lt;-</span> get self, <span class="PreProc">loop</span>
 <span id="L634" class="LineNr"> 634 </span>    copy-to *<span class="PreProc">loop</span>, <span class="Constant">0</span>
 <span id="L635" class="LineNr"> 635 </span>    <span class="PreProc">return</span>
 <span id="L636" class="LineNr"> 636 </span>  <span class="Delimiter">}</span>
@@ -703,7 +702,7 @@ if ('onhashchange' in window) {
 <span id="L638" class="LineNr"> 638 </span>  <span class="Delimiter">{</span>
 <span id="L639" class="LineNr"> 639 </span>    compare key, <span class="Constant">0x2d</span>/-
 <span id="L640" class="LineNr"> 640 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L641" class="LineNr"> 641 </span>    <span class="PreProc">var</span> zoom/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, zoom
+<span id="L641" class="LineNr"> 641 </span>    <span class="PreProc">var</span> zoom/eax: (addr int) <span class="Special">&lt;-</span> get self, zoom
 <span id="L642" class="LineNr"> 642 </span>    compare *zoom, <span class="Constant">1</span>
 <span id="L643" class="LineNr"> 643 </span>    <span class="Delimiter">{</span>
 <span id="L644" class="LineNr"> 644 </span>      <span class="PreProc">break-if-!=</span>
@@ -723,7 +722,7 @@ if ('onhashchange' in window) {
 <span id="L658" class="LineNr"> 658 </span>  <span class="Delimiter">{</span>
 <span id="L659" class="LineNr"> 659 </span>    compare key, <span class="Constant">0x2b</span>/+
 <span id="L660" class="LineNr"> 660 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L661" class="LineNr"> 661 </span>    <span class="PreProc">var</span> zoom/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, zoom
+<span id="L661" class="LineNr"> 661 </span>    <span class="PreProc">var</span> zoom/eax: (addr int) <span class="Special">&lt;-</span> get self, zoom
 <span id="L662" class="LineNr"> 662 </span>    compare *zoom, <span class="Constant">1</span>
 <span id="L663" class="LineNr"> 663 </span>    <span class="Delimiter">{</span>
 <span id="L664" class="LineNr"> 664 </span>      <span class="PreProc">break-if-!=</span>
@@ -762,18 +761,18 @@ if ('onhashchange' in window) {
 <span id="L697" class="LineNr"> 697 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L698" class="LineNr"> 698 </span>    add-to *tick-a, <span class="Constant">0x10</span>
 <span id="L699" class="LineNr"> 699 </span>  <span class="Delimiter">}</span>
-<span id="L700" class="LineNr"> 700 </span>  <span class="PreProc">var</span> tick/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *tick-a
+<span id="L700" class="LineNr"> 700 </span>  <span class="PreProc">var</span> tick/eax: int <span class="Special">&lt;-</span> copy *tick-a
 <span id="L701" class="LineNr"> 701 </span>  tick <span class="Special">&lt;-</span> and <span class="Constant">0xf</span>
 <span id="L702" class="LineNr"> 702 </span>  compare tick, <span class="Constant">0</span>
 <span id="L703" class="LineNr"> 703 </span>  <span class="Delimiter">{</span>
 <span id="L704" class="LineNr"> 704 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L705" class="LineNr"> 705 </span>    <a href='hest-life.mu.html#L908'>step4</a> self
 <span id="L706" class="LineNr"> 706 </span>  <span class="Delimiter">}</span>
-<span id="L707" class="LineNr"> 707 </span>  <span class="PreProc">var</span> loop-a/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, <span class="PreProc">loop</span>
+<span id="L707" class="LineNr"> 707 </span>  <span class="PreProc">var</span> loop-a/eax: (addr int) <span class="Special">&lt;-</span> get self, <span class="PreProc">loop</span>
 <span id="L708" class="LineNr"> 708 </span>  compare *loop-a, <span class="Constant">0</span>
 <span id="L709" class="LineNr"> 709 </span>  <span class="Delimiter">{</span>
 <span id="L710" class="LineNr"> 710 </span>    <span class="PreProc">break-if-=</span>
-<span id="L711" class="LineNr"> 711 </span>    <span class="PreProc">var</span> <span class="PreProc">loop</span>/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *loop-a
+<span id="L711" class="LineNr"> 711 </span>    <span class="PreProc">var</span> <span class="PreProc">loop</span>/eax: int <span class="Special">&lt;-</span> copy *loop-a
 <span id="L712" class="LineNr"> 712 </span>    compare *tick-a, <span class="PreProc">loop</span>
 <span id="L713" class="LineNr"> 713 </span>    <span class="PreProc">break-if-&lt;</span>
 <span id="L714" class="LineNr"> 714 </span>    <a href='hest-life.mu.html#L744'>clear-environment</a> self
@@ -782,18 +781,18 @@ if ('onhashchange' in window) {
 <span id="L717" class="LineNr"> 717 </span>
 <span id="L718" class="LineNr"> 718 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L718'>initialize-environment</a></span> _self: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Delimiter">{</span>
 <span id="L719" class="LineNr"> 719 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L720" class="LineNr"> 720 </span>  <span class="PreProc">var</span> zoom/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, zoom
+<span id="L720" class="LineNr"> 720 </span>  <span class="PreProc">var</span> zoom/eax: (addr int) <span class="Special">&lt;-</span> get self, zoom
 <span id="L721" class="LineNr"> 721 </span>  copy-to *zoom, <span class="Constant">0</span>
-<span id="L722" class="LineNr"> 722 </span>  <span class="PreProc">var</span> play?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, play?
+<span id="L722" class="LineNr"> 722 </span>  <span class="PreProc">var</span> play?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, play?
 <span id="L723" class="LineNr"> 723 </span>  copy-to *play?, <span class="Constant">1</span>/true
-<span id="L724" class="LineNr"> 724 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L724" class="LineNr"> 724 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
 <span id="L725" class="LineNr"> 725 </span>  populate data-ah, <span class="Constant">0x100</span>
-<span id="L726" class="LineNr"> 726 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L726" class="LineNr"> 726 </span>  <span class="PreProc">var</span> data/eax: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L727" class="LineNr"> 727 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L728" class="LineNr"> 728 </span>  <span class="Delimiter">{</span>
 <span id="L729" class="LineNr"> 729 </span>    compare y, <span class="Constant">0xc0</span>
 <span id="L730" class="LineNr"> 730 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L731" class="LineNr"> 731 </span>    <span class="PreProc">var</span> dest-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
+<span id="L731" class="LineNr"> 731 </span>    <span class="PreProc">var</span> dest-ah/eax: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
 <span id="L732" class="LineNr"> 732 </span>    populate dest-ah, <span class="Constant">0x100</span>
 <span id="L733" class="LineNr"> 733 </span>    y <span class="Special">&lt;-</span> increment
 <span id="L734" class="LineNr"> 734 </span>    <span class="PreProc">loop</span>
@@ -808,22 +807,22 @@ if ('onhashchange' in window) {
 <span id="L743" class="LineNr"> 743 </span>
 <span id="L744" class="LineNr"> 744 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L744'>clear-environment</a></span> _self: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Delimiter">{</span>
 <span id="L745" class="LineNr"> 745 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L746" class="LineNr"> 746 </span>  <span class="PreProc">var</span> tick/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> get self, tick
+<span id="L746" class="LineNr"> 746 </span>  <span class="PreProc">var</span> tick/eax: (addr int) <span class="Special">&lt;-</span> get self, tick
 <span id="L747" class="LineNr"> 747 </span>  copy-to *tick, <span class="Constant">0</span>
 <span id="L748" class="LineNr"> 748 </span>  <span class="muComment"># don't touch zoom or play settings</span>
-<span id="L749" class="LineNr"> 749 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
-<span id="L750" class="LineNr"> 750 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L749" class="LineNr"> 749 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L750" class="LineNr"> 750 </span>  <span class="PreProc">var</span> data/eax: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L751" class="LineNr"> 751 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L752" class="LineNr"> 752 </span>  <span class="Delimiter">{</span>
 <span id="L753" class="LineNr"> 753 </span>    compare y, <span class="Constant">0xc0</span>
 <span id="L754" class="LineNr"> 754 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L755" class="LineNr"> 755 </span>    <span class="PreProc">var</span> row-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
-<span id="L756" class="LineNr"> 756 </span>    <span class="PreProc">var</span> row/<span class="muRegEax">eax</span>: (addr array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *row-ah
+<span id="L755" class="LineNr"> 755 </span>    <span class="PreProc">var</span> row-ah/eax: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
+<span id="L756" class="LineNr"> 756 </span>    <span class="PreProc">var</span> row/eax: (addr array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *row-ah
 <span id="L757" class="LineNr"> 757 </span>    <span class="PreProc">var</span> x/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L758" class="LineNr"> 758 </span>    <span class="Delimiter">{</span>
 <span id="L759" class="LineNr"> 759 </span>      compare x, <span class="Constant">0x100</span>
 <span id="L760" class="LineNr"> 760 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L761" class="LineNr"> 761 </span>      <span class="PreProc">var</span> dest/<span class="muRegEax">eax</span>: (addr <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index row, x
+<span id="L761" class="LineNr"> 761 </span>      <span class="PreProc">var</span> dest/eax: (addr <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index row, x
 <span id="L762" class="LineNr"> 762 </span>      clear-object dest
 <span id="L763" class="LineNr"> 763 </span>      x <span class="Special">&lt;-</span> increment
 <span id="L764" class="LineNr"> 764 </span>      <span class="PreProc">loop</span>
@@ -841,19 +840,19 @@ if ('onhashchange' in window) {
 <span id="L776" class="LineNr"> 776 </span>
 <span id="L777" class="LineNr"> 777 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L777'>set</a></span> _self: (addr <a href='hest-life.mu.html#L50'>environment</a>), _x: int, _y: int, _val: boolean <span class="Delimiter">{</span>
 <span id="L778" class="LineNr"> 778 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L779" class="LineNr"> 779 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
-<span id="L780" class="LineNr"> 780 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L779" class="LineNr"> 779 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L780" class="LineNr"> 780 </span>  <span class="PreProc">var</span> data/eax: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L781" class="LineNr"> 781 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy _y
-<span id="L782" class="LineNr"> 782 </span>  <span class="PreProc">var</span> row-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
-<span id="L783" class="LineNr"> 783 </span>  <span class="PreProc">var</span> row/<span class="muRegEax">eax</span>: (addr array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *row-ah
+<span id="L782" class="LineNr"> 782 </span>  <span class="PreProc">var</span> row-ah/eax: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
+<span id="L783" class="LineNr"> 783 </span>  <span class="PreProc">var</span> row/eax: (addr array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *row-ah
 <span id="L784" class="LineNr"> 784 </span>  <span class="PreProc">var</span> x/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy _x
-<span id="L785" class="LineNr"> 785 </span>  <span class="PreProc">var</span> <a href='hest-life.mu.html#L58'>cell</a>/<span class="muRegEax">eax</span>: (addr <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index row, x
-<span id="L786" class="LineNr"> 786 </span>  <span class="PreProc">var</span> dest/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get <a href='hest-life.mu.html#L58'>cell</a>, next
+<span id="L785" class="LineNr"> 785 </span>  <span class="PreProc">var</span> <a href='hest-life.mu.html#L58'>cell</a>/eax: (addr <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index row, x
+<span id="L786" class="LineNr"> 786 </span>  <span class="PreProc">var</span> dest/eax: (addr boolean) <span class="Special">&lt;-</span> get <a href='hest-life.mu.html#L58'>cell</a>, next
 <span id="L787" class="LineNr"> 787 </span>  <span class="PreProc">var</span> val/<span class="muRegEcx">ecx</span>: boolean <span class="Special">&lt;-</span> copy _val
 <span id="L788" class="LineNr"> 788 </span>  copy-to *dest, val
 <span id="L789" class="LineNr"> 789 </span><span class="Delimiter">}</span>
 <span id="L790" class="LineNr"> 790 </span>
-<span id="L791" class="LineNr"> 791 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L791'>state</a></span> _self: (addr <a href='hest-life.mu.html#L50'>environment</a>), _x: int, _y: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L791" class="LineNr"> 791 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L791'>state</a></span> _self: (addr <a href='hest-life.mu.html#L50'>environment</a>), _x: int, _y: int<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
 <span id="L792" class="LineNr"> 792 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L793" class="LineNr"> 793 </span>  <span class="PreProc">var</span> x/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy _x
 <span id="L794" class="LineNr"> 794 </span>  <span class="PreProc">var</span> y/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy _y
@@ -878,20 +877,20 @@ if ('onhashchange' in window) {
 <span id="L813" class="LineNr"> 813 </span>    <span class="PreProc">break-if-&lt;</span>
 <span id="L814" class="LineNr"> 814 </span>    <span class="PreProc">return</span> <span class="Constant">0</span>/false
 <span id="L815" class="LineNr"> 815 </span>  <span class="Delimiter">}</span>
-<span id="L816" class="LineNr"> 816 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
-<span id="L817" class="LineNr"> 817 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
-<span id="L818" class="LineNr"> 818 </span>  <span class="PreProc">var</span> row-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
-<span id="L819" class="LineNr"> 819 </span>  <span class="PreProc">var</span> row/<span class="muRegEax">eax</span>: (addr array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *row-ah
-<span id="L820" class="LineNr"> 820 </span>  <span class="PreProc">var</span> <a href='hest-life.mu.html#L58'>cell</a>/<span class="muRegEax">eax</span>: (addr <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index row, x
-<span id="L821" class="LineNr"> 821 </span>  <span class="PreProc">var</span> src/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get <a href='hest-life.mu.html#L58'>cell</a>, curr
+<span id="L816" class="LineNr"> 816 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L817" class="LineNr"> 817 </span>  <span class="PreProc">var</span> data/eax: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L818" class="LineNr"> 818 </span>  <span class="PreProc">var</span> row-ah/eax: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
+<span id="L819" class="LineNr"> 819 </span>  <span class="PreProc">var</span> row/eax: (addr array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *row-ah
+<span id="L820" class="LineNr"> 820 </span>  <span class="PreProc">var</span> <a href='hest-life.mu.html#L58'>cell</a>/eax: (addr <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index row, x
+<span id="L821" class="LineNr"> 821 </span>  <span class="PreProc">var</span> src/eax: (addr boolean) <span class="Special">&lt;-</span> get <a href='hest-life.mu.html#L58'>cell</a>, curr
 <span id="L822" class="LineNr"> 822 </span>  <span class="PreProc">return</span> *src
 <span id="L823" class="LineNr"> 823 </span><span class="Delimiter">}</span>
 <span id="L824" class="LineNr"> 824 </span>
-<span id="L825" class="LineNr"> 825 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L825'>state-color</a></span> _self: (addr <a href='hest-life.mu.html#L50'>environment</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L825" class="LineNr"> 825 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L825'>state-color</a></span> _self: (addr <a href='hest-life.mu.html#L50'>environment</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L826" class="LineNr"> 826 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L827" class="LineNr"> 827 </span>  <span class="PreProc">var</span> color/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0x1a</span>/dead
 <span id="L828" class="LineNr"> 828 </span>  <span class="Delimiter">{</span>
-<span id="L829" class="LineNr"> 829 </span>    <span class="PreProc">var</span> <a href='hest-life.mu.html#L791'>state</a>/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L791'>state</a> self, x, y
+<span id="L829" class="LineNr"> 829 </span>    <span class="PreProc">var</span> <a href='hest-life.mu.html#L791'>state</a>/eax: boolean <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L791'>state</a> self, x, y
 <span id="L830" class="LineNr"> 830 </span>    compare <a href='hest-life.mu.html#L791'>state</a>, <span class="Constant">0</span>/dead
 <span id="L831" class="LineNr"> 831 </span>    <span class="PreProc">break-if-=</span>
 <span id="L832" class="LineNr"> 832 </span>    color <span class="Special">&lt;-</span> copy <span class="Constant">0xf</span>/alive
@@ -901,24 +900,24 @@ if ('onhashchange' in window) {
 <span id="L836" class="LineNr"> 836 </span>
 <span id="L837" class="LineNr"> 837 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L837'>flush</a></span>  _self: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Delimiter">{</span>
 <span id="L838" class="LineNr"> 838 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L839" class="LineNr"> 839 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
-<span id="L840" class="LineNr"> 840 </span>  <span class="PreProc">var</span> _data/<span class="muRegEax">eax</span>: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L839" class="LineNr"> 839 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L840" class="LineNr"> 840 </span>  <span class="PreProc">var</span> _data/eax: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L841" class="LineNr"> 841 </span>  <span class="PreProc">var</span> data/<span class="muRegEsi">esi</span>: (addr array handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> copy _data
 <span id="L842" class="LineNr"> 842 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L843" class="LineNr"> 843 </span>  <span class="Delimiter">{</span>
 <span id="L844" class="LineNr"> 844 </span>    compare y, <span class="Constant">0xc0</span>/height
 <span id="L845" class="LineNr"> 845 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L846" class="LineNr"> 846 </span>    <span class="PreProc">var</span> row-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
-<span id="L847" class="LineNr"> 847 </span>    <span class="PreProc">var</span> _row/<span class="muRegEax">eax</span>: (addr array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *row-ah
+<span id="L846" class="LineNr"> 846 </span>    <span class="PreProc">var</span> row-ah/eax: (addr handle array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index data, y
+<span id="L847" class="LineNr"> 847 </span>    <span class="PreProc">var</span> _row/eax: (addr array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L223'>lookup</a> *row-ah
 <span id="L848" class="LineNr"> 848 </span>    <span class="PreProc">var</span> row/<span class="muRegEbx">ebx</span>: (addr array <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> copy _row
 <span id="L849" class="LineNr"> 849 </span>    <span class="PreProc">var</span> x/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L850" class="LineNr"> 850 </span>    <span class="Delimiter">{</span>
 <span id="L851" class="LineNr"> 851 </span>      compare x, <span class="Constant">0x100</span>/width
 <span id="L852" class="LineNr"> 852 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L853" class="LineNr"> 853 </span>      <span class="PreProc">var</span> cell-a/<span class="muRegEax">eax</span>: (addr <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index row, x
+<span id="L853" class="LineNr"> 853 </span>      <span class="PreProc">var</span> cell-a/eax: (addr <a href='hest-life.mu.html#L58'>cell</a>) <span class="Special">&lt;-</span> index row, x
 <span id="L854" class="LineNr"> 854 </span>      <span class="PreProc">var</span> curr-a/<span class="muRegEdi">edi</span>: (addr boolean) <span class="Special">&lt;-</span> get cell-a, curr
 <span id="L855" class="LineNr"> 855 </span>      <span class="PreProc">var</span> next-a/<span class="muRegEsi">esi</span>: (addr boolean) <span class="Special">&lt;-</span> get cell-a, next
-<span id="L856" class="LineNr"> 856 </span>      <span class="PreProc">var</span> val/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> copy *next-a
+<span id="L856" class="LineNr"> 856 </span>      <span class="PreProc">var</span> val/eax: boolean <span class="Special">&lt;-</span> copy *next-a
 <span id="L857" class="LineNr"> 857 </span>      copy-to *curr-a, val
 <span id="L858" class="LineNr"> 858 </span>      copy-to *next-a, <span class="Constant">0</span>/dead
 <span id="L859" class="LineNr"> 859 </span>      x <span class="Special">&lt;-</span> increment
@@ -939,7 +938,7 @@ if ('onhashchange' in window) {
 <span id="L874" class="LineNr"> 874 </span>    <span class="Delimiter">{</span>
 <span id="L875" class="LineNr"> 875 </span>      compare x, <span class="Constant">0x100</span>/width
 <span id="L876" class="LineNr"> 876 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L877" class="LineNr"> 877 </span>      <span class="PreProc">var</span> <a href='hest-life.mu.html#L791'>state</a>/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L791'>state</a> self, x, y
+<span id="L877" class="LineNr"> 877 </span>      <span class="PreProc">var</span> <a href='hest-life.mu.html#L791'>state</a>/eax: boolean <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L791'>state</a> self, x, y
 <span id="L878" class="LineNr"> 878 </span>      compare <a href='hest-life.mu.html#L791'>state</a>, <span class="Constant">0</span>/false
 <span id="L879" class="LineNr"> 879 </span>      <span class="Delimiter">{</span>
 <span id="L880" class="LineNr"> 880 </span>        <span class="PreProc">break-if-=</span>
@@ -959,7 +958,7 @@ if ('onhashchange' in window) {
 <span id="L894" class="LineNr"> 894 </span><span class="Delimiter">}</span>
 <span id="L895" class="LineNr"> 895 </span>
 <span id="L896" class="LineNr"> 896 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L896'>render4-cell</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), x: int, y: int, color: int <span class="Delimiter">{</span>
-<span id="L897" class="LineNr"> 897 </span>  <span class="PreProc">var</span> xmin/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy x
+<span id="L897" class="LineNr"> 897 </span>  <span class="PreProc">var</span> xmin/eax: int <span class="Special">&lt;-</span> copy x
 <span id="L898" class="LineNr"> 898 </span>  xmin <span class="Special">&lt;-</span> shift-left <span class="Constant">2</span>
 <span id="L899" class="LineNr"> 899 </span>  <span class="PreProc">var</span> xmax/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy xmin
 <span id="L900" class="LineNr"> 900 </span>  xmax <span class="Special">&lt;-</span> add <span class="Constant">4</span>
@@ -980,7 +979,7 @@ if ('onhashchange' in window) {
 <span id="L915" class="LineNr"> 915 </span>    <span class="Delimiter">{</span>
 <span id="L916" class="LineNr"> 916 </span>      compare x, <span class="Constant">0x100</span>/width
 <span id="L917" class="LineNr"> 917 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L918" class="LineNr"> 918 </span>      <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, x, y
+<span id="L918" class="LineNr"> 918 </span>      <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L953'>num-live-neighbors</a> self, x, y
 <span id="L919" class="LineNr"> 919 </span>      <span class="muComment"># if neighbors &lt; 2, die of loneliness</span>
 <span id="L920" class="LineNr"> 920 </span>      <span class="Delimiter">{</span>
 <span id="L921" class="LineNr"> 921 </span>        compare n, <span class="Constant">2</span>
@@ -997,7 +996,7 @@ if ('onhashchange' in window) {
 <span id="L932" class="LineNr"> 932 </span>      <span class="Delimiter">{</span>
 <span id="L933" class="LineNr"> 933 </span>        compare n, <span class="Constant">2</span>
 <span id="L934" class="LineNr"> 934 </span>        <span class="PreProc">break-if-!=</span>
-<span id="L935" class="LineNr"> 935 </span>        <span class="PreProc">var</span> old-state/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L791'>state</a> self, x, y
+<span id="L935" class="LineNr"> 935 </span>        <span class="PreProc">var</span> old-state/eax: boolean <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L791'>state</a> self, x, y
 <span id="L936" class="LineNr"> 936 </span>        <a href='hest-life.mu.html#L777'>set</a> self, x, y, old-state
 <span id="L937" class="LineNr"> 937 </span>      <span class="Delimiter">}</span>
 <span id="L938" class="LineNr"> 938 </span>      <span class="muComment"># if neighbors = 3, cell quickens to life</span>
@@ -1015,13 +1014,13 @@ if ('onhashchange' in window) {
 <span id="L950" class="LineNr"> 950 </span>  <a href='hest-life.mu.html#L837'>flush</a> self
 <span id="L951" class="LineNr"> 951 </span><span class="Delimiter">}</span>
 <span id="L952" class="LineNr"> 952 </span>
-<span id="L953" class="LineNr"> 953 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L953'>num-live-neighbors</a></span> _self: (addr <a href='hest-life.mu.html#L50'>environment</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L953" class="LineNr"> 953 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='hest-life.mu.html#L953'>num-live-neighbors</a></span> _self: (addr <a href='hest-life.mu.html#L50'>environment</a>), x: int, y: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L954" class="LineNr"> 954 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='hest-life.mu.html#L50'>environment</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L955" class="LineNr"> 955 </span>  <span class="PreProc">var</span> result/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L956" class="LineNr"> 956 </span>  <span class="muComment"># row above: zig</span>
 <span id="L957" class="LineNr"> 957 </span>  decrement y
 <span id="L958" class="LineNr"> 958 </span>  decrement x
-<span id="L959" class="LineNr"> 959 </span>  <span class="PreProc">var</span> s/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L791'>state</a> self, x, y
+<span id="L959" class="LineNr"> 959 </span>  <span class="PreProc">var</span> s/eax: boolean <span class="Special">&lt;-</span> <a href='hest-life.mu.html#L791'>state</a> self, x, y
 <span id="L960" class="LineNr"> 960 </span>  <span class="Delimiter">{</span>
 <span id="L961" class="LineNr"> 961 </span>    compare s, <span class="Constant">0</span>/false
 <span id="L962" class="LineNr"> 962 </span>    <span class="PreProc">break-if-=</span>

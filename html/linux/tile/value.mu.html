@@ -14,20 +14,19 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.LineNr { }
-.Delimiter { color: #c000c0; }
-.CommentedCode { color: #8a8a8a; }
-.muRegEsi { color: #87d787; }
-.muRegEdi { color: #87ffd7; }
-.Constant { color: #008787; }
-.Special { color: #ff6060; }
 .PreProc { color: #c000c0; }
-.muFunction { color: #af5f00; text-decoration: underline; }
+.muRegEdx { color: #af5f00; }
+.LineNr { }
+.Constant { color: #008787; }
+.muRegEdi { color: #00af00; }
 .muComment { color: #005faf; }
-.muRegEax { color: #875f00; }
-.muRegEcx { color: #af875f; }
-.muRegEdx { color: #878700; }
-.muRegEbx { color: #8787af; }
+.muRegEsi { color: #005faf; }
+.muRegEbx { color: #5f00ff; }
+.muRegEcx { color: #870000; }
+.Delimiter { color: #c000c0; }
+.muFunction { color: #af5f00; text-decoration: underline; }
+.CommentedCode { color: #8a8a8a; }
+.Special { color: #ff6060; }
 -->
 </style>
 
@@ -71,15 +70,15 @@ if ('onhashchange' in window) {
 <span id="L6" class="LineNr">  6 </span>  compare *val-type, <span class="Constant">1</span>/string
 <span id="L7" class="LineNr">  7 </span>  <span class="Delimiter">{</span>
 <span id="L8" class="LineNr">  8 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L9" class="LineNr">  9 </span>    <span class="PreProc">var</span> val-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, text-data
-<span id="L10" class="LineNr"> 10 </span>    <span class="PreProc">var</span> val-string/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *val-ah
+<span id="L9" class="LineNr">  9 </span>    <span class="PreProc">var</span> val-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, text-data
+<span id="L10" class="LineNr"> 10 </span>    <span class="PreProc">var</span> val-string/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *val-ah
 <span id="L11" class="LineNr"> 11 </span>    compare val-string, <span class="Constant">0</span>
 <span id="L12" class="LineNr"> 12 </span>    <span class="PreProc">break-if-=</span>
 <span id="L13" class="LineNr"> 13 </span>    <span class="PreProc">var</span> orig-len/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> length val-string
 <span id="L14" class="LineNr"> 14 </span>    <span class="PreProc">var</span> truncated: (handle array byte)
 <span id="L15" class="LineNr"> 15 </span>    <span class="PreProc">var</span> truncated-ah/<span class="muRegEsi">esi</span>: (addr handle array byte) <span class="Special">&lt;-</span> address truncated
 <span id="L16" class="LineNr"> 16 </span>    <a href='../411string.mu.html#L2'>substring</a> val-string, <span class="Constant">0</span>, <span class="Constant">0xc</span>, truncated-ah
-<span id="L17" class="LineNr"> 17 </span>    <span class="PreProc">var</span> truncated-string/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *truncated-ah
+<span id="L17" class="LineNr"> 17 </span>    <span class="PreProc">var</span> truncated-string/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *truncated-ah
 <span id="L18" class="LineNr"> 18 </span>    <span class="PreProc">var</span> len/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> length truncated-string
 <span id="L19" class="LineNr"> 19 </span>    <a href='../405screen.mu.html#L523'>start-color</a> <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">0xf2</span>, <span class="Constant">7</span>
 <span id="L20" class="LineNr"> 20 </span>    <a href='../405screen.mu.html#L435'>print-code-point</a> <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x275d</span>/open-quote
@@ -96,16 +95,16 @@ if ('onhashchange' in window) {
 <span id="L31" class="LineNr"> 31 </span>  compare *val-type, <span class="Constant">2</span>/array
 <span id="L32" class="LineNr"> 32 </span>  <span class="Delimiter">{</span>
 <span id="L33" class="LineNr"> 33 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L34" class="LineNr"> 34 </span>    <span class="PreProc">var</span> val-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, array-data
-<span id="L35" class="LineNr"> 35 </span>    <span class="PreProc">var</span> val-array/<span class="muRegEax">eax</span>: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *val-ah
+<span id="L34" class="LineNr"> 34 </span>    <span class="PreProc">var</span> val-ah/eax: (addr handle array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, array-data
+<span id="L35" class="LineNr"> 35 </span>    <span class="PreProc">var</span> val-array/eax: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *val-ah
 <span id="L36" class="LineNr"> 36 </span>    <a href='value.mu.html#L98'>render-array-at</a> <a href='../405screen.mu.html#L9'>screen</a>, row, col, val-array
 <span id="L37" class="LineNr"> 37 </span>    <span class="PreProc">return</span>
 <span id="L38" class="LineNr"> 38 </span>  <span class="Delimiter">}</span>
 <span id="L39" class="LineNr"> 39 </span>  compare *val-type, <span class="Constant">3</span>/file
 <span id="L40" class="LineNr"> 40 </span>  <span class="Delimiter">{</span>
 <span id="L41" class="LineNr"> 41 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L42" class="LineNr"> 42 </span>    <span class="PreProc">var</span> val-ah/<span class="muRegEax">eax</span>: (addr handle buffered-file) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, file-data
-<span id="L43" class="LineNr"> 43 </span>    <span class="PreProc">var</span> val-file/<span class="muRegEax">eax</span>: (addr buffered-file) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *val-ah
+<span id="L42" class="LineNr"> 42 </span>    <span class="PreProc">var</span> val-ah/eax: (addr handle buffered-file) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, file-data
+<span id="L43" class="LineNr"> 43 </span>    <span class="PreProc">var</span> val-file/eax: (addr buffered-file) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *val-ah
 <span id="L44" class="LineNr"> 44 </span>    <a href='../405screen.mu.html#L523'>start-color</a> <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>, <span class="Constant">7</span>
 <span id="L45" class="LineNr"> 45 </span>    <span class="muComment"># TODO</span>
 <span id="L46" class="LineNr"> 46 </span>    <a href='../405screen.mu.html#L169'>print-string</a> <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot; FILE &quot;</span>
@@ -115,14 +114,14 @@ if ('onhashchange' in window) {
 <span id="L50" class="LineNr"> 50 </span>  <span class="Delimiter">{</span>
 <span id="L51" class="LineNr"> 51 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L52" class="LineNr"> 52 </span><span class="CommentedCode">#?     print-string 0, &quot;render-screen&quot;</span>
-<span id="L53" class="LineNr"> 53 </span>    <span class="PreProc">var</span> val-ah/<span class="muRegEax">eax</span>: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, screen-data
-<span id="L54" class="LineNr"> 54 </span>    <span class="PreProc">var</span> val-screen/<span class="muRegEax">eax</span>: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *val-ah
+<span id="L53" class="LineNr"> 53 </span>    <span class="PreProc">var</span> val-ah/eax: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, screen-data
+<span id="L54" class="LineNr"> 54 </span>    <span class="PreProc">var</span> val-screen/eax: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *val-ah
 <span id="L55" class="LineNr"> 55 </span>    <a href='value.mu.html#L128'>render-screen</a> <a href='../405screen.mu.html#L9'>screen</a>, row, col, val-screen
 <span id="L56" class="LineNr"> 56 </span><span class="CommentedCode">#?     print-string 0, &quot;}\n&quot;</span>
 <span id="L57" class="LineNr"> 57 </span>    <span class="PreProc">return</span>
 <span id="L58" class="LineNr"> 58 </span>  <span class="Delimiter">}</span>
 <span id="L59" class="LineNr"> 59 </span>  <span class="muComment"># render ints by default for now</span>
-<span id="L60" class="LineNr"> 60 </span>  <span class="PreProc">var</span> val-num/<span class="muRegEax">eax</span>: (addr float) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, number-data
+<span id="L60" class="LineNr"> 60 </span>  <span class="PreProc">var</span> val-num/eax: (addr float) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> val, number-data
 <span id="L61" class="LineNr"> 61 </span>  <a href='value.mu.html#L66'>render-number</a> <a href='../405screen.mu.html#L9'>screen</a>, *val-num, top-level?
 <span id="L62" class="LineNr"> 62 </span><span class="Delimiter">}</span>
 <span id="L63" class="LineNr"> 63 </span>
@@ -136,8 +135,8 @@ if ('onhashchange' in window) {
 <span id="L71" class="LineNr"> 71 </span>    <a href='../412print-float-decimal.mu.html#L151'>print-float-decimal-approximate</a> <a href='../405screen.mu.html#L9'>screen</a>, val, <span class="Constant">3</span>
 <span id="L72" class="LineNr"> 72 </span>    <span class="PreProc">return</span>
 <span id="L73" class="LineNr"> 73 </span>  <span class="Delimiter">}</span>
-<span id="L74" class="LineNr"> 74 </span>  <span class="PreProc">var</span> val-int/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> convert val
-<span id="L75" class="LineNr"> 75 </span>  <span class="PreProc">var</span> bg/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='value.mu.html#L159'>hash-color</a> val-int
+<span id="L74" class="LineNr"> 74 </span>  <span class="PreProc">var</span> val-int/eax: int <span class="Special">&lt;-</span> convert val
+<span id="L75" class="LineNr"> 75 </span>  <span class="PreProc">var</span> bg/eax: int <span class="Special">&lt;-</span> <a href='value.mu.html#L159'>hash-color</a> val-int
 <span id="L76" class="LineNr"> 76 </span>  <span class="PreProc">var</span> fg/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">7</span>
 <span id="L77" class="LineNr"> 77 </span>  <span class="Delimiter">{</span>
 <span id="L78" class="LineNr"> 78 </span>    compare bg, <span class="Constant">2</span>
@@ -167,7 +166,7 @@ if ('onhashchange' in window) {
 <span id="L102" class="LineNr">102 </span>  increment col
 <span id="L103" class="LineNr">103 </span>  <span class="PreProc">var</span> a/<span class="muRegEsi">esi</span>: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> copy _a
 <span id="L104" class="LineNr">104 </span>  <span class="PreProc">var</span> <a href='surface.mu.html#L207'>max</a>/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> length a
-<span id="L105" class="LineNr">105 </span>  <span class="PreProc">var</span> i/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L105" class="LineNr">105 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L106" class="LineNr">106 </span>  <span class="Delimiter">{</span>
 <span id="L107" class="LineNr">107 </span>    compare i, <a href='surface.mu.html#L207'>max</a>
 <span id="L108" class="LineNr">108 </span>    <span class="PreProc">break-if-&gt;=</span>
@@ -180,7 +179,7 @@ if ('onhashchange' in window) {
 <span id="L115" class="LineNr">115 </span>    <span class="PreProc">var</span> x/<span class="muRegEcx">ecx</span>: (addr <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> index a, off
 <span id="L116" class="LineNr">116 </span>    <a href='value.mu.html#L1'>render-value-at</a> <a href='../405screen.mu.html#L9'>screen</a>, row, col, x, <span class="Constant">0</span>
 <span id="L117" class="LineNr">117 </span>    <span class="Delimiter">{</span>
-<span id="L118" class="LineNr">118 </span>      <span class="PreProc">var</span> w/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='value.mu.html#L218'>value-width</a> x, <span class="Constant">0</span>
+<span id="L118" class="LineNr">118 </span>      <span class="PreProc">var</span> w/eax: int <span class="Special">&lt;-</span> <a href='value.mu.html#L218'>value-width</a> x, <span class="Constant">0</span>
 <span id="L119" class="LineNr">119 </span>      add-to col, w
 <span id="L120" class="LineNr">120 </span>      increment col
 <span id="L121" class="LineNr">121 </span>    <span class="Delimiter">}</span>
@@ -221,8 +220,8 @@ if ('onhashchange' in window) {
 <span id="L156" class="LineNr">156 </span>  <a href='value.mu.html#L205'>print-lower-border</a> <a href='../405screen.mu.html#L9'>screen</a>, *ncols-a
 <span id="L157" class="LineNr">157 </span><span class="Delimiter">}</span>
 <span id="L158" class="LineNr">158 </span>
-<span id="L159" class="LineNr">159 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L159'>hash-color</a></span> val: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
-<span id="L160" class="LineNr">160 </span>  <span class="PreProc">var</span> quotient/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L159" class="LineNr">159 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L159'>hash-color</a></span> val: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
+<span id="L160" class="LineNr">160 </span>  <span class="PreProc">var</span> quotient/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L161" class="LineNr">161 </span>  <span class="PreProc">var</span> remainder/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L162" class="LineNr">162 </span>  quotient, remainder <span class="Special">&lt;-</span> <a href='../314divide.subx.html#L3'>integer-divide</a> val, <span class="Constant">7</span>  <span class="muComment"># assumes that 7 is always the background color</span>
 <span id="L163" class="LineNr">163 </span>  <span class="PreProc">return</span> remainder
@@ -235,16 +234,16 @@ if ('onhashchange' in window) {
 <span id="L170" class="LineNr">170 </span>  <span class="PreProc">var</span> col/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy _col
 <span id="L171" class="LineNr">171 </span>  <span class="muComment"># if cursor is at screen-cell, add some fancy</span>
 <span id="L172" class="LineNr">172 </span>  <span class="Delimiter">{</span>
-<span id="L173" class="LineNr">173 </span>    <span class="PreProc">var</span> cursor-row/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> target, cursor-row
+<span id="L173" class="LineNr">173 </span>    <span class="PreProc">var</span> cursor-row/eax: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> target, cursor-row
 <span id="L174" class="LineNr">174 </span>    compare *cursor-row, row
 <span id="L175" class="LineNr">175 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L176" class="LineNr">176 </span>    <span class="PreProc">var</span> cursor-col/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> target, cursor-col
+<span id="L176" class="LineNr">176 </span>    <span class="PreProc">var</span> cursor-col/eax: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> target, cursor-col
 <span id="L177" class="LineNr">177 </span>    compare *cursor-col, col
 <span id="L178" class="LineNr">178 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L179" class="LineNr">179 </span>    <a href='../405screen.mu.html#L583'>start-blinking</a> <a href='../405screen.mu.html#L9'>screen</a>
 <span id="L180" class="LineNr">180 </span>    <a href='../405screen.mu.html#L523'>start-color</a> <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>, <span class="Constant">1</span>
 <span id="L181" class="LineNr">181 </span>  <span class="Delimiter">}</span>
-<span id="L182" class="LineNr">182 </span>  <span class="PreProc">var</span> g/<span class="muRegEax">eax</span>: grapheme <span class="Special">&lt;-</span> <a href='../405screen.mu.html#L308'>screen-grapheme-at</a> target, row, col
+<span id="L182" class="LineNr">182 </span>  <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../405screen.mu.html#L308'>screen-grapheme-at</a> target, row, col
 <span id="L183" class="LineNr">183 </span>  <span class="Delimiter">{</span>
 <span id="L184" class="LineNr">184 </span>    compare g, <span class="Constant">0</span>
 <span id="L185" class="LineNr">185 </span>    <span class="PreProc">break-if-!=</span>
@@ -256,7 +255,7 @@ if ('onhashchange' in window) {
 <span id="L191" class="LineNr">191 </span>
 <span id="L192" class="LineNr">192 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L192'>print-upper-border</a></span> <a href='../405screen.mu.html#L9'>screen</a>: (addr <a href='../405screen.mu.html#L9'>screen</a>), width: int <span class="Delimiter">{</span>
 <span id="L193" class="LineNr">193 </span>  <a href='../405screen.mu.html#L435'>print-code-point</a> <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x250c</span>/top-left-corner
-<span id="L194" class="LineNr">194 </span>  <span class="PreProc">var</span> i/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L194" class="LineNr">194 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L195" class="LineNr">195 </span>  <span class="Delimiter">{</span>
 <span id="L196" class="LineNr">196 </span>    compare i, width
 <span id="L197" class="LineNr">197 </span>    <span class="PreProc">break-if-&gt;=</span>
@@ -269,7 +268,7 @@ if ('onhashchange' in window) {
 <span id="L204" class="LineNr">204 </span>
 <span id="L205" class="LineNr">205 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L205'>print-lower-border</a></span> <a href='../405screen.mu.html#L9'>screen</a>: (addr <a href='../405screen.mu.html#L9'>screen</a>), width: int <span class="Delimiter">{</span>
 <span id="L206" class="LineNr">206 </span>  <a href='../405screen.mu.html#L435'>print-code-point</a> <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x2514</span>/bottom-left-corner
-<span id="L207" class="LineNr">207 </span>  <span class="PreProc">var</span> i/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L207" class="LineNr">207 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L208" class="LineNr">208 </span>  <span class="Delimiter">{</span>
 <span id="L209" class="LineNr">209 </span>    compare i, width
 <span id="L210" class="LineNr">210 </span>    <span class="PreProc">break-if-&gt;=</span>
@@ -280,24 +279,24 @@ if ('onhashchange' in window) {
 <span id="L215" class="LineNr">215 </span>  <a href='../405screen.mu.html#L435'>print-code-point</a> <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">0x2518</span>/bottom-right-corner
 <span id="L216" class="LineNr">216 </span><span class="Delimiter">}</span>
 <span id="L217" class="LineNr">217 </span>
-<span id="L218" class="LineNr">218 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L218'>value-width</a></span> _v: (addr <a href='data.mu.html#L49'>value</a>), top-level: boolean<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L218" class="LineNr">218 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L218'>value-width</a></span> _v: (addr <a href='data.mu.html#L49'>value</a>), top-level: boolean<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L219" class="LineNr">219 </span>  <span class="PreProc">var</span> v/<span class="muRegEsi">esi</span>: (addr <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> copy _v
-<span id="L220" class="LineNr">220 </span>  <span class="PreProc">var</span> <span class="PreProc">type</span>/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, <span class="PreProc">type</span>
+<span id="L220" class="LineNr">220 </span>  <span class="PreProc">var</span> <span class="PreProc">type</span>/eax: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, <span class="PreProc">type</span>
 <span id="L221" class="LineNr">221 </span>  <span class="Delimiter">{</span>
 <span id="L222" class="LineNr">222 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">0</span>/int
 <span id="L223" class="LineNr">223 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L224" class="LineNr">224 </span>    <span class="PreProc">var</span> v-num/<span class="muRegEdx">edx</span>: (addr float) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, number-data
-<span id="L225" class="LineNr">225 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='../412print-float-decimal.mu.html#L510'>float-size</a> *v-num, <span class="Constant">3</span>
+<span id="L225" class="LineNr">225 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: int <span class="Special">&lt;-</span> <a href='../412print-float-decimal.mu.html#L510'>float-size</a> *v-num, <span class="Constant">3</span>
 <span id="L226" class="LineNr">226 </span>    <span class="PreProc">return</span> <a href='data.mu.html#L82'>result</a>
 <span id="L227" class="LineNr">227 </span>  <span class="Delimiter">}</span>
 <span id="L228" class="LineNr">228 </span>  <span class="Delimiter">{</span>
 <span id="L229" class="LineNr">229 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">1</span>/string
 <span id="L230" class="LineNr">230 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L231" class="LineNr">231 </span>    <span class="PreProc">var</span> s-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, text-data
-<span id="L232" class="LineNr">232 </span>    <span class="PreProc">var</span> s/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *s-ah
+<span id="L231" class="LineNr">231 </span>    <span class="PreProc">var</span> s-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, text-data
+<span id="L232" class="LineNr">232 </span>    <span class="PreProc">var</span> s/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *s-ah
 <span id="L233" class="LineNr">233 </span>    compare s, <span class="Constant">0</span>
 <span id="L234" class="LineNr">234 </span>    <span class="PreProc">break-if-=</span>
-<span id="L235" class="LineNr">235 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> length s
+<span id="L235" class="LineNr">235 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: int <span class="Special">&lt;-</span> length s
 <span id="L236" class="LineNr">236 </span>    compare <a href='data.mu.html#L82'>result</a>, <span class="Constant">0xd</span>/max-string-size
 <span id="L237" class="LineNr">237 </span>    <span class="Delimiter">{</span>
 <span id="L238" class="LineNr">238 </span>      <span class="PreProc">break-if-&lt;=</span>
@@ -316,18 +315,18 @@ if ('onhashchange' in window) {
 <span id="L251" class="LineNr">251 </span>  <span class="Delimiter">{</span>
 <span id="L252" class="LineNr">252 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">2</span>/array
 <span id="L253" class="LineNr">253 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L254" class="LineNr">254 </span>    <span class="PreProc">var</span> a-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, array-data
-<span id="L255" class="LineNr">255 </span>    <span class="PreProc">var</span> a/<span class="muRegEax">eax</span>: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *a-ah
+<span id="L254" class="LineNr">254 </span>    <span class="PreProc">var</span> a-ah/eax: (addr handle array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, array-data
+<span id="L255" class="LineNr">255 </span>    <span class="PreProc">var</span> a/eax: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *a-ah
 <span id="L256" class="LineNr">256 </span>    compare a, <span class="Constant">0</span>
 <span id="L257" class="LineNr">257 </span>    <span class="PreProc">break-if-=</span>
-<span id="L258" class="LineNr">258 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='value.mu.html#L287'>array-width</a> a
+<span id="L258" class="LineNr">258 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: int <span class="Special">&lt;-</span> <a href='value.mu.html#L287'>array-width</a> a
 <span id="L259" class="LineNr">259 </span>    <span class="PreProc">return</span> <a href='data.mu.html#L82'>result</a>
 <span id="L260" class="LineNr">260 </span>  <span class="Delimiter">}</span>
 <span id="L261" class="LineNr">261 </span>  <span class="Delimiter">{</span>
 <span id="L262" class="LineNr">262 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">3</span>/file
 <span id="L263" class="LineNr">263 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L264" class="LineNr">264 </span>    <span class="PreProc">var</span> f-ah/<span class="muRegEax">eax</span>: (addr handle buffered-file) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, file-data
-<span id="L265" class="LineNr">265 </span>    <span class="PreProc">var</span> f/<span class="muRegEax">eax</span>: (addr buffered-file) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *f-ah
+<span id="L264" class="LineNr">264 </span>    <span class="PreProc">var</span> f-ah/eax: (addr handle buffered-file) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, file-data
+<span id="L265" class="LineNr">265 </span>    <span class="PreProc">var</span> f/eax: (addr buffered-file) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *f-ah
 <span id="L266" class="LineNr">266 </span>    compare f, <span class="Constant">0</span>
 <span id="L267" class="LineNr">267 </span>    <span class="PreProc">break-if-=</span>
 <span id="L268" class="LineNr">268 </span>    <span class="muComment"># TODO: visualizing file handles</span>
@@ -336,12 +335,12 @@ if ('onhashchange' in window) {
 <span id="L271" class="LineNr">271 </span>  <span class="Delimiter">{</span>
 <span id="L272" class="LineNr">272 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">4</span>/screen
 <span id="L273" class="LineNr">273 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L274" class="LineNr">274 </span>    <span class="PreProc">var</span> screen-ah/<span class="muRegEax">eax</span>: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, screen-data
-<span id="L275" class="LineNr">275 </span>    <span class="PreProc">var</span> <a href='../405screen.mu.html#L9'>screen</a>/<span class="muRegEax">eax</span>: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *screen-ah
+<span id="L274" class="LineNr">274 </span>    <span class="PreProc">var</span> screen-ah/eax: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, screen-data
+<span id="L275" class="LineNr">275 </span>    <span class="PreProc">var</span> <a href='../405screen.mu.html#L9'>screen</a>/eax: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *screen-ah
 <span id="L276" class="LineNr">276 </span>    compare <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>
 <span id="L277" class="LineNr">277 </span>    <span class="PreProc">break-if-=</span>
 <span id="L278" class="LineNr">278 </span>    <span class="PreProc">var</span> ncols/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> <a href='../405screen.mu.html#L9'>screen</a>, num-cols
-<span id="L279" class="LineNr">279 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *ncols
+<span id="L279" class="LineNr">279 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: int <span class="Special">&lt;-</span> copy *ncols
 <span id="L280" class="LineNr">280 </span>    <a href='data.mu.html#L82'>result</a> <span class="Special">&lt;-</span> add <span class="Constant">2</span>  <span class="muComment"># left/right margins</span>
 <span id="L281" class="LineNr">281 </span>    <span class="PreProc">return</span> *ncols
 <span id="L282" class="LineNr">282 </span>  <span class="Delimiter">}</span>
@@ -349,10 +348,10 @@ if ('onhashchange' in window) {
 <span id="L284" class="LineNr">284 </span><span class="Delimiter">}</span>
 <span id="L285" class="LineNr">285 </span>
 <span id="L286" class="LineNr">286 </span><span class="muComment"># keep sync'd with render-array-at</span>
-<span id="L287" class="LineNr">287 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L287'>array-width</a></span> _a: (addr array <a href='data.mu.html#L49'>value</a>)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L287" class="LineNr">287 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L287'>array-width</a></span> _a: (addr array <a href='data.mu.html#L49'>value</a>)<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L288" class="LineNr">288 </span>  <span class="PreProc">var</span> a/<span class="muRegEsi">esi</span>: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> copy _a
 <span id="L289" class="LineNr">289 </span>  <span class="PreProc">var</span> <a href='surface.mu.html#L207'>max</a>/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> length a
-<span id="L290" class="LineNr">290 </span>  <span class="PreProc">var</span> i/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L290" class="LineNr">290 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L291" class="LineNr">291 </span>  <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L292" class="LineNr">292 </span>  <span class="Delimiter">{</span>
 <span id="L293" class="LineNr">293 </span>    compare i, <a href='surface.mu.html#L207'>max</a>
@@ -365,7 +364,7 @@ if ('onhashchange' in window) {
 <span id="L300" class="LineNr">300 </span>    <span class="PreProc">var</span> off/<span class="muRegEcx">ecx</span>: (offset <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> compute-offset a, i
 <span id="L301" class="LineNr">301 </span>    <span class="PreProc">var</span> x/<span class="muRegEcx">ecx</span>: (addr <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> index a, off
 <span id="L302" class="LineNr">302 </span>    <span class="Delimiter">{</span>
-<span id="L303" class="LineNr">303 </span>      <span class="PreProc">var</span> w/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='value.mu.html#L218'>value-width</a> x, <span class="Constant">0</span>
+<span id="L303" class="LineNr">303 </span>      <span class="PreProc">var</span> w/eax: int <span class="Special">&lt;-</span> <a href='value.mu.html#L218'>value-width</a> x, <span class="Constant">0</span>
 <span id="L304" class="LineNr">304 </span>      <a href='data.mu.html#L82'>result</a> <span class="Special">&lt;-</span> add w
 <span id="L305" class="LineNr">305 </span>    <span class="Delimiter">}</span>
 <span id="L306" class="LineNr">306 </span>    i <span class="Special">&lt;-</span> increment
@@ -376,9 +375,9 @@ if ('onhashchange' in window) {
 <span id="L311" class="LineNr">311 </span>  <span class="PreProc">return</span> <a href='data.mu.html#L82'>result</a>
 <span id="L312" class="LineNr">312 </span><span class="Delimiter">}</span>
 <span id="L313" class="LineNr">313 </span>
-<span id="L314" class="LineNr">314 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L314'>value-height</a></span> _v: (addr <a href='data.mu.html#L49'>value</a>)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L314" class="LineNr">314 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='value.mu.html#L314'>value-height</a></span> _v: (addr <a href='data.mu.html#L49'>value</a>)<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L315" class="LineNr">315 </span>  <span class="PreProc">var</span> v/<span class="muRegEsi">esi</span>: (addr <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> copy _v
-<span id="L316" class="LineNr">316 </span>  <span class="PreProc">var</span> <span class="PreProc">type</span>/<span class="muRegEax">eax</span>: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, <span class="PreProc">type</span>
+<span id="L316" class="LineNr">316 </span>  <span class="PreProc">var</span> <span class="PreProc">type</span>/eax: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, <span class="PreProc">type</span>
 <span id="L317" class="LineNr">317 </span>  <span class="Delimiter">{</span>
 <span id="L318" class="LineNr">318 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">3</span>/file
 <span id="L319" class="LineNr">319 </span>    <span class="PreProc">break-if-!=</span>
@@ -388,12 +387,12 @@ if ('onhashchange' in window) {
 <span id="L323" class="LineNr">323 </span>  <span class="Delimiter">{</span>
 <span id="L324" class="LineNr">324 </span>    compare *<span class="PreProc">type</span>, <span class="Constant">4</span>/screen
 <span id="L325" class="LineNr">325 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L326" class="LineNr">326 </span>    <span class="PreProc">var</span> screen-ah/<span class="muRegEax">eax</span>: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, screen-data
-<span id="L327" class="LineNr">327 </span>    <span class="PreProc">var</span> <a href='../405screen.mu.html#L9'>screen</a>/<span class="muRegEax">eax</span>: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *screen-ah
+<span id="L326" class="LineNr">326 </span>    <span class="PreProc">var</span> screen-ah/eax: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> v, screen-data
+<span id="L327" class="LineNr">327 </span>    <span class="PreProc">var</span> <a href='../405screen.mu.html#L9'>screen</a>/eax: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *screen-ah
 <span id="L328" class="LineNr">328 </span>    compare <a href='../405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>
 <span id="L329" class="LineNr">329 </span>    <span class="PreProc">break-if-=</span>
 <span id="L330" class="LineNr">330 </span>    <span class="PreProc">var</span> nrows/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> <a href='../405screen.mu.html#L9'>screen</a>, num-rows
-<span id="L331" class="LineNr">331 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy *nrows
+<span id="L331" class="LineNr">331 </span>    <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: int <span class="Special">&lt;-</span> copy *nrows
 <span id="L332" class="LineNr">332 </span>    <a href='data.mu.html#L82'>result</a> <span class="Special">&lt;-</span> add <span class="Constant">2</span>  <span class="muComment"># top and bottom border</span>
 <span id="L333" class="LineNr">333 </span>    <span class="PreProc">return</span> <a href='data.mu.html#L82'>result</a>
 <span id="L334" class="LineNr">334 </span>  <span class="Delimiter">}</span>
@@ -411,7 +410,7 @@ if ('onhashchange' in window) {
 <span id="L346" class="LineNr">346 </span>  <span class="Delimiter">{</span>
 <span id="L347" class="LineNr">347 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L348" class="LineNr">348 </span><span class="CommentedCode">#?     print-string 0, &quot;int value\n&quot;</span>
-<span id="L349" class="LineNr">349 </span>    <span class="PreProc">var</span> src-n/<span class="muRegEax">eax</span>: (addr float) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, number-data
+<span id="L349" class="LineNr">349 </span>    <span class="PreProc">var</span> src-n/eax: (addr float) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, number-data
 <span id="L350" class="LineNr">350 </span>    <span class="PreProc">var</span> dest-n/<span class="muRegEcx">ecx</span>: (addr float) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest, number-data
 <span id="L351" class="LineNr">351 </span>    copy-object src-n, dest-n
 <span id="L352" class="LineNr">352 </span>    <span class="PreProc">return</span>
@@ -420,8 +419,8 @@ if ('onhashchange' in window) {
 <span id="L355" class="LineNr">355 </span>  <span class="Delimiter">{</span>
 <span id="L356" class="LineNr">356 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L357" class="LineNr">357 </span><span class="CommentedCode">#?     print-string 0, &quot;string value\n&quot;</span>
-<span id="L358" class="LineNr">358 </span>    <span class="PreProc">var</span> src-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, text-data
-<span id="L359" class="LineNr">359 </span>    <span class="PreProc">var</span> src/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-ah
+<span id="L358" class="LineNr">358 </span>    <span class="PreProc">var</span> src-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, text-data
+<span id="L359" class="LineNr">359 </span>    <span class="PreProc">var</span> src/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-ah
 <span id="L360" class="LineNr">360 </span>    <span class="PreProc">var</span> dest-ah/<span class="muRegEdx">edx</span>: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest, text-data
 <span id="L361" class="LineNr">361 </span>    <a href='../312copy.subx.html#L3'>copy-array-object</a> src, dest-ah
 <span id="L362" class="LineNr">362 </span>    <span class="PreProc">return</span>
@@ -430,21 +429,21 @@ if ('onhashchange' in window) {
 <span id="L365" class="LineNr">365 </span>  <span class="Delimiter">{</span>
 <span id="L366" class="LineNr">366 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L367" class="LineNr">367 </span><span class="CommentedCode">#?     print-string 0, &quot;array value\n&quot;</span>
-<span id="L368" class="LineNr">368 </span>    <span class="PreProc">var</span> src-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, array-data
-<span id="L369" class="LineNr">369 </span>    <span class="PreProc">var</span> _src/<span class="muRegEax">eax</span>: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-ah
+<span id="L368" class="LineNr">368 </span>    <span class="PreProc">var</span> src-ah/eax: (addr handle array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, array-data
+<span id="L369" class="LineNr">369 </span>    <span class="PreProc">var</span> _src/eax: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-ah
 <span id="L370" class="LineNr">370 </span>    <span class="PreProc">var</span> src/<span class="muRegEsi">esi</span>: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> copy _src
 <span id="L371" class="LineNr">371 </span>    <span class="PreProc">var</span> n/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> length src
 <span id="L372" class="LineNr">372 </span>    <span class="PreProc">var</span> dest-ah/<span class="muRegEdx">edx</span>: (addr handle array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest, array-data
 <span id="L373" class="LineNr">373 </span>    populate dest-ah, n
-<span id="L374" class="LineNr">374 </span>    <span class="PreProc">var</span> _dest/<span class="muRegEax">eax</span>: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *dest-ah
+<span id="L374" class="LineNr">374 </span>    <span class="PreProc">var</span> _dest/eax: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *dest-ah
 <span id="L375" class="LineNr">375 </span>    <span class="PreProc">var</span> dest/<span class="muRegEdi">edi</span>: (addr array <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> copy _dest
-<span id="L376" class="LineNr">376 </span>    <span class="PreProc">var</span> i/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L376" class="LineNr">376 </span>    <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L377" class="LineNr">377 </span>    <span class="Delimiter">{</span>
 <span id="L378" class="LineNr">378 </span>      compare i, n
 <span id="L379" class="LineNr">379 </span>      <span class="PreProc">break-if-&gt;=</span>
 <span id="L380" class="LineNr">380 </span>      <span class="Delimiter">{</span>
 <span id="L381" class="LineNr">381 </span>        <span class="PreProc">var</span> offset/<span class="muRegEdx">edx</span>: (offset <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> compute-offset src, i
-<span id="L382" class="LineNr">382 </span>        <span class="PreProc">var</span> src-element/<span class="muRegEax">eax</span>: (addr <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> index src, offset
+<span id="L382" class="LineNr">382 </span>        <span class="PreProc">var</span> src-element/eax: (addr <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> index src, offset
 <span id="L383" class="LineNr">383 </span>        <span class="PreProc">var</span> dest-element/<span class="muRegEcx">ecx</span>: (addr <a href='data.mu.html#L49'>value</a>) <span class="Special">&lt;-</span> index dest, offset
 <span id="L384" class="LineNr">384 </span>        <a href='value.mu.html#L338'>deep-copy-value</a> src-element, dest-element
 <span id="L385" class="LineNr">385 </span>      <span class="Delimiter">}</span>
@@ -458,13 +457,13 @@ if ('onhashchange' in window) {
 <span id="L393" class="LineNr">393 </span>  <span class="Delimiter">{</span>
 <span id="L394" class="LineNr">394 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L395" class="LineNr">395 </span><span class="CommentedCode">#?     print-string 0, &quot;file value\n&quot;</span>
-<span id="L396" class="LineNr">396 </span>    <span class="PreProc">var</span> src-filename-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, filename
-<span id="L397" class="LineNr">397 </span>    <span class="PreProc">var</span> _src-filename/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-filename-ah
+<span id="L396" class="LineNr">396 </span>    <span class="PreProc">var</span> src-filename-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, filename
+<span id="L397" class="LineNr">397 </span>    <span class="PreProc">var</span> _src-filename/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-filename-ah
 <span id="L398" class="LineNr">398 </span>    <span class="PreProc">var</span> src-filename/<span class="muRegEcx">ecx</span>: (addr array byte) <span class="Special">&lt;-</span> copy _src-filename
 <span id="L399" class="LineNr">399 </span>    <span class="PreProc">var</span> dest-filename-ah/<span class="muRegEbx">ebx</span>: (addr handle array byte) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest, filename
 <span id="L400" class="LineNr">400 </span>    <a href='../312copy.subx.html#L3'>copy-array-object</a> src-filename, dest-filename-ah
-<span id="L401" class="LineNr">401 </span>    <span class="PreProc">var</span> src-file-ah/<span class="muRegEax">eax</span>: (addr handle buffered-file) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, file-data
-<span id="L402" class="LineNr">402 </span>    <span class="PreProc">var</span> src-file/<span class="muRegEax">eax</span>: (addr buffered-file) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-file-ah
+<span id="L401" class="LineNr">401 </span>    <span class="PreProc">var</span> src-file-ah/eax: (addr handle buffered-file) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, file-data
+<span id="L402" class="LineNr">402 </span>    <span class="PreProc">var</span> src-file/eax: (addr buffered-file) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-file-ah
 <span id="L403" class="LineNr">403 </span>    <span class="PreProc">var</span> dest-file-ah/<span class="muRegEdx">edx</span>: (addr handle buffered-file) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest, file-data
 <span id="L404" class="LineNr">404 </span>    <a href='../312copy.subx.html#L17'>copy-file</a> src-file, dest-file-ah, src-filename
 <span id="L405" class="LineNr">405 </span>    <span class="PreProc">return</span>
@@ -473,16 +472,16 @@ if ('onhashchange' in window) {
 <span id="L408" class="LineNr">408 </span>  <span class="Delimiter">{</span>
 <span id="L409" class="LineNr">409 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L410" class="LineNr">410 </span><span class="CommentedCode">#?     print-string 0, &quot;screen value\n&quot;</span>
-<span id="L411" class="LineNr">411 </span>    <span class="PreProc">var</span> src-screen-ah/<span class="muRegEax">eax</span>: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, screen-data
-<span id="L412" class="LineNr">412 </span>    <span class="PreProc">var</span> _src-screen/<span class="muRegEax">eax</span>: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-screen-ah
+<span id="L411" class="LineNr">411 </span>    <span class="PreProc">var</span> src-screen-ah/eax: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, screen-data
+<span id="L412" class="LineNr">412 </span>    <span class="PreProc">var</span> _src-screen/eax: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-screen-ah
 <span id="L413" class="LineNr">413 </span>    <span class="PreProc">var</span> src-screen/<span class="muRegEcx">ecx</span>: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy _src-screen
-<span id="L414" class="LineNr">414 </span>    <span class="PreProc">var</span> dest-screen-ah/<span class="muRegEax">eax</span>: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest, screen-data
+<span id="L414" class="LineNr">414 </span>    <span class="PreProc">var</span> dest-screen-ah/eax: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest, screen-data
 <span id="L415" class="LineNr">415 </span>    <a href='../120allocate.subx.html#L66'>allocate</a> dest-screen-ah
-<span id="L416" class="LineNr">416 </span>    <span class="PreProc">var</span> dest-screen/<span class="muRegEax">eax</span>: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *dest-screen-ah
+<span id="L416" class="LineNr">416 </span>    <span class="PreProc">var</span> dest-screen/eax: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *dest-screen-ah
 <span id="L417" class="LineNr">417 </span>    copy-object src-screen, dest-screen
 <span id="L418" class="LineNr">418 </span>    <span class="PreProc">var</span> dest-screen-data-ah/<span class="muRegEbx">ebx</span>: (addr handle array <a href='../405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest-screen, data
-<span id="L419" class="LineNr">419 </span>    <span class="PreProc">var</span> src-screen-data-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='../405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src-screen, data
-<span id="L420" class="LineNr">420 </span>    <span class="PreProc">var</span> src-screen-data/<span class="muRegEax">eax</span>: (addr array <a href='../405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-screen-data-ah
+<span id="L419" class="LineNr">419 </span>    <span class="PreProc">var</span> src-screen-data-ah/eax: (addr handle array <a href='../405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src-screen, data
+<span id="L420" class="LineNr">420 </span>    <span class="PreProc">var</span> src-screen-data/eax: (addr array <a href='../405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-screen-data-ah
 <span id="L421" class="LineNr">421 </span>    <a href='../312copy.subx.html#L3'>copy-array-object</a> src-screen-data, dest-screen-data-ah
 <span id="L422" class="LineNr">422 </span>    <span class="PreProc">return</span>
 <span id="L423" class="LineNr">423 </span>  <span class="Delimiter">}</span>

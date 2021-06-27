@@ -14,20 +14,19 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.LineNr { }
-.Delimiter { color: #c000c0; }
-.muRegEsi { color: #87d787; }
-.muRegEdi { color: #87ffd7; }
-.Constant { color: #008787; }
-.Special { color: #ff6060; }
 .PreProc { color: #c000c0; }
+.muRegEdx { color: #af5f00; }
+.LineNr { }
+.muRegEdi { color: #00af00; }
+.muRegEsi { color: #005faf; }
+.muRegEbx { color: #5f00ff; }
+.Constant { color: #008787; }
 .muFunction { color: #af5f00; text-decoration: underline; }
+.muRegEcx { color: #870000; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
 .muTest { color: #5f8700; }
 .muComment { color: #005faf; }
-.muRegEax { color: #875f00; }
-.muRegEcx { color: #af875f; }
-.muRegEdx { color: #878700; }
-.muRegEbx { color: #8787af; }
 -->
 </style>
 
@@ -157,7 +156,7 @@ if ('onhashchange' in window) {
 <span id="L92" class="LineNr"> 92 </span>  <a href='109stream-equal.subx.html#L194'>check-stream-equal</a> s, <span class="Constant">&quot;1.00e3&quot;</span>, <span class="Constant">&quot;F - <a href='412render-float-decimal.mu.html#L61'>test-write-float-decimal-approximate-integer</a> 1000&quot;</span>
 <span id="L93" class="LineNr"> 93 </span>  <span class="muComment"># 100,000</span>
 <span id="L94" class="LineNr"> 94 </span>  <a href='106stream.subx.html#L20'>clear-stream</a> s
-<span id="L95" class="LineNr"> 95 </span>  <span class="PreProc">var</span> hundred-thousand/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0x186a0</span>
+<span id="L95" class="LineNr"> 95 </span>  <span class="PreProc">var</span> hundred-thousand/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0x186a0</span>
 <span id="L96" class="LineNr"> 96 </span>  <span class="PreProc">var</span> hundred-thousand-f/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert hundred-thousand
 <span id="L97" class="LineNr"> 97 </span>  <a href='412render-float-decimal.mu.html#L163'>write-float-decimal-approximate</a> s, hundred-thousand-f, <span class="Constant">3</span>
 <span id="L98" class="LineNr"> 98 </span>  <a href='109stream-equal.subx.html#L194'>check-stream-equal</a> s, <span class="Constant">&quot;1.00e5&quot;</span>, <span class="Constant">&quot;F - <a href='412render-float-decimal.mu.html#L61'>test-write-float-decimal-approximate-integer</a> 100,000&quot;</span>
@@ -213,21 +212,21 @@ if ('onhashchange' in window) {
 <span id="L148" class="LineNr">148 </span>  <a href='109stream-equal.subx.html#L194'>check-stream-equal</a> s, <span class="Constant">&quot;NaN&quot;</span>, <span class="Constant">&quot;F - test-write-float-decimal-approximate-not-a-number&quot;</span>
 <span id="L149" class="LineNr">149 </span><span class="Delimiter">}</span>
 <span id="L150" class="LineNr">150 </span>
-<span id="L151" class="LineNr">151 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L151'>render-float-decimal</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), in: float, precision: int, x: int, y: int, color: int, background-color: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L151" class="LineNr">151 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L151'>render-float-decimal</a></span> <a href='500fake-screen.mu.html#L14'>screen</a>: (addr <a href='500fake-screen.mu.html#L14'>screen</a>), in: float, precision: int, x: int, y: int, color: int, background-color: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L152" class="LineNr">152 </span>  <span class="PreProc">var</span> s-storage: (stream byte <span class="Constant">0x10</span>)
 <span id="L153" class="LineNr">153 </span>  <span class="PreProc">var</span> s/<span class="muRegEsi">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> address s-storage
 <span id="L154" class="LineNr">154 </span>  <a href='412render-float-decimal.mu.html#L163'>write-float-decimal-approximate</a> s, in, precision
-<span id="L155" class="LineNr">155 </span>  <span class="PreProc">var</span> width/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L155" class="LineNr">155 </span>  <span class="PreProc">var</span> width/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L156" class="LineNr">156 </span>  <span class="PreProc">var</span> height/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L157" class="LineNr">157 </span>  width, height <span class="Special">&lt;-</span> <a href='500fake-screen.mu.html#L86'>screen-size</a> <a href='500fake-screen.mu.html#L14'>screen</a>
-<span id="L158" class="LineNr">158 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='501draw-text.mu.html#L111'>draw-stream-rightward</a> <a href='500fake-screen.mu.html#L14'>screen</a>, s, x, width, y, color, background-color
+<span id="L158" class="LineNr">158 </span>  <span class="PreProc">var</span> result/eax: int <span class="Special">&lt;-</span> <a href='501draw-text.mu.html#L111'>draw-stream-rightward</a> <a href='500fake-screen.mu.html#L14'>screen</a>, s, x, width, y, color, background-color
 <span id="L159" class="LineNr">159 </span>  <span class="PreProc">return</span> result
 <span id="L160" class="LineNr">160 </span><span class="Delimiter">}</span>
 <span id="L161" class="LineNr">161 </span>
 <span id="L162" class="LineNr">162 </span><span class="muComment"># 'precision' controls the maximum width past which we resort to scientific notation</span>
 <span id="L163" class="LineNr">163 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L163'>write-float-decimal-approximate</a></span> out: (addr stream byte), in: float, precision: int <span class="Delimiter">{</span>
 <span id="L164" class="LineNr">164 </span>  <span class="muComment"># - special names</span>
-<span id="L165" class="LineNr">165 </span>  <span class="PreProc">var</span> bits/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> reinterpret in
+<span id="L165" class="LineNr">165 </span>  <span class="PreProc">var</span> bits/eax: int <span class="Special">&lt;-</span> reinterpret in
 <span id="L166" class="LineNr">166 </span>  compare bits, <span class="Constant">0</span>
 <span id="L167" class="LineNr">167 </span>  <span class="Delimiter">{</span>
 <span id="L168" class="LineNr">168 </span>    <span class="PreProc">break-if-!=</span>
@@ -283,7 +282,7 @@ if ('onhashchange' in window) {
 <span id="L218" class="LineNr">218 </span>  <span class="muComment"># unlike <a href="https://research.swtch.com/ftoa">https://research.swtch.com/ftoa</a>, no ascii here</span>
 <span id="L219" class="LineNr">219 </span>  <span class="PreProc">var</span> buf-storage: (array byte <span class="Constant">0x7f</span>)
 <span id="L220" class="LineNr">220 </span>  <span class="PreProc">var</span> buf/<span class="muRegEdi">edi</span>: (addr array byte) <span class="Special">&lt;-</span> address buf-storage
-<span id="L221" class="LineNr">221 </span>  <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='412render-float-decimal.mu.html#L251'>decimal-digits</a> v, buf
+<span id="L221" class="LineNr">221 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> <a href='412render-float-decimal.mu.html#L251'>decimal-digits</a> v, buf
 <span id="L222" class="LineNr">222 </span>  <span class="muComment"># I suspect we can do without reversing, but we'll follow <a href="https://research.swtch.com/ftoa">https://research.swtch.com/ftoa</a></span>
 <span id="L223" class="LineNr">223 </span>  <span class="muComment"># closely for now.</span>
 <span id="L224" class="LineNr">224 </span>  <a href='412render-float-decimal.mu.html#L268'>reverse-digits</a> buf, n
@@ -313,10 +312,10 @@ if ('onhashchange' in window) {
 <span id="L248" class="LineNr">248 </span>
 <span id="L249" class="LineNr">249 </span><span class="muComment"># store the decimal digits of 'n' into 'buf', units first</span>
 <span id="L250" class="LineNr">250 </span><span class="muComment"># n must be positive</span>
-<span id="L251" class="LineNr">251 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L251'>decimal-digits</a></span> n: int, _buf: (addr array byte)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L251" class="LineNr">251 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L251'>decimal-digits</a></span> n: int, _buf: (addr array byte)<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L252" class="LineNr">252 </span>  <span class="PreProc">var</span> buf/<span class="muRegEdi">edi</span>: (addr array byte) <span class="Special">&lt;-</span> copy _buf
 <span id="L253" class="LineNr">253 </span>  <span class="PreProc">var</span> i/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L254" class="LineNr">254 </span>  <span class="PreProc">var</span> curr/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy n
+<span id="L254" class="LineNr">254 </span>  <span class="PreProc">var</span> curr/eax: int <span class="Special">&lt;-</span> copy n
 <span id="L255" class="LineNr">255 </span>  <span class="PreProc">var</span> curr-byte/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L256" class="LineNr">256 </span>  <span class="Delimiter">{</span>
 <span id="L257" class="LineNr">257 </span>    compare curr, <span class="Constant">0</span>
@@ -342,7 +341,7 @@ if ('onhashchange' in window) {
 <span id="L277" class="LineNr">277 </span>      <span class="PreProc">var</span> l-a/<span class="muRegEcx">ecx</span>: (addr byte) <span class="Special">&lt;-</span> index buf, left
 <span id="L278" class="LineNr">278 </span>      <span class="PreProc">var</span> r-a/<span class="muRegEdx">edx</span>: (addr byte) <span class="Special">&lt;-</span> index buf, right
 <span id="L279" class="LineNr">279 </span>      <span class="PreProc">var</span> l/<span class="muRegEbx">ebx</span>: byte <span class="Special">&lt;-</span> copy-byte *l-a
-<span id="L280" class="LineNr">280 </span>      <span class="PreProc">var</span> r/<span class="muRegEax">eax</span>: byte <span class="Special">&lt;-</span> copy-byte *r-a
+<span id="L280" class="LineNr">280 </span>      <span class="PreProc">var</span> r/eax: byte <span class="Special">&lt;-</span> copy-byte *r-a
 <span id="L281" class="LineNr">281 </span>      copy-byte-to *l-a, r
 <span id="L282" class="LineNr">282 </span>      copy-byte-to *r-a, l
 <span id="L283" class="LineNr">283 </span>    <span class="Delimiter">}</span>
@@ -352,19 +351,19 @@ if ('onhashchange' in window) {
 <span id="L287" class="LineNr">287 </span>  <span class="Delimiter">}</span>
 <span id="L288" class="LineNr">288 </span><span class="Delimiter">}</span>
 <span id="L289" class="LineNr">289 </span>
-<span id="L290" class="LineNr">290 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L290'>double-array-of-decimal-digits</a></span> _buf: (addr array byte), _n: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L290" class="LineNr">290 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L290'>double-array-of-decimal-digits</a></span> _buf: (addr array byte), _n: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L291" class="LineNr">291 </span>  <span class="PreProc">var</span> buf/<span class="muRegEdi">edi</span>: (addr array byte) <span class="Special">&lt;-</span> copy _buf
 <span id="L292" class="LineNr">292 </span>  <span class="muComment"># initialize delta</span>
 <span id="L293" class="LineNr">293 </span>  <span class="PreProc">var</span> delta/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L294" class="LineNr">294 </span>  <span class="Delimiter">{</span>
 <span id="L295" class="LineNr">295 </span>    <span class="PreProc">var</span> curr/<span class="muRegEbx">ebx</span>: (addr byte) <span class="Special">&lt;-</span> index buf, <span class="Constant">0</span>
-<span id="L296" class="LineNr">296 </span>    <span class="PreProc">var</span> tmp/<span class="muRegEax">eax</span>: byte <span class="Special">&lt;-</span> copy-byte *curr
+<span id="L296" class="LineNr">296 </span>    <span class="PreProc">var</span> tmp/eax: byte <span class="Special">&lt;-</span> copy-byte *curr
 <span id="L297" class="LineNr">297 </span>    compare tmp, <span class="Constant">5</span>
 <span id="L298" class="LineNr">298 </span>    <span class="PreProc">break-if-&lt;</span>
 <span id="L299" class="LineNr">299 </span>    delta <span class="Special">&lt;-</span> copy <span class="Constant">1</span>
 <span id="L300" class="LineNr">300 </span>  <span class="Delimiter">}</span>
 <span id="L301" class="LineNr">301 </span>  <span class="muComment"># loop</span>
-<span id="L302" class="LineNr">302 </span>  <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L302" class="LineNr">302 </span>  <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L303" class="LineNr">303 </span>  <span class="PreProc">var</span> i/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy _n
 <span id="L304" class="LineNr">304 </span>  i <span class="Special">&lt;-</span> decrement
 <span id="L305" class="LineNr">305 </span>  <span class="Delimiter">{</span>
@@ -391,7 +390,7 @@ if ('onhashchange' in window) {
 <span id="L326" class="LineNr">326 </span>    <span class="PreProc">loop</span>
 <span id="L327" class="LineNr">327 </span>  <span class="Delimiter">}</span>
 <span id="L328" class="LineNr">328 </span>  <span class="muComment"># final patch-up</span>
-<span id="L329" class="LineNr">329 </span>  <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy _n
+<span id="L329" class="LineNr">329 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> copy _n
 <span id="L330" class="LineNr">330 </span>  compare delta, <span class="Constant">1</span>
 <span id="L331" class="LineNr">331 </span>  <span class="Delimiter">{</span>
 <span id="L332" class="LineNr">332 </span>    <span class="PreProc">break-if-!=</span>
@@ -403,9 +402,9 @@ if ('onhashchange' in window) {
 <span id="L338" class="LineNr">338 </span>  <span class="PreProc">return</span> n
 <span id="L339" class="LineNr">339 </span><span class="Delimiter">}</span>
 <span id="L340" class="LineNr">340 </span>
-<span id="L341" class="LineNr">341 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L341'>halve-array-of-decimal-digits</a></span> _buf: (addr array byte), _n: int, _dp: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int, _/<span class="muRegEdx">edx</span>: int <span class="Delimiter">{</span>
+<span id="L341" class="LineNr">341 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L341'>halve-array-of-decimal-digits</a></span> _buf: (addr array byte), _n: int, _dp: int<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEdx">edx</span>: int <span class="Delimiter">{</span>
 <span id="L342" class="LineNr">342 </span>  <span class="PreProc">var</span> buf/<span class="muRegEdi">edi</span>: (addr array byte) <span class="Special">&lt;-</span> copy _buf
-<span id="L343" class="LineNr">343 </span>  <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy _n
+<span id="L343" class="LineNr">343 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> copy _n
 <span id="L344" class="LineNr">344 </span>  <span class="PreProc">var</span> dp/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy _dp
 <span id="L345" class="LineNr">345 </span>  <span class="muComment"># initialize one side</span>
 <span id="L346" class="LineNr">346 </span>  <span class="Delimiter">{</span>
@@ -417,7 +416,7 @@ if ('onhashchange' in window) {
 <span id="L352" class="LineNr">352 </span>    <span class="PreProc">var</span> right-int/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy right
 <span id="L353" class="LineNr">353 </span>    <span class="PreProc">var</span> remainder/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L354" class="LineNr">354 </span>    <span class="Delimiter">{</span>
-<span id="L355" class="LineNr">355 </span>      <span class="PreProc">var</span> dummy/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L355" class="LineNr">355 </span>      <span class="PreProc">var</span> dummy/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L356" class="LineNr">356 </span>      dummy, remainder <span class="Special">&lt;-</span> <a href='314divide.subx.html#L3'>integer-divide</a> right-int, <span class="Constant">2</span>
 <span id="L357" class="LineNr">357 </span>    <span class="Delimiter">}</span>
 <span id="L358" class="LineNr">358 </span>    compare remainder, <span class="Constant">0</span>
@@ -463,7 +462,7 @@ if ('onhashchange' in window) {
 <span id="L398" class="LineNr">398 </span>    <span class="Delimiter">}</span>
 <span id="L399" class="LineNr">399 </span>    <span class="muComment"># buf[i], x = x/2, x%2</span>
 <span id="L400" class="LineNr">400 </span>    <span class="Delimiter">{</span>
-<span id="L401" class="LineNr">401 </span>      <span class="PreProc">var</span> quotient/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L401" class="LineNr">401 </span>      <span class="PreProc">var</span> quotient/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L402" class="LineNr">402 </span>      <span class="PreProc">var</span> remainder/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L403" class="LineNr">403 </span>      quotient, remainder <span class="Special">&lt;-</span> <a href='314divide.subx.html#L3'>integer-divide</a> x, <span class="Constant">2</span>
 <span id="L404" class="LineNr">404 </span>      x <span class="Special">&lt;-</span> copy remainder
@@ -486,7 +485,7 @@ if ('onhashchange' in window) {
 <span id="L421" class="LineNr">421 </span>    <span class="PreProc">return</span>
 <span id="L422" class="LineNr">422 </span>  <span class="Delimiter">}</span>
 <span id="L423" class="LineNr">423 </span>  <span class="Delimiter">{</span>
-<span id="L424" class="LineNr">424 </span>    <span class="PreProc">var</span> dp2/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy dp
+<span id="L424" class="LineNr">424 </span>    <span class="PreProc">var</span> dp2/eax: int <span class="Special">&lt;-</span> copy dp
 <span id="L425" class="LineNr">425 </span>    compare dp2, precision
 <span id="L426" class="LineNr">426 </span>    <span class="PreProc">break-if-&lt;=</span>
 <span id="L427" class="LineNr">427 </span>    <a href='412render-float-decimal.mu.html#L464'>_write-float-array-of-decimal-digits-in-scientific-notation</a> out, buf, n, dp, precision
@@ -497,7 +496,7 @@ if ('onhashchange' in window) {
 <span id="L432" class="LineNr">432 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L433" class="LineNr">433 </span>    <a href='115write-byte.subx.html#L12'>append-byte</a> out, <span class="Constant">0x30</span>/<span class="Constant">0</span>
 <span id="L434" class="LineNr">434 </span>  <span class="Delimiter">}</span>
-<span id="L435" class="LineNr">435 </span>  <span class="PreProc">var</span> i/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L435" class="LineNr">435 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L436" class="LineNr">436 </span>  <span class="muComment"># bounds = min(n, dp+3)</span>
 <span id="L437" class="LineNr">437 </span>  <span class="PreProc">var</span> limit/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy dp
 <span id="L438" class="LineNr">438 </span>  limit <span class="Special">&lt;-</span> add <span class="Constant">3</span>
@@ -528,7 +527,7 @@ if ('onhashchange' in window) {
 <span id="L463" class="LineNr">463 </span>
 <span id="L464" class="LineNr">464 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L464'>_write-float-array-of-decimal-digits-in-scientific-notation</a></span> out: (addr stream byte), _buf: (addr array byte), n: int, dp: int, precision: int <span class="Delimiter">{</span>
 <span id="L465" class="LineNr">465 </span>  <span class="PreProc">var</span> buf/<span class="muRegEdi">edi</span>: (addr array byte) <span class="Special">&lt;-</span> copy _buf
-<span id="L466" class="LineNr">466 </span>  <span class="PreProc">var</span> i/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L466" class="LineNr">466 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L467" class="LineNr">467 </span>  <span class="Delimiter">{</span>
 <span id="L468" class="LineNr">468 </span>    compare i, n
 <span id="L469" class="LineNr">469 </span>    <span class="PreProc">break-if-&gt;=</span>
@@ -555,9 +554,9 @@ if ('onhashchange' in window) {
 <span id="L490" class="LineNr">490 </span>
 <span id="L491" class="LineNr">491 </span><span class="muComment"># follows the structure of write-float-decimal-approximate</span>
 <span id="L492" class="LineNr">492 </span><span class="muComment"># 'precision' controls the maximum width past which we resort to scientific notation</span>
-<span id="L493" class="LineNr">493 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L493'>float-size</a></span> in: float, precision: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L493" class="LineNr">493 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='412render-float-decimal.mu.html#L493'>float-size</a></span> in: float, precision: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L494" class="LineNr">494 </span>  <span class="muComment"># - special names</span>
-<span id="L495" class="LineNr">495 </span>  <span class="PreProc">var</span> bits/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> reinterpret in
+<span id="L495" class="LineNr">495 </span>  <span class="PreProc">var</span> bits/eax: int <span class="Special">&lt;-</span> reinterpret in
 <span id="L496" class="LineNr">496 </span>  compare bits, <span class="Constant">0</span>
 <span id="L497" class="LineNr">497 </span>  <span class="Delimiter">{</span>
 <span id="L498" class="LineNr">498 </span>    <span class="PreProc">break-if-!=</span>
@@ -599,7 +598,7 @@ if ('onhashchange' in window) {
 <span id="L534" class="LineNr">534 </span>  <span class="muComment"># initialize buffer with decimal representation of v</span>
 <span id="L535" class="LineNr">535 </span>  <span class="PreProc">var</span> buf-storage: (array byte <span class="Constant">0x7f</span>)
 <span id="L536" class="LineNr">536 </span>  <span class="PreProc">var</span> buf/<span class="muRegEdi">edi</span>: (addr array byte) <span class="Special">&lt;-</span> address buf-storage
-<span id="L537" class="LineNr">537 </span>  <span class="PreProc">var</span> n/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='412render-float-decimal.mu.html#L251'>decimal-digits</a> v, buf
+<span id="L537" class="LineNr">537 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> <a href='412render-float-decimal.mu.html#L251'>decimal-digits</a> v, buf
 <span id="L538" class="LineNr">538 </span>  <a href='412render-float-decimal.mu.html#L268'>reverse-digits</a> buf, n
 <span id="L539" class="LineNr">539 </span>
 <span id="L540" class="LineNr">540 </span>  <span class="muComment"># loop if e &gt; 0</span>
@@ -628,7 +627,7 @@ if ('onhashchange' in window) {
 <span id="L563" class="LineNr">563 </span>    <span class="PreProc">return</span> <span class="Constant">8</span>  <span class="muComment"># hacky for scientific notation</span>
 <span id="L564" class="LineNr">564 </span>  <span class="Delimiter">}</span>
 <span id="L565" class="LineNr">565 </span>  <span class="Delimiter">{</span>
-<span id="L566" class="LineNr">566 </span>    <span class="PreProc">var</span> dp2/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy dp
+<span id="L566" class="LineNr">566 </span>    <span class="PreProc">var</span> dp2/eax: int <span class="Special">&lt;-</span> copy dp
 <span id="L567" class="LineNr">567 </span>    compare dp2, precision
 <span id="L568" class="LineNr">568 </span>    <span class="PreProc">break-if-&lt;=</span>
 <span id="L569" class="LineNr">569 </span>    <span class="PreProc">return</span> <span class="Constant">8</span>  <span class="muComment"># hacky for scientific notation</span>

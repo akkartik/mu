@@ -14,18 +14,17 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.muRegEdx { color: #878700; }
-.muComment { color: #005faf; }
-.LineNr { }
-.muRegEdi { color: #87ffd7; }
-.Constant { color: #008787; }
+.PreProc { color: #c000c0; }
+.muRegEdx { color: #af5f00; }
 .Special { color: #ff6060; }
-.muRegEax { color: #875f00; }
+.LineNr { }
+.muRegEsi { color: #005faf; }
+.Constant { color: #008787; }
+.muRegEdi { color: #00af00; }
+.muRegEcx { color: #870000; }
 .Delimiter { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
-.muRegEsi { color: #87d787; }
-.muRegEcx { color: #af875f; }
-.PreProc { color: #c000c0; }
+.muComment { color: #005faf; }
 -->
 </style>
 
@@ -82,8 +81,8 @@ if ('onhashchange' in window) {
 <span id="L19" class="LineNr"> 19 </span><span class="muComment">#</span>
 <span id="L20" class="LineNr"> 20 </span><span class="muComment"># The day we want to support combining characters, this function will need to</span>
 <span id="L21" class="LineNr"> 21 </span><span class="muComment"># take multiple code points. Or something.</span>
-<span id="L22" class="LineNr"> 22 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='403unicode.mu.html#L22'>to-grapheme</a></span> in: code-point<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: grapheme <span class="Delimiter">{</span>
-<span id="L23" class="LineNr"> 23 </span>  <span class="PreProc">var</span> c/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy in
+<span id="L22" class="LineNr"> 22 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='403unicode.mu.html#L22'>to-grapheme</a></span> in: code-point<span class="PreProc"> -&gt; </span>_/eax: grapheme <span class="Delimiter">{</span>
+<span id="L23" class="LineNr"> 23 </span>  <span class="PreProc">var</span> c/eax: int <span class="Special">&lt;-</span> copy in
 <span id="L24" class="LineNr"> 24 </span>  <span class="PreProc">var</span> num-trailers/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L25" class="LineNr"> 25 </span>  <span class="PreProc">var</span> first/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L26" class="LineNr"> 26 </span>  $to-grapheme:compute-length: <span class="Delimiter">{</span>
@@ -91,7 +90,7 @@ if ('onhashchange' in window) {
 <span id="L28" class="LineNr"> 28 </span>    compare c, <span class="Constant">0x7f</span>
 <span id="L29" class="LineNr"> 29 </span>    <span class="Delimiter">{</span>
 <span id="L30" class="LineNr"> 30 </span>      <span class="PreProc">break-if-&gt;</span>
-<span id="L31" class="LineNr"> 31 </span>      <span class="PreProc">var</span> g/<span class="muRegEax">eax</span>: grapheme <span class="Special">&lt;-</span> copy c
+<span id="L31" class="LineNr"> 31 </span>      <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> copy c
 <span id="L32" class="LineNr"> 32 </span>      <span class="PreProc">return</span> g
 <span id="L33" class="LineNr"> 33 </span>    <span class="Delimiter">}</span>
 <span id="L34" class="LineNr"> 34 </span>    <span class="muComment"># 2 bytes</span>
@@ -152,28 +151,28 @@ if ('onhashchange' in window) {
 <span id="L89" class="LineNr"> 89 </span><span class="muComment"># TODO: bring in tests once we have check-ints-equal</span>
 <span id="L90" class="LineNr"> 90 </span>
 <span id="L91" class="LineNr"> 91 </span><span class="muComment"># read the next grapheme from a stream of bytes</span>
-<span id="L92" class="LineNr"> 92 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='403unicode.mu.html#L92'>read-grapheme</a></span> in: (addr stream byte)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: grapheme <span class="Delimiter">{</span>
+<span id="L92" class="LineNr"> 92 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='403unicode.mu.html#L92'>read-grapheme</a></span> in: (addr stream byte)<span class="PreProc"> -&gt; </span>_/eax: grapheme <span class="Delimiter">{</span>
 <span id="L93" class="LineNr"> 93 </span>  <span class="muComment"># if at eof, return EOF</span>
 <span id="L94" class="LineNr"> 94 </span>  <span class="Delimiter">{</span>
-<span id="L95" class="LineNr"> 95 </span>    <span class="PreProc">var</span> eof?/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> in
+<span id="L95" class="LineNr"> 95 </span>    <span class="PreProc">var</span> eof?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> in
 <span id="L96" class="LineNr"> 96 </span>    compare eof?, <span class="Constant">0</span>/false
 <span id="L97" class="LineNr"> 97 </span>    <span class="PreProc">break-if-=</span>
 <span id="L98" class="LineNr"> 98 </span>    <span class="PreProc">return</span> <span class="Constant">0xffffffff</span>
 <span id="L99" class="LineNr"> 99 </span>  <span class="Delimiter">}</span>
-<span id="L100" class="LineNr">100 </span>  <span class="PreProc">var</span> c/<span class="muRegEax">eax</span>: byte <span class="Special">&lt;-</span> <a href='112read-byte.subx.html#L13'>read-byte</a> in
+<span id="L100" class="LineNr">100 </span>  <span class="PreProc">var</span> c/eax: byte <span class="Special">&lt;-</span> <a href='112read-byte.subx.html#L13'>read-byte</a> in
 <span id="L101" class="LineNr">101 </span>  <span class="PreProc">var</span> num-trailers/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L102" class="LineNr">102 </span>  $read-grapheme:compute-length: <span class="Delimiter">{</span>
 <span id="L103" class="LineNr">103 </span>    <span class="muComment"># single byte: just return it</span>
 <span id="L104" class="LineNr">104 </span>    compare c, <span class="Constant">0xc0</span>
 <span id="L105" class="LineNr">105 </span>    <span class="Delimiter">{</span>
 <span id="L106" class="LineNr">106 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L107" class="LineNr">107 </span>      <span class="PreProc">var</span> g/<span class="muRegEax">eax</span>: grapheme <span class="Special">&lt;-</span> copy c
+<span id="L107" class="LineNr">107 </span>      <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> copy c
 <span id="L108" class="LineNr">108 </span>      <span class="PreProc">return</span> g
 <span id="L109" class="LineNr">109 </span>    <span class="Delimiter">}</span>
 <span id="L110" class="LineNr">110 </span>    compare c, <span class="Constant">0xfe</span>
 <span id="L111" class="LineNr">111 </span>    <span class="Delimiter">{</span>
 <span id="L112" class="LineNr">112 </span>      <span class="PreProc">break-if-&lt;</span>
-<span id="L113" class="LineNr">113 </span>      <span class="PreProc">var</span> g/<span class="muRegEax">eax</span>: grapheme <span class="Special">&lt;-</span> copy c
+<span id="L113" class="LineNr">113 </span>      <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> copy c
 <span id="L114" class="LineNr">114 </span>      <span class="PreProc">return</span> g
 <span id="L115" class="LineNr">115 </span>    <span class="Delimiter">}</span>
 <span id="L116" class="LineNr">116 </span>    <span class="muComment"># 2 bytes</span>
@@ -206,8 +205,8 @@ if ('onhashchange' in window) {
 <span id="L143" class="LineNr">143 </span>  <span class="Delimiter">{</span>
 <span id="L144" class="LineNr">144 </span>    compare num-trailers, <span class="Constant">0</span>
 <span id="L145" class="LineNr">145 </span>    <span class="PreProc">break-if-&lt;=</span>
-<span id="L146" class="LineNr">146 </span>    <span class="PreProc">var</span> tmp/<span class="muRegEax">eax</span>: byte <span class="Special">&lt;-</span> <a href='112read-byte.subx.html#L13'>read-byte</a> in
-<span id="L147" class="LineNr">147 </span>    <span class="PreProc">var</span> tmp2/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy tmp
+<span id="L146" class="LineNr">146 </span>    <span class="PreProc">var</span> tmp/eax: byte <span class="Special">&lt;-</span> <a href='112read-byte.subx.html#L13'>read-byte</a> in
+<span id="L147" class="LineNr">147 </span>    <span class="PreProc">var</span> tmp2/eax: int <span class="Special">&lt;-</span> copy tmp
 <span id="L148" class="LineNr">148 </span>    tmp2 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L159'>shift-left-bytes</a> tmp2, num-byte-shifts
 <span id="L149" class="LineNr">149 </span>    result <span class="Special">&lt;-</span> or tmp2
 <span id="L150" class="LineNr">150 </span>    <span class="muComment"># update loop state</span>
@@ -219,9 +218,9 @@ if ('onhashchange' in window) {
 <span id="L156" class="LineNr">156 </span><span class="Delimiter">}</span>
 <span id="L157" class="LineNr">157 </span>
 <span id="L158" class="LineNr">158 </span><span class="muComment"># needed because available primitives only shift by a literal/constant number of bits</span>
-<span id="L159" class="LineNr">159 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='403unicode.mu.html#L159'>shift-left-bytes</a></span> n: int, k: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: int <span class="Delimiter">{</span>
+<span id="L159" class="LineNr">159 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='403unicode.mu.html#L159'>shift-left-bytes</a></span> n: int, k: int<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
 <span id="L160" class="LineNr">160 </span>  <span class="PreProc">var</span> i/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L161" class="LineNr">161 </span>  <span class="PreProc">var</span> result/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy n
+<span id="L161" class="LineNr">161 </span>  <span class="PreProc">var</span> result/eax: int <span class="Special">&lt;-</span> copy n
 <span id="L162" class="LineNr">162 </span>  <span class="Delimiter">{</span>
 <span id="L163" class="LineNr">163 </span>    compare i, k
 <span id="L164" class="LineNr">164 </span>    <span class="PreProc">break-if-&gt;=</span>
@@ -238,7 +237,7 @@ if ('onhashchange' in window) {
 <span id="L175" class="LineNr">175 </span><span class="muComment"># this is like write-to-stream, except we skip leading 0 bytes</span>
 <span id="L176" class="LineNr">176 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='403unicode.mu.html#L176'>write-grapheme</a></span> out: (addr stream byte), g: grapheme <span class="Delimiter">{</span>
 <span id="L177" class="LineNr">177 </span>$write-grapheme:body: <span class="Delimiter">{</span>
-<span id="L178" class="LineNr">178 </span>  <span class="PreProc">var</span> c/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy g
+<span id="L178" class="LineNr">178 </span>  <span class="PreProc">var</span> c/eax: int <span class="Special">&lt;-</span> copy g
 <span id="L179" class="LineNr">179 </span>  <a href='115write-byte.subx.html#L12'>append-byte</a> out, c  <span class="muComment"># first byte is always written</span>
 <span id="L180" class="LineNr">180 </span>  c <span class="Special">&lt;-</span> shift-right <span class="Constant">8</span>
 <span id="L181" class="LineNr">181 </span>  compare c, <span class="Constant">0</span>

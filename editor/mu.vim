@@ -75,19 +75,18 @@ syntax match muData "^type\>"
 syntax match muData "\<xmm[0-7]\>"
 highlight link muData Constant
 
-" Some hacky colors
-" TODO: This should really be theme-dependent.
-syntax match muRegEax "\<eax\>"
-highlight muRegEax ctermfg=94
+" Some hacky colors for a light background.
+" TODO: They should really be theme-dependent. Use tools/regs.mu when tweaking them.
+" eax is so common that it's not worth highlighting
 syntax match muRegEcx "\<ecx\>"
-highlight muRegEcx ctermfg=137
+highlight muRegEcx ctermfg=88
 syntax match muRegEdx "\<edx\>"
-highlight muRegEdx ctermfg=100
+highlight muRegEdx ctermfg=130
 syntax match muRegEbx "\<ebx\>"
-highlight muRegEbx ctermfg=103
+highlight muRegEbx ctermfg=57
 syntax match muRegEsi "\<esi\>"
-highlight muRegEsi ctermfg=114
+highlight muRegEsi ctermfg=25
 syntax match muRegEdi "\<edi\>"
-highlight muRegEdi ctermfg=122
+highlight muRegEdi ctermfg=34
 
 let &cpo = s:save_cpo

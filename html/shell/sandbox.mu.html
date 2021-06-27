@@ -17,18 +17,17 @@ a { color:inherit; }
 .LineNr { }
 .Delimiter { color: #c000c0; }
 .CommentedCode { color: #8a8a8a; }
-.muRegEsi { color: #87d787; }
-.muRegEdi { color: #87ffd7; }
+.muRegEbx { color: #5f00ff; }
+.muRegEsi { color: #005faf; }
+.muRegEdi { color: #00af00; }
 .Constant { color: #008787; }
 .Special { color: #ff6060; }
 .PreProc { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
 .muTest { color: #5f8700; }
 .muComment { color: #005faf; }
-.muRegEax { color: #875f00; }
-.muRegEcx { color: #af875f; }
-.muRegEdx { color: #878700; }
-.muRegEbx { color: #8787af; }
+.muRegEcx { color: #870000; }
+.muRegEdx { color: #af5f00; }
 -->
 </style>
 
@@ -77,28 +76,28 @@ if ('onhashchange' in window) {
 <span id="L11" class="LineNr">  11 </span>
 <span id="L12" class="LineNr">  12 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L12'>initialize-sandbox</a></span> _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>), fake-screen-width: int, fake-screen-height: int <span class="Delimiter">{</span>
 <span id="L13" class="LineNr">  13 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L14" class="LineNr">  14 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L14" class="LineNr">  14 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
 <span id="L15" class="LineNr">  15 </span>  <a href='../120allocate.subx.html#L43'>allocate</a> data-ah
-<span id="L16" class="LineNr">  16 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L16" class="LineNr">  16 </span>  <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L17" class="LineNr">  17 </span>  <a href='gap-buffer.mu.html#L11'>initialize-gap-buffer</a> data, <span class="Constant">0x2000</span>/default-gap-buffer-size=8KB
 <span id="L18" class="LineNr">  18 </span>  <span class="muComment">#</span>
-<span id="L19" class="LineNr">  19 </span>  <span class="PreProc">var</span> value-ah/<span class="muRegEax">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get self, value
+<span id="L19" class="LineNr">  19 </span>  <span class="PreProc">var</span> value-ah/eax: (addr handle stream byte) <span class="Special">&lt;-</span> get self, value
 <span id="L20" class="LineNr">  20 </span>  populate-stream value-ah, <span class="Constant">0x1000</span>/4KB
 <span id="L21" class="LineNr">  21 </span>  <span class="muComment">#</span>
 <span id="L22" class="LineNr">  22 </span>  <span class="Delimiter">{</span>
 <span id="L23" class="LineNr">  23 </span>    compare fake-screen-width, <span class="Constant">0</span>
 <span id="L24" class="LineNr">  24 </span>    <span class="PreProc">break-if-=</span>
-<span id="L25" class="LineNr">  25 </span>    <span class="PreProc">var</span> screen-ah/<span class="muRegEax">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, screen-var
+<span id="L25" class="LineNr">  25 </span>    <span class="PreProc">var</span> screen-ah/eax: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, screen-var
 <span id="L26" class="LineNr">  26 </span>    <a href='cell.mu.html#L154'>new-fake-screen</a> screen-ah, fake-screen-width, fake-screen-height, <span class="Constant">1</span>/enable-pixel-graphics
-<span id="L27" class="LineNr">  27 </span>    <span class="PreProc">var</span> keyboard-ah/<span class="muRegEax">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
+<span id="L27" class="LineNr">  27 </span>    <span class="PreProc">var</span> keyboard-ah/eax: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
 <span id="L28" class="LineNr">  28 </span>    <a href='cell.mu.html#L185'>new-fake-keyboard</a> keyboard-ah, <span class="Constant">0x10</span>/keyboard-capacity
 <span id="L29" class="LineNr">  29 </span>  <span class="Delimiter">}</span>
 <span id="L30" class="LineNr">  30 </span>  <span class="muComment">#</span>
-<span id="L31" class="LineNr">  31 </span>  <span class="PreProc">var</span> trace-ah/<span class="muRegEax">eax</span>: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
+<span id="L31" class="LineNr">  31 </span>  <span class="PreProc">var</span> trace-ah/eax: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
 <span id="L32" class="LineNr">  32 </span>  <a href='../120allocate.subx.html#L43'>allocate</a> trace-ah
-<span id="L33" class="LineNr">  33 </span>  <span class="PreProc">var</span> trace/<span class="muRegEax">eax</span>: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
+<span id="L33" class="LineNr">  33 </span>  <span class="PreProc">var</span> trace/eax: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
 <span id="L34" class="LineNr">  34 </span>  <a href='trace.mu.html#L61'>initialize-trace</a> trace, <span class="Constant">4</span>/max-depth, <span class="Constant">0x8000</span>/lines, <span class="Constant">0x80</span>/visible
-<span id="L35" class="LineNr">  35 </span>  <span class="PreProc">var</span> cursor-in-data?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
+<span id="L35" class="LineNr">  35 </span>  <span class="PreProc">var</span> cursor-in-data?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
 <span id="L36" class="LineNr">  36 </span>  copy-to *cursor-in-data?, <span class="Constant">1</span>/true
 <span id="L37" class="LineNr">  37 </span><span class="Delimiter">}</span>
 <span id="L38" class="LineNr">  38 </span>
@@ -106,33 +105,33 @@ if ('onhashchange' in window) {
 <span id="L40" class="LineNr">  40 </span>
 <span id="L41" class="LineNr">  41 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L41'>initialize-sandbox-with</a></span> _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>), s: (addr array byte) <span class="Delimiter">{</span>
 <span id="L42" class="LineNr">  42 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L43" class="LineNr">  43 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L43" class="LineNr">  43 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
 <span id="L44" class="LineNr">  44 </span>  <a href='../120allocate.subx.html#L43'>allocate</a> data-ah
-<span id="L45" class="LineNr">  45 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L45" class="LineNr">  45 </span>  <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L46" class="LineNr">  46 </span>  <a href='gap-buffer.mu.html#L53'>initialize-gap-buffer-with</a> data, s
-<span id="L47" class="LineNr">  47 </span>  <span class="PreProc">var</span> value-ah/<span class="muRegEax">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get self, value
+<span id="L47" class="LineNr">  47 </span>  <span class="PreProc">var</span> value-ah/eax: (addr handle stream byte) <span class="Special">&lt;-</span> get self, value
 <span id="L48" class="LineNr">  48 </span>  populate-stream value-ah, <span class="Constant">0x1000</span>/4KB
-<span id="L49" class="LineNr">  49 </span>  <span class="PreProc">var</span> trace-ah/<span class="muRegEax">eax</span>: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
+<span id="L49" class="LineNr">  49 </span>  <span class="PreProc">var</span> trace-ah/eax: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
 <span id="L50" class="LineNr">  50 </span>  <a href='../120allocate.subx.html#L43'>allocate</a> trace-ah
-<span id="L51" class="LineNr">  51 </span>  <span class="PreProc">var</span> trace/<span class="muRegEax">eax</span>: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
+<span id="L51" class="LineNr">  51 </span>  <span class="PreProc">var</span> trace/eax: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
 <span id="L52" class="LineNr">  52 </span>  <a href='trace.mu.html#L61'>initialize-trace</a> trace, <span class="Constant">3</span>/max-depth, <span class="Constant">0x8000</span>/lines, <span class="Constant">0x80</span>/visible
-<span id="L53" class="LineNr">  53 </span>  <span class="PreProc">var</span> cursor-in-data?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
+<span id="L53" class="LineNr">  53 </span>  <span class="PreProc">var</span> cursor-in-data?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
 <span id="L54" class="LineNr">  54 </span>  copy-to *cursor-in-data?, <span class="Constant">1</span>/true
 <span id="L55" class="LineNr">  55 </span><span class="Delimiter">}</span>
 <span id="L56" class="LineNr">  56 </span>
 <span id="L57" class="LineNr">  57 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L57'>allocate-sandbox-with</a></span> _out: (addr handle <a href='sandbox.mu.html#L1'>sandbox</a>), s: (addr array byte) <span class="Delimiter">{</span>
-<span id="L58" class="LineNr">  58 </span>  <span class="PreProc">var</span> out/<span class="muRegEax">eax</span>: (addr handle <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _out
+<span id="L58" class="LineNr">  58 </span>  <span class="PreProc">var</span> out/eax: (addr handle <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _out
 <span id="L59" class="LineNr">  59 </span>  <a href='../120allocate.subx.html#L43'>allocate</a> out
-<span id="L60" class="LineNr">  60 </span>  <span class="PreProc">var</span> out-addr/<span class="muRegEax">eax</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *out
+<span id="L60" class="LineNr">  60 </span>  <span class="PreProc">var</span> out-addr/eax: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *out
 <span id="L61" class="LineNr">  61 </span>  <a href='sandbox.mu.html#L41'>initialize-sandbox-with</a> out-addr, s
 <span id="L62" class="LineNr">  62 </span><span class="Delimiter">}</span>
 <span id="L63" class="LineNr">  63 </span>
 <span id="L64" class="LineNr">  64 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L64'>write-sandbox</a></span> out: (addr stream byte), _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Delimiter">{</span>
-<span id="L65" class="LineNr">  65 </span>  <span class="PreProc">var</span> self/<span class="muRegEax">eax</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L66" class="LineNr">  66 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
-<span id="L67" class="LineNr">  67 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L65" class="LineNr">  65 </span>  <span class="PreProc">var</span> self/eax: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
+<span id="L66" class="LineNr">  66 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L67" class="LineNr">  67 </span>  <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L68" class="LineNr">  68 </span>  <span class="Delimiter">{</span>
-<span id="L69" class="LineNr">  69 </span>    <span class="PreProc">var</span> len/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L429'>gap-buffer-length</a> data
+<span id="L69" class="LineNr">  69 </span>    <span class="PreProc">var</span> len/eax: int <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L429'>gap-buffer-length</a> data
 <span id="L70" class="LineNr">  70 </span>    compare len, <span class="Constant">0</span>
 <span id="L71" class="LineNr">  71 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L72" class="LineNr">  72 </span>    <span class="PreProc">return</span>
@@ -151,10 +150,10 @@ if ('onhashchange' in window) {
 <span id="L85" class="LineNr">  85 </span>  subtract-from xmax, <span class="Constant">1</span>/padding-right
 <span id="L86" class="LineNr">  86 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L87" class="LineNr">  87 </span>  <span class="muComment"># data</span>
-<span id="L88" class="LineNr">  88 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
-<span id="L89" class="LineNr">  89 </span>  <span class="PreProc">var</span> _data/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L88" class="LineNr">  88 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L89" class="LineNr">  89 </span>  <span class="PreProc">var</span> _data/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L90" class="LineNr">  90 </span>  <span class="PreProc">var</span> data/<span class="muRegEdx">edx</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> copy _data
-<span id="L91" class="LineNr">  91 </span>  <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy xmin
+<span id="L91" class="LineNr">  91 </span>  <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> copy xmin
 <span id="L92" class="LineNr">  92 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy ymin
 <span id="L93" class="LineNr">  93 </span>  y <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L171'>maybe-render-empty-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, self, xmin, y
 <span id="L94" class="LineNr">  94 </span>  y <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L337'>maybe-render-keyboard</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, self, xmin, y
@@ -162,32 +161,32 @@ if ('onhashchange' in window) {
 <span id="L96" class="LineNr">  96 </span>  <span class="Delimiter">{</span>
 <span id="L97" class="LineNr">  97 </span>    compare cursor-in-editor?, <span class="Constant">0</span>/false
 <span id="L98" class="LineNr">  98 </span>    <span class="PreProc">break-if-=</span>
-<span id="L99" class="LineNr">  99 </span>    <span class="PreProc">var</span> cursor-in-data-a/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
+<span id="L99" class="LineNr">  99 </span>    <span class="PreProc">var</span> cursor-in-data-a/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
 <span id="L100" class="LineNr"> 100 </span>    cursor-in-editor? <span class="Special">&lt;-</span> copy *cursor-in-data-a
 <span id="L101" class="LineNr"> 101 </span>  <span class="Delimiter">}</span>
 <span id="L102" class="LineNr"> 102 </span>  x, y <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L386'>render-gap-buffer-wrapping-right-then-down</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, data, x, y, xmax, ymax, cursor-in-editor?, <span class="Constant">7</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
 <span id="L103" class="LineNr"> 103 </span>  y <span class="Special">&lt;-</span> increment
 <span id="L104" class="LineNr"> 104 </span>  <span class="muComment"># trace</span>
-<span id="L105" class="LineNr"> 105 </span>  <span class="PreProc">var</span> trace-ah/<span class="muRegEax">eax</span>: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
-<span id="L106" class="LineNr"> 106 </span>  <span class="PreProc">var</span> _trace/<span class="muRegEax">eax</span>: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
+<span id="L105" class="LineNr"> 105 </span>  <span class="PreProc">var</span> trace-ah/eax: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
+<span id="L106" class="LineNr"> 106 </span>  <span class="PreProc">var</span> _trace/eax: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
 <span id="L107" class="LineNr"> 107 </span>  <span class="PreProc">var</span> trace/<span class="muRegEdx">edx</span>: (addr trace) <span class="Special">&lt;-</span> copy _trace
-<span id="L108" class="LineNr"> 108 </span>  <span class="PreProc">var</span> cursor-in-trace?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
+<span id="L108" class="LineNr"> 108 </span>  <span class="PreProc">var</span> cursor-in-trace?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
 <span id="L109" class="LineNr"> 109 </span>  y <span class="Special">&lt;-</span> <a href='trace.mu.html#L452'>render-trace</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, trace, xmin, y, xmax, ymax, *cursor-in-trace?
 <span id="L110" class="LineNr"> 110 </span>  <span class="muComment"># value</span>
 <span id="L111" class="LineNr"> 111 </span>  $render-sandbox:value: <span class="Delimiter">{</span>
 <span id="L112" class="LineNr"> 112 </span>    compare y, ymax
 <span id="L113" class="LineNr"> 113 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L114" class="LineNr"> 114 </span>    <span class="PreProc">var</span> value-ah/<span class="muRegEax">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get self, value
-<span id="L115" class="LineNr"> 115 </span>    <span class="PreProc">var</span> _value/<span class="muRegEax">eax</span>: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *value-ah
+<span id="L114" class="LineNr"> 114 </span>    <span class="PreProc">var</span> value-ah/eax: (addr handle stream byte) <span class="Special">&lt;-</span> get self, value
+<span id="L115" class="LineNr"> 115 </span>    <span class="PreProc">var</span> _value/eax: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *value-ah
 <span id="L116" class="LineNr"> 116 </span>    <span class="PreProc">var</span> value/<span class="muRegEsi">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> copy _value
 <span id="L117" class="LineNr"> 117 </span>    <a href='../106stream.subx.html#L59'>rewind-stream</a> value
-<span id="L118" class="LineNr"> 118 </span>    <span class="PreProc">var</span> done?/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> value
+<span id="L118" class="LineNr"> 118 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> value
 <span id="L119" class="LineNr"> 119 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L120" class="LineNr"> 120 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L121" class="LineNr"> 121 </span>    <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L121" class="LineNr"> 121 </span>    <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L122" class="LineNr"> 122 </span>    x, y <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L174'>draw-text-wrapping-right-then-down</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;=&gt; &quot;</span>, xmin, y, xmax, ymax, xmin, y, <span class="Constant">7</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
 <span id="L123" class="LineNr"> 123 </span>    <span class="PreProc">var</span> x2/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy x
-<span id="L124" class="LineNr"> 124 </span>    <span class="PreProc">var</span> dummy/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L111'>draw-stream-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, value, x2, xmax, y, <span class="Constant">7</span>/fg=grey, <span class="Constant">0xc5</span>/bg=blue-bg
+<span id="L124" class="LineNr"> 124 </span>    <span class="PreProc">var</span> dummy/eax: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L111'>draw-stream-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, value, x2, xmax, y, <span class="Constant">7</span>/fg=grey, <span class="Constant">0xc5</span>/bg=blue-bg
 <span id="L125" class="LineNr"> 125 </span>  <span class="Delimiter">}</span>
 <span id="L126" class="LineNr"> 126 </span>  y <span class="Special">&lt;-</span> add <span class="Constant">2</span>  <span class="muComment"># padding</span>
 <span id="L127" class="LineNr"> 127 </span>  <a href='sandbox.mu.html#L198'>maybe-render-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, self, xmin, y
@@ -195,21 +194,21 @@ if ('onhashchange' in window) {
 <span id="L129" class="LineNr"> 129 </span>
 <span id="L130" class="LineNr"> 130 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L130'>render-sandbox-menu</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Delimiter">{</span>
 <span id="L131" class="LineNr"> 131 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L132" class="LineNr"> 132 </span>  <span class="PreProc">var</span> cursor-in-data?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
+<span id="L132" class="LineNr"> 132 </span>  <span class="PreProc">var</span> cursor-in-data?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
 <span id="L133" class="LineNr"> 133 </span>  compare *cursor-in-data?, <span class="Constant">0</span>/false
 <span id="L134" class="LineNr"> 134 </span>  <span class="Delimiter">{</span>
 <span id="L135" class="LineNr"> 135 </span>    <span class="PreProc">break-if-=</span>
 <span id="L136" class="LineNr"> 136 </span>    <a href='sandbox.mu.html#L393'>render-sandbox-edit-menu</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, self
 <span id="L137" class="LineNr"> 137 </span>    <span class="PreProc">return</span>
 <span id="L138" class="LineNr"> 138 </span>  <span class="Delimiter">}</span>
-<span id="L139" class="LineNr"> 139 </span>  <span class="PreProc">var</span> cursor-in-trace?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
+<span id="L139" class="LineNr"> 139 </span>  <span class="PreProc">var</span> cursor-in-trace?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
 <span id="L140" class="LineNr"> 140 </span>  compare *cursor-in-trace?, <span class="Constant">0</span>/false
 <span id="L141" class="LineNr"> 141 </span>  <span class="Delimiter">{</span>
 <span id="L142" class="LineNr"> 142 </span>    <span class="PreProc">break-if-=</span>
 <span id="L143" class="LineNr"> 143 </span>    <a href='trace.mu.html#L885'>render-trace-menu</a> <a href='../500fake-screen.mu.html#L14'>screen</a>
 <span id="L144" class="LineNr"> 144 </span>    <span class="PreProc">return</span>
 <span id="L145" class="LineNr"> 145 </span>  <span class="Delimiter">}</span>
-<span id="L146" class="LineNr"> 146 </span>  <span class="PreProc">var</span> cursor-in-keyboard?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
+<span id="L146" class="LineNr"> 146 </span>  <span class="PreProc">var</span> cursor-in-keyboard?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
 <span id="L147" class="LineNr"> 147 </span>  compare *cursor-in-keyboard?, <span class="Constant">0</span>/false
 <span id="L148" class="LineNr"> 148 </span>  <span class="Delimiter">{</span>
 <span id="L149" class="LineNr"> 149 </span>    <span class="PreProc">break-if-=</span>
@@ -221,10 +220,10 @@ if ('onhashchange' in window) {
 <span id="L155" class="LineNr"> 155 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L155'>clear-sandbox-output</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>), xmin: int, ymin: int, xmax: int, ymax: int <span class="Delimiter">{</span>
 <span id="L156" class="LineNr"> 156 </span>  <span class="muComment"># render just enough of the sandbox to figure out what to erase</span>
 <span id="L157" class="LineNr"> 157 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L158" class="LineNr"> 158 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
-<span id="L159" class="LineNr"> 159 </span>  <span class="PreProc">var</span> _data/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L158" class="LineNr"> 158 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L159" class="LineNr"> 159 </span>  <span class="PreProc">var</span> _data/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L160" class="LineNr"> 160 </span>  <span class="PreProc">var</span> data/<span class="muRegEdx">edx</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> copy _data
-<span id="L161" class="LineNr"> 161 </span>  <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy xmin
+<span id="L161" class="LineNr"> 161 </span>  <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> copy xmin
 <span id="L162" class="LineNr"> 162 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy ymin
 <span id="L163" class="LineNr"> 163 </span>  y <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L171'>maybe-render-empty-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, self, xmin, y
 <span id="L164" class="LineNr"> 164 </span>  y <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L337'>maybe-render-keyboard</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, self, xmin, y
@@ -236,8 +235,8 @@ if ('onhashchange' in window) {
 <span id="L170" class="LineNr"> 170 </span>
 <span id="L171" class="LineNr"> 171 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L171'>maybe-render-empty-screen</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>), xmin: int, ymin: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEcx">ecx</span>: int <span class="Delimiter">{</span>
 <span id="L172" class="LineNr"> 172 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L173" class="LineNr"> 173 </span>  <span class="PreProc">var</span> screen-obj-cell-ah/<span class="muRegEax">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, screen-var
-<span id="L174" class="LineNr"> 174 </span>  <span class="PreProc">var</span> screen-obj-cell/<span class="muRegEax">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *screen-obj-cell-ah
+<span id="L173" class="LineNr"> 173 </span>  <span class="PreProc">var</span> screen-obj-cell-ah/eax: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, screen-var
+<span id="L174" class="LineNr"> 174 </span>  <span class="PreProc">var</span> screen-obj-cell/eax: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *screen-obj-cell-ah
 <span id="L175" class="LineNr"> 175 </span>  compare screen-obj-cell, <span class="Constant">0</span>
 <span id="L176" class="LineNr"> 176 </span>  <span class="Delimiter">{</span>
 <span id="L177" class="LineNr"> 177 </span>    <span class="PreProc">break-if-!=</span>
@@ -250,10 +249,10 @@ if ('onhashchange' in window) {
 <span id="L184" class="LineNr"> 184 </span>    <span class="PreProc">return</span> ymin  <span class="muComment"># silently give up on rendering the screen</span>
 <span id="L185" class="LineNr"> 185 </span>  <span class="Delimiter">}</span>
 <span id="L186" class="LineNr"> 186 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy ymin
-<span id="L187" class="LineNr"> 187 </span>  <span class="PreProc">var</span> screen-obj-ah/<span class="muRegEax">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get screen-obj-cell, screen-data
-<span id="L188" class="LineNr"> 188 </span>  <span class="PreProc">var</span> _screen-obj/<span class="muRegEax">eax</span>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *screen-obj-ah
+<span id="L187" class="LineNr"> 187 </span>  <span class="PreProc">var</span> screen-obj-ah/eax: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get screen-obj-cell, screen-data
+<span id="L188" class="LineNr"> 188 </span>  <span class="PreProc">var</span> _screen-obj/eax: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *screen-obj-ah
 <span id="L189" class="LineNr"> 189 </span>  <span class="PreProc">var</span> screen-obj/<span class="muRegEdx">edx</span>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen-obj
-<span id="L190" class="LineNr"> 190 </span>  <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;screen:   &quot;</span>, xmin, <span class="Constant">0x99</span>/xmax, y, <span class="Constant">0x17</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
+<span id="L190" class="LineNr"> 190 </span>  <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;screen:   &quot;</span>, xmin, <span class="Constant">0x99</span>/xmax, y, <span class="Constant">0x17</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
 <span id="L191" class="LineNr"> 191 </span>  x <span class="Special">&lt;-</span> copy xmin
 <span id="L192" class="LineNr"> 192 </span>  x <span class="Special">&lt;-</span> add <span class="Constant">2</span>
 <span id="L193" class="LineNr"> 193 </span>  y <span class="Special">&lt;-</span> increment
@@ -263,8 +262,8 @@ if ('onhashchange' in window) {
 <span id="L197" class="LineNr"> 197 </span>
 <span id="L198" class="LineNr"> 198 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L198'>maybe-render-screen</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>), xmin: int, ymin: int <span class="Delimiter">{</span>
 <span id="L199" class="LineNr"> 199 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L200" class="LineNr"> 200 </span>  <span class="PreProc">var</span> screen-obj-cell-ah/<span class="muRegEax">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, screen-var
-<span id="L201" class="LineNr"> 201 </span>  <span class="PreProc">var</span> screen-obj-cell/<span class="muRegEax">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *screen-obj-cell-ah
+<span id="L200" class="LineNr"> 200 </span>  <span class="PreProc">var</span> screen-obj-cell-ah/eax: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, screen-var
+<span id="L201" class="LineNr"> 201 </span>  <span class="PreProc">var</span> screen-obj-cell/eax: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *screen-obj-cell-ah
 <span id="L202" class="LineNr"> 202 </span>  compare screen-obj-cell, <span class="Constant">0</span>
 <span id="L203" class="LineNr"> 203 </span>  <span class="Delimiter">{</span>
 <span id="L204" class="LineNr"> 204 </span>    <span class="PreProc">break-if-!=</span>
@@ -276,16 +275,16 @@ if ('onhashchange' in window) {
 <span id="L210" class="LineNr"> 210 </span>    <span class="PreProc">break-if-=</span>
 <span id="L211" class="LineNr"> 211 </span>    <span class="PreProc">return</span>  <span class="muComment"># silently give up on rendering the screen</span>
 <span id="L212" class="LineNr"> 212 </span>  <span class="Delimiter">}</span>
-<span id="L213" class="LineNr"> 213 </span>  <span class="PreProc">var</span> screen-obj-ah/<span class="muRegEax">eax</span>: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get screen-obj-cell, screen-data
-<span id="L214" class="LineNr"> 214 </span>  <span class="PreProc">var</span> _screen-obj/<span class="muRegEax">eax</span>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *screen-obj-ah
+<span id="L213" class="LineNr"> 213 </span>  <span class="PreProc">var</span> screen-obj-ah/eax: (addr handle <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> get screen-obj-cell, screen-data
+<span id="L214" class="LineNr"> 214 </span>  <span class="PreProc">var</span> _screen-obj/eax: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *screen-obj-ah
 <span id="L215" class="LineNr"> 215 </span>  <span class="PreProc">var</span> screen-obj/<span class="muRegEdx">edx</span>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _screen-obj
 <span id="L216" class="LineNr"> 216 </span>  <span class="Delimiter">{</span>
-<span id="L217" class="LineNr"> 217 </span>    <span class="PreProc">var</span> screen-empty?/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='../500fake-screen.mu.html#L294'>fake-screen-empty?</a> screen-obj
+<span id="L217" class="LineNr"> 217 </span>    <span class="PreProc">var</span> screen-empty?/eax: boolean <span class="Special">&lt;-</span> <a href='../500fake-screen.mu.html#L294'>fake-screen-empty?</a> screen-obj
 <span id="L218" class="LineNr"> 218 </span>    compare screen-empty?, <span class="Constant">0</span>/false
 <span id="L219" class="LineNr"> 219 </span>    <span class="PreProc">break-if-=</span>
 <span id="L220" class="LineNr"> 220 </span>    <span class="PreProc">return</span>
 <span id="L221" class="LineNr"> 221 </span>  <span class="Delimiter">}</span>
-<span id="L222" class="LineNr"> 222 </span>  <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;screen:   &quot;</span>, xmin, <span class="Constant">0x99</span>/xmax, ymin, <span class="Constant">0x17</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
+<span id="L222" class="LineNr"> 222 </span>  <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;screen:   &quot;</span>, xmin, <span class="Constant">0x99</span>/xmax, ymin, <span class="Constant">0x17</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
 <span id="L223" class="LineNr"> 223 </span>  x <span class="Special">&lt;-</span> copy xmin
 <span id="L224" class="LineNr"> 224 </span>  x <span class="Special">&lt;-</span> add <span class="Constant">2</span>
 <span id="L225" class="LineNr"> 225 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy ymin
@@ -327,7 +326,7 @@ if ('onhashchange' in window) {
 <span id="L261" class="LineNr"> 261 </span>  <span class="muComment"># pixel data</span>
 <span id="L262" class="LineNr"> 262 </span>  <span class="Delimiter">{</span>
 <span id="L263" class="LineNr"> 263 </span>    <span class="muComment"># screen top left pixels x y width height</span>
-<span id="L264" class="LineNr"> 264 </span>    <span class="PreProc">var</span> tmp/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy xmin
+<span id="L264" class="LineNr"> 264 </span>    <span class="PreProc">var</span> tmp/eax: int <span class="Special">&lt;-</span> copy xmin
 <span id="L265" class="LineNr"> 265 </span>    tmp <span class="Special">&lt;-</span> shift-left <span class="Constant">3</span>/log2-font-width
 <span id="L266" class="LineNr"> 266 </span>    <span class="PreProc">var</span> left: int
 <span id="L267" class="LineNr"> 267 </span>    copy-to left, tmp
@@ -335,8 +334,8 @@ if ('onhashchange' in window) {
 <span id="L269" class="LineNr"> 269 </span>    tmp <span class="Special">&lt;-</span> shift-left <span class="Constant">4</span>/log2-font-height
 <span id="L270" class="LineNr"> 270 </span>    <span class="PreProc">var</span> top: int
 <span id="L271" class="LineNr"> 271 </span>    copy-to top, tmp
-<span id="L272" class="LineNr"> 272 </span>    <span class="PreProc">var</span> pixels-ah/<span class="muRegEax">eax</span>: (addr handle array byte) <span class="Special">&lt;-</span> get target-screen, pixels
-<span id="L273" class="LineNr"> 273 </span>    <span class="PreProc">var</span> _pixels/<span class="muRegEax">eax</span>: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *pixels-ah
+<span id="L272" class="LineNr"> 272 </span>    <span class="PreProc">var</span> pixels-ah/eax: (addr handle array byte) <span class="Special">&lt;-</span> get target-screen, pixels
+<span id="L273" class="LineNr"> 273 </span>    <span class="PreProc">var</span> _pixels/eax: (addr array byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *pixels-ah
 <span id="L274" class="LineNr"> 274 </span>    <span class="PreProc">var</span> pixels/<span class="muRegEdi">edi</span>: (addr array byte) <span class="Special">&lt;-</span> copy _pixels
 <span id="L275" class="LineNr"> 275 </span>    compare pixels, <span class="Constant">0</span>
 <span id="L276" class="LineNr"> 276 </span>    <span class="PreProc">break-if-=</span>
@@ -350,7 +349,7 @@ if ('onhashchange' in window) {
 <span id="L284" class="LineNr"> 284 </span>      <span class="PreProc">var</span> width-addr/<span class="muRegEdx">edx</span>: (addr int) <span class="Special">&lt;-</span> get target-screen, width
 <span id="L285" class="LineNr"> 285 </span>      <span class="PreProc">var</span> width/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy *width-addr
 <span id="L286" class="LineNr"> 286 </span>      width <span class="Special">&lt;-</span> shift-left <span class="Constant">3</span>/log2-font-width
-<span id="L287" class="LineNr"> 287 </span>      <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L287" class="LineNr"> 287 </span>      <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L288" class="LineNr"> 288 </span>      <span class="Delimiter">{</span>
 <span id="L289" class="LineNr"> 289 </span>        compare x, width
 <span id="L290" class="LineNr"> 290 </span>        <span class="PreProc">break-if-&gt;=</span>
@@ -359,7 +358,7 @@ if ('onhashchange' in window) {
 <span id="L293" class="LineNr"> 293 </span>          <span class="PreProc">var</span> color-addr/<span class="muRegEcx">ecx</span>: (addr byte) <span class="Special">&lt;-</span> index pixels, idx
 <span id="L294" class="LineNr"> 294 </span>          <span class="PreProc">var</span> color/<span class="muRegEcx">ecx</span>: byte <span class="Special">&lt;-</span> copy-byte *color-addr
 <span id="L295" class="LineNr"> 295 </span>          <span class="PreProc">var</span> color2/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy color
-<span id="L296" class="LineNr"> 296 </span>          <span class="PreProc">var</span> x2/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy x
+<span id="L296" class="LineNr"> 296 </span>          <span class="PreProc">var</span> x2/eax: int <span class="Special">&lt;-</span> copy x
 <span id="L297" class="LineNr"> 297 </span>          x2 <span class="Special">&lt;-</span> add left
 <span id="L298" class="LineNr"> 298 </span>          <span class="PreProc">var</span> y2/<span class="muRegEbx">ebx</span>: int <span class="Special">&lt;-</span> copy y
 <span id="L299" class="LineNr"> 299 </span>          y2 <span class="Special">&lt;-</span> add top
@@ -374,10 +373,10 @@ if ('onhashchange' in window) {
 <span id="L308" class="LineNr"> 308 </span>  <span class="Delimiter">}</span>
 <span id="L309" class="LineNr"> 309 </span><span class="Delimiter">}</span>
 <span id="L310" class="LineNr"> 310 </span>
-<span id="L311" class="LineNr"> 311 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L311'>has-keyboard?</a></span> _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L311" class="LineNr"> 311 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L311'>has-keyboard?</a></span> _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>)<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
 <span id="L312" class="LineNr"> 312 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L313" class="LineNr"> 313 </span>  <span class="PreProc">var</span> keyboard-obj-cell-ah/<span class="muRegEax">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
-<span id="L314" class="LineNr"> 314 </span>  <span class="PreProc">var</span> keyboard-obj-cell/<span class="muRegEax">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-obj-cell-ah
+<span id="L313" class="LineNr"> 313 </span>  <span class="PreProc">var</span> keyboard-obj-cell-ah/eax: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
+<span id="L314" class="LineNr"> 314 </span>  <span class="PreProc">var</span> keyboard-obj-cell/eax: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-obj-cell-ah
 <span id="L315" class="LineNr"> 315 </span>  compare keyboard-obj-cell, <span class="Constant">0</span>
 <span id="L316" class="LineNr"> 316 </span>  <span class="Delimiter">{</span>
 <span id="L317" class="LineNr"> 317 </span>    <span class="PreProc">break-if-!=</span>
@@ -389,8 +388,8 @@ if ('onhashchange' in window) {
 <span id="L323" class="LineNr"> 323 </span>    <span class="PreProc">break-if-=</span>
 <span id="L324" class="LineNr"> 324 </span>    <span class="PreProc">return</span> <span class="Constant">0</span>/false
 <span id="L325" class="LineNr"> 325 </span>  <span class="Delimiter">}</span>
-<span id="L326" class="LineNr"> 326 </span>  <span class="PreProc">var</span> keyboard-obj-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get keyboard-obj-cell, keyboard-data
-<span id="L327" class="LineNr"> 327 </span>  <span class="PreProc">var</span> _keyboard-obj/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-obj-ah
+<span id="L326" class="LineNr"> 326 </span>  <span class="PreProc">var</span> keyboard-obj-ah/eax: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get keyboard-obj-cell, keyboard-data
+<span id="L327" class="LineNr"> 327 </span>  <span class="PreProc">var</span> _keyboard-obj/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-obj-ah
 <span id="L328" class="LineNr"> 328 </span>  <span class="PreProc">var</span> keyboard-obj/<span class="muRegEdx">edx</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> copy _keyboard-obj
 <span id="L329" class="LineNr"> 329 </span>  compare keyboard-obj, <span class="Constant">0</span>
 <span id="L330" class="LineNr"> 330 </span>  <span class="Delimiter">{</span>
@@ -402,8 +401,8 @@ if ('onhashchange' in window) {
 <span id="L336" class="LineNr"> 336 </span>
 <span id="L337" class="LineNr"> 337 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L337'>maybe-render-keyboard</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>), xmin: int, ymin: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEcx">ecx</span>: int <span class="Delimiter">{</span>
 <span id="L338" class="LineNr"> 338 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L339" class="LineNr"> 339 </span>  <span class="PreProc">var</span> keyboard-obj-cell-ah/<span class="muRegEax">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
-<span id="L340" class="LineNr"> 340 </span>  <span class="PreProc">var</span> keyboard-obj-cell/<span class="muRegEax">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-obj-cell-ah
+<span id="L339" class="LineNr"> 339 </span>  <span class="PreProc">var</span> keyboard-obj-cell-ah/eax: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
+<span id="L340" class="LineNr"> 340 </span>  <span class="PreProc">var</span> keyboard-obj-cell/eax: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-obj-cell-ah
 <span id="L341" class="LineNr"> 341 </span>  compare keyboard-obj-cell, <span class="Constant">0</span>
 <span id="L342" class="LineNr"> 342 </span>  <span class="Delimiter">{</span>
 <span id="L343" class="LineNr"> 343 </span>    <span class="PreProc">break-if-!=</span>
@@ -415,12 +414,12 @@ if ('onhashchange' in window) {
 <span id="L349" class="LineNr"> 349 </span>    <span class="PreProc">break-if-=</span>
 <span id="L350" class="LineNr"> 350 </span>    <span class="PreProc">return</span> ymin  <span class="muComment"># silently give up on rendering the keyboard</span>
 <span id="L351" class="LineNr"> 351 </span>  <span class="Delimiter">}</span>
-<span id="L352" class="LineNr"> 352 </span>  <span class="PreProc">var</span> keyboard-obj-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get keyboard-obj-cell, keyboard-data
-<span id="L353" class="LineNr"> 353 </span>  <span class="PreProc">var</span> _keyboard-obj/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-obj-ah
+<span id="L352" class="LineNr"> 352 </span>  <span class="PreProc">var</span> keyboard-obj-ah/eax: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get keyboard-obj-cell, keyboard-data
+<span id="L353" class="LineNr"> 353 </span>  <span class="PreProc">var</span> _keyboard-obj/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-obj-ah
 <span id="L354" class="LineNr"> 354 </span>  <span class="PreProc">var</span> keyboard-obj/<span class="muRegEdx">edx</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> copy _keyboard-obj
 <span id="L355" class="LineNr"> 355 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy ymin
 <span id="L356" class="LineNr"> 356 </span>  y <span class="Special">&lt;-</span> increment  <span class="muComment"># padding</span>
-<span id="L357" class="LineNr"> 357 </span>  <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;keyboard: &quot;</span>, xmin, <span class="Constant">0x99</span>/xmax, y, <span class="Constant">0x17</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
+<span id="L357" class="LineNr"> 357 </span>  <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;keyboard: &quot;</span>, xmin, <span class="Constant">0x99</span>/xmax, y, <span class="Constant">0x17</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
 <span id="L358" class="LineNr"> 358 </span>  <span class="PreProc">var</span> cursor-in-keyboard?/<span class="muRegEsi">esi</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
 <span id="L359" class="LineNr"> 359 </span>  y <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L364'>render-keyboard</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, keyboard-obj, x, y, *cursor-in-keyboard?
 <span id="L360" class="LineNr"> 360 </span>  y <span class="Special">&lt;-</span> increment  <span class="muComment"># padding</span>
@@ -432,7 +431,7 @@ if ('onhashchange' in window) {
 <span id="L366" class="LineNr"> 366 </span>  <span class="PreProc">var</span> width/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0x10</span>/keyboard-capacity
 <span id="L367" class="LineNr"> 367 </span>  <span class="PreProc">var</span> y/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy ymin
 <span id="L368" class="LineNr"> 368 </span>  <span class="muComment"># keyboard</span>
-<span id="L369" class="LineNr"> 369 </span>  <span class="PreProc">var</span> x/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy xmin
+<span id="L369" class="LineNr"> 369 </span>  <span class="PreProc">var</span> x/eax: int <span class="Special">&lt;-</span> copy xmin
 <span id="L370" class="LineNr"> 370 </span>  <span class="PreProc">var</span> xmax/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy x
 <span id="L371" class="LineNr"> 371 </span>  xmax <span class="Special">&lt;-</span> add <span class="Constant">0x10</span>
 <span id="L372" class="LineNr"> 372 </span>  <span class="PreProc">var</span> ymax/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy ymin
@@ -445,19 +444,19 @@ if ('onhashchange' in window) {
 <span id="L379" class="LineNr"> 379 </span>
 <span id="L380" class="LineNr"> 380 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L380'>print-screen-cell-of-fake-screen</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _target: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), x: int, y: int <span class="Delimiter">{</span>
 <span id="L381" class="LineNr"> 381 </span>  <span class="PreProc">var</span> target/<span class="muRegEcx">ecx</span>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> copy _target
-<span id="L382" class="LineNr"> 382 </span>  <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle array <a href='../500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get target, data
-<span id="L383" class="LineNr"> 383 </span>  <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr array <a href='../500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L382" class="LineNr"> 382 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array <a href='../500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> get target, data
+<span id="L383" class="LineNr"> 383 </span>  <span class="PreProc">var</span> data/eax: (addr array <a href='../500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L384" class="LineNr"> 384 </span>  <span class="PreProc">var</span> index/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='../500fake-screen.mu.html#L136'>screen-cell-index</a> target, x, y
 <span id="L385" class="LineNr"> 385 </span>  <span class="PreProc">var</span> offset/<span class="muRegEcx">ecx</span>: (offset <a href='../500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> compute-offset data, index
 <span id="L386" class="LineNr"> 386 </span>  <span class="PreProc">var</span> src-cell/<span class="muRegEsi">esi</span>: (addr <a href='../500fake-screen.mu.html#L27'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
-<span id="L387" class="LineNr"> 387 </span>  <span class="PreProc">var</span> src-grapheme/<span class="muRegEax">eax</span>: (addr grapheme) <span class="Special">&lt;-</span> get src-cell, data
+<span id="L387" class="LineNr"> 387 </span>  <span class="PreProc">var</span> src-grapheme/eax: (addr grapheme) <span class="Special">&lt;-</span> get src-cell, data
 <span id="L388" class="LineNr"> 388 </span>  <span class="PreProc">var</span> src-color/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> get src-cell, color
 <span id="L389" class="LineNr"> 389 </span>  <span class="PreProc">var</span> src-background-color/<span class="muRegEdx">edx</span>: (addr int) <span class="Special">&lt;-</span> get src-cell, background-color
 <span id="L390" class="LineNr"> 390 </span>  <a href='../501draw-text.mu.html#L84'>draw-grapheme-at-cursor</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, *src-grapheme, *src-color, *src-background-color
 <span id="L391" class="LineNr"> 391 </span><span class="Delimiter">}</span>
 <span id="L392" class="LineNr"> 392 </span>
 <span id="L393" class="LineNr"> 393 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L393'>render-sandbox-edit-menu</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Delimiter">{</span>
-<span id="L394" class="LineNr"> 394 </span>  <span class="PreProc">var</span> _width/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L394" class="LineNr"> 394 </span>  <span class="PreProc">var</span> _width/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L395" class="LineNr"> 395 </span>  <span class="PreProc">var</span> height/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L396" class="LineNr"> 396 </span>  _width, height <span class="Special">&lt;-</span> <a href='../500fake-screen.mu.html#L86'>screen-size</a> <a href='../500fake-screen.mu.html#L14'>screen</a>
 <span id="L397" class="LineNr"> 397 </span>  <span class="PreProc">var</span> width/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy _width
@@ -474,8 +473,8 @@ if ('onhashchange' in window) {
 <span id="L408" class="LineNr"> 408 </span>  <a href='../501draw-text.mu.html#L133'>draw-text-rightward-from-cursor</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot; ^g &quot;</span>, width, <span class="Constant">0</span>/fg, <span class="Constant">0x5c</span>/bg=menu-highlight
 <span id="L409" class="LineNr"> 409 </span>  <a href='../501draw-text.mu.html#L133'>draw-text-rightward-from-cursor</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot; go to  &quot;</span>, width, <span class="Constant">7</span>/fg, <span class="Constant">0xc5</span>/bg=blue-bg
 <span id="L410" class="LineNr"> 410 </span>  $render-sandbox-edit-menu:render-ctrl-m: <span class="Delimiter">{</span>
-<span id="L411" class="LineNr"> 411 </span>    <span class="PreProc">var</span> self/<span class="muRegEax">eax</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L412" class="LineNr"> 412 </span>    <span class="PreProc">var</span> <a href='sandbox.mu.html#L901'>has-trace?</a>/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L901'>has-trace?</a> self
+<span id="L411" class="LineNr"> 411 </span>    <span class="PreProc">var</span> self/eax: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
+<span id="L412" class="LineNr"> 412 </span>    <span class="PreProc">var</span> <a href='sandbox.mu.html#L901'>has-trace?</a>/eax: boolean <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L901'>has-trace?</a> self
 <span id="L413" class="LineNr"> 413 </span>    compare <a href='sandbox.mu.html#L901'>has-trace?</a>, <span class="Constant">0</span>/false
 <span id="L414" class="LineNr"> 414 </span>    <span class="Delimiter">{</span>
 <span id="L415" class="LineNr"> 415 </span>      <span class="PreProc">break-if-=</span>
@@ -497,7 +496,7 @@ if ('onhashchange' in window) {
 <span id="L431" class="LineNr"> 431 </span><span class="Delimiter">}</span>
 <span id="L432" class="LineNr"> 432 </span>
 <span id="L433" class="LineNr"> 433 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L433'>render-keyboard-menu</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Delimiter">{</span>
-<span id="L434" class="LineNr"> 434 </span>  <span class="PreProc">var</span> width/<span class="muRegEax">eax</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L434" class="LineNr"> 434 </span>  <span class="PreProc">var</span> width/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L435" class="LineNr"> 435 </span>  <span class="PreProc">var</span> height/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L436" class="LineNr"> 436 </span>  width, height <span class="Special">&lt;-</span> <a href='../500fake-screen.mu.html#L86'>screen-size</a> <a href='../500fake-screen.mu.html#L14'>screen</a>
 <span id="L437" class="LineNr"> 437 </span>  <span class="PreProc">var</span> y/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy height
@@ -523,7 +522,7 @@ if ('onhashchange' in window) {
 <span id="L457" class="LineNr"> 457 </span>    compare key, <span class="Constant">0x13</span>/ctrl-s
 <span id="L458" class="LineNr"> 458 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L459" class="LineNr"> 459 </span>    <span class="muComment"># if cursor is in trace, skip</span>
-<span id="L460" class="LineNr"> 460 </span>    <span class="PreProc">var</span> cursor-in-trace?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
+<span id="L460" class="LineNr"> 460 </span>    <span class="PreProc">var</span> cursor-in-trace?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
 <span id="L461" class="LineNr"> 461 </span>    compare *cursor-in-trace?, <span class="Constant">0</span>/false
 <span id="L462" class="LineNr"> 462 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L463" class="LineNr"> 463 </span>    <span class="muComment"># minor gotcha here: any bindings created later in this iteration won't be</span>
@@ -539,26 +538,26 @@ if ('onhashchange' in window) {
 <span id="L473" class="LineNr"> 473 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L474" class="LineNr"> 474 </span>    <span class="muComment"># if cursor in data, switch to trace or fall through to keyboard</span>
 <span id="L475" class="LineNr"> 475 </span>    <span class="Delimiter">{</span>
-<span id="L476" class="LineNr"> 476 </span>      <span class="PreProc">var</span> cursor-in-data?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
+<span id="L476" class="LineNr"> 476 </span>      <span class="PreProc">var</span> cursor-in-data?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
 <span id="L477" class="LineNr"> 477 </span>      compare *cursor-in-data?, <span class="Constant">0</span>/false
 <span id="L478" class="LineNr"> 478 </span>      <span class="PreProc">break-if-=</span>
-<span id="L479" class="LineNr"> 479 </span>      <span class="PreProc">var</span> <a href='sandbox.mu.html#L901'>has-trace?</a>/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L901'>has-trace?</a> self
+<span id="L479" class="LineNr"> 479 </span>      <span class="PreProc">var</span> <a href='sandbox.mu.html#L901'>has-trace?</a>/eax: boolean <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L901'>has-trace?</a> self
 <span id="L480" class="LineNr"> 480 </span>      compare <a href='sandbox.mu.html#L901'>has-trace?</a>, <span class="Constant">0</span>/false
 <span id="L481" class="LineNr"> 481 </span>      <span class="Delimiter">{</span>
 <span id="L482" class="LineNr"> 482 </span>        <span class="PreProc">break-if-=</span>
-<span id="L483" class="LineNr"> 483 </span>        <span class="PreProc">var</span> cursor-in-data?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
+<span id="L483" class="LineNr"> 483 </span>        <span class="PreProc">var</span> cursor-in-data?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
 <span id="L484" class="LineNr"> 484 </span>        copy-to *cursor-in-data?, <span class="Constant">0</span>/false
-<span id="L485" class="LineNr"> 485 </span>        <span class="PreProc">var</span> cursor-in-trace?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
+<span id="L485" class="LineNr"> 485 </span>        <span class="PreProc">var</span> cursor-in-trace?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
 <span id="L486" class="LineNr"> 486 </span>        copy-to *cursor-in-trace?, <span class="Constant">1</span>/false
 <span id="L487" class="LineNr"> 487 </span>        <span class="PreProc">return</span>
 <span id="L488" class="LineNr"> 488 </span>      <span class="Delimiter">}</span>
-<span id="L489" class="LineNr"> 489 </span>      <span class="PreProc">var</span> <a href='sandbox.mu.html#L311'>has-keyboard?</a>/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L311'>has-keyboard?</a> self
+<span id="L489" class="LineNr"> 489 </span>      <span class="PreProc">var</span> <a href='sandbox.mu.html#L311'>has-keyboard?</a>/eax: boolean <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L311'>has-keyboard?</a> self
 <span id="L490" class="LineNr"> 490 </span>      compare <a href='sandbox.mu.html#L311'>has-keyboard?</a>, <span class="Constant">0</span>/false
 <span id="L491" class="LineNr"> 491 </span>      <span class="Delimiter">{</span>
 <span id="L492" class="LineNr"> 492 </span>        <span class="PreProc">break-if-=</span>
-<span id="L493" class="LineNr"> 493 </span>        <span class="PreProc">var</span> cursor-in-data?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
+<span id="L493" class="LineNr"> 493 </span>        <span class="PreProc">var</span> cursor-in-data?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
 <span id="L494" class="LineNr"> 494 </span>        copy-to *cursor-in-data?, <span class="Constant">0</span>/false
-<span id="L495" class="LineNr"> 495 </span>        <span class="PreProc">var</span> cursor-in-keyboard?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
+<span id="L495" class="LineNr"> 495 </span>        <span class="PreProc">var</span> cursor-in-keyboard?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
 <span id="L496" class="LineNr"> 496 </span>        copy-to *cursor-in-keyboard?, <span class="Constant">1</span>/false
 <span id="L497" class="LineNr"> 497 </span>        <span class="PreProc">return</span>
 <span id="L498" class="LineNr"> 498 </span>      <span class="Delimiter">}</span>
@@ -566,12 +565,12 @@ if ('onhashchange' in window) {
 <span id="L500" class="LineNr"> 500 </span>    <span class="Delimiter">}</span>
 <span id="L501" class="LineNr"> 501 </span>    <span class="muComment"># if cursor in trace, switch to keyboard or fall through to data</span>
 <span id="L502" class="LineNr"> 502 </span>    <span class="Delimiter">{</span>
-<span id="L503" class="LineNr"> 503 </span>      <span class="PreProc">var</span> cursor-in-trace?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
+<span id="L503" class="LineNr"> 503 </span>      <span class="PreProc">var</span> cursor-in-trace?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
 <span id="L504" class="LineNr"> 504 </span>      compare *cursor-in-trace?, <span class="Constant">0</span>/false
 <span id="L505" class="LineNr"> 505 </span>      <span class="PreProc">break-if-=</span>
 <span id="L506" class="LineNr"> 506 </span>      copy-to *cursor-in-trace?, <span class="Constant">0</span>/false
 <span id="L507" class="LineNr"> 507 </span>      <span class="PreProc">var</span> cursor-target/<span class="muRegEcx">ecx</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
-<span id="L508" class="LineNr"> 508 </span>      <span class="PreProc">var</span> <a href='sandbox.mu.html#L311'>has-keyboard?</a>/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L311'>has-keyboard?</a> self
+<span id="L508" class="LineNr"> 508 </span>      <span class="PreProc">var</span> <a href='sandbox.mu.html#L311'>has-keyboard?</a>/eax: boolean <span class="Special">&lt;-</span> <a href='sandbox.mu.html#L311'>has-keyboard?</a> self
 <span id="L509" class="LineNr"> 509 </span>      compare <a href='sandbox.mu.html#L311'>has-keyboard?</a>, <span class="Constant">0</span>/false
 <span id="L510" class="LineNr"> 510 </span>      <span class="Delimiter">{</span>
 <span id="L511" class="LineNr"> 511 </span>        <span class="PreProc">break-if-!=</span>
@@ -582,11 +581,11 @@ if ('onhashchange' in window) {
 <span id="L516" class="LineNr"> 516 </span>    <span class="Delimiter">}</span>
 <span id="L517" class="LineNr"> 517 </span>    <span class="muComment"># otherwise if cursor in keyboard, switch to data</span>
 <span id="L518" class="LineNr"> 518 </span>    <span class="Delimiter">{</span>
-<span id="L519" class="LineNr"> 519 </span>      <span class="PreProc">var</span> cursor-in-keyboard?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
+<span id="L519" class="LineNr"> 519 </span>      <span class="PreProc">var</span> cursor-in-keyboard?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
 <span id="L520" class="LineNr"> 520 </span>      compare *cursor-in-keyboard?, <span class="Constant">0</span>/false
 <span id="L521" class="LineNr"> 521 </span>      <span class="PreProc">break-if-=</span>
 <span id="L522" class="LineNr"> 522 </span>      copy-to *cursor-in-keyboard?, <span class="Constant">0</span>/false
-<span id="L523" class="LineNr"> 523 </span>      <span class="PreProc">var</span> cursor-in-data?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
+<span id="L523" class="LineNr"> 523 </span>      <span class="PreProc">var</span> cursor-in-data?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
 <span id="L524" class="LineNr"> 524 </span>      copy-to *cursor-in-data?, <span class="Constant">1</span>/true
 <span id="L525" class="LineNr"> 525 </span>      <span class="PreProc">return</span>
 <span id="L526" class="LineNr"> 526 </span>    <span class="Delimiter">}</span>
@@ -594,21 +593,21 @@ if ('onhashchange' in window) {
 <span id="L528" class="LineNr"> 528 </span>  <span class="Delimiter">}</span>
 <span id="L529" class="LineNr"> 529 </span>  <span class="muComment"># if cursor in data, send key to data</span>
 <span id="L530" class="LineNr"> 530 </span>  <span class="Delimiter">{</span>
-<span id="L531" class="LineNr"> 531 </span>    <span class="PreProc">var</span> cursor-in-data?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
+<span id="L531" class="LineNr"> 531 </span>    <span class="PreProc">var</span> cursor-in-data?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-data?
 <span id="L532" class="LineNr"> 532 </span>    compare *cursor-in-data?, <span class="Constant">0</span>/false
 <span id="L533" class="LineNr"> 533 </span>    <span class="PreProc">break-if-=</span>
-<span id="L534" class="LineNr"> 534 </span>    <span class="PreProc">var</span> data-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
-<span id="L535" class="LineNr"> 535 </span>    <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L534" class="LineNr"> 534 </span>    <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get self, data
+<span id="L535" class="LineNr"> 535 </span>    <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L536" class="LineNr"> 536 </span>    <a href='gap-buffer.mu.html#L1204'>edit-gap-buffer</a> data, key
 <span id="L537" class="LineNr"> 537 </span>    <span class="PreProc">return</span>
 <span id="L538" class="LineNr"> 538 </span>  <span class="Delimiter">}</span>
 <span id="L539" class="LineNr"> 539 </span>  <span class="muComment"># if cursor in keyboard, send key to keyboard</span>
 <span id="L540" class="LineNr"> 540 </span>  <span class="Delimiter">{</span>
-<span id="L541" class="LineNr"> 541 </span>    <span class="PreProc">var</span> cursor-in-keyboard?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
+<span id="L541" class="LineNr"> 541 </span>    <span class="PreProc">var</span> cursor-in-keyboard?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-keyboard?
 <span id="L542" class="LineNr"> 542 </span>    compare *cursor-in-keyboard?, <span class="Constant">0</span>/false
 <span id="L543" class="LineNr"> 543 </span>    <span class="PreProc">break-if-=</span>
-<span id="L544" class="LineNr"> 544 </span>    <span class="PreProc">var</span> inner-keyboard-var-ah/<span class="muRegEax">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
-<span id="L545" class="LineNr"> 545 </span>    <span class="PreProc">var</span> inner-keyboard-var/<span class="muRegEax">eax</span>: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *inner-keyboard-var-ah
+<span id="L544" class="LineNr"> 544 </span>    <span class="PreProc">var</span> inner-keyboard-var-ah/eax: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
+<span id="L545" class="LineNr"> 545 </span>    <span class="PreProc">var</span> inner-keyboard-var/eax: (addr <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *inner-keyboard-var-ah
 <span id="L546" class="LineNr"> 546 </span>    compare inner-keyboard-var, <span class="Constant">0</span>
 <span id="L547" class="LineNr"> 547 </span>    <span class="Delimiter">{</span>
 <span id="L548" class="LineNr"> 548 </span>      <span class="PreProc">break-if-!=</span>
@@ -620,24 +619,24 @@ if ('onhashchange' in window) {
 <span id="L554" class="LineNr"> 554 </span>      <span class="PreProc">break-if-=</span>
 <span id="L555" class="LineNr"> 555 </span>      <span class="PreProc">return</span>
 <span id="L556" class="LineNr"> 556 </span>    <span class="Delimiter">}</span>
-<span id="L557" class="LineNr"> 557 </span>    <span class="PreProc">var</span> keyboard-ah/<span class="muRegEax">eax</span>: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get inner-keyboard-var, keyboard-data
-<span id="L558" class="LineNr"> 558 </span>    <span class="PreProc">var</span> keyboard/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-ah
+<span id="L557" class="LineNr"> 557 </span>    <span class="PreProc">var</span> keyboard-ah/eax: (addr handle <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> get inner-keyboard-var, keyboard-data
+<span id="L558" class="LineNr"> 558 </span>    <span class="PreProc">var</span> keyboard/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *keyboard-ah
 <span id="L559" class="LineNr"> 559 </span>    <a href='gap-buffer.mu.html#L1204'>edit-gap-buffer</a> keyboard, key
 <span id="L560" class="LineNr"> 560 </span>    <span class="PreProc">return</span>
 <span id="L561" class="LineNr"> 561 </span>  <span class="Delimiter">}</span>
 <span id="L562" class="LineNr"> 562 </span>  <span class="muComment"># if cursor in trace, send key to trace</span>
 <span id="L563" class="LineNr"> 563 </span>  <span class="Delimiter">{</span>
-<span id="L564" class="LineNr"> 564 </span>    <span class="PreProc">var</span> cursor-in-trace?/<span class="muRegEax">eax</span>: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
+<span id="L564" class="LineNr"> 564 </span>    <span class="PreProc">var</span> cursor-in-trace?/eax: (addr boolean) <span class="Special">&lt;-</span> get self, cursor-in-trace?
 <span id="L565" class="LineNr"> 565 </span>    compare *cursor-in-trace?, <span class="Constant">0</span>/false
 <span id="L566" class="LineNr"> 566 </span>    <span class="PreProc">break-if-=</span>
-<span id="L567" class="LineNr"> 567 </span>    <span class="PreProc">var</span> trace-ah/<span class="muRegEax">eax</span>: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
-<span id="L568" class="LineNr"> 568 </span>    <span class="PreProc">var</span> trace/<span class="muRegEax">eax</span>: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
+<span id="L567" class="LineNr"> 567 </span>    <span class="PreProc">var</span> trace-ah/eax: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
+<span id="L568" class="LineNr"> 568 </span>    <span class="PreProc">var</span> trace/eax: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
 <span id="L569" class="LineNr"> 569 </span>    <span class="muComment"># if expanding the trace, first check if we need to run the sandbox again with a deeper trace</span>
 <span id="L570" class="LineNr"> 570 </span>    <span class="Delimiter">{</span>
 <span id="L571" class="LineNr"> 571 </span>      compare key, <span class="Constant">0xa</span>/newline
 <span id="L572" class="LineNr"> 572 </span>      <span class="PreProc">break-if-!=</span>
 <span id="L573" class="LineNr"> 573 </span>      <span class="Delimiter">{</span>
-<span id="L574" class="LineNr"> 574 </span>        <span class="PreProc">var</span> need-rerun?/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='trace.mu.html#L1139'>cursor-too-deep?</a> trace
+<span id="L574" class="LineNr"> 574 </span>        <span class="PreProc">var</span> need-rerun?/eax: boolean <span class="Special">&lt;-</span> <a href='trace.mu.html#L1139'>cursor-too-deep?</a> trace
 <span id="L575" class="LineNr"> 575 </span>        compare need-rerun?, <span class="Constant">0</span>/false
 <span id="L576" class="LineNr"> 576 </span>      <span class="Delimiter">}</span>
 <span id="L577" class="LineNr"> 577 </span>      <span class="PreProc">break-if-=</span>
@@ -667,15 +666,15 @@ if ('onhashchange' in window) {
 <span id="L601" class="LineNr"> 601 </span>  <span class="PreProc">var</span> eval-result-ah/<span class="muRegEdi">edi</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> address eval-result-h
 <span id="L602" class="LineNr"> 602 </span>  <span class="PreProc">var</span> definitions-created-storage: (stream int <span class="Constant">0x10</span>)
 <span id="L603" class="LineNr"> 603 </span>  <span class="PreProc">var</span> definitions-created/<span class="muRegEdx">edx</span>: (addr stream int) <span class="Special">&lt;-</span> address definitions-created-storage
-<span id="L604" class="LineNr"> 604 </span>  <span class="PreProc">var</span> trace-ah/<span class="muRegEax">eax</span>: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
-<span id="L605" class="LineNr"> 605 </span>  <span class="PreProc">var</span> _trace/<span class="muRegEax">eax</span>: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
+<span id="L604" class="LineNr"> 604 </span>  <span class="PreProc">var</span> trace-ah/eax: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
+<span id="L605" class="LineNr"> 605 </span>  <span class="PreProc">var</span> _trace/eax: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
 <span id="L606" class="LineNr"> 606 </span>  <span class="PreProc">var</span> trace/<span class="muRegEbx">ebx</span>: (addr trace) <span class="Special">&lt;-</span> copy _trace
 <span id="L607" class="LineNr"> 607 </span>  <a href='trace.mu.html#L80'>clear-trace</a> trace
-<span id="L608" class="LineNr"> 608 </span>  <span class="PreProc">var</span> tmp/<span class="muRegEax">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, screen-var
+<span id="L608" class="LineNr"> 608 </span>  <span class="PreProc">var</span> tmp/eax: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, screen-var
 <span id="L609" class="LineNr"> 609 </span>  <span class="PreProc">var</span> inner-screen-var: (addr handle <a href='cell.mu.html#L1'>cell</a>)
 <span id="L610" class="LineNr"> 610 </span>  copy-to inner-screen-var, tmp
 <span id="L611" class="LineNr"> 611 </span>  <a href='cell.mu.html#L164'>clear-screen-var</a> inner-screen-var
-<span id="L612" class="LineNr"> 612 </span>  <span class="PreProc">var</span> inner-keyboard-var/<span class="muRegEax">eax</span>: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
+<span id="L612" class="LineNr"> 612 </span>  <span class="PreProc">var</span> inner-keyboard-var/eax: (addr handle <a href='cell.mu.html#L1'>cell</a>) <span class="Special">&lt;-</span> get self, keyboard-var
 <span id="L613" class="LineNr"> 613 </span>  <a href='cell.mu.html#L195'>rewind-keyboard-var</a> inner-keyboard-var  <span class="muComment"># don't clear keys from before</span>
 <span id="L614" class="LineNr"> 614 </span>  <span class="muComment">#</span>
 <span id="L615" class="LineNr"> 615 </span>  <a href='environment.mu.html#L372'>read-and-evaluate-and-save-gap-buffer-to-globals</a> data-ah, eval-result-ah, globals, definitions-created, trace, inner-screen-var, inner-keyboard-var
@@ -684,19 +683,19 @@ if ('onhashchange' in window) {
 <span id="L618" class="LineNr"> 618 </span>    compare globals, <span class="Constant">0</span>
 <span id="L619" class="LineNr"> 619 </span>    <span class="PreProc">break-if-=</span>
 <span id="L620" class="LineNr"> 620 </span>    <a href='../106stream.subx.html#L59'>rewind-stream</a> definitions-created
-<span id="L621" class="LineNr"> 621 </span>    <span class="PreProc">var</span> no-definitions?/<span class="muRegEax">eax</span>: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> definitions-created
+<span id="L621" class="LineNr"> 621 </span>    <span class="PreProc">var</span> no-definitions?/eax: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> definitions-created
 <span id="L622" class="LineNr"> 622 </span>    compare no-definitions?, <span class="Constant">0</span>/false
 <span id="L623" class="LineNr"> 623 </span>    <span class="PreProc">break-if-!=</span>
 <span id="L624" class="LineNr"> 624 </span>    <span class="muComment"># some definitions were created; clear the gap buffer</span>
-<span id="L625" class="LineNr"> 625 </span>    <span class="PreProc">var</span> data/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L625" class="LineNr"> 625 </span>    <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L626" class="LineNr"> 626 </span>    <span class="PreProc">var</span> capacity/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L43'>gap-buffer-capacity</a> data
 <span id="L627" class="LineNr"> 627 </span>    <a href='../120allocate.subx.html#L43'>allocate</a> data-ah
-<span id="L628" class="LineNr"> 628 </span>    <span class="PreProc">var</span> new-data/<span class="muRegEax">eax</span>: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
+<span id="L628" class="LineNr"> 628 </span>    <span class="PreProc">var</span> new-data/eax: (addr <a href='gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *data-ah
 <span id="L629" class="LineNr"> 629 </span>    <a href='gap-buffer.mu.html#L11'>initialize-gap-buffer</a> new-data, capacity
 <span id="L630" class="LineNr"> 630 </span>  <span class="Delimiter">}</span>
 <span id="L631" class="LineNr"> 631 </span>  <span class="muComment"># print</span>
-<span id="L632" class="LineNr"> 632 </span>  <span class="PreProc">var</span> value-ah/<span class="muRegEax">eax</span>: (addr handle stream byte) <span class="Special">&lt;-</span> get self, value
-<span id="L633" class="LineNr"> 633 </span>  <span class="PreProc">var</span> value/<span class="muRegEax">eax</span>: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *value-ah
+<span id="L632" class="LineNr"> 632 </span>  <span class="PreProc">var</span> value-ah/eax: (addr handle stream byte) <span class="Special">&lt;-</span> get self, value
+<span id="L633" class="LineNr"> 633 </span>  <span class="PreProc">var</span> value/eax: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *value-ah
 <span id="L634" class="LineNr"> 634 </span>  <a href='../106stream.subx.html#L20'>clear-stream</a> value
 <span id="L635" class="LineNr"> 635 </span>  <a href='print.mu.html#L7'>print-cell</a> eval-result-ah, value, trace
 <span id="L636" class="LineNr"> 636 </span><span class="Delimiter">}</span>
@@ -964,10 +963,10 @@ if ('onhashchange' in window) {
 <span id="L898" class="LineNr"> 898 </span>  <a href='../504test-screen.mu.html#L257'>check-background-color-in-screen-row</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">7</span>/bg=cursor, <span class="Constant">3</span>/y, <span class="Constant">&quot;       &quot;</span>, <span class="Constant">&quot;F - <a href='sandbox.mu.html#L858'>test-run-move-cursor-into-trace</a>/input-2/cursor&quot;</span>
 <span id="L899" class="LineNr"> 899 </span><span class="Delimiter">}</span>
 <span id="L900" class="LineNr"> 900 </span>
-<span id="L901" class="LineNr"> 901 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L901'>has-trace?</a></span> _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>)<span class="PreProc"> -&gt; </span>_/<span class="muRegEax">eax</span>: boolean <span class="Delimiter">{</span>
+<span id="L901" class="LineNr"> 901 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='sandbox.mu.html#L901'>has-trace?</a></span> _self: (addr <a href='sandbox.mu.html#L1'>sandbox</a>)<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
 <span id="L902" class="LineNr"> 902 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='sandbox.mu.html#L1'>sandbox</a>) <span class="Special">&lt;-</span> copy _self
-<span id="L903" class="LineNr"> 903 </span>  <span class="PreProc">var</span> trace-ah/<span class="muRegEax">eax</span>: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
-<span id="L904" class="LineNr"> 904 </span>  <span class="PreProc">var</span> _trace/<span class="muRegEax">eax</span>: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
+<span id="L903" class="LineNr"> 903 </span>  <span class="PreProc">var</span> trace-ah/eax: (addr handle trace) <span class="Special">&lt;-</span> get self, trace
+<span id="L904" class="LineNr"> 904 </span>  <span class="PreProc">var</span> _trace/eax: (addr trace) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L223'>lookup</a> *trace-ah
 <span id="L905" class="LineNr"> 905 </span>  <span class="PreProc">var</span> trace/<span class="muRegEdx">edx</span>: (addr trace) <span class="Special">&lt;-</span> copy _trace
 <span id="L906" class="LineNr"> 906 </span>  compare trace, <span class="Constant">0</span>
 <span id="L907" class="LineNr"> 907 </span>  <span class="Delimiter">{</span>
