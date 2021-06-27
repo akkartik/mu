@@ -116,7 +116,7 @@ The Mu shell supports infix operators:
 => 4
 ```
 
-You don't need spaces around infix ops:
+You don't need spaces around infix operators:
 ```
 3+1
 => 4
@@ -132,7 +132,7 @@ To see how an expression is parsed, quote it:
 => (+ 3 1)
 ```
 
-You can create your own infix ops:
+You can create your own infix operators:
 ```
 def (a <> b)
   (not (a = b))
@@ -158,11 +158,17 @@ Infix operators also work in prefix position:
 => 4
 ```
 
-To pass infix operators to higher-order functions, wrap them in parens. A
-silly example:
+As a special case, operators can be unary. A silly example:
 ```
-def (+++ x)          # silly name
+def (+++ x)
   x+1
+
++++4
+=> 5
+```
+
+To pass operators to higher-order functions, wrap them in parens
+```
 (map1 (+++) '(1 2 3))
 => (2 3 4)
 ```
