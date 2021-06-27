@@ -179,18 +179,18 @@ Forks of Mu are encouraged. If you don't like something about this repo, feel
 free to make a fork. If you show it to me, I'll link to it here. I might even
 pull features upstream!
 
-- [mu-normie](https://git.sr.ht/~akkartik/mu-normie): with a more standard
-  build system that organizes the repo by header files and compilation units.
-  Stays in sync with this repo.
-- [mu-x86\_64](https://git.sr.ht/~akkartik/mu-x86_64): experimental fork for
-  64-bit x86 in collaboration with [Max Bernstein](https://bernsteinbear.com).
-  It's brought up a few concrete open problems that I don't have good solutions
-  for yet.
 - [uCISC](https://github.com/grokthis/ucisc): a 16-bit processor being
   designed from scratch by [Robert Butler](https://www.youtube.com/channel/UCh4OpfF7T7UtezGejRTLxCw)
   and programmed with a SubX-like syntax.
 - [subv](https://git.s-ol.nu/subv): experimental SubX-like syntax by [s-ol
   bekic](https://mmm.s-ol.nu) for the RISC-V instruction set.
+- [mu-x86\_64](https://git.sr.ht/~akkartik/mu-x86_64): experimental fork for
+  64-bit x86 in collaboration with [Max Bernstein](https://bernsteinbear.com).
+  It's brought up a few concrete open problems that I don't have good solutions
+  for yet.
+- [mu-normie](https://git.sr.ht/~akkartik/mu-normie): with a more standard
+  build system for the `linux/bootstrap/` directory that organizes the repo by
+  header files and compilation units. Stays in sync with this repo.
 
 ## Desiderata
 
@@ -198,21 +198,20 @@ If you're still reading, here are some more things to check out:
 
 - [How to get your text editor set up for Mu and SubX programs.](editor/editor.md)
 
-- [Some 2-minute videos demonstrating Mu programs](https://archive.org/details/@kartik_agaram).
-  Many of them involve this prototype live-updating programming environment
-  for a postfix language that I might work on again one day:
+- [Videos demonstrating Mu programs and features.](https://archive.org/details/@kartik_agaram)
+
+- [A summary](mu_instructions) of how the Mu compiler translates statements
+  to SubX. Most Mu statements map to a single x86 instruction.
+  ([colorized version](http://akkartik.github.io/mu/html/mu_instructions.html))
+
+- A prototype live-updating programming environment for a postfix language
+  that I might work on again one day:
 
   ```sh
   cd linux
   ./translate tile/*.mu
   ./a.elf screen
   ```
-
-- [A summary](mu_instructions) of how the Mu compiler translates statements
-  to SubX. Most Mu statements map to a single x86 instruction.
-  ([colorized version](http://akkartik.github.io/mu/html/mu_instructions.html))
-
-- [Some details on the unconventional organization of this project.](http://akkartik.name/post/four-repos)
 
 - Previous prototypes: [mu0](https://github.com/akkartik/mu0), [mu1](https://github.com/akkartik/mu1).
 

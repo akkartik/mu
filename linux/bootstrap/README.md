@@ -25,3 +25,8 @@ identical binaries should help gain confidence in Mu.
   Remember, not all 32-bit Linux binaries are guaranteed to run. I'm not
   building general infrastructure here for all of the x86 instruction set.
   SubX is about programming with a small, regular subset of 32-bit x86.
+
+## Hacking
+
+This directory is the only C++ code in the project, and has [an unconventional
+organization](http://akkartik.name/post/four-repos).
