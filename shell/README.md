@@ -177,9 +177,6 @@ To pass operators to higher-order functions, wrap them in parens
 
 * No mouse support.
 
-* Don't press keys too quickly (such as by holding down a key). The Mu
-  computer will crash (and often Qemu will segfault).
-
 * Mu currently assumes access to 2GB of RAM. To increase that, modify the
   definition of `Heap` in 120allocate.subx, and then modify the `-m 2G`
   argument in the Qemu commands above. Mu currently has no virtual
