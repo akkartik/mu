@@ -302,11 +302,11 @@ idt_start:
 # https://wiki.osdev.org/index.php?title=Interrupts&oldid=25102#Default_PC_Interrupt_Vector_Assignment
 
 # entry 8: https://wiki.osdev.org/Programmable_Interval_Timer
-  null-interrupt-handler/imm16  # target[0:16]
+  timer-interrupt-handler/imm16  # target[0:16]
   8/imm16  # segment selector (gdt_code)
   00  # unused
   8e  # 1/p 00/dpl 0 1110/type/32-bit-interrupt-gate
-  0/imm16  # target[16:32] -- null-interrupt-handler must be within address 0x10000
+  0/imm16  # target[16:32] -- timer-interrupt-handler must be within address 0x10000
 
 # entry 9: keyboard
   keyboard-interrupt-handler/imm16  # target[0:16]
@@ -342,7 +342,7 @@ idt_start:
 
 == code
 
-null-interrupt-handler:
+timer-interrupt-handler:
   # prologue
   fa/disable-interrupts
   60/push-all-registers
@@ -351,13 +351,35 @@ null-interrupt-handler:
   b0/copy-to-al 0x20/imm8
   e6/write-al-into-port 0x20/imm8
   31/xor %eax 0/r32/eax
-$null-interrupt-handler:end:
+  # ecx = *Timer-current-color
+  8b/-> *Timer-current-color 1/r32/ecx
+  # update *Timer-current-color
+  81 0/subop/add *Timer-current-color 0x01010101/imm32
+  # eax = *Video-memory + 0x1200 (a few rows down from top, around middle of screen)
+  8b/-> *Video-memory-addr 0/r32/eax
+  05/add-to-eax 0x1200/imm32
+  89/copy *eax 1/r32/ecx
+  # eax += 0x400
+  05/add-to-eax 0x400/imm32
+  89/copy *eax 1/r32/ecx
+  # eax += 0x400
+  05/add-to-eax 0x400/imm32
+  89/copy *eax 1/r32/ecx
+  # eax += 0x400
+  05/add-to-eax 0x400/imm32
+  89/copy *eax 1/r32/ecx
+$timer-interrupt-handler:epilogue:
   # epilogue
   9d/pop-flags
   61/pop-all-registers
   fb/enable-interrupts
   cf/return-from-interrupt
 
+== data
+Timer-current-color:
+  0/imm32
+
+== code
 keyboard-interrupt-handler:
   # prologue
   fa/disable-interrupts
