@@ -351,23 +351,8 @@ timer-interrupt-handler:
   b0/copy-to-al 0x20/imm8
   e6/write-al-into-port 0x20/imm8
   31/xor %eax 0/r32/eax
-  # ecx = *Timer-current-color
-  8b/-> *Timer-current-color 1/r32/ecx
   # update *Timer-current-color
-  81 0/subop/add *Timer-current-color 0x01010101/imm32
-  # eax = *Video-memory + 0x1200 (a few rows down from top, around middle of screen)
-  8b/-> *Video-memory-addr 0/r32/eax
-  05/add-to-eax 0x1200/imm32
-  89/copy *eax 1/r32/ecx
-  # eax += 0x400
-  05/add-to-eax 0x400/imm32
-  89/copy *eax 1/r32/ecx
-  # eax += 0x400
-  05/add-to-eax 0x400/imm32
-  89/copy *eax 1/r32/ecx
-  # eax += 0x400
-  05/add-to-eax 0x400/imm32
-  89/copy *eax 1/r32/ecx
+  ff 0/subop/increment *Timer-counter
 $timer-interrupt-handler:epilogue:
   # epilogue
   9d/pop-flags
@@ -376,7 +361,7 @@ $timer-interrupt-handler:epilogue:
   cf/return-from-interrupt
 
 == data
-Timer-current-color:
+Timer-counter:
   0/imm32
 
 == code
