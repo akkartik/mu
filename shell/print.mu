@@ -298,7 +298,14 @@ fn print-pair _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
     {
       compare right-addr, 0
       break-if-!=
-      abort "NULL in print!"
+      {
+        var overflow?/eax: boolean <- try-write out, " ... NULL"
+        compare overflow?, 0/false
+        break-if-=
+        error trace, "print-pair: no space for ' ... NULL'"
+        return
+      }
+      return
     }
     {
       var right-nil?/eax: boolean <- nil? right-addr

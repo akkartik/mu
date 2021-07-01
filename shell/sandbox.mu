@@ -613,6 +613,12 @@ fn run-sandbox _self: (addr sandbox), globals: (addr global-table) {
   rewind-keyboard-var inner-keyboard-var  # don't clear keys from before
   #
   read-and-evaluate-and-save-gap-buffer-to-globals data-ah, eval-result-ah, globals, definitions-created, trace, inner-screen-var, inner-keyboard-var
+  var error?/eax: boolean <- has-errors? trace
+  {
+    compare error?, 0/false
+    break-if-=
+    return
+  }
   # if necessary, initialize a new gap-buffer for sandbox
   {
     compare globals, 0
