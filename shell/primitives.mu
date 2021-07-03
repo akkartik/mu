@@ -1,3 +1,6 @@
+# Primitives are functions that are implemented directly in Mu.
+# They always evaluate all their arguments.
+
 fn initialize-primitives _self: (addr global-table) {
   var self/esi: (addr global-table) <- copy _self
   # for numbers
@@ -46,13 +49,15 @@ fn initialize-primitives _self: (addr global-table) {
   # keep sync'd with render-primitives
 }
 
+# Slightly misnamed; renders primitives as well as special forms that don't
+# evaluate all their arguments.
 fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var y/ecx: int <- copy ymax
-  y <- subtract 0xf
+  y <- subtract 0xf/primitives-border
   clear-rect screen, xmin, y, xmax, ymax, 0xdc/bg=green-bg
   y <- increment
   var right-min/edx: int <- copy xmax
-  right-min <- subtract 0x1e
+  right-min <- subtract 0x1e/primitives-divider
   set-cursor-position screen, right-min, y
   draw-text-wrapping-right-then-down-from-cursor screen, "primitives", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
@@ -69,7 +74,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   draw-text-wrapping-right-then-down-from-cursor screen, "lists", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "cons car cdr no ", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "cons car cdr no", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
   draw-text-wrapping-right-then-down-from-cursor screen, "numbers", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
@@ -90,9 +95,9 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
 #?     loop-if-=
 #?   }
   y <- copy ymax
-  y <- subtract 0xe
+  y <- subtract 0xe/primitives-border
   var left-max/edx: int <- copy xmax
-  left-max <- subtract 0x20
+  left-max <- subtract 0x20/primitives-divider
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "cursor graphics", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
