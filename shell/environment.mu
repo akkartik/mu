@@ -24,7 +24,7 @@ fn test-environment {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  initialize-screen screen, 0x80/width, 0x30/height, 0/no-pixel-graphics
   # type some code into sandbox
   type-in env, screen, "(+ 3 4)"  # we don't have any global definitions here, so no macros
   # run code in sandbox
@@ -49,7 +49,7 @@ fn test-environment {
   check-screen-row                     screen,       0xd/y, "                                                                                                                                ", "F - test-environment/13"
   check-screen-row                     screen,       0xe/y, "                                                                                                                                ", "F - test-environment/14"
   # bottom row is for a wordstar-style menu
-  check-screen-row                     screen,       0xf/y, " ^r  run main   ^s  run sandbox   ^g  go to   ^m  to trace   ^a  <<   ^b  <word   ^f  word>   ^e  >>                            ", "F - test-environment/15"
+  check-screen-row                     screen,      0x2f/y, " ^r  run main   ^s  run sandbox   ^g  go to   ^m  to trace   ^a  <<   ^b  <word   ^f  word>   ^e  >>                            ", "F - test-environment/15"
 }
 
 fn test-definition-in-environment {
@@ -59,7 +59,7 @@ fn test-definition-in-environment {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  initialize-screen screen, 0x80/width, 0x30/height, 0/no-pixel-graphics
   # define a global on the right (sandbox) side
   type-in env, screen, "(define f 42)"
   edit-environment env, 0x13/ctrl-s, 0/no-disk
@@ -68,9 +68,9 @@ fn test-definition-in-environment {
   check-screen-row                     screen,         0/y, "                                                                                                                                ", "F - test-definition-in-environment/0"
   # global definition is now on the left side
   check-screen-row                     screen,         1/y, "                                           (define f 42)                              screen:                                   ", "F - test-definition-in-environment/1"
-  check-background-color-in-screen-row screen, 0/bg,   2/y, "                                                                                        ........                                ", "F - test-environment/2"
-  check-background-color-in-screen-row screen, 0/bg,   3/y, "                                                                                        ........                                ", "F - test-environment/3"
-  check-background-color-in-screen-row screen, 0/bg,   4/y, "                                                                                        ........                                ", "F - test-environment/4"
+  check-background-color-in-screen-row screen, 0/bg,   2/y, "                                                                                        ........                                ", "F - test-definition-in-environment/2"
+  check-background-color-in-screen-row screen, 0/bg,   3/y, "                                                                                        ........                                ", "F - test-definition-in-environment/3"
+  check-background-color-in-screen-row screen, 0/bg,   4/y, "                                                                                        ........                                ", "F - test-definition-in-environment/4"
   check-screen-row                     screen,         5/y, "                                                                                                                                ", "F - test-definition-in-environment/4"
   check-screen-row                     screen,         6/y, "                                                                                      keyboard:                                 ", "F - test-definition-in-environment/5"
   check-background-color-in-screen-row screen, 0/bg,   6/y, "                                                                                                ................                ", "F - test-definition-in-environment/5-2"
@@ -419,7 +419,7 @@ fn test-go-modal {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   # hit ctrl-g
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
@@ -454,7 +454,7 @@ fn test-leave-go-modal {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   # hit ctrl-g
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
@@ -487,7 +487,7 @@ fn test-jump-to-global {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  initialize-screen screen, 0x80/width, 0x30/height, 0/no-pixel-graphics
   # define a global
   type-in env, screen, "(define f 42)"
   edit-environment env, 0x13/ctrl-s, 0/no-disk
@@ -530,7 +530,7 @@ fn test-go-modal-prepopulates-word-at-cursor {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   # type a word at the cursor
   type-in env, screen, "fn1"
   # hit ctrl-g
@@ -631,7 +631,7 @@ fn test-jump-to-nonexistent-global {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   # type in any (nonexistent) global name
   type-in env, screen, "f"
   # hit ctrl-g
@@ -702,7 +702,7 @@ fn test-create-global {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  initialize-screen screen, 0x80/width, 0x30/height, 0/no-pixel-graphics
   # hit ctrl-g
   edit-environment env, 7/ctrl-g, 0/no-disk
   render-environment screen, env
@@ -740,7 +740,7 @@ fn test-create-nonexistent-global {
   # setup: screen
   var screen-on-stack: screen
   var screen/edi: (addr screen) <- address screen-on-stack
-  initialize-screen screen, 0x80/width=72, 0x10/height, 0/no-pixel-graphics
+  initialize-screen screen, 0x80/width, 0x10/height, 0/no-pixel-graphics
   # define a global
   type-in env, screen, "(define f 42)"
   edit-environment env, 0x13/ctrl-s, 0/no-disk
