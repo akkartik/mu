@@ -41,15 +41,15 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
   results. Hit `ctrl-m` to focus on the `...` after a run, and browse how the
   _trace_ of how the results were computed. [Here's a 2-minute demo](https://archive.org/details/akkartik-mu-2021-05-31).
 
-3. If your Qemu installation supports them, an `-accel` arguments
+3. If your Qemu installation supports them, an `-accel` argument
    will speed up emulation. Try `-accel help` to list your options.
 
   Once you select an accelerator, I recommend also adjusting the `responsiveness`
   mask in shell/evaluate.mu, which controls how frequently the fake screen
   updates within the REPL. Smaller values will seem more responsive, larger
-  values will leave more time to run your programs. I like to see the screen
-  update about once a second. Some suggested values depending on how fast your
-  Qemu is running:
+  values will run your programs faster. I like to see the fake screen update
+  about once a second. Some suggested values depending on how fast your Qemu
+  is running:
 
   - `-accel kvm` on a T420s running Linux: `0xffff/responsiveness=64k`
   - `-accel tcg` on a 2019 Mac: `0xfff/responsiveness=4k`
