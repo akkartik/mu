@@ -26,6 +26,7 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "car"
   append-primitive self, "cdr"
   append-primitive self, "cons"
+  append-primitive self, "cons?"
   # for screens
   append-primitive self, "print"
   append-primitive self, "clear"
@@ -74,7 +75,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   draw-text-wrapping-right-then-down-from-cursor screen, "lists", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "cons car cdr no", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "cons car cdr no cons?", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
   draw-text-wrapping-right-then-down-from-cursor screen, "numbers", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
@@ -290,6 +291,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare cons?, 0/false
     break-if-=
     apply-cons args-ah, out, trace
+    return
+  }
+  {
+    var cons-check?/eax: boolean <- string-equal? f-name, "cons?"
+    compare cons-check?, 0/false
+    break-if-=
+    apply-cons-check args-ah, out, trace
     return
   }
   {
@@ -1069,6 +1077,39 @@ fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   # cons
   new-pair out, *first-ah, *second-ah
 }
+
+fn apply-cons-check _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply cons?"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to cons? are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "cons? needs 1 arg but got 0"
+    return
+  }
+  # args->left
+  var first-ah/edx: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 0/pair
+  {
+    break-if-=
+    nil out
+    return
+  }
+  new-integer out, 1
+}
+
 
 fn apply-structurally-equal _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply '='"
