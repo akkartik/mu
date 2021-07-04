@@ -638,7 +638,7 @@ fn next-stream-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
     var stream/esi: (addr stream byte) <- address stream-storage
     write stream, "=> "
     rewind-stream out-data
-    write-stream stream, out-data
+    write-stream-immutable stream, out-data
     trace trace, "tokenize", stream
   }
 }

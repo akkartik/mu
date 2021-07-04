@@ -160,7 +160,7 @@ fn print-symbol _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
     error trace, "print-symbol: no space"
     return
   }
-  write-stream out, data
+  write-stream-immutable out, data
   # trace
   var should-trace?/eax: boolean <- should-trace? trace
   compare should-trace?, 0/false
@@ -179,7 +179,6 @@ fn print-stream _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   var data-ah/eax: (addr handle stream byte) <- get in, text-data
   var _data/eax: (addr stream byte) <- lookup *data-ah
   var data/esi: (addr stream byte) <- copy _data
-  rewind-stream data
   var _required-space/eax: int <- stream-size data
   var required-space/ecx: int <- copy _required-space
   required-space <- add 2  # for []
@@ -192,7 +191,7 @@ fn print-stream _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
     return
   }
   write out, "["
-  write-stream out, data
+  write-stream-immutable out, data
   write out, "]"
   # trace
   var should-trace?/eax: boolean <- should-trace? trace
@@ -202,7 +201,7 @@ fn print-stream _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   var stream-storage: (stream byte 0x40)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, "=> stream "
-  write-stream stream, data
+  write-stream-immutable stream, data
   trace trace, "print", stream
 }
 

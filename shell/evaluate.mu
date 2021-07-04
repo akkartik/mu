@@ -1277,14 +1277,9 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     trace-text trace, "eval", "=> true (numbers)"
     return 1/true
   }
-  $cell-isomorphic?:text-data: {
-    {
-      compare b-type, 2/symbol
-      break-if-=
-      compare b-type, 3/stream
-      break-if-=
-      break $cell-isomorphic?:text-data
-    }
+  {
+    compare b-type, 2/symbol
+    break-if-!=
     var b-val-ah/eax: (addr handle stream byte) <- get b, text-data
     var _b-val/eax: (addr stream byte) <- lookup *b-val-ah
     var b-val/ecx: (addr stream byte) <- copy _b-val
@@ -1306,6 +1301,36 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
       compare match?, 0/false
       break-if-!=
       trace-text trace, "eval", "=> false (symbols)"
+    }
+    return match?
+  }
+  {
+    compare b-type, 3/stream
+    break-if-!=
+    var a-val-ah/eax: (addr handle stream byte) <- get a, text-data
+    var a-val/eax: (addr stream byte) <- lookup *a-val-ah
+    var a-data-h: (handle array byte)
+    var a-data-ah/edx: (addr handle array byte) <- address a-data-h
+    stream-to-array a-val, a-data-ah
+    var _a-data/eax: (addr array byte) <- lookup *a-data-ah
+    var a-data/edx: (addr array byte) <- copy _a-data
+    var b-val-ah/eax: (addr handle stream byte) <- get b, text-data
+    var b-val/eax: (addr stream byte) <- lookup *b-val-ah
+    var b-data-h: (handle array byte)
+    var b-data-ah/ecx: (addr handle array byte) <- address b-data-h
+    stream-to-array b-val, b-data-ah
+    var b-data/eax: (addr array byte) <- lookup *b-data-ah
+    var match?/eax: boolean <- string-equal? a-data, b-data
+    trace-higher trace
+    {
+      compare match?, 0/false
+      break-if-=
+      trace-text trace, "eval", "=> true (streams)"
+    }
+    {
+      compare match?, 0/false
+      break-if-!=
+      trace-text trace, "eval", "=> false (streams)"
     }
     return match?
   }

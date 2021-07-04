@@ -102,6 +102,8 @@ test-stream-to-array:
     (write _test-input-stream "abc")
     # skip something
     (read-byte _test-input-stream)  # => eax
+    8b/-> *$_test-input-stream->read 0/r32/eax
+    (check-ints-equal %eax 1 "F - test-stream-to-array/pre")
     # var out/ecx: (handle array byte)
     68/push 0/imm32
     68/push 0/imm32
@@ -109,7 +111,9 @@ test-stream-to-array:
     #
     (stream-to-array _test-input-stream %ecx)
     (lookup *ecx *(ecx+4))  # => eax
-    (check-strings-equal %eax "bc")
+    (check-strings-equal %eax "bc" "F - test-stream-to-array")
+    8b/-> *$_test-input-stream->read 0/r32/eax
+    (check-ints-equal %eax 1 "F - test-stream-to-array/read-pointer-not-perturbed")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp

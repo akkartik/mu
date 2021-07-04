@@ -158,6 +158,53 @@ test-write-stream-appends:
     # . end
     c3/return
 
+# like write-stream, but don't update s->read
+# is there a better name for this?
+write-stream-immutable:  # f: (addr stream byte), s: (addr stream byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    56/push-esi
+    57/push-edi
+    # edi = f
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
+    # esi = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
+    # eax = _append-4(&f->data[f->write], &f->data[f->size], &s->data[s->read], &s->data[s->write])
+    # . . push &s->data[s->write]
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
+    50/push-eax
+    # . . push &s->data[s->read]
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
+    50/push-eax
+    # . . push &f->data[f->size]
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   8/disp8         .                 # copy *(edi+8) to eax
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy edi+eax+12 to eax
+    50/push-eax
+    # . . push &f->data[f->write]
+    8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy *edi to eax
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy edi+eax+12 to eax
+    50/push-eax
+    # . . call
+    e8/call  _append-4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # f->write += eax
+    01/add                          0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # add eax to *edi
+$write-stream-immutable:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
 == data
 
 _test-stream2:  # (stream byte)

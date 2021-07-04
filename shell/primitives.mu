@@ -45,6 +45,8 @@ fn initialize-primitives _self: (addr global-table) {
   # for streams
   append-primitive self, "stream"
   append-primitive self, "write"
+  append-primitive self, "read"
+  append-primitive self, "rewind"
   # misc
   append-primitive self, "abort"
   # keep sync'd with render-primitives
@@ -54,7 +56,7 @@ fn initialize-primitives _self: (addr global-table) {
 # evaluate all their arguments.
 fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var y/ecx: int <- copy ymax
-  y <- subtract 0xf/primitives-border
+  y <- subtract 0x11/primitives-border
   clear-rect screen, xmin, y, xmax, ymax, 0xdc/bg=green-bg
   y <- increment
   var right-min/edx: int <- copy xmax
@@ -96,7 +98,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
 #?     loop-if-=
 #?   }
   y <- copy ymax
-  y <- subtract 0xe/primitives-border
+  y <- subtract 0x10/primitives-border
   var left-max/edx: int <- copy xmax
   left-max <- subtract 0x20/primitives-divider
   var tmpx/eax: int <- copy xmin
@@ -151,6 +153,14 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  write", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
   tmpx <- draw-text-rightward screen, ": stream grapheme -> stream", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  rewind clear", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": stream", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  read", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": stream -> grapheme", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
 }
 
 fn primitive-global? _x: (addr global) -> _/eax: boolean {
@@ -459,6 +469,20 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare write?, 0/false
     break-if-=
     apply-write args-ah, out, trace
+    return
+  }
+  {
+    var rewind?/eax: boolean <- string-equal? f-name, "rewind"
+    compare rewind?, 0/false
+    break-if-=
+    apply-rewind args-ah, out, trace
+    return
+  }
+  {
+    var read?/eax: boolean <- string-equal? f-name, "read"
+    compare read?, 0/false
+    break-if-=
+    apply-read args-ah, out, trace
     return
   }
   {
@@ -1584,17 +1608,25 @@ fn apply-clear _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
   var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
+  compare *first-type, 3/stream
   {
     break-if-=
-    error trace, "first arg for 'clear' is not a screen"
+    var stream-data-ah/eax: (addr handle stream byte) <- get first, text-data
+    var _stream-data/eax: (addr stream byte) <- lookup *stream-data-ah
+    var stream-data/ebx: (addr stream byte) <- copy _stream-data
+    clear-stream stream-data
     return
   }
-  var screen-ah/eax: (addr handle screen) <- get first, screen-data
-  var _screen/eax: (addr screen) <- lookup *screen-ah
-  var screen/ecx: (addr screen) <- copy _screen
-  #
-  clear-screen screen
+  compare *first-type, 5/screen
+  {
+    break-if-!=
+    var screen-ah/eax: (addr handle screen) <- get first, screen-data
+    var _screen/eax: (addr screen) <- lookup *screen-ah
+    var screen/ecx: (addr screen) <- copy _screen
+    clear-screen screen
+    return
+  }
+  error trace, "first arg for 'clear' is not a screen or a stream"
 }
 
 fn apply-up _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
@@ -2022,6 +2054,80 @@ fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   write-grapheme stream-data, x-grapheme
   # return the stream
   copy-object first-ah, out
+}
+
+fn apply-rewind _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'rewind'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'rewind' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'rewind' needs 1 arg but got 0"
+    return
+  }
+  # stream = args->left
+  var first-ah/edx: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 3/stream
+  {
+    break-if-=
+    error trace, "first arg for 'rewind' is not a stream"
+    return
+  }
+  var stream-data-ah/eax: (addr handle stream byte) <- get first, text-data
+  var _stream-data/eax: (addr stream byte) <- lookup *stream-data-ah
+  var stream-data/ebx: (addr stream byte) <- copy _stream-data
+  rewind-stream stream-data
+  copy-object first-ah, out
+}
+
+fn apply-read _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'read'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/ecx: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'read' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'read' needs 1 arg but got 0"
+    return
+  }
+  # stream = args->left
+  var first-ah/edx: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var first-type/ecx: (addr int) <- get first, type
+  compare *first-type, 3/stream
+  {
+    break-if-=
+    error trace, "first arg for 'read' is not a stream"
+    return
+  }
+  var stream-data-ah/eax: (addr handle stream byte) <- get first, text-data
+  var _stream-data/eax: (addr stream byte) <- lookup *stream-data-ah
+  var stream-data/ebx: (addr stream byte) <- copy _stream-data
+#?   rewind-stream stream-data
+  var result-grapheme/eax: grapheme <- read-grapheme stream-data
+  var result/eax: int <- copy result-grapheme
+  new-integer out, result
 }
 
 fn apply-lines _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
