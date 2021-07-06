@@ -1646,7 +1646,7 @@ fn apply-clear _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var first-type/ecx: (addr int) <- get first, type
   compare *first-type, 3/stream
   {
-    break-if-=
+    break-if-!=
     var stream-data-ah/eax: (addr handle stream byte) <- get first, text-data
     var _stream-data/eax: (addr stream byte) <- lookup *stream-data-ah
     var stream-data/ebx: (addr stream byte) <- copy _stream-data
