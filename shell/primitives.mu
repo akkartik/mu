@@ -172,9 +172,9 @@ fn primitive-global? _x: (addr global) -> _/eax: boolean {
     break-if-!=
     return 0/false
   }
-  var value-type/eax: (addr int) <- get value, type
-  compare *value-type, 4/primitive
   {
+    var value-type/eax: (addr int) <- get value, type
+    compare *value-type, 4/primitive
     break-if-=
     return 0/false
   }
@@ -501,7 +501,7 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to + are not a list"
@@ -517,9 +517,9 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   # args->left->value
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "first arg for + is not a number"
     return
@@ -529,7 +529,7 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "+ encountered non-pair"
@@ -544,9 +544,9 @@ fn apply-add _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/edx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for + is not a number"
     return
@@ -593,7 +593,7 @@ fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to - are not a list"
@@ -609,9 +609,9 @@ fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   # args->left->value
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "first arg for - is not a number"
     return
@@ -621,7 +621,7 @@ fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "- encountered non-pair"
@@ -636,9 +636,9 @@ fn apply-subtract _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/edx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for - is not a number"
     return
@@ -656,7 +656,7 @@ fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to * are not a list"
@@ -672,9 +672,9 @@ fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   # args->left->value
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "first arg for * is not a number"
     return
@@ -684,7 +684,7 @@ fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "* encountered non-pair"
@@ -699,9 +699,9 @@ fn apply-multiply _args-ah: (addr handle cell), out: (addr handle cell), trace: 
   }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/edx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for * is not a number"
     return
@@ -719,7 +719,7 @@ fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to / are not a list"
@@ -735,9 +735,9 @@ fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   # args->left->value
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "first arg for / is not a number"
     return
@@ -747,7 +747,7 @@ fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "/ encountered non-pair"
@@ -762,9 +762,9 @@ fn apply-divide _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/edx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for / is not a number"
     return
@@ -782,7 +782,7 @@ fn apply-remainder _args-ah: (addr handle cell), out: (addr handle cell), trace:
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to % are not a list"
@@ -798,9 +798,9 @@ fn apply-remainder _args-ah: (addr handle cell), out: (addr handle cell), trace:
   # args->left->value
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "first arg for % is not a number"
     return
@@ -810,7 +810,7 @@ fn apply-remainder _args-ah: (addr handle cell), out: (addr handle cell), trace:
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "% encountered non-pair"
@@ -825,9 +825,9 @@ fn apply-remainder _args-ah: (addr handle cell), out: (addr handle cell), trace:
   }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/edx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for % is not a number"
     return
@@ -851,7 +851,7 @@ fn apply-square-root _args-ah: (addr handle cell), out: (addr handle cell), trac
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to sqrt are not a list"
@@ -867,14 +867,14 @@ fn apply-square-root _args-ah: (addr handle cell), out: (addr handle cell), trac
   # args->left->value
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "arg for sqrt is not a number"
     return
   }
-  var first-value/ecx: (addr float) <- get first, number-data
+  var first-value/eax: (addr float) <- get first, number-data
   # square-root
   var result/xmm0: float <- square-root *first-value
   new-float out, result
@@ -886,7 +886,7 @@ fn apply-abs _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to abs are not a list"
@@ -902,9 +902,9 @@ fn apply-abs _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   # args->left->value
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "arg for abs is not a number"
     return
@@ -929,7 +929,7 @@ fn apply-sgn _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to sgn are not a list"
@@ -945,9 +945,9 @@ fn apply-sgn _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   # args->left->value
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "arg for sgn is not a number"
     return
@@ -981,7 +981,7 @@ fn apply-car _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to car are not a list"
@@ -997,9 +997,9 @@ fn apply-car _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   # args->left
   var first-ah/edx: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 0/pair
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 0/pair
     break-if-=
     error trace, "arg for car is not a pair"
     return
@@ -1023,7 +1023,7 @@ fn apply-cdr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to cdr are not a list"
@@ -1039,9 +1039,9 @@ fn apply-cdr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   # args->left
   var first-ah/edx: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 0/pair
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 0/pair
     break-if-=
     error trace, "arg for cdr is not a pair"
     return
@@ -1065,7 +1065,7 @@ fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'cons' are not a list"
@@ -1084,7 +1084,7 @@ fn apply-cons _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "'cons' encountered non-pair"
@@ -1108,7 +1108,7 @@ fn apply-cons-check _args-ah: (addr handle cell), out: (addr handle cell), trace
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to cons? are not a list"
@@ -1124,9 +1124,9 @@ fn apply-cons-check _args-ah: (addr handle cell), out: (addr handle cell), trace
   # args->left
   var first-ah/edx: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 0/pair
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 0/pair
     break-if-=
     nil out
     return
@@ -1141,7 +1141,7 @@ fn apply-structurally-equal _args-ah: (addr handle cell), out: (addr handle cell
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to '=' are not a list"
@@ -1160,7 +1160,7 @@ fn apply-structurally-equal _args-ah: (addr handle cell), out: (addr handle cell
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "'=' encountered non-pair"
@@ -1194,7 +1194,7 @@ fn apply-not _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'not' are not a list"
@@ -1227,7 +1227,7 @@ fn apply-debug _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'debug' are not a list"
@@ -1257,7 +1257,7 @@ fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to '<' are not a list"
@@ -1276,7 +1276,7 @@ fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "'<' encountered non-pair"
@@ -1293,9 +1293,9 @@ fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   # compare
   var _first/eax: (addr cell) <- lookup *first-ah
   var first/ecx: (addr cell) <- copy _first
-  var first-type/eax: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "first arg for '<' is not a number"
     return
@@ -1303,9 +1303,9 @@ fn apply-< _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   var first-value/ecx: (addr float) <- get first, number-data
   var first-float/xmm0: float <- copy *first-value
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/edx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for '<' is not a number"
     return
@@ -1326,7 +1326,7 @@ fn apply-> _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to '>' are not a list"
@@ -1345,7 +1345,7 @@ fn apply-> _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "'>' encountered non-pair"
@@ -1362,9 +1362,9 @@ fn apply-> _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   # compare
   var _first/eax: (addr cell) <- lookup *first-ah
   var first/ecx: (addr cell) <- copy _first
-  var first-type/eax: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "first arg for '>' is not a number"
     return
@@ -1372,9 +1372,9 @@ fn apply-> _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr t
   var first-value/ecx: (addr float) <- get first, number-data
   var first-float/xmm0: float <- copy *first-value
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/edx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for '>' is not a number"
     return
@@ -1395,7 +1395,7 @@ fn apply-<= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to '<=' are not a list"
@@ -1414,7 +1414,7 @@ fn apply-<= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "'<=' encountered non-pair"
@@ -1431,9 +1431,9 @@ fn apply-<= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   # compare
   var _first/eax: (addr cell) <- lookup *first-ah
   var first/ecx: (addr cell) <- copy _first
-  var first-type/eax: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "first arg for '<=' is not a number"
     return
@@ -1441,9 +1441,9 @@ fn apply-<= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var first-value/ecx: (addr float) <- get first, number-data
   var first-float/xmm0: float <- copy *first-value
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/edx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for '<=' is not a number"
     return
@@ -1464,7 +1464,7 @@ fn apply->= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to '>=' are not a list"
@@ -1483,7 +1483,7 @@ fn apply->= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "'>=' encountered non-pair"
@@ -1500,9 +1500,9 @@ fn apply->= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   # compare
   var _first/eax: (addr cell) <- lookup *first-ah
   var first/ecx: (addr cell) <- copy _first
-  var first-type/eax: (addr int) <- get first, type
-  compare *first-type, 1/number
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
     break-if-=
     error trace, "first arg for '>=' is not a number"
     return
@@ -1510,9 +1510,9 @@ fn apply->= _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var first-value/ecx: (addr float) <- get first, number-data
   var first-float/xmm0: float <- copy *first-value
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/edx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for '>=' is not a number"
     return
@@ -1533,7 +1533,7 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'print' are not a list"
@@ -1549,9 +1549,9 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'print' is not a screen"
     return
@@ -1563,7 +1563,7 @@ fn apply-print _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "'print' encountered non-pair"
@@ -1591,7 +1591,7 @@ fn apply-clear _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'clear' are not a list"
@@ -1635,7 +1635,7 @@ fn apply-up _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'up' are not a list"
@@ -1651,9 +1651,9 @@ fn apply-up _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'up' is not a screen"
     return
@@ -1671,7 +1671,7 @@ fn apply-down _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'down' are not a list"
@@ -1687,9 +1687,9 @@ fn apply-down _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'down' is not a screen"
     return
@@ -1707,7 +1707,7 @@ fn apply-left _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'left' are not a list"
@@ -1723,9 +1723,9 @@ fn apply-left _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'left' is not a screen"
     return
@@ -1743,7 +1743,7 @@ fn apply-right _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'right' are not a list"
@@ -1759,9 +1759,9 @@ fn apply-right _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'right' is not a screen"
     return
@@ -1779,7 +1779,7 @@ fn apply-cr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'cr' are not a list"
@@ -1795,9 +1795,9 @@ fn apply-cr _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr 
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'cr' is not a screen"
     return
@@ -1815,7 +1815,7 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'pixel' are not a list"
@@ -1831,9 +1831,9 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'pixel' is not a screen"
     return
@@ -1846,7 +1846,7 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _rest/eax: (addr cell) <- lookup *rest-ah
   var rest/esi: (addr cell) <- copy _rest
   {
-    var rest-type/ecx: (addr int) <- get rest, type
+    var rest-type/eax: (addr int) <- get rest, type
     compare *rest-type, 0/pair
     break-if-=
     error trace, "'pixel' encountered non-pair"
@@ -1861,9 +1861,9 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   }
   var second-ah/eax: (addr handle cell) <- get rest, left
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/ecx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for 'pixel' is not an int (x coordinate)"
     return
@@ -1875,7 +1875,7 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _rest/eax: (addr cell) <- lookup *rest-ah
   rest <- copy _rest
   {
-    var rest-type/ecx: (addr int) <- get rest, type
+    var rest-type/eax: (addr int) <- get rest, type
     compare *rest-type, 0/pair
     break-if-=
     error trace, "'pixel' encountered non-pair"
@@ -1890,9 +1890,9 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   }
   var third-ah/eax: (addr handle cell) <- get rest, left
   var third/eax: (addr cell) <- lookup *third-ah
-  var third-type/ecx: (addr int) <- get third, type
-  compare *third-type, 1/number
   {
+    var third-type/eax: (addr int) <- get third, type
+    compare *third-type, 1/number
     break-if-=
     error trace, "third arg for 'pixel' is not an int (y coordinate)"
     return
@@ -1904,7 +1904,7 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _rest/eax: (addr cell) <- lookup *rest-ah
   rest <- copy _rest
   {
-    var rest-type/ecx: (addr int) <- get rest, type
+    var rest-type/eax: (addr int) <- get rest, type
     compare *rest-type, 0/pair
     break-if-=
     error trace, "'pixel' encountered non-pair"
@@ -1919,9 +1919,9 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   }
   var fourth-ah/eax: (addr handle cell) <- get rest, left
   var fourth/eax: (addr cell) <- lookup *fourth-ah
-  var fourth-type/ecx: (addr int) <- get fourth, type
-  compare *fourth-type, 1/number
   {
+    var fourth-type/eax: (addr int) <- get fourth, type
+    compare *fourth-type, 1/number
     break-if-=
     error trace, "fourth arg for 'pixel' is not an int (color; 0..0xff)"
     return
@@ -1938,7 +1938,7 @@ fn apply-wait-for-key _args-ah: (addr handle cell), out: (addr handle cell), tra
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'key' are not a list"
@@ -1954,9 +1954,9 @@ fn apply-wait-for-key _args-ah: (addr handle cell), out: (addr handle cell), tra
   # keyboard = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 6/keyboard
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 6/keyboard
     break-if-=
     error trace, "first arg for 'key' is not a keyboard"
     return
@@ -1995,7 +1995,7 @@ fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'write' are not a list"
@@ -2011,9 +2011,9 @@ fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   # stream = args->left
   var first-ah/edx: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 3/stream
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 3/stream
     break-if-=
     error trace, "first arg for 'write' is not a stream"
     return
@@ -2025,7 +2025,7 @@ fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var right-ah/eax: (addr handle cell) <- get args, right
   var right/eax: (addr cell) <- lookup *right-ah
   {
-    var right-type/ecx: (addr int) <- get right, type
+    var right-type/eax: (addr int) <- get right, type
     compare *right-type, 0/pair
     break-if-=
     error trace, "'write' encountered non-pair"
@@ -2040,9 +2040,9 @@ fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   }
   var second-ah/eax: (addr handle cell) <- get right, left
   var second/eax: (addr cell) <- lookup *second-ah
-  var second-type/ecx: (addr int) <- get second, type
-  compare *second-type, 1/number
   {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
     break-if-=
     error trace, "second arg for 'write' is not a number/grapheme"
     return
@@ -2062,7 +2062,7 @@ fn apply-rewind _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'rewind' are not a list"
@@ -2078,9 +2078,9 @@ fn apply-rewind _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   # stream = args->left
   var first-ah/edx: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 3/stream
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 3/stream
     break-if-=
     error trace, "first arg for 'rewind' is not a stream"
     return
@@ -2098,7 +2098,7 @@ fn apply-read _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'read' are not a list"
@@ -2114,9 +2114,9 @@ fn apply-read _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   # stream = args->left
   var first-ah/edx: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 3/stream
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 3/stream
     break-if-=
     error trace, "first arg for 'read' is not a stream"
     return
@@ -2136,7 +2136,7 @@ fn apply-lines _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'lines' are not a list"
@@ -2152,9 +2152,9 @@ fn apply-lines _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'lines' is not a screen"
     return
@@ -2180,7 +2180,7 @@ fn apply-columns _args-ah: (addr handle cell), out: (addr handle cell), trace: (
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'columns' are not a list"
@@ -2196,9 +2196,9 @@ fn apply-columns _args-ah: (addr handle cell), out: (addr handle cell), trace: (
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'columns' is not a screen"
     return
@@ -2220,7 +2220,7 @@ fn apply-width _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'width' are not a list"
@@ -2236,9 +2236,9 @@ fn apply-width _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'width' is not a screen"
     return
@@ -2261,7 +2261,7 @@ fn apply-height _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   var _args/eax: (addr cell) <- lookup *args-ah
   var args/esi: (addr cell) <- copy _args
   {
-    var args-type/ecx: (addr int) <- get args, type
+    var args-type/eax: (addr int) <- get args, type
     compare *args-type, 0/pair
     break-if-=
     error trace, "args to 'height' are not a list"
@@ -2277,9 +2277,9 @@ fn apply-height _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   # screen = args->left
   var first-ah/eax: (addr handle cell) <- get args, left
   var first/eax: (addr cell) <- lookup *first-ah
-  var first-type/ecx: (addr int) <- get first, type
-  compare *first-type, 5/screen
   {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
     break-if-=
     error trace, "first arg for 'height' is not a screen"
     return
