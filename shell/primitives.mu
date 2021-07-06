@@ -38,6 +38,7 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "right"
   append-primitive self, "cr"
   append-primitive self, "pixel"
+  append-primitive self, "line"
   append-primitive self, "width"
   append-primitive self, "height"
   # for keyboards
@@ -56,7 +57,7 @@ fn initialize-primitives _self: (addr global-table) {
 # evaluate all their arguments.
 fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var y/ecx: int <- copy ymax
-  y <- subtract 0x11/primitives-border
+  y <- subtract 0x10/primitives-border
   clear-rect screen, xmin, y, xmax, ymax, 0xdc/bg=green-bg
   y <- increment
   var right-min/edx: int <- copy xmax
@@ -98,7 +99,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
 #?     loop-if-=
 #?   }
   y <- copy ymax
-  y <- subtract 0x10/primitives-border
+  y <- subtract 0xf/primitives-border
   var left-max/edx: int <- copy xmax
   left-max <- subtract 0x20/primitives-divider
   var tmpx/eax: int <- copy xmin
@@ -125,15 +126,11 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   tmpx <- draw-text-rightward screen, "pixel graphics", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  line pixel", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  y <- increment
+  var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  width height", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
   tmpx <- draw-text-rightward screen, ": screen -> number", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
-  y <- increment
-  var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "  pixel", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, ": screen x y color", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
-  y <- increment
-  var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "screen/keyboard", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  clear", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
@@ -434,6 +431,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare pixel?, 0/false
     break-if-=
     apply-pixel args-ah, out, trace
+    return
+  }
+  {
+    var line?/eax: boolean <- string-equal? f-name, "line"
+    compare line?, 0/false
+    break-if-=
+    apply-line args-ah, out, trace
     return
   }
   {
@@ -1929,6 +1933,189 @@ fn apply-pixel _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var fourth-value/eax: (addr float) <- get fourth, number-data
   var color/eax: int <- convert *fourth-value
   pixel screen, x, y, color
+  # return nothing
+}
+
+fn apply-line _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'line'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'line' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'line' needs 6 args but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
+    break-if-=
+    error trace, "first arg for 'line' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  # x1 = args->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get args, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  var rest/esi: (addr cell) <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'line' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'line' needs 6 args but got 1"
+    return
+  }
+  var second-ah/eax: (addr handle cell) <- get rest, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
+    break-if-=
+    error trace, "second arg for 'line' is not a number (screen x coordinate of start point)"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  var x1/edx: int <- convert *second-value
+  # y1 = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'line' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'line' needs 6 args but got 2"
+    return
+  }
+  var third-ah/eax: (addr handle cell) <- get rest, left
+  var third/eax: (addr cell) <- lookup *third-ah
+  {
+    var third-type/eax: (addr int) <- get third, type
+    compare *third-type, 1/number
+    break-if-=
+    error trace, "third arg for 'line' is not a number (screen y coordinate of start point)"
+    return
+  }
+  var third-value/eax: (addr float) <- get third, number-data
+  var y1/ebx: int <- convert *third-value
+  # x2 = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  var rest/esi: (addr cell) <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'line' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'line' needs 6 args but got 3"
+    return
+  }
+  var fourth-ah/eax: (addr handle cell) <- get rest, left
+  var fourth/eax: (addr cell) <- lookup *fourth-ah
+  {
+    var fourth-type/eax: (addr int) <- get fourth, type
+    compare *fourth-type, 1/number
+    break-if-=
+    error trace, "fourth arg for 'line' is not a number (screen x coordinate of end point)"
+    return
+  }
+  var fourth-value/eax: (addr float) <- get fourth, number-data
+  var x2/ecx: int <- convert *fourth-value
+  # y2 = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'line' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'line' needs 6 args but got 4"
+    return
+  }
+  var fifth-ah/eax: (addr handle cell) <- get rest, left
+  var fifth/eax: (addr cell) <- lookup *fifth-ah
+  {
+    var fifth-type/eax: (addr int) <- get fifth, type
+    compare *fifth-type, 1/number
+    break-if-=
+    error trace, "fifth arg for 'line' is not a number (screen y coordinate of end point)"
+    return
+  }
+  var fifth-value/eax: (addr float) <- get fifth, number-data
+  var tmp/eax: int <- convert *fifth-value
+  var y2: int
+  copy-to y2, tmp
+  # color = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'line' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'line' needs 6 args but got 5"
+    return
+  }
+  var sixth-ah/eax: (addr handle cell) <- get rest, left
+  var sixth/eax: (addr cell) <- lookup *sixth-ah
+  {
+    var sixth-type/eax: (addr int) <- get sixth, type
+    compare *sixth-type, 1/number
+    break-if-=
+    error trace, "sixth arg for 'line' is not an int (color; 0..0xff)"
+    return
+  }
+  var sixth-value/eax: (addr float) <- get sixth, number-data
+  var color/eax: int <- convert *sixth-value
+  draw-line screen, x1, y1, x2, y2, color
   # return nothing
 }
 
