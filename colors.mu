@@ -48,6 +48,13 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
     a, b, c <- hsl a, b, c
     # return all colors in the same quadrant in h, s and l
     print-nearby-colors screen, a, b, c
+    # another metric
+    var color/eax: int <- nearest-color-euclidean-hsl a, b, c
+    set-cursor-position screen, 0x10/x, 0x26/y
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "nearest (euclidean, h/s/l): ", 0xf/fg, 0/bg
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, color, 7/fg, 0/bg
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, " ", 0xf/fg, 0/bg
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "               ", 0/fg, color
     #
     loop
   }
@@ -232,4 +239,48 @@ fn print-nearby-colors screen: (addr screen), h: int, s: int, l: int {
     color <- increment
     loop
   }
+}
+
+fn nearest-color-euclidean-hsl h: int, s: int, l: int -> _/eax: int {
+  var result/edi: int <- copy 0x100/invalid
+  var max-distance/esi: int <- copy 0x30000/max  # 3 * 0x100*0x100
+  var a/ecx: int <- copy 0
+  var b/edx: int <- copy 0
+  var c/ebx: int <- copy 0
+  var color/eax: int <- copy 0
+  {
+    compare color, 0x100
+    break-if->=
+    $nearest-color-euclidean-hsl:body: {
+      a, b, c <- color-rgb color
+      a, b, c <- hsl a, b, c
+      {
+        var curr-distance/eax: int <- euclidean-distance-squared a, b, c, h, s, l
+        compare curr-distance, max-distance
+        break-if->= $nearest-color-euclidean-hsl:body
+        max-distance <- copy curr-distance
+      }
+      result <- copy color
+    }
+    color <- increment
+    loop
+  }
+  return result
+}
+
+fn euclidean-distance-squared x1: int, y1: int, z1: int, x2: int, y2: int, z2: int -> _/eax: int {
+  var result/edi: int <- copy 0
+  var tmp/eax: int <- copy x1
+  tmp <- subtract x2
+  tmp <- multiply tmp
+  result <- add tmp
+  tmp <- copy y1
+  tmp <- subtract y2
+  tmp <- multiply tmp
+  result <- add tmp
+  tmp <- copy z1
+  tmp <- subtract z2
+  tmp <- multiply tmp
+  result <- add tmp
+  return result
 }
