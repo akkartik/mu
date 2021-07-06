@@ -45,6 +45,8 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "bezier"
   append-primitive self, "width"
   append-primitive self, "height"
+  append-primitive self, "new_screen"
+  append-primitive self, "blit"
   # for keyboards
   append-primitive self, "key"
   # for streams
@@ -61,7 +63,7 @@ fn initialize-primitives _self: (addr global-table) {
 # evaluate all their arguments.
 fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var y/ecx: int <- copy ymax
-  y <- subtract 0x10/primitives-border
+  y <- subtract 0x11/primitives-border
   clear-rect screen, xmin, y, xmax, ymax, 0xdc/bg=green-bg
   y <- increment
   var right-min/edx: int <- copy xmax
@@ -103,7 +105,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
 #?     loop-if-=
 #?   }
   y <- copy ymax
-  y <- subtract 0xf/primitives-border
+  y <- subtract 0x10/primitives-border
   var left-max/edx: int <- copy xmax
   left-max <- subtract 0x20/primitives-divider
   var tmpx/eax: int <- copy xmin
@@ -137,7 +139,11 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   tmpx <- draw-text-rightward screen, ": screen -> number", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "  clear", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, "  new_screen", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": number number -> screen ", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  y <- increment
+  var tmpx/eax: int <- copy xmin
+  tmpx <- draw-text-rightward screen, "  clear blit", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
   tmpx <- draw-text-rightward screen, ": screen", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
@@ -149,7 +155,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  stream", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, ": () -> stream ", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": -> stream ", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  write", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
@@ -484,6 +490,20 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare height?, 0/false
     break-if-=
     apply-height args-ah, out, trace
+    return
+  }
+  {
+    var screen?/eax: boolean <- string-equal? f-name, "new_screen"
+    compare screen?, 0/false
+    break-if-=
+    apply-new-screen args-ah, out, trace
+    return
+  }
+  {
+    var blit?/eax: boolean <- string-equal? f-name, "blit"
+    compare blit?, 0/false
+    break-if-=
+    apply-blit args-ah, out, trace
     return
   }
   {
@@ -3216,4 +3236,132 @@ fn apply-height _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   height <- shift-left 4/log2-font-height
   var result/xmm0: float <- convert height
   new-float out, result
+}
+
+fn apply-new-screen _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'screen'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'screen' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'screen' needs 2 args but got 0"
+    return
+  }
+  # args->left->value
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
+    break-if-=
+    error trace, "first arg for 'screen' is not a number (screen width in pixels)"
+    return
+  }
+  var first-value-a/ecx: (addr float) <- get first, number-data
+  var first-value/ecx: int <- convert *first-value-a
+  # args->right->left->value
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  {
+    var right-type/eax: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'screen' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'screen' needs 2 args but got 1"
+    return
+  }
+  var second-ah/eax: (addr handle cell) <- get right, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
+    break-if-=
+    error trace, "second arg for 'screen' is not a number (screen height in pixels)"
+    return
+  }
+  var second-value-a/edx: (addr float) <- get second, number-data
+  var second-value/edx: int <- convert *second-value-a
+  # create fake screen
+  new-fake-screen out, first-value, second-value, 1/pixel-graphics
+}
+
+fn apply-blit _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'blit'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'blit' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'blit' needs 2 args but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
+    break-if-=
+    error trace, "first arg for 'blit' is not a screen"
+    return
+  }
+  var src-ah/eax: (addr handle screen) <- get first, screen-data
+  var _src/eax: (addr screen) <- lookup *src-ah
+  var src/ecx: (addr screen) <- copy _src
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  {
+    var right-type/eax: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'blit' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'blit' needs 2 args but got 1"
+    return
+  }
+  var second-ah/eax: (addr handle cell) <- get right, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 5/screen
+    break-if-=
+    error trace, "second arg for 'blit' is not a screen"
+    return
+  }
+  var dest-ah/eax: (addr handle screen) <- get second, screen-data
+  var dest/eax: (addr screen) <- lookup *dest-ah
+  #
+  convert-graphemes-to-pixels src
+  copy-pixels src, dest
 }
