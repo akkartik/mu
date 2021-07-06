@@ -42,6 +42,7 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "hline"
   append-primitive self, "vline"
   append-primitive self, "circle"
+  append-primitive self, "bezier"
   append-primitive self, "width"
   append-primitive self, "height"
   # for keyboards
@@ -129,7 +130,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   tmpx <- draw-text-rightward screen, "pixel graphics", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "  circle line hline vline pixel", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, "  circle bezier line hline vline pixel", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  width height", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
@@ -462,6 +463,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare circle?, 0/false
     break-if-=
     apply-circle args-ah, out, trace
+    return
+  }
+  {
+    var bezier?/eax: boolean <- string-equal? f-name, "bezier"
+    compare bezier?, 0/false
+    break-if-=
+    apply-bezier args-ah, out, trace
     return
   }
   {
@@ -2596,6 +2604,253 @@ fn apply-circle _args-ah: (addr handle cell), out: (addr handle cell), trace: (a
   var fifth-value/eax: (addr float) <- get fifth, number-data
   var color/eax: int <- convert *fifth-value
   draw-circle screen, cx, cy, r, color
+  # return nothing
+}
+
+fn apply-bezier _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'bezier'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'bezier' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'bezier' needs 8 args but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
+    break-if-=
+    error trace, "first arg for 'bezier' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  # x0 = args->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get args, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  var rest/esi: (addr cell) <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'bezier' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'bezier' needs 8 args but got 1"
+    return
+  }
+  var second-ah/eax: (addr handle cell) <- get rest, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
+    break-if-=
+    error trace, "second arg for 'bezier' is not a number (screen x coordinate of start point)"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  var x0/edx: int <- convert *second-value
+  # y0 = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'bezier' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'bezier' needs 8 args but got 2"
+    return
+  }
+  var third-ah/eax: (addr handle cell) <- get rest, left
+  var third/eax: (addr cell) <- lookup *third-ah
+  {
+    var third-type/eax: (addr int) <- get third, type
+    compare *third-type, 1/number
+    break-if-=
+    error trace, "third arg for 'bezier' is not a number (screen y coordinate of start point)"
+    return
+  }
+  var third-value/eax: (addr float) <- get third, number-data
+  var y0/ebx: int <- convert *third-value
+  # x1 = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  var rest/esi: (addr cell) <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'bezier' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'bezier' needs 8 args but got 3"
+    return
+  }
+  var fourth-ah/eax: (addr handle cell) <- get rest, left
+  var fourth/eax: (addr cell) <- lookup *fourth-ah
+  {
+    var fourth-type/eax: (addr int) <- get fourth, type
+    compare *fourth-type, 1/number
+    break-if-=
+    error trace, "fourth arg for 'bezier' is not a number (screen x coordinate of control point)"
+    return
+  }
+  var fourth-value/eax: (addr float) <- get fourth, number-data
+  var tmp/eax: int <- convert *fourth-value
+  var x1: int
+  copy-to x1, tmp
+  # y1 = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'bezier' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'bezier' needs 8 args but got 4"
+    return
+  }
+  var fifth-ah/eax: (addr handle cell) <- get rest, left
+  var fifth/eax: (addr cell) <- lookup *fifth-ah
+  {
+    var fifth-type/eax: (addr int) <- get fifth, type
+    compare *fifth-type, 1/number
+    break-if-=
+    error trace, "fifth arg for 'bezier' is not a number (screen y coordinate of control point)"
+    return
+  }
+  var fifth-value/eax: (addr float) <- get fifth, number-data
+  var tmp/eax: int <- convert *fifth-value
+  var y1: int
+  copy-to y1, tmp
+  # x2 = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  var rest/esi: (addr cell) <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'bezier' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'bezier' needs 8 args but got 3"
+    return
+  }
+  var sixth-ah/eax: (addr handle cell) <- get rest, left
+  var sixth/eax: (addr cell) <- lookup *sixth-ah
+  {
+    var sixth-type/eax: (addr int) <- get sixth, type
+    compare *sixth-type, 1/number
+    break-if-=
+    error trace, "sixth arg for 'bezier' is not a number (screen x coordinate of end point)"
+    return
+  }
+  var sixth-value/eax: (addr float) <- get sixth, number-data
+  var tmp/eax: int <- convert *sixth-value
+  var x2: int
+  copy-to x2, tmp
+  # y2 = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'bezier' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'bezier' needs 8 args but got 4"
+    return
+  }
+  var seventh-ah/eax: (addr handle cell) <- get rest, left
+  var seventh/eax: (addr cell) <- lookup *seventh-ah
+  {
+    var seventh-type/eax: (addr int) <- get seventh, type
+    compare *seventh-type, 1/number
+    break-if-=
+    error trace, "seventh arg for 'bezier' is not a number (screen y coordinate of end point)"
+    return
+  }
+  var seventh-value/eax: (addr float) <- get seventh, number-data
+  var tmp/eax: int <- convert *seventh-value
+  var y2: int
+  copy-to y2, tmp
+  # color = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'bezier' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'bezier' needs 8 args but got 5"
+    return
+  }
+  var eighth-ah/eax: (addr handle cell) <- get rest, left
+  var eighth/eax: (addr cell) <- lookup *eighth-ah
+  {
+    var eighth-type/eax: (addr int) <- get eighth, type
+    compare *eighth-type, 1/number
+    break-if-=
+    error trace, "eighth arg for 'bezier' is not an int (color; 0..0xff)"
+    return
+  }
+  var eighth-value/eax: (addr float) <- get eighth, number-data
+  var color/eax: int <- convert *eighth-value
+  draw-monotonic-bezier screen, x0, y0, x1, y1, x2, y2, color
   # return nothing
 }
 
