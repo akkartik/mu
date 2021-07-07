@@ -225,7 +225,7 @@ fn nearest-color-euclidean-hsl h: int, s: int, l: int -> _/eax: int {
       a, b, c <- color-rgb color
       a, b, c <- hsl a, b, c
       {
-        var curr-distance/eax: int <- euclidean-distance-squared a, b, c, h, s, l
+        var curr-distance/eax: int <- euclidean-hsl-squared a, b, c, h, s, l
         compare curr-distance, max-distance
         break-if->= $nearest-color-euclidean-hsl:body
         max-distance <- copy curr-distance
@@ -238,18 +238,28 @@ fn nearest-color-euclidean-hsl h: int, s: int, l: int -> _/eax: int {
   return result
 }
 
-fn euclidean-distance-squared x1: int, y1: int, z1: int, x2: int, y2: int, z2: int -> _/eax: int {
+fn euclidean-hsl-squared h1: int, s1: int, l1: int, h2: int, s2: int, l2: int -> _/eax: int {
   var result/edi: int <- copy 0
-  var tmp/eax: int <- copy x1
-  tmp <- subtract x2
+  # hue
+  var tmp/eax: int <- copy h1
+  tmp <- subtract h2
+  tmp <- multiply tmp
+  # hue is a cylindrical space; distance can't be greater than 0x80
+  {
+    compare tmp, 0x4000  # 0x80*0x80
+    break-if-<=
+    tmp <- subtract 0x4000
+    tmp <- negate
+  }
+  result <- add tmp
+  # saturation
+  tmp <- copy s1
+  tmp <- subtract s2
   tmp <- multiply tmp
   result <- add tmp
-  tmp <- copy y1
-  tmp <- subtract y2
-  tmp <- multiply tmp
-  result <- add tmp
-  tmp <- copy z1
-  tmp <- subtract z2
+  # luminance
+  tmp <- copy l1
+  tmp <- subtract l2
   tmp <- multiply tmp
   result <- add tmp
   return result
