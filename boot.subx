@@ -972,6 +972,7 @@ Primary-bus-secondary-drive:
 
 == code
 
+# No more than 0x100 sectors
 load-sectors:  # disk: (addr disk), lba: int, n: int, out: (addr stream byte)
   # . prologue
   55/push-ebp
@@ -980,6 +981,12 @@ load-sectors:  # disk: (addr disk), lba: int, n: int, out: (addr stream byte)
   50/push-eax
   51/push-ecx
   52/push-edx
+  # check precondition
+  81 7/subop/compare *(ebp+0x10) 0x100/imm32
+  {
+    7e/jump-if-<= break/disp8
+    (abort "load-sectors: no more than 0x100 sectors")
+  }
   # check for drive
   (drive-exists? *(ebp+8))  # => eax
   3d/compare-eax-and 0/imm32/false

@@ -98,6 +98,10 @@ sig to-decimal-digit in: grapheme -> _/eax: int
 # next-raw-word really reads whitespace-separated words
 sig next-word line: (addr stream byte), out: (addr slice)  # skips '#' comments
 sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not skip '#' comments
+sig skip-chars-matching in: (addr stream byte), delimiter: byte
+sig skip-chars-matching-whitespace in: (addr stream byte)
+sig skip-chars-not-matching in: (addr stream byte), delimiter: byte
+sig skip-chars-not-matching-whitespace in: (addr stream byte)
 sig stream-empty? s: (addr stream _) -> _/eax: boolean
 sig stream-full? s: (addr stream _) -> _/eax: boolean
 sig stream-to-array in: (addr stream _), out: (addr handle array _)
