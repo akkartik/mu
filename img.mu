@@ -42,7 +42,7 @@ fn initialize-image _self: (addr image), in: (addr stream byte) {
     compare P1?, 0/false
     break-if-=
     var type-a/eax: (addr int) <- get self, type
-    copy-to *type-a, 1
+    copy-to *type-a, 1/ppm
     initialize-image-from-pbm self, in
     return
   }
@@ -51,7 +51,7 @@ fn initialize-image _self: (addr image), in: (addr stream byte) {
     compare P2?, 0/false
     break-if-=
     var type-a/eax: (addr int) <- get self, type
-    copy-to *type-a, 2
+    copy-to *type-a, 2/pgm
     initialize-image-from-pgm self, in
     return
   }
@@ -60,11 +60,11 @@ fn initialize-image _self: (addr image), in: (addr stream byte) {
     compare P3?, 0/false
     break-if-=
     var type-a/eax: (addr int) <- get self, type
-    copy-to *type-a, 3
+    copy-to *type-a, 3/ppm
     initialize-image-from-ppm self, in
     return
   }
-  abort "unrecognized image type"
+  abort "initialize-image: unrecognized image type"
 }
 
 # import a black-and-white ascii bitmap
@@ -211,6 +211,30 @@ fn initialize-image-from-ppm _self: (addr image), in: (addr stream byte) {
 
 fn render-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int {
   var self/esi: (addr image) <- copy _self
+  var type-a/eax: (addr int) <- get self, type
+  {
+    compare *type-a, 1/pbm
+    break-if-!=
+    render-pbm-image screen, self, xmin, ymin
+    return
+  }
+  {
+    compare *type-a, 2/pgm
+    break-if-!=
+    render-pgm-image screen, self, xmin, ymin
+    return
+  }
+  {
+    compare *type-a, 3/ppm
+    break-if-!=
+    render-ppm-image screen, self, xmin, ymin
+    return
+  }
+  abort "render-image: unrecognized image type"
+}
+
+fn render-pbm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int {
+  var self/esi: (addr image) <- copy _self
   var width-a/ecx: (addr int) <- get self, width
   var data-ah/eax: (addr handle array byte) <- get self, data
   var _data/eax: (addr array byte) <- lookup *data-ah
@@ -230,9 +254,84 @@ fn render-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int
         var src-a/eax: (addr byte) <- index data, i
         var src/eax: byte <- copy-byte *src-a
         var src-int/eax: int <- copy src
-#?         set-cursor-position-on-real-screen 0x40/x 0/y
-#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, src-int, 4/fg 0/bg
-        pixel screen, x, y, src-int
+        compare src-int, 0/black
+        {
+          break-if-=
+          pixel screen, x, y, 0xf/white
+        }
+        compare src-int, 0/black
+        {
+          break-if-!=
+          pixel screen, x, y, 0/black
+        }
+      }
+      x <- increment
+      i <- increment
+      i2 <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+}
+
+fn render-pgm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int {
+  var self/esi: (addr image) <- copy _self
+  var width-a/ecx: (addr int) <- get self, width
+  var data-ah/eax: (addr handle array byte) <- get self, data
+  var _data/eax: (addr array byte) <- lookup *data-ah
+  var data/esi: (addr array byte) <- copy _data
+  var y/edx: int <- copy ymin
+  var i/edi: int <- copy 0
+  var max/eax: int <- length data
+  {
+    compare i, max
+    break-if->=
+    var x/ebx: int <- copy xmin
+    var i2/eax: int <- copy 0
+    {
+      compare i2, *width-a
+      break-if->=
+      {
+        var src-a/eax: (addr byte) <- index data, i
+        var src/eax: byte <- copy-byte *src-a
+        var src-int/eax: int <- copy src
+        # shades of grey = just a non-zero luminance
+        var color/eax: int <- nearest-color-euclidean-hsl 0/hue, 0/saturation, src-int
+        pixel screen, x, y, color
+      }
+      x <- increment
+      i <- increment
+      i2 <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+}
+
+fn render-ppm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int {
+  var self/esi: (addr image) <- copy _self
+  var width-a/ecx: (addr int) <- get self, width
+  var data-ah/eax: (addr handle array byte) <- get self, data
+  var _data/eax: (addr array byte) <- lookup *data-ah
+  var data/esi: (addr array byte) <- copy _data
+  var y/edx: int <- copy ymin
+  var i/edi: int <- copy 0
+  var max/eax: int <- length data
+  {
+    compare i, max
+    break-if->=
+    var x/ebx: int <- copy xmin
+    var i2/eax: int <- copy 0
+    {
+      compare i2, *width-a
+      break-if->=
+      {
+        var src-a/eax: (addr byte) <- index data, i
+        var src/eax: byte <- copy-byte *src-a
+        var src-int/eax: int <- copy src
+        # TODO
       }
       x <- increment
       i <- increment
