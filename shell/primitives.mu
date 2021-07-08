@@ -318,10 +318,10 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     return
   }
   {
-    var structurally-equal?/eax: boolean <- string-equal? f-name, "="
-    compare structurally-equal?, 0/false
+    var cell-isomorphic?/eax: boolean <- string-equal? f-name, "="
+    compare cell-isomorphic?, 0/false
     break-if-=
-    apply-structurally-equal args-ah, out, trace
+    apply-cell-isomorphic args-ah, out, trace
     return
   }
   {
@@ -1191,7 +1191,7 @@ fn apply-cons-check _args-ah: (addr handle cell), out: (addr handle cell), trace
 }
 
 
-fn apply-structurally-equal _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+fn apply-cell-isomorphic _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply '='"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
   var _args/eax: (addr cell) <- lookup *args-ah
