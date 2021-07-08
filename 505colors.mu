@@ -238,19 +238,43 @@ fn nearest-color-euclidean-hsl h: int, s: int, l: int -> _/eax: int {
   return result
 }
 
+fn test-nearest-color-euclidean-hsl {
+  # red from lightest to darkest
+  var red/eax: int <- nearest-color-euclidean-hsl 0, 0xff, 0xff
+  check-ints-equal red, 0x58/88, "F - test-nearest-color-euclidean-hsl/full-red1"
+  red <- nearest-color-euclidean-hsl 0, 0xff, 0xc0
+  check-ints-equal red, 0x40/64, "F - test-nearest-color-euclidean-hsl/full-red2"
+  red <- nearest-color-euclidean-hsl 0, 0xff, 0x80
+  check-ints-equal red, 0x28/40, "F - test-nearest-color-euclidean-hsl/full-red3"
+  red <- nearest-color-euclidean-hsl 0, 0xff, 0x40
+  check-ints-equal red, 0x28/40, "F - test-nearest-color-euclidean-hsl/full-red4"
+  red <- nearest-color-euclidean-hsl 0, 0xff, 0
+  check-ints-equal red, 0x28/40, "F - test-nearest-color-euclidean-hsl/full-red5"
+  # try a number really close to red but on the other side of the cylinder
+  red <- nearest-color-euclidean-hsl 0xff, 0xff, 0xff
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, red, 7/fg 0/bg
+  check-ints-equal red, 0x57/87, "F - test-nearest-color-euclidean-hsl/other-end-of-red"  # still looks red
+  # half-saturation red from lightest to darkest
+  red <- nearest-color-euclidean-hsl 0, 0x80, 0xff
+  check-ints-equal red, 0xf/15, "F - test-nearest-color-euclidean-hsl/half-red1"   # ?? grey ??
+  red <- nearest-color-euclidean-hsl 0, 0x80, 0xc0
+  check-ints-equal red, 4, "F - test-nearest-color-euclidean-hsl/half-red2"
+  red <- nearest-color-euclidean-hsl 0, 0x80, 0x80
+  check-ints-equal red, 4, "F - test-nearest-color-euclidean-hsl/half-red3"
+  red <- nearest-color-euclidean-hsl 0, 0x80, 0x40
+  check-ints-equal red, 4, "F - test-nearest-color-euclidean-hsl/half-red4"
+  red <- nearest-color-euclidean-hsl 0, 0x80, 0
+  check-ints-equal red, 0x70/112, "F - test-nearest-color-euclidean-hsl/half-red5"
+}
+
 fn euclidean-hsl-squared h1: int, s1: int, l1: int, h2: int, s2: int, l2: int -> _/eax: int {
   var result/edi: int <- copy 0
   # hue
   var tmp/eax: int <- copy h1
   tmp <- subtract h2
   tmp <- multiply tmp
-  # hue is a cylindrical space; distance can't be greater than 0x80
-  {
-    compare tmp, 0x4000  # 0x80*0x80
-    break-if-<=
-    tmp <- subtract 0x4000
-    tmp <- negate
-  }
+  # TODO: should we do something to reflect that hue is a cylindrical space?
+  # I can't come up with a failing test.
   result <- add tmp
   # saturation
   tmp <- copy s1
