@@ -15,7 +15,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img-storage: image
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
-  render-image screen, img, 0x20/x 0x80/y
+  render-image screen, img, 0x20/x 0x80/y, 0x100/width, 0x100/height
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
@@ -212,33 +212,33 @@ fn initialize-image-from-ppm _self: (addr image), in: (addr stream byte) {
   }
 }
 
-fn render-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int {
+fn render-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int, width: int, height: int {
   var self/esi: (addr image) <- copy _self
   var type-a/eax: (addr int) <- get self, type
   {
     compare *type-a, 1/pbm
     break-if-!=
-    render-pbm-image screen, self, xmin, ymin
+    render-pbm-image screen, self, xmin, ymin, width, height
     return
   }
   {
     compare *type-a, 2/pgm
     break-if-!=
-    render-pgm-image screen, self, xmin, ymin
+    render-pgm-image screen, self, xmin, ymin, width, height
     return
   }
   {
     compare *type-a, 3/ppm
     break-if-!=
-    render-ppm-image screen, self, xmin, ymin
+    render-ppm-image screen, self, xmin, ymin, width, height
     return
   }
   abort "render-image: unrecognized image type"
 }
 
-fn render-pbm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int {
+fn render-pbm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int, width: int, height: int {
   var self/esi: (addr image) <- copy _self
-  var width-a/ecx: (addr int) <- get self, width
+  var img-width-a/ecx: (addr int) <- get self, width
   var data-ah/eax: (addr handle array byte) <- get self, data
   var _data/eax: (addr array byte) <- lookup *data-ah
   var data/esi: (addr array byte) <- copy _data
@@ -251,7 +251,7 @@ fn render-pbm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
     var x/ebx: int <- copy xmin
     var img-x/eax: int <- copy 0
     {
-      compare img-x, *width-a
+      compare img-x, *img-width-a
       break-if->=
       {
         var src-a/eax: (addr byte) <- index data, i
@@ -278,9 +278,9 @@ fn render-pbm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
   }
 }
 
-fn render-pgm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int {
+fn render-pgm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int, width: int, height: int {
   var self/esi: (addr image) <- copy _self
-  var width-a/ecx: (addr int) <- get self, width
+  var img-width-a/ecx: (addr int) <- get self, width
   var data-ah/eax: (addr handle array byte) <- get self, data
   var _data/eax: (addr array byte) <- lookup *data-ah
   var data/esi: (addr array byte) <- copy _data
@@ -293,7 +293,7 @@ fn render-pgm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
     var x/ebx: int <- copy xmin
     var img-x/eax: int <- copy 0
     {
-      compare img-x, *width-a
+      compare img-x, *img-width-a
       break-if->=
       {
         var src-a/eax: (addr byte) <- index data, i
@@ -313,9 +313,9 @@ fn render-pgm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
   }
 }
 
-fn render-ppm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int {
+fn render-ppm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int, width: int, height: int {
   var self/esi: (addr image) <- copy _self
-  var width-a/ecx: (addr int) <- get self, width
+  var img-width-a/ecx: (addr int) <- get self, width
   var data-ah/eax: (addr handle array byte) <- get self, data
   var _data/eax: (addr array byte) <- lookup *data-ah
   var data/esi: (addr array byte) <- copy _data
@@ -328,7 +328,7 @@ fn render-ppm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
     var x/ebx: int <- copy xmin
     var img-x/eax: int <- copy 0
     {
-      compare img-x, *width-a
+      compare img-x, *img-width-a
       break-if->=
       # r channel
       var r: int
