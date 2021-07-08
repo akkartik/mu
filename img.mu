@@ -246,9 +246,9 @@ fn render-pbm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
     compare i, max
     break-if->=
     var x/ebx: int <- copy xmin
-    var i2/eax: int <- copy 0
+    var img-x/eax: int <- copy 0
     {
-      compare i2, *width-a
+      compare img-x, *width-a
       break-if->=
       {
         var src-a/eax: (addr byte) <- index data, i
@@ -267,7 +267,7 @@ fn render-pbm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
       }
       x <- increment
       i <- increment
-      i2 <- increment
+      img-x <- increment
       loop
     }
     y <- increment
@@ -288,9 +288,9 @@ fn render-pgm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
     compare i, max
     break-if->=
     var x/ebx: int <- copy xmin
-    var i2/eax: int <- copy 0
+    var img-x/eax: int <- copy 0
     {
-      compare i2, *width-a
+      compare img-x, *width-a
       break-if->=
       {
         var src-a/eax: (addr byte) <- index data, i
@@ -302,7 +302,7 @@ fn render-pgm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
       }
       x <- increment
       i <- increment
-      i2 <- increment
+      img-x <- increment
       loop
     }
     y <- increment
@@ -323,9 +323,9 @@ fn render-ppm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
     compare i, max
     break-if->=
     var x/ebx: int <- copy xmin
-    var i2/eax: int <- copy 0
+    var img-x/eax: int <- copy 0
     {
-      compare i2, *width-a
+      compare img-x, *width-a
       break-if->=
       {
         var src-a/eax: (addr byte) <- index data, i
@@ -335,7 +335,7 @@ fn render-ppm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
       }
       x <- increment
       i <- increment
-      i2 <- increment
+      img-x <- increment
       loop
     }
     y <- increment
