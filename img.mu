@@ -327,14 +327,43 @@ fn render-ppm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
     {
       compare img-x, *width-a
       break-if->=
+      # r channel
+      var r: int
       {
         var src-a/eax: (addr byte) <- index data, i
         var src/eax: byte <- copy-byte *src-a
-        var src-int/eax: int <- copy src
-        # TODO
+        copy-to r, src
       }
-      x <- increment
       i <- increment
+      # g channel
+      var g: int
+      {
+        var src-a/eax: (addr byte) <- index data, i
+        var src/eax: byte <- copy-byte *src-a
+        copy-to g, src
+      }
+      i <- increment
+      # b channel
+      var b: int
+      {
+        var src-a/eax: (addr byte) <- index data, i
+        var src/eax: byte <- copy-byte *src-a
+        copy-to b, src
+      }
+      i <- increment
+      #
+      var color: int
+      {
+        var h/ecx: int <- copy 0
+        var s/edx: int <- copy 0
+        var l/ebx: int <- copy 0
+        h, s, l <- hsl r, g, b
+        var tmp/eax: int <- nearest-color-euclidean-hsl h, s, l
+        copy-to color, tmp
+      }
+      pixel screen, x, y, color
+      #
+      x <- increment
       img-x <- increment
       loop
     }
