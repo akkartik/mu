@@ -335,8 +335,7 @@ fn render-pgm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
       {
         var src-a/eax: (addr byte) <- index data, i
         var src/eax: byte <- copy-byte *src-a
-        var src-int/eax: int <- copy src
-        var color/eax: int <- nearest-grey src-int
+        var color/eax: int <- nearest-grey src
         pixel screen, x, y, color
       }
       x <- increment
@@ -349,7 +348,7 @@ fn render-pgm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
   }
 }
 
-fn nearest-grey level-255: int -> _/eax: int {
+fn nearest-grey level-255: byte -> _/eax: int {
   var result/eax: int <- copy level-255
   result <- shift-right 4
   result <- add 0x10
