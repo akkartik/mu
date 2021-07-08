@@ -294,9 +294,9 @@ fn render-pbm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, imgy, 4/fg 0/bg
         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, idx, 5/fg 0/bg
       }
-      var src/eax: (addr byte) <- index img-data, idx
-      var color/eax: byte <- copy-byte *src
-      var color-int/eax: int <- copy color
+      var src-a/eax: (addr byte) <- index img-data, idx
+      var src/eax: byte <- copy-byte *src-a
+      var color-int/eax: int <- copy src
       {
         compare color-int, 0/black
         break-if-=
