@@ -212,34 +212,34 @@ fn initialize-image-from-ppm _self: (addr image), in: (addr stream byte) {
   }
 }
 
-fn render-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int, width: int, height: int {
-  var self/esi: (addr image) <- copy _self
-  var type-a/eax: (addr int) <- get self, type
+fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
+  var img/esi: (addr image) <- copy _img
+  var type-a/eax: (addr int) <- get img, type
   {
     compare *type-a, 1/pbm
     break-if-!=
-    render-pbm-image screen, self, xmin, ymin, width, height
+    render-pbm-image screen, img, xmin, ymin, width, height
     return
   }
   {
     compare *type-a, 2/pgm
     break-if-!=
-    render-pgm-image screen, self, xmin, ymin, width, height
+    render-pgm-image screen, img, xmin, ymin, width, height
     return
   }
   {
     compare *type-a, 3/ppm
     break-if-!=
-    render-ppm-image screen, self, xmin, ymin, width, height
+    render-ppm-image screen, img, xmin, ymin, width, height
     return
   }
   abort "render-image: unrecognized image type"
 }
 
-fn render-pbm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int, width: int, height: int {
-  var self/esi: (addr image) <- copy _self
-  var img-width-a/ecx: (addr int) <- get self, width
-  var data-ah/eax: (addr handle array byte) <- get self, data
+fn render-pbm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
+  var img/esi: (addr image) <- copy _img
+  var img-width-a/ecx: (addr int) <- get img, width
+  var data-ah/eax: (addr handle array byte) <- get img, data
   var _data/eax: (addr array byte) <- lookup *data-ah
   var data/esi: (addr array byte) <- copy _data
   var y/edx: int <- copy ymin
@@ -278,10 +278,10 @@ fn render-pbm-image screen: (addr screen), _self: (addr image), xmin: int, ymin:
   }
 }
 
-fn render-pgm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int, width: int, height: int {
-  var self/esi: (addr image) <- copy _self
-  var img-width-a/ecx: (addr int) <- get self, width
-  var data-ah/eax: (addr handle array byte) <- get self, data
+fn render-pgm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
+  var img/esi: (addr image) <- copy _img
+  var img-width-a/ecx: (addr int) <- get img, width
+  var data-ah/eax: (addr handle array byte) <- get img, data
   var _data/eax: (addr array byte) <- lookup *data-ah
   var data/esi: (addr array byte) <- copy _data
   var y/edx: int <- copy ymin
@@ -319,10 +319,10 @@ fn nearest-grey level-255: int -> _/eax: int {
   return result
 }
 
-fn render-ppm-image screen: (addr screen), _self: (addr image), xmin: int, ymin: int, width: int, height: int {
-  var self/esi: (addr image) <- copy _self
-  var img-width-a/ecx: (addr int) <- get self, width
-  var data-ah/eax: (addr handle array byte) <- get self, data
+fn render-ppm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
+  var img/esi: (addr image) <- copy _img
+  var img-width-a/ecx: (addr int) <- get img, width
+  var data-ah/eax: (addr handle array byte) <- get img, data
   var _data/eax: (addr array byte) <- lookup *data-ah
   var data/esi: (addr array byte) <- copy _data
   var y/edx: int <- copy ymin
