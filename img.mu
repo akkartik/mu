@@ -399,64 +399,114 @@ fn nearest-grey level-255: byte -> _/eax: int {
   return result
 }
 
+# portable pixmap: each pixel consists of 3 rgb channels, each from 0 to 255
 fn render-ppm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
   var img/esi: (addr image) <- copy _img
-  var img-width-a/ecx: (addr int) <- get img, width
-  var data-ah/eax: (addr handle array byte) <- get img, data
-  var _data/eax: (addr array byte) <- lookup *data-ah
-  var data/esi: (addr array byte) <- copy _data
-  var y/edx: int <- copy ymin
-  var i/edi: int <- copy 0
-  var max/eax: int <- length data
+  # yratio = height/img->height
+  var img-height-a/eax: (addr int) <- get img, height
+  var img-height/xmm0: float <- convert *img-height-a
+  var yratio/xmm1: float <- convert height
+  yratio <- divide img-height
+  # xratio = width/img->width
+  var img-width-a/eax: (addr int) <- get img, width
+  var img-width/ebx: int <- copy *img-width-a
+  var img-width-f/xmm0: float <- convert img-width
+  var xratio/xmm2: float <- convert width
+  xratio <- divide img-width-f
+  # esi = img->data
+  var img-data-ah/eax: (addr handle array byte) <- get img, data
+  var _img-data/eax: (addr array byte) <- lookup *img-data-ah
+  var img-data/esi: (addr array byte) <- copy _img-data
+  var len/edi: int <- length img-data
+  #
+  var one/eax: int <- copy 1
+  var one-f/xmm3: float <- convert one
+  var width-f/xmm4: float <- convert width
+  var height-f/xmm5: float <- convert height
+  var zero/eax: int <- copy 0
+  var zero-f/xmm0: float <- convert zero
+  var y/xmm6: float <- copy zero-f
+  set-cursor-position 0/screen, 0x20/x 0x20/y
   {
-    compare i, max
-    break-if->=
-    var x/ebx: int <- copy xmin
-    var img-x/eax: int <- copy 0
+    compare y, height-f
+    break-if-float>=
+    var imgy-f/xmm5: float <- copy y
+    imgy-f <- divide yratio
+    var imgy/edx: int <- truncate imgy-f
+    var x/xmm7: float <- copy zero-f
     {
-      compare img-x, *img-width-a
-      break-if->=
+      compare x, width-f
+      break-if-float>=
+      var imgx-f/xmm5: float <- copy x
+      imgx-f <- divide xratio
+      var imgx/ecx: int <- truncate imgx-f
+      var idx/eax: int <- copy imgy
+      {
+        compare idx, 0
+        break-if-<=
+        idx <- decrement
+        idx <- multiply img-width
+      }
+      idx <- add imgx
+      # . multiply by 3 for the r/g/b channels
+      {
+        var tmp/ecx: int <- copy idx
+        tmp <- shift-left 1
+        idx <- add tmp
+      }
+      # error info in case we rounded wrong and 'index' will fail bounds-check
+      compare idx, len
+      {
+        break-if-<
+        set-cursor-position 0/screen, 0x20/x 0x20/y
+        draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, imgx, 3/fg 0/bg
+        draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, imgy, 4/fg 0/bg
+        draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, idx, 5/fg 0/bg
+      }
       # r channel
       var r: int
       {
-        var src-a/eax: (addr byte) <- index data, i
+        var src-a/eax: (addr byte) <- index img-data, idx
         var src/eax: byte <- copy-byte *src-a
         copy-to r, src
       }
-      i <- increment
+      idx <- increment
       # g channel
       var g: int
       {
-        var src-a/eax: (addr byte) <- index data, i
+        var src-a/eax: (addr byte) <- index img-data, idx
         var src/eax: byte <- copy-byte *src-a
         copy-to g, src
       }
-      i <- increment
+      idx <- increment
       # b channel
       var b: int
       {
-        var src-a/eax: (addr byte) <- index data, i
+        var src-a/eax: (addr byte) <- index img-data, idx
         var src/eax: byte <- copy-byte *src-a
         copy-to b, src
       }
-      i <- increment
-      #
-      var color: int
+      idx <- increment
+      # color-int = nearest-hsl(r, g, b)
+      var color-int: int
       {
         var h/ecx: int <- copy 0
         var s/edx: int <- copy 0
         var l/ebx: int <- copy 0
         h, s, l <- hsl r, g, b
         var tmp/eax: int <- nearest-color-euclidean-hsl h, s, l
-        copy-to color, tmp
+        copy-to color-int, tmp
       }
-      pixel screen, x, y, color
       #
-      x <- increment
-      img-x <- increment
+      var screenx/ecx: int <- convert x
+      screenx <- add xmin
+      var screeny/edx: int <- convert y
+      screeny <- add ymin
+      pixel screen, screenx, screeny, color-int
+      x <- add one-f
       loop
     }
-    y <- increment
+    y <- add one-f
     loop
   }
 }
