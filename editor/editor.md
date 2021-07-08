@@ -10,9 +10,10 @@ instructions within.
 The Vim files are most developed. In particular, I recommend some optional
 setup in subx.vim to use multiple colors for comments.
 
-If you use [Exuberant Ctags](http://ctags.sourceforge.net) for jumping easily
-from names to their definitions in your editor, copy the contents of `exuberant_ctags_rc`
-into your `.ctags` file.
+If you use [`ctags`](http://ctags.sourceforge.net) for jumping easily
+from names to their definitions in your editor, set it up to load `mu.ctags`.
+For classic Exuberant Ctags, copy it into `~/.ctags`. For the newer Universal
+Ctags, copy it into `~/.ctags.d/mu.ctags`.
 
 [Here](https://lobste.rs/s/qglfdp/subx_minimalist_assembly_language_for#c_o9ddqk)
 are some tips on my setup for quickly finding the right opcode for any
