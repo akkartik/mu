@@ -30,7 +30,6 @@ fn load-image self: (addr image), data-disk: (addr disk) {
   load-sectors data-disk, 0x300/lba, 0x100/sectors, s
   load-sectors data-disk, 0x400/lba, 0x100/sectors, s
   load-sectors data-disk, 0x500/lba, 0x100/sectors, s
-  # stream -> gap-buffer (HACK: we temporarily cannibalize the sandbox's gap-buffer)
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
   move-cursor-to-left-margin-of-next-line 0/screen
   initialize-image self, s
