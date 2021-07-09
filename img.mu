@@ -84,7 +84,34 @@ fn initialize-image _self: (addr image), in: (addr stream byte) {
   abort "initialize-image: unrecognized image type"
 }
 
-# import a black-and-white ascii bitmap
+# dispatch to a few variants with mostly identical boilerplate
+fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
+  var img/esi: (addr image) <- copy _img
+  var type-a/eax: (addr int) <- get img, type
+  {
+    compare *type-a, 1/pbm
+    break-if-!=
+    render-pbm-image screen, img, xmin, ymin, width, height
+    return
+  }
+  {
+    compare *type-a, 2/pgm
+    break-if-!=
+    render-pgm-image screen, img, xmin, ymin, width, height
+    return
+  }
+  {
+    compare *type-a, 3/ppm
+    break-if-!=
+    render-ppm-image screen, img, xmin, ymin, width, height
+    return
+  }
+  abort "render-image: unrecognized image type"
+}
+
+## helpers
+
+# import a black-and-white ascii bitmap (each pixel is 0 or 1)
 fn initialize-image-from-pbm _self: (addr image), in: (addr stream byte) {
   var self/esi: (addr image) <- copy _self
   var curr-word-storage: slice
@@ -123,135 +150,7 @@ fn initialize-image-from-pbm _self: (addr image), in: (addr stream byte) {
   }
 }
 
-# import a greyscale ascii "greymap"
-fn initialize-image-from-pgm _self: (addr image), in: (addr stream byte) {
-  var self/esi: (addr image) <- copy _self
-  var curr-word-storage: slice
-  var curr-word/ecx: (addr slice) <- address curr-word-storage
-  # load width, height
-  next-word in, curr-word
-  var tmp/eax: int <- parse-decimal-int-from-slice curr-word
-  var width/edx: int <- copy tmp
-  next-word in, curr-word
-  tmp <- parse-decimal-int-from-slice curr-word
-  var height/ebx: int <- copy tmp
-  # check and save color levels
-  next-word in, curr-word
-  {
-    tmp <- parse-decimal-int-from-slice curr-word
-    compare tmp, 0xff
-    break-if-<=
-    abort "initialize-image-from-pgm: no more than 255 levels of grey"
-  }
-  var dest/edi: (addr int) <- get self, max
-  copy-to *dest, tmp
-  # save width, height
-  dest <- get self, width
-  copy-to *dest, width
-  dest <- get self, height
-  copy-to *dest, height
-  # initialize data
-  var capacity/edx: int <- copy width
-  capacity <- multiply height
-  var data-ah/edi: (addr handle array byte) <- get self, data
-  populate data-ah, capacity
-  var _data/eax: (addr array byte) <- lookup *data-ah
-  var data/edi: (addr array byte) <- copy _data
-  var i/ebx: int <- copy 0
-  {
-    compare i, capacity
-    break-if->=
-    next-word in, curr-word
-    var src/eax: int <- parse-decimal-int-from-slice curr-word
-    {
-      var dest/ecx: (addr byte) <- index data, i
-      copy-byte-to *dest, src
-    }
-    i <- increment
-    loop
-  }
-}
-
-# import a color ascii "pixmap"
-fn initialize-image-from-ppm _self: (addr image), in: (addr stream byte) {
-  var self/esi: (addr image) <- copy _self
-  var curr-word-storage: slice
-  var curr-word/ecx: (addr slice) <- address curr-word-storage
-  # load width, height
-  next-word in, curr-word
-  var tmp/eax: int <- parse-decimal-int-from-slice curr-word
-  var width/edx: int <- copy tmp
-  next-word in, curr-word
-  tmp <- parse-decimal-int-from-slice curr-word
-  var height/ebx: int <- copy tmp
-  next-word in, curr-word
-  # check color levels
-  {
-    tmp <- parse-decimal-int-from-slice curr-word
-    compare tmp, 0xff
-    break-if-=
-    abort "initialize-image-from-ppm: supports exactly 255 levels per rgb channel"
-  }
-  var dest/edi: (addr int) <- get self, max
-  copy-to *dest, tmp
-  # save width, height
-  dest <- get self, width
-  copy-to *dest, width
-  dest <- get self, height
-  copy-to *dest, height
-  # initialize data
-  var capacity/edx: int <- copy width
-  capacity <- multiply height
-  # . multiply by 3 for the r/g/b channels
-  var tmp/eax: int <- copy capacity
-  tmp <- shift-left 1
-  capacity <- add tmp
-  #
-  var data-ah/edi: (addr handle array byte) <- get self, data
-  populate data-ah, capacity
-  var _data/eax: (addr array byte) <- lookup *data-ah
-  var data/edi: (addr array byte) <- copy _data
-  var i/ebx: int <- copy 0
-  {
-    compare i, capacity
-    break-if->=
-    next-word in, curr-word
-    var src/eax: int <- parse-decimal-int-from-slice curr-word
-    {
-      var dest/ecx: (addr byte) <- index data, i
-      copy-byte-to *dest, src
-    }
-    i <- increment
-    loop
-  }
-}
-
-# dispatch to a few variants with mostly identical boilerplate
-fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
-  var img/esi: (addr image) <- copy _img
-  var type-a/eax: (addr int) <- get img, type
-  {
-    compare *type-a, 1/pbm
-    break-if-!=
-    render-pbm-image screen, img, xmin, ymin, width, height
-    return
-  }
-  {
-    compare *type-a, 2/pgm
-    break-if-!=
-    render-pgm-image screen, img, xmin, ymin, width, height
-    return
-  }
-  {
-    compare *type-a, 3/ppm
-    break-if-!=
-    render-ppm-image screen, img, xmin, ymin, width, height
-    return
-  }
-  abort "render-image: unrecognized image type"
-}
-
-# portable bitmap: each pixel is 0 or 1
+# render a black-and-white ascii bitmap (each pixel is 0 or 1)
 fn render-pbm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
   var img/esi: (addr image) <- copy _img
   # yratio = height/img->height
@@ -330,7 +229,56 @@ fn render-pbm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
   }
 }
 
-# portable greymap: each pixel is a shade of grey from 0 to 255
+# import a greyscale ascii "greymap" (each pixel is a shade of grey from 0 to 255)
+fn initialize-image-from-pgm _self: (addr image), in: (addr stream byte) {
+  var self/esi: (addr image) <- copy _self
+  var curr-word-storage: slice
+  var curr-word/ecx: (addr slice) <- address curr-word-storage
+  # load width, height
+  next-word in, curr-word
+  var tmp/eax: int <- parse-decimal-int-from-slice curr-word
+  var width/edx: int <- copy tmp
+  next-word in, curr-word
+  tmp <- parse-decimal-int-from-slice curr-word
+  var height/ebx: int <- copy tmp
+  # check and save color levels
+  next-word in, curr-word
+  {
+    tmp <- parse-decimal-int-from-slice curr-word
+    compare tmp, 0xff
+    break-if-<=
+    abort "initialize-image-from-pgm: no more than 255 levels of grey"
+  }
+  var dest/edi: (addr int) <- get self, max
+  copy-to *dest, tmp
+  # save width, height
+  dest <- get self, width
+  copy-to *dest, width
+  dest <- get self, height
+  copy-to *dest, height
+  # initialize data
+  var capacity/edx: int <- copy width
+  capacity <- multiply height
+  var data-ah/edi: (addr handle array byte) <- get self, data
+  populate data-ah, capacity
+  var _data/eax: (addr array byte) <- lookup *data-ah
+  var data/edi: (addr array byte) <- copy _data
+  var i/ebx: int <- copy 0
+  {
+    compare i, capacity
+    break-if->=
+    next-word in, curr-word
+    var src/eax: int <- parse-decimal-int-from-slice curr-word
+    {
+      var dest/ecx: (addr byte) <- index data, i
+      copy-byte-to *dest, src
+    }
+    i <- increment
+    loop
+  }
+}
+
+# render a greyscale ascii "greymap" (each pixel is a shade of grey from 0 to 255) by quantizing the shades
 fn render-pgm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
   var img/esi: (addr image) <- copy _img
   # yratio = height/img->height
@@ -411,7 +359,61 @@ fn nearest-grey level-255: byte -> _/eax: int {
   return result
 }
 
-# portable pixmap: each pixel consists of 3 rgb channels, each from 0 to 255
+# import a color ascii "pixmap" (each pixel consists of 3 shades of r/g/b from 0 to 255)
+fn initialize-image-from-ppm _self: (addr image), in: (addr stream byte) {
+  var self/esi: (addr image) <- copy _self
+  var curr-word-storage: slice
+  var curr-word/ecx: (addr slice) <- address curr-word-storage
+  # load width, height
+  next-word in, curr-word
+  var tmp/eax: int <- parse-decimal-int-from-slice curr-word
+  var width/edx: int <- copy tmp
+  next-word in, curr-word
+  tmp <- parse-decimal-int-from-slice curr-word
+  var height/ebx: int <- copy tmp
+  next-word in, curr-word
+  # check color levels
+  {
+    tmp <- parse-decimal-int-from-slice curr-word
+    compare tmp, 0xff
+    break-if-=
+    abort "initialize-image-from-ppm: supports exactly 255 levels per rgb channel"
+  }
+  var dest/edi: (addr int) <- get self, max
+  copy-to *dest, tmp
+  # save width, height
+  dest <- get self, width
+  copy-to *dest, width
+  dest <- get self, height
+  copy-to *dest, height
+  # initialize data
+  var capacity/edx: int <- copy width
+  capacity <- multiply height
+  # . multiply by 3 for the r/g/b channels
+  var tmp/eax: int <- copy capacity
+  tmp <- shift-left 1
+  capacity <- add tmp
+  #
+  var data-ah/edi: (addr handle array byte) <- get self, data
+  populate data-ah, capacity
+  var _data/eax: (addr array byte) <- lookup *data-ah
+  var data/edi: (addr array byte) <- copy _data
+  var i/ebx: int <- copy 0
+  {
+    compare i, capacity
+    break-if->=
+    next-word in, curr-word
+    var src/eax: int <- parse-decimal-int-from-slice curr-word
+    {
+      var dest/ecx: (addr byte) <- index data, i
+      copy-byte-to *dest, src
+    }
+    i <- increment
+    loop
+  }
+}
+
+# import a color ascii "pixmap" (each pixel consists of 3 shades of r/g/b from 0 to 255)
 fn render-ppm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
   var img/esi: (addr image) <- copy _img
   # yratio = height/img->height
