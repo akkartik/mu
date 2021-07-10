@@ -27,9 +27,18 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img-storage: image
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
-  render-image screen, img, 0x20/x 0x80/y, 0x100/width, 0x100/height
-  render-image screen, img, 0x120/x 0x180/y, 0x12c/width=300, 0xc8/height=200
-  render-image screen, img, 0x320/x 0x280/y, 0x60/width=96, 0x1c/height=28
+#?   render-image screen, img, 0x20/x, 0x80/y, 0x100/width, 0x100/height
+#?   render-image screen, img, 0x120/x, 0x180/y, 0x12c/width=300, 0xc8/height=200
+#?   render-image screen, img, 0x320/x, 0x280/y, 0x60/width=96, 0x1c/height=28
+
+#?   render-pgm-image screen, img, 0x1c0/x, 0x100/y, 0x12c/width=300, 0xc8/height=200
+#?   draw-box-on-real-screen 0x1bf/x, 0x102/y, 0x1c4/x, 0x104/y, 4/fg
+#?   render-image screen, img, 0x80/x, 0x100/y, 0x12c/width=300, 0xc8/height=200
+
+  set-cursor-position 0/screen, 0/x 2/y
+  render-pgm-image screen, img, 0x200/x, 0x100/y, 0xc0/width, 0xc0/height
+  render-image screen, img, 0x100/x, 0x100/y, 0xc0/width, 0xc0/height
+
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
@@ -97,7 +106,10 @@ fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int,
   {
     compare *type-a, 2/pgm
     break-if-!=
-    render-pgm-image screen, img, xmin, ymin, width, height
+    var img2-storage: image
+    var img2/edi: (addr image) <- address img2-storage
+    dither-pgm-with-monochrome img, img2
+    render-pbm-image screen, img2, xmin, ymin, width, height
     return
   }
   {
@@ -177,7 +189,6 @@ fn render-pbm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
   var zero/eax: int <- copy 0
   var zero-f/xmm0: float <- convert zero
   var y/xmm6: float <- copy zero-f
-  set-cursor-position 0/screen, 0x20/x 0x20/y
   {
     compare y, height-f
     break-if-float>=
@@ -192,12 +203,7 @@ fn render-pbm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
       imgx-f <- divide xratio
       var imgx/ecx: int <- truncate imgx-f
       var idx/eax: int <- copy imgy
-      {
-        compare idx, 0
-        break-if-<=
-        idx <- decrement
-        idx <- multiply img-width
-      }
+      idx <- multiply img-width
       idx <- add imgx
       # error info in case we rounded wrong and 'index' will fail bounds-check
       compare idx, len
@@ -305,7 +311,6 @@ fn render-pgm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
   var zero/eax: int <- copy 0
   var zero-f/xmm0: float <- convert zero
   var y/xmm6: float <- copy zero-f
-  set-cursor-position 0/screen, 0x20/x 0x20/y
   {
     compare y, height-f
     break-if-float>=
@@ -320,12 +325,7 @@ fn render-pgm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
       imgx-f <- divide xratio
       var imgx/ecx: int <- truncate imgx-f
       var idx/eax: int <- copy imgy
-      {
-        compare idx, 0
-        break-if-<=
-        idx <- decrement
-        idx <- multiply img-width
-      }
+      idx <- multiply img-width
       idx <- add imgx
       # error info in case we rounded wrong and 'index' will fail bounds-check
       compare idx, len
@@ -357,6 +357,252 @@ fn nearest-grey level-255: byte -> _/eax: int {
   result <- shift-right 4
   result <- add 0x10
   return result
+}
+
+fn dither-pgm-with-monochrome _src: (addr image), _dest: (addr image) {
+  var src/esi: (addr image) <- copy _src
+  var dest/edi: (addr image) <- copy _dest
+  # copy 'width'
+  var src-width-a/ecx: (addr int) <- get src, width
+  var src-width/ecx: int <- copy *src-width-a
+  {
+    var dest-width-a/edx: (addr int) <- get dest, width
+    copy-to *dest-width-a, src-width
+  }
+  # copy 'height'
+  var src-height-a/edx: (addr int) <- get src, height
+  var src-height/edx: int <- copy *src-height-a
+  {
+    var dest-height-a/ecx: (addr int) <- get dest, height
+    copy-to *dest-height-a, src-height
+  }
+  # transform 'data'
+  var capacity/ebx: int <- copy src-width
+  capacity <- multiply src-height
+  var dest/edi: (addr image) <- copy _dest
+  var dest-data-ah/eax: (addr handle array byte) <- get dest, data
+  populate dest-data-ah, capacity
+  var _dest-data/eax: (addr array byte) <- lookup *dest-data-ah
+  var dest-data/edi: (addr array byte) <- copy _dest-data
+  # needs a buffer to temporarily hold more than 256 levels of precision
+  var buffer-storage: (array int 0xc0000)
+  var buffer/ebx: (addr array int) <- address buffer-storage
+  var src-data-ah/eax: (addr handle array byte) <- get src, data
+  var _src-data/eax: (addr array byte) <- lookup *src-data-ah
+  var src-data/esi: (addr array byte) <- copy _src-data
+  _unordered-monochrome-dither src-data, src-width, src-height, buffer, dest-data
+}
+
+fn _unordered-monochrome-dither src: (addr array byte), width: int, height: int, buf: (addr array int), dest: (addr array byte) {
+  var y/edx: int <- copy 0
+  {
+    compare y, height
+    break-if->=
+#?     psd "y", y, 9/fg, 0/x, y
+    var x/ecx: int <- copy 0
+    {
+      compare x, width
+      break-if->=
+#?       psd "x", x, 3/fg, x, y
+      var error/ebx: int <- _read-buffer buf, x, y, width
+      $_unordered-monochrome-dither:update-error: {
+        var curr/eax: byte <- _read-byte-buffer src, x, y, width
+        error <- add curr
+#?         psd "e", error, 5/fg, x, y
+#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, error, 7/fg 0/bg
+        compare error, 0x80
+        {
+          break-if->=
+#?           psd "p", 0, 0x14/fg, x, y
+          _write-byte-buffer dest, x, y, width, 0/black
+          break $_unordered-monochrome-dither:update-error
+        }
+#?         psd "p", 1, 0xf/fg, x, y
+        _write-byte-buffer dest, x, y, width, 1/white
+        error <- subtract 0xff
+      }
+      _diffuse-monochrome-dithering-errors buf, x, y, width, height, error
+#?       {
+#?         compare y, 3
+#?         break-if-!=
+#?         compare x, 4
+#?         break-if->=
+#?         {
+#?           var b/eax: byte <- read-key 0/keyboard
+#?           compare b, 0
+#?           loop-if-=
+#?         }
+#?       }
+      x <- increment
+      loop
+    }
+    move-cursor-to-left-margin-of-next-line 0/screen
+    y <- increment
+    loop
+  }
+}
+
+fn show-errors buf: (addr array int), width: int, height: int {
+  var y/edx: int <- copy 0
+  {
+    compare y, height
+    break-if->=
+    var x/ecx: int <- copy 0
+    {
+      compare x, width
+      break-if->=
+      var error/ebx: int <- _read-buffer buf, x, y, width
+      psd "e", error, 5/fg, x, y
+      x <- increment
+      loop
+    }
+    move-cursor-to-left-margin-of-next-line 0/screen
+    y <- increment
+    loop
+  }
+}
+
+fn psd s: (addr array byte), d: int, fg: int, x: int, y: int {
+#?   {
+#?     compare y, 3
+#?     break-if-=
+#?     return
+#?   }
+#?   {
+#?     compare x, 4
+#?     break-if-<
+#?     return
+#?   }
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, s, 7/fg 0/bg
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, d, fg 0/bg
+}
+
+# Use Floyd-Steinberg algorithm for turning an image of greyscale pixels into
+# one of pure black or white pixels.
+#
+# https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html
+fn _diffuse-monochrome-dithering-errors buf: (addr array int), x: int, y: int, width: int, height: int, error: int {
+  {
+    compare error, 0
+    break-if-!=
+    return
+  }
+  decrement width
+  decrement height
+  # delta = error/16
+#?   show-errors buf, width, height
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, error, 3/fg 0/bg
+#?   move-cursor-to-left-margin-of-next-line 0/screen
+  var delta/ecx: int <- copy error
+  delta <- shift-right-signed 4
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, delta, 2/fg 0/bg
+#?   move-cursor-to-left-margin-of-next-line 0/screen
+  # In Floyd-Steinberg, each pixel X transmits its errors to surrounding
+  # pixels in the following proportion:
+  #           X     7/16
+  #     3/16  5/16  1/16
+  var x/esi: int <- copy x
+  {
+    compare x, width
+    break-if->=
+    var tmp/eax: int <- copy delta
+    var seven/edx: int <- copy 7
+    tmp <- multiply seven
+    var xright/edx: int <- copy x
+    xright <- increment
+    _accumulate-error buf, xright, y, width, tmp
+  }
+#?   show-errors buf, width, height
+  var y/edi: int <- copy y
+  {
+    compare y, height
+    break-if-<
+    return
+  }
+  var ybelow/edi: int <- copy y
+  ybelow <- increment
+  {
+    compare x, 0
+    break-if-<=
+    var tmp/eax: int <- copy delta
+    var three/edx: int <- copy 3
+    tmp <- multiply three
+    var xleft/ebx: int <- copy x
+    xleft <- decrement
+    _accumulate-error buf, xleft, ybelow, width, tmp
+  }
+#?   show-errors buf, width, height
+  {
+    var tmp/eax: int <- copy delta
+    var five/edx: int <- copy 5
+    tmp <- multiply five
+    _accumulate-error buf, x, ybelow, width, tmp
+  }
+#?   show-errors buf, width, height
+  {
+    compare x, width
+    break-if->=
+    var xright/edx: int <- copy x
+    xright <- increment
+    _accumulate-error buf, xright, ybelow, width, delta
+  }
+#?   show-errors buf, width, height
+}
+
+fn _accumulate-error buf: (addr array int), x: int, y: int, width: int, error: int {
+  var curr/ebx: int <- _read-buffer buf, x, y, width
+  curr <- add error
+#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "{", 7/fg 0/bg
+#?   move-cursor-to-left-margin-of-next-line 0/screen
+#?   show-errors buf, width, 3/height
+  _write-buffer buf, x, y, width, curr
+#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "===", 7/fg 0/bg
+#?   move-cursor-to-left-margin-of-next-line 0/screen
+#?   show-errors buf, width, 3/height
+#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "}", 7/fg 0/bg
+#?   move-cursor-to-left-margin-of-next-line 0/screen
+}
+
+fn _read-buffer _buf: (addr array int), x: int, y: int, width: int -> _/ebx: int {
+  var buf/esi: (addr array int) <- copy _buf
+  var idx/ecx: int <- copy y
+  idx <- multiply width
+  idx <- add x
+#?   psd "i", idx, 5/fg, x, y
+  var result-a/eax: (addr int) <- index buf, idx
+  return *result-a
+}
+
+fn _write-buffer _buf: (addr array int), x: int, y: int, width: int, val: int {
+  var buf/esi: (addr array int) <- copy _buf
+  var idx/ecx: int <- copy y
+  idx <- multiply width
+  idx <- add x
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, idx, 7/fg 0/bg
+#?   move-cursor-to-left-margin-of-next-line 0/screen
+  var src/eax: int <- copy val
+  var dest-a/edi: (addr int) <- index buf, idx
+  copy-to *dest-a, src
+}
+
+fn _read-byte-buffer _buf: (addr array byte), x: int, y: int, width: int -> _/eax: byte {
+  var buf/esi: (addr array byte) <- copy _buf
+  var idx/ecx: int <- copy y
+  idx <- multiply width
+  idx <- add x
+  var result-a/eax: (addr byte) <- index buf, idx
+  var result/eax: byte <- copy-byte *result-a
+  return result
+}
+
+fn _write-byte-buffer _buf: (addr array byte), x: int, y: int, width: int, val: byte {
+  var buf/esi: (addr array byte) <- copy _buf
+  var idx/ecx: int <- copy y
+  idx <- multiply width
+  idx <- add x
+  var src/eax: byte <- copy val
+  var dest-a/edi: (addr byte) <- index buf, idx
+  copy-byte-to *dest-a, src
 }
 
 # import a color ascii "pixmap" (each pixel consists of 3 shades of r/g/b from 0 to 255)
@@ -455,12 +701,7 @@ fn render-ppm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
       imgx-f <- divide xratio
       var imgx/ecx: int <- truncate imgx-f
       var idx/eax: int <- copy imgy
-      {
-        compare idx, 0
-        break-if-<=
-        idx <- decrement
-        idx <- multiply img-width
-      }
+      idx <- multiply img-width
       idx <- add imgx
       # . multiply by 3 for the r/g/b channels
       {
