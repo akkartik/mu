@@ -27,7 +27,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img-storage: image
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
-#?   render-image screen, img, 0x20/x, 0x80/y, 0x100/width, 0x100/height
+  render-image screen, img, 0/x, 0/y, 0x400/width, 0x400/height
 #?   render-image screen, img, 0x120/x, 0x180/y, 0x12c/width=300, 0xc8/height=200
 #?   render-image screen, img, 0x320/x, 0x280/y, 0x60/width=96, 0x1c/height=28
 
@@ -35,9 +35,9 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 #?   draw-box-on-real-screen 0x1bf/x, 0x102/y, 0x1c4/x, 0x104/y, 4/fg
 #?   render-image screen, img, 0x80/x, 0x100/y, 0x12c/width=300, 0xc8/height=200
 
-  set-cursor-position 0/screen, 0/x 2/y
-  render-pgm-image screen, img, 0x200/x, 0x100/y, 0xc0/width, 0xc0/height
-  render-image screen, img, 0x100/x, 0x100/y, 0xc0/width, 0xc0/height
+#?   set-cursor-position 0/screen, 0/x 2/y
+#?   render-pgm-image screen, img, 0x200/x, 0x100/y, 0x200/width, 0x200/height
+#?   render-image screen, img, 0/x, 0x100/y, 0x200/width, 0x200/height
 
 }
 
