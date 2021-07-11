@@ -374,18 +374,22 @@ fn dither-pgm-unordered-monochrome _src: (addr image), _dest: (addr image) {
   var src/esi: (addr image) <- copy _src
   var dest/edi: (addr image) <- copy _dest
   # copy 'width'
-  var src-width-a/ecx: (addr int) <- get src, width
-  var src-width/ecx: int <- copy *src-width-a
+  var src-width-a/eax: (addr int) <- get src, width
+  var tmp/eax: int <- copy *src-width-a
+  var src-width: int
+  copy-to src-width, tmp
   {
     var dest-width-a/edx: (addr int) <- get dest, width
-    copy-to *dest-width-a, src-width
+    copy-to *dest-width-a, tmp
   }
   # copy 'height'
-  var src-height-a/edx: (addr int) <- get src, height
-  var src-height/edx: int <- copy *src-height-a
+  var src-height-a/eax: (addr int) <- get src, height
+  var tmp/eax: int <- copy *src-height-a
+  var src-height: int
+  copy-to src-height, tmp
   {
     var dest-height-a/ecx: (addr int) <- get dest, height
-    copy-to *dest-height-a, src-height
+    copy-to *dest-height-a, tmp
   }
   # transform 'data'
   var capacity/ebx: int <- copy src-width
@@ -401,39 +405,35 @@ fn dither-pgm-unordered-monochrome _src: (addr image), _dest: (addr image) {
   var src-data-ah/eax: (addr handle array byte) <- get src, data
   var _src-data/eax: (addr array byte) <- lookup *src-data-ah
   var src-data/esi: (addr array byte) <- copy _src-data
-  _dither-pgm-unordered-monochrome src-data, src-width, src-height, buffer, dest-data
-}
-
-fn _dither-pgm-unordered-monochrome src: (addr array byte), width: int, height: int, buf: (addr array int), dest: (addr array byte) {
   var y/edx: int <- copy 0
   {
-    compare y, height
+    compare y, src-height
     break-if->=
 #?     psd "y", y, 9/fg, 0/x, y
     var x/ecx: int <- copy 0
     {
-      compare x, width
+      compare x, src-width
       break-if->=
 #?       psd "x", x, 3/fg, x, y
-      var error/ebx: int <- _read-dithering-error buf, x, y, width
+      var curr/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
+      var curr-int/eax: int <- copy curr
+      curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
+      var error/esi: int <- _read-dithering-error buffer, x, y, src-width
+      error <- add curr-int
       $_dither-pgm-unordered-monochrome:update-error: {
-        var curr/eax: byte <- _read-pgm-buffer src, x, y, width
-        var curr-int/eax: int <- copy curr
-        curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
-        error <- add curr-int
 #?         psd "e", error, 5/fg, x, y
         compare error, 0x800000
         {
           break-if->=
 #?           psd "p", 0, 0x14/fg, x, y
-          _write-raw-buffer dest, x, y, width, 0/black
+          _write-raw-buffer dest-data, x, y, src-width, 0/black
           break $_dither-pgm-unordered-monochrome:update-error
         }
 #?         psd "p", 1, 0xf/fg, x, y
-        _write-raw-buffer dest, x, y, width, 1/white
+        _write-raw-buffer dest-data, x, y, src-width, 1/white
         error <- subtract 0xff0000
       }
-      _diffuse-dithering-error-floyd-steinberg buf, x, y, width, height, error
+      _diffuse-dithering-error-floyd-steinberg buffer, x, y, src-width, src-height, error
       x <- increment
       loop
     }
@@ -447,18 +447,22 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
   var src/esi: (addr image) <- copy _src
   var dest/edi: (addr image) <- copy _dest
   # copy 'width'
-  var src-width-a/ecx: (addr int) <- get src, width
-  var src-width/ecx: int <- copy *src-width-a
+  var src-width-a/eax: (addr int) <- get src, width
+  var tmp/eax: int <- copy *src-width-a
+  var src-width: int
+  copy-to src-width, tmp
   {
     var dest-width-a/edx: (addr int) <- get dest, width
-    copy-to *dest-width-a, src-width
+    copy-to *dest-width-a, tmp
   }
   # copy 'height'
-  var src-height-a/edx: (addr int) <- get src, height
-  var src-height/edx: int <- copy *src-height-a
+  var src-height-a/eax: (addr int) <- get src, height
+  var tmp/eax: int <- copy *src-height-a
+  var src-height: int
+  copy-to src-height, tmp
   {
     var dest-height-a/ecx: (addr int) <- get dest, height
-    copy-to *dest-height-a, src-height
+    copy-to *dest-height-a, tmp
   }
   # transform 'data'
   var capacity/ebx: int <- copy src-width
@@ -474,23 +478,19 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
   var src-data-ah/eax: (addr handle array byte) <- get src, data
   var _src-data/eax: (addr array byte) <- lookup *src-data-ah
   var src-data/esi: (addr array byte) <- copy _src-data
-  _dither-pgm-unordered src-data, src-width, src-height, buffer, dest-data
-}
-
-fn _dither-pgm-unordered src: (addr array byte), width: int, height: int, buf: (addr array int), dest: (addr array byte) {
   var y/edx: int <- copy 0
   {
-    compare y, height
+    compare y, src-height
     break-if->=
     var x/ecx: int <- copy 0
     {
-      compare x, width
+      compare x, src-width
       break-if->=
-      var color/eax: byte <- _read-pgm-buffer src, x, y, width
-      var error/ebx: int <- copy 0
-      color, error <- compute-color-and-error buf, color, x, y, width
-      _write-raw-buffer dest, x, y, width, color
-      _diffuse-dithering-error-floyd-steinberg buf, x, y, width, height, error
+      var color/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
+      var error/esi: int <- copy 0
+      color, error <- compute-color-and-error buffer, color, x, y, src-width
+      _write-raw-buffer dest-data, x, y, src-width, color
+      _diffuse-dithering-error-floyd-steinberg buffer, x, y, src-width, src-height, error
       x <- increment
       loop
     }
@@ -500,8 +500,8 @@ fn _dither-pgm-unordered src: (addr array byte), width: int, height: int, buf: (
   }
 }
 
-fn compute-color-and-error buf: (addr array int), initial-color: byte, x: int, y: int, width: int -> _/eax: byte, _/ebx: int {
-  var error/ebx: int <- _read-dithering-error buf, x, y, width
+fn compute-color-and-error buf: (addr array int), initial-color: byte, x: int, y: int, width: int -> _/eax: byte, _/esi: int {
+  var error/esi: int <- _read-dithering-error buf, x, y, width
   # error += initial-color << 16
   var color-int/eax: int <- copy initial-color
 #?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, initial-color-int, 2/fg 0/bg
@@ -604,12 +604,12 @@ fn _diffuse-dithering-error-floyd-steinberg buf: (addr array int), x: int, y: in
 }
 
 fn _accumulate-dithering-error buf: (addr array int), x: int, y: int, width: int, error: int {
-  var curr/ebx: int <- _read-dithering-error buf, x, y, width
+  var curr/esi: int <- _read-dithering-error buf, x, y, width
   curr <- add error
   _write-dithering-error buf, x, y, width, curr
 }
 
-fn _read-dithering-error _buf: (addr array int), x: int, y: int, width: int -> _/ebx: int {
+fn _read-dithering-error _buf: (addr array int), x: int, y: int, width: int -> _/esi: int {
   var buf/esi: (addr array int) <- copy _buf
   var idx/ecx: int <- copy y
   idx <- multiply width
@@ -670,7 +670,7 @@ fn show-errors buf: (addr array int), width: int, height: int, x: int, y: int {
     {
       compare x, width
       break-if->=
-      var error/ebx: int <- _read-dithering-error buf, x, y, width
+      var error/esi: int <- _read-dithering-error buf, x, y, width
       psd "e", error, 5/fg, x, y
       x <- increment
       loop
