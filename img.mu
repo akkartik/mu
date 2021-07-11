@@ -488,7 +488,7 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
       break-if->=
       var color/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
       var error/esi: int <- copy 0
-      color, error <- compute-color-and-error buffer, color, x, y, src-width
+      color, error <- compute-greyscale-color-and-error buffer, color, x, y, src-width
       _write-raw-buffer dest-data, x, y, src-width, color
       _diffuse-dithering-error-floyd-steinberg buffer, x, y, src-width, src-height, error
       x <- increment
@@ -500,7 +500,7 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
   }
 }
 
-fn compute-color-and-error buf: (addr array int), initial-color: byte, x: int, y: int, width: int -> _/eax: byte, _/esi: int {
+fn compute-greyscale-color-and-error buf: (addr array int), initial-color: byte, x: int, y: int, width: int -> _/eax: byte, _/esi: int {
   var error/esi: int <- _read-dithering-error buf, x, y, width
   # error += initial-color << 16
   var color-int/eax: int <- copy initial-color
