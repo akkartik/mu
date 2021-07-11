@@ -407,10 +407,12 @@ fn _unordered-monochrome-dither src: (addr array byte), width: int, height: int,
       var error/ebx: int <- _read-buffer buf, x, y, width
       $_unordered-monochrome-dither:update-error: {
         var curr/eax: byte <- _read-byte-buffer src, x, y, width
-        error <- add curr
+        var curr-int/eax: int <- copy curr
+        curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
+        error <- add curr-int
 #?         psd "e", error, 5/fg, x, y
 #?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, error, 7/fg 0/bg
-        compare error, 0x80
+        compare error, 0x800000
         {
           break-if->=
 #?           psd "p", 0, 0x14/fg, x, y
@@ -419,7 +421,7 @@ fn _unordered-monochrome-dither src: (addr array byte), width: int, height: int,
         }
 #?         psd "p", 1, 0xf/fg, x, y
         _write-byte-buffer dest, x, y, width, 1/white
-        error <- subtract 0xff
+        error <- subtract 0xff0000
       }
       _diffuse-monochrome-dithering-errors buf, x, y, width, height, error
 #?       {
@@ -491,6 +493,9 @@ fn psd s: (addr array byte), d: int, fg: int, x: int, y: int {
 # one of pure black or white pixels.
 #
 # https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html
+#
+# Error is currently a fixed-point number with 16-bit fraction. But
+# interestingly this function doesn't care about that.
 fn _diffuse-monochrome-dithering-errors buf: (addr array int), x: int, y: int, width: int, height: int, error: int {
   {
     compare error, 0
