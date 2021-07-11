@@ -415,9 +415,9 @@ fn _dither-pgm-unordered-monochrome src: (addr array byte), width: int, height: 
       compare x, width
       break-if->=
 #?       psd "x", x, 3/fg, x, y
-      var error/ebx: int <- _read-pgm-buffer buf, x, y, width
+      var error/ebx: int <- _read-dithering-error buf, x, y, width
       $_dither-pgm-unordered-monochrome:update-error: {
-        var curr/eax: byte <- _read-pgm-byte-buffer src, x, y, width
+        var curr/eax: byte <- _read-pgm-buffer src, x, y, width
         var curr-int/eax: int <- copy curr
         curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
         error <- add curr-int
@@ -426,11 +426,11 @@ fn _dither-pgm-unordered-monochrome src: (addr array byte), width: int, height: 
         {
           break-if->=
 #?           psd "p", 0, 0x14/fg, x, y
-          _write-pgm-byte-buffer dest, x, y, width, 0/black
+          _write-raw-buffer dest, x, y, width, 0/black
           break $_dither-pgm-unordered-monochrome:update-error
         }
 #?         psd "p", 1, 0xf/fg, x, y
-        _write-pgm-byte-buffer dest, x, y, width, 1/white
+        _write-raw-buffer dest, x, y, width, 1/white
         error <- subtract 0xff0000
       }
       _diffuse-dithering-error-floyd-steinberg buf, x, y, width, height, error
@@ -486,10 +486,10 @@ fn _dither-pgm-unordered src: (addr array byte), width: int, height: int, buf: (
     {
       compare x, width
       break-if->=
-      var error/ebx: int <- _read-pgm-buffer buf, x, y, width
-      $_dither-pgm-unordered-monochrome:update-error: {
+      var error/ebx: int <- _read-dithering-error buf, x, y, width
+      {
         # error += src_color << 16
-        var curr/eax: byte <- _read-pgm-byte-buffer src, x, y, width
+        var curr/eax: byte <- _read-pgm-buffer src, x, y, width
         var curr-int/eax: int <- copy curr
 #?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, curr-int, 2/fg 0/bg
         curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
@@ -519,7 +519,7 @@ fn _dither-pgm-unordered src: (addr array byte), width: int, height: int, buf: (
 #?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, color, 3/fg 0/bg
 #?         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 7/fg 0/bg
         var color-byte/eax: byte <- copy-byte color
-        _write-pgm-byte-buffer dest, x, y, width, color-byte
+        _write-raw-buffer dest, x, y, width, color-byte
       }
       _diffuse-dithering-error-floyd-steinberg buf, x, y, width, height, error
       x <- increment
@@ -564,7 +564,7 @@ fn _diffuse-dithering-error-floyd-steinberg buf: (addr array int), x: int, y: in
     tmp <- multiply delta
     var xright/edx: int <- copy x
     xright <- increment
-    _accumulate-pgm-error buf, xright, y, width, tmp
+    _accumulate-dithering-error buf, xright, y, width, tmp
   }
   var y/ebx: int <- copy y
   {
@@ -582,30 +582,30 @@ fn _diffuse-dithering-error-floyd-steinberg buf: (addr array int), x: int, y: in
     tmp <- multiply delta
     var xleft/edx: int <- copy x
     xleft <- decrement
-    _accumulate-pgm-error buf, xleft, ybelow, width, tmp
+    _accumulate-dithering-error buf, xleft, ybelow, width, tmp
   }
   {
     var tmp/eax: int <- copy 5
     tmp <- multiply delta
-    _accumulate-pgm-error buf, x, ybelow, width, tmp
+    _accumulate-dithering-error buf, x, ybelow, width, tmp
   }
   {
     compare x, width-1
     break-if->=
     var xright/edx: int <- copy x
     xright <- increment
-    _accumulate-pgm-error buf, xright, ybelow, width, delta
+    _accumulate-dithering-error buf, xright, ybelow, width, delta
   }
 #?   show-errors buf, width, height, x, y
 }
 
-fn _accumulate-pgm-error buf: (addr array int), x: int, y: int, width: int, error: int {
-  var curr/ebx: int <- _read-pgm-buffer buf, x, y, width
+fn _accumulate-dithering-error buf: (addr array int), x: int, y: int, width: int, error: int {
+  var curr/ebx: int <- _read-dithering-error buf, x, y, width
   curr <- add error
-  _write-pgm-buffer buf, x, y, width, curr
+  _write-dithering-error buf, x, y, width, curr
 }
 
-fn _read-pgm-buffer _buf: (addr array int), x: int, y: int, width: int -> _/ebx: int {
+fn _read-dithering-error _buf: (addr array int), x: int, y: int, width: int -> _/ebx: int {
   var buf/esi: (addr array int) <- copy _buf
   var idx/ecx: int <- copy y
   idx <- multiply width
@@ -615,7 +615,7 @@ fn _read-pgm-buffer _buf: (addr array int), x: int, y: int, width: int -> _/ebx:
   return *result-a
 }
 
-fn _write-pgm-buffer _buf: (addr array int), x: int, y: int, width: int, val: int {
+fn _write-dithering-error _buf: (addr array int), x: int, y: int, width: int, val: int {
   var buf/esi: (addr array int) <- copy _buf
   var idx/ecx: int <- copy y
   idx <- multiply width
@@ -627,7 +627,7 @@ fn _write-pgm-buffer _buf: (addr array int), x: int, y: int, width: int, val: in
   copy-to *dest-a, src
 }
 
-fn _read-pgm-byte-buffer _buf: (addr array byte), x: int, y: int, width: int -> _/eax: byte {
+fn _read-pgm-buffer _buf: (addr array byte), x: int, y: int, width: int -> _/eax: byte {
   var buf/esi: (addr array byte) <- copy _buf
   var idx/ecx: int <- copy y
   idx <- multiply width
@@ -637,7 +637,7 @@ fn _read-pgm-byte-buffer _buf: (addr array byte), x: int, y: int, width: int -> 
   return result
 }
 
-fn _write-pgm-byte-buffer _buf: (addr array byte), x: int, y: int, width: int, val: byte {
+fn _write-raw-buffer _buf: (addr array byte), x: int, y: int, width: int, val: byte {
   var buf/esi: (addr array byte) <- copy _buf
   var idx/ecx: int <- copy y
   idx <- multiply width
@@ -666,7 +666,7 @@ fn show-errors buf: (addr array int), width: int, height: int, x: int, y: int {
     {
       compare x, width
       break-if->=
-      var error/ebx: int <- _read-pgm-buffer buf, x, y, width
+      var error/ebx: int <- _read-dithering-error buf, x, y, width
       psd "e", error, 5/fg, x, y
       x <- increment
       loop
