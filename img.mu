@@ -487,40 +487,38 @@ fn _dither-pgm-unordered src: (addr array byte), width: int, height: int, buf: (
       compare x, width
       break-if->=
       var error/ebx: int <- _read-dithering-error buf, x, y, width
+      # error += src_color << 16
+      var curr/eax: byte <- _read-pgm-buffer src, x, y, width
+      var curr-int/eax: int <- copy curr
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, curr-int, 2/fg 0/bg
+      curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
+      error <- add curr-int
+      # tmp = max(error, 0)
+      var tmp/eax: int <- copy error
       {
-        # error += src_color << 16
-        var curr/eax: byte <- _read-pgm-buffer src, x, y, width
-        var curr-int/eax: int <- copy curr
-#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, curr-int, 2/fg 0/bg
-        curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
-        error <- add curr-int
-        # tmp = max(error, 0)
-        var tmp/eax: int <- copy error
-        {
-          compare tmp, 0
-          break-if->=
-          tmp <- copy 0
-        }
-        # round tmp to nearest multiple of 0x100000
-        {
-          var tmp2/ecx: int <- copy tmp
-          tmp2 <- and   0xfffff
-          compare tmp2, 0x80000
-          break-if-<
-          tmp <- add    0x80000
-        }
-        tmp <- and 0xf00000
-        # error -= tmp
-        error <- subtract tmp
-        # color = tmp >> 20 + 16
-        var color/eax: int <- copy tmp
-        color <- shift-right-signed 0x14
-        color <- add 0x10
-#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, color, 3/fg 0/bg
-#?         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 7/fg 0/bg
-        var color-byte/eax: byte <- copy-byte color
-        _write-raw-buffer dest, x, y, width, color-byte
+        compare tmp, 0
+        break-if->=
+        tmp <- copy 0
       }
+      # round tmp to nearest multiple of 0x100000
+      {
+        var tmp2/ecx: int <- copy tmp
+        tmp2 <- and   0xfffff
+        compare tmp2, 0x80000
+        break-if-<
+        tmp <- add    0x80000
+      }
+      tmp <- and 0xf00000
+      # error -= tmp
+      error <- subtract tmp
+      # color = tmp >> 20 + 16
+      var color/eax: int <- copy tmp
+      color <- shift-right-signed 0x14
+      color <- add 0x10
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, color, 3/fg 0/bg
+#?       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 7/fg 0/bg
+      var color-byte/eax: byte <- copy-byte color
+      _write-raw-buffer dest, x, y, width, color-byte
       _diffuse-dithering-error-floyd-steinberg buf, x, y, width, height, error
       x <- increment
       loop
