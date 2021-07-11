@@ -504,7 +504,6 @@ fn compute-color-and-error buf: (addr array int), initial-color: byte, x: int, y
   var error/esi: int <- _read-dithering-error buf, x, y, width
   # error += initial-color << 16
   var color-int/eax: int <- copy initial-color
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, initial-color-int, 2/fg 0/bg
   color-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
   error <- add color-int
   # tmp = max(error, 0)
@@ -529,14 +528,12 @@ fn compute-color-and-error buf: (addr array int), initial-color: byte, x: int, y
   var color/eax: int <- copy tmp
   color <- shift-right-signed 0x14
   color <- add 0x10
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, color, 3/fg 0/bg
-#?       draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 7/fg 0/bg
   var color-byte/eax: byte <- copy-byte color
   return color-byte, error
 }
 
-# Use Floyd-Steinberg algorithm for turning an image of greyscale pixels into
-# one of pure black or white pixels.
+# Use Floyd-Steinberg algorithm for diffusing error at x, y in a 2D grid of
+# dimensions (width, height)
 #
 # https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html
 #
