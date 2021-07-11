@@ -442,7 +442,17 @@ fn _unordered-monochrome-dither src: (addr array byte), width: int, height: int,
   }
 }
 
-fn show-errors buf: (addr array int), width: int, height: int {
+fn show-errors buf: (addr array int), width: int, height: int, x: int, y: int {
+  compare y, 1
+  {
+    break-if-=
+    return
+  }
+  compare x, 0
+  {
+    break-if-=
+    return
+  }
   var y/edx: int <- copy 0
   {
     compare y, height
@@ -487,66 +497,80 @@ fn _diffuse-monochrome-dithering-errors buf: (addr array int), x: int, y: int, w
     break-if-!=
     return
   }
-  decrement width
-  decrement height
+  var width-1/esi: int <- copy width
+  width-1 <- decrement
+  var height-1/edi: int <- copy height
+  height-1 <- decrement
   # delta = error/16
-#?   show-errors buf, width, height
-#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, error, 3/fg 0/bg
-#?   move-cursor-to-left-margin-of-next-line 0/screen
+  show-errors buf, width, height, x, y
+  {
+    compare y, 1
+    break-if-!=
+    compare x, 0
+    break-if-!=
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, error, 3/fg 0/bg
+    move-cursor-to-left-margin-of-next-line 0/screen
+  }
   var delta/ecx: int <- copy error
   delta <- shift-right-signed 4
-#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, delta, 2/fg 0/bg
-#?   move-cursor-to-left-margin-of-next-line 0/screen
+  {
+    compare y, 1
+    break-if-!=
+    compare x, 0
+    break-if-!=
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, delta, 2/fg 0/bg
+    move-cursor-to-left-margin-of-next-line 0/screen
+  }
   # In Floyd-Steinberg, each pixel X transmits its errors to surrounding
   # pixels in the following proportion:
   #           X     7/16
   #     3/16  5/16  1/16
-  var x/esi: int <- copy x
+  var x/edx: int <- copy x
   {
-    compare x, width
+    compare x, width-1
     break-if->=
-    var tmp/eax: int <- copy delta
-    var seven/edx: int <- copy 7
-    tmp <- multiply seven
+    var tmp/eax: int <- copy 7
+    tmp <- multiply delta
     var xright/edx: int <- copy x
     xright <- increment
     _accumulate-error buf, xright, y, width, tmp
   }
-#?   show-errors buf, width, height
-  var y/edi: int <- copy y
+#?   show-errors buf, width, height, x, y
+  var y/ebx: int <- copy y
   {
-    compare y, height
+    compare y, height-1
     break-if-<
     return
   }
-  var ybelow/edi: int <- copy y
-  ybelow <- increment
+  var ybelow: int
+  copy-to ybelow, y
+  increment ybelow
+#?   var ybelow/edi: int <- copy y
+#?   ybelow <- increment
   {
     compare x, 0
     break-if-<=
-    var tmp/eax: int <- copy delta
-    var three/edx: int <- copy 3
-    tmp <- multiply three
-    var xleft/ebx: int <- copy x
+    var tmp/eax: int <- copy 3
+    tmp <- multiply delta
+    var xleft/edx: int <- copy x
     xleft <- decrement
     _accumulate-error buf, xleft, ybelow, width, tmp
   }
-#?   show-errors buf, width, height
+#?   show-errors buf, width, height, x, y
   {
-    var tmp/eax: int <- copy delta
-    var five/edx: int <- copy 5
-    tmp <- multiply five
+    var tmp/eax: int <- copy 5
+    tmp <- multiply delta
     _accumulate-error buf, x, ybelow, width, tmp
   }
-#?   show-errors buf, width, height
+#?   show-errors buf, width, height, x, y
   {
-    compare x, width
+    compare x, width-1
     break-if->=
     var xright/edx: int <- copy x
     xright <- increment
     _accumulate-error buf, xright, ybelow, width, delta
   }
-#?   show-errors buf, width, height
+  show-errors buf, width, height, x, y
 }
 
 fn _accumulate-error buf: (addr array int), x: int, y: int, width: int, error: int {
