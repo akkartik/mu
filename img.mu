@@ -27,7 +27,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img-storage: image
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
-  render-image screen, img, 0/x, 0/y, 0x400/width, 0x400/height
+  render-image screen, img, 0/x, 0/y, 0x100/width, 0x100/height
 #?   render-image screen, img, 0x20/x, 0x180/y, 0x12c/width=300, 0xc8/height=200
 #?   render-pgm-image screen, img, 0x220/x, 0x180/y, 0x12c/width=300, 0xc8/height=200
 #?   render-image screen, img, 0x320/x, 0x280/y, 0x60/width=96, 0x1c/height=28
@@ -833,22 +833,13 @@ fn render-ppm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
         copy-to b, src
       }
       idx <- increment
-      # color-int = nearest-hsl(r, g, b)
-      var color-int: int
-      {
-        var h/ecx: int <- copy 0
-        var s/edx: int <- copy 0
-        var l/ebx: int <- copy 0
-        h, s, l <- hsl r, g, b
-        var tmp/eax: int <- nearest-color-euclidean-hsl h, s, l
-        copy-to color-int, tmp
-      }
-      #
+      # plot nearest color
+      var color/eax: int <- nearest-color-euclidean r, g, b
       var screenx/ecx: int <- convert x
       screenx <- add xmin
       var screeny/edx: int <- convert y
       screeny <- add ymin
-      pixel screen, screenx, screeny, color-int
+      pixel screen, screenx, screeny, color
       x <- add one-f
       loop
     }

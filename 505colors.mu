@@ -1,3 +1,49 @@
+fn nearest-color-euclidean r: int, g: int, b: int -> _/eax: int {
+  var result/edi: int <- copy 0x100/invalid
+  var max-distance/esi: int <- copy 0x30000/max  # 3 * 0x100*0x100
+  var r2/ecx: int <- copy 0
+  var g2/edx: int <- copy 0
+  var b2/ebx: int <- copy 0
+  var color/eax: int <- copy 0
+  {
+    compare color, 0x100
+    break-if->=
+    $nearest-color-euclidean:body: {
+      r2, g2, b2 <- color-rgb color
+      {
+        var curr-distance/eax: int <- euclidean-distance-squared r, g, b, r2, g2, b2
+        compare curr-distance, max-distance
+        break-if->= $nearest-color-euclidean:body
+        max-distance <- copy curr-distance
+      }
+      result <- copy color
+    }
+    color <- increment
+    loop
+  }
+  return result
+}
+
+fn euclidean-distance-squared r1: int, g1: int, b1: int, r2: int, g2: int, b2: int -> _/eax: int {
+  var result/edi: int <- copy 0
+  # red
+  var tmp/eax: int <- copy r1
+  tmp <- subtract r2
+  tmp <- multiply tmp
+  result <- add tmp
+  # green
+  tmp <- copy g1
+  tmp <- subtract g2
+  tmp <- multiply tmp
+  result <- add tmp
+  # blue
+  tmp <- copy b1
+  tmp <- subtract b2
+  tmp <- multiply tmp
+  result <- add tmp
+  return result
+}
+
 # Hue/saturation/luminance for an rgb triple.
 # rgb are in [0, 256)
 # hsl are also returned in [0, 256)
