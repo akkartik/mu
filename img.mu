@@ -27,19 +27,10 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img-storage: image
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
-  render-image screen, img, 0/x, 0/y, 0x100/width, 0x100/height
-#?   render-image screen, img, 0x20/x, 0x180/y, 0x12c/width=300, 0xc8/height=200
-#?   render-pgm-image screen, img, 0x220/x, 0x180/y, 0x12c/width=300, 0xc8/height=200
-#?   render-image screen, img, 0x320/x, 0x280/y, 0x60/width=96, 0x1c/height=28
-
-#?   render-pgm-image screen, img, 0x1c0/x, 0x100/y, 0x12c/width=300, 0xc8/height=200
-#?   draw-box-on-real-screen 0x1bf/x, 0x102/y, 0x1c4/x, 0x104/y, 4/fg
-#?   render-image screen, img, 0x80/x, 0x100/y, 0x12c/width=300, 0xc8/height=200
-
-#?   set-cursor-position 0/screen, 0/x 2/y
-#?   render-pgm-image screen, img, 0x200/x, 0x100/y, 0x200/width, 0x200/height
-#?   render-image screen, img, 0/x, 0x100/y, 0x200/width, 0x200/height
-
+#?   render-image screen, img, 0/x, 0/y, 0x300/width, 0x300/height
+  render-image screen, img, 0x20/x, 0x80/y, 0x258/width=600, 0x190/height=400
+#?   render-image screen, img, 0x20/x, 0x80/y, 0x12c/width=300, 0xc8/height=200
+#?   render-pgm-image screen, img, 0x220/x, 0x80/y, 0x12c/width=300, 0xc8/height=200
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
@@ -501,34 +492,41 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
 }
 
 fn compute-greyscale-color-and-error errors: (addr array int), initial-color: byte, x: int, y: int, width: int -> _/eax: byte, _/esi: int {
+  # pseudocode:
+  #   error += (initial-color << 16)
+  #   nearest-color = nearest(error >> 16)
+  #   error -= (nearest-color << 16)
+  #   return nearest-color >> 4 + 16, error
   var error/esi: int <- _read-dithering-error errors, x, y, width
-  # error += initial-color << 16
-  var color-int/eax: int <- copy initial-color
-  color-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
-  error <- add color-int
-  # tmp = max(error, 0)
-  var tmp/eax: int <- copy error
+  # error += (initial-color << 16)
+  var tmp/eax: int <- copy initial-color
+  tmp <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
+  error <- add tmp
+  # nearest-color = nearest(error >> 16)
+  var nearest-color/ecx: int <- copy error
+  nearest-color <- shift-right-signed 0x10
   {
-    compare tmp, 0
+    compare nearest-color, 0
     break-if->=
-    tmp <- copy 0
+    nearest-color <- copy 0
   }
-  # round tmp to nearest multiple of 0x100000
+  # . round to nearest multiple of 0x10
   {
-    var tmp2/ecx: int <- copy tmp
-    tmp2 <- and   0xfffff
-    compare tmp2, 0x80000
+    var tmp/eax: int <- copy nearest-color
+    tmp <- and 0xf
+    compare tmp, 8
     break-if-<
-    tmp <- add    0x80000
+    nearest-color <- add 8
   }
-  tmp <- and 0xf00000
-  # error -= tmp
+  nearest-color <- and 0xf0
+  # error -= (nearest-color << 16)
+  var tmp/eax: int <- copy nearest-color
+  tmp <- shift-left 0x10
   error <- subtract tmp
-  # color = tmp >> 20 + 16
-  var color/eax: int <- copy tmp
-  color <- shift-right-signed 0x14
-  color <- add 0x10
-  var color-byte/eax: byte <- copy-byte color
+  # return (nearest-color >> 4 + 16), error
+  nearest-color <- shift-right 4
+  nearest-color <- add 0x10
+  var color-byte/eax: byte <- copy-byte nearest-color
   return color-byte, error
 }
 
