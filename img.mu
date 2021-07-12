@@ -400,8 +400,8 @@ fn dither-pgm-unordered-monochrome _src: (addr image), _dest: (addr image) {
   var _dest-data/eax: (addr array byte) <- lookup *dest-data-ah
   var dest-data/edi: (addr array byte) <- copy _dest-data
   # needs a buffer to temporarily hold more than 256 levels of precision
-  var buffer-storage: (array int 0xc0000)
-  var buffer/ebx: (addr array int) <- address buffer-storage
+  var errors-storage: (array int 0xc0000)
+  var errors/ebx: (addr array int) <- address errors-storage
   var src-data-ah/eax: (addr handle array byte) <- get src, data
   var _src-data/eax: (addr array byte) <- lookup *src-data-ah
   var src-data/esi: (addr array byte) <- copy _src-data
@@ -418,7 +418,7 @@ fn dither-pgm-unordered-monochrome _src: (addr image), _dest: (addr image) {
       var curr/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
       var curr-int/eax: int <- copy curr
       curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
-      var error/esi: int <- _read-dithering-error buffer, x, y, src-width
+      var error/esi: int <- _read-dithering-error errors, x, y, src-width
       error <- add curr-int
       $_dither-pgm-unordered-monochrome:update-error: {
 #?         psd "e", error, 5/fg, x, y
@@ -433,7 +433,7 @@ fn dither-pgm-unordered-monochrome _src: (addr image), _dest: (addr image) {
         _write-raw-buffer dest-data, x, y, src-width, 1/white
         error <- subtract 0xff0000
       }
-      _diffuse-dithering-error-floyd-steinberg buffer, x, y, src-width, src-height, error
+      _diffuse-dithering-error-floyd-steinberg errors, x, y, src-width, src-height, error
       x <- increment
       loop
     }
@@ -473,8 +473,8 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
   var _dest-data/eax: (addr array byte) <- lookup *dest-data-ah
   var dest-data/edi: (addr array byte) <- copy _dest-data
   # needs a buffer to temporarily hold more than 256 levels of precision
-  var buffer-storage: (array int 0xc0000)
-  var buffer/ebx: (addr array int) <- address buffer-storage
+  var errors-storage: (array int 0xc0000)
+  var errors/ebx: (addr array int) <- address errors-storage
   var src-data-ah/eax: (addr handle array byte) <- get src, data
   var _src-data/eax: (addr array byte) <- lookup *src-data-ah
   var src-data/esi: (addr array byte) <- copy _src-data
@@ -488,9 +488,9 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
       break-if->=
       var color/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
       var error/esi: int <- copy 0
-      color, error <- compute-greyscale-color-and-error buffer, color, x, y, src-width
+      color, error <- compute-greyscale-color-and-error errors, color, x, y, src-width
       _write-raw-buffer dest-data, x, y, src-width, color
-      _diffuse-dithering-error-floyd-steinberg buffer, x, y, src-width, src-height, error
+      _diffuse-dithering-error-floyd-steinberg errors, x, y, src-width, src-height, error
       x <- increment
       loop
     }
@@ -500,8 +500,8 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
   }
 }
 
-fn compute-greyscale-color-and-error buf: (addr array int), initial-color: byte, x: int, y: int, width: int -> _/eax: byte, _/esi: int {
-  var error/esi: int <- _read-dithering-error buf, x, y, width
+fn compute-greyscale-color-and-error errors: (addr array int), initial-color: byte, x: int, y: int, width: int -> _/eax: byte, _/esi: int {
+  var error/esi: int <- _read-dithering-error errors, x, y, width
   # error += initial-color << 16
   var color-int/eax: int <- copy initial-color
   color-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
@@ -539,7 +539,7 @@ fn compute-greyscale-color-and-error buf: (addr array int), initial-color: byte,
 #
 # Error is currently a fixed-point number with 16-bit fraction. But
 # interestingly this function doesn't care about that.
-fn _diffuse-dithering-error-floyd-steinberg buf: (addr array int), x: int, y: int, width: int, height: int, error: int {
+fn _diffuse-dithering-error-floyd-steinberg errors: (addr array int), x: int, y: int, width: int, height: int, error: int {
   {
     compare error, 0
     break-if-!=
@@ -550,7 +550,7 @@ fn _diffuse-dithering-error-floyd-steinberg buf: (addr array int), x: int, y: in
   var height-1/edi: int <- copy height
   height-1 <- decrement
   # delta = error/16
-#?   show-errors buf, width, height, x, y
+#?   show-errors errors, width, height, x, y
   var delta/ecx: int <- copy error
   delta <- shift-right-signed 4
   # In Floyd-Steinberg, each pixel X transmits its errors to surrounding
@@ -565,7 +565,7 @@ fn _diffuse-dithering-error-floyd-steinberg buf: (addr array int), x: int, y: in
     tmp <- multiply delta
     var xright/edx: int <- copy x
     xright <- increment
-    _accumulate-dithering-error buf, xright, y, width, tmp
+    _accumulate-dithering-error errors, xright, y, width, tmp
   }
   var y/ebx: int <- copy y
   {
@@ -583,48 +583,48 @@ fn _diffuse-dithering-error-floyd-steinberg buf: (addr array int), x: int, y: in
     tmp <- multiply delta
     var xleft/edx: int <- copy x
     xleft <- decrement
-    _accumulate-dithering-error buf, xleft, ybelow, width, tmp
+    _accumulate-dithering-error errors, xleft, ybelow, width, tmp
   }
   {
     var tmp/eax: int <- copy 5
     tmp <- multiply delta
-    _accumulate-dithering-error buf, x, ybelow, width, tmp
+    _accumulate-dithering-error errors, x, ybelow, width, tmp
   }
   {
     compare x, width-1
     break-if->=
     var xright/edx: int <- copy x
     xright <- increment
-    _accumulate-dithering-error buf, xright, ybelow, width, delta
+    _accumulate-dithering-error errors, xright, ybelow, width, delta
   }
-#?   show-errors buf, width, height, x, y
+#?   show-errors errors, width, height, x, y
 }
 
-fn _accumulate-dithering-error buf: (addr array int), x: int, y: int, width: int, error: int {
-  var curr/esi: int <- _read-dithering-error buf, x, y, width
+fn _accumulate-dithering-error errors: (addr array int), x: int, y: int, width: int, error: int {
+  var curr/esi: int <- _read-dithering-error errors, x, y, width
   curr <- add error
-  _write-dithering-error buf, x, y, width, curr
+  _write-dithering-error errors, x, y, width, curr
 }
 
-fn _read-dithering-error _buf: (addr array int), x: int, y: int, width: int -> _/esi: int {
-  var buf/esi: (addr array int) <- copy _buf
+fn _read-dithering-error _errors: (addr array int), x: int, y: int, width: int -> _/esi: int {
+  var errors/esi: (addr array int) <- copy _errors
   var idx/ecx: int <- copy y
   idx <- multiply width
   idx <- add x
 #?   psd "i", idx, 5/fg, x, y
-  var result-a/eax: (addr int) <- index buf, idx
+  var result-a/eax: (addr int) <- index errors, idx
   return *result-a
 }
 
-fn _write-dithering-error _buf: (addr array int), x: int, y: int, width: int, val: int {
-  var buf/esi: (addr array int) <- copy _buf
+fn _write-dithering-error _errors: (addr array int), x: int, y: int, width: int, val: int {
+  var errors/esi: (addr array int) <- copy _errors
   var idx/ecx: int <- copy y
   idx <- multiply width
   idx <- add x
 #?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, idx, 7/fg 0/bg
 #?   move-cursor-to-left-margin-of-next-line 0/screen
   var src/eax: int <- copy val
-  var dest-a/edi: (addr int) <- index buf, idx
+  var dest-a/edi: (addr int) <- index errors, idx
   copy-to *dest-a, src
 }
 
@@ -648,7 +648,7 @@ fn _write-raw-buffer _buf: (addr array byte), x: int, y: int, width: int, val: b
   copy-byte-to *dest-a, src
 }
 
-fn show-errors buf: (addr array int), width: int, height: int, x: int, y: int {
+fn show-errors errors: (addr array int), width: int, height: int, x: int, y: int {
   compare y, 1
   {
     break-if-=
@@ -667,7 +667,7 @@ fn show-errors buf: (addr array int), width: int, height: int, x: int, y: int {
     {
       compare x, width
       break-if->=
-      var error/esi: int <- _read-dithering-error buf, x, y, width
+      var error/esi: int <- _read-dithering-error errors, x, y, width
       psd "e", error, 5/fg, x, y
       x <- increment
       loop
