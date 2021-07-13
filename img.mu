@@ -27,16 +27,15 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img-storage: image
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
-  render-image screen, img, 0/x, 0xd0/y, 0x12c/width=300, 0xc8/height=200
-  render-pgm-image screen, img, 0x140/x, 0/y, 0x12c/width=300, 0xc8/height=200
+  render-image screen, img, 0/x 0/y, 0x400/width 0x400/height
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
   # data-disk -> stream
   var s-storage: (stream byte 0x200000)  # 512* 0x1000 sectors
   var s/ebx: (addr stream byte) <- address s-storage
-#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sectors from data disk", 3/fg, 0/bg
-#?   move-cursor-to-left-margin-of-next-line 0/screen
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sectors from data disk", 3/fg, 0/bg
+  move-cursor-to-left-margin-of-next-line 0/screen
   load-sectors data-disk, 0/lba, 0x100/sectors, s
   load-sectors data-disk, 0x100/lba, 0x100/sectors, s
   load-sectors data-disk, 0x200/lba, 0x100/sectors, s
@@ -53,8 +52,8 @@ fn load-image self: (addr image), data-disk: (addr disk) {
   load-sectors data-disk, 0xd00/lba, 0x100/sectors, s
   load-sectors data-disk, 0xe00/lba, 0x100/sectors, s
   load-sectors data-disk, 0xf00/lba, 0x100/sectors, s
-#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
-#?   move-cursor-to-left-margin-of-next-line 0/screen
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
+  move-cursor-to-left-margin-of-next-line 0/screen
   initialize-image self, s
 }
 
@@ -453,6 +452,12 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
     var dest-height-a/ecx: (addr int) <- get dest, height
     copy-to *dest-height-a, tmp
   }
+  # compute scaling factor 255/max
+  var target-scale/eax: int <- copy 0xff
+  var scale-f/xmm7: float <- convert target-scale
+  var src-max-a/eax: (addr int) <- get src, max
+  var tmp-f/xmm0: float <- convert *src-max-a
+  scale-f <- divide tmp-f
   # transform 'data'
   var capacity/ebx: int <- copy src-width
   capacity <- multiply src-height
@@ -484,6 +489,13 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
 #?         var foo/eax: int <- copy initial-color
 #?         psd "r", foo, 7/fg, x, y
 #?       }
+      # . scale to 255 levels
+      var initial-color-int/eax: int <- copy initial-color
+      var initial-color-f/xmm0: float <- convert initial-color-int
+      initial-color-f <- multiply scale-f
+      initial-color-int <- convert initial-color-f
+#?       var initial-color/eax: byte <- copy-byte initial-color-int
+      #
       var error/esi: int <- _read-dithering-error errors, x, y, src-width
 #?       {
 #?         var foo/eax: int <- copy error
@@ -504,7 +516,7 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
 #?       }
       # error += (initial-color << 16)
       {
-        var tmp/eax: int <- copy initial-color
+        var tmp/eax: int <- copy initial-color-int
         tmp <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
         error <- add tmp
       }
