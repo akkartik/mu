@@ -27,8 +27,8 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img-storage: image
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
-#?   render-image screen, img, 0/x, 0/y, 0x300/width, 0x300/height
-  render-image screen, img, 0x20/x, 0x80/y, 0x258/width=600, 0x190/height=400
+  render-image screen, img, 0/x, 0/y, 0x300/width, 0x300/height
+#?   render-image screen, img, 0x20/x, 0x80/y, 0x258/width=600, 0x190/height=400
 #?   render-image screen, img, 0x20/x, 0x80/y, 0x12c/width=300, 0xc8/height=200
 #?   render-pgm-image screen, img, 0x220/x, 0x80/y, 0x12c/width=300, 0xc8/height=200
 }
@@ -455,6 +455,12 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
     var dest-height-a/ecx: (addr int) <- get dest, height
     copy-to *dest-height-a, tmp
   }
+  # compute scaling factor 255/max
+  var target-scale/eax: int <- copy 0xff
+  var scale-f/xmm7: float <- convert target-scale
+  var src-max-a/eax: (addr int) <- get src, max
+  var tmp-f/xmm0: float <- convert *src-max-a
+  scale-f <- divide tmp-f
   # transform 'data'
   var capacity/ebx: int <- copy src-width
   capacity <- multiply src-height
@@ -478,6 +484,12 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
       compare x, src-width
       break-if->=
       var initial-color/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
+      # . scale to 255 levels
+      var initial-color-int/eax: int <- copy initial-color
+      var initial-color-f/xmm0: float <- convert initial-color-int
+      initial-color-f <- multiply scale-f
+      initial-color-int <- convert initial-color-f
+      var initial-color/eax: byte <- copy-byte initial-color-int
       var error/esi: int <- _read-dithering-error errors, x, y, src-width
       # error += (initial-color << 16)
       {
