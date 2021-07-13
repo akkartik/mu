@@ -27,20 +27,16 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img-storage: image
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
-#?   render-image screen, img, 0/x, 0/y, 0x300/width, 0x300/height
-  set-cursor-position screen, 0 0
-  render-image screen, img, 0/x, 0/y, 0x258/width=600, 0x190/height=400
-#?   draw-rect screen, 0x5c 0x60, 0x6c 0x6c, 9/blue
-#?   render-image screen, img, 0x20/x, 0x80/y, 0x12c/width=300, 0xc8/height=200
-  render-pgm-image screen, img, 0x220/x, 0x80/y, 0x12c/width=300, 0xc8/height=200
+  render-image screen, img, 0/x, 0xd0/y, 0x12c/width=300, 0xc8/height=200
+  render-pgm-image screen, img, 0x140/x, 0/y, 0x12c/width=300, 0xc8/height=200
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
   # data-disk -> stream
   var s-storage: (stream byte 0x200000)  # 512* 0x1000 sectors
   var s/ebx: (addr stream byte) <- address s-storage
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sectors from data disk", 3/fg, 0/bg
-  move-cursor-to-left-margin-of-next-line 0/screen
+#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sectors from data disk", 3/fg, 0/bg
+#?   move-cursor-to-left-margin-of-next-line 0/screen
   load-sectors data-disk, 0/lba, 0x100/sectors, s
   load-sectors data-disk, 0x100/lba, 0x100/sectors, s
   load-sectors data-disk, 0x200/lba, 0x100/sectors, s
@@ -57,8 +53,8 @@ fn load-image self: (addr image), data-disk: (addr disk) {
   load-sectors data-disk, 0xd00/lba, 0x100/sectors, s
   load-sectors data-disk, 0xe00/lba, 0x100/sectors, s
   load-sectors data-disk, 0xf00/lba, 0x100/sectors, s
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
-  move-cursor-to-left-margin-of-next-line 0/screen
+#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
+#?   move-cursor-to-left-margin-of-next-line 0/screen
   initialize-image self, s
 }
 
@@ -113,7 +109,7 @@ fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int,
     var img2-storage: image
     var img2/edi: (addr image) <- address img2-storage
     dither-pgm-unordered img, img2
-#?     render-raw-image screen, img2, xmin, ymin, width, height
+    render-raw-image screen, img2, xmin, ymin, width, height
     return
   }
   {
@@ -475,9 +471,9 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
   {
     compare y, src-height
     break-if->=
-    set-cursor-position 0/screen, 0 0
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y ", 3/fg 0/bg
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg 0/bg
+#?     set-cursor-position 0/screen, 0 0
+#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y ", 3/fg 0/bg
+#?     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg 0/bg
     var x/ecx: int <- copy 0
     {
       compare x, src-width
