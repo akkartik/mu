@@ -28,9 +28,11 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
 #?   render-image screen, img, 0/x, 0/y, 0x300/width, 0x300/height
-  render-image screen, img, 0x20/x, 0x80/y, 0x258/width=600, 0x190/height=400
+  set-cursor-position screen, 0 0
+  render-image screen, img, 0/x, 0/y, 0x258/width=600, 0x190/height=400
+#?   draw-rect screen, 0x5c 0x60, 0x6c 0x6c, 9/blue
 #?   render-image screen, img, 0x20/x, 0x80/y, 0x12c/width=300, 0xc8/height=200
-#?   render-pgm-image screen, img, 0x220/x, 0x80/y, 0x12c/width=300, 0xc8/height=200
+  render-pgm-image screen, img, 0x220/x, 0x80/y, 0x12c/width=300, 0xc8/height=200
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
@@ -111,7 +113,7 @@ fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int,
     var img2-storage: image
     var img2/edi: (addr image) <- address img2-storage
     dither-pgm-unordered img, img2
-    render-raw-image screen, img2, xmin, ymin, width, height
+#?     render-raw-image screen, img2, xmin, ymin, width, height
     return
   }
   {
@@ -473,12 +475,32 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
   {
     compare y, src-height
     break-if->=
+    set-cursor-position 0/screen, 0 0
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y ", 3/fg 0/bg
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg 0/bg
     var x/ecx: int <- copy 0
     {
       compare x, src-width
       break-if->=
+#?       psd "x", x, 3/fg, x, y
       var initial-color/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
+#?       {
+#?         var foo/eax: int <- copy initial-color
+#?         psd "r", foo, 7/fg, x, y
+#?       }
       var error/esi: int <- _read-dithering-error errors, x, y, src-width
+      {
+        var foo/eax: int <- copy error
+        foo <- shift-right-signed 0x10
+        compare foo, 0xff
+        break-if-<
+        pixel 0/screen x, y, 4/red
+#?         set-cursor-position 0/screen, 0x20 0x20
+#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg 0/bg
+#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 4/fg 0/bg
+#?         abort "error too high"
+#?         psd "e", foo, 5/fg, x, y
+      }
       # error += (initial-color << 16)
       {
         var tmp/eax: int <- copy initial-color
@@ -512,13 +534,23 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
       var color-index/eax: int <- copy nearest-color
       color-index <- shift-right 4
       color-index <- add 0x10
+#?       psd "p", color-index, 4/fg, x, y
       var color-index-byte/eax: byte <- copy-byte color-index
       _write-raw-buffer dest-data, x, y, src-width, color-index-byte
       _diffuse-dithering-error-floyd-steinberg errors, x, y, src-width, src-height, error
       x <- increment
       loop
     }
-    move-cursor-to-left-margin-of-next-line 0/screen
+#?     {
+#?       compare y, 0x60
+#?       break-if-<
+      move-cursor-to-left-margin-of-next-line 0/screen
+#?     }
+#?     {
+#?       var key/eax: byte <- read-key 0/keyboard
+#?       compare key, 0
+#?       loop-if-=
+#?     }
     y <- increment
     loop
   }
@@ -672,17 +704,52 @@ fn show-errors errors: (addr array int), width: int, height: int, x: int, y: int
 
 fn psd s: (addr array byte), d: int, fg: int, x: int, y: int {
 #?   {
-#?     compare y, 3
-#?     break-if-=
+#?     compare y, 0x60
+#?     break-if->=
 #?     return
 #?   }
 #?   {
-#?     compare x, 4
-#?     break-if-<
+#?     compare y, 0x6c
+#?     break-if-<=
+#?     return
+#?   }
+  {
+    compare x, 0x40
+    break-if->=
+    return
+  }
+#?   {
+#?     compare x, 0x6c
+#?     break-if-<=
 #?     return
 #?   }
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, s, 7/fg 0/bg
   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, d, fg 0/bg
+}
+
+fn psx s: (addr array byte), d: int, fg: int, x: int, y: int {
+#?   {
+#?     compare y, 0x60
+#?     break-if->=
+#?     return
+#?   }
+#?   {
+#?     compare y, 0x6c
+#?     break-if-<=
+#?     return
+#?   }
+  {
+    compare x, 0x20
+    break-if->=
+    return
+  }
+#?   {
+#?     compare x, 0x6c
+#?     break-if-<=
+#?     return
+#?   }
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, s, 7/fg 0/bg
+  draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, d, fg 0/bg
 }
 
 # import a color ascii "pixmap" (each pixel consists of 3 shades of r/g/b from 0 to 255)
@@ -766,7 +833,6 @@ fn render-ppm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
   var zero/eax: int <- copy 0
   var zero-f/xmm0: float <- convert zero
   var y/xmm6: float <- copy zero-f
-  set-cursor-position 0/screen, 0x20/x 0x20/y
   {
     compare y, height-f
     break-if-float>=
