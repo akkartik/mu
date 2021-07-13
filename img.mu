@@ -28,7 +28,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
   render-image screen, img, 0/x, 0xd0/y, 0x12c/width=300, 0xc8/height=200
-#?   render-pgm-image screen, img, 0x140/x, 0/y, 0x12c/width=300, 0xc8/height=200
+  render-pgm-image screen, img, 0x140/x, 0/y, 0x12c/width=300, 0xc8/height=200
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
@@ -109,7 +109,7 @@ fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int,
     var img2-storage: image
     var img2/edi: (addr image) <- address img2-storage
     dither-pgm-unordered img, img2
-#?     render-raw-image screen, img2, xmin, ymin, width, height
+    render-raw-image screen, img2, xmin, ymin, width, height
     return
   }
   {
@@ -497,11 +497,11 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
 #?         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 5/fg 0/bg
 #?         abort "error too high"
 #?       }
-      {
-        var foo/eax: int <- copy error
-        foo <- shift-right-signed 0x10
-        psd "e", foo, 5/fg, x, y
-      }
+#?       {
+#?         var foo/eax: int <- copy error
+#?         foo <- shift-right-signed 0x10
+#?         psd "e", foo, 5/fg, x, y
+#?       }
       # error += (initial-color << 16)
       {
         var tmp/eax: int <- copy initial-color
