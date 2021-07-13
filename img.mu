@@ -34,8 +34,8 @@ fn load-image self: (addr image), data-disk: (addr disk) {
   # data-disk -> stream
   var s-storage: (stream byte 0x200000)  # 512* 0x1000 sectors
   var s/ebx: (addr stream byte) <- address s-storage
-#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sectors from data disk", 3/fg, 0/bg
-#?   move-cursor-to-left-margin-of-next-line 0/screen
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sectors from data disk", 3/fg, 0/bg
+  move-cursor-to-left-margin-of-next-line 0/screen
   load-sectors data-disk, 0/lba, 0x100/sectors, s
   load-sectors data-disk, 0x100/lba, 0x100/sectors, s
   load-sectors data-disk, 0x200/lba, 0x100/sectors, s
@@ -52,8 +52,8 @@ fn load-image self: (addr image), data-disk: (addr disk) {
   load-sectors data-disk, 0xd00/lba, 0x100/sectors, s
   load-sectors data-disk, 0xe00/lba, 0x100/sectors, s
   load-sectors data-disk, 0xf00/lba, 0x100/sectors, s
-#?   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
-#?   move-cursor-to-left-margin-of-next-line 0/screen
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
+  move-cursor-to-left-margin-of-next-line 0/screen
   initialize-image self, s
 }
 
@@ -252,7 +252,6 @@ fn initialize-image-from-pgm _self: (addr image), in: (addr stream byte) {
     tmp <- parse-decimal-int-from-slice curr-word
     compare tmp, 0xff
     break-if-=
-    set-cursor-position 0/screen, 0/x 2/y
     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "levels of grey is not 255; continuing and hoping for the best", 0x2b/fg 0/bg
   }
   # save width, height
@@ -396,27 +395,22 @@ fn dither-pgm-unordered-monochrome _src: (addr image), _dest: (addr image) {
   {
     compare y, src-height
     break-if->=
-#?     psd "y", y, 9/fg, 0/x, y
     var x/ecx: int <- copy 0
     {
       compare x, src-width
       break-if->=
-#?       psd "x", x, 3/fg, x, y
       var curr/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
       var curr-int/eax: int <- copy curr
       curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
       var error/esi: int <- _read-dithering-error errors, x, y, src-width
       error <- add curr-int
       $_dither-pgm-unordered-monochrome:update-error: {
-#?         psd "e", error, 5/fg, x, y
         compare error, 0x800000
         {
           break-if->=
-#?           psd "p", 0, 0x14/fg, x, y
           _write-raw-buffer dest-data, x, y, src-width, 0/black
           break $_dither-pgm-unordered-monochrome:update-error
         }
-#?         psd "p", 1, 0xf/fg, x, y
         _write-raw-buffer dest-data, x, y, src-width, 1/white
         error <- subtract 0xff0000
       }
@@ -469,48 +463,18 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
   {
     compare y, src-height
     break-if->=
-#?     set-cursor-position 0/screen, 0 0
-#?     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "y ", 3/fg 0/bg
-#?     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg 0/bg
     var x/ecx: int <- copy 0
     {
       compare x, src-width
       break-if->=
-#?       psd "x", x, 3/fg, x, y
       var initial-color/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
-#?       {
-#?         var foo/eax: int <- copy initial-color
-#?         psd "r", foo, 7/fg, x, y
-#?       }
       var error/esi: int <- _read-dithering-error errors, x, y, src-width
-#?       {
-#?         var foo/eax: int <- copy error
-#?         foo <- shift-right-signed 0x10
-#?         compare foo, 0xff
-#?         break-if-<=
-#?         pixel 0/screen x, y, 4/red
-#?         set-cursor-position 0/screen, 0x28/x 0x10/y
-#?         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg 0/bg
-#?         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 4/fg 0/bg
-#?         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 5/fg 0/bg
-#?         abort "error too high"
-#?       }
-#?       {
-#?         var foo/eax: int <- copy error
-#?         foo <- shift-right-signed 0x10
-#?         psd "e", foo, 5/fg, x, y
-#?       }
       # error += (initial-color << 16)
       {
         var tmp/eax: int <- copy initial-color
         tmp <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
         error <- add tmp
       }
-#?       {
-#?         var foo/eax: int <- copy error
-#?         foo <- shift-right-signed 0x10
-#?         psd "f", foo, 5/fg, x, y
-#?       }
       # nearest-color = nearest(error >> 16)
       var nearest-color/eax: int <- copy error
       nearest-color <- shift-right-signed 0x10
@@ -524,10 +488,6 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
         break-if-<=
         nearest-color <- copy 0xf0
       }
-#?       {
-#?         var foo/eax: int <- copy nearest-color
-#?         psd "m", foo, 2/fg, x, y
-#?       }
       # . round to nearest multiple of 0x10
       {
         var tmp/ecx: int <- copy nearest-color
@@ -537,42 +497,22 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
         nearest-color <- add 8
       }
       nearest-color <- and 0xf0
-#?       {
-#?         var foo/eax: int <- copy nearest-color
-#?         psd "n", foo, 2/fg, x, y
-#?       }
       # error -= (nearest-color << 16)
       {
         var tmp/eax: int <- copy nearest-color
         tmp <- shift-left 0x10
         error <- subtract tmp
       }
-#?       {
-#?         var foo/eax: int <- copy error
-#?         foo <- shift-right-signed 0x10
-#?         psd "g", foo, 3/fg, x, y
-#?       }
       # color-index = (nearest-color >> 4 + 16)
       var color-index/eax: int <- copy nearest-color
       color-index <- shift-right 4
       color-index <- add 0x10
-#?       psd "p", color-index, 4/fg, x, y
       var color-index-byte/eax: byte <- copy-byte color-index
       _write-raw-buffer dest-data, x, y, src-width, color-index-byte
       _diffuse-dithering-error-floyd-steinberg errors, x, y, src-width, src-height, error
       x <- increment
       loop
     }
-    {
-      compare y, 0x18
-      break-if-<
-      move-cursor-to-left-margin-of-next-line 0/screen
-    }
-#?     {
-#?       var key/eax: byte <- read-key 0/keyboard
-#?       compare key, 0
-#?       loop-if-=
-#?     }
     y <- increment
     loop
   }
@@ -657,7 +597,6 @@ fn _read-dithering-error _errors: (addr array int), x: int, y: int, width: int -
   var idx/ecx: int <- copy y
   idx <- multiply width
   idx <- add x
-#?   psd "i", idx, 5/fg, x, y
   var result-a/eax: (addr int) <- index errors, idx
   return *result-a
 }
@@ -694,6 +633,7 @@ fn _write-raw-buffer _buf: (addr array byte), x: int, y: int, width: int, val: b
   copy-byte-to *dest-a, src
 }
 
+# some debugging helpers
 fn show-errors errors: (addr array int), width: int, height: int, x: int, y: int {
   compare y, 1
   {
