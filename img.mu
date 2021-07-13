@@ -477,10 +477,43 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
     {
       compare x, src-width
       break-if->=
-      var color/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
-      var error/esi: int <- copy 0
-      color, error <- compute-greyscale-color-and-error errors, color, x, y, src-width
-      _write-raw-buffer dest-data, x, y, src-width, color
+      var initial-color/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
+      var error/esi: int <- _read-dithering-error errors, x, y, src-width
+      # error += (initial-color << 16)
+      {
+        var tmp/eax: int <- copy initial-color
+        tmp <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
+        error <- add tmp
+      }
+      # nearest-color = nearest(error >> 16)
+      var nearest-color/eax: int <- copy error
+      nearest-color <- shift-right-signed 0x10
+      {
+        compare nearest-color, 0
+        break-if->=
+        nearest-color <- copy 0
+      }
+      # . round to nearest multiple of 0x10
+      {
+        var tmp/ecx: int <- copy nearest-color
+        tmp <- and 0xf
+        compare tmp, 8
+        break-if-<
+        nearest-color <- add 8
+      }
+      nearest-color <- and 0xf0
+      # error -= (nearest-color << 16)
+      {
+        var tmp/eax: int <- copy nearest-color
+        tmp <- shift-left 0x10
+        error <- subtract tmp
+      }
+      # color-index = (nearest-color >> 4 + 16)
+      var color-index/eax: int <- copy nearest-color
+      color-index <- shift-right 4
+      color-index <- add 0x10
+      var color-index-byte/eax: byte <- copy-byte color-index
+      _write-raw-buffer dest-data, x, y, src-width, color-index-byte
       _diffuse-dithering-error-floyd-steinberg errors, x, y, src-width, src-height, error
       x <- increment
       loop
@@ -489,45 +522,6 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
     y <- increment
     loop
   }
-}
-
-fn compute-greyscale-color-and-error errors: (addr array int), initial-color: byte, x: int, y: int, width: int -> _/eax: byte, _/esi: int {
-  # pseudocode:
-  #   error += (initial-color << 16)
-  #   nearest-color = nearest(error >> 16)
-  #   error -= (nearest-color << 16)
-  #   return nearest-color >> 4 + 16, error
-  var error/esi: int <- _read-dithering-error errors, x, y, width
-  # error += (initial-color << 16)
-  var tmp/eax: int <- copy initial-color
-  tmp <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
-  error <- add tmp
-  # nearest-color = nearest(error >> 16)
-  var nearest-color/ecx: int <- copy error
-  nearest-color <- shift-right-signed 0x10
-  {
-    compare nearest-color, 0
-    break-if->=
-    nearest-color <- copy 0
-  }
-  # . round to nearest multiple of 0x10
-  {
-    var tmp/eax: int <- copy nearest-color
-    tmp <- and 0xf
-    compare tmp, 8
-    break-if-<
-    nearest-color <- add 8
-  }
-  nearest-color <- and 0xf0
-  # error -= (nearest-color << 16)
-  var tmp/eax: int <- copy nearest-color
-  tmp <- shift-left 0x10
-  error <- subtract tmp
-  # return (nearest-color >> 4 + 16), error
-  nearest-color <- shift-right 4
-  nearest-color <- add 0x10
-  var color-byte/eax: byte <- copy-byte nearest-color
-  return color-byte, error
 }
 
 # Use Floyd-Steinberg algorithm for diffusing error at x, y in a 2D grid of
