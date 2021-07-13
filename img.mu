@@ -17,7 +17,6 @@ type image {
              #  1: portable bitmap (P1) - pixels 0 or 1
              #  2: portable greymap (P2) - pixels 1-byte greyscale values
              #  3: portable pixmap (P3) - pixels 3-byte rgb values
-  max: int
   width: int
   height: int
   data: (handle array byte)
@@ -252,13 +251,12 @@ fn initialize-image-from-pgm _self: (addr image), in: (addr stream byte) {
   {
     tmp <- parse-decimal-int-from-slice curr-word
     compare tmp, 0xff
-    break-if-<=
-    abort "initialize-image-from-pgm: no more than 255 levels of grey"
+    break-if-=
+    set-cursor-position 0/screen, 0/x 2/y
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "levels of grey is not 255; continuing and hoping for the best", 0x2b/fg 0/bg
   }
-  var dest/edi: (addr int) <- get self, max
-  copy-to *dest, tmp
   # save width, height
-  dest <- get self, width
+  var dest/edi: (addr int) <- get self, width
   copy-to *dest, width
   dest <- get self, height
   copy-to *dest, height
@@ -796,10 +794,8 @@ fn initialize-image-from-ppm _self: (addr image), in: (addr stream byte) {
     break-if-=
     abort "initialize-image-from-ppm: supports exactly 255 levels per rgb channel"
   }
-  var dest/edi: (addr int) <- get self, max
-  copy-to *dest, tmp
   # save width, height
-  dest <- get self, width
+  var dest/edi: (addr int) <- get self, width
   copy-to *dest, width
   dest <- get self, height
   copy-to *dest, height
