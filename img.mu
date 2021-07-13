@@ -489,14 +489,19 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
         var foo/eax: int <- copy error
         foo <- shift-right-signed 0x10
         compare foo, 0xff
-        break-if-<
+        break-if-<=
         pixel 0/screen x, y, 4/red
-#?         set-cursor-position 0/screen, 0x20 0x20
-#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg 0/bg
-#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 4/fg 0/bg
-#?         abort "error too high"
-#?         psd "e", foo, 5/fg, x, y
+        set-cursor-position 0/screen, 0x28/x 0x10/y
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg 0/bg
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 4/fg 0/bg
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 5/fg 0/bg
+        abort "error too high"
       }
+#?       {
+#?         var foo/eax: int <- copy error
+#?         foo <- shift-right-signed 0x10
+#?         psd "e", foo, 5/fg, x, y
+#?       }
       # error += (initial-color << 16)
       {
         var tmp/eax: int <- copy initial-color
