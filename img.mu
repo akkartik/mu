@@ -26,8 +26,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img-storage: image
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
-  render-image screen, img, 0/x, 0xd0/y, 0x12c/width=300, 0xc8/height=200
-  render-pgm-image screen, img, 0x140/x, 0/y, 0x12c/width=300, 0xc8/height=200
+  render-image screen, img, 0/x, 0/y, 0x300/width, 0x300/height
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
@@ -484,7 +483,7 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
         nearest-color <- copy 0
       }
       {
-        compare nearest-color, 0xff
+        compare nearest-color, 0xf0
         break-if-<=
         nearest-color <- copy 0xf0
       }
