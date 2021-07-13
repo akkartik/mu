@@ -28,7 +28,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var img/esi: (addr image) <- address img-storage
   load-image img, data-disk
   render-image screen, img, 0/x, 0xd0/y, 0x12c/width=300, 0xc8/height=200
-  render-pgm-image screen, img, 0x140/x, 0/y, 0x12c/width=300, 0xc8/height=200
+#?   render-pgm-image screen, img, 0x140/x, 0/y, 0x12c/width=300, 0xc8/height=200
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
@@ -109,7 +109,7 @@ fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int,
     var img2-storage: image
     var img2/edi: (addr image) <- address img2-storage
     dither-pgm-unordered img, img2
-    render-raw-image screen, img2, xmin, ymin, width, height
+#?     render-raw-image screen, img2, xmin, ymin, width, height
     return
   }
   {
@@ -485,29 +485,34 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
 #?         psd "r", foo, 7/fg, x, y
 #?       }
       var error/esi: int <- _read-dithering-error errors, x, y, src-width
-      {
-        var foo/eax: int <- copy error
-        foo <- shift-right-signed 0x10
-        compare foo, 0xff
-        break-if-<=
-        pixel 0/screen x, y, 4/red
-        set-cursor-position 0/screen, 0x28/x 0x10/y
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg 0/bg
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 4/fg 0/bg
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 5/fg 0/bg
-        abort "error too high"
-      }
 #?       {
 #?         var foo/eax: int <- copy error
 #?         foo <- shift-right-signed 0x10
-#?         psd "e", foo, 5/fg, x, y
+#?         compare foo, 0xff
+#?         break-if-<=
+#?         pixel 0/screen x, y, 4/red
+#?         set-cursor-position 0/screen, 0x28/x 0x10/y
+#?         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg 0/bg
+#?         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 4/fg 0/bg
+#?         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 5/fg 0/bg
+#?         abort "error too high"
 #?       }
+      {
+        var foo/eax: int <- copy error
+        foo <- shift-right-signed 0x10
+        psd "e", foo, 5/fg, x, y
+      }
       # error += (initial-color << 16)
       {
         var tmp/eax: int <- copy initial-color
         tmp <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
         error <- add tmp
       }
+#?       {
+#?         var foo/eax: int <- copy error
+#?         foo <- shift-right-signed 0x10
+#?         psd "f", foo, 5/fg, x, y
+#?       }
       # nearest-color = nearest(error >> 16)
       var nearest-color/eax: int <- copy error
       nearest-color <- shift-right-signed 0x10
@@ -516,6 +521,15 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
         break-if->=
         nearest-color <- copy 0
       }
+      {
+        compare nearest-color, 0xff
+        break-if-<=
+        nearest-color <- copy 0xf0
+      }
+#?       {
+#?         var foo/eax: int <- copy nearest-color
+#?         psd "m", foo, 2/fg, x, y
+#?       }
       # . round to nearest multiple of 0x10
       {
         var tmp/ecx: int <- copy nearest-color
@@ -525,12 +539,21 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
         nearest-color <- add 8
       }
       nearest-color <- and 0xf0
+#?       {
+#?         var foo/eax: int <- copy nearest-color
+#?         psd "n", foo, 2/fg, x, y
+#?       }
       # error -= (nearest-color << 16)
       {
         var tmp/eax: int <- copy nearest-color
         tmp <- shift-left 0x10
         error <- subtract tmp
       }
+#?       {
+#?         var foo/eax: int <- copy error
+#?         foo <- shift-right-signed 0x10
+#?         psd "g", foo, 3/fg, x, y
+#?       }
       # color-index = (nearest-color >> 4 + 16)
       var color-index/eax: int <- copy nearest-color
       color-index <- shift-right 4
@@ -542,11 +565,11 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
       x <- increment
       loop
     }
-#?     {
-#?       compare y, 0x60
-#?       break-if-<
+    {
+      compare y, 0x18
+      break-if-<
       move-cursor-to-left-margin-of-next-line 0/screen
-#?     }
+    }
 #?     {
 #?       var key/eax: byte <- read-key 0/keyboard
 #?       compare key, 0
@@ -704,23 +727,23 @@ fn show-errors errors: (addr array int), width: int, height: int, x: int, y: int
 }
 
 fn psd s: (addr array byte), d: int, fg: int, x: int, y: int {
-#?   {
-#?     compare y, 0x60
-#?     break-if->=
-#?     return
-#?   }
-#?   {
-#?     compare y, 0x6c
-#?     break-if-<=
-#?     return
-#?   }
+  {
+    compare y, 0x18
+    break-if->=
+    return
+  }
+  {
+    compare y, 0x1c
+    break-if-<=
+    return
+  }
   {
     compare x, 0x40
     break-if->=
     return
   }
 #?   {
-#?     compare x, 0x6c
+#?     compare x, 0x48
 #?     break-if-<=
 #?     return
 #?   }
