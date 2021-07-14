@@ -114,7 +114,10 @@ fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int,
   {
     compare *type-a, 3/ppm
     break-if-!=
-    render-ppm-image screen, img, xmin, ymin, width, height
+    var img2-storage: image
+    var img2/edi: (addr image) <- address img2-storage
+    dither-ppm-unordered img, img2
+    render-raw-image screen, img2, xmin, ymin, width, height
     return
   }
   abort "render-image: unrecognized image type"
@@ -740,8 +743,10 @@ fn initialize-image-from-ppm _self: (addr image), in: (addr stream byte) {
     break-if-=
     abort "initialize-image-from-ppm: supports exactly 255 levels per rgb channel"
   }
+  var dest/edi: (addr int) <- get self, max
+  copy-to *dest, tmp
   # save width, height
-  var dest/edi: (addr int) <- get self, width
+  dest <- get self, width
   copy-to *dest, width
   dest <- get self, height
   copy-to *dest, height
@@ -867,6 +872,204 @@ fn render-ppm-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
     y <- add one-f
     loop
   }
+}
+
+fn dither-ppm-unordered _src: (addr image), _dest: (addr image) {
+  var src/esi: (addr image) <- copy _src
+  var dest/edi: (addr image) <- copy _dest
+  # copy 'width'
+  var src-width-a/eax: (addr int) <- get src, width
+  var tmp/eax: int <- copy *src-width-a
+  var src-width: int
+  copy-to src-width, tmp
+  {
+    var dest-width-a/edx: (addr int) <- get dest, width
+    copy-to *dest-width-a, tmp
+  }
+  # copy 'height'
+  var src-height-a/eax: (addr int) <- get src, height
+  var tmp/eax: int <- copy *src-height-a
+  var src-height: int
+  copy-to src-height, tmp
+  {
+    var dest-height-a/ecx: (addr int) <- get dest, height
+    copy-to *dest-height-a, tmp
+  }
+  # compute scaling factor 255/max
+  var target-scale/eax: int <- copy 0xff
+  var scale-f/xmm7: float <- convert target-scale
+  var src-max-a/eax: (addr int) <- get src, max
+  var tmp-f/xmm0: float <- convert *src-max-a
+  scale-f <- divide tmp-f
+  # allocate 'data'
+  var capacity/ebx: int <- copy src-width
+  capacity <- multiply src-height
+  var dest/edi: (addr image) <- copy _dest
+  var dest-data-ah/eax: (addr handle array byte) <- get dest, data
+  populate dest-data-ah, capacity
+  var _dest-data/eax: (addr array byte) <- lookup *dest-data-ah
+  var dest-data/edi: (addr array byte) <- copy _dest-data
+  # error buffers per r/g/b channel
+  var red-errors-storage: (array int 0xc0000)
+  var tmp/eax: (addr array int) <- address red-errors-storage
+  var red-errors: (addr array int)
+  copy-to red-errors, tmp
+  var green-errors-storage: (array int 0xc0000)
+  var tmp/eax: (addr array int) <- address green-errors-storage
+  var green-errors: (addr array int)
+  copy-to green-errors, tmp
+  var blue-errors-storage: (array int 0xc0000)
+  var tmp/eax: (addr array int) <- address blue-errors-storage
+  var blue-errors: (addr array int)
+  copy-to blue-errors, tmp
+  # transform 'data'
+  var src-data-ah/eax: (addr handle array byte) <- get src, data
+  var _src-data/eax: (addr array byte) <- lookup *src-data-ah
+  var src-data/esi: (addr array byte) <- copy _src-data
+  var y/edx: int <- copy 0
+  {
+    compare y, src-height
+    break-if->=
+    var x/ecx: int <- copy 0
+    {
+      compare x, src-width
+      break-if->=
+      # - update errors and compute color levels for current pixel in each channel
+      # update red-error with current image pixel
+      var red-error: int
+      {
+        var tmp/esi: int <- _read-dithering-error red-errors, x, y, src-width
+        copy-to red-error, tmp
+      }
+      {
+        var tmp/eax: int <- _ppm-error src-data, x, y, src-width, 0/red, scale-f
+        add-to red-error, tmp
+      }
+      # recompute red channel for current pixel
+      var red-level: int
+      {
+        var tmp/eax: int <- _error-to-ppm-channel red-error
+        copy-to red-level, tmp
+      }
+      # update green-error with current image pixel
+      var green-error: int
+      {
+        var tmp/esi: int <- _read-dithering-error green-errors, x, y, src-width
+        copy-to green-error, tmp
+      }
+      {
+        var tmp/eax: int <- _ppm-error src-data, x, y, src-width, 1/green, scale-f
+        add-to green-error, tmp
+      }
+      # recompute green channel for current pixel
+      var green-level: int
+      {
+        var tmp/eax: int <- _error-to-ppm-channel green-error
+        copy-to green-level, tmp
+      }
+      # update blue-error with current image pixel
+      var blue-error: int
+      {
+        var tmp/esi: int <- _read-dithering-error blue-errors, x, y, src-width
+        copy-to blue-error, tmp
+      }
+      {
+        var tmp/eax: int <- _ppm-error src-data, x, y, src-width, 2/blue, scale-f
+        add-to blue-error, tmp
+      }
+      # recompute blue channel for current pixel
+      var blue-level: int
+      {
+        var tmp/eax: int <- _error-to-ppm-channel blue-error
+        copy-to blue-level, tmp
+      }
+      # - figure out the nearest color
+      var nearest-color-index/eax: int <- nearest-color-euclidean red-level, green-level, blue-level
+      {
+        var nearest-color-index-byte/eax: byte <- copy-byte nearest-color-index
+        _write-raw-buffer dest-data, x, y, src-width, nearest-color-index-byte
+      }
+      # - diffuse errors
+      var red-level: int
+      var green-level: int
+      var blue-level: int
+      {
+        var tmp-red-level/ecx: int <- copy 0
+        var tmp-green-level/edx: int <- copy 0
+        var tmp-blue-level/ebx: int <- copy 0
+        tmp-red-level, tmp-green-level, tmp-blue-level <- color-rgb nearest-color-index
+        copy-to red-level, tmp-red-level
+        copy-to green-level, tmp-green-level
+        copy-to blue-level, tmp-blue-level
+      }
+      # update red-error
+      var red-level-error/eax: int <- copy red-level
+      red-level-error <- shift-left 0x10
+      subtract-from red-error, red-level-error
+      _diffuse-dithering-error-floyd-steinberg red-errors, x, y, src-width, src-height, red-error
+      # update green-error
+      var green-level-error/eax: int <- copy green-level
+      green-level-error <- shift-left 0x10
+      subtract-from green-error, green-level-error
+      _diffuse-dithering-error-floyd-steinberg green-errors, x, y, src-width, src-height, green-error
+      # update blue-error
+      var blue-level-error/eax: int <- copy blue-level
+      blue-level-error <- shift-left 0x10
+      subtract-from blue-error, blue-level-error
+      _diffuse-dithering-error-floyd-steinberg blue-errors, x, y, src-width, src-height, blue-error
+      #
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+}
+
+# convert a single channel for a single image pixel to error space
+fn _ppm-error buf: (addr array byte), x: int, y: int, width: int, channel: int, _scale-f: float -> _/eax: int {
+  # current image pixel
+  var initial-level/eax: byte <- _read-ppm-buffer buf, x, y, width, 0/red
+  # scale to 255 levels
+  var initial-level-int/eax: int <- copy initial-level
+  var initial-level-f/xmm0: float <- convert initial-level-int
+  var scale-f/xmm1: float <- copy _scale-f
+  initial-level-f <- multiply scale-f
+  initial-level-int <- convert initial-level-f
+  # switch to fixed-point with 16 bits of precision
+  initial-level-int <- shift-left 0x10
+  return initial-level-int
+}
+
+fn _error-to-ppm-channel error: int -> _/eax: int {
+  # clamp(error >> 16)
+  var result/esi: int <- copy error
+  result <- shift-right-signed 0x10
+  {
+    compare result, 0
+    break-if->=
+    result <- copy 0
+  }
+  {
+    compare result, 0xff
+    break-if-<=
+    result <- copy 0xff
+  }
+  return result
+}
+
+# read from a buffer containing alternating bytes from r/g/b channels
+fn _read-ppm-buffer _buf: (addr array byte), x: int, y: int, width: int, channel: int -> _/eax: byte {
+  var buf/esi: (addr array byte) <- copy _buf
+  var idx/ecx: int <- copy y
+  idx <- multiply width
+  idx <- add x
+  var byte-idx/edx: int <- copy 3
+  byte-idx <- multiply idx
+  byte-idx <- add channel
+  var result-a/eax: (addr byte) <- index buf, byte-idx
+  var result/eax: byte <- copy-byte *result-a
+  return result
 }
 
 fn render-raw-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
