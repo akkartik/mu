@@ -487,14 +487,7 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
         break-if-<=
         nearest-color <- copy 0xf0
       }
-      # . round to nearest multiple of 0x10
-      {
-        var tmp/ecx: int <- copy nearest-color
-        tmp <- and 0xf
-        compare tmp, 8
-        break-if-<
-        nearest-color <- add 8
-      }
+      # . truncate last 4 bits
       nearest-color <- and 0xf0
       # error -= (nearest-color << 16)
       {
