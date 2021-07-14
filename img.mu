@@ -1072,6 +1072,7 @@ fn _read-ppm-buffer _buf: (addr array byte), x: int, y: int, width: int, channel
   return result
 }
 
+# each byte in the image data is a color of the current palette
 fn render-raw-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
   var img/esi: (addr image) <- copy _img
   # yratio = height/img->height
