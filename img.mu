@@ -984,6 +984,13 @@ fn dither-ppm-unordered _src: (addr image), _dest: (addr image) {
         copy-to blue-level, tmp
       }
       # - figure out the nearest color
+#?       {
+#?         compare red-level, 0x80
+#?         break-if->
+#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, red-level, 4/fg 0/bg
+#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, green-level, 2/fg 0/bg
+#?         draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, blue-level, 9/fg 0/bg
+#?       }
       var nearest-color-index/eax: int <- nearest-color-euclidean red-level, green-level, blue-level
       {
         var nearest-color-index-byte/eax: byte <- copy-byte nearest-color-index
@@ -1029,7 +1036,7 @@ fn dither-ppm-unordered _src: (addr image), _dest: (addr image) {
 # convert a single channel for a single image pixel to error space
 fn _ppm-error buf: (addr array byte), x: int, y: int, width: int, channel: int, _scale-f: float -> _/eax: int {
   # current image pixel
-  var initial-level/eax: byte <- _read-ppm-buffer buf, x, y, width, 0/red
+  var initial-level/eax: byte <- _read-ppm-buffer buf, x, y, width, channel
   # scale to 255 levels
   var initial-level-int/eax: int <- copy initial-level
   var initial-level-f/xmm0: float <- convert initial-level-int
