@@ -17,6 +17,7 @@ type image {
              #  1: portable bitmap (P1) - pixels 0 or 1
              #  2: portable greymap (P2) - pixels 1-byte greyscale values
              #  3: portable pixmap (P3) - pixels 3-byte rgb values
+  max: int
   width: int
   height: int
   data: (handle array byte)
@@ -253,8 +254,10 @@ fn initialize-image-from-pgm _self: (addr image), in: (addr stream byte) {
     break-if-=
     draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "levels of grey is not 255; continuing and hoping for the best", 0x2b/fg 0/bg
   }
+  var dest/edi: (addr int) <- get self, max
+  copy-to *dest, tmp
   # save width, height
-  var dest/edi: (addr int) <- get self, width
+  dest <- get self, width
   copy-to *dest, width
   dest <- get self, height
   copy-to *dest, height
@@ -444,6 +447,12 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
     var dest-height-a/ecx: (addr int) <- get dest, height
     copy-to *dest-height-a, tmp
   }
+  # compute scaling factor 255/max
+  var target-scale/eax: int <- copy 0xff
+  var scale-f/xmm7: float <- convert target-scale
+  var src-max-a/eax: (addr int) <- get src, max
+  var tmp-f/xmm0: float <- convert *src-max-a
+  scale-f <- divide tmp-f
   # transform 'data'
   var capacity/ebx: int <- copy src-width
   capacity <- multiply src-height
@@ -467,10 +476,15 @@ fn dither-pgm-unordered _src: (addr image), _dest: (addr image) {
       compare x, src-width
       break-if->=
       var initial-color/eax: byte <- _read-pgm-buffer src-data, x, y, src-width
+      # . scale to 255 levels
+      var initial-color-int/eax: int <- copy initial-color
+      var initial-color-f/xmm0: float <- convert initial-color-int
+      initial-color-f <- multiply scale-f
+      initial-color-int <- convert initial-color-f
       var error/esi: int <- _read-dithering-error errors, x, y, src-width
       # error += (initial-color << 16)
       {
-        var tmp/eax: int <- copy initial-color
+        var tmp/eax: int <- copy initial-color-int
         tmp <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
         error <- add tmp
       }
