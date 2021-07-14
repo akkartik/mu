@@ -298,7 +298,7 @@ fn test-nearest-color-euclidean-hsl {
   check-ints-equal red, 0x28/40, "F - test-nearest-color-euclidean-hsl/full-red5"
   # try a number really close to red but on the other side of the cylinder
   red <- nearest-color-euclidean-hsl 0xff, 0xff, 0xff
-  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, red, 7/fg 0/bg
+#?   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, red, 7/fg 0/bg
   check-ints-equal red, 0x57/87, "F - test-nearest-color-euclidean-hsl/other-end-of-red"  # still looks red
   # half-saturation red from lightest to darkest
   red <- nearest-color-euclidean-hsl 0, 0x80, 0xff
