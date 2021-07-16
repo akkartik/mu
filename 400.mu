@@ -14,8 +14,8 @@ sig timer-counter -> _/eax: int
 sig read-key kbd: (addr keyboard) -> _/eax: byte
 
 # disk
-sig load-sectors disk: (addr disk), lba: int, n: int, out: (addr stream byte)
-sig store-sectors disk: (addr disk), lba: int, n: int, out: (addr stream byte)
+sig read-ata-disk disk: (addr disk), lba: int, n: int, out: (addr stream byte)
+sig write-ata-disk disk: (addr disk), lba: int, n: int, out: (addr stream byte)
 
 # mouse
 sig read-mouse-event -> _/eax: int, _/ecx: int

@@ -973,7 +973,7 @@ Primary-bus-secondary-drive:
 == code
 
 # No more than 0x100 sectors
-load-sectors:  # disk: (addr disk), lba: int, n: int, out: (addr stream byte)
+read-ata-disk:  # disk: (addr disk), lba: int, n: int, out: (addr stream byte)
   # . prologue
   55/push-ebp
   89/<- %ebp 4/r32/esp
@@ -985,12 +985,12 @@ load-sectors:  # disk: (addr disk), lba: int, n: int, out: (addr stream byte)
   81 7/subop/compare *(ebp+0x10) 0x100/imm32
   {
     7e/jump-if-<= break/disp8
-    (abort "load-sectors: no more than 0x100 sectors")
+    (abort "read-ata-disk: no more than 0x100 sectors")
   }
   # check for drive
   (drive-exists? *(ebp+8))  # => eax
   3d/compare-eax-and 0/imm32/false
-  0f 84/jump-if-= $load-sectors:end/disp32
+  0f 84/jump-if-= $read-ata-disk:end/disp32
   # kick off read
   (ata-drive-select *(ebp+8) *(ebp+0xc))
   (clear-ata-error *(ebp+8))
@@ -1032,7 +1032,7 @@ load-sectors:  # disk: (addr disk), lba: int, n: int, out: (addr stream byte)
 #?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "next sector\n" 7 0)
     e9/jump loop/disp32
   }
-$load-sectors:end:
+$read-ata-disk:end:
   # . restore registers
   5a/pop-to-edx
   59/pop-to-ecx
@@ -1042,7 +1042,7 @@ $load-sectors:end:
   5d/pop-to-ebp
   c3/return
 
-store-sectors:  # disk: (addr disk), lba: int, n: int, in: (addr stream byte)
+write-ata-disk:  # disk: (addr disk), lba: int, n: int, in: (addr stream byte)
   # . prologue
   55/push-ebp
   89/<- %ebp 4/r32/esp
@@ -1054,7 +1054,7 @@ store-sectors:  # disk: (addr disk), lba: int, n: int, in: (addr stream byte)
   # check for drive
   (drive-exists? *(ebp+8))  # => eax
   3d/compare-eax-and 0/imm32/false
-  0f 84/jump-if-= $store-sectors:end/disp32
+  0f 84/jump-if-= $write-ata-disk:end/disp32
   # kick off write
   (ata-drive-select *(ebp+8) *(ebp+0xc))
   (clear-ata-error *(ebp+8))
@@ -1077,7 +1077,7 @@ store-sectors:  # disk: (addr disk), lba: int, n: int, in: (addr stream byte)
     # . when it's more than 0xff, we're at an even-numbered byte
     bb/copy-to-ebx 0xffff/imm32
 #?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "D" 7 0)
-$store-sectors:store-sector:
+$write-ata-disk:store-sector:
     {
       81 7/subop/compare %ecx 0/imm32
       74/jump-if-= break/disp8
@@ -1092,7 +1092,7 @@ $store-sectors:store-sector:
       {
         7e/jump-if-<= break/disp8
         89/<- %ebx 0/r32/eax
-        eb/jump $store-sectors:store-sector/disp8
+        eb/jump $write-ata-disk:store-sector/disp8
       }
       # otherwise OR it with first-byte and write it out
       c1/shift 4/subop/left %eax 8/imm8
@@ -1138,7 +1138,7 @@ $store-sectors:store-sector:
 #?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "F" 7 0)
   (flush-ata-cache *(ebp+8))
 #?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 "Y" 7 0)
-$store-sectors:end:
+$write-ata-disk:end:
   # . restore registers
   5b/pop-to-ebx
   5a/pop-to-edx
