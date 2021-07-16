@@ -19,7 +19,7 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
 
   ```sh
   dd if=/dev/zero of=data.img count=20160
-  cat shell/data.limg |dd of=data.img conv=notrunc
+  dd if=shell/data.limg of=data.img conv=notrunc
   ```
 
   Run with data disk (and 2GB of RAM):

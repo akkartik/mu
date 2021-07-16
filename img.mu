@@ -2,13 +2,13 @@
 #
 # To build:
 #   $ ./translate img.mu                            # generates code.img
-# Load a pbm, pgm or ppm image (no more than 255 levels)
+# Load a pbm, pgm or ppm image (no more than 255 levels) in the data disk
 #   $ dd if=/dev/zero of=data.img count=20160
-#   $ cat x.pbm |dd of=data.img conv=notrunc
+#   $ dd if=x.pbm of=data.img conv=notrunc
 # or
-#   $ cat t.pgm |dd of=data.img conv=notrunc
+#   $ dd if=t.pgm of=data.img conv=notrunc
 # or
-#   $ cat snail.ppm |dd of=data.img conv=notrunc
+#   $ dd if=snail.ppm of=data.img conv=notrunc
 # To run:
 #   $ qemu-system-i386 -hda code.img -hdb data.img
 
