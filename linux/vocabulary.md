@@ -74,7 +74,7 @@ Low-level testable primitives for unsafe SubX code.
   of clobbering outside array bounds.
 
   One bit of weirdness here: in tests we do a redundant copy from one stream
-  to another. See [the comments before the implementation](http://akkartik.github.io/mu/html/060read.subx.html)
+  to another. See [the comments before the implementation](http://akkartik.github.io/mu/html/linux/111read.subx.html)
   for a discussion of alternative interfaces.
 
 - `stop`: takes two arguments:
@@ -84,7 +84,7 @@ Low-level testable primitives for unsafe SubX code.
   - `value` is the status code to `exit()` with.
 
   For more details on exit descriptors and how to create one, see [the
-  comments before the implementation](http://akkartik.github.io/mu/html/059stop.subx.html).
+  comments before the implementation](http://akkartik.github.io/mu/html/linux/110stop.subx.html).
 
 - `allocate`: takes two arguments, an address to allocation-descriptor `ad`
   and an integer `n`

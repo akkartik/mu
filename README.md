@@ -18,7 +18,7 @@ qemu-system-i386 code.img
 
 <img alt='screenshot of Game of Life running on the Mu computer' src='html/life.png'>
 
-([Colorized sources.](http://akkartik.github.io/mu/html/life.mu.html)
+([Colorized sources.](http://akkartik.github.io/mu/html/apps/life.mu.html)
 This is memory-safe code, and most statements map to a single instruction of
 machine code.)
 
