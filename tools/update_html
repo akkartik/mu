@@ -47,6 +47,14 @@ do
   process $f
 done
 
+for f in apps/*.mu
+do
+  ( cd $(dirname $f)
+    ctags -x ../[0-9]*.subx ../[0-9]*.mu $(basename $f) > /tmp/tags
+  )
+  process $f
+done
+
 ( cd shell
   ctags -x ../boot.subx ../[0-9]*.subx ../[0-9]*.mu *.mu > /tmp/tags
 )
@@ -72,7 +80,7 @@ do
   process $f
 done
 
-for f in linux/advent2020/*.mu linux/advent2017/*.mu
+for f in linux/apps/*.subx linux/apps/*.mu
 do
   ( cd $(dirname $f)
     ctags -x ../[0-9]*.subx ../[0-9]*.mu $(basename $f) > /tmp/tags
@@ -80,15 +88,28 @@ do
   process $f
 done
 
-for dir in linux/raytracing linux/tile
+for f in linux/apps/advent2020/*.mu linux/apps/advent2017/*.mu
 do
-  ( cd $dir
-    ctags -x ../[0-9]*.subx ../[0-9]*.mu *.mu > /tmp/tags
+  ( cd $(dirname $f)
+    ctags -x ../../[0-9]*.subx ../../[0-9]*.mu $(basename $f) > /tmp/tags
   )
-  for f in $dir/*.mu
-  do
-    process $f
-  done
+  process $f
+done
+
+( cd linux/tile
+  ctags -x ../[0-9]*.subx ../[0-9]*.mu *.mu > /tmp/tags
+)
+for f in linux/tile/*.mu
+do
+  process $f
+done
+
+( cd linux/apps/raytracing
+  ctags -x ../../[0-9]*.subx ../../[0-9]*.mu *.mu > /tmp/tags
+)
+for f in linux/apps/raytracing/*.mu
+do
+  process $f
 done
 
 ( cd linux/bootstrap

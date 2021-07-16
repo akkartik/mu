@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mu - apps/ex8.mu</title>
+<meta name="Generator" content="Vim/8.2">
+<meta name="plugin-version" content="vim8.1_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=,use_input_for_pc=fallback">
+<meta name="colorscheme" content="minimal-light">
+<style>
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffd7; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.PreProc { color: #c000c0; }
+.LineNr { }
+.Constant { color: #008787; }
+.muFunction { color: #af5f00; text-decoration: underline; }
+.Delimiter { color: #c000c0; }
+.muComment { color: #005faf; }
+.Special { color: #ff6060; }
+-->
+</style>
+
+<script>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/main/apps/ex8.mu'>https://github.com/akkartik/mu/blob/main/apps/ex8.mu</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span><span class="muComment"># Demo of floating-point support.</span>
+<span id="L2" class="LineNr"> 2 </span><span class="muComment">#</span>
+<span id="L3" class="LineNr"> 3 </span><span class="muComment"># To build a disk image:</span>
+<span id="L4" class="LineNr"> 4 </span><span class="muComment">#   ./translate apps/ex8.mu        # emits code.img</span>
+<span id="L5" class="LineNr"> 5 </span><span class="muComment"># To run:</span>
+<span id="L6" class="LineNr"> 6 </span><span class="muComment">#   bochs -f bochsrc               # bochsrc loads code.img</span>
+<span id="L7" class="LineNr"> 7 </span><span class="muComment"># Set a breakpoint at 0x7c00 and start stepping.</span>
+<span id="L8" class="LineNr"> 8 </span>
+<span id="L9" class="LineNr"> 9 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex8.mu.html#L9'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
+<span id="L10" class="LineNr">10 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L11" class="LineNr">11 </span>  <span class="PreProc">var</span> result/<span class="Constant">xmm0</span>: float <span class="Special">&lt;-</span> convert n
+<span id="L12" class="LineNr">12 </span><span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

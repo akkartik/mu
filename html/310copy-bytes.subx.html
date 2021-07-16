@@ -1,14 +1,14 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
 <title>Mu - 310copy-bytes.subx</title>
-<meta name="Generator" content="Vim/8.1">
-<meta name="plugin-version" content="vim8.1_v1">
+<meta name="Generator" content="Vim/8.2">
+<meta name="plugin-version" content="vim8.1_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=,use_input_for_pc=fallback">
 <meta name="colorscheme" content="minimal-light">
-<style type="text/css">
+<style>
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffd7; }
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
@@ -16,15 +16,15 @@ a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .subxComment { color: #005faf; }
 .LineNr { }
-.SpecialChar { color: #d70000; }
-.subxS1Comment { color: #0000af; }
 .subxFunction { color: #af5f00; text-decoration: underline; }
+.subxS1Comment { color: #0000af; }
+.SpecialChar { color: #d70000; }
 .Constant { color: #008787; }
 .subxTest { color: #5f8700; }
 -->
 </style>
 
-<script type='text/javascript'>
+<script>
 <!--
 
 /* function to open any folds containing a jumped-to line before jumping to it */
@@ -160,59 +160,63 @@ if ('onhashchange' in window) {
 <span id="L102" class="LineNr">102 </span>    (<a href='108write.subx.html#L11'>write</a> <a href='112read-byte.subx.html#L47'>_test-input-stream</a> <span class="Constant">&quot;abc&quot;</span>)
 <span id="L103" class="LineNr">103 </span>    <span class="subxComment"># skip something</span>
 <span id="L104" class="LineNr">104 </span>    (<a href='112read-byte.subx.html#L13'>read-byte</a> <a href='112read-byte.subx.html#L47'>_test-input-stream</a>)  <span class="subxComment"># =&gt; eax</span>
-<span id="L105" class="LineNr">105 </span>    <span class="subxComment"># var out/ecx: (handle array byte)</span>
-<span id="L106" class="LineNr">106 </span>    68/push 0/imm32
-<span id="L107" class="LineNr">107 </span>    68/push 0/imm32
-<span id="L108" class="LineNr">108 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L109" class="LineNr">109 </span>    <span class="subxComment">#</span>
-<span id="L110" class="LineNr">110 </span>    (<a href='310copy-bytes.subx.html#L60'>stream-to-array</a> <a href='112read-byte.subx.html#L47'>_test-input-stream</a> %ecx)
-<span id="L111" class="LineNr">111 </span>    (<a href='120allocate.subx.html#L223'>lookup</a> *ecx *(ecx+4))  <span class="subxComment"># =&gt; eax</span>
-<span id="L112" class="LineNr">112 </span>    (<a href='105string-equal.subx.html#L213'>check-strings-equal</a> %eax <span class="Constant">&quot;bc&quot;</span>)
-<span id="L113" class="LineNr">113 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L114" class="LineNr">114 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L115" class="LineNr">115 </span>    5d/pop-to-ebp
-<span id="L116" class="LineNr">116 </span>    c3/return
-<span id="L117" class="LineNr">117 </span>
-<span id="L118" class="LineNr">118 </span><span class="subxComment"># like stream-to-array but ignore surrounding quotes</span>
-<span id="L119" class="LineNr">119 </span><span class="subxComment"># we might do other stuff here later</span>
-<span id="L120" class="LineNr">120 </span><span class="subxFunction">unquote-stream-to-array</span>:  <span class="subxComment"># in: (addr stream _), out: (addr handle array _)</span>
-<span id="L121" class="LineNr">121 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L122" class="LineNr">122 </span>    55/push-ebp
-<span id="L123" class="LineNr">123 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L124" class="LineNr">124 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L125" class="LineNr">125 </span>    50/push-eax
-<span id="L126" class="LineNr">126 </span>    51/push-ecx
-<span id="L127" class="LineNr">127 </span>    52/push-edx
-<span id="L128" class="LineNr">128 </span>    56/push-esi
-<span id="L129" class="LineNr">129 </span>    <span class="subxComment"># esi = s</span>
-<span id="L130" class="LineNr">130 </span>    8b/-&gt; *(ebp+8) 6/r32/esi
-<span id="L131" class="LineNr">131 </span>    <span class="subxComment"># var len/ecx: int = s-&gt;write - s-&gt;read - 2</span>
-<span id="L132" class="LineNr">132 </span>    8b/-&gt; *esi 1/r32/ecx
-<span id="L133" class="LineNr">133 </span>    2b/subtract *(esi+4) 1/r32/ecx
-<span id="L134" class="LineNr">134 </span>    81 7/subop/compare %ecx 2/imm32
-<span id="L135" class="LineNr">135 </span>    7c/jump-if-&lt; $unquote-stream-to-array:end/disp8
-<span id="L136" class="LineNr">136 </span>    81 5/subop/subtract %ecx 2/imm32
-<span id="L137" class="LineNr">137 </span>    <span class="subxComment"># allocate</span>
-<span id="L138" class="LineNr">138 </span>    (<a href='120allocate.subx.html#L556'>allocate-array</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> %ecx *(ebp+0xc))
-<span id="L139" class="LineNr">139 </span>    <span class="subxComment"># var in/edx: (addr byte) = s-&gt;data + s-&gt;read + 1</span>
-<span id="L140" class="LineNr">140 </span>    8b/-&gt; *(esi+4) 2/r32/edx
-<span id="L141" class="LineNr">141 </span>    8d/copy-address *(esi+edx+0xd) 2/r32/edx  <span class="subxComment"># Stream-data + 1</span>
-<span id="L142" class="LineNr">142 </span>    <span class="subxComment"># var dest/eax: (addr byte) = data for out</span>
-<span id="L143" class="LineNr">143 </span>    8b/-&gt; *(ebp+0xc) 0/r32/eax
-<span id="L144" class="LineNr">144 </span>    (<a href='120allocate.subx.html#L223'>lookup</a> *eax *(eax+4))  <span class="subxComment"># =&gt; eax</span>
-<span id="L145" class="LineNr">145 </span>    8d/copy-address *(eax+4) 0/r32/eax
-<span id="L146" class="LineNr">146 </span>    <span class="subxComment">#</span>
-<span id="L147" class="LineNr">147 </span>    (<a href='310copy-bytes.subx.html#L6'>copy-bytes</a> %edx %eax %ecx)
-<span id="L148" class="LineNr">148 </span><span class="Constant">$unquote-stream-to-array:end</span>:
-<span id="L149" class="LineNr">149 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L150" class="LineNr">150 </span>    5e/pop-to-esi
-<span id="L151" class="LineNr">151 </span>    5a/pop-to-edx
-<span id="L152" class="LineNr">152 </span>    59/pop-to-ecx
-<span id="L153" class="LineNr">153 </span>    58/pop-to-eax
-<span id="L154" class="LineNr">154 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L155" class="LineNr">155 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L156" class="LineNr">156 </span>    5d/pop-to-ebp
-<span id="L157" class="LineNr">157 </span>    c3/return
+<span id="L105" class="LineNr">105 </span>    8b/-&gt; *$_test-input-stream-&gt;read 0/r32/eax
+<span id="L106" class="LineNr">106 </span>    (<a href='502test.mu.html#L2'>check-ints-equal</a> %eax 1 <span class="Constant">&quot;F - <a href='310copy-bytes.subx.html#L96'>test-stream-to-array</a>/pre&quot;</span>)
+<span id="L107" class="LineNr">107 </span>    <span class="subxComment"># var out/ecx: (handle array byte)</span>
+<span id="L108" class="LineNr">108 </span>    68/push 0/imm32
+<span id="L109" class="LineNr">109 </span>    68/push 0/imm32
+<span id="L110" class="LineNr">110 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L111" class="LineNr">111 </span>    <span class="subxComment">#</span>
+<span id="L112" class="LineNr">112 </span>    (<a href='310copy-bytes.subx.html#L60'>stream-to-array</a> <a href='112read-byte.subx.html#L47'>_test-input-stream</a> %ecx)
+<span id="L113" class="LineNr">113 </span>    (<a href='120allocate.subx.html#L223'>lookup</a> *ecx *(ecx+4))  <span class="subxComment"># =&gt; eax</span>
+<span id="L114" class="LineNr">114 </span>    (<a href='105string-equal.subx.html#L213'>check-strings-equal</a> %eax <span class="Constant">&quot;bc&quot;</span> <span class="Constant">&quot;F - test-stream-to-array&quot;</span>)
+<span id="L115" class="LineNr">115 </span>    8b/-&gt; *$_test-input-stream-&gt;read 0/r32/eax
+<span id="L116" class="LineNr">116 </span>    (<a href='502test.mu.html#L2'>check-ints-equal</a> %eax 1 <span class="Constant">&quot;F - <a href='310copy-bytes.subx.html#L96'>test-stream-to-array</a>/read-pointer-not-perturbed&quot;</span>)
+<span id="L117" class="LineNr">117 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L118" class="LineNr">118 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L119" class="LineNr">119 </span>    5d/pop-to-ebp
+<span id="L120" class="LineNr">120 </span>    c3/return
+<span id="L121" class="LineNr">121 </span>
+<span id="L122" class="LineNr">122 </span><span class="subxComment"># like stream-to-array but ignore surrounding quotes</span>
+<span id="L123" class="LineNr">123 </span><span class="subxComment"># we might do other stuff here later</span>
+<span id="L124" class="LineNr">124 </span><span class="subxFunction">unquote-stream-to-array</span>:  <span class="subxComment"># in: (addr stream _), out: (addr handle array _)</span>
+<span id="L125" class="LineNr">125 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L126" class="LineNr">126 </span>    55/push-ebp
+<span id="L127" class="LineNr">127 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L128" class="LineNr">128 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L129" class="LineNr">129 </span>    50/push-eax
+<span id="L130" class="LineNr">130 </span>    51/push-ecx
+<span id="L131" class="LineNr">131 </span>    52/push-edx
+<span id="L132" class="LineNr">132 </span>    56/push-esi
+<span id="L133" class="LineNr">133 </span>    <span class="subxComment"># esi = s</span>
+<span id="L134" class="LineNr">134 </span>    8b/-&gt; *(ebp+8) 6/r32/esi
+<span id="L135" class="LineNr">135 </span>    <span class="subxComment"># var len/ecx: int = s-&gt;write - s-&gt;read - 2</span>
+<span id="L136" class="LineNr">136 </span>    8b/-&gt; *esi 1/r32/ecx
+<span id="L137" class="LineNr">137 </span>    2b/subtract *(esi+4) 1/r32/ecx
+<span id="L138" class="LineNr">138 </span>    81 7/subop/compare %ecx 2/imm32
+<span id="L139" class="LineNr">139 </span>    7c/jump-if-&lt; $unquote-stream-to-array:end/disp8
+<span id="L140" class="LineNr">140 </span>    81 5/subop/subtract %ecx 2/imm32
+<span id="L141" class="LineNr">141 </span>    <span class="subxComment"># allocate</span>
+<span id="L142" class="LineNr">142 </span>    (<a href='120allocate.subx.html#L556'>allocate-array</a> <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span> %ecx *(ebp+0xc))
+<span id="L143" class="LineNr">143 </span>    <span class="subxComment"># var in/edx: (addr byte) = s-&gt;data + s-&gt;read + 1</span>
+<span id="L144" class="LineNr">144 </span>    8b/-&gt; *(esi+4) 2/r32/edx
+<span id="L145" class="LineNr">145 </span>    8d/copy-address *(esi+edx+0xd) 2/r32/edx  <span class="subxComment"># Stream-data + 1</span>
+<span id="L146" class="LineNr">146 </span>    <span class="subxComment"># var dest/eax: (addr byte) = data for out</span>
+<span id="L147" class="LineNr">147 </span>    8b/-&gt; *(ebp+0xc) 0/r32/eax
+<span id="L148" class="LineNr">148 </span>    (<a href='120allocate.subx.html#L223'>lookup</a> *eax *(eax+4))  <span class="subxComment"># =&gt; eax</span>
+<span id="L149" class="LineNr">149 </span>    8d/copy-address *(eax+4) 0/r32/eax
+<span id="L150" class="LineNr">150 </span>    <span class="subxComment">#</span>
+<span id="L151" class="LineNr">151 </span>    (<a href='310copy-bytes.subx.html#L6'>copy-bytes</a> %edx %eax %ecx)
+<span id="L152" class="LineNr">152 </span><span class="Constant">$unquote-stream-to-array:end</span>:
+<span id="L153" class="LineNr">153 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L154" class="LineNr">154 </span>    5e/pop-to-esi
+<span id="L155" class="LineNr">155 </span>    5a/pop-to-edx
+<span id="L156" class="LineNr">156 </span>    59/pop-to-ecx
+<span id="L157" class="LineNr">157 </span>    58/pop-to-eax
+<span id="L158" class="LineNr">158 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L159" class="LineNr">159 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L160" class="LineNr">160 </span>    5d/pop-to-ebp
+<span id="L161" class="LineNr">161 </span>    c3/return
 </pre>
 </body>
 </html>

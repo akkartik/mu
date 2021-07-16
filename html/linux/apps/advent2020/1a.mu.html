@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mu - linux/apps/advent2020/1a.mu</title>
+<meta name="Generator" content="Vim/8.2">
+<meta name="plugin-version" content="vim8.1_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=,use_input_for_pc=fallback">
+<meta name="colorscheme" content="minimal-light">
+<style>
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffd7; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.PreProc { color: #c000c0; }
+.CommentedCode { color: #8a8a8a; }
+.muRegEcx { color: #870000; }
+.Special { color: #ff6060; }
+.LineNr { }
+.muRegEsi { color: #005faf; }
+.muRegEdi { color: #00af00; }
+.Constant { color: #008787; }
+.muFunction { color: #af5f00; text-decoration: underline; }
+.Delimiter { color: #c000c0; }
+.muComment { color: #005faf; }
+.muRegEdx { color: #af5f00; }
+.muRegEbx { color: #5f00ff; }
+-->
+</style>
+
+<script>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/main/linux/apps/advent2020/1a.mu'>https://github.com/akkartik/mu/blob/main/linux/apps/advent2020/1a.mu</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span><span class="muComment"># <a href="https://adventofcode.com/2020/day/1">https://adventofcode.com/2020/day/1</a></span>
+<span id="L2" class="LineNr"> 2 </span><span class="muComment">#</span>
+<span id="L3" class="LineNr"> 3 </span><span class="muComment"># To run (on Linux):</span>
+<span id="L4" class="LineNr"> 4 </span><span class="muComment">#   $ git clone <a href="https://github.com/akkartik/mu">https://github.com/akkartik/mu</a></span>
+<span id="L5" class="LineNr"> 5 </span><span class="muComment">#   $ cd mu</span>
+<span id="L6" class="LineNr"> 6 </span><span class="muComment">#   $ ./translate apps/advent2020/1a.mu</span>
+<span id="L7" class="LineNr"> 7 </span><span class="muComment">#   $ ./a.elf &lt; input</span>
+<span id="L8" class="LineNr"> 8 </span><span class="muComment">#   found</span>
+<span id="L9" class="LineNr"> 9 </span><span class="muComment">#   1353 667</span>
+<span id="L10" class="LineNr">10 </span><span class="muComment">#   902451</span>
+<span id="L11" class="LineNr">11 </span><span class="muComment">#</span>
+<span id="L12" class="LineNr">12 </span><span class="muComment"># You'll need to register to download the 'input' file for yourself.</span>
+<span id="L13" class="LineNr">13 </span>
+<span id="L14" class="LineNr">14 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='1a.mu.html#L14'>main</a></span><span class="PreProc"> -&gt; </span>_/<span class="muRegEbx">ebx</span>: int <span class="Delimiter">{</span>
+<span id="L15" class="LineNr">15 </span>  <span class="muComment"># data structure</span>
+<span id="L16" class="LineNr">16 </span>  <span class="PreProc">var</span> numbers-storage: (array int <span class="Constant">0x100</span>)  <span class="muComment"># 256 ints</span>
+<span id="L17" class="LineNr">17 </span>  <span class="PreProc">var</span> numbers/<span class="muRegEsi">esi</span>: (addr array int) <span class="Special">&lt;-</span> address numbers-storage
+<span id="L18" class="LineNr">18 </span>  <span class="PreProc">var</span> numbers-index/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L19" class="LineNr">19 </span>  <span class="muComment"># phase 1: parse each line from stdin and add it to numbers</span>
+<span id="L20" class="LineNr">20 </span>  <span class="Delimiter">{</span>
+<span id="L21" class="LineNr">21 </span>    <span class="PreProc">var</span> line-storage: (stream byte <span class="Constant">0x100</span>)  <span class="muComment"># 256 bytes</span>
+<span id="L22" class="LineNr">22 </span>    <span class="PreProc">var</span> line/<span class="muRegEdx">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address line-storage
+<span id="L23" class="LineNr">23 </span>    <span class="Delimiter">{</span>
+<span id="L24" class="LineNr">24 </span><span class="CommentedCode">#?       print-string 0, &quot;== iter\n&quot;</span>
+<span id="L25" class="LineNr">25 </span>      <span class="muComment"># read line from stdin</span>
+<span id="L26" class="LineNr">26 </span>      <a href='../../106stream.subx.html#L17'>clear-stream</a> line
+<span id="L27" class="LineNr">27 </span>      <a href='../../305keyboard.subx.html#L158'>read-line-from-real-keyboard</a> line
+<span id="L28" class="LineNr">28 </span>      <span class="muComment"># if line is empty (not even a newline), quit</span>
+<span id="L29" class="LineNr">29 </span>      <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='../../309stream.subx.html#L6'>stream-empty?</a> line
+<span id="L30" class="LineNr">30 </span>      compare done?, <span class="Constant">0</span>/false
+<span id="L31" class="LineNr">31 </span>      <span class="PreProc">break-if-!=</span>
+<span id="L32" class="LineNr">32 </span><span class="CommentedCode">#?       print-stream-to-real-screen line</span>
+<span id="L33" class="LineNr">33 </span>      <span class="muComment"># convert line to int and append it to numbers</span>
+<span id="L34" class="LineNr">34 </span>      <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> <a href='../../311decimal-int.subx.html#L48'>parse-decimal-int-from-stream</a> line
+<span id="L35" class="LineNr">35 </span><span class="CommentedCode">#?       print-int32-decimal 0, n</span>
+<span id="L36" class="LineNr">36 </span><span class="CommentedCode">#?       print-string 0, &quot;\n&quot;</span>
+<span id="L37" class="LineNr">37 </span>      <span class="PreProc">var</span> dest/<span class="muRegEbx">ebx</span>: (addr int) <span class="Special">&lt;-</span> index numbers, numbers-index
+<span id="L38" class="LineNr">38 </span>      copy-to *dest, n
+<span id="L39" class="LineNr">39 </span>      numbers-index <span class="Special">&lt;-</span> increment
+<span id="L40" class="LineNr">40 </span><span class="CommentedCode">#?       print-string 0, &quot;== &quot;</span>
+<span id="L41" class="LineNr">41 </span><span class="CommentedCode">#?       print-int32-decimal 0, numbers-index</span>
+<span id="L42" class="LineNr">42 </span><span class="CommentedCode">#?       print-string 0, &quot;\n&quot;</span>
+<span id="L43" class="LineNr">43 </span>      <span class="PreProc">loop</span>
+<span id="L44" class="LineNr">44 </span>    <span class="Delimiter">}</span>
+<span id="L45" class="LineNr">45 </span>  <span class="Delimiter">}</span>
+<span id="L46" class="LineNr">46 </span>  <span class="muComment"># phase 2: for each number in the array, check if 2020-it is in the rest of</span>
+<span id="L47" class="LineNr">47 </span>  <span class="muComment"># the array</span>
+<span id="L48" class="LineNr">48 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L49" class="LineNr">49 </span>  <span class="Delimiter">{</span>
+<span id="L50" class="LineNr">50 </span>    compare i, numbers-index
+<span id="L51" class="LineNr">51 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L52" class="LineNr">52 </span>    <span class="PreProc">var</span> src/<span class="muRegEbx">ebx</span>: (addr int) <span class="Special">&lt;-</span> index numbers, i
+<span id="L53" class="LineNr">53 </span><span class="CommentedCode">#?     print-int32-decimal 0, *src</span>
+<span id="L54" class="LineNr">54 </span><span class="CommentedCode">#?     print-string 0, &quot;\n&quot;</span>
+<span id="L55" class="LineNr">55 </span>    <span class="PreProc">var</span> target/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0x7e4</span>  <span class="muComment"># 2020</span>
+<span id="L56" class="LineNr">56 </span>    target <span class="Special">&lt;-</span> subtract *src
+<span id="L57" class="LineNr">57 </span>    <span class="Delimiter">{</span>
+<span id="L58" class="LineNr">58 </span>      <span class="PreProc">var</span> found?/eax: boolean <span class="Special">&lt;-</span> <a href='1a.mu.html#L77'>find-after</a> numbers, i, target
+<span id="L59" class="LineNr">59 </span>      compare found?, <span class="Constant">0</span>/false
+<span id="L60" class="LineNr">60 </span>      <span class="PreProc">break-if-=</span>
+<span id="L61" class="LineNr">61 </span>      <a href='../../405screen.mu.html#L169'>print-string</a> <span class="Constant">0</span>, <span class="Constant">&quot;found\n&quot;</span>
+<span id="L62" class="LineNr">62 </span>      <a href='../../405screen.mu.html#L484'>print-int32-decimal</a> <span class="Constant">0</span>, *src
+<span id="L63" class="LineNr">63 </span>      <a href='../../405screen.mu.html#L169'>print-string</a> <span class="Constant">0</span>, <span class="Constant">&quot; &quot;</span>
+<span id="L64" class="LineNr">64 </span>      <a href='../../405screen.mu.html#L484'>print-int32-decimal</a> <span class="Constant">0</span>, target
+<span id="L65" class="LineNr">65 </span>      <a href='../../405screen.mu.html#L169'>print-string</a> <span class="Constant">0</span>, <span class="Constant">&quot;\n&quot;</span>
+<span id="L66" class="LineNr">66 </span>      target <span class="Special">&lt;-</span> multiply *src
+<span id="L67" class="LineNr">67 </span>      <a href='../../405screen.mu.html#L484'>print-int32-decimal</a> <span class="Constant">0</span>, target
+<span id="L68" class="LineNr">68 </span>      <a href='../../405screen.mu.html#L169'>print-string</a> <span class="Constant">0</span>, <span class="Constant">&quot;\n&quot;</span>
+<span id="L69" class="LineNr">69 </span>      <span class="PreProc">return</span> <span class="Constant">0</span>/success
+<span id="L70" class="LineNr">70 </span>    <span class="Delimiter">}</span>
+<span id="L71" class="LineNr">71 </span>    i <span class="Special">&lt;-</span> increment
+<span id="L72" class="LineNr">72 </span>    <span class="PreProc">loop</span>
+<span id="L73" class="LineNr">73 </span>  <span class="Delimiter">}</span>
+<span id="L74" class="LineNr">74 </span>  <span class="PreProc">return</span> <span class="Constant">1</span>/not-found
+<span id="L75" class="LineNr">75 </span><span class="Delimiter">}</span>
+<span id="L76" class="LineNr">76 </span>
+<span id="L77" class="LineNr">77 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='1a.mu.html#L77'>find-after</a></span> _numbers: (addr array int), start: int, _target: int<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
+<span id="L78" class="LineNr">78 </span>  <span class="PreProc">var</span> numbers/<span class="muRegEsi">esi</span>: (addr array int) <span class="Special">&lt;-</span> copy _numbers
+<span id="L79" class="LineNr">79 </span>  <span class="PreProc">var</span> target/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy _target
+<span id="L80" class="LineNr">80 </span>  <span class="PreProc">var</span> len/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> length numbers
+<span id="L81" class="LineNr">81 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy start
+<span id="L82" class="LineNr">82 </span>  i <span class="Special">&lt;-</span> increment
+<span id="L83" class="LineNr">83 </span>  <span class="Delimiter">{</span>
+<span id="L84" class="LineNr">84 </span>    compare i, len
+<span id="L85" class="LineNr">85 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L86" class="LineNr">86 </span>    <span class="PreProc">var</span> src/<span class="muRegEdx">edx</span>: (addr int) <span class="Special">&lt;-</span> index numbers, i
+<span id="L87" class="LineNr">87 </span>    <span class="muComment"># if *src == target, return true</span>
+<span id="L88" class="LineNr">88 </span>    compare *src, target
+<span id="L89" class="LineNr">89 </span>    <span class="Delimiter">{</span>
+<span id="L90" class="LineNr">90 </span>      <span class="PreProc">break-if-!=</span>
+<span id="L91" class="LineNr">91 </span>      <span class="PreProc">return</span> <span class="Constant">1</span>/true
+<span id="L92" class="LineNr">92 </span>    <span class="Delimiter">}</span>
+<span id="L93" class="LineNr">93 </span>    i <span class="Special">&lt;-</span> increment
+<span id="L94" class="LineNr">94 </span>    <span class="PreProc">loop</span>
+<span id="L95" class="LineNr">95 </span>  <span class="Delimiter">}</span>
+<span id="L96" class="LineNr">96 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>/false
+<span id="L97" class="LineNr">97 </span><span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

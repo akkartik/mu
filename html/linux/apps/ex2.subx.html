@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mu - linux/apps/ex2.subx</title>
+<meta name="Generator" content="Vim/8.2">
+<meta name="plugin-version" content="vim8.1_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,no_foldcolumn,expand_tabs,line_ids,prevent_copy=,use_input_for_pc=fallback">
+<meta name="colorscheme" content="minimal-light">
+<style>
+<!--
+pre { font-family: monospace; color: #000000; background-color: #ffffd7; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.subxComment { color: #005faf; }
+.subxS2Comment { color: #8a8a8a; }
+.LineNr { }
+.SpecialChar { color: #d70000; }
+-->
+</style>
+
+<script>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/main/linux/apps/ex2.subx'>https://github.com/akkartik/mu/blob/main/linux/apps/ex2.subx</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span><span class="subxComment"># Add 3 and 4, and return the result in the exit code.</span>
+<span id="L2" class="LineNr"> 2 </span><span class="subxComment">#</span>
+<span id="L3" class="LineNr"> 3 </span><span class="subxComment"># To run:</span>
+<span id="L4" class="LineNr"> 4 </span><span class="subxComment">#   $ bootstrap/bootstrap translate apps/ex2.subx -o ex2</span>
+<span id="L5" class="LineNr"> 5 </span><span class="subxComment">#   $ bootstrap/bootstrap run ex2</span>
+<span id="L6" class="LineNr"> 6 </span><span class="subxComment"># Expected result:</span>
+<span id="L7" class="LineNr"> 7 </span><span class="subxComment">#   $ echo $?</span>
+<span id="L8" class="LineNr"> 8 </span><span class="subxComment">#   2</span>
+<span id="L9" class="LineNr"> 9 </span>
+<span id="L10" class="LineNr">10 </span>== code
+<span id="L11" class="LineNr">11 </span>
+<span id="L12" class="LineNr">12 </span><span class="SpecialChar">Entry</span>:
+<span id="L13" class="LineNr">13 </span><span class="subxComment"># ebx = 3</span>
+<span id="L14" class="LineNr">14 </span>bb/copy-to-ebx  3/imm32
+<span id="L15" class="LineNr">15 </span><span class="subxComment"># add 4 to ebx</span>
+<span id="L16" class="LineNr">16 </span>81 0/subop/add 3/mod/direct 3/rm32/ebx 4/imm32
+<span id="L17" class="LineNr">17 </span><span class="subxComment"># exit(ebx)</span>
+<span id="L18" class="LineNr">18 </span>e8/call  <a href='../000init.subx.html#L18'>syscall_exit</a>/disp32
+<span id="L19" class="LineNr">19 </span>
+<span id="L20" class="LineNr">20 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
