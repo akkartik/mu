@@ -36,22 +36,7 @@ fn load-image self: (addr image), data-disk: (addr disk) {
   var s/ebx: (addr stream byte) <- address s-storage
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sectors from data disk", 3/fg, 0/bg
   move-cursor-to-left-margin-of-next-line 0/screen
-  read-ata-disk data-disk, 0/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0x100/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0x200/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0x300/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0x400/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0x500/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0x600/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0x700/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0x800/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0x900/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0xa00/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0xb00/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0xc00/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0xd00/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0xe00/lba, 0x100/sectors, s
-  read-ata-disk data-disk, 0xf00/lba, 0x100/sectors, s
+  load-sectors data-disk, 0/lba, 0x1000/sectors, s
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
   move-cursor-to-left-margin-of-next-line 0/screen
   initialize-image self, s
