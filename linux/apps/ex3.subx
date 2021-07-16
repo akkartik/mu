@@ -1,0 +1,36 @@
+# Add the first 10 numbers, and return the result in the exit code.
+#
+# To run:
+#   $ bootstrap/bootstrap translate apps/ex3.subx -o ex3
+#   $ bootstrap/bootstrap run ex3
+# Expected result:
+#   $ echo $?
+#   55
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+Entry:
+    # result: ebx = 0
+    bb/copy-to-ebx  0/imm32
+    # counter: ecx = 1
+    b9/copy-to-ecx  1/imm32
+
+$loop:
+    # if (counter > 10) break
+    81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0xa/imm32         # compare ecx
+    7f/jump-if->  $exit/disp8
+    # result += counter
+    01/add                          3/mod/direct    3/rm32/ebx    .           .             .           1/r32/ecx   .               .                 # add ecx to ebx
+    # ++counter
+    41/increment-ecx
+    # loop
+    eb/jump  $loop/disp8
+
+$exit:
+    # exit(ebx)
+    e8/call  syscall_exit/disp32
+
+# . . vim:nowrap:textwidth=0

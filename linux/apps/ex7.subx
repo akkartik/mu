@@ -1,0 +1,98 @@
+# Example showing file syscalls.
+#
+# Create a file, open it for writing, write a character to it, close it, open
+# it for reading, read a character from it, close it, delete it, and return
+# the character read.
+#
+# To run:
+#   $ bootstrap/bootstrap translate apps/ex7.subx -o ex7
+#   $ bootstrap/bootstrap run ex7
+# Expected result:
+#   $ echo $?
+#   97
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+Entry:
+    # creat(Filename)
+    bb/copy-to-ebx  Filename/imm32
+    b9/copy-to-ecx  0x180/imm32/fixed-perms
+    e8/call  syscall_creat/disp32
+
+    # stream = open(Filename, O_WRONLY, 0)  # we can't use 'fd' because it looks like a hex byte
+    bb/copy-to-ebx  Filename/imm32
+    b9/copy-to-ecx  1/imm32/wronly
+    ba/copy-to-edx  0x180/imm32/fixed-perms
+    e8/call  syscall_open/disp32
+    # save stream
+    bb/copy-to-ebx  Stream/imm32
+    89/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to *ebx
+
+    # write(Stream, "a", 1)
+    # . load stream
+    bb/copy-to-ebx  Stream/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
+    # .
+    b9/copy-to-ecx  A/imm32
+    ba/copy-to-edx  1/imm32/size
+    e8/call  syscall_write/disp32
+
+    # close(Stream)
+    # . load stream
+    bb/copy-to-ebx  Stream/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
+    # .
+    e8/call  syscall_close/disp32
+
+    # stream = open(Filename, O_RDONLY, 0)
+    bb/copy-to-ebx  Filename/imm32
+    b9/copy-to-ecx  0/imm32/rdonly
+    ba/copy-to-edx  0x180/imm32/fixed-perms
+    e8/call  syscall_open/disp32
+    # . save Stream
+    bb/copy-to-ebx  Stream/imm32
+    89/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to *ebx
+
+    # read(Stream, B, 1)
+    # . load stream
+    bb/copy-to-ebx  Stream/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
+    # .
+    b9/copy-to-ecx  B/imm32
+    ba/copy-to-edx  1/imm32/size
+    e8/call  syscall_read/disp32
+
+    # close(Stream)
+    # . load stream
+    bb/copy-to-ebx  Stream/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
+    #
+    e8/call  syscall_close/disp32
+
+    # unlink(filename)
+    bb/copy-to-ebx  Filename/imm32
+    e8/call  syscall_unlink/disp32
+
+    # exit(b)
+    # . load b
+    bb/copy-to-ebx  B/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
+    #
+    e8/call  syscall_exit/disp32
+
+== data
+
+Stream:
+    0/imm32
+A:
+    61/imm32/A
+B:
+    0/imm32
+Filename:
+    2e 66 6f 6f 00 00 00 00
+#   .  f  o  o  null
+
+# . . vim:nowrap:textwidth=0

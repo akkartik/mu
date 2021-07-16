@@ -1,0 +1,52 @@
+# Example showing arg order on the stack.
+#
+# Show difference between ascii codes of first letter of first arg and first
+# letter of second arg.
+#
+# To run:
+#   $ bootstrap/bootstrap translate apps/ex9.subx -o ex9
+#   $ bootstrap/bootstrap run ex9 z x
+# Expected result:
+#   $ echo $?
+#   2
+#
+# At the start of a SubX program:
+#   argc: *esp
+#   argv[0]: *(esp+4)
+#   argv[1]: *(esp+8)
+#   ...
+# Locals start from esp-4 downwards.
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+Entry:
+    # . prologue
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # ascii-difference(argv[1], argv[2])
+    # . . push argv[2]
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . push argv[1]
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  ascii-difference/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # exit(eax)
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
+    e8/call  syscall_exit/disp32
+
+ascii-difference:  # (s1, s2): null-terminated ascii strings
+    # a = first letter of s1 (ecx)
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           0/r32/eax   4/disp8         .                 # copy *(esp+4) to eax
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           0/r32/eax   .               .                 # copy *eax to eax
+    # b = first letter of s2 (edx)
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           1/r32/ecx   8/disp8                           # copy *(esp+8) to ecx
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # copy *ecx to ecx
+    # a-b
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    c3/return
+
+# . . vim:nowrap:textwidth=0

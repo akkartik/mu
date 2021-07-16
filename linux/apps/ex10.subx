@@ -1,0 +1,69 @@
+# String comparison: return 1 iff the two args passed in at the commandline are equal.
+#
+# To run:
+#   $ bootstrap/bootstrap translate apps/ex10.subx -o ex10
+#   $ bootstrap/bootstrap run ex10 abc abd
+# Expected result:
+#   $ echo $?
+#   0  # false
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+Entry:  # return argv-equal(argv[1], argv[2])
+#       At the start of a SubX program:
+#         argc: *esp
+#         argv[0]: *(esp+4)
+#         argv[1]: *(esp+8)
+#         ...
+    # . prologue
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # argv-equal(argv[1], argv[2])
+    # . . push argv[2]
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . push argv[1]
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call argv-equal/disp32
+    # exit(eax)
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
+    e8/call  syscall_exit/disp32
+
+# compare two null-terminated ascii strings
+# reason for the name: the only place we should have null-terminated ascii strings is from commandline args
+argv-equal:  # (s1, s2): null-terminated ascii strings -> eax: boolean
+    # initialize s1 (ecx) and s2 (edx)
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           1/r32/ecx   4/disp8         .                 # copy *(esp+4) to ecx
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           2/r32/edx   8/disp8         .                 # copy *(esp+8) to edx
+$argv-equal:loop:
+    # c1/eax, c2/ebx = *s1, *s2
+    b8/copy-to-eax  0/imm32
+    8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
+    bb/copy-to-ebx  0/imm32
+    8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           3/r32/BL    .               .                 # copy byte at *edx to BL
+    # if (c1 == 0) break
+    3d/compare-eax-and  0/imm32/null
+    74/jump-if-=  $argv-equal:break/disp8
+    # if (c1 != c2) return false
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # compare eax and ebx
+    75/jump-if-!=  $argv-equal:false/disp8
+    # ++s1, ++s2
+    41/increment-ecx
+    42/increment-edx
+    # end while
+    eb/jump  $argv-equal:loop/disp8
+$argv-equal:break:
+    # if (c2 == 0) return true
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32/null      # compare ebx
+    75/jump-if-!=  $argv-equal:false/disp8
+$argv-equal:success:
+    b8/copy-to-eax  1/imm32
+    c3/return
+    # return false
+$argv-equal:false:
+    b8/copy-to-eax  0/imm32
+    c3/return
+
+# . . vim:nowrap:textwidth=0

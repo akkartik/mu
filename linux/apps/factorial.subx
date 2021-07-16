@@ -1,0 +1,153 @@
+## compute the factorial of 5, and print the result
+#
+# To run:
+#   $ bootstrap/bootstrap translate [01]*.subx apps/factorial.subx -o factorial
+#   $ bootstrap/bootstrap run factorial
+# Expected result:
+#   $ echo $?
+#   120
+#
+# You can also run the automated test suite:
+#   $ bootstrap/bootstrap run factorial test
+# Expected output:
+#   ........
+# Every '.' indicates a passing test. Failing tests get a 'F'.
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+factorial:  # n: int -> _/eax: int
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    51/push-ecx
+    # if (n <= 1) return 1
+    b8/copy-to-eax  1/imm32
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         1/imm32           # compare *(ebp+8)
+    7e/jump-if-<=  $factorial:end/disp8
+    # var ecx: int = n-1
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    49/decrement-ecx
+    # var eax: int = factorial(n-1)
+    # . . push args
+    51/push-ecx
+    # . . call
+    e8/call  factorial/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # return n * factorial(n-1)
+    f7          4/subop/multiply    1/mod/*+disp8   5/rm32/ebp    .           .                                     8/disp8         .                 # multiply *(ebp+8) into eax
+    # TODO: check for overflow
+$factorial:end:
+    # restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-factorial:
+    # factorial(5)
+    # . . push args
+    68/push  5/imm32
+    # . . call
+    e8/call  factorial/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # check-ints-equal(eax, 120, msg)
+    # . . push args
+    68/push  "F - test-factorial"/imm32
+    68/push  0x78/imm32/expected-120
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # end
+    c3/return
+
+Entry:  # run tests if necessary, compute `factorial(5)` if not
+    # . prologue
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+
+    # initialize heap (needed by tests elsewhere)
+    # . Heap = new-segment(Heap-size)
+    # . . push args
+    68/push  Heap/imm32
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Heap-size/disp32                  # push *Heap-size
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+
+    # if (argc <= 1) return factorial(5)
+$run-main:
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
+    7f/jump-if->  $main:run-tests/disp8
+    # eax = factorial(5)
+    # . . push args
+    68/push  5/imm32
+    # . . call
+    e8/call  factorial/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # var buffer/ecx: (stream byte 10)  # number of decimal digits a 32-bit number can have
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa/imm32         # subtract from esp
+    68/push  0xa/imm32/decimal-digits-in-32bit-number
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # write-int32-decimal(buffer, eax)
+    # . . push args
+    50/push-eax
+    51/push-ecx
+    # . . call
+    e8/call  write-int32-decimal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # write-stream(stderr, buffer)
+    # . . push args
+    51/push-ecx
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  write-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # write(stderr, Newline)
+    # . . push args
+    68/push  Newline/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    #
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
+    eb/jump  $main:end/disp8
+$main:run-tests:
+    # otherwise if first arg is "test", then return run_tests()
+    # if (!kernel-string-equal?(argv[1], "test")) goto do-nothing
+    # . eax = kernel-string-equal?(argv[1], "test")
+    # . . push args
+    68/push  "test"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  kernel-string-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax == false) goto do-nothing
+    3d/compare-eax-and  0/imm32/false
+    74/jump-if-=  $main:do-nothing/disp8
+    # run-tests()
+    e8/call  run-tests/disp32
+    # exit(*Num-test-failures)
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
+    eb/jump  $main:end/disp8
+$main:do-nothing:
+    bb/copy-to-ebx  0/imm32
+$main:end:
+    e8/call  syscall_exit/disp32
+
+# . . vim:nowrap:textwidth=0

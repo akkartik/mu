@@ -3,7 +3,7 @@ kernel. To run programs under this directory, you must first `cd` into it.
 
   ```sh
   $ cd linux/
-  $ ./translate hello.mu      # generates a.elf
+  $ ./translate apps/hello.mu      # generates a.elf
   $ ./a.elf
   Hello world!
   ```
@@ -22,11 +22,11 @@ Some programs to try out:
 
 * `browse`: [A text-mode browser for a tiny subset of Markdown](https://mastodon.social/@akkartik/104845344081779025).
 
-* `ex*`: small stand-alone examples that don't need any of the shared code at
+* `apps/ex*`: small stand-alone examples that don't need any of the shared code at
   the top-level. They each have a simple pedagogical goal. Read these first.
 
-* `factorial*`: A simple program to compute factorials in 5 versions, showing
-  all the different syntax sugars and what they expand to.
+* `apps/factorial*`: A simple program to compute factorials in 5 versions,
+  showing all the different syntax sugars and what they expand to.
 
 The Mu compiler toolchain is also here in the following phases:
 

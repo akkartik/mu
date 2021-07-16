@@ -1,0 +1,80 @@
+## compute the factorial of 5, and return the result in the exit code
+#
+# Uses syntax sugar for:
+#   rm32 operands
+#   function calls
+#
+# To run:
+#   $ ./translate_subx init.linux [01]*.subx apps/factorial3.subx -o factorial
+#   $ bootstrap/bootstrap run factorial
+# Expected result:
+#   $ echo $?
+#   120
+#
+# You can also run the automated test suite:
+#   $ bootstrap/bootstrap run factorial test
+# Expected output:
+#   ........
+# Every '.' indicates a passing test. Failing tests get a 'F'.
+#
+# Compare factorial2.subx
+
+== code
+
+factorial:  # n: int -> _/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # save registers
+    51/push-ecx
+    # if (n <= 1) return 1
+    b8/copy-to-eax 1/imm32
+    81 7/subop/compare *(ebp+8) 1/imm32
+    7e/jump-if-<= $factorial:end/disp8
+    # n > 1; return n * factorial(n-1)
+    8b/-> *(ebp+8) 1/r32/ecx
+    49/decrement-ecx
+    (factorial %ecx)  # => eax
+    f7 4/subop/multiply-into-eax *(ebp+8)
+    # TODO: check for overflow
+$factorial:end:
+    # restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-factorial:
+    (factorial 5)
+    (check-ints-equal %eax 0x78 "F - test-factorial")
+    c3/return
+
+Entry:  # run tests if necessary, compute `factorial(5)` if not
+    # . prologue
+    89/<- %ebp 4/r32/esp
+
+    # initialize heap (needed by tests elsewhere)
+    (new-segment *Heap-size Heap)
+
+    # if (argc <= 1) return factorial(5)
+    81 7/subop/compare *ebp 1/imm32
+    7f/jump-if-> $main:run-tests/disp8
+    (factorial 5)  # => eax
+    89/<- %ebx 0/r32/eax
+    eb/jump $main:end/disp8
+$main:run-tests:
+    # otherwise if first arg is "test", then return run_tests()
+    # if (!kernel-string-equal?(argv[1], "test")) goto do-nothing
+    (kernel-string-equal? *(ebp+8) "test")  # => eax
+    3d/compare-eax-and 0/imm32/false
+    74/jump-if-= $main:do-nothing/disp8
+    #
+    (run-tests)
+    # exit(*Num-test-failures)
+    8b/-> *Num-test-failures 3/r32/ebx
+    eb/jump $main:end/disp8
+$main:do-nothing:
+    bb/copy-to-ebx 0/imm32
+$main:end:
+    e8/call  syscall_exit/disp32
