@@ -1,7 +1,7 @@
 # load an image from disk and display it on screen
 #
 # To build:
-#   $ ./translate shell/*.mu                        # generates code.img
+#   $ ./translate img.mu                            # generates code.img
 # Load a pbm, pgm or ppm image (no more than 255 levels)
 #   $ dd if=/dev/zero of=data.img count=20160
 #   $ cat x.pbm |dd of=data.img conv=notrunc
