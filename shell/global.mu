@@ -37,13 +37,13 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     var _curr/eax: (addr cell) <- lookup *curr-ah
     var curr/ecx: (addr cell) <- copy _curr
     remaining-ah <- get remaining, right
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 2/fg 0/bg
     var name-ah/eax: (addr handle cell) <- get curr, left
     var name/eax: (addr cell) <- lookup *name-ah
     var name-data-ah/eax: (addr handle stream byte) <- get name, text-data
     var _name-data/eax: (addr stream byte) <- lookup *name-data-ah
     var name-data/edx: (addr stream byte) <- copy _name-data
     rewind-stream name-data
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 3/fg 0/bg
     draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, name-data, 3/fg, 0/bg
     var value-ah/eax: (addr handle cell) <- get curr, right
     var value/eax: (addr cell) <- lookup *value-ah
@@ -113,7 +113,7 @@ fn write-globals out: (addr stream byte), _self: (addr global-table) {
   write out, "  ))\n"
 }
 
-# globals layout: 1 char padding, 41 code, 1 padding, 41 code, 1 padding =  85 chars
+# globals layout: 1 char padding, 41 code, 1 padding, 41 code, 1 padding = 85 chars
 fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor?: boolean {
   clear-rect screen, 0/xmin, 0/ymin, 0x55/xmax, 0x2f/ymax=screen-height-without-menu, 0xdc/bg=green-bg
   var self/esi: (addr global-table) <- copy _self
