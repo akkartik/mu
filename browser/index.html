@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Browser Mu</title>
+    <script src="libv86.js"></script>
+    <script>
+      "use strict";
+
+      window.onload = function()
+      {
+          var emulator = window.emulator = new V86Starter({
+              memory_size: 64 * 1024 * 1024,
+              vga_memory_size: 1024 * 768,
+              screen_container: document.getElementById("screen_container"),
+              bios: {
+                  url: "seabios.bin",
+              },
+              vga_bios: {
+                  url: "vgabios.bin",
+              },
+              hda: {
+                  "url": "code.img",
+                  "size": 10321920,
+                  "async": !1,
+              },
+              network_adapter: false, // uses a mad public proxy if true
+              disable_mouse: true,    // for now, remove when Mu has mouse stuff
+              disable_speaker: true,  // as above, but for faux  soundblaster
+              autostart: true,
+          });
+      }
+    </script>
+  </head>
+  <body>
+    <!-- A minimal structure for the ScreenAdapter defined in browser/screen.js -->
+    <div id="screen_container">
+      <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
+      <canvas style="display: none"></canvas>
+    </div>
+  </body>
+</html>
