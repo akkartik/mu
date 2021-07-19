@@ -1,7 +1,8 @@
 type global-table {
   data: (handle array global)
   final-index: int
-  cursor-index: int
+  render-list: (handle array int)  # sequence of globals to render on the left side
+                                   # no pagination or scrolling
 }
 
 type global {
@@ -22,6 +23,8 @@ fn initialize-globals _self: (addr global-table) {
   var data-ah/eax: (addr handle array global) <- get self, data
   populate data-ah, 0x80
   initialize-primitives self
+  var render-ah/eax: (addr handle array int) <- get self, render-list
+  populate render-ah, 0x20/render-size
 }
 
 fn load-globals in: (addr handle cell), self: (addr global-table) {
@@ -124,27 +127,16 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
     return
   }
   var data-ah/eax: (addr handle array global) <- get self, data
-  var data/eax: (addr array global) <- lookup *data-ah
-  var curr-index/edx: int <- copy 1
-  {
-    var curr-offset/ebx: (offset global) <- compute-offset data, curr-index
-    var curr/ebx: (addr global) <- index data, curr-offset
-    var continue?/eax: boolean <- primitive-global? curr
-    compare continue?, 0/false
-    break-if-=
-    curr-index <- increment
-    loop
-  }
-  var lowest-index/edi: int <- copy curr-index
-  var cursor-index/edx: (addr int) <- get self, cursor-index
-  var curr-index/edx: int <- copy *cursor-index
+  var _data/eax: (addr array global) <- lookup *data-ah
+  var data/ebx: (addr array global) <- copy _data
+  var curr-index/edx: int <- copy 0
   var y1: int
   copy-to y1, 1/padding-top
   var y2: int
   copy-to y2, 1/padding-top
   $render-globals:loop: {
-    compare curr-index, lowest-index
-    break-if-<
+    compare curr-index, 0x20/render-size
+    break-if->=
     {
       compare y1, 0x2f/ymax
       break-if-<
@@ -157,13 +149,18 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
       {
         compare show-cursor?, 0/false
         break-if-=
-        var cursor-index/eax: (addr int) <- get self, cursor-index
-        compare *cursor-index, curr-index
+        compare curr-index, 0
         break-if-!=
         copy-to cursor-in-current-line?, 1/true
       }
-      var curr-offset/edx: (offset global) <- compute-offset data, curr-index
-      var curr/edx: (addr global) <- index data, curr-offset
+      var render-list-ah/eax: (addr handle array int) <- get self, render-list
+      var render-list/eax: (addr array int) <- lookup *render-list-ah
+      var global-id-a/eax: (addr int) <- index render-list, curr-index
+      var global-id/eax: int <- copy *global-id-a
+      compare global-id, 0
+      break-if-= $render-globals:loop
+      var global-offset/edx: (offset global) <- compute-offset data, global-id
+      var curr/edx: (addr global) <- index data, global-offset
       var curr-input-ah/eax: (addr handle gap-buffer) <- get curr, input
       var _curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
       var curr-input/ebx: (addr gap-buffer) <- copy _curr-input
@@ -192,7 +189,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
         copy-to y2, y
       }
     }
-    curr-index <- decrement
+    curr-index <- increment
     loop
   }
   # render primitives on top
@@ -236,8 +233,12 @@ fn edit-globals _self: (addr global-table), key: grapheme {
     refresh-cursor-definition self
     return
   }
-  var cursor-index-addr/ecx: (addr int) <- get self, cursor-index
-  var cursor-index/ecx: int <- copy *cursor-index-addr
+  var cursor-index/ecx: int <- cursor-global self
+  compare cursor-index, 0
+  {
+    break-if-!=
+    return
+  }
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
   var cursor-offset/ecx: (offset global) <- compute-offset data, cursor-index
@@ -251,9 +252,12 @@ fn create-empty-global _self: (addr global-table), name-stream: (addr stream byt
   var self/esi: (addr global-table) <- copy _self
   var final-index-addr/ecx: (addr int) <- get self, final-index
   increment *final-index-addr
+  var render-list-ah/eax: (addr handle array int) <- get self, render-list
+  var render-list/eax: (addr array int) <- lookup *render-list-ah
+  slide-down render-list, 0/start 0x1f/penultimate, 1/target
   var curr-index/ecx: int <- copy *final-index-addr
-  var cursor-index-addr/eax: (addr int) <- get self, cursor-index
-  copy-to *cursor-index-addr, curr-index
+  var dest/eax: (addr int) <- index render-list, 0
+  copy-to *dest, curr-index
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
   var curr-offset/ecx: (offset global) <- compute-offset data, curr-index
@@ -272,7 +276,9 @@ fn create-empty-global _self: (addr global-table), name-stream: (addr stream byt
 
 fn refresh-cursor-definition _self: (addr global-table) {
   var self/esi: (addr global-table) <- copy _self
-  var cursor-index/edx: (addr int) <- get self, cursor-index
+  var render-list-ah/eax: (addr handle array int) <- get self, render-list
+  var render-list/eax: (addr array int) <- lookup *render-list-ah
+  var cursor-index/edx: (addr int) <- index render-list, 0
   refresh-definition self, *cursor-index
 }
 
@@ -307,8 +313,11 @@ fn assign-or-create-global _self: (addr global-table), name: (addr array byte), 
     var final-index-addr/eax: (addr int) <- get self, final-index
     increment *final-index-addr
     curr-index <- copy *final-index-addr
-    var cursor-index-addr/eax: (addr int) <- get self, cursor-index
-    copy-to *cursor-index-addr, curr-index
+    var arr-ah/eax: (addr handle array int) <- get self, render-list
+    var arr/eax: (addr array int) <- lookup *arr-ah
+    slide-down arr, 0/start 0x1e/penultimate, 1/target
+    var dest/eax: (addr int) <- index arr, 0
+    copy-to *dest, curr-index
   }
   var data-ah/eax: (addr handle array global) <- get self, data
   var data/eax: (addr array global) <- lookup *data-ah
@@ -324,6 +333,30 @@ fn assign-or-create-global _self: (addr global-table), name: (addr array byte), 
   allocate trace-ah
   var trace/eax: (addr trace) <- lookup *trace-ah
   initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+}
+
+fn bump-global _globals: (addr global-table), global-id: int {
+  var globals/esi: (addr global-table) <- copy _globals
+  var render-list-ah/eax: (addr handle array int) <- get globals, render-list
+  var render-list/eax: (addr array int) <- lookup *render-list-ah
+  var idx/ecx: int <- find-slide-down-slot-in-array render-list, global-id
+  {
+    compare idx, 0
+    break-if-!=
+    return
+  }
+  slide-down render-list, 0/start idx, 1/target
+  var dest/eax: (addr int) <- index render-list, 0
+  var val/ecx: int <- copy global-id
+  copy-to *dest, val
+}
+
+fn cursor-global _globals: (addr global-table) -> _/ecx: int {
+  var globals/esi: (addr global-table) <- copy _globals
+  var render-list-ah/eax: (addr handle array int) <- get globals, render-list
+  var render-list/eax: (addr array int) <- lookup *render-list-ah
+  var dest/eax: (addr int) <- index render-list, 0
+  return *dest
 }
 
 fn lookup-symbol-in-globals _sym: (addr cell), out: (addr handle cell), _globals: (addr global-table), trace: (addr trace), inner-screen-var: (addr handle cell), inner-keyboard-var: (addr handle cell) {
@@ -567,14 +600,4 @@ fn load-lexical-scope in-ah: (addr handle gap-buffer), _globals: (addr global-ta
     copy-object trace-ah, curr-trace-ah
     loop
   }
-}
-
-fn set-global-cursor-index _globals: (addr global-table), name-gap: (addr gap-buffer) {
-  var globals/esi: (addr global-table) <- copy _globals
-  var name-storage: (stream byte 0x40)
-  var name/ecx: (addr stream byte) <- address name-storage
-  emit-gap-buffer name-gap, name
-  var index/ecx: int <- find-symbol-in-globals globals, name
-  var dest/edi: (addr int) <- get globals, cursor-index
-  copy-to *dest, index
 }

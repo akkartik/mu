@@ -284,8 +284,12 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       var cursor-in-go-modal-a/eax: (addr boolean) <- get self, cursor-in-go-modal?
       copy-to *cursor-in-go-modal-a, 0/false
       # switch focus to global at index
-      var globals-cursor-index/eax: (addr int) <- get globals, cursor-index
-      copy-to *globals-cursor-index, index
+#?       set-cursor-position 0/screen, 0x20/x 0x20/y
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, index, 7/fg 0/bg
+      bump-global globals, index
+#?       var cursor-index/ecx: int <- cursor-global globals
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, cursor-index, 4/fg 0/bg
+#?       abort "a"
       var cursor-in-globals-a/ecx: (addr boolean) <- get self, cursor-in-globals?
       copy-to *cursor-in-globals-a, 1/true
       return
@@ -329,8 +333,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       create-empty-global globals, name, 0x2000/default-gap-buffer-size=8KB
       var globals-final-index/eax: (addr int) <- get globals, final-index
       var new-index/ecx: int <- copy *globals-final-index
-      var globals-cursor-index/eax: (addr int) <- get globals, cursor-index
-      copy-to *globals-cursor-index, new-index
+      bump-global globals, new-index
       var cursor-in-globals-a/ecx: (addr boolean) <- get self, cursor-in-globals?
       copy-to *cursor-in-globals-a, 1/true
       return
@@ -913,8 +916,7 @@ fn word-at-cursor _self: (addr environment), out: (addr stream byte) {
     break-if-=
     # cursor in some global editor
     var globals/eax: (addr global-table) <- get self, globals
-    var cursor-index-addr/ecx: (addr int) <- get globals, cursor-index
-    var cursor-index/ecx: int <- copy *cursor-index-addr
+    var cursor-index/ecx: int <- cursor-global globals
     var globals-data-ah/eax: (addr handle array global) <- get globals, data
     var globals-data/eax: (addr array global) <- lookup *globals-data-ah
     var cursor-offset/ecx: (offset global) <- compute-offset globals-data, cursor-index

@@ -80,6 +80,27 @@ fn test-slide-down {
   check-slide-down "0 1 2 3 0", 1/start 4/end, 2/target, "0 1 1 2 3", "F - test-slide-down/overlapping"
 }
 
+# Return the index that val is at.
+# If not found, return len-1.
+# That way the result is always a valid index to pass into slide-down.
+fn find-slide-down-slot-in-array _a: (addr array int), _val: int -> _/ecx: int {
+  var a/esi: (addr array int) <- copy _a
+  var val/ebx: int <- copy _val
+  var max/edx: int <- length a
+  max <- decrement
+  var i/ecx: int <- copy 0
+  {
+    compare i, max
+    break-if->=
+    var curr/eax: (addr int) <- index a, i
+    compare *curr, val
+    break-if-=
+    i <- increment
+    loop
+  }
+  return i
+}
+
 # helpers for tests
 fn check-slide-up before: (addr array byte), start: int, end: int, target: int, after: (addr array byte), msg: (addr array byte) {
   var arr-h: (handle array int)
