@@ -268,10 +268,10 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       var name/ecx: (addr stream byte) <- address name-storage
       emit-gap-buffer partial-global-name, name
       # compute global index
-      var index/ecx: int <- find-symbol-in-globals globals, name
+      var curr-index/ecx: int <- find-symbol-in-globals globals, name
       # if global not found, set error and return
       {
-        compare index, 0
+        compare curr-index, 0
         break-if->=
         var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
         copy-array-object "no such global", go-modal-error-ah
@@ -285,10 +285,10 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       copy-to *cursor-in-go-modal-a, 0/false
       # switch focus to global at index
 #?       set-cursor-position 0/screen, 0x20/x 0x20/y
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, index, 7/fg 0/bg
-      bump-global globals, index
-#?       var cursor-index/ecx: int <- cursor-global globals
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, cursor-index, 4/fg 0/bg
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, curr-index, 7/fg 0/bg
+      bump-global globals, curr-index
+#?       var curr-index2/ecx: int <- cursor-global globals
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, curr-index2, 4/fg 0/bg
 #?       abort "a"
       var cursor-in-globals-a/ecx: (addr boolean) <- get self, cursor-in-globals?
       copy-to *cursor-in-globals-a, 1/true
@@ -313,11 +313,11 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
       var name-storage: (stream byte 0x40)
       var name/edx: (addr stream byte) <- address name-storage
       emit-gap-buffer partial-global-name, name
-      # compute global index
-      var index/ecx: int <- find-symbol-in-globals globals, name
+      # compute global curr-index
+      var curr-index/ecx: int <- find-symbol-in-globals globals, name
       # if global found, set error and return
       {
-        compare index, 0
+        compare curr-index, 0
         break-if-<
         var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
         copy-array-object "already exists", go-modal-error-ah
