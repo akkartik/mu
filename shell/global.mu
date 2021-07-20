@@ -158,7 +158,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
       var global-id-a/eax: (addr int) <- index render-list, curr-index
       var global-id/eax: int <- copy *global-id-a
       compare global-id, 0
-      break-if-= $render-globals:loop
+      break-if-=
       var global-offset/edx: (offset global) <- compute-offset data, global-id
       var curr/edx: (addr global) <- index data, global-offset
       var curr-input-ah/eax: (addr handle gap-buffer) <- get curr, input
