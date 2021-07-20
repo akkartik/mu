@@ -285,9 +285,9 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
         var curr/ebx: (addr global) <- index global-data, curr-offset
         var curr-value-ah/eax: (addr handle cell) <- get curr, value
         var curr-value/eax: (addr cell) <- lookup *curr-value-ah
-        var curr-type/eax: (addr int) <- get curr-value, type
-        compare *curr-type, 4/primitive
-        break-if-!=
+        var primitive?/eax: boolean <- primitive? curr-value
+        compare primitive?, 0/false
+        break-if-=
         var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error
         copy-array-object "sorry, primitives can't be edited yet", go-modal-error-ah
         return

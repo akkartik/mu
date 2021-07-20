@@ -41,6 +41,17 @@ fn new-symbol out: (addr handle cell), val: (addr array byte) {
   initialize-symbol out, val
 }
 
+fn symbol? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 2/symbol
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
+}
+
 fn symbol-equal? _in: (addr cell), name: (addr array byte) -> _/eax: boolean {
   var in/esi: (addr cell) <- copy _in
   var in-type/eax: (addr int) <- get in, type
@@ -99,6 +110,17 @@ fn new-float out: (addr handle cell), n: float {
   initialize-float out, n
 }
 
+fn number? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 1/number
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
+}
+
 fn allocate-pair out: (addr handle cell) {
   allocate out
   # new cells have type pair by default
@@ -122,6 +144,17 @@ fn nil out: (addr handle cell) {
   allocate-pair out
 }
 
+fn pair? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 0/pair
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
+}
+
 fn allocate-primitive-function _out: (addr handle cell) {
   var out/eax: (addr handle cell) <- copy _out
   allocate out
@@ -133,6 +166,8 @@ fn allocate-primitive-function _out: (addr handle cell) {
 fn initialize-primitive-function _out: (addr handle cell), n: int {
   var out/eax: (addr handle cell) <- copy _out
   var out-addr/eax: (addr cell) <- lookup *out
+  var type/ecx: (addr int) <- get out-addr, type
+  copy-to *type, 4/primitive
   var dest-addr/eax: (addr int) <- get out-addr, index-data
   var src/ecx: int <- copy n
   copy-to *dest-addr, src
@@ -141,6 +176,17 @@ fn initialize-primitive-function _out: (addr handle cell), n: int {
 fn new-primitive-function out: (addr handle cell), n: int {
   allocate-primitive-function out
   initialize-primitive-function out, n
+}
+
+fn primitive? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 4/primitive
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
 }
 
 fn allocate-screen _out: (addr handle cell) {
@@ -159,6 +205,17 @@ fn new-fake-screen _out: (addr handle cell), width: int, height: int, pixel-grap
   allocate dest-ah
   var dest-addr/eax: (addr screen) <- lookup *dest-ah
   initialize-screen dest-addr, width, height, pixel-graphics?
+}
+
+fn screen? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 5/screen
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
 }
 
 fn clear-screen-var _self-ah: (addr handle cell) {
@@ -190,6 +247,17 @@ fn new-fake-keyboard _out: (addr handle cell), capacity: int {
   allocate dest-ah
   var dest-addr/eax: (addr gap-buffer) <- lookup *dest-ah
   initialize-gap-buffer dest-addr, capacity
+}
+
+fn keyboard? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 6/keyboard
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
 }
 
 fn rewind-keyboard-var _self-ah: (addr handle cell) {
