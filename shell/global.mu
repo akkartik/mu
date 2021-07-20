@@ -547,27 +547,6 @@ fn stash-gap-buffer-to-globals _globals: (addr global-table), definitions: (addr
   }
 }
 
-fn is-definition? _expr: (addr cell) -> _/eax: boolean {
-  var expr/eax: (addr cell) <- copy _expr
-  # if expr->left is neither "define" nor "set", return
-  var left-ah/eax: (addr handle cell) <- get expr, left
-  var _left/eax: (addr cell) <- lookup *left-ah
-  var left/ecx: (addr cell) <- copy _left
-  {
-    var def?/eax: boolean <- symbol-equal? left, "define"
-    compare def?, 0/false
-    break-if-=
-    return 1/true
-  }
-  {
-    var set?/eax: boolean <- symbol-equal? left, "set"
-    compare set?, 0/false
-    break-if-=
-    return 1/true
-  }
-  return 0/false
-}
-
 # load all bindings in a single lexical scope, aka gap buffer of the environment, aka file of the file system
 fn load-lexical-scope in-ah: (addr handle gap-buffer), _globals: (addr global-table) {
   var globals/esi: (addr global-table) <- copy _globals
