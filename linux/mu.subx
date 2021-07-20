@@ -493,7 +493,7 @@ Entry:
       74/jump-if-= break/disp8
       #
       (run-tests)
-      # syscall(exit, *Num-test-failures)
+      # syscall_exit(*Num-test-failures)
       8b/-> *Num-test-failures 3/r32/ebx
       eb/jump $mu-main:end/disp8
     }
@@ -501,7 +501,7 @@ Entry:
     (write-buffered Stdout "== code\n")
     (convert-mu Stdin Stdout Stderr 0)
     (flush Stdout)
-    # syscall(exit, 0)
+    # syscall_exit(0)
     bb/copy-to-ebx 0/imm32
 $mu-main:end:
     e8/call syscall_exit/disp32
@@ -18450,7 +18450,7 @@ check-no-tokens-left:  # line: (addr stream byte)
     (write-stream 2 %ecx)
     (write-buffered Stderr "'\n")
     (flush Stderr)
-    # . syscall(exit, 1)
+    # . syscall_exit(1)
     bb/copy-to-ebx  1/imm32
     e8/call syscall_exit/disp32
     # never gets here

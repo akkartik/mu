@@ -10,7 +10,7 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 Entry:
-    # stream/esi = syscall(open, "/dev/null", O_RDONLY, 0)  # we can't use 'fd' because it looks like a hex byte
+    # stream/esi = syscall_open("/dev/null", O_RDONLY, 0)  # we can't use 'fd' because it looks like a hex byte
     bb/copy-to-ebx  Filename/imm32
     b9/copy-to-ecx  0/imm32/rdonly
     ba/copy-to-edx  0x180/imm32/fixed-perms
@@ -20,7 +20,7 @@ Entry:
 
 $loop:
 
-    # syscall(read, Stream, N, 4)
+    # syscall_read(Stream, N, 4)
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           6/r32/esi   .               .                 # copy esi to ebx
     b9/copy-to-ecx  N/imm32
     ba/copy-to-edx  4/imm32/size
@@ -44,7 +44,7 @@ $loop:
 
     eb/jump  $loop/disp8
 
-    # syscall(exit, 0)
+    # syscall_exit(0)
     bb/copy-to-ebx  0/imm32
     e8/call  syscall_exit/disp32
 

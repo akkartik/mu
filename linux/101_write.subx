@@ -18,7 +18,7 @@ _write:  # fd: int, s: (addr array byte)
     51/push-ecx
     52/push-edx
     53/push-ebx
-    # syscall(write, fd, (data) s+4, (size) *s)
+    # syscall_write(fd, (data) s+4, (size) *s)
     # . ebx = fd
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
     # . var data/ecx: (addr byte) = s+4
@@ -45,7 +45,7 @@ $_write:end:
 
 $_write:abort:
     # can't write a message here for risk of an infinite loop, so we'll use a special exit code instead
-    # . syscall(exit, 255)
+    # . syscall_exit(255)
     bb/copy-to-ebx  0xff/imm32
     e8/call  syscall_exit/disp32
     # never gets here

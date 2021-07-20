@@ -10,7 +10,7 @@
 #?     68/push  _test-stream2/imm32
 #?     68/push  1/imm32/stdout
 #?     e8/call write-stream/disp32
-#?     # syscall(exit, Num-test-failures)
+#?     # syscall_exit(Num-test-failures)
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
 #?     e8/call  syscall_exit/disp32
 
@@ -91,7 +91,7 @@ _write-stream:  # fd: int, s: (addr stream byte)
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           7/r32/edi   4/disp8         .                 # copy *(esi+4) to edi
     # edx = s->write
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
-    # syscall(write, fd, &s->data[s->read], s->write - s->read)
+    # syscall_write(fd, &s->data[s->read], s->write - s->read)
     # . . fd: ebx
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
     # . . data: ecx = &s->data[s->read]
@@ -126,7 +126,7 @@ $_write-stream:abort:
     e8/call  _write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . syscall(exit, 1)
+    # . syscall_exit(1)
     bb/copy-to-ebx  1/imm32
     e8/call  syscall_exit/disp32
     # never gets here
