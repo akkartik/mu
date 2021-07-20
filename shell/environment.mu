@@ -283,9 +283,7 @@ fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr d
         var global-data/eax: (addr array global) <- lookup *global-data-ah
         var curr-offset/ebx: (offset global) <- compute-offset global-data, curr-index
         var curr/ebx: (addr global) <- index global-data, curr-offset
-        var curr-value-ah/eax: (addr handle cell) <- get curr, value
-        var curr-value/eax: (addr cell) <- lookup *curr-value-ah
-        var primitive?/eax: boolean <- primitive? curr-value
+        var primitive?/eax: boolean <- primitive-global? curr
         compare primitive?, 0/false
         break-if-=
         var go-modal-error-ah/eax: (addr handle array byte) <- get self, go-modal-error

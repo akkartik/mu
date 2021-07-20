@@ -179,13 +179,8 @@ fn primitive-global? _x: (addr global) -> _/eax: boolean {
     break-if-!=
     return 0/false
   }
-  {
-    var value-type/eax: (addr int) <- get value, type
-    compare *value-type, 4/primitive
-    break-if-=
-    return 0/false
-  }
-  return 1/true
+  var primitive?/eax: boolean <- primitive? value
+  return primitive?
 }
 
 fn append-primitive _self: (addr global-table), name: (addr array byte) {
