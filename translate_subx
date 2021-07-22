@@ -41,6 +41,12 @@ then
   exit 1
 fi
 
+if [ `stat --printf="%s" a.bin` -ge 492544 ]  # 15 tracks * 63 sectors per track * 512 bytes per sector
+then
+  echo "a.bin will overwrite BIOS/Video memory; you'll need to adjust boot.subx to load code to some other non-contiguous area of memory"
+  exit 1
+fi
+
 # Latter half of disk is for debug info.
 dd if=labels of=code.img seek=10080 conv=notrunc  # keep this sync'd with abort.subx
 if [ `stat --printf="%s" labels` -ge 524288 ]  # 4 reads * 256 sectors * 512 bytes per sector
