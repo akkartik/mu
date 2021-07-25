@@ -57,6 +57,7 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "rewind"
   # for arrays
   append-primitive self, "array"
+  append-primitive self, "index"
   # misc
   append-primitive self, "abort"
   # keep sync'd with render-primitives
@@ -105,7 +106,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   draw-text-wrapping-right-then-down-from-cursor screen, "arrays", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "  array len", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "  array index len", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
 #?   {
 #?     compare screen, 0
 #?     break-if-!=
@@ -556,6 +557,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare array?, 0/false
     break-if-=
     apply-array args-ah, out, trace
+    return
+  }
+  {
+    var index?/eax: boolean <- string-equal? f-name, "index"
+    compare index?, 0/false
+    break-if-=
+    apply-index args-ah, out, trace
     return
   }
   {
@@ -3487,6 +3495,79 @@ fn apply-array _args-ah: (addr handle cell), _out-ah: (addr handle cell), trace:
     args <- copy next
     loop
   }
+}
+
+fn apply-index _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'index'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'index' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'index' needs 2 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/ecx: (addr handle cell) <- get args, left
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  {
+    var right-type/eax: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'index' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'index' needs 2 args but got 1"
+    return
+  }
+  var second-ah/edx: (addr handle cell) <- get right, left
+  # compare
+  var _first/eax: (addr cell) <- lookup *first-ah
+  var first/ecx: (addr cell) <- copy _first
+  {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 7/array
+    break-if-=
+    error trace, "first arg for 'index' is not an array"
+    return
+  }
+  var second/eax: (addr cell) <- lookup *second-ah
+  {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
+    break-if-=
+    error trace, "second arg for 'index' is not a number"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  var index/edx: int <- convert *second-value
+  var data-ah/eax: (addr handle array handle cell) <- get first, array-data
+  var data/eax: (addr array handle cell) <- lookup *data-ah
+  var len/ebx: int <- length data
+  compare index, len
+  {
+    break-if-<
+    error trace, "too few elements in array"
+    return
+  }
+  var offset/edx: (offset handle cell) <- compute-offset data, index
+  var src/eax: (addr handle cell) <- index data, offset
+  copy-object src, out
 }
 
 fn apply-abort _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
