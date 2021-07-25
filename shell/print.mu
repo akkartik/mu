@@ -68,7 +68,7 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
   compare *in-type, 4/primitive
   {
     break-if-!=
-    var overflow?/eax: boolean <- try-write out, "[primitive]"
+    var overflow?/eax: boolean <- try-write out, "{primitive}"
     compare overflow?, 0/false
     {
       break-if-=
@@ -89,12 +89,12 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
       error trace, "print-cell: no space for screen"
       return
     }
-    write out, "[screen "
+    write out, "{screen "
     var screen-ah/eax: (addr handle screen) <- get in-addr, screen-data
     var screen/eax: (addr screen) <- lookup *screen-ah
     var screen-addr/eax: int <- copy screen
     write-int32-hex out, screen-addr
-    write out, "]"
+    write out, "}"
     trace-higher trace
     return
   }
@@ -109,12 +109,12 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
       error trace, "print-cell: no space for keyboard"
       return
     }
-    write out, "[keyboard "
+    write out, "{keyboard "
     var keyboard-ah/eax: (addr handle gap-buffer) <- get in-addr, keyboard-data
     var keyboard/eax: (addr gap-buffer) <- lookup *keyboard-ah
     var keyboard-addr/eax: int <- copy keyboard
     write-int32-hex out, keyboard-addr
-    write out, "]"
+    write out, "}"
     trace-higher trace
     return
   }
