@@ -72,31 +72,31 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   draw-text-wrapping-right-then-down-from-cursor screen, "primitives", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "fn apply set if while", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "  fn apply set if while", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
   draw-text-wrapping-right-then-down-from-cursor screen, "booleans", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "= and or not", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "  = and or not", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
   draw-text-wrapping-right-then-down-from-cursor screen, "lists", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "cons car cdr no cons?", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "  cons car cdr no cons?", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
   draw-text-wrapping-right-then-down-from-cursor screen, "numbers", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "+ - * / %", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "  + - * / %", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "< > <= >=", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "  < > <= >=", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "sqrt abs sgn", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "  sqrt abs sgn", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
 #?   {
 #?     compare screen, 0
 #?     break-if-!=
@@ -113,7 +113,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  print", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, ": screen a -> a", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": screen _ -> _", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  lines columns", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
@@ -139,12 +139,11 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   tmpx <- draw-text-rightward screen, ": screen -> number", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "  new_screen", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, ": number number -> screen ", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, "  clear", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": screen", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
-  tmpx <- draw-text-rightward screen, "  clear blit", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, ": screen", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, "input", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  key", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
