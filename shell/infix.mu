@@ -89,8 +89,8 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace), at-head-of-
     var first-ah/ecx: (addr handle cell) <- get x, left
     {
       var first/eax: (addr cell) <- lookup *first-ah
-      var infix?/eax: boolean <- operator-symbol? first
-      compare infix?, 0/false
+      var operator?/eax: boolean <- operator-symbol? first
+      compare operator?, 0/false
     }
     break-if-=
     var rest-ah/eax: (addr handle cell) <- get x, right
@@ -127,8 +127,8 @@ fn transform-infix-2 _x-ah: (addr handle cell), trace: (addr trace), at-head-of-
     var first-ah/ecx: (addr handle cell) <- get x, left
     var rest-ah/esi: (addr handle cell) <- get x, right
     var first/eax: (addr cell) <- lookup *first-ah
-    var first-infix?/eax: boolean <- operator-symbol? first
-    compare first-infix?, 0/false
+    var first-operator?/eax: boolean <- operator-symbol? first
+    compare first-operator?, 0/false
     break-if-=
     var rest/eax: (addr cell) <- lookup *rest-ah
     {
@@ -452,7 +452,6 @@ fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
   return 1/true
 }
 
-# just a short list of operator graphemes for now
 fn operator-grapheme? g: grapheme -> _/eax: boolean {
   # '$' is special and can be in either a symbol or operator; here we treat it as a symbol
   compare g, 0x25/percent
