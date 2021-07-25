@@ -1356,9 +1356,9 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
   compare b-type, 5/screen
   {
     break-if-!=
-    var a-val-addr/eax: (addr handle screen) <- get a, screen-data
-    var b-val-addr/ecx: (addr handle screen) <- get b, screen-data
-    var result/eax: boolean <- handle-equal? *a-val-addr, *b-val-addr
+    var a-val-ah/eax: (addr handle screen) <- get a, screen-data
+    var b-val-ah/ecx: (addr handle screen) <- get b, screen-data
+    var result/eax: boolean <- handle-equal? *a-val-ah, *b-val-ah
     compare result, 0/false
     return result
   }
@@ -1366,12 +1366,12 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
   compare b-type, 6/keyboard
   {
     break-if-!=
-    var a-val-addr/ecx: (addr handle gap-buffer) <- get a, keyboard-data
-    var _a/eax: (addr gap-buffer) <- lookup *a-val-addr
-    var a/ecx: (addr gap-buffer) <- copy _a
-    var b-val-addr/eax: (addr handle gap-buffer) <- get b, keyboard-data
-    var b/eax: (addr gap-buffer) <- lookup *b-val-addr
-    var result/eax: boolean <- gap-buffers-equal? a, b
+    var a-val-ah/ecx: (addr handle gap-buffer) <- get a, keyboard-data
+    var _a-val/eax: (addr gap-buffer) <- lookup *a-val-ah
+    var a-val/ecx: (addr gap-buffer) <- copy _a-val
+    var b-val-ah/eax: (addr handle gap-buffer) <- get b, keyboard-data
+    var b-val/eax: (addr gap-buffer) <- lookup *b-val-ah
+    var result/eax: boolean <- gap-buffers-equal? a-val, b-val
     return result
   }
   # if a is nil, b should be nil
