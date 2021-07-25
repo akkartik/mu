@@ -406,6 +406,9 @@ fn test-infix {
 
 # helpers
 
+# return true if x is composed entirely of operator graphemes, optionally prefixed with some '$'s
+# some operator, some non-operator => pre-tokenized symbol; return false
+# all '$'s => return false
 fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
   var x/esi: (addr cell) <- copy _x
   {
