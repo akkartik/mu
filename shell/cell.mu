@@ -14,7 +14,9 @@ type cell {
   screen-data: (handle screen)
   # type 6: keyboard
   keyboard-data: (handle gap-buffer)
-  # TODO: array, (associative) table
+  # type 7: array
+  array-data: (handle array handle cell)
+  # TODO: (associative) table
   # if you add types here, don't forget to update cell-isomorphic?
 }
 
@@ -271,4 +273,25 @@ fn rewind-keyboard-var _self-ah: (addr handle cell) {
   var keyboard-ah/eax: (addr handle gap-buffer) <- get self, keyboard-data
   var keyboard/eax: (addr gap-buffer) <- lookup *keyboard-ah
   rewind-gap-buffer keyboard
+}
+
+fn new-array _out: (addr handle cell), capacity: int {
+  var out/eax: (addr handle cell) <- copy _out
+  allocate out
+  var out-addr/eax: (addr cell) <- lookup *out
+  var type/ecx: (addr int) <- get out-addr, type
+  copy-to *type, 7/array
+  var dest-ah/eax: (addr handle array handle cell) <- get out-addr, array-data
+  populate dest-ah, capacity
+}
+
+fn array? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 7/array
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
 }

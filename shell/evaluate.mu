@@ -134,6 +134,14 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     trace-higher trace
     return
   }
+  compare *in-type, 7/array
+  {
+    break-if-!=
+    trace-text trace, "eval", "array"
+    copy-object _in-ah, _out-ah
+    trace-higher trace
+    return
+  }
   # 'in' is a syntax tree
   $evaluate:literal-function: {
     # trees starting with "litfn" are literals
@@ -1373,6 +1381,43 @@ fn cell-isomorphic? _a: (addr cell), _b: (addr cell), trace: (addr trace) -> _/e
     var b-val/eax: (addr gap-buffer) <- lookup *b-val-ah
     var result/eax: boolean <- gap-buffers-equal? a-val, b-val
     return result
+  }
+  # if objects are arrays, check if they have the same contents
+  compare b-type, 7/array
+  {
+    break-if-!=
+    var a-val-ah/ecx: (addr handle array handle cell) <- get a, array-data
+    var _a-val/eax: (addr array handle cell) <- lookup *a-val-ah
+    var a-val/ecx: (addr array handle cell) <- copy _a-val
+    var b-val-ah/eax: (addr handle array handle cell) <- get b, array-data
+    var _b-val/eax: (addr array handle cell) <- lookup *b-val-ah
+    var b-val/edx: (addr array handle cell) <- copy _b-val
+    var a-len/eax: int <- length a-val
+    var b-len/ebx: int <- length b-val
+    {
+      compare a-len, b-len
+      break-if-=
+      return 0/false
+    }
+    var i/esi: int <- copy 0
+    {
+      compare i, b-len
+      break-if->=
+      var a-elem-ah/eax: (addr handle cell) <- index a-val, i
+      var _a-elem/eax: (addr cell) <- lookup *a-elem-ah
+      var a-elem/edi: (addr cell) <- copy _a-elem
+      var b-elem-ah/eax: (addr handle cell) <- index b-val, i
+      var b-elem/eax: (addr cell) <- lookup *b-elem-ah
+      var curr-result/eax: boolean <- cell-isomorphic? a-elem, b-elem, trace
+      {
+        compare curr-result, 0/false
+        break-if-!=
+        return 0/false
+      }
+      i <- increment
+      loop
+    }
+    return 1/true
   }
   # if a is nil, b should be nil
   {

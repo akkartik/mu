@@ -118,6 +118,29 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
     trace-higher trace
     return
   }
+  compare *in-type, 7/array
+  {
+    break-if-!=
+    # TODO: gracefully handle trace filling up
+    write out, "{array"
+    var data-ah/eax: (addr handle array handle cell) <- get in-addr, array-data
+    var _data/eax: (addr array handle cell) <- lookup *data-ah
+    var data/esi: (addr array handle cell) <- copy _data
+    var i/ecx: int <- copy 0
+    var max/edx: int <- length data
+    {
+      compare i, max
+      break-if->=
+      write out " "
+      var curr-ah/eax: (addr handle cell) <- index data, i
+      print-cell curr-ah, out, trace
+      i <- increment
+      loop
+    }
+    write out, "}"
+    trace-higher trace
+    return
+  }
 }
 
 # debug helper

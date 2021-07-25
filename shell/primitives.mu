@@ -55,6 +55,8 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "write"
   append-primitive self, "read"
   append-primitive self, "rewind"
+  # for arrays
+  append-primitive self, "array"
   # misc
   append-primitive self, "abort"
   # keep sync'd with render-primitives
@@ -98,6 +100,12 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   y <- increment
   set-cursor-position screen, right-min, y
   draw-text-wrapping-right-then-down-from-cursor screen, "  sqrt abs sgn", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  y <- increment
+  set-cursor-position screen, right-min, y
+  draw-text-wrapping-right-then-down-from-cursor screen, "arrays", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
+  y <- increment
+  set-cursor-position screen, right-min, y
+  draw-text-wrapping-right-then-down-from-cursor screen, "  array len", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
 #?   {
 #?     compare screen, 0
 #?     break-if-!=
@@ -541,6 +549,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare read?, 0/false
     break-if-=
     apply-read args-ah, out, trace
+    return
+  }
+  {
+    var array?/eax: boolean <- string-equal? f-name, "array"
+    compare array?, 0/false
+    break-if-=
+    apply-array args-ah, out, trace
     return
   }
   {
@@ -1224,6 +1239,16 @@ fn apply-len _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr
     new-integer out, result
     return
   }
+  {
+    {
+      var first-array?/eax: boolean <- array? first
+      compare first-array?, 0/false
+    }
+    break-if-=
+    var result/eax: int <- array-length first
+    new-integer out, result
+    return
+  }
   nil out
 }
 
@@ -1246,6 +1271,14 @@ fn list-length in: (addr cell) -> _/eax: int {
     curr <- copy next
     loop
   }
+  return result
+}
+
+fn array-length _in: (addr cell) -> _/eax: int {
+  var in/esi: (addr cell) <- copy _in
+  var in-data-ah/eax: (addr handle array handle cell) <- get in, array-data
+  var in-data/eax: (addr array handle cell) <- lookup *in-data-ah
+  var result/eax: int <- length in-data
   return result
 }
 
@@ -3418,6 +3451,42 @@ fn apply-blit _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   #
   convert-graphemes-to-pixels src
   copy-pixels src, dest
+}
+
+fn apply-array _args-ah: (addr handle cell), _out-ah: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'array'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'array' are not a list"
+    return
+  }
+  var capacity/eax: int <- list-length args
+  var out-ah/edi: (addr handle cell) <- copy _out-ah
+  new-array out-ah, capacity
+  var out/eax: (addr cell) <- lookup *out-ah
+  var out-data-ah/eax: (addr handle array handle cell) <- get out, array-data
+  var _out-data/eax: (addr array handle cell) <- lookup *out-data-ah
+  var out-data/edi: (addr array handle cell) <- copy _out-data
+  var i/ecx: int <- copy 0
+  {
+    var done?/eax: boolean <- nil? args
+    compare done?, 0/false
+    break-if-!=
+    var curr-ah/eax: (addr handle cell) <- get args, left
+    var dest-ah/edx: (addr handle cell) <- index out-data, i
+    copy-object curr-ah, dest-ah
+    # update loop variables
+    i <- increment
+    var next-ah/eax: (addr handle cell) <- get args, right
+    var next/eax: (addr cell) <- lookup *next-ah
+    args <- copy next
+    loop
+  }
 }
 
 fn apply-abort _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
