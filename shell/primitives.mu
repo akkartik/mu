@@ -22,6 +22,7 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "no"
   append-primitive self, "not"
   append-primitive self, "dbg"
+  append-primitive self, "len"
   # for pairs
   append-primitive self, "car"
   append-primitive self, "cdr"
@@ -84,7 +85,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   draw-text-wrapping-right-then-down-from-cursor screen, "lists", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "  cons car cdr no cons?", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "  cons car cdr no cons? len", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
   draw-text-wrapping-right-then-down-from-cursor screen, "numbers", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
@@ -309,6 +310,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare cons-check?, 0/false
     break-if-=
     apply-cons-check args-ah, out, trace
+    return
+  }
+  {
+    var len?/eax: boolean <- string-equal? f-name, "len"
+    compare len?, 0/false
+    break-if-=
+    apply-len args-ah, out, trace
     return
   }
   {
@@ -1184,6 +1192,62 @@ fn apply-cons-check _args-ah: (addr handle cell), out: (addr handle cell), trace
   new-integer out, 1
 }
 
+fn apply-len _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply len"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to len are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "len needs 1 arg but got 0"
+    return
+  }
+  # args->left
+  var first-ah/edx: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  {
+    {
+      var first-pair?/eax: boolean <- pair? first
+      compare first-pair?, 0/false
+    }
+    break-if-=
+    var result/eax: int <- list-length first
+    new-integer out, result
+    return
+  }
+  nil out
+}
+
+fn list-length in: (addr cell) -> _/eax: int {
+  var curr/ecx: (addr cell) <- copy in
+  var result/edi: int <- copy 0
+  {
+    var pair?/eax: boolean <- pair? curr
+    {
+      compare pair?, 0/false
+      break-if-!=
+      abort "len: ran into a non-cons"
+    }
+    var nil?/eax: boolean <- nil? curr
+    compare nil?, 0/false
+    break-if-!=
+    result <- increment
+    var next-ah/eax: (addr handle cell) <- get curr, right
+    var next/eax: (addr cell) <- lookup *next-ah
+    curr <- copy next
+    loop
+  }
+  return result
+}
 
 fn apply-cell-isomorphic _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply '='"
