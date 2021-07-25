@@ -3170,10 +3170,6 @@ fn apply-lines _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   new-float out, result
 }
 
-fn apply-abort _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
-  abort "aa"
-}
-
 fn apply-columns _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
   trace-text trace, "eval", "apply 'columns'"
   var args-ah/eax: (addr handle cell) <- copy _args-ah
@@ -3422,4 +3418,8 @@ fn apply-blit _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   #
   convert-graphemes-to-pixels src
   copy-pixels src, dest
+}
+
+fn apply-abort _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  abort "aa"
 }
