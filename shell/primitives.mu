@@ -58,6 +58,7 @@ fn initialize-primitives _self: (addr global-table) {
   # for arrays
   append-primitive self, "array"
   append-primitive self, "index"
+  append-primitive self, "iset"
   # misc
   append-primitive self, "abort"
   # keep sync'd with render-primitives
@@ -106,7 +107,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   draw-text-wrapping-right-then-down-from-cursor screen, "arrays", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   set-cursor-position screen, right-min, y
-  draw-text-wrapping-right-then-down-from-cursor screen, "  array index len", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  draw-text-wrapping-right-then-down-from-cursor screen, "  array index iset len", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
 #?   {
 #?     compare screen, 0
 #?     break-if-!=
@@ -564,6 +565,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare index?, 0/false
     break-if-=
     apply-index args-ah, out, trace
+    return
+  }
+  {
+    var iset?/eax: boolean <- string-equal? f-name, "iset"
+    compare iset?, 0/false
+    break-if-=
+    apply-iset args-ah, out, trace
     return
   }
   {
@@ -3568,6 +3576,101 @@ fn apply-index _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var offset/edx: (offset handle cell) <- compute-offset data, index
   var src/eax: (addr handle cell) <- index data, offset
   copy-object src, out
+}
+
+fn apply-iset _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'iset'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'iset' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'iset' needs 3 args but got 0"
+    return
+  }
+  # array = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 7/array
+    break-if-=
+    error trace, "first arg for 'iset' is not an array"
+    return
+  }
+  var array-ah/eax: (addr handle array handle cell) <- get first, array-data
+  var _array/eax: (addr array handle cell) <- lookup *array-ah
+  var array/ecx: (addr array handle cell) <- copy _array
+  # idx = args->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get args, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  var rest/esi: (addr cell) <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'iset' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'iset' needs 3 args but got 1"
+    return
+  }
+  var second-ah/eax: (addr handle cell) <- get rest, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 1/number
+    break-if-=
+    error trace, "second arg for 'iset' is not an int (index)"
+    return
+  }
+  var second-value/eax: (addr float) <- get second, number-data
+  var idx/eax: int <- convert *second-value
+  # offset based on idx after bounds check
+  var max/edx: int <- length array
+  compare idx, max
+  {
+    break-if-<
+    error trace, "too few elements in array"
+    return
+  }
+  var offset/edx: (offset handle cell) <- compute-offset array, idx
+  # val = rest->right->left
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'iset' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'iset' needs 3 args but got 2"
+    return
+  }
+  var val-ah/eax: (addr handle cell) <- get rest, left
+  # copy
+  var dest/edi: (addr handle cell) <- index array, offset
+  copy-object val-ah, dest
+  # return nothing
 }
 
 fn apply-abort _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
