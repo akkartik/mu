@@ -57,6 +57,7 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "rewind"
   # for arrays
   append-primitive self, "array"
+  append-primitive self, "populate"
   append-primitive self, "index"
   append-primitive self, "iset"
   # misc
@@ -108,6 +109,10 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   y <- increment
   set-cursor-position screen, right-min, y
   draw-text-wrapping-right-then-down-from-cursor screen, "  array index iset len", right-min, y, xmax, ymax, 0x2a/fg=orange, 0xdc/bg=green-bg
+  y <- increment
+  var tmpx/eax: int <- copy right-min
+  tmpx <- draw-text-rightward screen, "  populate", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": int _ -> array", tmpx, xmax, y, 7/fg=grey, 0xdc/bg=green-bg
 #?   {
 #?     compare screen, 0
 #?     break-if-!=
@@ -558,6 +563,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare array?, 0/false
     break-if-=
     apply-array args-ah, out, trace
+    return
+  }
+  {
+    var populate?/eax: boolean <- string-equal? f-name, "populate"
+    compare populate?, 0/false
+    break-if-=
+    apply-populate args-ah, out, trace
     return
   }
   {
@@ -3501,6 +3513,72 @@ fn apply-array _args-ah: (addr handle cell), _out-ah: (addr handle cell), trace:
     var next-ah/eax: (addr handle cell) <- get args, right
     var next/eax: (addr cell) <- lookup *next-ah
     args <- copy next
+    loop
+  }
+}
+
+fn apply-populate _args-ah: (addr handle cell), _out-ah: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'populate'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'populate' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'populate' needs 2 args but got 0"
+    return
+  }
+  # args->left
+  var first-ah/ecx: (addr handle cell) <- get args, left
+  # args->right->left
+  var right-ah/eax: (addr handle cell) <- get args, right
+  var right/eax: (addr cell) <- lookup *right-ah
+  {
+    var right-type/eax: (addr int) <- get right, type
+    compare *right-type, 0/pair
+    break-if-=
+    error trace, "'populate' encountered non-pair"
+    return
+  }
+  {
+    var nil?/eax: boolean <- nil? right
+    compare nil?, 0/false
+    break-if-=
+    error trace, "'populate' needs 2 args but got 1"
+    return
+  }
+  var second-ah/edx: (addr handle cell) <- get right, left
+  #
+  var first/eax: (addr cell) <- lookup *first-ah
+  {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 1/number
+    break-if-=
+    error trace, "first arg for 'populate' is not a number"
+    return
+  }
+  var first-value/eax: (addr float) <- get first, number-data
+  var capacity/ecx: int <- convert *first-value
+  var out-ah/edi: (addr handle cell) <- copy _out-ah
+  new-array out-ah, capacity
+  var out/eax: (addr cell) <- lookup *out-ah
+  var data-ah/eax: (addr handle array handle cell) <- get out, array-data
+  var data/eax: (addr array handle cell) <- lookup *data-ah
+  var i/ebx: int <- copy 0
+  {
+    compare i, capacity
+    break-if->=
+    var curr-ah/ecx: (addr handle cell) <- index data, i
+    copy-object second-ah, curr-ah
+    i <- increment
     loop
   }
 }
