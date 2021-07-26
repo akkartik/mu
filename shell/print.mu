@@ -121,8 +121,12 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
   compare *in-type, 7/array
   {
     break-if-!=
-    # TODO: gracefully handle trace filling up
-    write out, "{array"
+    {
+      var overflow?/eax: boolean <- try-write out, "{array"
+      compare overflow?, 0/false
+      break-if-=
+      return
+    }
     var data-ah/eax: (addr handle array handle cell) <- get in-addr, array-data
     var _data/eax: (addr array handle cell) <- lookup *data-ah
     var data/esi: (addr array handle cell) <- copy _data
@@ -139,13 +143,15 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
         error trace, "print-cell: no space for array"
         return
       }
-      write out " "
+      var overflow?/eax: boolean <- try-write out " "
+      compare overflow?, 0/false
+      break-if-!=
       var curr-ah/eax: (addr handle cell) <- index data, i
       print-cell curr-ah, out, trace
       i <- increment
       loop
     }
-    write out, "}"
+    var dummy/eax: boolean <- try-write out, "}"
     trace-higher trace
     return
   }
