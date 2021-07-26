@@ -146,20 +146,22 @@
   for r r0 (r < r0+w) ++r
     (circle screen cx cy r clr)])
     (Greys . [define Greys
-  (map1 (fn(n) n+15)
-        (seq 16))])
-    (Pinks . [define Pinks '(84 85 59 60 61
-               13 36 37 5 108)])
+  ret p (populate 16 ())
+    for i 0 (< i 16) ++i
+      iset p i i+16])
+    (Pinks . [define Pinks (array
+                84 85 59 60 61
+                13 36 37 5 108)])
     (palette . [def (palette p i)
-  (nth (i % (len p)) p)])
+  (index p (i % (len p)))])
     (pat . [def (pat screen)
   with (w (width screen)
         h (height screen))
     for y 0 (y < h) ++y
       for x 0 (x < w) ++x
-        (pixel screen x y x*y)])
+        (pixel screen x y (palette Greys x*y))])
     (main . [def (main screen keyboard)
   (pat screen)])
   ))
-  (sandbox . [circle screen 35 35 14 3])
+  (sandbox . [pat screen])
 )
