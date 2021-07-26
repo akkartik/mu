@@ -3622,7 +3622,7 @@ fn apply-index _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
     return
   }
   var second-ah/edx: (addr handle cell) <- get right, left
-  # compare
+  # index
   var _first/eax: (addr cell) <- lookup *first-ah
   var first/ecx: (addr cell) <- copy _first
   {
@@ -3644,9 +3644,9 @@ fn apply-index _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
   var index/edx: int <- convert *second-value
   var data-ah/eax: (addr handle array handle cell) <- get first, array-data
   var data/eax: (addr array handle cell) <- lookup *data-ah
-  var len/ebx: int <- length data
-  compare index, len
   {
+    var len/eax: int <- length data
+    compare index, len
     break-if-<
     error trace, "too few elements in array"
     return
