@@ -131,6 +131,14 @@ fn print-cell _in: (addr handle cell), out: (addr stream byte), trace: (addr tra
     {
       compare i, max
       break-if->=
+      {
+        var available-space/eax: int <- space-remaining-in-stream out
+        compare available-space, 0x10
+        break-if->=
+        var dummy/eax: boolean <- try-write out, "..."
+        error trace, "print-cell: no space for array"
+        return
+      }
       write out " "
       var curr-ah/eax: (addr handle cell) <- index data, i
       print-cell curr-ah, out, trace
