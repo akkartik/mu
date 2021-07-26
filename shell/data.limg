@@ -66,10 +66,6 @@
       (list (list (car xs)))
       (cons (list (car xs) (cadr xs))
             (pair (cddr xs)))])
-    (grid . [def (grid m n val)
-  ret g (populate n ())
-    for i 0 (< i n) ++i
-      iset g i (populate m val)])
     (with . [mac (with bindings . body)
   `((fn ,(map1 car (pair bindings))
       ,@body)
@@ -124,6 +120,14 @@
      (while ,test
        ,@body
        ,update))])
+    (grid . [def (grid m n val)
+  ret g (populate n ())
+    for i 0 (< i n) ++i
+      iset g i (populate m val)])
+    (indexgrid . [def (indexgrid g x y)
+  (index (index g y) x)])
+    (isetgrid . [def (isetgrid g x y val)
+  iset (index g y) x val])
     (hborder . [def (hborder scr y color)
   (hline scr y 0 (width scr) color)])
     (vborder . [def (vborder scr x color)
@@ -162,6 +166,27 @@
         (pixel screen x y (palette Greys x*y))])
     (main . [def (main screen keyboard)
   (pat screen)])
+    (lifreres . [define liferes 8])
+    (life . [def (life screen)
+  let g (grid (/ (width screen) liferes)
+              (/ (height screen) liferes)
+              0)
+    isetgrid g 5 5 1
+    isetgrid g 6 5 1
+    isetgrid g 4 6 1
+    isetgrid g 5 6 1
+    isetgrid g 5 7 1
+    while 1
+      steplife g
+      renderlife screen g])
+    (steplife . [def (steplife g)
+  ])
+    (renderlife . [def (renderlife screen g)
+  with (w (width screen)
+        h (height screen))
+    for y 0 (< y h) ++y
+      for x 0 (< x w) ++x
+        (pixel screen x y (indexgrid g x/liferes y/liferes))])
   ))
-  (sandbox . [pat screen])
+  (sandbox . [life screen])
 )

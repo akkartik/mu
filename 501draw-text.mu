@@ -98,7 +98,7 @@ fn draw-code-point-at-cursor screen: (addr screen), c: code-point, color: int, b
 # return the next 'x' coordinate
 # if there isn't enough space, truncate
 fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, xmax: int, y: int, color: int, background-color: int -> _/eax: int {
-  var stream-storage: (stream byte 0x200/print-buffer-size)
+  var stream-storage: (stream byte 0x400/print-buffer-size)
   var stream/esi: (addr stream byte) <- address stream-storage
   write stream, text
   var xcurr/eax: int <- draw-stream-rightward screen, stream, x, xmax, y, color, background-color

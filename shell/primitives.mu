@@ -3641,14 +3641,19 @@ fn apply-index _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
     return
   }
   var second-value/eax: (addr float) <- get second, number-data
-  var index/edx: int <- convert *second-value
+  var index/edx: int <- truncate *second-value
   var data-ah/eax: (addr handle array handle cell) <- get first, array-data
   var data/eax: (addr array handle cell) <- lookup *data-ah
   {
     var len/eax: int <- length data
     compare index, len
     break-if-<
-    error trace, "too few elements in array"
+    error trace, "index: too few elements in array"
+    compare index, len
+    {
+      break-if-<=
+      error trace, "foo"
+    }
     return
   }
   var offset/edx: (offset handle cell) <- compute-offset data, index
@@ -3716,13 +3721,13 @@ fn apply-iset _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
     return
   }
   var second-value/eax: (addr float) <- get second, number-data
-  var idx/eax: int <- convert *second-value
+  var idx/eax: int <- truncate *second-value
   # offset based on idx after bounds check
   var max/edx: int <- length array
   compare idx, max
   {
     break-if-<
-    error trace, "too few elements in array"
+    error trace, "iset: too few elements in array"
     return
   }
   var offset/edx: (offset handle cell) <- compute-offset array, idx
