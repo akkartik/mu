@@ -17,6 +17,8 @@
      (if ,var ,then ,else))])
     (aif . [mac (aif expr then else)
   `(iflet it ,expr ,then ,else)])
+    (forever . [mac (forever . body)
+  `(while 1 ,@body)])
     (list . [def (list . args)
   # we should probably make a copy here
   args])
@@ -64,6 +66,10 @@
       (list (list (car xs)))
       (cons (list (car xs) (cadr xs))
             (pair (cddr xs)))])
+    (grid . [def (grid m n val)
+  ret g (populate n ())
+    for i 0 (< i n) ++i
+      iset g i (populate m val)])
     (with . [mac (with bindings . body)
   `((fn ,(map1 car (pair bindings))
       ,@body)
