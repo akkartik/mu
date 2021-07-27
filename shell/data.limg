@@ -165,28 +165,68 @@
       for x 0 (x < w) ++x
         (pixel screen x y (palette Greys x*y))])
     (main . [def (main screen keyboard)
-  (pat screen)])
-    (lifreres . [define liferes 8])
+  (life screen keyboard)])
+    (liferes . [define liferes 8])
     (life . [def (life screen)
-  let g (grid (/ (width screen) liferes)
-              (/ (height screen) liferes)
-              0)
-    isetgrid g 5 5 1
-    isetgrid g 6 5 1
-    isetgrid g 4 6 1
-    isetgrid g 5 6 1
-    isetgrid g 5 7 1
-    while 1
-      steplife g
-      renderlife screen g])
-    (steplife . [def (steplife g)
-  ])
+  with (w (/ (width screen) liferes)
+        h (/ (height screen) liferes))
+    with (g1 (grid w h 0)
+          g2 (grid w h 0))
+      isetgrid g1 w/2 h/2-1 1
+      isetgrid g1 w/2+1 h/2-1 1
+      isetgrid g1 w/2-1 h/2 1
+      isetgrid g1 w/2 h/2 1
+      isetgrid g1 w/2 h/2+1 1
+      renderlife screen g1
+      while 1
+        steplife g1 g2 screen
+        renderlife screen g2
+        steplife g2 g1 screen
+        renderlife screen g1])
+    (steplife . [def (steplife old new screen)
+  ++lifetime
+  with (h (len old)
+        w (len (index old 0)))
+    for x 0 (< x w) ++x
+      for y 0 (< y h) ++y
+        fill_rect screen x*liferes y*liferes x+1*liferes y+1*liferes 0
+        with (curr (indexgrid old x y)
+              n (neighbors old x y w h)
+             )
+          isetgrid new x y (if (= n 2)
+                             curr
+                             (if (= n 3)
+                               1
+                               0))])
     (renderlife . [def (renderlife screen g)
   with (w (width screen)
         h (height screen))
-    for y 0 (< y h) ++y
-      for x 0 (< x w) ++x
-        (pixel screen x y (indexgrid g x/liferes y/liferes))])
+    for y 0 (< y h) y+=liferes
+      for x 0 (< x w) x+=liferes
+        (fill_rect screen x y x+liferes y+liferes 
+          (if (0 = (indexgrid g x/liferes y/liferes))
+            3
+#            (1 + lifetime%15)
+            0))])
+    (neighbors . [def (neighbors g x y w h)
+  ret result 0
+    when (y > 0)
+      when (x > 0)
+        result += (indexgrid g x-1 y-1)
+      result += (indexgrid g x y-1)
+      when (x < w-1)
+        result += (indexgrid g x+1 y-1)
+    when (x > 0)
+      result += (indexgrid g x-1 y)
+    when (x < w-1)
+      result += (indexgrid g x+1 y)
+    when (y < h-1)
+      when (x > 0)
+        result += (indexgrid g x-1 y+1)
+      result += (indexgrid g x y+1)
+      when (x < w-1)
+        result += (indexgrid g x+1 y+1)])
+    (lifetime . [define lifetime 0])
   ))
   (sandbox . [life screen])
 )

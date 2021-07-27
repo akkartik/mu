@@ -799,15 +799,21 @@ fn push-bindings _params-ah: (addr handle cell), _args-ah: (addr handle cell), o
     break-if-=
     var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
-    write stream, "pushing bindings from "
+    var overflow?/eax: boolean <- try-write stream, "pushing bindings from "
+    compare overflow?, 0/false
+    break-if-!=
     var nested-trace-storage: trace
     var nested-trace/edi: (addr trace) <- address nested-trace-storage
     initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
     print-cell params-ah, stream, nested-trace
-    write stream, " to "
+    var overflow?/eax: boolean <- try-write stream, " to "
+    compare overflow?, 0/false
+    break-if-!=
     clear-trace nested-trace
     print-cell args-ah, stream, nested-trace
-    write stream, " onto "
+    var overflow?/eax: boolean <- try-write stream, " onto "
+    compare overflow?, 0/false
+    break-if-!=
     var old-env-ah/eax: (addr handle cell) <- address old-env-h
     clear-trace nested-trace
     print-cell old-env-ah, stream, nested-trace
@@ -881,13 +887,17 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     break-if-=
     var stream-storage: (stream byte 0x800)  # pessimistically sized just for the large alist loaded from disk in `main`
     var stream/ecx: (addr stream byte) <- address stream-storage
-    write stream, "look up "
+    var overflow?/eax: boolean <- try-write stream, "look up "
+    compare overflow?, 0/false
+    break-if-!=
     var sym2/eax: (addr cell) <- copy sym
     var sym-data-ah/eax: (addr handle stream byte) <- get sym2, text-data
     var sym-data/eax: (addr stream byte) <- lookup *sym-data-ah
     rewind-stream sym-data
     write-stream stream, sym-data
-    write stream, " in "
+    var overflow?/eax: boolean <- try-write stream, " in "
+    compare overflow?, 0/false
+    break-if-!=
     var env-ah/eax: (addr handle cell) <- address env-h
     var nested-trace-storage: trace
     var nested-trace/edi: (addr trace) <- address nested-trace-storage
@@ -926,12 +936,16 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       break-if-!=
       var stream-storage: (stream byte 0x200)
       var stream/ecx: (addr stream byte) <- address stream-storage
-      write stream, "=> "
+      var overflow?/eax: boolean <- try-write stream, "=> "
+      compare overflow?, 0/false
+      break-if-!=
       var nested-trace-storage: trace
       var nested-trace/edi: (addr trace) <- address nested-trace-storage
       initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
       print-cell out, stream, nested-trace
-      write stream, " (global)"
+      var overflow?/eax: boolean <- try-write stream, " (global)"
+      compare overflow?, 0/false
+      break-if-!=
       trace trace, "eval", stream
     }
     # }}}
@@ -983,12 +997,16 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
       break-if-!=
       var stream-storage: (stream byte 0x800)
       var stream/ecx: (addr stream byte) <- address stream-storage
-      write stream, "=> "
+      var overflow?/eax: boolean <- try-write stream, "=> "
+      compare overflow?, 0/false
+      break-if-!=
       var nested-trace-storage: trace
       var nested-trace/edi: (addr trace) <- address nested-trace-storage
       initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
       print-cell out, stream, nested-trace
-      write stream, " (match)"
+      var overflow?/eax: boolean <- try-write stream, " (match)"
+      compare overflow?, 0/false
+      break-if-!=
       trace trace, "eval", stream
     }
     # }}}
@@ -1011,12 +1029,16 @@ fn lookup-symbol sym: (addr cell), out: (addr handle cell), env-h: (handle cell)
     break-if-!=
     var stream-storage: (stream byte 0x200)
     var stream/ecx: (addr stream byte) <- address stream-storage
-    write stream, "=> "
+    var overflow?/eax: boolean <- try-write stream, "=> "
+    compare overflow?, 0/false
+    break-if-!=
     var nested-trace-storage: trace
     var nested-trace/edi: (addr trace) <- address nested-trace-storage
     initialize-trace nested-trace, 1/only-errors, 0x10/capacity, 0/visible
     print-cell out, stream, nested-trace
-    write stream, " (recurse)"
+    var overflow?/eax: boolean <- try-write stream, " (recurse)"
+    compare overflow?, 0/false
+    break-if-!=
     trace trace, "eval", stream
   }
   # }}}
