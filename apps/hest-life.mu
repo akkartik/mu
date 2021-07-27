@@ -42,7 +42,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       convert-graphemes-to-pixels second-screen
       copy-pixels second-screen, screen
     }
-    linger env
+    linger
     loop
   }
 }
@@ -1016,11 +1016,10 @@ fn num-live-neighbors _self: (addr environment), x: int, y: int -> _/eax: int {
   return result
 }
 
-fn linger _self: (addr environment) {
-  var self/esi: (addr environment) <- copy _self
+fn linger {
   var i/ecx: int <- copy 0
   {
-    compare i, 0x10000000  # Kartik's Linux with -enable-kvm
+    compare i, 0x10000000  # Kartik's Linux with -accel kvm
 #?     compare i, 0x8000000  # Kartik's Mac with -accel tcg
     break-if->=
     i <- increment
