@@ -16,6 +16,8 @@ type cell {
   keyboard-data: (handle gap-buffer)
   # type 7: array
   array-data: (handle array handle cell)
+  # type 8: image
+  image-data: (handle image)
   # TODO: (associative) table
   # if you add types here, don't forget to update cell-isomorphic?
 }
@@ -289,6 +291,29 @@ fn array? _x: (addr cell) -> _/eax: boolean {
   var x/esi: (addr cell) <- copy _x
   var type/eax: (addr int) <- get x, type
   compare *type, 7/array
+  {
+    break-if-=
+    return 0/false
+  }
+  return 1/true
+}
+
+fn new-image _out-ah: (addr handle cell), in: (addr stream byte) {
+  var out-ah/eax: (addr handle cell) <- copy _out-ah
+  allocate out-ah
+  var out/eax: (addr cell) <- lookup *out-ah
+  var type/ecx: (addr int) <- get out, type
+  copy-to *type, 8/image
+  var dest-ah/eax: (addr handle image) <- get out, image-data
+  allocate dest-ah
+  var dest/eax: (addr image) <- lookup *dest-ah
+  initialize-image dest, in
+}
+
+fn image? _x: (addr cell) -> _/eax: boolean {
+  var x/esi: (addr cell) <- copy _x
+  var type/eax: (addr int) <- get x, type
+  compare *type, 8/image
   {
     break-if-=
     return 0/false

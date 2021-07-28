@@ -60,6 +60,8 @@ fn initialize-primitives _self: (addr global-table) {
   append-primitive self, "populate"
   append-primitive self, "index"
   append-primitive self, "iset"
+  # for images
+  append-primitive self, "img"
   # misc
   append-primitive self, "abort"
   # keep sync'd with render-primitives
@@ -113,6 +115,13 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   var tmpx/eax: int <- copy right-min
   tmpx <- draw-text-rightward screen, "  populate", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
   tmpx <- draw-text-rightward screen, ": int _ -> array", tmpx, xmax, y, 7/fg=grey, 0xdc/bg=green-bg
+  y <- increment
+  set-cursor-position screen, right-min, y
+  draw-text-wrapping-right-then-down-from-cursor screen, "images", right-min, y, xmax, ymax, 7/fg=grey, 0xdc/bg=green-bg
+  y <- increment
+  var tmpx/eax: int <- copy right-min
+  tmpx <- draw-text-rightward screen, "  img", tmpx, xmax, y, 0x2a/fg=orange, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": screen stream x y w h", tmpx, xmax, y, 7/fg=grey, 0xdc/bg=green-bg
 #?   {
 #?     compare screen, 0
 #?     break-if-!=
@@ -584,6 +593,13 @@ fn apply-primitive _f: (addr cell), args-ah: (addr handle cell), out: (addr hand
     compare iset?, 0/false
     break-if-=
     apply-iset args-ah, out, trace
+    return
+  }
+  {
+    var render-image?/eax: boolean <- string-equal? f-name, "img"
+    compare render-image?, 0/false
+    break-if-=
+    apply-render-image args-ah, out, trace
     return
   }
   {
@@ -3753,6 +3769,199 @@ fn apply-iset _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   # copy
   var dest/edi: (addr handle cell) <- index array, offset
   copy-object val-ah, dest
+  # return nothing
+}
+
+fn apply-render-image _args-ah: (addr handle cell), out: (addr handle cell), trace: (addr trace) {
+  trace-text trace, "eval", "apply 'img'"
+  var args-ah/eax: (addr handle cell) <- copy _args-ah
+  var _args/eax: (addr cell) <- lookup *args-ah
+  var args/esi: (addr cell) <- copy _args
+  {
+    var args-type/eax: (addr int) <- get args, type
+    compare *args-type, 0/pair
+    break-if-=
+    error trace, "args to 'img' are not a list"
+    return
+  }
+  var empty-args?/eax: boolean <- nil? args
+  compare empty-args?, 0/false
+  {
+    break-if-=
+    error trace, "'img' needs 6 args but got 0"
+    return
+  }
+  # screen = args->left
+  var first-ah/eax: (addr handle cell) <- get args, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  {
+    var first-type/eax: (addr int) <- get first, type
+    compare *first-type, 5/screen
+    break-if-=
+    error trace, "first arg for 'img' is not a screen"
+    return
+  }
+  var screen-ah/eax: (addr handle screen) <- get first, screen-data
+  var _screen/eax: (addr screen) <- lookup *screen-ah
+  var screen/edi: (addr screen) <- copy _screen
+  # x1 = args->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get args, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  var rest/esi: (addr cell) <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'img' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'img' needs 6 args but got 1"
+    return
+  }
+  var second-ah/eax: (addr handle cell) <- get rest, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  {
+    var second-type/eax: (addr int) <- get second, type
+    compare *second-type, 3/stream
+    break-if-=
+    error trace, "second arg for 'img' is not a stream (image data in ascii netpbm)"
+    return
+  }
+  var img-data-ah/eax: (addr handle stream byte) <- get second, text-data
+  var img-data/eax: (addr stream byte) <- lookup *img-data-ah
+  var img-h: (handle cell)
+  var img-ah/ecx: (addr handle cell) <- address img-h
+  new-image img-ah, img-data
+  # x = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'img' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'img' needs 6 args but got 2"
+    return
+  }
+  var third-ah/eax: (addr handle cell) <- get rest, left
+  var third/eax: (addr cell) <- lookup *third-ah
+  {
+    var third-type/eax: (addr int) <- get third, type
+    compare *third-type, 1/number
+    break-if-=
+    error trace, "third arg for 'img' is not a number (screen x coordinate of top left)"
+    return
+  }
+  var third-value/eax: (addr float) <- get third, number-data
+  var x/ebx: int <- convert *third-value
+  # y = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  var rest/esi: (addr cell) <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'img' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'img' needs 6 args but got 3"
+    return
+  }
+  var fourth-ah/eax: (addr handle cell) <- get rest, left
+  var fourth/eax: (addr cell) <- lookup *fourth-ah
+  {
+    var fourth-type/eax: (addr int) <- get fourth, type
+    compare *fourth-type, 1/number
+    break-if-=
+    error trace, "fourth arg for 'img' is not a number (screen x coordinate of end point)"
+    return
+  }
+  var fourth-value/eax: (addr float) <- get fourth, number-data
+  var y/ecx: int <- convert *fourth-value
+  # w = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'img' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'img' needs 6 args but got 4"
+    return
+  }
+  var fifth-ah/eax: (addr handle cell) <- get rest, left
+  var fifth/eax: (addr cell) <- lookup *fifth-ah
+  {
+    var fifth-type/eax: (addr int) <- get fifth, type
+    compare *fifth-type, 1/number
+    break-if-=
+    error trace, "fifth arg for 'img' is not a number (screen y coordinate of end point)"
+    return
+  }
+  var fifth-value/eax: (addr float) <- get fifth, number-data
+  var tmp/eax: int <- convert *fifth-value
+  var w: int
+  copy-to w, tmp
+  # h = rest->right->left->value
+  var rest-ah/eax: (addr handle cell) <- get rest, right
+  var _rest/eax: (addr cell) <- lookup *rest-ah
+  rest <- copy _rest
+  {
+    var rest-type/eax: (addr int) <- get rest, type
+    compare *rest-type, 0/pair
+    break-if-=
+    error trace, "'img' encountered non-pair"
+    return
+  }
+  {
+    var rest-nil?/eax: boolean <- nil? rest
+    compare rest-nil?, 0/false
+    break-if-=
+    error trace, "'img' needs 6 args but got 5"
+    return
+  }
+  var sixth-ah/eax: (addr handle cell) <- get rest, left
+  var sixth/eax: (addr cell) <- lookup *sixth-ah
+  {
+    var sixth-type/eax: (addr int) <- get sixth, type
+    compare *sixth-type, 1/number
+    break-if-=
+    error trace, "sixth arg for 'img' is not an int (height)"
+    return
+  }
+  var sixth-value/eax: (addr float) <- get sixth, number-data
+  var tmp/eax: int <- convert *sixth-value
+  var h: int
+  copy-to h, tmp
+  #
+  var img-cell-ah/eax: (addr handle cell) <- address img-h
+  var img-cell/eax: (addr cell) <- lookup *img-cell-ah
+  var img-ah/eax: (addr handle image) <- get img-cell, image-data
+  var img/eax: (addr image) <- lookup *img-ah
+  render-image screen, img, x y, w h
   # return nothing
 }
 
