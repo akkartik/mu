@@ -16,7 +16,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 }
 
 fn load-image self: (addr image), data-disk: (addr disk) {
-  var s-storage: (stream byte 0x200000)  # 512* 0x1000 sectors
+  var s-storage: (stream byte 0x200000)  # 512 * 0x1000 sectors
   var s/ebx: (addr stream byte) <- address s-storage
   load-sectors data-disk, 0/lba, 0x1000/sectors, s
   initialize-image self, s
