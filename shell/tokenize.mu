@@ -248,10 +248,11 @@ fn test-tokenize-dotted-list {
   check close-paren?, "F - test-tokenize-dotted-list: close paren"
 }
 
+# double quotes with zero escaping support
 fn test-tokenize-stream-literal {
   var in-storage: gap-buffer
   var in/esi: (addr gap-buffer) <- address in-storage
-  initialize-gap-buffer-with in, "[abc def]"
+  initialize-gap-buffer-with in, "\"abc def\""
   #
   var stream-storage: (stream token 0x10)
   var stream/edi: (addr stream token) <- address stream-storage
@@ -277,6 +278,69 @@ fn test-tokenize-stream-literal {
   check data-equal?, "F - test-tokenize-stream-literal"
   var empty?/eax: boolean <- stream-empty? stream
   check empty?, "F - test-tokenize-stream-literal: empty?"
+}
+
+# alternative syntax for strings with balancing brackets
+fn test-tokenize-balanced-stream-literal {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "[abc def]"
+  #
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
+  #
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
+  #
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-balanced-stream-literal/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-balanced-stream-literal/before-indent"
+  read-from-stream stream, curr-token
+  var stream?/eax: boolean <- stream-token? curr-token
+  check stream?, "F - test-tokenize-stream-literal: type"
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  var data-equal?/eax: boolean <- stream-data-equal? curr-token-data, "abc def"
+  check data-equal?, "F - test-tokenize-balanced-stream-literal"
+  var empty?/eax: boolean <- stream-empty? stream
+  check empty?, "F - test-tokenize-balanced-stream-literal: empty?"
+}
+
+fn test-tokenize-nested-stream-literal {
+  var in-storage: gap-buffer
+  var in/esi: (addr gap-buffer) <- address in-storage
+  initialize-gap-buffer-with in, "[abc [def]]"
+  #
+  var stream-storage: (stream token 0x10)
+  var stream/edi: (addr stream token) <- address stream-storage
+  #
+  var trace-storage: trace
+  var trace/edx: (addr trace) <- address trace-storage
+  initialize-trace trace, 1/only-errors, 0x10/capacity, 0/visible
+  tokenize in, stream, trace
+  #
+  var curr-token-storage: token
+  var curr-token/ebx: (addr token) <- address curr-token-storage
+  read-from-stream stream, curr-token
+  var curr-token-type/eax: (addr int) <- get curr-token, type
+  check-ints-equal *curr-token-type, 3/indent, "F - test-tokenize-nested-stream-literal/before-indent-type"
+  var curr-token-data/eax: (addr int) <- get curr-token, number-data
+  check-ints-equal *curr-token-data, 0/spaces, "F - test-tokenize-nested-stream-literal/before-indent"
+  read-from-stream stream, curr-token
+  var stream?/eax: boolean <- stream-token? curr-token
+  check stream?, "F - test-tokenize-stream-literal: type"
+  var curr-token-data-ah/eax: (addr handle stream byte) <- get curr-token, text-data
+  var curr-token-data/eax: (addr stream byte) <- lookup *curr-token-data-ah
+  var data-equal?/eax: boolean <- stream-data-equal? curr-token-data, "abc [def]"
+  check data-equal?, "F - test-tokenize-nested-stream-literal"
+  var empty?/eax: boolean <- stream-empty? stream
+  check empty?, "F - test-tokenize-nested-stream-literal: empty?"
 }
 
 fn test-tokenize-stream-literal-in-tree {
@@ -411,12 +475,20 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     trace trace, "tokenize", stream
   }
   $next-token:case: {
-    # open square brackets begin streams
+    # double quotes begin streams
+    {
+      compare g, 0x22/double-quote
+      break-if-!=
+      var dummy/eax: grapheme <- read-from-gap-buffer in  # skip
+      next-stream-token in, out, trace
+      break $next-token:case
+    }
+    # open square brackets begin balanced streams
     {
       compare g, 0x5b/open-square-bracket
       break-if-!=
       var dummy/eax: grapheme <- read-from-gap-buffer in  # skip open bracket
-      next-stream-token in, out, trace
+      next-balanced-stream-token in, out, trace
       break $next-token:case
     }
     # other symbol char
@@ -621,12 +693,61 @@ fn next-stream-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
     compare empty?, 0/false
     {
       break-if-=
+      error trace, "unbalanced '\"'"
+      return
+    }
+    var g/eax: grapheme <- read-from-gap-buffer in
+    compare g, 0x22/double-quote
+    break-if-=
+    write-grapheme out-data, g
+    loop
+  }
+  {
+    var should-trace?/eax: boolean <- should-trace? trace
+    compare should-trace?, 0/false
+    break-if-=
+    var stream-storage: (stream byte 0x400)  # max-definition-size
+    var stream/esi: (addr stream byte) <- address stream-storage
+    write stream, "=> "
+    rewind-stream out-data
+    write-stream-immutable stream, out-data
+    trace trace, "tokenize", stream
+  }
+}
+
+fn next-balanced-stream-token in: (addr gap-buffer), _out: (addr token), trace: (addr trace) {
+  trace-text trace, "tokenize", "balanced stream"
+  var out/edi: (addr token) <- copy _out
+  var out-type/eax: (addr int) <- get out, type
+  copy-to *out-type, 1/stream
+  var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
+  var bracket-count: int
+  # stream tokens contain whole function definitions on boot, so we always
+  # give them plenty of space
+  populate-stream out-data-ah, 0x400/max-definition-size=1KB
+  var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
+  var out-data/edi: (addr stream byte) <- copy _out-data
+  $next-balanced-stream-token:loop: {
+    var empty?/eax: boolean <- gap-buffer-scan-done? in
+    compare empty?, 0/false
+    {
+      break-if-=
       error trace, "unbalanced '['"
       return
     }
     var g/eax: grapheme <- read-from-gap-buffer in
-    compare g, 0x5d/close-square-bracket
-    break-if-=
+    {
+      compare g, 0x5b/open-square-bracket
+      break-if-!=
+      increment bracket-count
+    }
+    {
+      compare g, 0x5d/close-square-bracket
+      break-if-!=
+      compare bracket-count, 0
+      break-if-= $next-balanced-stream-token:loop
+      decrement bracket-count
+    }
     write-grapheme out-data, g
     loop
   }
