@@ -93,8 +93,6 @@ fn write-globals out: (addr stream byte), _self: (addr global-table) {
       break-if-=
       compare *curr-type, 6/keyboard
       break-if-=
-      compare *curr-type, 3/stream  # not implemented yet
-      break-if-=
       write out, "    ("
       var curr-name-ah/eax: (addr handle array byte) <- get curr, name
       var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
