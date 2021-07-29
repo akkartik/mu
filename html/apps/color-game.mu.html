@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mu - apps/color-game.mu</title>
+<meta name="Generator" content="Vim/8.2">
+<meta name="plugin-version" content="vim8.1_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=,use_input_for_pc=fallback">
+<meta name="colorscheme" content="minimal-light">
+<style>
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffd7; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
+a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.PreProc { color: #c000c0; }
+.muRegEbx { color: #5f00ff; }
+.muRegEcx { color: #870000; }
+.muRegEdx { color: #af5f00; }
+.LineNr { }
+.muRegEsi { color: #005faf; }
+.muRegEdi { color: #00af00; }
+.Constant { color: #008787; }
+.muFunction { color: #af5f00; text-decoration: underline; }
+.CommentedCode { color: #8a8a8a; }
+.Delimiter { color: #c000c0; }
+.muComment { color: #005faf; }
+.Special { color: #ff6060; }
+-->
+</style>
+
+<script>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  var lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/main/apps/color-game.mu'>https://github.com/akkartik/mu/blob/main/apps/color-game.mu</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span><span class="muComment"># Guess the result of mixing two colors.</span>
+<span id="L2" class="LineNr"> 2 </span>
+<span id="L3" class="LineNr"> 3 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='color-game.mu.html#L3'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
+<span id="L4" class="LineNr"> 4 </span>  <span class="PreProc">var</span> second-buffer: <a href='../500fake-screen.mu.html#L14'>screen</a>
+<span id="L5" class="LineNr"> 5 </span>  <span class="PreProc">var</span> second-screen/<span class="muRegEdi">edi</span>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> address second-buffer
+<span id="L6" class="LineNr"> 6 </span>  <a href='../500fake-screen.mu.html#L33'>initialize-screen</a> second-screen, <span class="Constant">0x80</span>, <span class="Constant">0x30</span>, <span class="Constant">1</span>/include-pixels
+<span id="L7" class="LineNr"> 7 </span>  <span class="PreProc">var</span> leftx/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0x80</span>
+<span id="L8" class="LineNr"> 8 </span>  <span class="PreProc">var</span> rightx/<span class="muRegEbx">ebx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0x380</span>
+<span id="L9" class="LineNr"> 9 </span>  <span class="Delimiter">{</span>
+<span id="L10" class="LineNr">10 </span>    compare leftx, rightx
+<span id="L11" class="LineNr">11 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L12" class="LineNr">12 </span>    <a href='../500fake-screen.mu.html#L251'>clear-screen</a> second-screen
+<span id="L13" class="LineNr">13 </span>    <span class="muComment"># interesting value: 9/blue with 0xe/yellow</span>
+<span id="L14" class="LineNr">14 </span>    <a href='color-game.mu.html#L31'>color-field</a> second-screen, leftx <span class="Constant">0x40</span>/y, <span class="Constant">0x40</span>/width <span class="Constant">0x40</span>/height, <span class="Constant">1</span>/blue
+<span id="L15" class="LineNr">15 </span>    <a href='color-game.mu.html#L31'>color-field</a> second-screen, rightx <span class="Constant">0x41</span>/y, <span class="Constant">0x40</span>/width <span class="Constant">0x40</span>/height, <span class="Constant">2</span>/green
+<span id="L16" class="LineNr">16 </span>    <a href='../500fake-screen.mu.html#L548'>copy-pixels</a> second-screen, <a href='../500fake-screen.mu.html#L14'>screen</a>
+<span id="L17" class="LineNr">17 </span>    <span class="muComment"># on the first iteration, give everyone a chance to make their guess</span>
+<span id="L18" class="LineNr">18 </span>    <span class="Delimiter">{</span>
+<span id="L19" class="LineNr">19 </span>      compare leftx, <span class="Constant">0x80</span>
+<span id="L20" class="LineNr">20 </span>      <span class="PreProc">break-if-&gt;</span>
+<span id="L21" class="LineNr">21 </span>      <span class="PreProc">var</span> x/eax: byte <span class="Special">&lt;-</span> <a href='../102keyboard.subx.html#L21'>read-key</a> keyboard
+<span id="L22" class="LineNr">22 </span>      compare x, <span class="Constant">0</span>
+<span id="L23" class="LineNr">23 </span>      <span class="PreProc">loop-if-=</span>
+<span id="L24" class="LineNr">24 </span>    <span class="Delimiter">}</span>
+<span id="L25" class="LineNr">25 </span>    leftx <span class="Special">&lt;-</span> add <span class="Constant">2</span>
+<span id="L26" class="LineNr">26 </span>    rightx <span class="Special">&lt;-</span> subtract <span class="Constant">2</span>
+<span id="L27" class="LineNr">27 </span>    <span class="PreProc">loop</span>
+<span id="L28" class="LineNr">28 </span>  <span class="Delimiter">}</span>
+<span id="L29" class="LineNr">29 </span><span class="Delimiter">}</span>
+<span id="L30" class="LineNr">30 </span>
+<span id="L31" class="LineNr">31 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='color-game.mu.html#L31'>color-field</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), xmin: int, ymin: int, width: int, height: int, color: int <span class="Delimiter">{</span>
+<span id="L32" class="LineNr">32 </span>  <span class="PreProc">var</span> xmax/<span class="muRegEsi">esi</span>: int <span class="Special">&lt;-</span> copy xmin
+<span id="L33" class="LineNr">33 </span>  xmax <span class="Special">&lt;-</span> add width
+<span id="L34" class="LineNr">34 </span>  <span class="PreProc">var</span> ymax/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy ymin
+<span id="L35" class="LineNr">35 </span>  ymax <span class="Special">&lt;-</span> add height
+<span id="L36" class="LineNr">36 </span>  <span class="PreProc">var</span> y/eax: int <span class="Special">&lt;-</span> copy ymin
+<span id="L37" class="LineNr">37 </span>  <span class="Delimiter">{</span>
+<span id="L38" class="LineNr">38 </span>    compare y, ymax
+<span id="L39" class="LineNr">39 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L40" class="LineNr">40 </span>    <span class="PreProc">var</span> x/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy xmin
+<span id="L41" class="LineNr">41 </span>    <span class="Delimiter">{</span>
+<span id="L42" class="LineNr">42 </span>      compare x, xmax
+<span id="L43" class="LineNr">43 </span>      <span class="PreProc">break-if-&gt;=</span>
+<span id="L44" class="LineNr">44 </span>      <a href='../500fake-screen.mu.html#L483'>pixel</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, x, y, color
+<span id="L45" class="LineNr">45 </span>      x <span class="Special">&lt;-</span> add <span class="Constant">2</span>
+<span id="L46" class="LineNr">46 </span>      <span class="PreProc">loop</span>
+<span id="L47" class="LineNr">47 </span>    <span class="Delimiter">}</span>
+<span id="L48" class="LineNr">48 </span>    y <span class="Special">&lt;-</span> increment
+<span id="L49" class="LineNr">49 </span>    compare y, ymax
+<span id="L50" class="LineNr">50 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L51" class="LineNr">51 </span>    <span class="PreProc">var</span> x/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy xmin
+<span id="L52" class="LineNr">52 </span>    x <span class="Special">&lt;-</span> increment
+<span id="L53" class="LineNr">53 </span>    <span class="Delimiter">{</span>
+<span id="L54" class="LineNr">54 </span>      compare x, xmax
+<span id="L55" class="LineNr">55 </span>      <span class="PreProc">break-if-&gt;=</span>
+<span id="L56" class="LineNr">56 </span>      <a href='../500fake-screen.mu.html#L483'>pixel</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, x, y, color
+<span id="L57" class="LineNr">57 </span>      x <span class="Special">&lt;-</span> add <span class="Constant">2</span>
+<span id="L58" class="LineNr">58 </span>      <span class="PreProc">loop</span>
+<span id="L59" class="LineNr">59 </span>    <span class="Delimiter">}</span>
+<span id="L60" class="LineNr">60 </span>    y <span class="Special">&lt;-</span> increment
+<span id="L61" class="LineNr">61 </span>    <span class="PreProc">loop</span>
+<span id="L62" class="LineNr">62 </span>  <span class="Delimiter">}</span>
+<span id="L63" class="LineNr">63 </span><span class="Delimiter">}</span>
+<span id="L64" class="LineNr">64 </span>
+<span id="L65" class="LineNr">65 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='color-game.mu.html#L65'>linger</a></span> <span class="Delimiter">{</span>
+<span id="L66" class="LineNr">66 </span>  <span class="PreProc">var</span> i/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L67" class="LineNr">67 </span>  <span class="Delimiter">{</span>
+<span id="L68" class="LineNr">68 </span>    compare i, <span class="Constant">0x40000000</span>  <span class="muComment"># Kartik's Linux with -accel kvm</span>
+<span id="L69" class="LineNr">69 </span><span class="CommentedCode">#?     compare i, 0x8000000  # Kartik's Mac with -accel tcg</span>
+<span id="L70" class="LineNr">70 </span>    <span class="PreProc">break-if-&gt;=</span>
+<span id="L71" class="LineNr">71 </span>    i <span class="Special">&lt;-</span> increment
+<span id="L72" class="LineNr">72 </span>    <span class="PreProc">loop</span>
+<span id="L73" class="LineNr">73 </span>  <span class="Delimiter">}</span>
+<span id="L74" class="LineNr">74 </span><span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
