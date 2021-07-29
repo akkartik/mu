@@ -724,7 +724,7 @@ fn next-balanced-stream-token in: (addr gap-buffer), _out: (addr token), trace: 
   var bracket-count: int
   # stream tokens contain whole function definitions on boot, so we always
   # give them plenty of space
-  populate-stream out-data-ah, 0x400/max-definition-size=1KB
+  populate-stream out-data-ah, 0x40000/max-definition-size=256KB
   var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
   var out-data/edi: (addr stream byte) <- copy _out-data
   $next-balanced-stream-token:loop: {

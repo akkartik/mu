@@ -950,11 +950,11 @@ fn word-at-cursor _self: (addr environment), out: (addr stream byte) {
 fn load-state _self: (addr environment), data-disk: (addr disk) {
   var self/esi: (addr environment) <- copy _self
   # data-disk -> stream
-  var s-storage: (stream byte 0x2000)  # space for 16/sectors
+  var s-storage: (stream byte 0x40000)  # space for 0x200/sectors
   var s/ebx: (addr stream byte) <- address s-storage
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "loading sectors from data disk", 3/fg, 0/bg
   move-cursor-to-left-margin-of-next-line 0/screen
-  load-sectors data-disk, 0/lba, 0x10/sectors, s
+  load-sectors data-disk, 0/lba, 0x200/sectors, s
 #?   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, s, 7/fg, 0xc5/bg=blue-bg
   # stream -> gap-buffer (HACK: we temporarily cannibalize the sandbox's gap-buffer)
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsing", 3/fg, 0/bg
@@ -1034,11 +1034,11 @@ fn store-state data-disk: (addr disk), sandbox: (addr sandbox), globals: (addr g
     break-if-!=
     return
   }
-  var stream-storage: (stream byte 0x2000)  # space enough for 16/sectors
+  var stream-storage: (stream byte 0x40000)  # space enough for 0x200/sectors
   var stream/edi: (addr stream byte) <- address stream-storage
   write stream, "(\n"
   write-globals stream, globals
   write-sandbox stream, sandbox
   write stream, ")\n"
-  store-sectors data-disk, 0/lba, 0x10/sectors, stream
+  store-sectors data-disk, 0/lba, 0x200/sectors, stream
 }

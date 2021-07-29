@@ -267,7 +267,7 @@ fn parse-atom _curr-token: (addr token), _out: (addr handle cell), trace: (addr 
       compare should-trace?, 0/false
     }
     break-if-=
-    var stream-storage: (stream byte 0x400)
+    var stream-storage: (stream byte 0x40000)
     var stream/ecx: (addr stream byte) <- address stream-storage
     write stream, "=> symbol "
     var nested-trace-storage: trace

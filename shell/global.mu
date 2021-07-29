@@ -57,7 +57,7 @@ fn load-globals in: (addr handle cell), self: (addr global-table) {
     var value-gap-buffer-ah/edi: (addr handle gap-buffer) <- address value-gap-buffer-storage
     allocate value-gap-buffer-ah
     var value-gap-buffer/eax: (addr gap-buffer) <- lookup *value-gap-buffer-ah
-    initialize-gap-buffer value-gap-buffer, 0x1000/4KB
+    initialize-gap-buffer value-gap-buffer, 0x40000/256KB
     load-gap-buffer-from-stream value-gap-buffer, value-data
     load-lexical-scope value-gap-buffer-ah, self
     loop
