@@ -61,14 +61,3 @@ fn color-field screen: (addr screen), xmin: int, ymin: int, width: int, height: 
     loop
   }
 }
-
-fn linger {
-  var i/ecx: int <- copy 0
-  {
-    compare i, 0x40000000  # Kartik's Linux with -accel kvm
-#?     compare i, 0x8000000  # Kartik's Mac with -accel tcg
-    break-if->=
-    i <- increment
-    loop
-  }
-}
