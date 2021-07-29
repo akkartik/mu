@@ -142,7 +142,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
       break-if-<
       break $render-globals:loop
     }
-    {
+    $render-globals:iter: {
       var cursor-in-current-line?: boolean
       {
         compare show-cursor?, 0/false
@@ -159,6 +159,14 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
       break-if-=
       var global-offset/edx: (offset global) <- compute-offset data, global-id
       var curr/edx: (addr global) <- index data, global-offset
+      {
+        var render-image?/eax: boolean <- render-image? curr, cursor-in-current-line?
+        compare render-image?, 0/false
+        break-if-=
+        render-image-definition screen, curr, 0/x y1
+        add-to y1, 6  # 1 line for definition, 4 lines (64px) for image, 1 line padding
+        break $render-globals:iter
+      }
       var curr-input-ah/eax: (addr handle gap-buffer) <- get curr, input
       var _curr-input/eax: (addr gap-buffer) <- lookup *curr-input-ah
       var curr-input/ebx: (addr gap-buffer) <- copy _curr-input
@@ -577,4 +585,63 @@ fn load-lexical-scope in-ah: (addr handle gap-buffer), _globals: (addr global-ta
     copy-object trace-ah, curr-trace-ah
     loop
   }
+}
+
+fn render-image? _self: (addr global), cursor-in-definition?: boolean -> _/eax: boolean {
+  {
+    compare cursor-in-definition?, 0/false
+    break-if-=
+    # if the cursor is in this definition we need to be able to edit raw data
+    return 0/false
+  }
+  var self/esi: (addr global) <- copy _self
+  var value-ah/eax: (addr handle cell) <- get self, value
+  var value/eax: (addr cell) <- lookup *value-ah
+  compare value, 0
+  {
+    break-if-!=
+    # unparsed buffers can't be rendered; either they're uninitialized or they have errors
+    return 0/false
+  }
+  {
+    var pair?/eax: boolean <- pair? value
+    compare pair?, 0/false
+    break-if-!=
+    # not a pair? not an image
+    return 0/false
+  }
+  var first-ah/eax: (addr handle cell) <- get value, left
+  var first/eax: (addr cell) <- lookup *first-ah
+  var litimg?/eax: boolean <- litimg? first
+  return litimg?
+}
+
+fn render-image-definition screen: (addr screen), _self: (addr global), x: int, y: int {
+  var self/esi: (addr global) <- copy _self
+  {
+    var name-ah/eax: (addr handle array byte) <- get self, name
+    var _name/eax: (addr array byte) <- lookup *name-ah
+    var name/ecx: (addr array byte) <- copy _name
+    var x/eax: int <- draw-text-rightward-over-full-screen screen, "define ", x y, 7/fg=definition, 0xc5/bg=blue-bg
+    x <- draw-text-rightward-over-full-screen screen, name, x y, 7/fg=definition, 0xc5/bg=blue-bg
+  }
+  increment y
+  shift-left y, 4/log2fontheight
+  add-to x, 4
+  shift-left x, 3/log2fontwidth
+  var value-ah/eax: (addr handle cell) <- get self, value
+  var value/eax: (addr cell) <- lookup *value-ah
+  var rest-ah/eax: (addr handle cell) <- get value, right
+  var rest/eax: (addr cell) <- lookup *rest-ah
+  var second-ah/eax: (addr handle cell) <- get rest, left
+  var second/eax: (addr cell) <- lookup *second-ah
+  var img-data-ah/eax: (addr handle stream byte) <- get second, text-data
+  var img-data/eax: (addr stream byte) <- lookup *img-data-ah
+  var img-h: (handle cell)
+  var img-cell-ah/ecx: (addr handle cell) <- address img-h
+  new-image img-cell-ah, img-data
+  var img-cell/eax: (addr cell) <- lookup *img-cell-ah
+  var img-ah/eax: (addr handle image) <- get img-cell, image-data
+  var img/eax: (addr image) <- lookup *img-ah
+  render-image screen, img, x y, 0x40/w 0x40/h
 }
