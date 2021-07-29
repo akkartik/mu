@@ -103,6 +103,15 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
+  {
+    var litimg?/eax: boolean <- litimg? first
+    compare litimg?, 0/false
+    break-if-=
+    # litimg is a literal
+    trace-text trace, "mac", "literal image"
+    trace-higher trace
+    return 0/false
+  }
   var result/edi: boolean <- copy 0/false
   # for each builtin, expand only what will later be evaluated
   $macroexpand-iter:anonymous-function: {

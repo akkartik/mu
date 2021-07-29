@@ -235,7 +235,7 @@ fn print-stream _in: (addr cell), out: (addr stream byte), trace: (addr trace) {
   compare should-trace?, 0/false
   break-if-=
   rewind-stream data
-  var stream-storage: (stream byte 0x40)
+  var stream-storage: (stream byte 0x400)
   var stream/ecx: (addr stream byte) <- address stream-storage
   write stream, "=> stream "
   write-stream-immutable stream, data
