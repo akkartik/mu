@@ -1098,3 +1098,16 @@ fn render-raw-image screen: (addr screen), _img: (addr image), xmin: int, ymin: 
     loop
   }
 }
+
+fn scale-image-height _img: (addr image), width: int -> _/ebx: int {
+  var img/esi: (addr image) <- copy _img
+  var img-height/eax: (addr int) <- get img, height
+  var result-f/xmm0: float <- convert *img-height
+  var img-width/eax: (addr int) <- get img, width
+  var img-width-f/xmm1: float <- convert *img-width
+  result-f <- divide img-width-f
+  var width-f/xmm1: float <- convert width
+  result-f <- multiply width-f
+  var result/ebx: int <- convert result-f
+  return result
+}

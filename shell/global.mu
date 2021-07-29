@@ -163,8 +163,9 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
         var render-image?/eax: boolean <- render-image? curr, cursor-in-current-line?
         compare render-image?, 0/false
         break-if-=
-        render-image-definition screen, curr, 0/x y1
-        add-to y1, 0xa  # 1 line for definition, 8 lines (128px) for image, 1 line padding
+        var y/ecx: int <- render-image-definition screen, curr, 0/x y1
+        y <- increment  # padding
+        copy-to y1, y
         break $render-globals:iter
       }
       var curr-input-ah/eax: (addr handle gap-buffer) <- get curr, input
@@ -616,17 +617,21 @@ fn render-image? _self: (addr global), cursor-in-definition?: boolean -> _/eax: 
   return litimg?
 }
 
-fn render-image-definition screen: (addr screen), _self: (addr global), x: int, y: int {
+fn render-image-definition screen: (addr screen), _self: (addr global), x: int, _y: int -> _/ecx: int {
   var self/esi: (addr global) <- copy _self
+  var y/ecx: int <- copy _y
+  set-cursor-position 0/screen, 0x20 0x20
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 4/fg 0/bg
   {
     var name-ah/eax: (addr handle array byte) <- get self, name
     var _name/eax: (addr array byte) <- lookup *name-ah
-    var name/ecx: (addr array byte) <- copy _name
+    var name/edx: (addr array byte) <- copy _name
     var x/eax: int <- draw-text-rightward-over-full-screen screen, "define ", x y, 7/fg=definition, 0xc5/bg=blue-bg
     x <- draw-text-rightward-over-full-screen screen, name, x y, 7/fg=definition, 0xc5/bg=blue-bg
   }
-  increment y
-  shift-left y, 4/log2fontheight
+  y <- increment  # skip definition line
+  # y is now in pixels
+  y <- shift-left 4/log2fontheight
   add-to x, 4
   shift-left x, 3/log2fontwidth
   var value-ah/eax: (addr handle cell) <- get self, value
@@ -638,10 +643,15 @@ fn render-image-definition screen: (addr screen), _self: (addr global), x: int, 
   var img-data-ah/eax: (addr handle stream byte) <- get second, text-data
   var img-data/eax: (addr stream byte) <- lookup *img-data-ah
   var img-h: (handle cell)
-  var img-cell-ah/ecx: (addr handle cell) <- address img-h
+  var img-cell-ah/edx: (addr handle cell) <- address img-h
   new-image img-cell-ah, img-data
   var img-cell/eax: (addr cell) <- lookup *img-cell-ah
   var img-ah/eax: (addr handle image) <- get img-cell, image-data
   var img/eax: (addr image) <- lookup *img-ah
-  render-image screen, img, x y, 0x80/w 0x80/h
+  var height/ebx: int <- scale-image-height img, 0x80/width
+  render-image screen, img, x y, 0x80/width height
+  y <- add height
+  # switch y back to characters
+  y <- scale-down-and-round-up y, 0x10/font-height
+  return y
 }
