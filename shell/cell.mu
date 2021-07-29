@@ -299,6 +299,7 @@ fn array? _x: (addr cell) -> _/eax: boolean {
 }
 
 fn new-image _out-ah: (addr handle cell), in: (addr stream byte) {
+  rewind-stream in
   var out-ah/eax: (addr handle cell) <- copy _out-ah
   allocate out-ah
   var out/eax: (addr cell) <- lookup *out-ah
