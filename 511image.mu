@@ -50,6 +50,8 @@ fn initialize-image _self: (addr image), in: (addr stream byte) {
 }
 
 # dispatch to a few variants with mostly identical boilerplate
+# TODO: if we have more resolution we could actually use it to improve
+# dithering
 fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int, width: int, height: int {
   var img/esi: (addr image) <- copy _img
   var type-a/eax: (addr int) <- get img, type
