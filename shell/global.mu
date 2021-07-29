@@ -164,7 +164,7 @@ fn render-globals screen: (addr screen), _self: (addr global-table), show-cursor
         compare render-image?, 0/false
         break-if-=
         render-image-definition screen, curr, 0/x y1
-        add-to y1, 6  # 1 line for definition, 4 lines (64px) for image, 1 line padding
+        add-to y1, 0xa  # 1 line for definition, 8 lines (128px) for image, 1 line padding
         break $render-globals:iter
       }
       var curr-input-ah/eax: (addr handle gap-buffer) <- get curr, input
@@ -643,5 +643,5 @@ fn render-image-definition screen: (addr screen), _self: (addr global), x: int, 
   var img-cell/eax: (addr cell) <- lookup *img-cell-ah
   var img-ah/eax: (addr handle image) <- get img-cell, image-data
   var img/eax: (addr image) <- lookup *img-ah
-  render-image screen, img, x y, 0x40/w 0x40/h
+  render-image screen, img, x y, 0x80/w 0x80/h
 }
