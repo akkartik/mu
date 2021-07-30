@@ -38,29 +38,44 @@ $next-word:check0:
     # . return out
     c7          0/subop/copy        0/mod/direct    7/rm32/edi    .           .             .           .           .               0/imm32           # copy to *edi
     c7          0/subop/copy        1/mod/*+disp8   7/rm32/edi    .           .             .           .           4/disp8         0/imm32           # copy to *(edi+4)
-    eb/jump  $next-word:end/disp8
+    e9/jump  $next-word:end/disp32
 $next-word:check-for-comment:
     # out->start = &line->data[line->read]
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/eax   0xc/disp8       .                 # copy esi+ecx+12 to eax
     89/copy                         0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to *edi
-    # if (line->data[line->read] == '#') out->end = &line->data[line->write]), skip rest of stream and return
+    # if (line->data[line->read] == '#') return rest of line
     # . eax = line->data[line->read]
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
     # . compare
     3d/compare-eax-and  0x23/imm32/pound
-    75/jump-if-!=  $next-word:regular-word/disp8
+    0f 85/jump-if-!=  $next-word:regular-word/disp32
 $next-word:comment:
-    # . out->end = &line->data[line->write]
-    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
+    # out->end = out->start
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/eax   0xc/disp8       .                 # copy esi+ecx+12 to eax
     89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(edi+4)
-    # . line->read = line->write
-    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
-    89/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(esi+4)
-    # . return
-    eb/jump  $next-word:end/disp8
+    # var write/ecx: int = line->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+$next-word:comment-loop:
+    # if (line->read >= line->write) break
+    39/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # compare *(esi+4) with ecx
+    0f 8d/jump-if->=  $next-word:comment-break/disp32
+    # ++line->read
+    ff          0/subop/increment   1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # increment *(esi+4)
+    # ++out->end
+    ff          0/subop/increment   1/mod/*+disp8   7/rm32/edi    .           .             .           .           4/disp8         .                 # increment *(edi+4)
+    # if (*out->end == newline) break
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(edi+4) to eax
+    8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
+    25/and-eax-with  0xff/imm32
+    3d/compare-eax-and  0xa/imm32/newline
+    0f 84/jump-if-=  $next-word:comment-break/disp32
+    # loop
+    e9/jump  $next-word:comment-loop/disp32
+$next-word:comment-break:
+    # return
+    e9/jump  $next-word:end/disp32
 $next-word:regular-word:
     # otherwise skip-chars-not-matching-whitespace(line)  # including trailing newline
     # . . push args

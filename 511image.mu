@@ -18,7 +18,7 @@ fn initialize-image _self: (addr image), in: (addr stream byte) {
   var self/esi: (addr image) <- copy _self
   var mode-storage: slice
   var mode/ecx: (addr slice) <- address mode-storage
-  next-word in, mode
+  next-word-skipping-comments in, mode
   {
     var P1?/eax: boolean <- slice-equal? mode, "P1"
     compare P1?, 0/false
@@ -90,10 +90,10 @@ fn initialize-image-from-pbm _self: (addr image), in: (addr stream byte) {
   var curr-word-storage: slice
   var curr-word/ecx: (addr slice) <- address curr-word-storage
   # load width, height
-  next-word in, curr-word
+  next-word-skipping-comments in, curr-word
   var tmp/eax: int <- parse-decimal-int-from-slice curr-word
   var width/edx: int <- copy tmp
-  next-word in, curr-word
+  next-word-skipping-comments in, curr-word
   tmp <- parse-decimal-int-from-slice curr-word
   var height/ebx: int <- copy tmp
   # save width, height
@@ -112,7 +112,7 @@ fn initialize-image-from-pbm _self: (addr image), in: (addr stream byte) {
   {
     compare i, capacity
     break-if->=
-    next-word in, curr-word
+    next-word-skipping-comments in, curr-word
     var src/eax: int <- parse-decimal-int-from-slice curr-word
     {
       var dest/ecx: (addr byte) <- index data, i
@@ -202,14 +202,14 @@ fn initialize-image-from-pgm _self: (addr image), in: (addr stream byte) {
   var curr-word-storage: slice
   var curr-word/ecx: (addr slice) <- address curr-word-storage
   # load width, height
-  next-word in, curr-word
+  next-word-skipping-comments in, curr-word
   var tmp/eax: int <- parse-decimal-int-from-slice curr-word
   var width/edx: int <- copy tmp
-  next-word in, curr-word
+  next-word-skipping-comments in, curr-word
   tmp <- parse-decimal-int-from-slice curr-word
   var height/ebx: int <- copy tmp
   # check and save color levels
-  next-word in, curr-word
+  next-word-skipping-comments in, curr-word
   {
     tmp <- parse-decimal-int-from-slice curr-word
     compare tmp, 0xff
@@ -234,7 +234,7 @@ fn initialize-image-from-pgm _self: (addr image), in: (addr stream byte) {
   {
     compare i, capacity
     break-if->=
-    next-word in, curr-word
+    next-word-skipping-comments in, curr-word
     var src/eax: int <- parse-decimal-int-from-slice curr-word
     {
       var dest/ecx: (addr byte) <- index data, i
@@ -688,13 +688,13 @@ fn initialize-image-from-ppm _self: (addr image), in: (addr stream byte) {
   var curr-word-storage: slice
   var curr-word/ecx: (addr slice) <- address curr-word-storage
   # load width, height
-  next-word in, curr-word
+  next-word-skipping-comments in, curr-word
   var tmp/eax: int <- parse-decimal-int-from-slice curr-word
   var width/edx: int <- copy tmp
-  next-word in, curr-word
+  next-word-skipping-comments in, curr-word
   tmp <- parse-decimal-int-from-slice curr-word
   var height/ebx: int <- copy tmp
-  next-word in, curr-word
+  next-word-skipping-comments in, curr-word
   # check color levels
   {
     tmp <- parse-decimal-int-from-slice curr-word
@@ -725,7 +725,7 @@ fn initialize-image-from-ppm _self: (addr image), in: (addr stream byte) {
   {
     compare i, capacity
     break-if->=
-    next-word in, curr-word
+    next-word-skipping-comments in, curr-word
     var src/eax: int <- parse-decimal-int-from-slice curr-word
     {
       var dest/ecx: (addr byte) <- index data, i
@@ -1110,4 +1110,11 @@ fn scale-image-height _img: (addr image), width: int -> _/ebx: int {
   result-f <- multiply width-f
   var result/ebx: int <- convert result-f
   return result
+}
+
+fn next-word-skipping-comments line: (addr stream byte), out: (addr slice) {
+  next-word line, out
+  var retry?/eax: boolean <- slice-starts-with? out, "#"
+  compare retry?, 0/false
+  loop-if-!=
 }

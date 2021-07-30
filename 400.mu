@@ -96,8 +96,8 @@ sig to-decimal-digit in: grapheme -> _/eax: int
 # bad name alert
 # next-word really tokenizes
 # next-raw-word really reads whitespace-separated words
-sig next-word line: (addr stream byte), out: (addr slice)  # skips '#' comments
-sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not skip '#' comments
+sig next-word line: (addr stream byte), out: (addr slice)  # merges '#' comments into a single word
+sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not merge '#' comments
 sig skip-chars-matching in: (addr stream byte), delimiter: byte
 sig skip-chars-matching-whitespace in: (addr stream byte)
 sig skip-chars-not-matching in: (addr stream byte), delimiter: byte
