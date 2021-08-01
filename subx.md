@@ -87,18 +87,24 @@ the one at address `edx`:
 
 ## The syntax of SubX programs
 
-SubX programs map to the same ELF binaries that a conventional Linux system
-uses. Linux ELF binaries consist of a series of _segments_. In particular, they
-distinguish between code and data. Correspondingly, SubX programs consist of a
-series of segments, each starting with a header line: `==` followed by a name
-and approximate starting address.
+SubX programs consist of functions and global variables. It's very important
+the two stay separate; executing data as code is the most common vector for
+security issues. Consequently, SubX programs maintain separate code and data
+_segments_. To add to a segment, specify it using a `==` header.
 
-All code must lie in a segment called 'code'.
+Details of segment header syntax depend on where you want the program to run:
+
+* On Linux, segment headers consist of `==`, a name and an approximate
+  starting address (which might perturb slightly during translation)
+
+* For bootable disks that run without an OS, segment headers consist of `==`
+  and a name. Boot disks really only have one segment of contiguous memory,
+  and segment headers merely affect parsing and error-checking.
 
 Segments can be added to.
 
 ```sh
-== code 0x09000000  # first mention requires starting address
+== code 0x09000000  # first mention requires starting address on Linux
 ...A...
 
 == data 0x0a000000
@@ -132,12 +138,9 @@ Functions are called using the following syntax:
 Function arguments must be either literals (integers or strings) or a reg/mem
 operand using the syntax in the previous section.
 
-A special label is `Entry`, which can be used to specify/override the entry
-point of the program. It doesn't have to be unique, and the latest definition
-will override earlier ones.
-
-(The `Entry` label, along with duplicate segment headers, allows programs to
-be built up incrementally out of multiple [_layers_](http://akkartik.name/post/wart-layers).)
+A special label on Linux is `Entry`, which can be used to specify/override the
+entry point of the program. It doesn't have to be unique, and the latest
+definition will override earlier ones.
 
 Another special pair of labels are the block delimiters `{` and `}`. They can
 be nested, and jump instructions can take arguments `loop` or `break` that
