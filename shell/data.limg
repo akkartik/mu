@@ -40,6 +40,7 @@
     (cadr . [define cadr (compose car cdr)])
     (cddr . [define cddr (compose cdr cdr)])
     (cdar . [define cdar (compose cdr car)])
+    (val . [define val cadr])
     (some . [def (some f xs)
   if (no xs)
     ()
@@ -112,9 +113,10 @@
   aif (assoc alist key)
     (cdr it)
     ()])
-    (++ . [mac (++ var) `(set ,var (,var + 1))])
     (+= . [mac (var += inc)
   `(set ,var (,var + ,inc))])
+    (++ . [mac (++ var)
+  `(+= ,var 1)])
     (for . [mac (for var init test update . body)
   `(let ,var ,init
      (while ,test
