@@ -464,6 +464,7 @@ fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-tabl
     # persisted until the next call to ctrl-s.
     store-state data-disk, self, globals
     #
+#?     turn-on-debug-print
     run-sandbox self, globals
     return
   }

@@ -15,6 +15,8 @@ fn macroexpand expr-ah: (addr handle cell), globals: (addr global-table), trace:
   }
   # }}}
   trace-lower trace
+#?   clear-screen 0
+#?   set-cursor-position 0, 0x20 0x20
   # loop until convergence
   {
     var error?/eax: boolean <- has-errors? trace
@@ -45,6 +47,11 @@ fn macroexpand expr-ah: (addr handle cell), globals: (addr global-table), trace:
 # return true if we found any macros
 fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), trace: (addr trace) -> _/eax: boolean {
   var expr-ah/esi: (addr handle cell) <- copy _expr-ah
+  {
+    compare expr-ah, 0
+    break-if-!=
+    abort "macroexpand-iter: NULL expr-ah"
+  }
   # trace "macroexpand-iter " expr {{{
   {
     var should-trace?/eax: boolean <- should-trace? trace
@@ -61,8 +68,14 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
   }
   # }}}
   trace-lower trace
+  debug-print "a", 7/fg, 0/bg
   # if expr is a non-pair, return
   var expr/eax: (addr cell) <- lookup *expr-ah
+  {
+    compare expr, 0
+    break-if-!=
+    abort "macroexpand-iter: NULL expr"
+  }
   {
     var nil?/eax: boolean <- nil? expr
     compare nil?, 0/false
@@ -72,6 +85,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
+  debug-print "b", 7/fg, 0/bg
   {
     var expr-type/eax: (addr int) <- get expr, type
     compare *expr-type, 0/pair
@@ -81,6 +95,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
+  debug-print "c", 7/fg, 0/bg
   # if expr is a literal pair, return
   var first-ah/ebx: (addr handle cell) <- get expr, left
   var rest-ah/ecx: (addr handle cell) <- get expr, right
@@ -94,6 +109,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
+  debug-print "d", 7/fg, 0/bg
   {
     var litmac?/eax: boolean <- litmac? first
     compare litmac?, 0/false
@@ -103,6 +119,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
+  debug-print "e", 7/fg, 0/bg
   {
     var litimg?/eax: boolean <- litimg? first
     compare litimg?, 0/false
@@ -112,6 +129,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
+  debug-print "f", 7/fg, 0/bg
   var result/edi: boolean <- copy 0/false
   # for each builtin, expand only what will later be evaluated
   $macroexpand-iter:anonymous-function: {
@@ -160,6 +178,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     # }}}
     return result
   }
+  debug-print "g", 7/fg, 0/bg
   # builtins with "special" evaluation rules
   $macroexpand-iter:quote: {
     # trees starting with single quote create literals
@@ -171,6 +190,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
+  debug-print "h", 7/fg, 0/bg
   $macroexpand-iter:backquote: {
     # nested backquote not supported for now
     var backquote?/eax: boolean <- symbol-equal? first, "`"
@@ -188,6 +208,23 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     trace-higher trace
     return 0/false
   }
+  $macroexpand-iter:unquote: {
+    # nested backquote not supported for now
+    var unquote?/eax: boolean <- symbol-equal? first, ","
+    compare unquote?, 0/false
+    break-if-=
+    error trace, "unquote (,) must be within backquote (`)"
+    return 0/false
+  }
+  $macroexpand-iter:unquote-splice: {
+    # nested backquote not supported for now
+    var unquote-splice?/eax: boolean <- symbol-equal? first, ",@"
+    compare unquote-splice?, 0/false
+    break-if-=
+    error trace, "unquote (,@) must be within backquote (`)"
+    return 0/false
+  }
+  debug-print "i", 7/fg, 0/bg
   $macroexpand-iter:define: {
     # trees starting with "define" define globals
     var define?/eax: boolean <- symbol-equal? first, "define"
@@ -218,6 +255,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     # }}}
     return macro-found?
   }
+  debug-print "j", 7/fg, 0/bg
   $macroexpand-iter:set: {
     # trees starting with "set" mutate bindings
     var set?/eax: boolean <- symbol-equal? first, "set"
@@ -248,6 +286,7 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
     # }}}
     return macro-found?
   }
+  debug-print "k", 7/fg, 0/bg
   # 'and' is like a function for macroexpansion purposes
   # 'or' is like a function for macroexpansion purposes
   # 'if' is like a function for macroexpansion purposes
@@ -301,8 +340,15 @@ fn macroexpand-iter _expr-ah: (addr handle cell), globals: (addr global-table), 
   trace-text trace, "mac", "recursing into function definition"
   var curr-ah/ebx: (addr handle cell) <- copy first-ah
   $macroexpand-iter:loop: {
+    debug-print "l", 7/fg, 0/bg
 #?     clear-screen 0/screen
 #?     dump-trace trace
+    {
+      var foo/eax: (addr cell) <- lookup *curr-ah
+      compare foo, 0
+      break-if-!=
+      abort "macroexpand-iter: NULL in loop"
+    }
     var macro-found?/eax: boolean <- macroexpand-iter curr-ah, globals, trace
     result <- or macro-found?
     var error?/eax: boolean <- has-errors? trace
