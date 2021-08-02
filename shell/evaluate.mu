@@ -15,7 +15,11 @@ fn evaluate _in-ah: (addr handle cell), _out-ah: (addr handle cell), env-h: (han
     var running-tests?/eax: boolean <- running-tests?
     compare running-tests?, 0/false
     break-if-!=
+    var old-x/eax: int <- copy 0
+    var old-y/ecx: int <- copy 0
+    old-x, old-y <- cursor-position 0/screen
     show-stack-state
+    set-cursor-position 0/screen, old-x, old-y
   }
   # show intermediate progress on screen if necessary
   # treat input at the real keyboard as interrupting
