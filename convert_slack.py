@@ -1,7 +1,7 @@
 # Import JSON from a Slack admin export.
 #
 # Images downloaded as follows:
-#   grep image_72 foc/ -r |grep -v users.json |column 3 |sort |uniq |sed 's/?.*//' |sed 's,\\,,g' |sed 's/"//' |sed 's/", $//' > images.list
+#   grep image_72 . -r |grep -v users.json |column 3 |sort |uniq |sed 's/?.*//' |sed 's,\\,,g' |sed 's/"//' |sed 's/", $//' > images.list
 #   wget -i images.list --wait=0.1
 #   # fix some lying images
 #   for f in $(file *.jpg |grep PNG |sed 's/:.*//'); do mv -i $f $(echo $f |sed 's/\.jpg$/.png/'); done
@@ -21,10 +21,9 @@ from os import listdir
 from os.path import isfile, join, basename, splitext
 from urllib.parse import urlparse
 
-channel_id = {}  # name -> index
-channels = []
+channels = {}
 
-user_id = {}
+user_id = {}  # name -> index
 users = []
 
 items = []
@@ -53,7 +52,7 @@ def contents(filename):
                 stderr.write(repr(item)+'\n')
 
 def filenames(dir):
-    for filename in listdir(dir):
+    for filename in sorted(listdir(dir)):
         result = join(dir, filename)
         if isfile(result):
             yield result
@@ -75,7 +74,7 @@ def load_users():
             if user['id'] not in user_id:
                 if 'real_name' not in user:
                     user['real_name'] = ''
-                print(f"(\"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
+                print(f"({json.dumps(user['id'])} \"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
 #?                 users.append({
 #?                     'id': user['id'],
 #?                     'username': user['name'],
@@ -85,11 +84,19 @@ def load_users():
                 user_id[user['id']] = length
                 length += 1
 
+def load_channels():
+    stderr.write('loading channels..\n')
+    with open('channels.json') as f:
+        for channel in json.load(f):
+            channels[channel['id']] = channel['name']
+
+load_channels()
 load_users()
-for dir in argv[1:]:
+for dir in channels.values():
     try:
         for filename in filenames(dir):
+            print(filename)
             for item in contents(filename):
-                print(f"({json.dumps(item['name'])} {item['by']} {json.dumps(item['contents'])})")
+                print(f"({json.dumps(item['name'])} {json.dumps(dir)} {item['by']} {json.dumps(item['contents'])})")
     except NotADirectoryError:
         pass
