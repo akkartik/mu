@@ -1,7 +1,9 @@
-# Import JSON from a Slack admin export.
+# Import JSON from a Slack admin export into a disk image Qemu can load.
+#
+# Dependencies: python, netpbm
 #
 # Images downloaded as follows:
-#   grep image_72 . -r |grep -v users.json |column 3 |sort |uniq |sed 's/?.*//' |sed 's,\\,,g' |sed 's/"//' |sed 's/", $//' > images.list
+#   grep image_72 . -r |grep -v users.json |awk '{print $3}' |sort |uniq |sed 's/?.*//' |sed 's,\\,,g' |sed 's/"//' |sed 's/",$//' > images.list
 #   wget -i images.list --wait=0.1
 #   # fix some lying images
 #   for f in $(file *.jpg |grep PNG |sed 's/:.*//'); do mv -i $f $(echo $f |sed 's/\.jpg$/.png/'); done
@@ -10,7 +12,11 @@
 #   for f in *.jpg; do jpegtopnm $f |pnmtopnm -plain > ppm/$(echo $f |sed 's/\.jpg$//').ppm; done
 #   for f in *.png; do png2pnm -n $f > ppm/$(echo $f |sed 's/\.png$//').ppm; done
 #
-# Dependencies: python netpbm and my 'column' perl script
+# To construct the disk image:
+#   dd if=/dev/zero of=data.img count=201600  # 100MB
+#   python convert_slack.py |dd of=data.img conv=notrunc
+# Currently this process yields errors for ~70 items on the Future of Software
+# group. We fail to load those.
 #
 # Notes on input format:
 #   Redundant 'type' field that's always 'message'. Probably an "enterprise" feature.
