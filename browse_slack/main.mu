@@ -79,5 +79,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   }
 }
 
-fn parse s: (addr stream byte), users: (addr array user), channels: (addr array channel), items: (addr array item) {
+fn parse in: (addr stream byte), users: (addr array user), channels: (addr array channel), items: (addr array item) {
+  var line-storage: (stream byte 0x18000)
+  var line/ecx: (addr stream byte) <- address line-storage
 }

@@ -2,7 +2,11 @@
 #
 # Dependencies: python, netpbm
 #
-# Images downloaded as follows:
+# Step 1: download a Slack archive
+#
+# Step 2: download user avatars to subdirectory images/ and convert them to PPM in subdirectory images/ppm/
+#   mkdir images
+#   cd images
 #   grep image_72 . -r |grep -v users.json |awk '{print $3}' |sort |uniq |sed 's/?.*//' |sed 's,\\,,g' |sed 's/"//' |sed 's/",$//' > images.list
 #   wget -i images.list --wait=0.1
 #   # fix some lying images
@@ -12,9 +16,10 @@
 #   for f in *.jpg; do jpegtopnm $f |pnmtopnm -plain > ppm/$(echo $f |sed 's/\.jpg$//').ppm; done
 #   for f in *.png; do png2pnm -n $f > ppm/$(echo $f |sed 's/\.png$//').ppm; done
 #
-# To construct the disk image:
+# Step 3: construct a disk image out of the archives and avatars
+#   cd ../..  # go back to parent of images/
 #   dd if=/dev/zero of=data.img count=201600  # 100MB
-#   python convert_slack.py |dd of=data.img conv=notrunc
+#   python path/to/convert_slack.py |dd of=data.img conv=notrunc
 # Currently this process yields errors for ~70 items on the Future of Software
 # group. We fail to load those.
 #
@@ -65,7 +70,7 @@ def filenames(dir):
 
 def look_up_ppm_image(url):
     file_root = splitext(basename(urlparse(url).path))[0]
-    filename = f"images2/ppm/{file_root}.ppm"
+    filename = f"images/ppm/{file_root}.ppm"
     if isfile(filename):
         with open(filename) as f:
             return f.read()
