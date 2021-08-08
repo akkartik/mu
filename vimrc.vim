@@ -93,6 +93,7 @@ inoremap <Leader>aha <Esc>F<Space>a(addr handle array <Esc>A)
 inoremap <Leader>as <Esc>F<Space>a(addr stream <Esc>A)
 inoremap <Leader>hs <Esc>F<Space>a(handle stream <Esc>A)
 inoremap <Leader>ahs <Esc>F<Space>a(addr handle stream <Esc>A)
+inoremap <Leader>as <Esc>F<Space>a(addr stream <Esc>A)
 inoremap <Leader>o <Esc>F<Space>a(offset <Esc>A)
 inoremap ,- <-
 inoremap -. ->
