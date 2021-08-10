@@ -32,6 +32,8 @@ from os import listdir
 from os.path import isfile, join, basename, splitext
 from urllib.parse import urlparse
 
+channels = {channel['id']: channel['name'] for channel in json.load(open('channels.json'))}
+
 items = []
 
 def look_up_ppm_image(url):
@@ -56,8 +58,6 @@ def load_users():
                 print(f"({json.dumps(user['id'])} \"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
                 user_id[user['id']] = length
                 length += 1
-
-channels = {channel['id']: channel['name'] for channel in json.load(open('channels.json'))}
 
 def contents(filename):
     with open(filename) as f:
