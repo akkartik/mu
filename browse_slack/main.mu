@@ -9,7 +9,7 @@ type user {
   id: (handle array byte)
   name: (handle array byte)
   real-name: (handle array byte)
-  avatar: (handle image)
+  avatar: image
 }
 
 type item {
@@ -162,12 +162,83 @@ fn user-record? record: (addr stream byte) -> _/eax: boolean {
   return 0/false
 }
 
-fn parse-user record: (addr stream byte), users: (addr array user), user-idx: int {
+fn parse-user record: (addr stream byte), _users: (addr array user), user-idx: int {
+  var users/esi: (addr array user) <- copy _users
+  var offset/eax: (offset user) <- compute-offset users, user-idx
+  var user/esi: (addr user) <- index users, offset
+  #
+  var s-storage: (stream byte 0x40)
+  var s/ecx: (addr stream byte) <- address s-storage
+  #
+  rewind-stream record
+  var paren/eax: byte <- read-byte record
+  compare paren, 0x28/open-paren
+  {
+    break-if-=
+    abort "parse-user: ("
+  }
+  # user id
+  skip-chars-matching-whitespace record
+  var double-quote/eax: byte <- read-byte record
+  compare double-quote, 0x22/double-quote
+  {
+    break-if-=
+    abort "parse-user: id"
+  }
+  next-json-string record, s
+  var dest/eax: (addr handle array byte) <- get user, id
+  stream-to-array s, dest
+  # user name
+  skip-chars-matching-whitespace record
+  var double-quote/eax: byte <- read-byte record
+  compare double-quote, 0x22/double-quote
+  {
+    break-if-=
+    abort "parse-user: name"
+  }
+  next-json-string record, s
+  var dest/eax: (addr handle array byte) <- get user, name
+  stream-to-array s, dest
+  # real name
+  skip-chars-matching-whitespace record
+  var double-quote/eax: byte <- read-byte record
+  compare double-quote, 0x22/double-quote
+  {
+    break-if-=
+    abort "parse-user: real-name"
+  }
+  next-json-string record, s
+  var dest/eax: (addr handle array byte) <- get user, real-name
+  stream-to-array s, dest
+  # avatar
+  skip-chars-matching-whitespace record
+  var open-bracket/eax: byte <- read-byte record
+  compare open-bracket, 0x5b/open-bracket
+  {
+    break-if-=
+    abort "parse-user: avatar"
+  }
+  skip-chars-matching-whitespace record
+  var c/eax: byte <- peek-byte record
+  {
+    compare c, 0x5d/close-bracket
+    break-if-=
+    var dest/eax: (addr image) <- get user, avatar
+    initialize-image dest, record
+  }
 }
 
 fn parse-item record: (addr stream byte), channels: (addr array channel), items: (addr array item), item-idx: int {
+  rewind-stream record
+  var paren/eax: byte <- read-byte record
+  compare paren, 0x28/open-paren
+  {
+    break-if-=
+    abort "parse-item: ("
+  }
 }
 
+# includes trailing double quote
 fn slurp-json-string in: (addr stream byte), out: (addr stream byte) {
   # open quote is already slurped
   {
@@ -175,7 +246,7 @@ fn slurp-json-string in: (addr stream byte), out: (addr stream byte) {
       var eof?/eax: boolean <- stream-empty? in
       compare eof?, 0/false
       break-if-=
-      abort "slurp-json-string: truncated"
+      abort "next-json-string: truncated"
     }
     var c/eax: byte <- read-byte in
     {
@@ -184,6 +255,35 @@ fn slurp-json-string in: (addr stream byte), out: (addr stream byte) {
     }
     compare c, 0x22/double-quote
     break-if-=
+    compare c, 0x5c/backslash
+    {
+      break-if-!=
+      # read next byte raw
+      c <- read-byte in
+      var c-int/eax: int <- copy c
+      append-byte out, c-int
+    }
+    loop
+  }
+}
+
+# drops trailing double quote
+fn next-json-string in: (addr stream byte), out: (addr stream byte) {
+  # open quote is already read
+  {
+    {
+      var eof?/eax: boolean <- stream-empty? in
+      compare eof?, 0/false
+      break-if-=
+      abort "slurp-json-string: truncated"
+    }
+    var c/eax: byte <- read-byte in
+    compare c, 0x22/double-quote
+    break-if-=
+    {
+      var c-int/eax: int <- copy c
+      append-byte out, c-int
+    }
     compare c, 0x5c/backslash
     {
       break-if-!=
