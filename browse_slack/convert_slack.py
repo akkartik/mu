@@ -70,11 +70,7 @@ def contents(filename):
             except KeyError:
                 stderr.write(repr(item)+'\n')
 
-def filenames(dir):
-    for filename in sorted(listdir(dir)):
-        yield join(dir, filename)
-
 for channel in json.load(open('channels.json')):
-    for filename in filenames(channel['name']):
-        for item in contents(filename):
+    for filename in sorted(listdir(channel['name'])):
+        for item in contents(join(channel['name'], filename)):
             print(f"({json.dumps(item['name'])} {json.dumps(channel['name'])} {item['by']} {json.dumps(item['contents'])})")
