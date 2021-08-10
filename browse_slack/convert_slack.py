@@ -42,8 +42,8 @@ def look_up_ppm_image(url):
             return f.read()
 
 user_id = {}  # name -> index
-length = 0
 with open('users.json') as f:
+    length = 0
     for user in json.load(f):
         if 'real_name' not in user:
             user['real_name'] = ''
