@@ -35,7 +35,6 @@ from urllib.parse import urlparse
 channels = {}
 
 user_id = {}  # name -> index
-users = []
 
 items = []
 
@@ -49,7 +48,6 @@ def contents(filename):
                       'name': f"/{item['thread_ts']}/{item['ts']}",
                       'contents': item['text'],
                       'by': user_id[item['user']],
-#?                       'by': users[user_id[item['user']]]['avatar'][0:100],
                     }
                 else:
                     # top-level post
@@ -57,7 +55,6 @@ def contents(filename):
                       'name': f"/{item['ts']}",
                       'contents': item['text'],
                       'by': user_id[item['user']],
-#?                       'by': users[user_id[item['user']]]['avatar'][0:100],
                     }
             except KeyError:
                 stderr.write(repr(item)+'\n')
@@ -86,12 +83,6 @@ def load_users():
                 if 'real_name' not in user:
                     user['real_name'] = ''
                 print(f"({json.dumps(user['id'])} \"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
-#?                 users.append({
-#?                     'id': user['id'],
-#?                     'username': user['name'],
-#?                     'name': user['real_name'],
-#?                     'avatar': look_up_ppm_image(user['profile']['image_72']),
-#?                 })
                 user_id[user['id']] = length
                 length += 1
 
