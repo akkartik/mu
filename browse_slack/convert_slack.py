@@ -38,33 +38,6 @@ user_id = {}  # name -> index
 
 items = []
 
-def contents(filename):
-    with open(filename) as f:
-        for item in json.load(f):
-            try:
-                if 'thread_ts' in item:
-                    # comment
-                    yield {
-                      'name': f"/{item['thread_ts']}/{item['ts']}",
-                      'contents': item['text'],
-                      'by': user_id[item['user']],
-                    }
-                else:
-                    # top-level post
-                    yield {
-                      'name': f"/{item['ts']}",
-                      'contents': item['text'],
-                      'by': user_id[item['user']],
-                    }
-            except KeyError:
-                stderr.write(repr(item)+'\n')
-
-def filenames(dir):
-    for filename in sorted(listdir(dir)):
-        result = join(dir, filename)
-        if isfile(result):
-            yield result
-
 def look_up_ppm_image(url):
     file_root = splitext(basename(urlparse(url).path))[0]
     filename = f"images/ppm/{file_root}.ppm"
@@ -91,6 +64,33 @@ def load_channels():
     with open('channels.json') as f:
         for channel in json.load(f):
             channels[channel['id']] = channel['name']
+
+def contents(filename):
+    with open(filename) as f:
+        for item in json.load(f):
+            try:
+                if 'thread_ts' in item:
+                    # comment
+                    yield {
+                      'name': f"/{item['thread_ts']}/{item['ts']}",
+                      'contents': item['text'],
+                      'by': user_id[item['user']],
+                    }
+                else:
+                    # top-level post
+                    yield {
+                      'name': f"/{item['ts']}",
+                      'contents': item['text'],
+                      'by': user_id[item['user']],
+                    }
+            except KeyError:
+                stderr.write(repr(item)+'\n')
+
+def filenames(dir):
+    for filename in sorted(listdir(dir)):
+        result = join(dir, filename)
+        if isfile(result):
+            yield result
 
 load_channels()
 load_users()
