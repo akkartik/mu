@@ -79,10 +79,7 @@ def filenames(dir):
             yield result
 
 for dir in channels.values():
-    try:
-        for filename in filenames(dir):
-            print(filename)
-            for item in contents(filename):
-                print(f"({json.dumps(item['name'])} {json.dumps(dir)} {item['by']} {json.dumps(item['contents'])})")
-    except NotADirectoryError:
-        pass
+    for filename in filenames(dir):
+        print(filename)
+        for item in contents(filename):
+            print(f"({json.dumps(item['name'])} {json.dumps(dir)} {item['by']} {json.dumps(item['contents'])})")
