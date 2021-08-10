@@ -47,8 +47,6 @@ with open('users.json') as f:
         print(f"({json.dumps(user['id'])} \"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
         user_id[user['id']] = idx
 
-items = []
-
 def by(item):
     return user_id[item['user']]
 
