@@ -1,4 +1,4 @@
-# Import JSON from a Slack admin export into a disk image Qemu can load.
+# Import JSON from a Slack admin export into a disk image Mu can load.
 #
 # Dependencies: python, netpbm
 #
@@ -20,7 +20,7 @@
 #   cd ../..  # go back to parent of images/
 #   dd if=/dev/zero of=data.img count=201600  # 100MB
 #   python path/to/convert_slack.py |dd of=data.img conv=notrunc
-# Currently this process yields errors for ~300 items (~70 items and their comments)
+# Currently this process yields errors for ~300 items (~70 posts and their comments)
 # on the Future of Software group (https://futureofcoding.org/community). We fail to load those.
 #
 # Notes on input format:
