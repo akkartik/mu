@@ -42,9 +42,8 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "loading data disk..", 3/fg 0/bg
   var _s/eax: (addr stream byte) <- lookup *s-ah
   var s/ebx: (addr stream byte) <- copy _s
-#?   load-sectors data-disk, 0/lba, 0x20000/sectors, s
-#?   load-sectors data-disk, 0/lba, 0x7000/sectors, s
-  load-sectors data-disk, 0/lba, 0x10/sectors, s
+  load-sectors data-disk, 0/lba, 0x400/sectors, s  # large enough for test_data
+#?   load-sectors data-disk, 0/lba, 0x20000/sectors, s  # largest size tested; _slow_
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "done", 3/fg 0/bg
   # parse global data structures out of the stream
   var users-h: (handle array user)
