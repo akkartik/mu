@@ -72,9 +72,7 @@ def contents(filename):
 
 def filenames(dir):
     for filename in sorted(listdir(dir)):
-        result = join(dir, filename)
-        if isfile(result):
-            yield result
+        yield join(dir, filename)
 
 for channel in json.load(open('channels.json')):
     for filename in filenames(channel['name']):
