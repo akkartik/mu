@@ -78,6 +78,5 @@ def filenames(dir):
 
 for channel in json.load(open('channels.json')):
     for filename in filenames(channel['name']):
-        print(filename)
         for item in contents(filename):
             print(f"({json.dumps(item['name'])} {json.dumps(channel['name'])} {item['by']} {json.dumps(item['contents'])})")
