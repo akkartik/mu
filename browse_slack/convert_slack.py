@@ -45,12 +45,11 @@ user_id = {}  # name -> index
 length = 0
 with open('users.json') as f:
     for user in json.load(f):
-        if user['id'] not in user_id:
-            if 'real_name' not in user:
-                user['real_name'] = ''
-            print(f"({json.dumps(user['id'])} \"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
-            user_id[user['id']] = length
-            length += 1
+        if 'real_name' not in user:
+            user['real_name'] = ''
+        print(f"({json.dumps(user['id'])} \"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
+        user_id[user['id']] = length
+        length += 1
 
 items = []
 
