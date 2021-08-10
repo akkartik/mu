@@ -32,8 +32,6 @@ from os import listdir
 from os.path import isfile, join, basename, splitext
 from urllib.parse import urlparse
 
-user_id = {}  # name -> index
-
 items = []
 
 def look_up_ppm_image(url):
@@ -42,6 +40,8 @@ def look_up_ppm_image(url):
     if isfile(filename):
         with open(filename) as f:
             return f.read()
+
+user_id = {}  # name -> index
 
 def load_users():
     stderr.write('loading users..\n')
