@@ -32,8 +32,6 @@ from os import listdir
 from os.path import isfile, join, basename, splitext
 from urllib.parse import urlparse
 
-channels = {}
-
 user_id = {}  # name -> index
 
 items = []
@@ -59,11 +57,7 @@ def load_users():
                 user_id[user['id']] = length
                 length += 1
 
-def load_channels():
-    stderr.write('loading channels..\n')
-    with open('channels.json') as f:
-        for channel in json.load(f):
-            channels[channel['id']] = channel['name']
+channels = {channel['id']: channel['name'] for channel in json.load(open('channels.json'))}
 
 def contents(filename):
     with open(filename) as f:
@@ -92,7 +86,6 @@ def filenames(dir):
         if isfile(result):
             yield result
 
-load_channels()
 load_users()
 for dir in channels.values():
     try:
