@@ -20,8 +20,8 @@
 #   cd ../..  # go back to parent of images/
 #   dd if=/dev/zero of=data.img count=201600  # 100MB
 #   python path/to/convert_slack.py |dd of=data.img conv=notrunc
-# Currently this process yields errors for ~70 items on the Future of Software
-# group. We fail to load those.
+# Currently this process yields errors for ~300 items (~70 items and their comments)
+# on the Future of Software group (https://futureofcoding.org/community). We fail to load those.
 #
 # Notes on input format:
 #   Redundant 'type' field that's always 'message'. Probably an "enterprise" feature.
@@ -50,16 +50,23 @@ with open('users.json') as f:
 def by(item):
     return user_idx[item['user']]
 
+item_idx = {}
+def parent(item):
+    if 'thread_ts' in item and item['thread_ts'] != item['ts']:
+        # comment
+        return item_idx[item['thread_ts']]
+    else:
+        return -1
+
+idx = 0
 for channel in json.load(open('channels.json')):
     for filename in sorted(listdir(channel['name'])):
         with open(join(channel['name'], filename)) as f:
             for item in json.load(f):
                 try:
-                    if 'thread_ts' in item:
-                        # comment
-                        print(f"({json.dumps(item['ts'])} {json.dumps(item['thread_ts'])} {json.dumps(channel['name'])} {by(item)} {json.dumps(item['text'])})")
-                    else:
-                        # top-level post
-                        print(f"({json.dumps(item['ts'])} {json.dumps(               '')} {json.dumps(channel['name'])} {by(item)} {json.dumps(item['text'])})")
+#?                     stderr.write(repr(item)+'\n')
+                    print(f"({json.dumps(item['ts'])} {parent(item)} {json.dumps(channel['name'])} {by(item)} {json.dumps(item['text'])})")
+                    item_idx[item['ts']] = idx
+                    idx += 1
                 except KeyError:
                     stderr.write(repr(item)+'\n')
