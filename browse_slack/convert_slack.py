@@ -42,20 +42,15 @@ def look_up_ppm_image(url):
             return f.read()
 
 user_id = {}  # name -> index
-
-def load_users():
-    stderr.write('loading users..\n')
-    length = 0
-    with open('users.json') as f:
-        for user in json.load(f):
-#?             if user['deleted']:
-#?                 continue
-            if user['id'] not in user_id:
-                if 'real_name' not in user:
-                    user['real_name'] = ''
-                print(f"({json.dumps(user['id'])} \"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
-                user_id[user['id']] = length
-                length += 1
+length = 0
+with open('users.json') as f:
+    for user in json.load(f):
+        if user['id'] not in user_id:
+            if 'real_name' not in user:
+                user['real_name'] = ''
+            print(f"({json.dumps(user['id'])} \"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
+            user_id[user['id']] = length
+            length += 1
 
 items = []
 
@@ -86,7 +81,6 @@ def filenames(dir):
         if isfile(result):
             yield result
 
-load_users()
 for dir in channels.values():
     try:
         for filename in filenames(dir):
