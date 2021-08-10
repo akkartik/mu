@@ -67,6 +67,6 @@ for channel in json.load(open('channels.json')):
 #?                     stderr.write(repr(item)+'\n')
                     print(f"({json.dumps(item['ts'])} {parent(item)} {json.dumps(channel['name'])} {by(item)} {json.dumps(item['text'])})")
                     item_idx[item['ts']] = idx
-                    idx += 1
+                    idx += 1  # only increment when actually used and no exception raised
                 except KeyError:
                     stderr.write(repr(item)+'\n')

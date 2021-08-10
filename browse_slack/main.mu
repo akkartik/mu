@@ -18,11 +18,7 @@ type item {
   by: int  # user index
   text: (handle array byte)
   parent: int  # item index
-}
-
-type post {
-  root: int  # item index
-  comments: (handle array int)  # item indices
+  comments: (handle array int)
 }
 
 # globals:
@@ -32,8 +28,9 @@ type post {
 #
 # flows:
 #   channel -> posts
-#   user -> posts
+#   user -> posts|comments
 #   post -> comments
+#   comment -> post|comments
 #   keywords -> posts|comments
 
 # I try to put all the static buffer sizes in this function.
@@ -80,6 +77,42 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 }
 
 fn parse in: (addr stream byte), users: (addr array user), channels: (addr array channel), items: (addr array item) {
-  var line-storage: (stream byte 0x18000)
-  var line/ecx: (addr stream byte) <- address line-storage
+  # 'in' consists of a long, flat sequence of records surrounded by parens
+  var record-storage: (stream byte 0x18000)
+  var record/ecx: (addr stream byte) <- address record-storage
+  var user-idx/edx: int <- copy 0
+  var item-idx/ebx: int <- copy 0
+  {
+    var done?/eax: boolean <- stream-empty? in
+    compare done?, 0/false
+    break-if-!=
+    parse-record in, record
+    var user?/eax: boolean <- user-record? record
+    {
+      compare user?, 0/false
+      break-if-=
+      parse-user record, users, user-idx
+      user-idx <- increment
+    }
+    {
+      compare user?, 0/false
+      break-if-!=
+      parse-item record, channels, items, item-idx
+      item-idx <- increment
+    }
+    loop
+  }
+}
+
+fn parse-record in: (addr stream byte), out: (addr stream byte) {
+}
+
+fn user-record? record: (addr stream byte) -> _/eax: boolean {
+  return 0/false
+}
+
+fn parse-user record: (addr stream byte), users: (addr array user), user-idx: int {
+}
+
+fn parse-item record: (addr stream byte), channels: (addr array channel), items: (addr array item), item-idx: int {
 }
