@@ -50,19 +50,16 @@ with open('users.json') as f:
 def by(item):
     return user_id[item['user']]
 
-def id(item):
-    if 'thread_ts' in item:
-        # comment
-        return f"/{item['thread_ts']}/{item['ts']}"
-    else:
-        # top-level post
-        return                     f"/{item['ts']}"
-
 for channel in json.load(open('channels.json')):
     for filename in sorted(listdir(channel['name'])):
         with open(join(channel['name'], filename)) as f:
             for item in json.load(f):
                 try:
-                    print(f"({json.dumps(id(item))} {json.dumps(channel['name'])} {by(item)} {json.dumps(item['text'])})")
+                    if 'thread_ts' in item:
+                        # comment
+                        print(f"({json.dumps(item['ts'])} {json.dumps(item['thread_ts'])} {json.dumps(channel['name'])} {by(item)} {json.dumps(item['text'])})")
+                    else:
+                        # top-level post
+                        print(f"({json.dumps(item['ts'])} {json.dumps(               '')} {json.dumps(channel['name'])} {by(item)} {json.dumps(item['text'])})")
                 except KeyError:
                     stderr.write(repr(item)+'\n')
