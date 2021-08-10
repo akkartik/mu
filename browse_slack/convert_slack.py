@@ -32,8 +32,6 @@ from os import listdir
 from os.path import isfile, join, basename, splitext
 from urllib.parse import urlparse
 
-channels = {channel['id']: channel['name'] for channel in json.load(open('channels.json'))}
-
 def look_up_ppm_image(url):
     file_root = splitext(basename(urlparse(url).path))[0]
     filename = f"images/ppm/{file_root}.ppm"
@@ -78,8 +76,8 @@ def filenames(dir):
         if isfile(result):
             yield result
 
-for dir in channels.values():
-    for filename in filenames(dir):
+for channel in json.load(open('channels.json')):
+    for filename in filenames(channel['name']):
         print(filename)
         for item in contents(filename):
-            print(f"({json.dumps(item['name'])} {json.dumps(dir)} {item['by']} {json.dumps(item['contents'])})")
+            print(f"({json.dumps(item['name'])} {json.dumps(channel['name'])} {item['by']} {json.dumps(item['contents'])})")
