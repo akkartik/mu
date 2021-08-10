@@ -59,6 +59,7 @@ sig space-remaining-in-stream f: (addr stream byte) -> _/eax: int
 sig write-stream f: (addr stream byte), s: (addr stream byte)
 sig write-stream-immutable f: (addr stream byte), s: (addr stream byte)
 sig read-byte s: (addr stream byte) -> _/eax: byte
+sig peek-byte s: (addr stream byte) -> _/eax: byte
 sig append-byte f: (addr stream byte), n: int  # really just a byte, but I want to pass in literal numbers
 #sig to-hex-char in/eax: int -> out/eax: int
 sig append-byte-hex f: (addr stream byte), n: int  # really just a byte, but I want to pass in literal numbers

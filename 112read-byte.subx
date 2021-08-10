@@ -42,6 +42,38 @@ $read-byte:abort:
     (abort "read-byte: empty stream")
     # never gets here
 
+# Return next byte value in eax, with top 3 bytes cleared.
+# Abort on reaching end of stream.
+peek-byte:  # s: (addr stream byte) -> result/eax: byte
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # esi = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # ecx = s->read
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    # if (f->read >= f->write) abort
+    3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare ecx with *esi
+    0f 8d/jump-if->=  $peek-byte:abort/disp32
+    # result = f->data[f->read]
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
+$peek-byte:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$peek-byte:abort:
+    (abort "peek-byte: empty stream")
+    # never gets here
+
 == data
 
 _test-input-stream:  # (stream byte)

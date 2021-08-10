@@ -86,6 +86,9 @@ fn parse in: (addr stream byte), users: (addr array user), channels: (addr array
     var done?/eax: boolean <- stream-empty? in
     compare done?, 0/false
     break-if-!=
+    set-cursor-position 0/screen, 0 0
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, user-idx, 3/fg 0/bg
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, item-idx, 4/fg 0/bg
     parse-record in, record
     var user?/eax: boolean <- user-record? record
     {
@@ -105,9 +108,49 @@ fn parse in: (addr stream byte), users: (addr array user), channels: (addr array
 }
 
 fn parse-record in: (addr stream byte), out: (addr stream byte) {
+  var paren/eax: byte <- read-byte in
+  compare paren, 0x28/open-paren
+  {
+    break-if-=
+    abort "parse-record: ("
+  }
+  var paren-int/eax: int <- copy paren
+  append-byte out, paren-int
+  {
+    {
+      var eof?/eax: boolean <- stream-empty? in
+      compare eof?, 0/false
+      break-if-=
+      abort "parse-record: truncated"
+    }
+    var c/eax: byte <- read-byte in
+    {
+      var c-int/eax: int <- copy c
+      append-byte out, c-int
+    }
+    compare c, 0x29/close-paren
+    break-if-=
+    compare c, 0x22/double-quote
+    {
+      break-if-!=
+      slurp-json-string in, out
+    }
+    loop
+  }
+  skip-chars-matching-whitespace in
 }
 
 fn user-record? record: (addr stream byte) -> _/eax: boolean {
+  rewind-stream record
+  var c/eax: byte <- read-byte record  # skip paren
+  var c/eax: byte <- read-byte record  # skip double quote
+  var c/eax: byte <- read-byte record
+  compare c, 0x55/U
+  {
+    break-if-!=
+    return 1/true
+  }
+  rewind-stream record
   return 0/false
 }
 
@@ -115,4 +158,32 @@ fn parse-user record: (addr stream byte), users: (addr array user), user-idx: in
 }
 
 fn parse-item record: (addr stream byte), channels: (addr array channel), items: (addr array item), item-idx: int {
+}
+
+fn slurp-json-string in: (addr stream byte), out: (addr stream byte) {
+  # open quote is already slurped
+  {
+    {
+      var eof?/eax: boolean <- stream-empty? in
+      compare eof?, 0/false
+      break-if-=
+      abort "slurp-json-string: truncated"
+    }
+    var c/eax: byte <- read-byte in
+    {
+      var c-int/eax: int <- copy c
+      append-byte out, c-int
+    }
+    compare c, 0x22/double-quote
+    break-if-=
+    compare c, 0x5c/backslash
+    {
+      break-if-!=
+      # read next byte raw
+      c <- read-byte in
+      var c-int/eax: int <- copy c
+      append-byte out, c-int
+    }
+    loop
+  }
 }
