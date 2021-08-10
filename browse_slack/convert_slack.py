@@ -49,28 +49,22 @@ with open('users.json') as f:
 
 items = []
 
-def contents(filename):
-    with open(filename) as f:
-        for item in json.load(f):
-            try:
-                if 'thread_ts' in item:
-                    # comment
-                    yield {
-                      'name': f"/{item['thread_ts']}/{item['ts']}",
-                      'contents': item['text'],
-                      'by': user_id[item['user']],
-                    }
-                else:
-                    # top-level post
-                    yield {
-                      'name': f"/{item['ts']}",
-                      'contents': item['text'],
-                      'by': user_id[item['user']],
-                    }
-            except KeyError:
-                stderr.write(repr(item)+'\n')
+def by(item):
+    return user_id[item['user']]
+
+def id(item):
+    if 'thread_ts' in item:
+        # comment
+        return f"/{item['thread_ts']}/{item['ts']}"
+    else:
+        # top-level post
+        return                     f"/{item['ts']}"
 
 for channel in json.load(open('channels.json')):
     for filename in sorted(listdir(channel['name'])):
-        for item in contents(join(channel['name'], filename)):
-            print(f"({json.dumps(item['name'])} {json.dumps(channel['name'])} {item['by']} {json.dumps(item['contents'])})")
+        with open(join(channel['name'], filename)) as f:
+            for item in json.load(f):
+                try:
+                    print(f"({json.dumps(id(item))} {json.dumps(channel['name'])} {by(item)} {json.dumps(item['text'])})")
+                except KeyError:
+                    stderr.write(repr(item)+'\n')
