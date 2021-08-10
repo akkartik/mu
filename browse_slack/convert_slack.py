@@ -39,16 +39,16 @@ def look_up_ppm_image(url):
         with open(filename) as f:
             return f.read()
 
-user_id = {}  # name -> index
+user_idx = {}
 with open('users.json') as f:
     for idx, user in enumerate(json.load(f)):
         if 'real_name' not in user:
             user['real_name'] = ''
         print(f"({json.dumps(user['id'])} \"@{user['name']}\" {json.dumps(user['real_name'])} [{look_up_ppm_image(user['profile']['image_72']) or ''}])")
-        user_id[user['id']] = idx
+        user_idx[user['id']] = idx
 
 def by(item):
-    return user_id[item['user']]
+    return user_idx[item['user']]
 
 for channel in json.load(open('channels.json')):
     for filename in sorted(listdir(channel['name'])):
