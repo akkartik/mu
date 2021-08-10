@@ -22,7 +22,13 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
   dd if=shell/data.limg of=data.img conv=notrunc
   ```
 
-  Run with data disk (and 2GB of RAM):
+  Equivalently, use `tools/image-data`.
+
+  ```sh
+  tools/image-data 10 < shell/data.limg
+  ```
+
+3. Run with data disk (and 2GB of RAM):
   ```sh
   qemu-system-i386 -m 2G -hda code.img -hdb data.img
   ```
