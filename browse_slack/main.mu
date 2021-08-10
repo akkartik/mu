@@ -36,13 +36,14 @@ type item {
 # I try to put all the static buffer sizes in this function.
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   # load entire disk contents to a single enormous stream
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "loading data disk..", 3/fg 0/bg
   var s-h: (handle stream byte)  # the stream is too large to put on the stack
   var s-ah/eax: (addr handle stream byte) <- address s-h
   populate-stream s-ah, 0x4000000
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "loading data disk..", 3/fg 0/bg
   var _s/eax: (addr stream byte) <- lookup *s-ah
   var s/ebx: (addr stream byte) <- copy _s
-  load-sectors data-disk, 0/lba, 0x20000/sectors, s
+#?   load-sectors data-disk, 0/lba, 0x20000/sectors, s
+  load-sectors data-disk, 0/lba, 0x7000/sectors, s
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "done", 3/fg 0/bg
   # parse global data structures out of the stream
   var users-h: (handle array user)
@@ -86,9 +87,10 @@ fn parse in: (addr stream byte), users: (addr array user), channels: (addr array
     var done?/eax: boolean <- stream-empty? in
     compare done?, 0/false
     break-if-!=
-    set-cursor-position 0/screen, 0 0
+    set-cursor-position 0/screen, 0x20 0x20
     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, user-idx, 3/fg 0/bg
     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, item-idx, 4/fg 0/bg
+    clear-stream record
     parse-record in, record
     var user?/eax: boolean <- user-record? record
     {
