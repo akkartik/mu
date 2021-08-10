@@ -43,7 +43,8 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var _s/eax: (addr stream byte) <- lookup *s-ah
   var s/ebx: (addr stream byte) <- copy _s
 #?   load-sectors data-disk, 0/lba, 0x20000/sectors, s
-  load-sectors data-disk, 0/lba, 0x7000/sectors, s
+#?   load-sectors data-disk, 0/lba, 0x7000/sectors, s
+  load-sectors data-disk, 0/lba, 0x10/sectors, s
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "done", 3/fg 0/bg
   # parse global data structures out of the stream
   var users-h: (handle array user)
@@ -87,6 +88,9 @@ fn parse in: (addr stream byte), users: (addr array user), channels: (addr array
     var done?/eax: boolean <- stream-empty? in
     compare done?, 0/false
     break-if-!=
+    var c/eax: byte <- peek-byte in
+    compare c, 0
+    break-if-=
     set-cursor-position 0/screen, 0x20 0x20
     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, user-idx, 3/fg 0/bg
     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, item-idx, 4/fg 0/bg
@@ -114,6 +118,9 @@ fn parse-record in: (addr stream byte), out: (addr stream byte) {
   compare paren, 0x28/open-paren
   {
     break-if-=
+    set-cursor-position 0/screen, 0x20 0x10
+    var c/eax: int <- copy paren
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen c, 5/fg 0/bg
     abort "parse-record: ("
   }
   var paren-int/eax: int <- copy paren
