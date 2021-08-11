@@ -1,5 +1,4 @@
 type channel {
-  id: (handle array byte)
   name: (handle array byte)
   posts: (handle array int)  # item indices
   newest-post-index: int
