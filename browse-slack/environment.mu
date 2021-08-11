@@ -28,8 +28,12 @@ type tab {
 #   post-right-coord          # in characters
 #   channel-offset-x          # in characters
 
-fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr array item) {
+fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr array item) {
   clear-screen screen
+  render-item-list screen, env, items, users
+}
+
+fn render-item-list screen: (addr screen), env: (addr environment), _items: (addr array item), users: (addr array user) {
   var tmp-width/eax: int <- copy 0
   var tmp-height/ecx: int <- copy 0
   tmp-width, tmp-height <- screen-size screen
