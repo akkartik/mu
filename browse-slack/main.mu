@@ -32,32 +32,38 @@ type item {
 #   comment -> post|comments
 #   keywords -> posts|comments
 
-# I try to put all the static buffer sizes in this function.
+# static buffer sizes in this program:
+#   data-size
+#   data-size-in-sectors
+#   num-channels
+#   num-users
+#   num-items
+
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   # load entire disk contents to a single enormous stream
   var s-h: (handle stream byte)  # the stream is too large to put on the stack
   var s-ah/eax: (addr handle stream byte) <- address s-h
-  populate-stream s-ah, 0x4000000
+  populate-stream s-ah, 0x4000000/data-size
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "loading data disk..", 3/fg 0/bg
   var _s/eax: (addr stream byte) <- lookup *s-ah
   var s/ebx: (addr stream byte) <- copy _s
   load-sectors data-disk, 0/lba, 0x400/sectors, s  # large enough for test_data
-#?   load-sectors data-disk, 0/lba, 0x20000/sectors, s  # largest size tested; _slow_
+#?   load-sectors data-disk, 0/lba, 0x20000/data-size-in-sectors, s  # largest size tested; _slow_
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "done", 3/fg 0/bg
   # parse global data structures out of the stream
   var users-h: (handle array user)
   var users-ah/eax: (addr handle array user) <- address users-h
-  populate users-ah, 0x800
+  populate users-ah, 0x800/num-users
   var _users/eax: (addr array user) <- lookup *users-ah
   var users/edi: (addr array user) <- copy _users
   var channels-h: (handle array channel)
   var channels-ah/eax: (addr handle array channel) <- address channels-h
-  populate channels-ah, 0x20
+  populate channels-ah, 0x20/num-channels
   var _channels/eax: (addr array channel) <- lookup *channels-ah
   var channels/esi: (addr array channel) <- copy _channels
   var items-h: (handle array item)
   var items-ah/eax: (addr handle array item) <- address items-h
-  populate items-ah, 0x10000
+  populate items-ah, 0x10000/num-items
   var _items/eax: (addr array item) <- lookup *items-ah
   var items/edx: (addr array item) <- copy _items
   parse s, users, channels, items
