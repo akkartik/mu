@@ -38,6 +38,7 @@ sig turn-on-debug-print
 sig turn-off-debug-print
 sig abort e: (addr array byte)
 sig dump-call-stack
+sig heap-bound -> _/eax: int
 
 sig count-event
 sig count-of-events -> _/eax: int

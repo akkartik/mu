@@ -75,6 +75,18 @@ $allocate:end:
     5d/pop-to-ebp
     c3/return
 
+heap-bound:  # -> _/eax: int
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    #
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Heap/disp32     .                 # copy *Heap to eax
+$heap-bound:end:
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
 # Claim the next 'n' bytes of memory starting at ad->curr and update ad->curr.
 # Abort if there isn't enough memory in 'ad'.
 allocate-raw:  # ad: (addr allocation-descriptor), n: int, out: (addr handle _)
