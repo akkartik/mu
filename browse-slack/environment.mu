@@ -26,6 +26,7 @@ type tab {
 #   avatar-space-hor          # in characters
 #   author-name-padding-ver   # in characters
 #   post-right-coord          # in characters
+#   channel-offset-x          # in characters
 
 fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr array item) {
   clear-screen screen
@@ -70,6 +71,12 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
     y <- shift-left 4/log2font-height
     render-image screen, author-avatar, 0x18/item-padding-hor, y, 0x50/avatar-side, 0x50/avatar-side
   }
+  # channel
+  var channel-name-ah/eax: (addr handle array byte) <- get item, channel
+  var channel-name/eax: (addr array byte) <- lookup *channel-name-ah
+  set-cursor-position screen, 0x40/channel-offset-x y
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 7/grey 0/black
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, channel-name, 7/grey 0/black
   # author name
   var author-real-name-ah/eax: (addr handle array byte) <- get author, real-name
   var author-real-name/eax: (addr array byte) <- lookup *author-real-name-ah
