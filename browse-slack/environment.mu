@@ -10,6 +10,7 @@ type environment {
 #   item-padding-ver          # in characters
 #   avatar-side               # in pixels
 #   avatar-space-hor          # in characters
+#   search-position-x         # in characters
 #   search-space-ver          # in characters
 #   author-name-padding-ver   # in characters
 #   post-right-coord          # in characters
@@ -79,7 +80,7 @@ fn render-item-list screen: (addr screen), env: (addr environment), _items: (add
 }
 
 fn render-search-input screen: (addr screen), env: (addr environment) {
-  set-cursor-position 0/screen, 2/x 1/y
+  set-cursor-position 0/screen, 0x22/x=search-position-x 1/y
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "search ", 7/fg 0/bg
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "________________________________", 0xf/fg 0/bg
 }
