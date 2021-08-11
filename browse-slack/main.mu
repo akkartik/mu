@@ -51,8 +51,8 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "loading data disk..", 3/fg 0/bg
   var _s/eax: (addr stream byte) <- lookup *s-ah
   var s/ebx: (addr stream byte) <- copy _s
-  load-sectors data-disk, 0/lba, 0x400/sectors, s  # large enough for test_data
-#?   load-sectors data-disk, 0/lba, 0x20000/data-size-in-sectors, s  # largest size tested; _slow_
+#?   load-sectors data-disk, 0/lba, 0x400/sectors, s  # large enough for test_data
+  load-sectors data-disk, 0/lba, 0x20000/data-size-in-sectors, s  # largest size tested; _slow_
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "done", 3/fg 0/bg
   # parse global data structures out of the stream
   var users-h: (handle array user)
@@ -176,7 +176,7 @@ fn parse-user record: (addr stream byte), _users: (addr array user), user-idx: i
   var offset/eax: (offset user) <- compute-offset users, user-idx
   var user/esi: (addr user) <- index users, offset
   #
-  var s-storage: (stream byte 0x40)
+  var s-storage: (stream byte 0x100)
   var s/ecx: (addr stream byte) <- address s-storage
   #
   rewind-stream record
