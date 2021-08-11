@@ -48,11 +48,14 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var s-h: (handle stream byte)  # the stream is too large to put on the stack
   var s-ah/eax: (addr handle stream byte) <- address s-h
   populate-stream s-ah, 0x4000000/data-size
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "loading data disk..", 3/fg 0/bg
   var _s/eax: (addr stream byte) <- lookup *s-ah
   var s/ebx: (addr stream byte) <- copy _s
-#?   load-sectors data-disk, 0/lba, 0x400/sectors, s  # large enough for test_data
-  load-sectors data-disk, 0/lba, 0x20000/data-size-in-sectors, s  # largest size tested; _slow_
+  var sector-count/eax: int <- copy 0x400  # test_data
+#?   var sector-count/eax: int <- copy 0x20000  # largest size tested; slow
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "loading ", 3/fg 0/bg
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, sector-count, 3/fg 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, " sectors from data disk..", 3/fg 0/bg
+  load-sectors data-disk, 0/lba, sector-count, s
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "done", 3/fg 0/bg
   # parse global data structures out of the stream
   var users-h: (handle array user)
