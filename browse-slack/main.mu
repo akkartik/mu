@@ -246,7 +246,7 @@ fn slurp-json-string in: (addr stream byte), out: (addr stream byte) {
       var eof?/eax: boolean <- stream-empty? in
       compare eof?, 0/false
       break-if-=
-      abort "next-json-string: truncated"
+      abort "slurp-json-string: truncated"
     }
     var c/eax: byte <- read-byte in
     {
@@ -275,7 +275,7 @@ fn next-json-string in: (addr stream byte), out: (addr stream byte) {
       var eof?/eax: boolean <- stream-empty? in
       compare eof?, 0/false
       break-if-=
-      abort "slurp-json-string: truncated"
+      abort "next-json-string: truncated"
     }
     var c/eax: byte <- read-byte in
     compare c, 0x22/double-quote
