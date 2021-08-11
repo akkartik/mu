@@ -75,7 +75,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var env-storage: environment
   var env/ebx: (addr environment) <- address env-storage
   {
-    render-environment env, users, channels, items
+    render-environment screen, env, users, channels, items
     {
       var key/eax: byte <- read-key keyboard
       compare key, 0

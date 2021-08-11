@@ -79,7 +79,7 @@ fn render-image screen: (addr screen), _img: (addr image), xmin: int, ymin: int,
     render-raw-image screen, img2, xmin, ymin, width, height
     return
   }
-  abort "render-image: unrecognized image type"
+#?   abort "render-image: unrecognized image type"
 }
 
 ## helpers
