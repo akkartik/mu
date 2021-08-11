@@ -14,17 +14,21 @@ type environment {
 #   author-name-padding-ver   # in characters
 #   post-right-coord          # in characters
 #   channel-offset-x          # in characters
+#   menu-space-ver            # in characters
 
 fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr array item) {
   clear-screen screen
   render-search-input screen, env
   render-item-list screen, env, items, users
+  render-menu screen
 }
 
 fn render-item-list screen: (addr screen), env: (addr environment), _items: (addr array item), users: (addr array user) {
   var tmp-width/eax: int <- copy 0
   var tmp-height/ecx: int <- copy 0
   tmp-width, tmp-height <- screen-size screen
+  var screen-width: int
+  copy-to screen-width, tmp-width
   var screen-height: int
   copy-to screen-height, tmp-height
   #
@@ -44,12 +48,25 @@ fn render-item-list screen: (addr screen), env: (addr environment), _items: (add
     i <- increment
     loop
   }
+  var top/eax: int <- copy screen-height
+  top <- subtract 2/menu-space-ver
+  clear-rect screen, 0 top, screen-width screen-height, 0/bg
 }
 
 fn render-search-input screen: (addr screen), env: (addr environment) {
   set-cursor-position 0/screen, 2/x 1/y
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "search ", 7/fg 0/bg
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "________________________________", 0xf/fg 0/bg
+}
+
+fn render-menu screen: (addr screen) {
+  var width/eax: int <- copy 0
+  var y/ecx: int <- copy 0
+  width, y <- screen-size screen
+  y <- decrement
+  set-cursor-position screen, 2/x, y
+  draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
 }
 
 fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), y: int, screen-height: int -> _/ecx: int {
