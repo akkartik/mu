@@ -19,8 +19,33 @@ type environment {
 fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr array item) {
   clear-screen screen
   render-search-input screen, env
+  render-channels screen, env, channels
   render-item-list screen, env, items, users
   render-menu screen
+}
+
+fn render-channels screen: (addr screen), env: (addr environment), _channels: (addr array channel) {
+  var channels/esi: (addr array channel) <- copy _channels
+  var y/ebx: int <- copy 2/search-space-ver
+  y <- add 1/item-padding-ver
+  var i/ecx: int <- copy 0
+  var max/edx: int <- length channels
+  {
+    compare i, max
+    break-if->=
+    var offset/eax: (offset channel) <- compute-offset channels, i
+    var curr/eax: (addr channel) <- index channels, offset
+    var name-ah/eax: (addr handle array byte) <- get curr, name
+    var name/eax: (addr array byte) <- lookup *name-ah
+    compare name, 0
+    break-if-=
+    set-cursor-position screen, 2/x y
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 0xf/grey 0/black
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, name, 0xf/grey 0/black
+    y <- add 2/channel-padding
+    i <- increment
+    loop
+  }
 }
 
 fn render-item-list screen: (addr screen), env: (addr environment), _items: (addr array item), users: (addr array user) {
