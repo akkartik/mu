@@ -196,6 +196,7 @@ fn parse-user record: (addr stream byte), _users: (addr array user), user-idx: i
     break-if-=
     abort "parse-user: name"
   }
+  clear-stream s
   next-json-string record, s
   var dest/eax: (addr handle array byte) <- get user, name
   stream-to-array s, dest
@@ -207,6 +208,7 @@ fn parse-user record: (addr stream byte), _users: (addr array user), user-idx: i
     break-if-=
     abort "parse-user: real-name"
   }
+  clear-stream s
   next-json-string record, s
   var dest/eax: (addr handle array byte) <- get user, real-name
   stream-to-array s, dest
