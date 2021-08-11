@@ -24,12 +24,14 @@ type tab {
 #   item-padding-ver          # in characters
 #   avatar-side               # in pixels
 #   avatar-space-hor          # in characters
+#   search-space-ver          # in characters
 #   author-name-padding-ver   # in characters
 #   post-right-coord          # in characters
 #   channel-offset-x          # in characters
 
 fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr array item) {
   clear-screen screen
+  render-search-input screen, env
   render-item-list screen, env, items, users
 }
 
@@ -40,7 +42,8 @@ fn render-item-list screen: (addr screen), env: (addr environment), _items: (add
   var screen-height: int
   copy-to screen-height, tmp-height
   #
-  var y/ecx: int <- copy 1/item-padding-ver
+  var y/ecx: int <- copy 2/search-space-ver
+  y <- add 1/item-padding-ver
   var items/esi: (addr array item) <- copy _items
   var i/ebx: int <- copy 0
   var max/edx: int <- length items
@@ -55,6 +58,12 @@ fn render-item-list screen: (addr screen), env: (addr environment), _items: (add
     i <- increment
     loop
   }
+}
+
+fn render-search-input screen: (addr screen), env: (addr environment) {
+  set-cursor-position 0/screen, 2/x 1/y
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "search ", 7/fg 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "________________________________", 0xf/fg 0/bg
 }
 
 fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), y: int, screen-height: int -> _/ecx: int {
