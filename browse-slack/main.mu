@@ -18,6 +18,7 @@ type item {
   text: (handle array byte)
   parent: int  # item index
   comments: (handle array int)
+  newest-comment-index: int
 }
 
 # globals:
@@ -38,6 +39,9 @@ type item {
 #   num-channels
 #   num-users
 #   num-items
+#   num-comments
+#   message-text-limit
+#   channel-capacity
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   # load entire disk contents to a single enormous stream
@@ -235,7 +239,14 @@ fn parse-user record: (addr stream byte), _users: (addr array user), user-idx: i
   }
 }
 
-fn parse-item record: (addr stream byte), channels: (addr array channel), items: (addr array item), item-idx: int {
+fn parse-item record: (addr stream byte), _channels: (addr array channel), _items: (addr array item), item-idx: int {
+  var items/esi: (addr array item) <- copy _items
+  var offset/eax: (offset item) <- compute-offset items, item-idx
+  var item/edi: (addr item) <- index items, offset
+  #
+  var s-storage: (stream byte 0x40)
+  var s/ecx: (addr stream byte) <- address s-storage
+  #
   rewind-stream record
   var paren/eax: byte <- read-byte record
   compare paren, 0x28/open-paren
@@ -243,6 +254,124 @@ fn parse-item record: (addr stream byte), channels: (addr array channel), items:
     break-if-=
     abort "parse-item: ("
   }
+  # item id
+  skip-chars-matching-whitespace record
+  var double-quote/eax: byte <- read-byte record
+  compare double-quote, 0x22/double-quote
+  {
+    break-if-=
+    abort "parse-item: id"
+  }
+  next-json-string record, s
+  var dest/eax: (addr handle array byte) <- get item, id
+  stream-to-array s, dest
+  # parent index
+  {
+    var word-slice-storage: slice
+    var word-slice/ecx: (addr slice) <- address word-slice-storage
+    next-word record, word-slice
+    var src/eax: int <- parse-decimal-int-from-slice word-slice
+    compare src, -1
+    break-if-=
+    var dest/edx: (addr int) <- get item, parent
+    copy-to *dest, src
+    # cross-link to parent
+    var parent-offset/eax: (offset item) <- compute-offset items, src
+    var parent-item/esi: (addr item) <- index items, parent-offset
+    var parent-comments-ah/ebx: (addr handle array int) <- get parent-item, comments
+    var parent-comments/eax: (addr array int) <- lookup *parent-comments-ah
+    compare parent-comments, 0
+    {
+      break-if-!=
+      populate parent-comments-ah, 0x200/num-comments
+      parent-comments <- lookup *parent-comments-ah
+    }
+    var parent-newest-comment-index-addr/edi: (addr int) <- get parent-item, newest-comment-index
+    var parent-newest-comment-index/edx: int <- copy *parent-newest-comment-index-addr
+    var dest/eax: (addr int) <- index parent-comments, parent-newest-comment-index
+    var src/ecx: int <- copy item-idx
+    copy-to *dest, src
+    increment *parent-newest-comment-index-addr
+  }
+  # channel name
+  skip-chars-matching-whitespace record
+  var double-quote/eax: byte <- read-byte record
+  compare double-quote, 0x22/double-quote
+  {
+    break-if-=
+    abort "parse-item: channel"
+  }
+  clear-stream s
+  next-json-string record, s
+  var dest/eax: (addr handle array byte) <- get item, channel
+  stream-to-array s, dest
+  # cross-link to channels
+  {
+    var channels/esi: (addr array channel) <- copy _channels
+    var channel-index/eax: int <- find-or-insert channels, s
+    var channel-offset/eax: (offset channel) <- compute-offset channels, channel-index
+    var channel/eax: (addr channel) <- index channels, channel-offset
+    var channel-posts-ah/ecx: (addr handle array int) <- get channel, posts
+    var channel-newest-post-index-addr/edx: (addr int) <- get channel, newest-post-index
+    var channel-newest-post-index/edx: int <- copy *channel-newest-post-index-addr
+    var channel-posts/eax: (addr array int) <- lookup *channel-posts-ah
+    var dest/eax: (addr int) <- index channel-posts, channel-newest-post-index
+  }
+  # user index
+  {
+    var word-slice-storage: slice
+    var word-slice/ecx: (addr slice) <- address word-slice-storage
+    next-word record, word-slice
+    var src/eax: int <- parse-decimal-int-from-slice word-slice
+    var dest/edx: (addr int) <- get item, by
+    copy-to *dest, src
+  }
+  # text
+  var s-storage: (stream byte 0x4000)  # message-text-limit
+  var s/ecx: (addr stream byte) <- address s-storage
+  skip-chars-matching-whitespace record
+  var double-quote/eax: byte <- read-byte record
+  compare double-quote, 0x22/double-quote
+  {
+    break-if-=
+    abort "parse-item: text"
+  }
+  next-json-string record, s
+  var dest/eax: (addr handle array byte) <- get item, text
+  stream-to-array s, dest
+}
+
+fn find-or-insert _channels: (addr array channel), name: (addr stream byte) -> _/eax: int {
+  var channels/esi: (addr array channel) <- copy _channels
+  var i/ecx: int <- copy 0
+  var max/edx: int <- length channels
+  {
+    compare i, max
+    break-if->=
+    var offset/eax: (offset channel) <- compute-offset channels, i
+    var curr/ebx: (addr channel) <- index channels, offset
+    var curr-name-ah/edi: (addr handle array byte) <- get curr, name
+    var curr-name/eax: (addr array byte) <- lookup *curr-name-ah
+    {
+      compare curr-name, 0
+      break-if-!=
+      rewind-stream name
+      stream-to-array name, curr-name-ah
+      var posts-ah/eax: (addr handle array int) <- get curr, posts
+      populate posts-ah, 0x8000/channel-capacity
+      return i
+    }
+    var found?/eax: boolean <- stream-data-equal? name, curr-name
+    {
+      compare found?, 0/false
+      break-if-=
+      return i
+    }
+    i <- increment
+    loop
+  }
+  abort "out of channels"
+  return -1
 }
 
 # includes trailing double quote
