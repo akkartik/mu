@@ -8,7 +8,7 @@ type user {
   id: (handle array byte)
   name: (handle array byte)
   real-name: (handle array byte)
-  avatar: image
+  avatar: (handle image)
 }
 
 type item {
@@ -234,7 +234,9 @@ fn parse-user record: (addr stream byte), _users: (addr array user), user-idx: i
   {
     compare c, 0x5d/close-bracket
     break-if-=
-    var dest/eax: (addr image) <- get user, avatar
+    var dest-ah/eax: (addr handle image) <- get user, avatar
+    allocate dest-ah
+    var dest/eax: (addr image) <- lookup *dest-ah
     initialize-image dest, record
   }
 }

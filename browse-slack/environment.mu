@@ -60,7 +60,9 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
   var author-offset/ecx: (offset user) <- compute-offset users, author-index
   var author/ecx: (addr user) <- index users, author-offset
   # author avatar
-  var author-avatar/ebx: (addr image) <- get author, avatar
+  var author-avatar-ah/eax: (addr handle image) <- get author, avatar
+  var _author-avatar/eax: (addr image) <- lookup *author-avatar-ah
+  var author-avatar/ebx: (addr image) <- copy _author-avatar
   {
     compare author-avatar, 0
     break-if-=
