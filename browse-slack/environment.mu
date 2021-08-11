@@ -5,6 +5,7 @@ type environment {
 }
 
 # static buffer sizes in this file:
+#   main-panel-hor            # in characters
 #   item-padding-hor          # in pixels
 #   item-padding-ver          # in characters
 #   avatar-side               # in pixels
@@ -67,28 +68,40 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
     break-if-=
     var y/edx: int <- copy y
     y <- shift-left 4/log2font-height
-    render-image screen, author-avatar, 0x18/item-padding-hor, y, 0x50/avatar-side, 0x50/avatar-side
+    var x/eax: int <- copy 0x20/main-panel-hor
+    x <- shift-left 3/log2font-width
+    x <- add 0x18/item-padding-hor
+    render-image screen, author-avatar, x, y, 0x50/avatar-side, 0x50/avatar-side
   }
   # channel
   var channel-name-ah/eax: (addr handle array byte) <- get item, channel
   var channel-name/eax: (addr array byte) <- lookup *channel-name-ah
-  set-cursor-position screen, 0x40/channel-offset-x y
+  {
+    var x/eax: int <- copy 0x20/main-panel-hor
+    x <- add 0x40/channel-offset-x
+    set-cursor-position screen, x y
+  }
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 7/grey 0/black
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, channel-name, 7/grey 0/black
   # author name
   var author-real-name-ah/eax: (addr handle array byte) <- get author, real-name
   var author-real-name/eax: (addr array byte) <- lookup *author-real-name-ah
-  set-cursor-position screen, 0x10/avatar-space-hor, y
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, author-real-name, 0xf/white 0/black
+  {
+    var x/ecx: int <- copy 0x20/main-panel-hor
+    x <- add 0x10/avatar-space-hor
+    set-cursor-position screen, x y
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, author-real-name, 0xf/white 0/black
+  }
   increment y
   # text
   var text-ah/eax: (addr handle array byte) <- get item, text
   var _text/eax: (addr array byte) <- lookup *text-ah
   var text/edx: (addr array byte) <- copy _text
-  var x/eax: int <- copy 0x10/avatar-space-hor
+  var x/eax: int <- copy 0x20/main-panel-hor
+  x <- add 0x10/avatar-space-hor
   var text-y/ecx: int <- copy y
   text-y <- add 1/author-name-padding-ver
-  x, text-y <- draw-text-wrapping-right-then-down screen, text, x text-y, 0x50/xmax=post-right-coord screen-height, x text-y, 7/fg 0/bg
+  x, text-y <- draw-text-wrapping-right-then-down screen, text, x text-y, 0x70/xmax=post-right-coord screen-height, x text-y, 7/fg 0/bg
   # flush
   add-to y, 6
   compare y, text-y
