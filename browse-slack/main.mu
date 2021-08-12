@@ -21,6 +21,11 @@ type item {
   newest-comment-index: int
 }
 
+type item-list {
+  data: (handle array item)
+  newest: int
+}
+
 # globals:
 #   users: (handle array user)
 #   channels: (handle array channel)
@@ -68,11 +73,10 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   populate channels-ah, 0x20/num-channels
   var _channels/eax: (addr array channel) <- lookup *channels-ah
   var channels/esi: (addr array channel) <- copy _channels
-  var items-h: (handle array item)
-  var items-ah/eax: (addr handle array item) <- address items-h
-  populate items-ah, 0x10000/num-items
-  var _items/eax: (addr array item) <- lookup *items-ah
-  var items/edx: (addr array item) <- copy _items
+  var items-storage: item-list
+  var items/edx: (addr item-list) <- address items-storage
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  populate items-data-ah, 0x10000/num-items
   parse s, users, channels, items
   # render
   var env-storage: environment
@@ -89,7 +93,11 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   }
 }
 
-fn parse in: (addr stream byte), users: (addr array user), channels: (addr array channel), items: (addr array item) {
+fn parse in: (addr stream byte), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+  var items/esi: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/edi: (addr array item) <- copy _items-data
   # 'in' consists of a long, flat sequence of records surrounded by parens
   var record-storage: (stream byte 0x18000)
   var record/ecx: (addr stream byte) <- address record-storage
@@ -117,11 +125,14 @@ fn parse in: (addr stream byte), users: (addr array user), channels: (addr array
     {
       compare user?, 0/false
       break-if-!=
-      parse-item record, channels, items, item-idx
+      parse-item record, channels, items-data, item-idx
       item-idx <- increment
     }
     loop
   }
+  var dest/eax: (addr int) <- get items, newest
+  copy-to *dest, item-idx
+  decrement *dest
 }
 
 fn parse-record in: (addr stream byte), out: (addr stream byte) {

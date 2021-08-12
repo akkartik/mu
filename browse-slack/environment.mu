@@ -17,7 +17,7 @@ type environment {
 #   channel-offset-x          # in characters
 #   menu-space-ver            # in characters
 
-fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr array item) {
+fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   clear-screen screen
   render-search-input screen, env
   render-channels screen, env, channels
@@ -49,7 +49,7 @@ fn render-channels screen: (addr screen), env: (addr environment), _channels: (a
   }
 }
 
-fn render-item-list screen: (addr screen), env: (addr environment), _items: (addr array item), users: (addr array user) {
+fn render-item-list screen: (addr screen), env: (addr environment), _items: (addr item-list), users: (addr array user) {
   var tmp-width/eax: int <- copy 0
   var tmp-height/ecx: int <- copy 0
   tmp-width, tmp-height <- screen-size screen
@@ -60,18 +60,21 @@ fn render-item-list screen: (addr screen), env: (addr environment), _items: (add
   #
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
-  var items/esi: (addr array item) <- copy _items
-  var i/ebx: int <- copy 0
-  var max/edx: int <- length items
+  var items/esi: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/edi: (addr array item) <- copy _items-data
+  var newest-item/eax: (addr int) <- get items, newest
+  var i/ebx: int <- copy *newest-item
   {
-    compare i, max
-    break-if->=
+    compare i, 0
+    break-if-<
     compare y, screen-height
     break-if->=
-    var offset/eax: (offset item) <- compute-offset items, i
-    var curr-item/eax: (addr item) <- index items, offset
+    var offset/eax: (offset item) <- compute-offset items-data, i
+    var curr-item/eax: (addr item) <- index items-data, offset
     y <- render-item screen, curr-item, users, y, screen-height
-    i <- increment
+    i <- decrement
     loop
   }
   var top/eax: int <- copy screen-height
