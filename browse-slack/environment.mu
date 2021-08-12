@@ -109,6 +109,10 @@ fn render-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " next page  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " previous page  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^n ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " next (older) item  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^p ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " previous (more recent) item  ", width, 0xf/fg, 0/bg
 }
 
 fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), y: int, screen-height: int -> _/ecx: int {
@@ -174,6 +178,18 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
 
 fn update-environment env: (addr environment), key: byte, items: (addr item-list) {
   {
+    compare key, 0xe/ctrl-n
+    break-if-!=
+    next-item env, items
+    return
+  }
+  {
+    compare key, 0x10/ctrl-p
+    break-if-!=
+    previous-item env, items
+    return
+  }
+  {
     compare key, 6/ctrl-f
     break-if-!=
     page-down env, items
@@ -185,6 +201,25 @@ fn update-environment env: (addr environment), key: byte, items: (addr item-list
     page-up env, items
     return
   }
+}
+
+fn next-item _env: (addr environment), _items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  var dest/eax: (addr int) <- get env, item-index
+  compare *dest, 0
+  break-if-<=
+  decrement *dest
+}
+
+fn previous-item _env: (addr environment), _items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  var items/esi: (addr item-list) <- copy _items
+  var newest-item-index-a/ecx: (addr int) <- get items, newest
+  var newest-item-index/ecx: int <- copy *newest-item-index-a
+  var dest/eax: (addr int) <- get env, item-index
+  compare *dest, newest-item-index
+  break-if->=
+  increment *dest
 }
 
 fn page-down _env: (addr environment), _items: (addr item-list) {
