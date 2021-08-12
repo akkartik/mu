@@ -2,6 +2,7 @@
 # are fully specified by the operations used to generate them.
 
 type environment {
+  item-index: int
 }
 
 # static buffer sizes in this file:
@@ -10,12 +11,22 @@ type environment {
 #   item-padding-ver          # in characters
 #   avatar-side               # in pixels
 #   avatar-space-hor          # in characters
+#   avatar-space-ver          # in characters
 #   search-position-x         # in characters
 #   search-space-ver          # in characters
 #   author-name-padding-ver   # in characters
 #   post-right-coord          # in characters
 #   channel-offset-x          # in characters
 #   menu-space-ver            # in characters
+
+fn initialize-environment _self: (addr environment), _items: (addr item-list) {
+  var self/esi: (addr environment) <- copy _self
+  var items/eax: (addr item-list) <- copy _items
+  var newest-item-a/eax: (addr int) <- get items, newest
+  var newest-item/eax: int <- copy *newest-item-a
+  var dest/edi: (addr int) <- get self, item-index
+  copy-to *dest, newest-item
+}
 
 fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   clear-screen screen
@@ -49,7 +60,8 @@ fn render-channels screen: (addr screen), env: (addr environment), _channels: (a
   }
 }
 
-fn render-item-list screen: (addr screen), env: (addr environment), _items: (addr item-list), users: (addr array user) {
+fn render-item-list screen: (addr screen), _env: (addr environment), _items: (addr item-list), users: (addr array user) {
+  var env/esi: (addr environment) <- copy _env
   var tmp-width/eax: int <- copy 0
   var tmp-height/ecx: int <- copy 0
   tmp-width, tmp-height <- screen-size screen
@@ -60,12 +72,12 @@ fn render-item-list screen: (addr screen), env: (addr environment), _items: (add
   #
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
+  var newest-item/eax: (addr int) <- get env, item-index
+  var i/ebx: int <- copy *newest-item
   var items/esi: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/edi: (addr array item) <- copy _items-data
-  var newest-item/eax: (addr int) <- get items, newest
-  var i/ebx: int <- copy *newest-item
   {
     compare i, 0
     break-if-<
@@ -96,6 +108,10 @@ fn render-menu screen: (addr screen) {
   set-cursor-position screen, 2/x, y
   draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " next page  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " previous page  ", width, 0xf/fg, 0/bg
 }
 
 fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), y: int, screen-height: int -> _/ecx: int {
@@ -148,8 +164,9 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
   var text-y/ecx: int <- copy y
   text-y <- add 1/author-name-padding-ver
   x, text-y <- draw-text-wrapping-right-then-down screen, text, x text-y, 0x70/xmax=post-right-coord screen-height, x text-y, 7/fg 0/bg
+  text-y <- add 2/item-padding-ver
   # flush
-  add-to y, 6
+  add-to y, 6/avatar-space-ver
   compare y, text-y
   {
     break-if-<
@@ -158,5 +175,70 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
   return text-y
 }
 
-fn update-environment env: (addr environment), key: byte {
+fn update-environment env: (addr environment), key: byte, items: (addr item-list) {
+  {
+    compare key, 6/ctrl-f
+    break-if-!=
+    page-down env, items
+    return
+  }
+  {
+    compare key, 2/ctrl-b
+    break-if-!=
+    page-up env, items
+    return
+  }
+}
+
+fn page-down _env: (addr environment), _items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  var items/esi: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/ebx: (addr array item) <- copy _items-data
+  var src/eax: (addr int) <- get env, item-index
+  var new-item-index/ecx: int <- copy *src
+  var y/edx: int <- copy 2
+  {
+    compare new-item-index, 0
+    break-if-<
+    compare y, 0x28/screen-height-minus-menu
+    break-if->=
+    var offset/eax: (offset item) <- compute-offset items-data, new-item-index
+    var item/eax: (addr item) <- index items-data, offset
+    var item-text-ah/eax: (addr handle array byte) <- get item, text
+    var item-text/eax: (addr array byte) <- lookup *item-text-ah
+    var h/eax: int <- estimate-height item-text
+    set-cursor-position 0/screen, 0 0
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, h, 4/fg 0/bg
+    y <- add h
+    new-item-index <- decrement
+    loop
+  }
+  new-item-index <- increment
+  var dest/eax: (addr int) <- get env, item-index
+  copy-to *dest, new-item-index
+}
+
+fn page-up _env: (addr environment), _items: (addr item-list) {
+}
+
+# keep sync'd with render-item
+fn estimate-height _message-text: (addr array byte) -> _/eax: int {
+  var message-text/esi: (addr array byte) <- copy _message-text
+  var result/eax: int <- length message-text
+  var remainder/edx: int <- copy 0
+  result, remainder <- integer-divide result, 0x40/post-width
+  compare remainder, 0
+  {
+    break-if-=
+    result <- increment
+  }
+  result <- add 2/item-padding-ver
+  compare result, 6/avatar-space-ver
+  {
+    break-if->
+    return 6/avatar-space-ver
+  }
+  return result
 }

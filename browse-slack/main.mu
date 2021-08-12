@@ -81,13 +81,14 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   # render
   var env-storage: environment
   var env/ebx: (addr environment) <- address env-storage
+  initialize-environment env, items
   {
     render-environment screen, env, users, channels, items
     {
       var key/eax: byte <- read-key keyboard
       compare key, 0
       loop-if-=
-      update-environment env, key
+      update-environment env, key, items
     }
     loop
   }
