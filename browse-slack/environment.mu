@@ -221,6 +221,34 @@ fn page-down _env: (addr environment), _items: (addr item-list) {
 }
 
 fn page-up _env: (addr environment), _items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  var items/esi: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/ebx: (addr array item) <- copy _items-data
+  var newest-item-index-a/esi: (addr int) <- get items, newest
+  var src/eax: (addr int) <- get env, item-index
+  var new-item-index/ecx: int <- copy *src
+  var y/edx: int <- copy 2
+  {
+    compare new-item-index, *newest-item-index-a
+    break-if->
+    compare y, 0x28/screen-height-minus-menu
+    break-if->=
+    var offset/eax: (offset item) <- compute-offset items-data, new-item-index
+    var item/eax: (addr item) <- index items-data, offset
+    var item-text-ah/eax: (addr handle array byte) <- get item, text
+    var item-text/eax: (addr array byte) <- lookup *item-text-ah
+    var h/eax: int <- estimate-height item-text
+    set-cursor-position 0/screen, 0 0
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, h, 4/fg 0/bg
+    y <- add h
+    new-item-index <- increment
+    loop
+  }
+  new-item-index <- decrement
+  var dest/eax: (addr int) <- get env, item-index
+  copy-to *dest, new-item-index
 }
 
 # keep sync'd with render-item
