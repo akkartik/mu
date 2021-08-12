@@ -214,6 +214,18 @@ fn page-down _env: (addr environment), _items: (addr item-list) {
   }
   new-item-index <- increment
   var dest/eax: (addr int) <- get env, item-index
+  {
+    # HACK: make sure we make forward progress even if a single post takes up
+    # the whole screen.
+    # We can't see the rest of that single post at the moment. But at least we
+    # can go past it.
+    compare new-item-index, *dest
+    break-if-!=
+    # Don't make "forward progress" past post 0.
+    compare new-item-index, 0
+    break-if-=
+    new-item-index <- decrement
+  }
   copy-to *dest, new-item-index
 }
 
