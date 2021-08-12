@@ -1,6 +1,3 @@
-# The environment is a thin layer in this app, just a history of 'tabs' that
-# are fully specified by the operations used to generate them.
-
 type environment {
   item-index: int
 }
