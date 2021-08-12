@@ -1,14 +1,14 @@
 # Import JSON from a Slack admin export into a disk image Mu can load.
 #
-# Dependencies: python, netpbm
+# Dependencies: python, wget, awk, sed, netpbm
 #
-# Step 1: download a Slack archive
+# Step 1: download a Slack archive and unpack it to some directory
 #
 # Step 2: download user avatars to subdirectory images/ and convert them to PPM in subdirectory images/ppm/
+#   grep image_72 . -r |grep -v users.json |awk '{print $3}' |sort |uniq |sed 's/?.*//' |sed 's,\\,,g' |sed 's/"//' |sed 's/",$//' > images.list
 #   mkdir images
 #   cd images
-#   grep image_72 . -r |grep -v users.json |awk '{print $3}' |sort |uniq |sed 's/?.*//' |sed 's,\\,,g' |sed 's/"//' |sed 's/",$//' > images.list
-#   wget -i images.list --wait=0.1
+#   wget -i ../images.list --wait=0.1
 #   # fix some lying images
 #   for f in $(file *.jpg |grep PNG |sed 's/:.*//'); do mv -i $f $(echo $f |sed 's/\.jpg$/.png/'); done
 #   #
@@ -17,9 +17,9 @@
 #   for f in *.png; do png2pnm -n $f > ppm/$(echo $f |sed 's/\.png$//').ppm; done
 #
 # Step 3: construct a disk image out of the archives and avatars
-#   cd ../..  # go back to parent of images/
+#   cd ..  # go back to the top-level archive directory
 #   dd if=/dev/zero of=data.img count=201600  # 100MB
-#   python path/to/convert_slack.py > data.out
+#   python path/to/convert_slack.py > data.out 2> data.err
 #   (optionally sort items by timestamp; I currently do this in Vim by piping the latter half of data.out through `sort`)
 #   dd if=data.out of=data.img conv=notrunc
 # Currently this process yields errors for ~300 items (~70 posts and their comments)
