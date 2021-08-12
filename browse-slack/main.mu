@@ -153,7 +153,7 @@ fn parse-record in: (addr stream byte), out: (addr stream byte) {
       var eof?/eax: boolean <- stream-empty? in
       compare eof?, 0/false
       break-if-=
-      abort "parse-record: truncated"
+      abort "parse-record: truncated; increase the sector-count to load from disk"
     }
     var c/eax: byte <- read-byte in
     {
