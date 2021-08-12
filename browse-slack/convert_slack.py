@@ -19,7 +19,9 @@
 # Step 3: construct a disk image out of the archives and avatars
 #   cd ../..  # go back to parent of images/
 #   dd if=/dev/zero of=data.img count=201600  # 100MB
-#   python path/to/convert_slack.py |dd of=data.img conv=notrunc
+#   python path/to/convert_slack.py > data.out
+#   (optionally sort items by timestamp; I currently do this in Vim by piping the latter half of data.out through `sort`)
+#   dd if=data.out of=data.img conv=notrunc
 # Currently this process yields errors for ~300 items (~70 posts and their comments)
 # on the Future of Software group (https://futureofcoding.org/community). We fail to load those.
 #
