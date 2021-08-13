@@ -249,15 +249,15 @@ fn render-main-menu screen: (addr screen), _env: (addr environment) {
   draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " Tab ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " to channels  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " go to channels  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " << previous page  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " << page  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^p ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " < previous item  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " < item  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^n ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " next item >  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " item >  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " next page >>  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " page >>  ", width, 0xf/fg, 0/bg
 }
 
 fn render-channels-menu screen: (addr screen), _env: (addr environment) {
@@ -277,7 +277,7 @@ fn render-channels-menu screen: (addr screen), _env: (addr environment) {
   draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " Tab ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " to items  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " go to items  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " select  ", width, 0xf/fg, 0/bg
 }
