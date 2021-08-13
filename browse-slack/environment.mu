@@ -640,21 +640,31 @@ fn all-items-page-down _current-tab: (addr tab), users: (addr array user), chann
   copy-to *current-tab-item-index-addr, new-item-index
 }
 
-fn channel-page-down _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+fn channel-page-down _current-tab: (addr tab), users: (addr array user), _channels: (addr array channel), _items: (addr item-list) {
   var current-tab/edi: (addr tab) <- copy _current-tab
-  var items/esi: (addr item-list) <- copy _items
+  var current-channel-index-addr/eax: (addr int) <- get current-tab, root-index
+  var current-channel-index/eax: int <- copy *current-channel-index-addr
+  var channels/esi: (addr array channel) <- copy _channels
+  var current-channel-offset/eax: (offset channel) <- compute-offset channels, current-channel-index
+  var current-channel/esi: (addr channel) <- index channels, current-channel-offset
+  var current-channel-posts-ah/eax: (addr handle array int) <- get current-channel, posts
+  var _current-channel-posts/eax: (addr array int) <- lookup *current-channel-posts-ah
+  var current-channel-posts/esi: (addr array int) <- copy _current-channel-posts
+  var items/eax: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/ebx: (addr array item) <- copy _items-data
   var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  var new-item-index/ecx: int <- copy *current-tab-item-index-addr
+  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
   var y/edx: int <- copy 2
   {
-    compare new-item-index, 0
+    compare new-tab-item-index, 0
     break-if-<
     compare y, 0x28/screen-height-minus-menu
     break-if->=
-    var offset/eax: (offset item) <- compute-offset items-data, new-item-index
+    var current-item-index-addr/eax: (addr int) <- index current-channel-posts, new-tab-item-index
+    var current-item-index/eax: int <- copy *current-item-index-addr
+    var offset/eax: (offset item) <- compute-offset items-data, current-item-index
     var item/eax: (addr item) <- index items-data, offset
     var item-text-ah/eax: (addr handle array byte) <- get item, text
     var item-text/eax: (addr array byte) <- lookup *item-text-ah
@@ -662,23 +672,23 @@ fn channel-page-down _current-tab: (addr tab), users: (addr array user), channel
     set-cursor-position 0/screen, 0 0
     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, h, 4/fg 0/bg
     y <- add h
-    new-item-index <- decrement
+    new-tab-item-index <- decrement
     loop
   }
-  new-item-index <- increment
+  new-tab-item-index <- increment
   {
     # HACK: make sure we make forward progress even if a single post takes up
     # the whole screen.
     # We can't see the rest of that single post at the moment. But at least we
     # can go past it.
-    compare new-item-index, *current-tab-item-index-addr
+    compare new-tab-item-index, *current-tab-item-index-addr
     break-if-!=
     # Don't make "forward progress" past post 0.
-    compare new-item-index, 0
+    compare new-tab-item-index, 0
     break-if-=
-    new-item-index <- decrement
+    new-tab-item-index <- decrement
   }
-  copy-to *current-tab-item-index-addr, new-item-index
+  copy-to *current-tab-item-index-addr, new-tab-item-index
 }
 
 fn page-up _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
