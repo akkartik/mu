@@ -491,34 +491,34 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
 
 ### Edit
 
-fn update-environment env: (addr environment), key: byte, items: (addr item-list) {
+fn update-environment env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   {
     compare key, 0xe/ctrl-n
     break-if-!=
-    next-item env, items
+    next-item env, users, channels, items
     return
   }
   {
     compare key, 0x10/ctrl-p
     break-if-!=
-    previous-item env, items
+    previous-item env, users, channels, items
     return
   }
   {
     compare key, 6/ctrl-f
     break-if-!=
-    page-down env, items
+    page-down env, users, channels, items
     return
   }
   {
     compare key, 2/ctrl-b
     break-if-!=
-    page-up env, items
+    page-up env, users, channels, items
     return
   }
 }
 
-fn next-item _env: (addr environment), _items: (addr item-list) {
+fn next-item _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
   var _tabs/eax: (addr array tab) <- lookup *tabs-ah
@@ -533,7 +533,7 @@ fn next-item _env: (addr environment), _items: (addr item-list) {
   decrement *dest
 }
 
-fn previous-item _env: (addr environment), _items: (addr item-list) {
+fn previous-item _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var items/esi: (addr item-list) <- copy _items
   var items-data-first-free-a/ecx: (addr int) <- get items, data-first-free
@@ -552,7 +552,7 @@ fn previous-item _env: (addr environment), _items: (addr item-list) {
   increment *dest
 }
 
-fn page-down _env: (addr environment), _items: (addr item-list) {
+fn page-down _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var items/esi: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
@@ -600,7 +600,7 @@ fn page-down _env: (addr environment), _items: (addr item-list) {
   copy-to *current-tab-item-index-addr, new-item-index
 }
 
-fn page-up _env: (addr environment), _items: (addr item-list) {
+fn page-up _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var items/esi: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data

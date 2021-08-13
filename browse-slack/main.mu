@@ -119,7 +119,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       var key/eax: byte <- read-key keyboard
       compare key, 0
       loop-if-=
-      update-environment env, key, items
+      update-environment env, key, users, channels, items
     }
     loop
   }
