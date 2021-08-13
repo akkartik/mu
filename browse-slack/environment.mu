@@ -160,12 +160,7 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
   var text-ah/eax: (addr handle array byte) <- get item, text
   var _text/eax: (addr array byte) <- lookup *text-ah
   var text/edx: (addr array byte) <- copy _text
-  var x/eax: int <- copy 0x20/main-panel-hor
-  x <- add 0x10/avatar-space-hor
-  var text-y/ecx: int <- copy y
-  text-y <- add 1/author-name-padding-ver
-  x, text-y <- draw-text-wrapping-right-then-down screen, text, x text-y, 0x70/xmax=post-right-coord screen-height, x text-y, 7/fg 0/bg
-  text-y <- add 2/item-padding-ver
+  var text-y/eax: int <- render-slack-message screen, text, y, screen-height
   # flush
   add-to y, 6/avatar-space-ver
   compare y, text-y
@@ -174,6 +169,41 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
     return y
   }
   return text-y
+}
+
+fn render-slack-message screen: (addr screen), text: (addr array byte), ymin: int, ymax: int -> _/eax: int {
+  var x/eax: int <- copy 0x20/main-panel-hor
+  x <- add 0x10/avatar-space-hor
+  var y/ecx: int <- copy ymin
+  y <- add 1/author-name-padding-ver
+  x, y <- draw-json-text-wrapping-right-then-down screen, text, x y, 0x70/xmax=post-right-coord ymax, x y, 7/fg 0/bg
+  y <- add 2/item-padding-ver
+  return y
+}
+
+# draw text in the rectangle from (xmin, ymin) to (xmax, ymax), starting from (x, y), wrapping as necessary
+# return the next (x, y) coordinate in raster order where drawing stopped
+# that way the caller can draw more if given the same min and max bounding-box.
+# if there isn't enough space, truncate
+fn draw-json-text-wrapping-right-then-down screen: (addr screen), _text: (addr array byte), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+  var stream-storage: (stream byte 0x4000/print-buffer-size)
+  var stream/edi: (addr stream byte) <- address stream-storage
+  var text/esi: (addr array byte) <- copy _text
+  var len/eax: int <- length text
+  compare len, 0x4000/print-buffer-size
+  {
+    break-if-<
+    write stream, "ERROR: stream too small in draw-text-wrapping-right-then-down"
+  }
+  compare len, 0x4000/print-buffer-size
+  {
+    break-if->=
+    write stream, text
+  }
+  var x/eax: int <- copy _x
+  var y/ecx: int <- copy _y
+  x, y <- draw-stream-wrapping-right-then-down screen, stream, xmin, ymin, xmax, ymax, x, y, color, background-color
+  return x, y
 }
 
 fn update-environment env: (addr environment), key: byte, items: (addr item-list) {
