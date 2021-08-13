@@ -223,10 +223,7 @@ fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (add
       compare g, 0x5c/backslash
       {
         break-if-!=
-        var next-g/ebx: grapheme <- read-json-grapheme stream
-        compare next-g, 0xffffffff/end-of-file
-        break-if-=  # just draw a final backslash
-        xcurr, ycurr <- render-json-escaped-grapheme screen, next-g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+        xcurr, ycurr <- render-json-escaped-grapheme screen, stream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
         break $draw-json-stream-wrapping-right-then-down:render-grapheme
       }
       xcurr, ycurr <- render-grapheme screen, g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
@@ -243,20 +240,157 @@ fn read-json-grapheme stream: (addr stream byte) -> _/ebx: grapheme {
   return result
 }
 
-fn render-json-escaped-grapheme screen: (addr screen), g: grapheme, xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+# '\' encountered
+fn render-json-escaped-grapheme screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+  var g/ebx: grapheme <- read-json-grapheme stream
+  compare g, 0xffffffff/end-of-file
+  {
+    break-if-!=
+    return xcurr, ycurr
+  }
+  # \n = newline
   compare g, 0x6e/n
   var x/eax: int <- copy xcurr
   {
     break-if-!=
-    # minimum effort to clear cursor
-    draw-code-point screen, 0x20/space, xcurr, ycurr, color, background-color
-    x <- copy xmin
     increment ycurr
-    return x, ycurr
+    return xmin, ycurr
+  }
+  # ignore \t \r \f \b
+  {
+    compare g, 0x74/t
+    break-if-!=
+    return xcurr, ycurr
+  }
+  {
+    compare g, 0x72/r
+    break-if-!=
+    return xcurr, ycurr
+  }
+  {
+    compare g, 0x66/f
+    break-if-!=
+    return xcurr, ycurr
+  }
+  {
+    compare g, 0x62/b
+    break-if-!=
+    return xcurr, ycurr
+  }
+  var y/ecx: int <- copy 0
+  # \u = Unicode
+  {
+    compare g, 0x75/u
+    break-if-!=
+    x, y <- render-json-escaped-unicode-grapheme screen, stream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    return x, y
   }
   # most characters escape to themselves
-  var y/ecx: int <- copy 0
   x, y <- render-grapheme screen, g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+  return x, y
+}
+
+# '\u' encountered
+fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+  var ustream-storage: (stream byte 4)
+  var ustream/esi: (addr stream byte) <- address ustream-storage
+  # slurp 4 bytes exactly
+  var b/eax: byte <- read-byte stream
+  var b-int/eax: int <- copy b
+  append-byte ustream, b-int
+  var b/eax: byte <- read-byte stream
+  var b-int/eax: int <- copy b
+  append-byte ustream, b-int
+  var b/eax: byte <- read-byte stream
+  var b-int/eax: int <- copy b
+  append-byte ustream, b-int
+  var b/eax: byte <- read-byte stream
+  var b-int/eax: int <- copy b
+  append-byte ustream, b-int
+  # \u2013 = -
+  {
+    var endash?/eax: boolean <- stream-data-equal? ustream, "2013"
+    compare endash?, 0/false
+    break-if-=
+    var x/eax: int <- copy 0
+    var y/ecx: int <- copy 0
+    x, y <- render-grapheme screen, 0x2d/dash, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    return x, y
+  }
+  # \u2014 = -
+  {
+    var emdash?/eax: boolean <- stream-data-equal? ustream, "2014"
+    compare emdash?, 0/false
+    break-if-=
+    var x/eax: int <- copy 0
+    var y/ecx: int <- copy 0
+    x, y <- render-grapheme screen, 0x2d/dash, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    return x, y
+  }
+  # \u2018 = '
+  {
+    var left-quote?/eax: boolean <- stream-data-equal? ustream, "2018"
+    compare left-quote?, 0/false
+    break-if-=
+    var x/eax: int <- copy 0
+    var y/ecx: int <- copy 0
+    x, y <- render-grapheme screen, 0x27/quote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    return x, y
+  }
+  # \u2019 = '
+  {
+    var right-quote?/eax: boolean <- stream-data-equal? ustream, "2019"
+    compare right-quote?, 0/false
+    break-if-=
+    var x/eax: int <- copy 0
+    var y/ecx: int <- copy 0
+    x, y <- render-grapheme screen, 0x27/quote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    return x, y
+  }
+  # \u201c = "
+  {
+    var left-dquote?/eax: boolean <- stream-data-equal? ustream, "201c"
+    compare left-dquote?, 0/false
+    break-if-=
+    var x/eax: int <- copy 0
+    var y/ecx: int <- copy 0
+    x, y <- render-grapheme screen, 0x22/dquote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    return x, y
+  }
+  # \u201d = "
+  {
+    var right-dquote?/eax: boolean <- stream-data-equal? ustream, "201d"
+    compare right-dquote?, 0/false
+    break-if-=
+    var x/eax: int <- copy 0
+    var y/ecx: int <- copy 0
+    x, y <- render-grapheme screen, 0x22/dquote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    return x, y
+  }
+  # \u2022 = *
+  {
+    var bullet?/eax: boolean <- stream-data-equal? ustream, "2022"
+    compare bullet?, 0/false
+    break-if-=
+    var x/eax: int <- copy 0
+    var y/ecx: int <- copy 0
+    x, y <- render-grapheme screen, 0x2a/asterisk, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    return x, y
+  }
+  # \u2026 = ...
+  {
+    var ellipses?/eax: boolean <- stream-data-equal? ustream, "2026"
+    compare ellipses?, 0/false
+    break-if-=
+    var x/eax: int <- copy 0
+    var y/ecx: int <- copy 0
+    x, y <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    return x, y
+  }
+  # TODO: rest of Unicode
+  var x/eax: int <- copy 0
+  var y/ecx: int <- copy 0
+  x, y <- draw-stream-wrapping-right-then-down screen, ustream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
   return x, y
 }
 
