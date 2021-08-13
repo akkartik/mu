@@ -241,6 +241,7 @@ fn read-json-grapheme stream: (addr stream byte) -> _/ebx: grapheme {
 }
 
 # '\' encountered
+# https://www.json.org/json-en.html
 fn render-json-escaped-grapheme screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var g/ebx: grapheme <- read-json-grapheme stream
   compare g, 0xffffffff/end-of-file
