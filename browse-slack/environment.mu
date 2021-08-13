@@ -535,10 +535,6 @@ fn next-item _env: (addr environment), users: (addr array user), channels: (addr
 
 fn previous-item _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
-  var items/esi: (addr item-list) <- copy _items
-  var items-data-first-free-a/ecx: (addr int) <- get items, data-first-free
-  var final-item-index/ecx: int <- copy *items-data-first-free-a
-  final-item-index <- decrement
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
   var _tabs/eax: (addr array tab) <- lookup *tabs-ah
   var tabs/edx: (addr array tab) <- copy _tabs
@@ -546,6 +542,10 @@ fn previous-item _env: (addr environment), users: (addr array user), channels: (
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var items/esi: (addr item-list) <- copy _items
+  var items-data-first-free-a/ecx: (addr int) <- get items, data-first-free
+  var final-item-index/ecx: int <- copy *items-data-first-free-a
+  final-item-index <- decrement
   var dest/eax: (addr int) <- get current-tab, item-index
   compare *dest, final-item-index
   break-if->=
