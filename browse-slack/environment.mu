@@ -71,7 +71,7 @@ fn render-channels screen: (addr screen), env: (addr environment), _channels: (a
   }
 }
 
-fn render-item-list screen: (addr screen), _env: (addr environment), _items: (addr item-list), users: (addr array user) {
+fn render-item-list screen: (addr screen), _env: (addr environment), items: (addr item-list), users: (addr array user) {
   var env/esi: (addr environment) <- copy _env
   var tmp-width/eax: int <- copy 0
   var tmp-height/ecx: int <- copy 0
@@ -81,8 +81,6 @@ fn render-item-list screen: (addr screen), _env: (addr environment), _items: (ad
   var screen-height: int
   copy-to screen-height, tmp-height
   #
-  var y/ecx: int <- copy 2/search-space-ver
-  y <- add 1/item-padding-ver
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
   var _tabs/eax: (addr array tab) <- lookup *tabs-ah
   var tabs/edx: (addr array tab) <- copy _tabs
@@ -90,14 +88,25 @@ fn render-item-list screen: (addr screen), _env: (addr environment), _items: (ad
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  render-tab screen, env, current-tab, items, users, screen-height
+  var top/eax: int <- copy screen-height
+  top <- subtract 2/menu-space-ver
+  clear-rect screen, 0 top, screen-width screen-height, 0/bg
+}
+
+fn render-tab screen: (addr screen), _env: (addr environment), _current-tab: (addr tab), _items: (addr item-list), users: (addr array user), screen-height: int {
+  var env/esi: (addr environment) <- copy _env
+  var items/edi: (addr item-list) <- copy _items
+  var current-tab/edx: (addr tab) <- copy _current-tab
   var newest-item/eax: (addr int) <- get current-tab, item-index
   var i/ebx: int <- copy *newest-item
-  var items/esi: (addr item-list) <- copy _items
   var items-data-first-free-addr/eax: (addr int) <- get items, data-first-free
   render-progress screen, i, *items-data-first-free-addr
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/edi: (addr array item) <- copy _items-data
+  var y/ecx: int <- copy 2/search-space-ver
+  y <- add 1/item-padding-ver
   {
     compare i, 0
     break-if-<
@@ -109,9 +118,6 @@ fn render-item-list screen: (addr screen), _env: (addr environment), _items: (ad
     i <- decrement
     loop
   }
-  var top/eax: int <- copy screen-height
-  top <- subtract 2/menu-space-ver
-  clear-rect screen, 0 top, screen-width screen-height, 0/bg
 }
 
 # side-effect: mutates cursor position
