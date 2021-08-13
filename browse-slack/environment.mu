@@ -1,5 +1,11 @@
 type environment {
-  item-index: int
+  tabs: (handle array tab)
+  current-tab-index: int  # index into tabs
+}
+
+type tab {
+  item-index: int  # what item in the corresponding list we start rendering
+                   # the current page at
 }
 
 # static buffer sizes in this file:
@@ -20,9 +26,14 @@ fn initialize-environment _self: (addr environment), _items: (addr item-list) {
   var self/esi: (addr environment) <- copy _self
   var items/eax: (addr item-list) <- copy _items
   var items-data-first-free-a/eax: (addr int) <- get items, data-first-free
-  var final-item/eax: int <- copy *items-data-first-free-a
+  var final-item/edx: int <- copy *items-data-first-free-a
   final-item <- decrement
-  var dest/edi: (addr int) <- get self, item-index
+  var tabs-ah/ecx: (addr handle array tab) <- get self, tabs
+  populate tabs-ah, 0x10
+  # current-tab-index implicitly set to 0
+  var tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var first-tab/eax: (addr tab) <- index tabs, 0/current-tab-index
+  var dest/edi: (addr int) <- get first-tab, item-index
   copy-to *dest, final-item
 }
 
@@ -72,7 +83,14 @@ fn render-item-list screen: (addr screen), _env: (addr environment), _items: (ad
   #
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
-  var newest-item/eax: (addr int) <- get env, item-index
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var tabs/edx: (addr array tab) <- copy _tabs
+  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
+  var current-tab-index/eax: int <- copy *current-tab-index-a
+  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var newest-item/eax: (addr int) <- get current-tab, item-index
   var i/ebx: int <- copy *newest-item
   var items/esi: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
@@ -427,7 +445,14 @@ fn update-environment env: (addr environment), key: byte, items: (addr item-list
 
 fn next-item _env: (addr environment), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
-  var dest/eax: (addr int) <- get env, item-index
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var tabs/edx: (addr array tab) <- copy _tabs
+  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
+  var current-tab-index/eax: int <- copy *current-tab-index-a
+  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var dest/eax: (addr int) <- get current-tab, item-index
   compare *dest, 0
   break-if-<=
   decrement *dest
@@ -439,7 +464,14 @@ fn previous-item _env: (addr environment), _items: (addr item-list) {
   var items-data-first-free-a/ecx: (addr int) <- get items, data-first-free
   var final-item-index/ecx: int <- copy *items-data-first-free-a
   final-item-index <- decrement
-  var dest/eax: (addr int) <- get env, item-index
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var tabs/edx: (addr array tab) <- copy _tabs
+  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
+  var current-tab-index/eax: int <- copy *current-tab-index-a
+  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var dest/eax: (addr int) <- get current-tab, item-index
   compare *dest, final-item-index
   break-if->=
   increment *dest
@@ -451,8 +483,15 @@ fn page-down _env: (addr environment), _items: (addr item-list) {
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/ebx: (addr array item) <- copy _items-data
-  var src/eax: (addr int) <- get env, item-index
-  var new-item-index/ecx: int <- copy *src
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var tabs/ecx: (addr array tab) <- copy _tabs
+  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
+  var current-tab-index/eax: int <- copy *current-tab-index-a
+  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/eax: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
+  var new-item-index/ecx: int <- copy *current-tab-item-index-addr
   var y/edx: int <- copy 2
   {
     compare new-item-index, 0
@@ -471,20 +510,19 @@ fn page-down _env: (addr environment), _items: (addr item-list) {
     loop
   }
   new-item-index <- increment
-  var dest/eax: (addr int) <- get env, item-index
   {
     # HACK: make sure we make forward progress even if a single post takes up
     # the whole screen.
     # We can't see the rest of that single post at the moment. But at least we
     # can go past it.
-    compare new-item-index, *dest
+    compare new-item-index, *current-tab-item-index-addr
     break-if-!=
     # Don't make "forward progress" past post 0.
     compare new-item-index, 0
     break-if-=
     new-item-index <- decrement
   }
-  copy-to *dest, new-item-index
+  copy-to *current-tab-item-index-addr, new-item-index
 }
 
 fn page-up _env: (addr environment), _items: (addr item-list) {
@@ -496,8 +534,15 @@ fn page-up _env: (addr environment), _items: (addr item-list) {
   var items-data-first-free-a/eax: (addr int) <- get items, data-first-free
   var final-item-index/esi: int <- copy *items-data-first-free-a
   final-item-index <- decrement
-  var src/eax: (addr int) <- get env, item-index
-  var new-item-index/ecx: int <- copy *src
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var tabs/ecx: (addr array tab) <- copy _tabs
+  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
+  var current-tab-index/eax: int <- copy *current-tab-index-a
+  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/eax: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
+  var new-item-index/ecx: int <- copy *current-tab-item-index-addr
   var y/edx: int <- copy 2
   {
     compare new-item-index, final-item-index
@@ -516,8 +561,7 @@ fn page-up _env: (addr environment), _items: (addr item-list) {
     loop
   }
   new-item-index <- decrement
-  var dest/eax: (addr int) <- get env, item-index
-  copy-to *dest, new-item-index
+  copy-to *current-tab-item-index-addr, new-item-index
 }
 
 # keep sync'd with render-item
