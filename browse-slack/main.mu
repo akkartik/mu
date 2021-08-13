@@ -137,7 +137,6 @@ fn parse in: (addr stream byte), users: (addr array user), channels: (addr array
   }
   var dest/eax: (addr int) <- get items, data-first-free
   copy-to *dest, item-idx
-  decrement *dest
 }
 
 fn parse-record in: (addr stream byte), out: (addr stream byte) {

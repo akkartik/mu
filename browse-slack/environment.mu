@@ -21,6 +21,7 @@ fn initialize-environment _self: (addr environment), _items: (addr item-list) {
   var items/eax: (addr item-list) <- copy _items
   var items-data-first-free-a/eax: (addr int) <- get items, data-first-free
   var final-item/eax: int <- copy *items-data-first-free-a
+  final-item <- decrement
   var dest/edi: (addr int) <- get self, item-index
   copy-to *dest, final-item
 }
@@ -436,9 +437,10 @@ fn previous-item _env: (addr environment), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var items/esi: (addr item-list) <- copy _items
   var items-data-first-free-a/ecx: (addr int) <- get items, data-first-free
-  var items-data-first-free/ecx: int <- copy *items-data-first-free-a
+  var final-item-index/ecx: int <- copy *items-data-first-free-a
+  final-item-index <- decrement
   var dest/eax: (addr int) <- get env, item-index
-  compare *dest, items-data-first-free
+  compare *dest, final-item-index
   break-if->=
   increment *dest
 }
@@ -491,12 +493,14 @@ fn page-up _env: (addr environment), _items: (addr item-list) {
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/ebx: (addr array item) <- copy _items-data
-  var items-data-first-free-a/esi: (addr int) <- get items, data-first-free
+  var items-data-first-free-a/eax: (addr int) <- get items, data-first-free
+  var final-item-index/esi: int <- copy *items-data-first-free-a
+  final-item-index <- decrement
   var src/eax: (addr int) <- get env, item-index
   var new-item-index/ecx: int <- copy *src
   var y/edx: int <- copy 2
   {
-    compare new-item-index, *items-data-first-free-a
+    compare new-item-index, final-item-index
     break-if->
     compare y, 0x28/screen-height-minus-menu
     break-if->=
