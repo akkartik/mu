@@ -1,7 +1,7 @@
 type channel {
   name: (handle array byte)
   posts: (handle array int)  # item indices
-  newest-post-index: int
+  posts-first-free: int
 }
 
 type user {
@@ -18,12 +18,12 @@ type item {
   text: (handle array byte)
   parent: int  # item index
   comments: (handle array int)
-  newest-comment-index: int
+  comments-first-free: int
 }
 
 type item-list {
   data: (handle array item)
-  newest: int
+  data-first-free: int
 }
 
 # globals:
@@ -135,7 +135,7 @@ fn parse in: (addr stream byte), users: (addr array user), channels: (addr array
     }
     loop
   }
-  var dest/eax: (addr int) <- get items, newest
+  var dest/eax: (addr int) <- get items, data-first-free
   copy-to *dest, item-idx
   decrement *dest
 }
@@ -307,12 +307,12 @@ fn parse-item record: (addr stream byte), _channels: (addr array channel), _item
       populate parent-comments-ah, 0x200/num-comments
       parent-comments <- lookup *parent-comments-ah
     }
-    var parent-newest-comment-index-addr/edi: (addr int) <- get parent-item, newest-comment-index
-    var parent-newest-comment-index/edx: int <- copy *parent-newest-comment-index-addr
-    var dest/eax: (addr int) <- index parent-comments, parent-newest-comment-index
+    var parent-comments-first-free-addr/edi: (addr int) <- get parent-item, comments-first-free
+    var parent-comments-first-free/edx: int <- copy *parent-comments-first-free-addr
+    var dest/eax: (addr int) <- index parent-comments, parent-comments-first-free
     var src/ecx: int <- copy item-idx
     copy-to *dest, src
-    increment *parent-newest-comment-index-addr
+    increment *parent-comments-first-free-addr
   }
   # channel name
   skip-chars-matching-whitespace record
@@ -333,10 +333,10 @@ fn parse-item record: (addr stream byte), _channels: (addr array channel), _item
     var channel-offset/eax: (offset channel) <- compute-offset channels, channel-index
     var channel/eax: (addr channel) <- index channels, channel-offset
     var channel-posts-ah/ecx: (addr handle array int) <- get channel, posts
-    var channel-newest-post-index-addr/edx: (addr int) <- get channel, newest-post-index
-    var channel-newest-post-index/edx: int <- copy *channel-newest-post-index-addr
+    var channel-posts-first-free-addr/edx: (addr int) <- get channel, posts-first-free
+    var channel-posts-first-free/ebx: int <- copy *channel-posts-first-free-addr
     var channel-posts/eax: (addr array int) <- lookup *channel-posts-ah
-    var dest/eax: (addr int) <- index channel-posts, channel-newest-post-index
+    var dest/eax: (addr int) <- index channel-posts, channel-posts-first-free
   }
   # user index
   {

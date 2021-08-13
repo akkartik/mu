@@ -19,10 +19,10 @@ type environment {
 fn initialize-environment _self: (addr environment), _items: (addr item-list) {
   var self/esi: (addr environment) <- copy _self
   var items/eax: (addr item-list) <- copy _items
-  var newest-item-a/eax: (addr int) <- get items, newest
-  var newest-item/eax: int <- copy *newest-item-a
+  var items-data-first-free-a/eax: (addr int) <- get items, data-first-free
+  var final-item/eax: int <- copy *items-data-first-free-a
   var dest/edi: (addr int) <- get self, item-index
-  copy-to *dest, newest-item
+  copy-to *dest, final-item
 }
 
 ### Render
@@ -435,10 +435,10 @@ fn next-item _env: (addr environment), _items: (addr item-list) {
 fn previous-item _env: (addr environment), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var items/esi: (addr item-list) <- copy _items
-  var newest-item-index-a/ecx: (addr int) <- get items, newest
-  var newest-item-index/ecx: int <- copy *newest-item-index-a
+  var items-data-first-free-a/ecx: (addr int) <- get items, data-first-free
+  var items-data-first-free/ecx: int <- copy *items-data-first-free-a
   var dest/eax: (addr int) <- get env, item-index
-  compare *dest, newest-item-index
+  compare *dest, items-data-first-free
   break-if->=
   increment *dest
 }
@@ -491,12 +491,12 @@ fn page-up _env: (addr environment), _items: (addr item-list) {
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/ebx: (addr array item) <- copy _items-data
-  var newest-item-index-a/esi: (addr int) <- get items, newest
+  var items-data-first-free-a/esi: (addr int) <- get items, data-first-free
   var src/eax: (addr int) <- get env, item-index
   var new-item-index/ecx: int <- copy *src
   var y/edx: int <- copy 2
   {
-    compare new-item-index, *newest-item-index-a
+    compare new-item-index, *items-data-first-free-a
     break-if->
     compare y, 0x28/screen-height-minus-menu
     break-if->=
