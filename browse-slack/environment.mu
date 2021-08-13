@@ -144,14 +144,14 @@ fn render-menu screen: (addr screen) {
   set-cursor-position screen, 2/x, y
   draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " next page  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " previous page  ", width, 0xf/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ^n ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " next item  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " << previous page  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^p ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " previous item  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " < previous item  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^n ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " next item >  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " next page >>  ", width, 0xf/fg, 0/bg
 }
 
 fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), y: int, screen-height: int -> _/ecx: int {
