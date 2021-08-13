@@ -57,6 +57,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var s/ebx: (addr stream byte) <- copy _s
   var sector-count/eax: int <- copy 0x400  # test_data
 #?   var sector-count/eax: int <- copy 0x20000  # largest size tested; slow
+  set-cursor-position 0/screen, 0x20/x 0/y  # aborts clobber the screen starting x=0
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "loading ", 3/fg 0/bg
   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, sector-count, 3/fg 0/bg
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, " sectors from data disk..", 3/fg 0/bg
@@ -111,9 +112,12 @@ fn parse in: (addr stream byte), users: (addr array user), channels: (addr array
     var c/eax: byte <- peek-byte in
     compare c, 0
     break-if-=
-    set-cursor-position 0/screen, 0x20 0x20
+    set-cursor-position 0/screen, 0x20/x 1/y
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "parsed " 3/fg 0/bg
     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, user-idx, 3/fg 0/bg
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, item-idx, 4/fg 0/bg
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " users, " 3/fg 0/bg
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, item-idx, 3/fg 0/bg
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " posts/comments" 3/fg 0/bg
     clear-stream record
     parse-record in, record
     var user?/eax: boolean <- user-record? record
