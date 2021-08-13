@@ -618,8 +618,6 @@ fn all-items-page-down _current-tab: (addr tab), users: (addr array user), chann
     var item-text-ah/eax: (addr handle array byte) <- get item, text
     var item-text/eax: (addr array byte) <- lookup *item-text-ah
     var h/eax: int <- estimate-height item-text
-    set-cursor-position 0/screen, 0 0
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, h, 4/fg 0/bg
     y <- add h
     new-item-index <- decrement
     loop
@@ -669,8 +667,6 @@ fn channel-page-down _current-tab: (addr tab), users: (addr array user), _channe
     var item-text-ah/eax: (addr handle array byte) <- get item, text
     var item-text/eax: (addr array byte) <- lookup *item-text-ah
     var h/eax: int <- estimate-height item-text
-    set-cursor-position 0/screen, 0 0
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, h, 4/fg 0/bg
     y <- add h
     new-tab-item-index <- decrement
     loop
@@ -691,8 +687,31 @@ fn channel-page-down _current-tab: (addr tab), users: (addr array user), _channe
   copy-to *current-tab-item-index-addr, new-tab-item-index
 }
 
-fn page-up _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+fn page-up _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var tabs/ecx: (addr array tab) <- copy _tabs
+  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
+  var current-tab-index/eax: int <- copy *current-tab-index-a
+  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-type/eax: (addr int) <- get current-tab, type
+  compare *current-tab-type, 0/all-items
+  {
+    break-if-!=
+    all-items-page-up current-tab, users, channels, items
+    return
+  }
+  compare *current-tab-type, 1/channel
+  {
+    break-if-!=
+    channel-page-up current-tab, users, channels, items
+    return
+  }
+}
+
+fn all-items-page-up _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var items/esi: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
@@ -700,13 +719,7 @@ fn page-up _env: (addr environment), users: (addr array user), channels: (addr a
   var items-data-first-free-a/eax: (addr int) <- get items, data-first-free
   var final-item-index/esi: int <- copy *items-data-first-free-a
   final-item-index <- decrement
-  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
-  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
-  var tabs/ecx: (addr array tab) <- copy _tabs
-  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
-  var current-tab-index/eax: int <- copy *current-tab-index-a
-  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
-  var current-tab/eax: (addr tab) <- index tabs, current-tab-offset
+  var current-tab/eax: (addr tab) <- copy _current-tab
   var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
   var new-item-index/ecx: int <- copy *current-tab-item-index-addr
   var y/edx: int <- copy 2
@@ -720,14 +733,52 @@ fn page-up _env: (addr environment), users: (addr array user), channels: (addr a
     var item-text-ah/eax: (addr handle array byte) <- get item, text
     var item-text/eax: (addr array byte) <- lookup *item-text-ah
     var h/eax: int <- estimate-height item-text
-    set-cursor-position 0/screen, 0 0
-    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, h, 4/fg 0/bg
     y <- add h
     new-item-index <- increment
     loop
   }
   new-item-index <- decrement
   copy-to *current-tab-item-index-addr, new-item-index
+}
+
+fn channel-page-up _current-tab: (addr tab), users: (addr array user), _channels: (addr array channel), _items: (addr item-list) {
+  var current-tab/edi: (addr tab) <- copy _current-tab
+  var current-channel-index-addr/eax: (addr int) <- get current-tab, root-index
+  var current-channel-index/eax: int <- copy *current-channel-index-addr
+  var channels/esi: (addr array channel) <- copy _channels
+  var current-channel-offset/eax: (offset channel) <- compute-offset channels, current-channel-index
+  var current-channel/esi: (addr channel) <- index channels, current-channel-offset
+  var current-channel-posts-first-free-addr/eax: (addr int) <- get current-channel, posts-first-free
+  var tmp/eax: int <- copy *current-channel-posts-first-free-addr
+  var final-tab-post-index: int
+  copy-to final-tab-post-index, tmp
+  decrement final-tab-post-index
+  var current-channel-posts-ah/eax: (addr handle array int) <- get current-channel, posts
+  var _current-channel-posts/eax: (addr array int) <- lookup *current-channel-posts-ah
+  var current-channel-posts/esi: (addr array int) <- copy _current-channel-posts
+  var items/esi: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/ebx: (addr array item) <- copy _items-data
+  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
+  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
+  var y/edx: int <- copy 2
+  {
+    compare new-tab-item-index, final-tab-post-index
+    break-if->
+    compare y, 0x28/screen-height-minus-menu
+    break-if->=
+    var offset/eax: (offset item) <- compute-offset items-data, new-tab-item-index
+    var item/eax: (addr item) <- index items-data, offset
+    var item-text-ah/eax: (addr handle array byte) <- get item, text
+    var item-text/eax: (addr array byte) <- lookup *item-text-ah
+    var h/eax: int <- estimate-height item-text
+    y <- add h
+    new-tab-item-index <- increment
+    loop
+  }
+  new-tab-item-index <- decrement
+  copy-to *current-tab-item-index-addr, new-tab-item-index
 }
 
 # keep sync'd with render-item
