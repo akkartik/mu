@@ -4,6 +4,10 @@ type environment {
 }
 
 type tab {
+  type: int
+  # type 0: everything
+  # type 1: items in a channel
+  root-index: int  # into channels; only for type 1
   item-index: int  # what item in the corresponding list we start rendering
                    # the current page at
 }
@@ -88,14 +92,24 @@ fn render-item-list screen: (addr screen), _env: (addr environment), items: (add
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  render-tab screen, env, current-tab, items, users, screen-height
+  render-tab screen, current-tab, items, users, screen-height
   var top/eax: int <- copy screen-height
   top <- subtract 2/menu-space-ver
   clear-rect screen, 0 top, screen-width screen-height, 0/bg
 }
 
-fn render-tab screen: (addr screen), _env: (addr environment), _current-tab: (addr tab), _items: (addr item-list), users: (addr array user), screen-height: int {
-  var env/esi: (addr environment) <- copy _env
+fn render-tab screen: (addr screen), _current-tab: (addr tab), items: (addr item-list), users: (addr array user), screen-height: int {
+  var current-tab/esi: (addr tab) <- copy _current-tab
+  var current-tab-type/eax: (addr int) <- get current-tab, type
+  compare *current-tab-type, 0/all-items
+  {
+    break-if-!=
+    render-all-items screen, current-tab, items, users, screen-height
+    return
+  }
+}
+
+fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (addr item-list), users: (addr array user), screen-height: int {
   var items/edi: (addr item-list) <- copy _items
   var current-tab/edx: (addr tab) <- copy _current-tab
   var newest-item/eax: (addr int) <- get current-tab, item-index
