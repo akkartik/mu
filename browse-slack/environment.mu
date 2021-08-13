@@ -533,7 +533,7 @@ fn next-item _env: (addr environment), users: (addr array user), channels: (addr
   decrement *dest
 }
 
-fn previous-item _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+fn previous-item _env: (addr environment), users: (addr array user), _channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
   var _tabs/eax: (addr array tab) <- lookup *tabs-ah
@@ -549,6 +549,23 @@ fn previous-item _env: (addr environment), users: (addr array user), channels: (
     var items/esi: (addr item-list) <- copy _items
     var items-data-first-free-a/ecx: (addr int) <- get items, data-first-free
     var final-item-index/ecx: int <- copy *items-data-first-free-a
+    final-item-index <- decrement
+    var dest/eax: (addr int) <- get current-tab, item-index
+    compare *dest, final-item-index
+    break-if->=
+    increment *dest
+    return
+  }
+  compare *current-tab-type, 1/channel
+  {
+    break-if-!=
+    var current-channel-index-addr/eax: (addr int) <- get current-tab, root-index
+    var current-channel-index/eax: int <- copy *current-channel-index-addr
+    var channels/esi: (addr array channel) <- copy _channels
+    var current-channel-offset/eax: (offset channel) <- compute-offset channels, current-channel-index
+    var current-channel/eax: (addr channel) <- index channels, current-channel-offset
+    var current-channel-posts-first-free-addr/eax: (addr int) <- get current-channel, posts-first-free
+    var final-item-index/ecx: int <- copy *current-channel-posts-first-free-addr
     final-item-index <- decrement
     var dest/eax: (addr int) <- get current-tab, item-index
     compare *dest, final-item-index
