@@ -25,6 +25,8 @@ fn initialize-environment _self: (addr environment), _items: (addr item-list) {
   copy-to *dest, newest-item
 }
 
+### Render
+
 fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   clear-screen screen
   render-search-input screen, env
@@ -202,9 +204,63 @@ fn draw-json-text-wrapping-right-then-down screen: (addr screen), _text: (addr a
   }
   var x/eax: int <- copy _x
   var y/ecx: int <- copy _y
-  x, y <- draw-stream-wrapping-right-then-down screen, stream, xmin, ymin, xmax, ymax, x, y, color, background-color
+  x, y <- draw-json-stream-wrapping-right-then-down screen, stream, xmin, ymin, xmax, ymax, x, y, color, background-color
   return x, y
 }
+
+# draw a stream in the rectangle from (xmin, ymin) to (xmax, ymax), starting from (x, y), wrapping as necessary
+# return the next (x, y) coordinate in raster order where drawing stopped
+# that way the caller can draw more if given the same min and max bounding-box.
+# if there isn't enough space, truncate
+fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+  var xcurr/eax: int <- copy x
+  var ycurr/ecx: int <- copy y
+  {
+    var g/ebx: grapheme <- read-json-grapheme stream
+    compare g, 0xffffffff/end-of-file
+    break-if-=
+    $draw-json-stream-wrapping-right-then-down:render-grapheme: {
+      compare g, 0x5c/backslash
+      {
+        break-if-!=
+        var next-g/ebx: grapheme <- read-json-grapheme stream
+        compare next-g, 0xffffffff/end-of-file
+        break-if-=  # just draw a final backslash
+        xcurr, ycurr <- render-json-escaped-grapheme screen, next-g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+        break $draw-json-stream-wrapping-right-then-down:render-grapheme
+      }
+      xcurr, ycurr <- render-grapheme screen, g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    }
+    loop
+  }
+  set-cursor-position screen, xcurr, ycurr
+  return xcurr, ycurr
+}
+
+# just return a different register
+fn read-json-grapheme stream: (addr stream byte) -> _/ebx: grapheme {
+  var result/eax: grapheme <- read-grapheme stream
+  return result
+}
+
+fn render-json-escaped-grapheme screen: (addr screen), g: grapheme, xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+  compare g, 0x6e/n
+  var x/eax: int <- copy xcurr
+  {
+    break-if-!=
+    # minimum effort to clear cursor
+    draw-code-point screen, 0x20/space, xcurr, ycurr, color, background-color
+    x <- copy xmin
+    increment ycurr
+    return x, ycurr
+  }
+  # most characters escape to themselves
+  var y/ecx: int <- copy 0
+  x, y <- render-grapheme screen, g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+  return x, y
+}
+
+### Edit
 
 fn update-environment env: (addr environment), key: byte, items: (addr item-list) {
   {
