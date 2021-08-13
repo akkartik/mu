@@ -83,6 +83,36 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var env-storage: environment
   var env/ebx: (addr environment) <- address env-storage
   initialize-environment env, items
+  # TEMPORARY
+  {
+    var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+    var tabs/eax: (addr array tab) <- lookup *tabs-ah
+    var first-tab/eax: (addr tab) <- index tabs, 0/current-tab-index
+    var dest/edi: (addr int) <- get first-tab, type
+    copy-to *dest, 1/channel
+    dest <- get first-tab, root-index
+    copy-to *dest, 0/channel-general
+    dest <- get first-tab, item-index
+    var channel-index/eax: int <- copy 0  # turns out we currently can't pass literal directly to channels; should be an easy gap to fill
+    var channel-offset/eax: (offset channel) <- compute-offset channels, channel-index
+#?     {
+#?       var foo/eax: int <- copy channel-offset
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 7/fg 0/bg
+#?     }
+    var curr-channel/eax: (addr channel) <- index channels, channel-offset
+#?     {
+#?       var foo/eax: int <- copy curr-channel
+#?       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 4/fg 0/bg
+#?     }
+    var curr-channel-posts-first-free-addr/eax: (addr int) <- get curr-channel, posts-first-free
+    var curr-channel-final-post-index/eax: int <- copy *curr-channel-posts-first-free-addr
+#?     set-cursor-position 0/screen, 0x20 0x20
+#?     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, curr-channel-final-post-index, 4/fg 0/bg
+#?     abort "aaa"
+    curr-channel-final-post-index <- decrement
+    copy-to *dest, curr-channel-final-post-index
+  }
+  #
   {
     render-environment screen, env, users, channels, items
     {
@@ -325,17 +355,31 @@ fn parse-item record: (addr stream byte), _channels: (addr array channel), _item
   next-json-string record, s
   var dest/eax: (addr handle array byte) <- get item, channel
   stream-to-array s, dest
+#?   set-cursor-position 0/screen, 0x70 item-idx
   # cross-link to channels
   {
     var channels/esi: (addr array channel) <- copy _channels
     var channel-index/eax: int <- find-or-insert channels, s
+#?     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, channel-index, 5/fg 0/bg
     var channel-offset/eax: (offset channel) <- compute-offset channels, channel-index
     var channel/eax: (addr channel) <- index channels, channel-offset
+#?     {
+#?       var foo/eax: int <- copy channel
+#?       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 4/fg 0/bg
+#?     }
     var channel-posts-ah/ecx: (addr handle array int) <- get channel, posts
     var channel-posts-first-free-addr/edx: (addr int) <- get channel, posts-first-free
+#?     {
+#?       var foo/eax: int <- copy channel-posts-first-free-addr
+#?       draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 4/fg 0/bg
+#?     }
     var channel-posts-first-free/ebx: int <- copy *channel-posts-first-free-addr
+#?     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, channel-posts-first-free, 3/fg 0/bg
     var channel-posts/eax: (addr array int) <- lookup *channel-posts-ah
     var dest/eax: (addr int) <- index channel-posts, channel-posts-first-free
+    var src/ecx: int <- copy item-idx
+    copy-to *dest, src
+    increment *channel-posts-first-free-addr
   }
   # user index
   {

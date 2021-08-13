@@ -47,7 +47,7 @@ fn render-environment screen: (addr screen), env: (addr environment), users: (ad
   clear-screen screen
   render-search-input screen, env
   render-channels screen, env, channels
-  render-item-list screen, env, items, users
+  render-item-list screen, env, items, channels, users
   render-menu screen
 }
 
@@ -75,7 +75,7 @@ fn render-channels screen: (addr screen), env: (addr environment), _channels: (a
   }
 }
 
-fn render-item-list screen: (addr screen), _env: (addr environment), items: (addr item-list), users: (addr array user) {
+fn render-item-list screen: (addr screen), _env: (addr environment), items: (addr item-list), channels: (addr array channel), users: (addr array user) {
   var env/esi: (addr environment) <- copy _env
   var tmp-width/eax: int <- copy 0
   var tmp-height/ecx: int <- copy 0
@@ -92,13 +92,13 @@ fn render-item-list screen: (addr screen), _env: (addr environment), items: (add
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  render-tab screen, current-tab, items, users, screen-height
+  render-tab screen, current-tab, items, channels, users, screen-height
   var top/eax: int <- copy screen-height
   top <- subtract 2/menu-space-ver
   clear-rect screen, 0 top, screen-width screen-height, 0/bg
 }
 
-fn render-tab screen: (addr screen), _current-tab: (addr tab), items: (addr item-list), users: (addr array user), screen-height: int {
+fn render-tab screen: (addr screen), _current-tab: (addr tab), items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
   var current-tab/esi: (addr tab) <- copy _current-tab
   var current-tab-type/eax: (addr int) <- get current-tab, type
   compare *current-tab-type, 0/all-items
@@ -107,11 +107,17 @@ fn render-tab screen: (addr screen), _current-tab: (addr tab), items: (addr item
     render-all-items screen, current-tab, items, users, screen-height
     return
   }
+  compare *current-tab-type, 1/channel
+  {
+    break-if-!=
+    render-channel-tab screen, current-tab, items, channels, users, screen-height
+    return
+  }
 }
 
 fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (addr item-list), users: (addr array user), screen-height: int {
+  var current-tab/esi: (addr tab) <- copy _current-tab
   var items/edi: (addr item-list) <- copy _items
-  var current-tab/edx: (addr tab) <- copy _current-tab
   var newest-item/eax: (addr int) <- get current-tab, item-index
   var i/ebx: int <- copy *newest-item
   var items-data-first-free-addr/eax: (addr int) <- get items, data-first-free
@@ -128,6 +134,43 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (ad
     break-if->=
     var offset/eax: (offset item) <- compute-offset items-data, i
     var curr-item/eax: (addr item) <- index items-data, offset
+    y <- render-item screen, curr-item, users, y, screen-height
+    i <- decrement
+    loop
+  }
+}
+
+fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (addr item-list), _channels: (addr array channel), users: (addr array user), screen-height: int {
+  var current-tab/esi: (addr tab) <- copy _current-tab
+  var items/edi: (addr item-list) <- copy _items
+  var channels/ebx: (addr array channel) <- copy _channels
+  var channel-index-addr/eax: (addr int) <- get current-tab, root-index
+  var channel-index/eax: int <- copy *channel-index-addr
+  var channel-offset/eax: (offset channel) <- compute-offset channels, channel-index
+  var current-channel/ecx: (addr channel) <- index channels, channel-offset
+  var current-channel-posts-ah/eax: (addr handle array int) <- get current-channel, posts
+  var _current-channel-posts/eax: (addr array int) <- lookup *current-channel-posts-ah
+  var current-channel-posts/edx: (addr array int) <- copy _current-channel-posts
+  var current-channel-first-channel-item-addr/eax: (addr int) <- get current-tab, item-index
+  var i/ebx: int <- copy *current-channel-first-channel-item-addr
+  var current-channel-posts-first-free-addr/eax: (addr int) <- get current-channel, posts-first-free
+  set-cursor-position 0/screen, 0x68/x 0/y
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "channel", 7/fg 0/bg
+  render-progress screen, i, *current-channel-posts-first-free-addr
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/edi: (addr array item) <- copy _items-data
+  var y/ecx: int <- copy 2/search-space-ver
+  y <- add 1/item-padding-ver
+  {
+    compare i, 0
+    break-if-<
+    compare y, screen-height
+    break-if->=
+    var item-index-addr/eax: (addr int) <- index current-channel-posts, i
+    var item-index/eax: int <- copy *item-index-addr
+    var item-offset/eax: (offset item) <- compute-offset items-data, item-index
+    var curr-item/eax: (addr item) <- index items-data, item-offset
     y <- render-item screen, curr-item, users, y, screen-height
     i <- decrement
     loop
