@@ -1,6 +1,8 @@
 type environment {
   tabs: (handle array tab)
   current-tab-index: int  # index into tabs
+  cursor-in-channels?: boolean
+  channel-cursor-index: int
 }
 
 type tab {
@@ -33,7 +35,7 @@ fn initialize-environment _self: (addr environment), _items: (addr item-list) {
   var final-item/edx: int <- copy *items-data-first-free-a
   final-item <- decrement
   var tabs-ah/ecx: (addr handle array tab) <- get self, tabs
-  populate tabs-ah, 0x10
+  populate tabs-ah, 0x10/max-history
   # current-tab-index implicitly set to 0
   var tabs/eax: (addr array tab) <- lookup *tabs-ah
   var first-tab/eax: (addr tab) <- index tabs, 0/current-tab-index
@@ -48,10 +50,19 @@ fn render-environment screen: (addr screen), env: (addr environment), users: (ad
   render-search-input screen, env
   render-channels screen, env, channels
   render-item-list screen, env, items, channels, users
-  render-menu screen
+  render-menu screen, env
 }
 
-fn render-channels screen: (addr screen), env: (addr environment), _channels: (addr array channel) {
+fn render-channels screen: (addr screen), _env: (addr environment), _channels: (addr array channel) {
+  var env/esi: (addr environment) <- copy _env
+  var cursor-index/edi: int <- copy -1
+  {
+    var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
+    compare *cursor-in-channels?, 0/false
+    break-if-=
+    var cursor-index-addr/eax: (addr int) <- get env, channel-cursor-index
+    cursor-index <- copy *cursor-index-addr
+  }
   var channels/esi: (addr array channel) <- copy _channels
   var y/ebx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
@@ -67,8 +78,19 @@ fn render-channels screen: (addr screen), env: (addr environment), _channels: (a
     compare name, 0
     break-if-=
     set-cursor-position screen, 2/x y
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 7/grey 0/black
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, name, 7/grey 0/black
+    {
+      compare cursor-index, i
+      break-if-=
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 7/grey 0/black
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, name, 7/grey 0/black
+    }
+    {
+      compare cursor-index, i
+      break-if-!=
+      # cursor; reverse video
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 0/black 7/grey
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, name, 0/black 7/grey
+    }
     y <- add 2/channel-padding
     i <- increment
     loop
@@ -193,7 +215,24 @@ fn render-search-input screen: (addr screen), env: (addr environment) {
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "________________________________", 0xf/fg 0/bg
 }
 
-fn render-menu screen: (addr screen) {
+fn render-menu screen: (addr screen), _env: (addr environment) {
+  var env/edi: (addr environment) <- copy _env
+  var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
+  compare *cursor-in-channels?, 0/false
+  {
+    break-if-!=
+    render-main-menu screen
+    return
+  }
+  compare *cursor-in-channels?, 1/true
+  {
+    break-if-=
+    render-channels-menu screen
+    return
+  }
+}
+
+fn render-main-menu screen: (addr screen) {
   var width/eax: int <- copy 0
   var y/ecx: int <- copy 0
   width, y <- screen-size screen
@@ -201,6 +240,8 @@ fn render-menu screen: (addr screen) {
   set-cursor-position screen, 2/x, y
   draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " Tab ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " to channels  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " << previous page  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^p ", width, 0/fg 0xf/bg
@@ -209,6 +250,20 @@ fn render-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " next item >  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " next page >>  ", width, 0xf/fg, 0/bg
+}
+
+fn render-channels-menu screen: (addr screen) {
+  var width/eax: int <- copy 0
+  var y/ecx: int <- copy 0
+  width, y <- screen-size screen
+  y <- decrement
+  set-cursor-position screen, 2/x, y
+  draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " Tab ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " to items  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " select  ", width, 0xf/fg, 0/bg
 }
 
 fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), y: int, screen-height: int -> _/ecx: int {
@@ -491,7 +546,33 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
 
 ### Edit
 
-fn update-environment env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
+fn update-environment _env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  # TODO: search
+  # either toggle the mode
+  var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
+  {
+    compare key, 9/tab
+    break-if-!=
+    not *cursor-in-channels?
+    return
+  }
+  # or dispatch based on the mode
+  {
+    compare *cursor-in-channels?, 0/false
+    break-if-!=
+    update-main-panel env, key, users, channels, items
+    return
+  }
+  {
+    compare *cursor-in-channels?, 0/false
+    break-if-=
+    update-channels-nav env, key, users, channels, items
+    return
+  }
+}
+
+fn update-main-panel env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   {
     compare key, 0xe/ctrl-n
     break-if-!=
@@ -516,6 +597,64 @@ fn update-environment env: (addr environment), key: byte, users: (addr array use
     page-up env, users, channels, items
     return
   }
+}
+
+# TODO: clamp cursor within bounds
+fn update-channels-nav _env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  var channel-cursor-index/eax: (addr int) <- get env, channel-cursor-index
+  {
+    compare key, 0x81/down-arrow
+    break-if-!=
+    increment *channel-cursor-index
+    return
+  }
+  {
+    compare key, 0x82/up-arrow
+    break-if-!=
+    decrement *channel-cursor-index
+    return
+  }
+  {
+    compare key, 0xa/newline
+    break-if-!=
+    new-channel-page env, *channel-cursor-index, channels
+    var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
+    copy-to *cursor-in-channels?, 0/false
+    return
+  }
+}
+
+fn new-channel-page _env: (addr environment), channel-index: int, _channels: (addr array channel) {
+  var env/edi: (addr environment) <- copy _env
+  var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
+  increment *current-tab-index-addr
+  var current-tab-index/ecx: int <- copy *current-tab-index-addr
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var max-tabs/eax: int <- length tabs
+  compare current-tab-index, max-tabs
+  {
+    compare current-tab-index, max-tabs
+    break-if-<
+    abort "history overflow; grow max-history (we should probably improve this)"
+  }
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-type/eax: (addr int) <- get current-tab, type
+  copy-to *current-tab, 1/channel
+  var current-tab-root-index/eax: (addr int) <- get current-tab, root-index
+  var curr-channel-index/edx: int <- copy channel-index
+  copy-to *current-tab-root-index, curr-channel-index
+  var channels/esi: (addr array channel) <- copy _channels
+  var curr-channel-offset/eax: (offset channel) <- compute-offset channels, curr-channel-index
+  var curr-channel/eax: (addr channel) <- index channels, curr-channel-offset
+  var curr-channel-posts-first-free-addr/eax: (addr int) <- get curr-channel, posts-first-free
+  var curr-channel-final-post-index/eax: int <- copy *curr-channel-posts-first-free-addr
+  var dest/edi: (addr int) <- get current-tab, item-index
+  copy-to *dest, curr-channel-final-post-index
 }
 
 fn next-item _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
