@@ -63,8 +63,8 @@ fn render-channels screen: (addr screen), env: (addr environment), _channels: (a
     compare name, 0
     break-if-=
     set-cursor-position screen, 2/x y
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 0xf/grey 0/black
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, name, 0xf/grey 0/black
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 7/grey 0/black
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, name, 7/grey 0/black
     y <- add 2/channel-padding
     i <- increment
     loop
