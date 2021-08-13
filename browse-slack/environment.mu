@@ -93,6 +93,8 @@ fn render-item-list screen: (addr screen), _env: (addr environment), _items: (ad
   var newest-item/eax: (addr int) <- get current-tab, item-index
   var i/ebx: int <- copy *newest-item
   var items/esi: (addr item-list) <- copy _items
+  var items-data-first-free-addr/eax: (addr int) <- get items, data-first-free
+  render-progress screen, i, *items-data-first-free-addr
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/edi: (addr array item) <- copy _items-data
@@ -110,6 +112,16 @@ fn render-item-list screen: (addr screen), _env: (addr environment), _items: (ad
   var top/eax: int <- copy screen-height
   top <- subtract 2/menu-space-ver
   clear-rect screen, 0 top, screen-width screen-height, 0/bg
+}
+
+# side-effect: mutates cursor position
+fn render-progress screen: (addr screen), curr: int, max: int {
+  set-cursor-position 0/screen, 0x70/x 0/y
+  var top-index/eax: int <- copy max
+  top-index <- subtract curr  # happy accident: 1-based
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, top-index, 7/fg 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "/", 7/fg 0/bg
+  draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, max, 7/fg 0/bg
 }
 
 fn render-search-input screen: (addr screen), env: (addr environment) {
