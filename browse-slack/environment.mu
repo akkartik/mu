@@ -352,18 +352,37 @@ fn render-menu screen: (addr screen), _env: (addr environment) {
 }
 
 fn render-main-menu screen: (addr screen), _env: (addr environment) {
+  var env/edi: (addr environment) <- copy _env
   var width/eax: int <- copy 0
   var y/ecx: int <- copy 0
   width, y <- screen-size screen
   y <- decrement
   set-cursor-position screen, 2/x, y
   {
-    var env/edi: (addr environment) <- copy _env
     var num-tabs/edi: (addr int) <- get env, current-tab-index
     compare *num-tabs, 0
     break-if-<=
     draw-text-rightward-from-cursor screen, " Esc ", width, 0/fg 0xf/bg
     draw-text-rightward-from-cursor screen, " go back  ", width, 0xf/fg, 0/bg
+  }
+  $render-main-menu:enter: {
+    draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
+    {
+      {
+        var current-tab-index-a/ecx: (addr int) <- get env, current-tab-index
+        var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+        var tabs/eax: (addr array tab) <- lookup *tabs-ah
+        var current-tab-index/ecx: int <- copy *current-tab-index-a
+        var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
+        var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+        var current-tab-intra-item-cursor-position/ecx: (addr int) <- get current-tab, intra-item-cursor-position
+        compare *current-tab-intra-item-cursor-position, 0/user
+      }
+      break-if-!=
+      draw-text-rightward-from-cursor screen, " go to user  ", width, 0xf/fg, 0/bg
+      break $render-main-menu:enter
+    }
+    draw-text-rightward-from-cursor screen, " go to thread  ", width, 0xf/fg, 0/bg
   }
   draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
