@@ -16,6 +16,9 @@ type tab {
       # type 2: search for a term
   item-index: int  # what item in the corresponding list we start rendering
                    # the current page at
+  intra-item-cursor-position: int
+    # 0: user
+    # 1: post
   # only for type 1
   channel-index: int
   # only for type 2
@@ -184,6 +187,13 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (ad
   # cursor always at top item
   var show-cursor?: boolean
   copy-to show-cursor?, 1/true
+  var cursor-on-user?: boolean
+  {
+    var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
+    compare *current-tab-intra-item-cursor-position, 0/user
+    break-if-!=
+    copy-to cursor-on-user?, 1/true
+  }
   {
     compare i, 0
     break-if-<
@@ -191,7 +201,7 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (ad
     break-if->=
     var offset/eax: (offset item) <- compute-offset items-data, i
     var curr-item/eax: (addr item) <- index items-data, offset
-    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    y <- render-item screen, curr-item, users, show-cursor?, cursor-on-user?, y, screen-height
     copy-to show-cursor?, 0/false
     i <- decrement
     loop
@@ -223,6 +233,13 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
   # cursor always at top item
   var show-cursor?: boolean
   copy-to show-cursor?, 1/true
+  var cursor-on-user?: boolean
+  {
+    var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
+    compare *current-tab-intra-item-cursor-position, 0/user
+    break-if-!=
+    copy-to cursor-on-user?, 1/true
+  }
   {
     compare i, 0
     break-if-<
@@ -232,7 +249,7 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
     var item-index/eax: int <- copy *item-index-addr
     var item-offset/eax: (offset item) <- compute-offset items-data, item-index
     var curr-item/eax: (addr item) <- index items-data, item-offset
-    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    y <- render-item screen, curr-item, users, show-cursor?, cursor-on-user?, y, screen-height
     copy-to show-cursor?, 0/false
     i <- decrement
     loop
@@ -265,6 +282,13 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (a
   # cursor always at top item
   var show-cursor?: boolean
   copy-to show-cursor?, 1/true
+  var cursor-on-user?: boolean
+  {
+    var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
+    compare *current-tab-intra-item-cursor-position, 0/user
+    break-if-!=
+    copy-to cursor-on-user?, 1/true
+  }
   {
     compare i, 0
     break-if-<
@@ -274,7 +298,7 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (a
     var item-index/eax: int <- copy *item-index-addr
     var item-offset/eax: (offset item) <- compute-offset items-data, item-index
     var curr-item/eax: (addr item) <- index items-data, item-offset
-    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    y <- render-item screen, curr-item, users, show-cursor?, cursor-on-user?, y, screen-height
     copy-to show-cursor?, 0/false
     i <- decrement
     loop
@@ -395,7 +419,7 @@ fn render-search-menu screen: (addr screen), _env: (addr environment) {
   draw-text-rightward-from-cursor screen, " clear  ", width, 0xf/fg, 0/bg
 }
 
-fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), show-cursor?: boolean, y: int, screen-height: int -> _/ecx: int {
+fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), show-cursor?: boolean, cursor-on-user?: boolean, y: int, screen-height: int -> _/ecx: int {
   var item/esi: (addr item) <- copy _item
   var users/edi: (addr array user) <- copy _users
   var author-index-addr/ecx: (addr int) <- get item, by
@@ -433,8 +457,10 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
     var x/ecx: int <- copy 0x20/main-panel-hor
     x <- add 0x10/avatar-space-hor
     set-cursor-position screen, x y
-    compare show-cursor?, 0/false
     {
+      compare show-cursor?, 0/false
+      break-if-=
+      compare cursor-on-user?, 0/false
       break-if-=
       draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, author-real-name, 0/black 0xf/white
       break $render-item:author-name
@@ -446,7 +472,16 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
   var text-ah/eax: (addr handle array byte) <- get item, text
   var _text/eax: (addr array byte) <- lookup *text-ah
   var text/edx: (addr array byte) <- copy _text
-  var text-y/eax: int <- render-slack-message screen, text, y, screen-height
+  # highlight = show-cursor? & ~cursor-on-user?
+  var highlight?/eax: boolean <- copy 0/false
+  {
+    compare show-cursor?, 0/false
+    break-if-=
+    compare cursor-on-user?, 0/false
+    break-if-!=
+    highlight? <- copy 1/true
+  }
+  var text-y/eax: int <- render-slack-message screen, text, highlight?, y, screen-height
   # flush
   add-to y, 6/avatar-space-ver
   compare y, text-y
@@ -457,12 +492,20 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
   return text-y
 }
 
-fn render-slack-message screen: (addr screen), text: (addr array byte), ymin: int, ymax: int -> _/eax: int {
+fn render-slack-message screen: (addr screen), text: (addr array byte), highlight?: boolean, ymin: int, ymax: int -> _/eax: int {
   var x/eax: int <- copy 0x20/main-panel-hor
   x <- add 0x10/avatar-space-hor
   var y/ecx: int <- copy ymin
   y <- add 1/author-name-padding-ver
-  x, y <- draw-json-text-wrapping-right-then-down screen, text, x y, 0x70/xmax=post-right-coord ymax, x y, 7/fg 0/bg
+  $render-slack-message:draw: {
+    compare highlight?, 0/false
+    {
+      break-if-=
+      x, y <- draw-json-text-wrapping-right-then-down screen, text, x y, 0x70/xmax=post-right-coord ymax, x y, 0/fg 0xf/bg
+      break $render-slack-message:draw
+    }
+    x, y <- draw-json-text-wrapping-right-then-down screen, text, x y, 0x70/xmax=post-right-coord ymax, x y, 7/fg 0/bg
+  }
   y <- add 2/item-padding-ver
   return y
 }
