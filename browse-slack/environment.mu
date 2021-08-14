@@ -2,7 +2,9 @@ type environment {
   search-terms: (handle gap-buffer)
   tabs: (handle array tab)
   current-tab-index: int  # index into tabs
+  # search mode
   cursor-in-search?: boolean
+  # channel mode
   cursor-in-channels?: boolean
   channel-cursor-index: int
 }
@@ -295,6 +297,7 @@ fn render-search-input screen: (addr screen), _env: (addr environment) {
   }
 }
 
+# not used in search mode
 fn render-menu screen: (addr screen), _env: (addr environment) {
   var env/edi: (addr environment) <- copy _env
   var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
