@@ -241,6 +241,12 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (a
   set-cursor-position 0/screen, 0x68/x 0/y
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "search", 7/fg 0/bg
   render-progress screen, i, *current-tab-search-items-first-free-addr
+  {
+    compare *current-tab-search-items-first-free-addr, 0x100/max-search-results
+    break-if-<
+    set-cursor-position 0/screen, 0x68/x 1/y
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "too many results", 4/fg 0/bg
+  }
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/edi: (addr array item) <- copy _items-data
