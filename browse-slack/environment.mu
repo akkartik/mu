@@ -335,10 +335,6 @@ fn render-main-menu screen: (addr screen), _env: (addr environment) {
   draw-text-rightward-from-cursor screen, " go to channels  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " << page  ", width, 0xf/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ^p ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " < item  ", width, 0xf/fg, 0/bg
-  draw-text-rightward-from-cursor screen, " ^n ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " item >  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " page >>  ", width, 0xf/fg, 0/bg
 }
@@ -716,13 +712,13 @@ fn update-environment _env: (addr environment), key: byte, users: (addr array us
 
 fn update-main-panel env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   {
-    compare key, 0xe/ctrl-n
+    compare key, 0x81/down-arrow
     break-if-!=
     next-item env, users, channels, items
     return
   }
   {
-    compare key, 0x10/ctrl-p
+    compare key, 0x82/up-arrow
     break-if-!=
     previous-item env, users, channels, items
     return
