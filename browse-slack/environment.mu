@@ -1,6 +1,8 @@
 type environment {
+  search-terms: (handle gap-buffer)
   tabs: (handle array tab)
   current-tab-index: int  # index into tabs
+  cursor-in-search?: boolean
   cursor-in-channels?: boolean
   channel-cursor-index: int
 }
@@ -9,10 +11,14 @@ type tab {
   type: int
       # type 0: everything
       # type 1: items in a channel
+      # type 2: search for a term
   item-index: int  # what item in the corresponding list we start rendering
                    # the current page at
   # only for type 1
   channel-index: int
+  # only for type 2
+  search-terms: (handle gap-buffer)
+  items: (handle array int)
 }
 
 # static buffer sizes in this file:
@@ -31,6 +37,10 @@ type tab {
 
 fn initialize-environment _self: (addr environment), _items: (addr item-list) {
   var self/esi: (addr environment) <- copy _self
+  var search-terms-ah/eax: (addr handle gap-buffer) <- get self, search-terms
+  allocate search-terms-ah
+  var search-terms/eax: (addr gap-buffer) <- lookup *search-terms-ah
+  initialize-gap-buffer search-terms, 0x30/search-capacity
   var items/eax: (addr item-list) <- copy _items
   var items-data-first-free-a/eax: (addr int) <- get items, data-first-free
   var final-item/edx: int <- copy *items-data-first-free-a
@@ -210,25 +220,43 @@ fn render-progress screen: (addr screen), curr: int, max: int {
   draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, max, 7/fg 0/bg
 }
 
-fn render-search-input screen: (addr screen), env: (addr environment) {
+fn render-search-input screen: (addr screen), _env: (addr environment) {
+  var env/esi: (addr environment) <- copy _env
   set-cursor-position 0/screen, 0x22/x=search-position-x 1/y
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "search ", 7/fg 0/bg
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "________________________________", 0xf/fg 0/bg
+  var search-terms-ah/eax: (addr handle gap-buffer) <- get env, search-terms
+  var search-terms/eax: (addr gap-buffer) <- lookup *search-terms-ah
+  rewind-gap-buffer search-terms
+  var x/eax: int <- render-gap-buffer screen, search-terms, 0x2a/x 1/y, 1/render-cursor, 0xf/fg 0/bg
+  {
+    compare x, 0x4a/end-search
+    break-if->
+    var y/ecx: int <- copy 0
+    x, y <- render-grapheme screen, 0x5f/underscore, 0/xmin 1/ymin, 0x80/xmax, 1/ymax, x, 1/y, 0xf/fg 0/bg
+    loop
+  }
 }
 
 fn render-menu screen: (addr screen), _env: (addr environment) {
   var env/edi: (addr environment) <- copy _env
+  var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+  compare *cursor-in-search?, 0/false
+  {
+    break-if-=
+    render-search-menu screen, env
+    return
+  }
   var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
+  compare *cursor-in-channels?, 0/false
+  {
+    break-if-=
+    render-channels-menu screen, env
+    return
+  }
   compare *cursor-in-channels?, 0/false
   {
     break-if-!=
     render-main-menu screen, env
-    return
-  }
-  compare *cursor-in-channels?, 1/true
-  {
-    break-if-=
-    render-channels-menu screen, env
     return
   }
 }
@@ -279,6 +307,18 @@ fn render-channels-menu screen: (addr screen), _env: (addr environment) {
   draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " Tab ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " go to items  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " select  ", width, 0xf/fg, 0/bg
+}
+
+fn render-search-menu screen: (addr screen), _env: (addr environment) {
+  var width/eax: int <- copy 0
+  var y/ecx: int <- copy 0
+  width, y <- screen-size screen
+  y <- decrement
+  set-cursor-position screen, 2/x, y
+  draw-text-rightward-from-cursor screen, " Esc ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " cancel  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " select  ", width, 0xf/fg, 0/bg
 }
@@ -572,7 +612,14 @@ fn update-environment _env: (addr environment), key: byte, users: (addr array us
     previous-tab env
     return
   }
-  # TODO: search
+  {
+    compare key, 0x2f/slash
+    break-if-!=
+    # start search mode
+    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+    copy-to *cursor-in-search?, 1/true
+    return
+  }
   var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
   {
     compare key, 9/tab
@@ -582,6 +629,13 @@ fn update-environment _env: (addr environment), key: byte, users: (addr array us
     return
   }
   # dispatch based on where the cursor is
+  {
+    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+    compare *cursor-in-search?, 0/false
+    break-if-!=
+    update-search env, key, users, channels, items
+    return
+  }
   {
     compare *cursor-in-channels?, 0/false
     break-if-!=
@@ -649,6 +703,23 @@ fn update-channels-nav _env: (addr environment), key: byte, users: (addr array u
   }
 }
 
+fn update-search _env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  {
+    compare key, 0xa/newline
+    break-if-!=
+    new-search-tab env, items
+    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+    copy-to *cursor-in-search?, 0/false
+    return
+  }
+  # otherwise delegate
+  var search-terms-ah/eax: (addr handle gap-buffer) <- get env, search-terms
+  var search-terms/eax: (addr gap-buffer) <- lookup *search-terms-ah
+  var g/ecx: grapheme <- copy key
+  edit-gap-buffer search-terms, g
+}
+
 fn new-channel-tab _env: (addr environment), channel-index: int, _channels: (addr array channel) {
   var env/edi: (addr environment) <- copy _env
   var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
@@ -679,6 +750,9 @@ fn new-channel-tab _env: (addr environment), channel-index: int, _channels: (add
   var curr-channel-final-post-index/eax: int <- copy *curr-channel-posts-first-free-addr
   var dest/edi: (addr int) <- get current-tab, item-index
   copy-to *dest, curr-channel-final-post-index
+}
+
+fn new-search-tab _env: (addr environment), _items: (addr item-list) {
 }
 
 fn previous-tab _env: (addr environment) {
