@@ -227,6 +227,10 @@ fn render-search-input screen: (addr screen), _env: (addr environment) {
   var search-terms-ah/eax: (addr handle gap-buffer) <- get env, search-terms
   var search-terms/eax: (addr gap-buffer) <- lookup *search-terms-ah
   rewind-gap-buffer search-terms
+  {
+    var len/eax: int <- gap-buffer-length search-terms
+    draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen screen, len, 4/fg 0/bg
+  }
   var x/eax: int <- render-gap-buffer screen, search-terms, 0x2a/x 1/y, 1/render-cursor, 0xf/fg 0/bg
   {
     compare x, 0x4a/end-search
