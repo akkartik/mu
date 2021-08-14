@@ -148,6 +148,12 @@ fn render-tab screen: (addr screen), _current-tab: (addr tab), items: (addr item
     render-channel-tab screen, current-tab, items, channels, users, screen-height
     return
   }
+  compare *current-tab-type, 2/search
+  {
+    break-if-!=
+    render-search-tab screen, current-tab, items, channels, users, screen-height
+    return
+  }
 }
 
 fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (addr item-list), users: (addr array user), screen-height: int {
@@ -203,6 +209,38 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
     compare y, screen-height
     break-if->=
     var item-index-addr/eax: (addr int) <- index current-channel-posts, i
+    var item-index/eax: int <- copy *item-index-addr
+    var item-offset/eax: (offset item) <- compute-offset items-data, item-index
+    var curr-item/eax: (addr item) <- index items-data, item-offset
+    y <- render-item screen, curr-item, users, y, screen-height
+    i <- decrement
+    loop
+  }
+}
+
+fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
+  var current-tab/esi: (addr tab) <- copy _current-tab
+  var items/edi: (addr item-list) <- copy _items
+  var current-tab-search-items-ah/eax: (addr handle array int) <- get current-tab, search-items
+  var _current-tab-search-items/eax: (addr array int) <- lookup *current-tab-search-items-ah
+  var current-tab-search-items/ebx: (addr array int) <- copy _current-tab-search-items
+  var current-tab-top-item-addr/eax: (addr int) <- get current-tab, item-index
+  var i/edx: int <- copy *current-tab-top-item-addr
+  var current-tab-search-items-first-free-addr/eax: (addr int) <- get current-tab, search-items-first-free
+  set-cursor-position 0/screen, 0x68/x 0/y
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "search", 7/fg 0/bg
+  render-progress screen, i, *current-tab-search-items-first-free-addr
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/edi: (addr array item) <- copy _items-data
+  var y/ecx: int <- copy 2/search-space-ver
+  y <- add 1/item-padding-ver
+  {
+    compare i, 0
+    break-if-<
+    compare y, screen-height
+    break-if->=
+    var item-index-addr/eax: (addr int) <- index current-tab-search-items, i
     var item-index/eax: int <- copy *item-index-addr
     var item-offset/eax: (offset item) <- compute-offset items-data, item-index
     var curr-item/eax: (addr item) <- index items-data, item-offset
@@ -787,34 +825,113 @@ fn search-items _tab: (addr tab), _items: (addr item-list), search-terms: (addr 
   populate tab-items-ah, 0x100/max-search-results
   var _tab-items/eax: (addr array int) <- lookup *tab-items-ah
   var tab-items/edi: (addr array int) <- copy _tab-items
+  # preprocess search-terms
+  var search-terms-stream-storage: (stream byte 0x100)
+  var search-terms-stream-addr/ecx: (addr stream byte) <- address search-terms-stream-storage
+  emit-gap-buffer search-terms, search-terms-stream-addr
+  var search-terms-text-h: (handle array byte)
+  var search-terms-text-ah/eax: (addr handle array byte) <- address search-terms-text-h
+  stream-to-array search-terms-stream-addr, search-terms-text-ah
+  var tmp/eax: (addr array byte) <- lookup *search-terms-text-ah
+  var search-terms-text: (addr array byte)
+  copy-to search-terms-text, tmp
   #
   var items/ecx: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/ebx: (addr array item) <- copy _items-data
   var items-data-first-free-a/edx: (addr int) <- get items, data-first-free
+#?   clear-screen 0/screen
   var i/ecx: int <- copy 0
   {
     compare i, *items-data-first-free-a
     break-if->=
     var curr-offset/eax: (offset item) <- compute-offset items-data, i
     var curr-item/eax: (addr item) <- index items-data, curr-offset
-    var found?/eax: boolean <- search-terms-match? curr-item, search-terms
+    var found?/eax: boolean <- search-terms-match? curr-item, search-terms-text
+#?     {
+#?       var foo/eax: int <- copy found?
+#?       set-cursor-position 0/screen, 0x10/x i
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 7/fg 0/bg
+#?     }
     compare found?, 0/false
     {
       break-if-=
       var tab-items-first-free/eax: int <- copy *tab-items-first-free-addr
       var dest/eax: (addr int) <- index tab-items, tab-items-first-free
       copy-to *dest, i
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, *dest, 3/fg 0/bg
       increment *tab-items-first-free-addr
     }
     i <- increment
     loop
   }
+  var tab/edi: (addr tab) <- copy _tab
+  var tab-item-index-addr/edi: (addr int) <- get tab, item-index
+  var tab-items-first-free/eax: int <- copy *tab-items-first-free-addr
+  tab-items-first-free <- decrement
+  copy-to *tab-item-index-addr, tab-items-first-free
 }
 
-fn search-terms-match? item: (addr item), search-terms: (addr gap-buffer) -> _/eax: boolean {
+fn search-terms-match? _item: (addr item), search-terms: (addr array byte) -> _/eax: boolean {
+  var item/esi: (addr item) <- copy _item
+  var item-text-ah/eax: (addr handle array byte) <- get item, text
+  var item-text/eax: (addr array byte) <- lookup *item-text-ah
+  var i/ecx: int <- copy 0
+  var max/edx: int <- length item-text
+  var search-terms2/ebx: (addr array byte) <- copy search-terms
+  var slen/ebx: int <- length search-terms2
+  max <- subtract slen
+  {
+    compare i, max
+    break-if->
+    var found?/eax: boolean <- substring-match? item-text, search-terms, i
+#?     {
+#?       var foo/eax: int <- copy found?
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 3/fg 0/bg
+#?     }
+    compare found?, 0/false
+    {
+      break-if-=
+      return 1/true
+    }
+    i <- increment
+    loop
+  }
   return 0/false
+}
+
+fn substring-match? _s: (addr array byte), _pat: (addr array byte), start: int -> _/eax: boolean {
+  var s/esi: (addr array byte) <- copy _s
+  var pat/edi: (addr array byte) <- copy _pat
+  var s-idx/edx: int <- copy start
+  var pat-idx/ebx: int <- copy 0
+  var pat-len: int
+  var tmp/eax: int <- length pat
+  copy-to pat-len, tmp
+  {
+    compare pat-idx, pat-len
+    break-if->=
+    var s-ab/eax: (addr byte) <- index s, s-idx
+    var s-b/eax: byte <- copy-byte *s-ab
+    var pat-ab/ecx: (addr byte) <- index pat, pat-idx
+    var pat-b/ecx: byte <- copy-byte *pat-ab
+#?     {
+#?       var foo/eax: int <- copy s-b
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 2/fg 0/bg
+#?       var foo/eax: int <- copy pat-b
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 5/fg 0/bg
+#?     }
+    compare s-b, pat-b
+    {
+      break-if-=
+      return 0/false
+    }
+    s-idx <- increment
+    pat-idx <- increment
+    loop
+  }
+  return 1/true
 }
 
 fn previous-tab _env: (addr environment) {
