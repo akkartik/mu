@@ -804,6 +804,7 @@ fn new-channel-tab _env: (addr environment), channel-index: int, _channels: (add
   }
   var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+  clear-object current-tab
   var current-tab-type/eax: (addr int) <- get current-tab, type
   copy-to *current-tab, 1/channel
   var current-tab-channel-index/eax: (addr int) <- get current-tab, channel-index
@@ -835,6 +836,7 @@ fn new-search-tab _env: (addr environment), items: (addr item-list) {
   }
   var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+  clear-object current-tab
   var current-tab-type/eax: (addr int) <- get current-tab, type
   copy-to *current-tab, 2/search
   var current-tab-search-terms-ah/edx: (addr handle gap-buffer) <- get current-tab, search-terms
