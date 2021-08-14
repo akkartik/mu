@@ -814,6 +814,7 @@ fn new-channel-tab _env: (addr environment), channel-index: int, _channels: (add
   var curr-channel/eax: (addr channel) <- index channels, curr-channel-offset
   var curr-channel-posts-first-free-addr/eax: (addr int) <- get curr-channel, posts-first-free
   var curr-channel-final-post-index/eax: int <- copy *curr-channel-posts-first-free-addr
+  curr-channel-final-post-index <- decrement
   var dest/edi: (addr int) <- get current-tab, item-index
   copy-to *dest, curr-channel-final-post-index
 }
