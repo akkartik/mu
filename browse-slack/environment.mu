@@ -16,9 +16,6 @@ type tab {
       # type 2: search for a term
   item-index: int  # what item in the corresponding list we start rendering
                    # the current page at
-  intra-item-cursor-position: int
-    # 0: user
-    # 1: post
   # only for type 1
   channel-index: int
   # only for type 2
@@ -187,13 +184,6 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (ad
   # cursor always at top item
   var show-cursor?: boolean
   copy-to show-cursor?, 1/true
-  var cursor-on-user?: boolean
-  {
-    var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
-    compare *current-tab-intra-item-cursor-position, 0/user
-    break-if-!=
-    copy-to cursor-on-user?, 1/true
-  }
   {
     compare i, 0
     break-if-<
@@ -201,7 +191,7 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (ad
     break-if->=
     var offset/eax: (offset item) <- compute-offset items-data, i
     var curr-item/eax: (addr item) <- index items-data, offset
-    y <- render-item screen, curr-item, users, show-cursor?, cursor-on-user?, y, screen-height
+    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
     copy-to show-cursor?, 0/false
     i <- decrement
     loop
@@ -233,13 +223,6 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
   # cursor always at top item
   var show-cursor?: boolean
   copy-to show-cursor?, 1/true
-  var cursor-on-user?: boolean
-  {
-    var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
-    compare *current-tab-intra-item-cursor-position, 0/user
-    break-if-!=
-    copy-to cursor-on-user?, 1/true
-  }
   {
     compare i, 0
     break-if-<
@@ -249,7 +232,7 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
     var item-index/eax: int <- copy *item-index-addr
     var item-offset/eax: (offset item) <- compute-offset items-data, item-index
     var curr-item/eax: (addr item) <- index items-data, item-offset
-    y <- render-item screen, curr-item, users, show-cursor?, cursor-on-user?, y, screen-height
+    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
     copy-to show-cursor?, 0/false
     i <- decrement
     loop
@@ -282,13 +265,6 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (a
   # cursor always at top item
   var show-cursor?: boolean
   copy-to show-cursor?, 1/true
-  var cursor-on-user?: boolean
-  {
-    var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
-    compare *current-tab-intra-item-cursor-position, 0/user
-    break-if-!=
-    copy-to cursor-on-user?, 1/true
-  }
   {
     compare i, 0
     break-if-<
@@ -298,7 +274,7 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (a
     var item-index/eax: int <- copy *item-index-addr
     var item-offset/eax: (offset item) <- compute-offset items-data, item-index
     var curr-item/eax: (addr item) <- index items-data, item-offset
-    y <- render-item screen, curr-item, users, show-cursor?, cursor-on-user?, y, screen-height
+    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
     copy-to show-cursor?, 0/false
     i <- decrement
     loop
@@ -352,38 +328,21 @@ fn render-menu screen: (addr screen), _env: (addr environment) {
 }
 
 fn render-main-menu screen: (addr screen), _env: (addr environment) {
-  var env/edi: (addr environment) <- copy _env
   var width/eax: int <- copy 0
   var y/ecx: int <- copy 0
   width, y <- screen-size screen
   y <- decrement
   set-cursor-position screen, 2/x, y
   {
+    var env/edi: (addr environment) <- copy _env
     var num-tabs/edi: (addr int) <- get env, current-tab-index
     compare *num-tabs, 0
     break-if-<=
     draw-text-rightward-from-cursor screen, " Esc ", width, 0/fg 0xf/bg
     draw-text-rightward-from-cursor screen, " go back  ", width, 0xf/fg, 0/bg
   }
-  $render-main-menu:enter: {
-    draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
-    {
-      {
-        var current-tab-index-a/ecx: (addr int) <- get env, current-tab-index
-        var tabs-ah/eax: (addr handle array tab) <- get env, tabs
-        var tabs/eax: (addr array tab) <- lookup *tabs-ah
-        var current-tab-index/ecx: int <- copy *current-tab-index-a
-        var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
-        var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
-        var current-tab-intra-item-cursor-position/ecx: (addr int) <- get current-tab, intra-item-cursor-position
-        compare *current-tab-intra-item-cursor-position, 0/user
-      }
-      break-if-!=
-      draw-text-rightward-from-cursor screen, " go to user  ", width, 0xf/fg, 0/bg
-      break $render-main-menu:enter
-    }
-    draw-text-rightward-from-cursor screen, " go to thread  ", width, 0xf/fg, 0/bg
-  }
+  draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " go to thread  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " Tab ", width, 0/fg 0xf/bg
@@ -438,7 +397,7 @@ fn render-search-menu screen: (addr screen), _env: (addr environment) {
   draw-text-rightward-from-cursor screen, " clear  ", width, 0xf/fg, 0/bg
 }
 
-fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), show-cursor?: boolean, cursor-on-user?: boolean, y: int, screen-height: int -> _/ecx: int {
+fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), show-cursor?: boolean, y: int, screen-height: int -> _/ecx: int {
   var item/esi: (addr item) <- copy _item
   var users/edi: (addr array user) <- copy _users
   var author-index-addr/ecx: (addr int) <- get item, by
@@ -470,37 +429,20 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 7/grey 0/black
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, channel-name, 7/grey 0/black
   # author name
-  $render-item:author-name: {
+  {
     var author-real-name-ah/eax: (addr handle array byte) <- get author, real-name
     var author-real-name/eax: (addr array byte) <- lookup *author-real-name-ah
     var x/ecx: int <- copy 0x20/main-panel-hor
     x <- add 0x10/avatar-space-hor
     set-cursor-position screen, x y
-    {
-      compare show-cursor?, 0/false
-      break-if-=
-      compare cursor-on-user?, 0/false
-      break-if-=
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, author-real-name, 0/black 0xf/white
-      break $render-item:author-name
-    }
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, author-real-name, 7/grey 0/black
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, author-real-name, 0xf/white 0/black
   }
   increment y
   # text
   var text-ah/eax: (addr handle array byte) <- get item, text
   var _text/eax: (addr array byte) <- lookup *text-ah
   var text/edx: (addr array byte) <- copy _text
-  # highlight = show-cursor? & ~cursor-on-user?
-  var highlight?/eax: boolean <- copy 0/false
-  {
-    compare show-cursor?, 0/false
-    break-if-=
-    compare cursor-on-user?, 0/false
-    break-if-!=
-    highlight? <- copy 1/true
-  }
-  var text-y/eax: int <- render-slack-message screen, text, highlight?, y, screen-height
+  var text-y/eax: int <- render-slack-message screen, text, show-cursor?, y, screen-height
   # flush
   add-to y, 6/avatar-space-ver
   compare y, text-y
@@ -1063,14 +1005,6 @@ fn next-item _env: (addr environment), users: (addr array user), channels: (addr
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
-  {
-    compare *current-tab-intra-item-cursor-position, 0/user
-    break-if-!=
-    copy-to *current-tab-intra-item-cursor-position, 1/text
-    return
-  }
-  copy-to *current-tab-intra-item-cursor-position, 0/user
   var dest/eax: (addr int) <- get current-tab, item-index
   compare *dest, 0
   break-if-<=
@@ -1086,14 +1020,6 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
-  {
-    compare *current-tab-intra-item-cursor-position, 1/text
-    break-if-!=
-    copy-to *current-tab-intra-item-cursor-position, 0/user
-    return
-  }
-  copy-to *current-tab-intra-item-cursor-position, 1/text
   var current-tab-type/eax: (addr int) <- get current-tab, type
   compare *current-tab-type, 0/all-items
   {
@@ -1148,8 +1074,6 @@ fn page-down _env: (addr environment), users: (addr array user), channels: (addr
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
-  copy-to *current-tab-intra-item-cursor-position, 0/user
   var current-tab-type/eax: (addr int) <- get current-tab, type
   compare *current-tab-type, 0/all-items
   {
@@ -1312,8 +1236,6 @@ fn page-up _env: (addr environment), users: (addr array user), channels: (addr a
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
-  copy-to *current-tab-intra-item-cursor-position, 0/user
   var current-tab-type/eax: (addr int) <- get current-tab, type
   compare *current-tab-type, 0/all-items
   {
