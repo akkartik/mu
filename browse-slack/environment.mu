@@ -996,6 +996,18 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
     increment *dest
     return
   }
+  compare *current-tab-type, 2/search
+  {
+    break-if-!=
+    var current-tab-search-items-first-free-addr/eax: (addr int) <- get current-tab, search-items-first-free
+    var final-item-index/ecx: int <- copy *current-tab-search-items-first-free-addr
+    final-item-index <- decrement
+    var dest/eax: (addr int) <- get current-tab, item-index
+    compare *dest, final-item-index
+    break-if->=
+    increment *dest
+    return
+  }
 }
 
 fn page-down _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
@@ -1018,6 +1030,12 @@ fn page-down _env: (addr environment), users: (addr array user), channels: (addr
   {
     break-if-!=
     channel-page-down current-tab, users, channels, items
+    return
+  }
+  compare *current-tab-type, 2/search
+  {
+    break-if-!=
+    search-page-down current-tab, users, channels, items
     return
   }
 }
@@ -1110,6 +1128,50 @@ fn channel-page-down _current-tab: (addr tab), users: (addr array user), _channe
   copy-to *current-tab-item-index-addr, new-tab-item-index
 }
 
+fn search-page-down _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+  var current-tab/edi: (addr tab) <- copy _current-tab
+  var current-tab-search-items-ah/eax: (addr handle array int) <- get current-tab, search-items
+  var _current-tab-search-items/eax: (addr array int) <- lookup *current-tab-search-items-ah
+  var current-tab-search-items/esi: (addr array int) <- copy _current-tab-search-items
+  var items/eax: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/ebx: (addr array item) <- copy _items-data
+  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
+  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
+  var y/edx: int <- copy 2
+  {
+    compare new-tab-item-index, 0
+    break-if-<
+    compare y, 0x28/screen-height-minus-menu
+    break-if->=
+    var current-item-index-addr/eax: (addr int) <- index current-tab-search-items, new-tab-item-index
+    var current-item-index/eax: int <- copy *current-item-index-addr
+    var offset/eax: (offset item) <- compute-offset items-data, current-item-index
+    var item/eax: (addr item) <- index items-data, offset
+    var item-text-ah/eax: (addr handle array byte) <- get item, text
+    var item-text/eax: (addr array byte) <- lookup *item-text-ah
+    var h/eax: int <- estimate-height item-text
+    y <- add h
+    new-tab-item-index <- decrement
+    loop
+  }
+  new-tab-item-index <- increment
+  {
+    # HACK: make sure we make forward progress even if a single post takes up
+    # the whole screen.
+    # We can't see the rest of that single post at the moment. But at least we
+    # can go past it.
+    compare new-tab-item-index, *current-tab-item-index-addr
+    break-if-!=
+    # Don't make "forward progress" past post 0.
+    compare new-tab-item-index, 0
+    break-if-=
+    new-tab-item-index <- decrement
+  }
+  copy-to *current-tab-item-index-addr, new-tab-item-index
+}
+
 fn page-up _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
@@ -1130,6 +1192,12 @@ fn page-up _env: (addr environment), users: (addr array user), channels: (addr a
   {
     break-if-!=
     channel-page-up current-tab, users, channels, items
+    return
+  }
+  compare *current-tab-type, 2/search
+  {
+    break-if-!=
+    search-page-up current-tab, users, channels, items
     return
   }
 }
@@ -1192,6 +1260,43 @@ fn channel-page-up _current-tab: (addr tab), users: (addr array user), _channels
     compare y, 0x28/screen-height-minus-menu
     break-if->=
     var offset/eax: (offset item) <- compute-offset items-data, new-tab-item-index
+    var item/eax: (addr item) <- index items-data, offset
+    var item-text-ah/eax: (addr handle array byte) <- get item, text
+    var item-text/eax: (addr array byte) <- lookup *item-text-ah
+    var h/eax: int <- estimate-height item-text
+    y <- add h
+    new-tab-item-index <- increment
+    loop
+  }
+  new-tab-item-index <- decrement
+  copy-to *current-tab-item-index-addr, new-tab-item-index
+}
+
+fn search-page-up _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+  var current-tab/edi: (addr tab) <- copy _current-tab
+  var current-tab-search-items-first-free-addr/eax: (addr int) <- get current-tab, search-items-first-free
+  var final-tab-post-index: int
+  var tmp/eax: int <- copy *current-tab-search-items-first-free-addr
+  copy-to final-tab-post-index, tmp
+  decrement final-tab-post-index
+  var current-tab-search-items-ah/eax: (addr handle array int) <- get current-tab, search-items
+  var _current-tab-search-items/eax: (addr array int) <- lookup *current-tab-search-items-ah
+  var current-tab-search-items/esi: (addr array int) <- copy _current-tab-search-items
+  var items/eax: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/ebx: (addr array item) <- copy _items-data
+  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
+  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
+  var y/edx: int <- copy 2
+  {
+    compare new-tab-item-index, final-tab-post-index
+    break-if->
+    compare y, 0x28/screen-height-minus-menu
+    break-if->=
+    var current-item-index-addr/eax: (addr int) <- index current-tab-search-items, new-tab-item-index
+    var current-item-index/eax: int <- copy *current-item-index-addr
+    var offset/eax: (offset item) <- compute-offset items-data, current-item-index
     var item/eax: (addr item) <- index items-data, offset
     var item-text-ah/eax: (addr handle array byte) <- get item, text
     var item-text/eax: (addr array byte) <- lookup *item-text-ah
