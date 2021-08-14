@@ -7,11 +7,12 @@ type environment {
 
 type tab {
   type: int
-  # type 0: everything
-  # type 1: items in a channel
-  root-index: int  # into channels; only for type 1
+      # type 0: everything
+      # type 1: items in a channel
   item-index: int  # what item in the corresponding list we start rendering
                    # the current page at
+  # only for type 1
+  channel-index: int
 }
 
 # static buffer sizes in this file:
@@ -166,7 +167,7 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
   var current-tab/esi: (addr tab) <- copy _current-tab
   var items/edi: (addr item-list) <- copy _items
   var channels/ebx: (addr array channel) <- copy _channels
-  var channel-index-addr/eax: (addr int) <- get current-tab, root-index
+  var channel-index-addr/eax: (addr int) <- get current-tab, channel-index
   var channel-index/eax: int <- copy *channel-index-addr
   var channel-offset/eax: (offset channel) <- compute-offset channels, channel-index
   var current-channel/ecx: (addr channel) <- index channels, channel-offset
@@ -668,9 +669,9 @@ fn new-channel-tab _env: (addr environment), channel-index: int, _channels: (add
   var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
   var current-tab-type/eax: (addr int) <- get current-tab, type
   copy-to *current-tab, 1/channel
-  var current-tab-root-index/eax: (addr int) <- get current-tab, root-index
+  var current-tab-channel-index/eax: (addr int) <- get current-tab, channel-index
   var curr-channel-index/edx: int <- copy channel-index
-  copy-to *current-tab-root-index, curr-channel-index
+  copy-to *current-tab-channel-index, curr-channel-index
   var channels/esi: (addr array channel) <- copy _channels
   var curr-channel-offset/eax: (offset channel) <- compute-offset channels, curr-channel-index
   var curr-channel/eax: (addr channel) <- index channels, curr-channel-offset
@@ -731,7 +732,7 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
   compare *current-tab-type, 1/channel
   {
     break-if-!=
-    var current-channel-index-addr/eax: (addr int) <- get current-tab, root-index
+    var current-channel-index-addr/eax: (addr int) <- get current-tab, channel-index
     var current-channel-index/eax: int <- copy *current-channel-index-addr
     var channels/esi: (addr array channel) <- copy _channels
     var current-channel-offset/eax: (offset channel) <- compute-offset channels, current-channel-index
@@ -812,7 +813,7 @@ fn all-items-page-down _current-tab: (addr tab), users: (addr array user), chann
 
 fn channel-page-down _current-tab: (addr tab), users: (addr array user), _channels: (addr array channel), _items: (addr item-list) {
   var current-tab/edi: (addr tab) <- copy _current-tab
-  var current-channel-index-addr/eax: (addr int) <- get current-tab, root-index
+  var current-channel-index-addr/eax: (addr int) <- get current-tab, channel-index
   var current-channel-index/eax: int <- copy *current-channel-index-addr
   var channels/esi: (addr array channel) <- copy _channels
   var current-channel-offset/eax: (offset channel) <- compute-offset channels, current-channel-index
@@ -915,7 +916,7 @@ fn all-items-page-up _current-tab: (addr tab), users: (addr array user), channel
 
 fn channel-page-up _current-tab: (addr tab), users: (addr array user), _channels: (addr array channel), _items: (addr item-list) {
   var current-tab/edi: (addr tab) <- copy _current-tab
-  var current-channel-index-addr/eax: (addr int) <- get current-tab, root-index
+  var current-channel-index-addr/eax: (addr int) <- get current-tab, channel-index
   var current-channel-index/eax: int <- copy *current-channel-index-addr
   var channels/esi: (addr array channel) <- copy _channels
   var current-channel-offset/eax: (offset channel) <- compute-offset channels, current-channel-index
