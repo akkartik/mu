@@ -666,26 +666,27 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
 
 fn update-environment _env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
-  # back in history
+  # first dispatch to search mode if necessary
   {
-    compare key, 0x1b/esc
-    break-if-!=
-    {
-      var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
-      compare *cursor-in-search?, 0/false
-      break-if-=
-      copy-to *cursor-in-search?, 0/false
-      return
-    }
-    previous-tab env
+    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+    compare *cursor-in-search?, 0/false
+    break-if-=
+    update-search env, key, users, channels, items
     return
   }
   {
     compare key, 0x2f/slash
     break-if-!=
-    # start search mode
+    # enter search mode
     var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
     copy-to *cursor-in-search?, 1/true
+    return
+  }
+  {
+    compare key, 0x1b/esc
+    break-if-!=
+    # back in history
+    previous-tab env
     return
   }
   var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
@@ -694,14 +695,6 @@ fn update-environment _env: (addr environment), key: byte, users: (addr array us
     break-if-!=
     # toggle cursor between main panel and channels nav
     not *cursor-in-channels?
-    return
-  }
-  # dispatch based on where the cursor is
-  {
-    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
-    compare *cursor-in-search?, 0/false
-    break-if-=
-    update-search env, key, users, channels, items
     return
   }
   {
@@ -773,11 +766,19 @@ fn update-channels-nav _env: (addr environment), key: byte, users: (addr array u
 
 fn update-search _env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
+  var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+  {
+    compare key 0x1b/esc
+    break-if-!=
+    # get out of search mode
+    copy-to *cursor-in-search?, 0/false
+    return
+  }
   {
     compare key, 0xa/newline
     break-if-!=
+    # perform a search, then get out of search mode
     new-search-tab env, items
-    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
     copy-to *cursor-in-search?, 0/false
     return
   }
