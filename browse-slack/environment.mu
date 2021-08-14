@@ -181,6 +181,9 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (ad
   var items-data/edi: (addr array item) <- copy _items-data
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
+  # cursor always at top item
+  var show-cursor?: boolean
+  copy-to show-cursor?, 1/true
   {
     compare i, 0
     break-if-<
@@ -188,7 +191,8 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (ad
     break-if->=
     var offset/eax: (offset item) <- compute-offset items-data, i
     var curr-item/eax: (addr item) <- index items-data, offset
-    y <- render-item screen, curr-item, users, y, screen-height
+    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    copy-to show-cursor?, 0/false
     i <- decrement
     loop
   }
@@ -216,6 +220,9 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
   var items-data/edi: (addr array item) <- copy _items-data
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
+  # cursor always at top item
+  var show-cursor?: boolean
+  copy-to show-cursor?, 1/true
   {
     compare i, 0
     break-if-<
@@ -225,7 +232,8 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
     var item-index/eax: int <- copy *item-index-addr
     var item-offset/eax: (offset item) <- compute-offset items-data, item-index
     var curr-item/eax: (addr item) <- index items-data, item-offset
-    y <- render-item screen, curr-item, users, y, screen-height
+    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    copy-to show-cursor?, 0/false
     i <- decrement
     loop
   }
@@ -254,6 +262,9 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (a
   var items-data/edi: (addr array item) <- copy _items-data
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
+  # cursor always at top item
+  var show-cursor?: boolean
+  copy-to show-cursor?, 1/true
   {
     compare i, 0
     break-if-<
@@ -263,7 +274,8 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (a
     var item-index/eax: int <- copy *item-index-addr
     var item-offset/eax: (offset item) <- compute-offset items-data, item-index
     var curr-item/eax: (addr item) <- index items-data, item-offset
-    y <- render-item screen, curr-item, users, y, screen-height
+    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    copy-to show-cursor?, 0/false
     i <- decrement
     loop
   }
@@ -383,7 +395,7 @@ fn render-search-menu screen: (addr screen), _env: (addr environment) {
   draw-text-rightward-from-cursor screen, " clear  ", width, 0xf/fg, 0/bg
 }
 
-fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), y: int, screen-height: int -> _/ecx: int {
+fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), show-cursor?: boolean, y: int, screen-height: int -> _/ecx: int {
   var item/esi: (addr item) <- copy _item
   var users/edi: (addr array user) <- copy _users
   var author-index-addr/ecx: (addr int) <- get item, by
@@ -415,13 +427,19 @@ fn render-item screen: (addr screen), _item: (addr item), _users: (addr array us
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 7/grey 0/black
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, channel-name, 7/grey 0/black
   # author name
-  var author-real-name-ah/eax: (addr handle array byte) <- get author, real-name
-  var author-real-name/eax: (addr array byte) <- lookup *author-real-name-ah
-  {
+  $render-item:author-name: {
+    var author-real-name-ah/eax: (addr handle array byte) <- get author, real-name
+    var author-real-name/eax: (addr array byte) <- lookup *author-real-name-ah
     var x/ecx: int <- copy 0x20/main-panel-hor
     x <- add 0x10/avatar-space-hor
     set-cursor-position screen, x y
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, author-real-name, 0xf/white 0/black
+    compare show-cursor?, 0/false
+    {
+      break-if-=
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, author-real-name, 0/black 0xf/white
+      break $render-item:author-name
+    }
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, author-real-name, 7/grey 0/black
   }
   increment y
   # text
