@@ -731,15 +731,13 @@ fn new-channel-tab _env: (addr environment), channel-index: int, _channels: (add
   var current-tab-index/ecx: int <- copy *current-tab-index-addr
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
   var tabs/eax: (addr array tab) <- lookup *tabs-ah
-  var max-tabs/eax: int <- length tabs
+  var max-tabs/edx: int <- length tabs
   compare current-tab-index, max-tabs
   {
     compare current-tab-index, max-tabs
     break-if-<
     abort "history overflow; grow max-history (we should probably improve this)"
   }
-  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
-  var tabs/eax: (addr array tab) <- lookup *tabs-ah
   var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
   var current-tab-type/eax: (addr int) <- get current-tab, type
@@ -757,15 +755,53 @@ fn new-channel-tab _env: (addr environment), channel-index: int, _channels: (add
 }
 
 fn new-search-tab _env: (addr environment), _items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
+  increment *current-tab-index-addr
+  var current-tab-index/ecx: int <- copy *current-tab-index-addr
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var max-tabs/edx: int <- length tabs
+  compare current-tab-index, max-tabs
+  {
+    compare current-tab-index, max-tabs
+    break-if-<
+    abort "history overflow; grow max-history (we should probably improve this)"
+  }
+  var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-type/eax: (addr int) <- get current-tab, type
+  copy-to *current-tab, 2/search
+  var current-tab-search-terms-ah/ecx: (addr handle gap-buffer) <- get current-tab, search-terms
+  allocate current-tab-search-terms-ah
+  var current-tab-search-terms/eax: (addr gap-buffer) <- lookup *current-tab-search-terms-ah
+  initialize-gap-buffer current-tab-search-terms, 0x30/search-capacity
+  var search-terms-ah/edx: (addr handle gap-buffer) <- get env, search-terms
+  copy-gap-buffer search-terms-ah, current-tab-search-terms-ah
+  # TODO: actually perform the search
 }
 
 fn previous-tab _env: (addr environment) {
   var env/edi: (addr environment) <- copy _env
-  var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
+  var current-tab-index-addr/ecx: (addr int) <- get env, current-tab-index
   compare *current-tab-index-addr, 0
   {
     break-if-<=
     decrement *current-tab-index-addr
+    # if necessary restore search state
+    var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+    var tabs/eax: (addr array tab) <- lookup *tabs-ah
+    var current-tab-index/ecx: int <- copy *current-tab-index-addr
+    var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
+    var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+    var current-tab-type/eax: (addr int) <- get current-tab, type
+    compare *current-tab-type, 2/search
+    break-if-!=
+    var current-tab-search-terms-ah/ecx: (addr handle gap-buffer) <- get current-tab, search-terms
+    var search-terms-ah/edx: (addr handle gap-buffer) <- get env, search-terms
+    var search-terms/eax: (addr gap-buffer) <- lookup *search-terms-ah
+    clear-gap-buffer search-terms
+    copy-gap-buffer current-tab-search-terms-ah, search-terms-ah
   }
 }
 
