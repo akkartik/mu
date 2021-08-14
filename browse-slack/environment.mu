@@ -658,6 +658,13 @@ fn update-environment _env: (addr environment), key: byte, users: (addr array us
   {
     compare key, 0x1b/esc
     break-if-!=
+    {
+      var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+      compare *cursor-in-search?, 0/false
+      break-if-=
+      copy-to *cursor-in-search?, 0/false
+      return
+    }
     previous-tab env
     return
   }
