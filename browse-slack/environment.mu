@@ -58,7 +58,16 @@ fn initialize-environment _self: (addr environment), _items: (addr item-list) {
 
 ### Render
 
-fn render-environment screen: (addr screen), env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
+fn render-environment screen: (addr screen), _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
+  var env/esi: (addr environment) <- copy _env
+  # don't bother repainting the screen when typing into the search bar
+  {
+    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+    compare *cursor-in-search?, 0/false
+    break-if-=
+    render-search-input screen, env
+    return
+  }
   clear-screen screen
   render-search-input screen, env
   render-channels screen, env, channels
