@@ -279,12 +279,13 @@ fn render-progress screen: (addr screen), curr: int, max: int {
 
 fn render-search-input screen: (addr screen), _env: (addr environment) {
   var env/esi: (addr environment) <- copy _env
+  var cursor-in-search?/ecx: (addr boolean) <- get env, cursor-in-search?
   set-cursor-position 0/screen, 0x22/x=search-position-x 1/y
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "search ", 7/fg 0/bg
   var search-terms-ah/eax: (addr handle gap-buffer) <- get env, search-terms
   var search-terms/eax: (addr gap-buffer) <- lookup *search-terms-ah
   rewind-gap-buffer search-terms
-  var x/eax: int <- render-gap-buffer screen, search-terms, 0x2a/x 1/y, 1/render-cursor, 0xf/fg 0/bg
+  var x/eax: int <- render-gap-buffer screen, search-terms, 0x2a/x 1/y, *cursor-in-search?, 0xf/fg 0/bg
   {
     compare x, 0x4a/end-search
     break-if->
