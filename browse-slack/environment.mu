@@ -501,7 +501,7 @@ fn render-slack-message screen: (addr screen), text: (addr array byte), highligh
     compare highlight?, 0/false
     {
       break-if-=
-      x, y <- draw-json-text-wrapping-right-then-down screen, text, x y, 0x70/xmax=post-right-coord ymax, x y, 0/fg 0xf/bg
+      x, y <- draw-json-text-wrapping-right-then-down screen, text, x y, 0x70/xmax=post-right-coord ymax, x y, 0/fg 7/bg
       break $render-slack-message:draw
     }
     x, y <- draw-json-text-wrapping-right-then-down screen, text, x y, 0x70/xmax=post-right-coord ymax, x y, 7/fg 0/bg
@@ -1044,6 +1044,14 @@ fn next-item _env: (addr environment), users: (addr array user), channels: (addr
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
+  {
+    compare *current-tab-intra-item-cursor-position, 0/user
+    break-if-!=
+    copy-to *current-tab-intra-item-cursor-position, 1/text
+    return
+  }
+  copy-to *current-tab-intra-item-cursor-position, 0/user
   var dest/eax: (addr int) <- get current-tab, item-index
   compare *dest, 0
   break-if-<=
@@ -1059,6 +1067,14 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
+  {
+    compare *current-tab-intra-item-cursor-position, 1/text
+    break-if-!=
+    copy-to *current-tab-intra-item-cursor-position, 0/user
+    return
+  }
+  copy-to *current-tab-intra-item-cursor-position, 1/text
   var current-tab-type/eax: (addr int) <- get current-tab, type
   compare *current-tab-type, 0/all-items
   {
@@ -1113,6 +1129,8 @@ fn page-down _env: (addr environment), users: (addr array user), channels: (addr
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
+  copy-to *current-tab-intra-item-cursor-position, 0/user
   var current-tab-type/eax: (addr int) <- get current-tab, type
   compare *current-tab-type, 0/all-items
   {
@@ -1275,6 +1293,8 @@ fn page-up _env: (addr environment), users: (addr array user), channels: (addr a
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-intra-item-cursor-position/eax: (addr int) <- get current-tab, intra-item-cursor-position
+  copy-to *current-tab-intra-item-cursor-position, 0/user
   var current-tab-type/eax: (addr int) <- get current-tab, type
   compare *current-tab-type, 0/all-items
   {
