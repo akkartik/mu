@@ -841,7 +841,6 @@ fn search-items _tab: (addr tab), _items: (addr item-list), search-terms: (addr 
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/ebx: (addr array item) <- copy _items-data
   var items-data-first-free-a/edx: (addr int) <- get items, data-first-free
-#?   clear-screen 0/screen
   var i/ecx: int <- copy 0
   {
     compare i, *items-data-first-free-a
@@ -849,18 +848,12 @@ fn search-items _tab: (addr tab), _items: (addr item-list), search-terms: (addr 
     var curr-offset/eax: (offset item) <- compute-offset items-data, i
     var curr-item/eax: (addr item) <- index items-data, curr-offset
     var found?/eax: boolean <- search-terms-match? curr-item, search-terms-text
-#?     {
-#?       var foo/eax: int <- copy found?
-#?       set-cursor-position 0/screen, 0x10/x i
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 7/fg 0/bg
-#?     }
     compare found?, 0/false
     {
       break-if-=
       var tab-items-first-free/eax: int <- copy *tab-items-first-free-addr
       var dest/eax: (addr int) <- index tab-items, tab-items-first-free
       copy-to *dest, i
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, *dest, 3/fg 0/bg
       increment *tab-items-first-free-addr
     }
     i <- increment
@@ -886,10 +879,6 @@ fn search-terms-match? _item: (addr item), search-terms: (addr array byte) -> _/
     compare i, max
     break-if->
     var found?/eax: boolean <- substring-match? item-text, search-terms, i
-#?     {
-#?       var foo/eax: int <- copy found?
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 3/fg 0/bg
-#?     }
     compare found?, 0/false
     {
       break-if-=
@@ -916,12 +905,6 @@ fn substring-match? _s: (addr array byte), _pat: (addr array byte), start: int -
     var s-b/eax: byte <- copy-byte *s-ab
     var pat-ab/ecx: (addr byte) <- index pat, pat-idx
     var pat-b/ecx: byte <- copy-byte *pat-ab
-#?     {
-#?       var foo/eax: int <- copy s-b
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 2/fg 0/bg
-#?       var foo/eax: int <- copy pat-b
-#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, foo, 5/fg 0/bg
-#?     }
     compare s-b, pat-b
     {
       break-if-=
