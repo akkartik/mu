@@ -114,8 +114,8 @@ fn render-channels screen: (addr screen), _env: (addr environment), _channels: (
       compare cursor-index, i
       break-if-!=
       # cursor; reverse video
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 0/black 7/grey
-      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, name, 0/black 7/grey
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "#", 0/black 0xf/white
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, name, 0/black 0xf/white
     }
     y <- add 2/channel-padding
     i <- increment
