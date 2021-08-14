@@ -18,8 +18,8 @@ type tab {
   channel-index: int
   # only for type 2
   search-terms: (handle gap-buffer)
-  items: (handle array int)
-  items-first-free: int
+  search-items: (handle array int)
+  search-items-first-free: int
 }
 
 # static buffer sizes in this file:
@@ -782,8 +782,8 @@ fn new-search-tab _env: (addr environment), items: (addr item-list) {
 
 fn search-items _tab: (addr tab), _items: (addr item-list), search-terms: (addr gap-buffer) {
   var tab/edi: (addr tab) <- copy _tab
-  var tab-items-first-free-addr/esi: (addr int) <- get tab, items-first-free
-  var tab-items-ah/eax: (addr handle array int) <- get tab, items
+  var tab-items-first-free-addr/esi: (addr int) <- get tab, search-items-first-free
+  var tab-items-ah/eax: (addr handle array int) <- get tab, search-items
   populate tab-items-ah, 0x100/max-search-results
   var _tab-items/eax: (addr array int) <- lookup *tab-items-ah
   var tab-items/edi: (addr array int) <- copy _tab-items
