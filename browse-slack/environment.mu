@@ -66,6 +66,8 @@ fn render-environment screen: (addr screen), _env: (addr environment), users: (a
     compare *cursor-in-search?, 0/false
     break-if-=
     render-search-input screen, env
+    clear-rect screen, 0/x 0x2f/y, 0x80/x 0x30/y, 0/bg
+    render-search-menu screen, env
     return
   }
   clear-screen screen
@@ -288,13 +290,6 @@ fn render-search-input screen: (addr screen), _env: (addr environment) {
 
 fn render-menu screen: (addr screen), _env: (addr environment) {
   var env/edi: (addr environment) <- copy _env
-  var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
-  compare *cursor-in-search?, 0/false
-  {
-    break-if-=
-    render-search-menu screen, env
-    return
-  }
   var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
   compare *cursor-in-channels?, 0/false
   {
@@ -370,6 +365,16 @@ fn render-search-menu screen: (addr screen), _env: (addr environment) {
   draw-text-rightward-from-cursor screen, " cancel  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " select  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^a ", width, 0/fg, 0xf/bg
+  draw-text-rightward-from-cursor screen, " <<  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg, 0xf/bg
+  draw-text-rightward-from-cursor screen, " <word  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg, 0xf/bg
+  draw-text-rightward-from-cursor screen, " word>  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^e ", width, 0/fg, 0xf/bg
+  draw-text-rightward-from-cursor screen, " >>  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " ^u ", width, 0/fg, 0xf/bg
+  draw-text-rightward-from-cursor screen, " clear  ", width, 0xf/fg, 0/bg
 }
 
 fn render-item screen: (addr screen), _item: (addr item), _users: (addr array user), y: int, screen-height: int -> _/ecx: int {
@@ -868,6 +873,8 @@ fn search-items _tab: (addr tab), _items: (addr item-list), search-terms: (addr 
     {
       break-if-=
       var tab-items-first-free/eax: int <- copy *tab-items-first-free-addr
+      compare tab-items-first-free, 0x100/max-search-results
+      break-if->=
       var dest/eax: (addr int) <- index tab-items, tab-items-first-free
       copy-to *dest, i
       increment *tab-items-first-free-addr
