@@ -80,6 +80,16 @@ fn render-environment screen: (addr screen), _env: (addr environment), users: (a
       render-search-menu screen, env
       return
     }
+    # minimize repaints when focus in channel nav
+    {
+      var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
+      compare *cursor-in-channels?, 0/false
+      break-if-=
+      render-channels screen, env, channels
+      clear-rect screen, 0/x 0x2f/y, 0x80/x 0x30/y, 0/bg
+      render-channels-menu screen, env
+      return
+    }
   }
   # full repaint
   clear-screen screen
@@ -785,6 +795,9 @@ fn update-environment _env: (addr environment), key: byte, users: (addr array us
     break-if-!=
     # toggle cursor between main panel and channels nav
     not *cursor-in-channels?  # bitwise NOT; only works if you never assign 1/true to this variable
+    # do one more repaint
+    var dirty?/eax: (addr boolean) <- get env, dirty?
+    copy-to *dirty?, 1/true
     return
   }
   {
