@@ -66,20 +66,22 @@ fn initialize-environment _self: (addr environment), _items: (addr item-list) {
 
 fn render-environment screen: (addr screen), _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   var env/esi: (addr environment) <- copy _env
-  # don't bother repainting the screen when typing into the search bar
-  # (and screen isn't dirty)
   {
-    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
-    compare *cursor-in-search?, 0/false
-    break-if-=
     var dirty?/eax: (addr boolean) <- get env, dirty?
     compare *dirty?, 0/false
     break-if-!=
-    render-search-input screen, env
-    clear-rect screen, 0/x 0x2f/y, 0x80/x 0x30/y, 0/bg
-    render-search-menu screen, env
-    return
+    # minimize repaints when typing into the search bar
+    {
+      var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+      compare *cursor-in-search?, 0/false
+      break-if-=
+      render-search-input screen, env
+      clear-rect screen, 0/x 0x2f/y, 0x80/x 0x30/y, 0/bg
+      render-search-menu screen, env
+      return
+    }
   }
+  # full repaint
   clear-screen screen
   render-search-input screen, env
   render-channels screen, env, channels
@@ -381,12 +383,7 @@ fn render-menu screen: (addr screen), _env: (addr environment) {
     render-channels-menu screen, env
     return
   }
-  compare *cursor-in-channels?, 0/false
-  {
-    break-if-!=
-    render-main-menu screen, env
-    return
-  }
+  render-main-menu screen, env
 }
 
 fn render-main-menu screen: (addr screen), _env: (addr environment) {
