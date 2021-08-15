@@ -15,6 +15,7 @@ type tab {
       # type 0: everything
       # type 1: items in a channel
       # type 2: search for a term
+      # type 3: comments in a single thread
   item-index: int  # what item in the corresponding list we start rendering
                    # the current page at
   # only for type 1
@@ -23,6 +24,8 @@ type tab {
   search-terms: (handle gap-buffer)
   search-items: (handle array int)
   search-items-first-free: int
+  # only for type 3
+  root-index: int
 }
 
 # static buffer sizes in this file:
@@ -751,6 +754,12 @@ fn update-environment _env: (addr environment), key: byte, users: (addr array us
 
 fn update-main-panel env: (addr environment), key: byte, users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   {
+    compare key, 0xa/newline
+    break-if-!=
+    new-thread-tab env, users, channels, items
+    return
+  }
+  {
     compare key, 0x81/down-arrow
     break-if-!=
     next-item env, users, channels, items
@@ -825,6 +834,93 @@ fn update-search _env: (addr environment), key: byte, users: (addr array user), 
   var search-terms/eax: (addr gap-buffer) <- lookup *search-terms-ah
   var g/ecx: grapheme <- copy key
   edit-gap-buffer search-terms, g
+}
+
+fn new-thread-tab _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  var current-tab-index-a/ecx: (addr int) <- get env, current-tab-index
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var current-tab-index/ecx: int <- copy *current-tab-index-a
+  var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+  var item-index/ecx: int <- item-index current-tab, channels
+  var post-index/ecx: int <- post-index _items, item-index
+  var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
+  increment *current-tab-index-addr
+  var current-tab-index/edx: int <- copy *current-tab-index-addr
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var max-tabs/ebx: int <- length tabs
+  compare current-tab-index, max-tabs
+  {
+    compare current-tab-index, max-tabs
+    break-if-<
+    abort "history overflow; grow max-history (we should probably improve this)"
+  }
+  var current-tab-offset/edx: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  clear-object current-tab
+  var current-tab-type/eax: (addr int) <- get current-tab, type
+  copy-to *current-tab, 3/thread
+  var current-tab-root-index/eax: (addr int) <- get current-tab, root-index
+  copy-to *current-tab-root-index, post-index
+  var items/eax: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var items-data/eax: (addr array item) <- lookup *items-data-ah
+  var offset/ecx: (offset item) <- compute-offset items-data, post-index
+  var post/eax: (addr item) <- index items-data, offset
+  var post-comments-first-free-addr/eax: (addr int) <- get post, comments-first-free
+  var final-post-comment-index/eax: int <- copy *post-comments-first-free-addr
+  final-post-comment-index <- decrement
+  var tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
+  copy-to *tab-item-index-addr, final-post-comment-index
+}
+
+fn item-index _tab: (addr tab), channels: (addr array channel) -> _/ecx: int {
+  var tab/esi: (addr tab) <- copy _tab
+  var tab-type/eax: (addr int) <- get tab, type
+  {
+    compare *tab-type, 0/all-items
+    break-if-!=
+    var tab-item-index/eax: (addr int) <- get tab, item-index
+    return *tab-item-index
+  }
+  {
+    compare *tab-type, 1/channel
+    break-if-!=
+    var tab-channel-index/eax: (addr int) <- get tab, channel-index
+    var channel-item-index/ecx: (addr int) <- get tab, item-index
+    return *channel-item-index
+  }
+  {
+    compare *tab-type, 2/search
+    break-if-!=
+    var tab-search-items-ah/eax: (addr handle array int) <- get tab, search-items
+    var tab-search-items/eax: (addr array int) <- lookup *tab-search-items-ah
+    var tab-search-items-index-addr/ecx: (addr int) <- get tab, item-index
+    var tab-search-items-index/ecx: int <- copy *tab-search-items-index-addr
+    var src/eax: (addr int) <- index tab-search-items, tab-search-items-index
+    return *src
+  }
+  abort "item-index: unknown tab type"
+  return -1
+}
+
+fn post-index _items: (addr item-list), item-index: int -> _/ecx: int {
+  var items/eax: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var items-data/eax: (addr array item) <- lookup *items-data-ah
+  var index/ecx: int <- copy item-index
+  var offset/ecx: (offset item) <- compute-offset items-data, index
+  var item/eax: (addr item) <- index items-data, offset
+  var parent/eax: (addr int) <- get item, parent
+  compare *parent, 0
+  {
+    break-if-=
+    return *parent
+  }
+  return item-index
 }
 
 fn new-channel-tab _env: (addr environment), channel-index: int, _channels: (addr array channel) {
