@@ -922,7 +922,7 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
   copy-to *tab-item-index-addr, final-post-comment-index
 }
 
-fn item-index _tab: (addr tab), channels: (addr array channel) -> _/ecx: int {
+fn item-index _tab: (addr tab), _channels: (addr array channel) -> _/ecx: int {
   var tab/esi: (addr tab) <- copy _tab
   var tab-type/eax: (addr int) <- get tab, type
   {
@@ -934,8 +934,16 @@ fn item-index _tab: (addr tab), channels: (addr array channel) -> _/ecx: int {
   {
     compare *tab-type, 1/channel
     break-if-!=
-    var tab-channel-index/eax: (addr int) <- get tab, channel-index
-    var channel-item-index/ecx: (addr int) <- get tab, item-index
+    var channel-index-addr/eax: (addr int) <- get tab, channel-index
+    var channel-index/eax: int <- copy *channel-index-addr
+    var channels/ecx: (addr array channel) <- copy _channels
+    var channel-offset/eax: (offset channel) <- compute-offset channels, channel-index
+    var current-channel/eax: (addr channel) <- index channels, channel-offset
+    var current-channel-posts-ah/eax: (addr handle array int) <- get current-channel, posts
+    var current-channel-posts/eax: (addr array int) <- lookup *current-channel-posts-ah
+    var channel-item-index-addr/ecx: (addr int) <- get tab, item-index
+    var channel-item-index/ecx: int <- copy *channel-item-index-addr
+    var channel-item-index/eax: (addr int) <- index current-channel-posts, channel-item-index
     return *channel-item-index
   }
   {
