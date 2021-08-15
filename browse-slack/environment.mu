@@ -889,7 +889,7 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
   var current-tab-index/ecx: int <- copy *current-tab-index-a
   var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
-  var item-index/ecx: int <- item-index current-tab, channels
+  var item-index/esi: int <- item-index current-tab, channels
   var post-index/ecx: int <- post-index _items, item-index
   var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
   increment *current-tab-index-addr
@@ -903,8 +903,8 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
     break-if-<
     abort "history overflow; grow max-history (we should probably improve this)"
   }
-  var current-tab-offset/edx: (offset tab) <- compute-offset tabs, current-tab-index
-  var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-offset/edi: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/edi: (addr tab) <- index tabs, current-tab-offset
   clear-object current-tab
   var current-tab-type/eax: (addr int) <- get current-tab, type
   copy-to *current-tab, 3/thread
@@ -915,14 +915,43 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
   var items-data/eax: (addr array item) <- lookup *items-data-ah
   var offset/ecx: (offset item) <- compute-offset items-data, post-index
   var post/eax: (addr item) <- index items-data, offset
-  var post-comments-first-free-addr/eax: (addr int) <- get post, comments-first-free
-  var final-post-comment-index/eax: int <- copy *post-comments-first-free-addr
+  var post-comments-first-free-addr/ecx: (addr int) <- get post, comments-first-free
+  # terminology:
+  #   post-comment-index = index of a comment in a post's comment array
+  #   comment-index = index of a comment in the global item list
+  var final-post-comment-index/ecx: int <- copy *post-comments-first-free-addr
   final-post-comment-index <- decrement
-  var tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  copy-to *tab-item-index-addr, final-post-comment-index
+  var post-comments-ah/eax: (addr handle array int) <- get post, comments
+  var post-comments/eax: (addr array int) <- lookup *post-comments-ah
+  # look for item-index in post-comments[0..final-post-comment-index]
+  var curr-post-comment-index/edx: int <- copy final-post-comment-index
+  {
+    compare curr-post-comment-index, 0
+    {
+      break-if->=
+      # if we didn't find the current item in a post's comments, it must be
+      # the parent post itself which isn't in the comment list but hackily
+      # rendered at the bottom. Just render the whole comment list.
+      var tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
+      copy-to *tab-item-index-addr, curr-post-comment-index
+      return
+    }
+    var curr-comment-index/ecx: (addr int) <- index post-comments, curr-post-comment-index
+    compare *curr-comment-index, item-index
+    {
+      break-if-!=
+      # item-index found
+      var tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
+      copy-to *tab-item-index-addr, curr-post-comment-index
+      return
+    }
+    curr-post-comment-index <- decrement
+    loop
+  }
+  abort "new-thread-tab: should never leave previous loop without returning"
 }
 
-fn item-index _tab: (addr tab), _channels: (addr array channel) -> _/ecx: int {
+fn item-index _tab: (addr tab), _channels: (addr array channel) -> _/esi: int {
   var tab/esi: (addr tab) <- copy _tab
   var tab-type/eax: (addr int) <- get tab, type
   {
