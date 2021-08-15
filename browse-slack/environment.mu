@@ -190,6 +190,12 @@ fn render-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boo
     render-search-tab screen, current-tab, show-cursor?, items, channels, users, screen-height
     return
   }
+  compare *current-tab-type, 3/thread
+  {
+    break-if-!=
+    render-thread-tab screen, current-tab, show-cursor?, items, channels, users, screen-height
+    return
+  }
 }
 
 fn render-all-items screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, _items: (addr item-list), users: (addr array user), screen-height: int {
@@ -296,6 +302,45 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), show-curso
     i <- decrement
     loop
   }
+}
+
+fn render-thread-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, _items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
+  var current-tab/esi: (addr tab) <- copy _current-tab
+  var items/eax: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var _items-data/eax: (addr array item) <- lookup *items-data-ah
+  var items-data/edi: (addr array item) <- copy _items-data
+  var post-index-addr/eax: (addr int) <- get current-tab, root-index
+  var post-index/eax: int <- copy *post-index-addr
+  var post-offset/eax: (offset item) <- compute-offset items-data, post-index
+  var post/ebx: (addr item) <- index items-data, post-offset
+  var current-tab-top-item-addr/eax: (addr int) <- get current-tab, item-index
+  var i/edx: int <- copy *current-tab-top-item-addr
+  var post-comments-first-free-addr/eax: (addr int) <- get post, comments-first-free
+  set-cursor-position 0/screen, 0x68/x 0/y
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen screen, "thread", 7/fg 0/bg
+  render-progress screen, i, *post-comments-first-free-addr
+  var post-comments-ah/eax: (addr handle array int) <- get post, comments
+  var post-comments/eax: (addr array int) <- lookup *post-comments-ah
+  var y/ecx: int <- copy 2/search-space-ver
+  y <- add 1/item-padding-ver
+  {
+    compare i, 0
+    break-if-<
+    compare y, screen-height
+    break-if->=
+    var item-index-addr/eax: (addr int) <- index post-comments, i
+    var item-index/eax: int <- copy *item-index-addr
+    var item-offset/eax: (offset item) <- compute-offset items-data, item-index
+    var curr-item/eax: (addr item) <- index items-data, item-offset
+    y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    # cursor always at top item
+    copy-to show-cursor?, 0/false
+    i <- decrement
+    loop
+  }
+  # finally render the parent -- though we'll never focus on it
+  y <- render-item screen, post, users, 0/no-cursor, y, screen-height
 }
 
 # side-effect: mutates cursor position
