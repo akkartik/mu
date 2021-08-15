@@ -2,6 +2,7 @@ type environment {
   search-terms: (handle gap-buffer)
   tabs: (handle array tab)
   current-tab-index: int  # index into tabs
+  dirty?: boolean
   # search mode
   cursor-in-search?: boolean
   # channel mode
@@ -63,10 +64,14 @@ fn initialize-environment _self: (addr environment), _items: (addr item-list) {
 fn render-environment screen: (addr screen), _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   var env/esi: (addr environment) <- copy _env
   # don't bother repainting the screen when typing into the search bar
+  # (and screen isn't dirty)
   {
     var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
     compare *cursor-in-search?, 0/false
     break-if-=
+    var dirty?/eax: (addr boolean) <- get env, dirty?
+    compare *dirty?, 0/false
+    break-if-!=
     render-search-input screen, env
     clear-rect screen, 0/x 0x2f/y, 0x80/x 0x30/y, 0/bg
     render-search-menu screen, env
@@ -77,12 +82,17 @@ fn render-environment screen: (addr screen), _env: (addr environment), users: (a
   render-channels screen, env, channels
   render-item-list screen, env, items, channels, users
   render-menu screen, env
+  var dirty?/eax: (addr boolean) <- get env, dirty?
+  copy-to *dirty?, 0/false
 }
 
 fn render-channels screen: (addr screen), _env: (addr environment), _channels: (addr array channel) {
   var env/esi: (addr environment) <- copy _env
   var cursor-index/edi: int <- copy -1
   {
+    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+    compare *cursor-in-search?, 0/false
+    break-if-!=
     var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
     compare *cursor-in-channels?, 0/false
     break-if-=
@@ -140,36 +150,46 @@ fn render-item-list screen: (addr screen), _env: (addr environment), items: (add
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  render-tab screen, current-tab, items, channels, users, screen-height
+  var show-cursor?: boolean
+  {
+    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+    compare *cursor-in-search?, 0/false
+    break-if-!=
+    var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
+    compare *cursor-in-channels?, 0/false
+    break-if-!=
+    copy-to show-cursor?, 1/true
+  }
+  render-tab screen, current-tab, show-cursor?, items, channels, users, screen-height
   var top/eax: int <- copy screen-height
   top <- subtract 2/menu-space-ver
   clear-rect screen, 0 top, screen-width screen-height, 0/bg
 }
 
-fn render-tab screen: (addr screen), _current-tab: (addr tab), items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
+fn render-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
   var current-tab/esi: (addr tab) <- copy _current-tab
   var current-tab-type/eax: (addr int) <- get current-tab, type
   compare *current-tab-type, 0/all-items
   {
     break-if-!=
-    render-all-items screen, current-tab, items, users, screen-height
+    render-all-items screen, current-tab, show-cursor?, items, users, screen-height
     return
   }
   compare *current-tab-type, 1/channel
   {
     break-if-!=
-    render-channel-tab screen, current-tab, items, channels, users, screen-height
+    render-channel-tab screen, current-tab, show-cursor?, items, channels, users, screen-height
     return
   }
   compare *current-tab-type, 2/search
   {
     break-if-!=
-    render-search-tab screen, current-tab, items, channels, users, screen-height
+    render-search-tab screen, current-tab, show-cursor?, items, channels, users, screen-height
     return
   }
 }
 
-fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (addr item-list), users: (addr array user), screen-height: int {
+fn render-all-items screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, _items: (addr item-list), users: (addr array user), screen-height: int {
   var current-tab/esi: (addr tab) <- copy _current-tab
   var items/edi: (addr item-list) <- copy _items
   var newest-item/eax: (addr int) <- get current-tab, item-index
@@ -181,9 +201,6 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (ad
   var items-data/edi: (addr array item) <- copy _items-data
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
-  # cursor always at top item
-  var show-cursor?: boolean
-  copy-to show-cursor?, 1/true
   {
     compare i, 0
     break-if-<
@@ -192,13 +209,14 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), _items: (ad
     var offset/eax: (offset item) <- compute-offset items-data, i
     var curr-item/eax: (addr item) <- index items-data, offset
     y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    # cursor always at top item
     copy-to show-cursor?, 0/false
     i <- decrement
     loop
   }
 }
 
-fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (addr item-list), _channels: (addr array channel), users: (addr array user), screen-height: int {
+fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, _items: (addr item-list), _channels: (addr array channel), users: (addr array user), screen-height: int {
   var current-tab/esi: (addr tab) <- copy _current-tab
   var items/edi: (addr item-list) <- copy _items
   var channels/ebx: (addr array channel) <- copy _channels
@@ -220,9 +238,6 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
   var items-data/edi: (addr array item) <- copy _items-data
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
-  # cursor always at top item
-  var show-cursor?: boolean
-  copy-to show-cursor?, 1/true
   {
     compare i, 0
     break-if-<
@@ -233,13 +248,14 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), _items: (
     var item-offset/eax: (offset item) <- compute-offset items-data, item-index
     var curr-item/eax: (addr item) <- index items-data, item-offset
     y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    # cursor always at top item
     copy-to show-cursor?, 0/false
     i <- decrement
     loop
   }
 }
 
-fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
+fn render-search-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, _items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
   var current-tab/esi: (addr tab) <- copy _current-tab
   var items/edi: (addr item-list) <- copy _items
   var current-tab-search-items-ah/eax: (addr handle array int) <- get current-tab, search-items
@@ -262,9 +278,6 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (a
   var items-data/edi: (addr array item) <- copy _items-data
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
-  # cursor always at top item
-  var show-cursor?: boolean
-  copy-to show-cursor?, 1/true
   {
     compare i, 0
     break-if-<
@@ -275,6 +288,7 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), _items: (a
     var item-offset/eax: (offset item) <- compute-offset items-data, item-index
     var curr-item/eax: (addr item) <- index items-data, item-offset
     y <- render-item screen, curr-item, users, show-cursor?, y, screen-height
+    # cursor always at top item
     copy-to show-cursor?, 0/false
     i <- decrement
     loop
@@ -701,6 +715,9 @@ fn update-environment _env: (addr environment), key: byte, users: (addr array us
     # enter search mode
     var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
     copy-to *cursor-in-search?, 1/true
+    # do one more repaint
+    var dirty?/eax: (addr boolean) <- get env, dirty?
+    copy-to *dirty?, 1/true
     return
   }
   {
