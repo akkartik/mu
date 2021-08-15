@@ -784,7 +784,7 @@ fn update-environment _env: (addr environment), key: byte, users: (addr array us
     compare key, 9/tab
     break-if-!=
     # toggle cursor between main panel and channels nav
-    not *cursor-in-channels?
+    not *cursor-in-channels?  # bitwise NOT; only works if you never assign 1/true to this variable
     return
   }
   {
