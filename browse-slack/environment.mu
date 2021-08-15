@@ -376,6 +376,13 @@ fn render-search-input screen: (addr screen), _env: (addr environment) {
 # not used in search mode
 fn render-menu screen: (addr screen), _env: (addr environment) {
   var env/edi: (addr environment) <- copy _env
+  {
+    var cursor-in-search?/eax: (addr boolean) <- get env, cursor-in-search?
+    compare *cursor-in-search?, 0/false
+    break-if-=
+    render-search-menu screen, env
+    return
+  }
   var cursor-in-channels?/eax: (addr boolean) <- get env, cursor-in-channels?
   compare *cursor-in-channels?, 0/false
   {
