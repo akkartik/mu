@@ -20,7 +20,6 @@
 #   cd ..  # go back to the top-level archive directory
 #   dd if=/dev/zero of=data.img count=201600  # 100MB
 #   python path/to/convert_slack.py > data.out 2> data.err
-#   (optionally sort items by timestamp; I currently do this in Vim by piping the latter half of data.out through `sort`)
 #   dd if=data.out of=data.img conv=notrunc
 # Currently this process yields errors for ~300 items (~70 posts and their comments)
 # on the Future of Software group (https://futureofcoding.org/community). We fail to load those.
@@ -60,15 +59,19 @@ def parent(item):
     else:
         return -1
 
-idx = 0
+items = []
 for channel in json.load(open('channels.json')):
     for filename in sorted(listdir(channel['name'])):
         with open(join(channel['name'], filename)) as f:
             for item in json.load(f):
-                try:
-#?                     stderr.write(repr(item)+'\n')
-                    print(f"({json.dumps(item['ts'])} {parent(item)} {json.dumps(channel['name'])} {by(item)} {json.dumps(item['text'])})")
-                    item_idx[item['ts']] = idx
-                    idx += 1  # only increment when actually used and no exception raised
-                except KeyError:
-                    stderr.write(repr(item)+'\n')
+                item['channel_name'] = channel['name']
+                items.append(item)
+
+idx = 0
+for item in sorted(items, key=lambda item: item['ts']):
+    try:
+        print(f"({json.dumps(item['ts'])} {parent(item)} {json.dumps(item['channel_name'])} {by(item)} {json.dumps(item['text'])})")
+        item_idx[item['ts']] = idx
+        idx += 1  # only increment when actually used and no exception raised
+    except KeyError:
+        stderr.write(repr(item)+'\n')
