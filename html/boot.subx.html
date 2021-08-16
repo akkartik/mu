@@ -1,32 +1,32 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-<meta charset="UTF-8">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - boot.subx</title>
-<meta name="Generator" content="Vim/8.2">
-<meta name="plugin-version" content="vim8.1_v2">
+<meta name="Generator" content="Vim/8.1">
+<meta name="plugin-version" content="vim8.1_v1">
 <meta name="syntax" content="none">
-<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=,use_input_for_pc=fallback">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal-light">
-<style>
+<style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffd7; }
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
+.subxH1Comment { color: #005faf; text-decoration: underline; }
 .subxComment { color: #005faf; }
-.LineNr { }
 .subxFunction { color: #af5f00; text-decoration: underline; }
-.subxS1Comment { color: #0000af; }
+.LineNr { }
 .CommentedCode { color: #8a8a8a; }
 .SpecialChar { color: #d70000; }
 .Constant { color: #008787; }
 .Folded { color: #080808; background-color: #949494; }
-.subxH1Comment { color: #005faf; text-decoration: underline; }
+.subxS1Comment { color: #0000af; }
 -->
 </style>
 
-<script>
+<script type='text/javascript'>
 <!--
 
 /* function to open any folds containing a jumped-to line before jumping to it */
@@ -75,10 +75,10 @@ if ('onhashchange' in window) {
 <span id="L15" class="LineNr">  15 </span><span class="subxComment"># understand hardware interfaces well enough to explain to others.</span>
 <span id="L16" class="LineNr">  16 </span>
 <span id="L17" class="LineNr">  17 </span><span class="subxComment"># Memory map of a Mu computer:</span>
-<span id="L18" class="LineNr">  18 </span><span class="subxComment">#   code: currently 4 tracks loaded from the primary disk to [0x00007c00, 0x00048600)</span>
+<span id="L18" class="LineNr">  18 </span><span class="subxComment">#   code: some tracks loaded from primary disk to [0x00007c00, 0x00080000)</span>
 <span id="L19" class="LineNr">  19 </span><span class="subxComment">#   stack: grows down from 0x02000000 to 0x01000000</span>
-<span id="L20" class="LineNr">  20 </span><span class="subxComment">#   heap: [0x02000000, 0x08000000)</span>
-<span id="L21" class="LineNr">  21 </span><span class="subxComment">#     see 120allocate.subx; Qemu initializes with 128MB RAM by default</span>
+<span id="L20" class="LineNr">  20 </span><span class="subxComment">#   heap: [0x02000000, 0x80000000)</span>
+<span id="L21" class="LineNr">  21 </span><span class="subxComment">#     see 120allocate.subx; Qemu initializes with 128MB RAM by default; simulating 2GB RAM is known to work</span>
 <span id="L22" class="LineNr">  22 </span><span class="subxComment"># Consult <a href="https://wiki.osdev.org/Memory_Map_(x86)">https://wiki.osdev.org/Memory_Map_(x86)</a> before modifying any of</span>
 <span id="L23" class="LineNr">  23 </span><span class="subxComment"># this. And don't forget to keep *stack-debug.subx in sync.</span>
 <span id="L24" class="LineNr">  24 </span>
@@ -358,7 +358,7 @@ if ('onhashchange' in window) {
 <span id="L298" class="LineNr"> 298 </span>  ff 03  <span class="subxComment"># final index of idt = size of idt - 1</span>
 <span id="L299" class="LineNr"> 299 </span>  <a href='boot.subx.html#L303'>idt_start</a>/imm32/start
 <span id="L300" class="LineNr"> 300 </span>
-<span id="L301" class="Folded"> 301 </span><span class="Folded">+-- 55 lines: # interrupt descriptor table ---------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L301" class="Folded"> 301 </span><span class="Folded">+-- 55 lines: # interrupt descriptor table ----------------------------------------------------------------------------------------------------------------------------------------------</span>
 <span id="L356" class="LineNr"> 356 </span>
 <span id="L357" class="LineNr"> 357 </span>== code
 <span id="L358" class="LineNr"> 358 </span>
@@ -524,13 +524,13 @@ if ('onhashchange' in window) {
 <span id="L518" class="LineNr"> 518 </span>  00 00 00 00
 <span id="L519" class="LineNr"> 519 </span>  00 00 00 00
 <span id="L520" class="LineNr"> 520 </span>
-<span id="L521" class="Folded"> 521 </span><span class="Folded">+-- 95 lines: # Keyboard maps for translating keys to ASCII ----------------------------------------------------------------------------------------------------------------</span>
+<span id="L521" class="Folded"> 521 </span><span class="Folded">+-- 95 lines: # Keyboard maps for translating keys to ASCII -----------------------------------------------------------------------------------------------------------------------------</span>
 <span id="L616" class="LineNr"> 616 </span>
 <span id="L617" class="LineNr"> 617 </span><span class="SpecialChar">Video-mode-info</span>:
-<span id="L618" class="Folded"> 618 </span><span class="Folded">+-- 53 lines: # video mode info --------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L618" class="Folded"> 618 </span><span class="Folded">+-- 53 lines: # video mode info ---------------------------------------------------------------------------------------------------------------------------------------------------------</span>
 <span id="L671" class="LineNr"> 671 </span>
 <span id="L672" class="LineNr"> 672 </span><span class="SpecialChar">Font</span>:
-<span id="L673" class="Folded"> 673 </span><span class="Folded">+--236 lines: # Bitmaps for some ASCII characters (soon Unicode) -----------------------------------------------------------------------------------------------------------</span>
+<span id="L673" class="Folded"> 673 </span><span class="Folded">+--236 lines: # Bitmaps for some ASCII characters (soon Unicode) ------------------------------------------------------------------------------------------------------------------------</span>
 <span id="L909" class="LineNr"> 909 </span>
 <span id="L910" class="LineNr"> 910 </span><span class="subxComment">## Controlling IDE (ATA) hard disks</span>
 <span id="L911" class="LineNr"> 911 </span><span class="subxComment"># Uses 28-bit PIO mode.</span>
@@ -598,7 +598,7 @@ if ('onhashchange' in window) {
 <span id="L973" class="LineNr"> 973 </span>== code
 <span id="L974" class="LineNr"> 974 </span>
 <span id="L975" class="LineNr"> 975 </span><span class="subxComment"># No more than 0x100 sectors</span>
-<span id="L976" class="LineNr"> 976 </span><span class="subxFunction">load-sectors</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, out: (addr stream byte)</span>
+<span id="L976" class="LineNr"> 976 </span><span class="subxFunction">read-ata-disk</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, out: (addr stream byte)</span>
 <span id="L977" class="LineNr"> 977 </span>  <span class="subxS1Comment"># . prologue</span>
 <span id="L978" class="LineNr"> 978 </span>  55/push-ebp
 <span id="L979" class="LineNr"> 979 </span>  89/&lt;- %ebp 4/r32/esp
@@ -610,12 +610,12 @@ if ('onhashchange' in window) {
 <span id="L985" class="LineNr"> 985 </span>  81 7/subop/compare *(ebp+0x10) 0x100/imm32
 <span id="L986" class="LineNr"> 986 </span>  {
 <span id="L987" class="LineNr"> 987 </span>    7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
-<span id="L988" class="LineNr"> 988 </span>    (<a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;load-sectors: no more than 0x100 sectors&quot;</span>)
+<span id="L988" class="LineNr"> 988 </span>    (<a href='317abort.subx.html#L5'>abort</a> <span class="Constant">&quot;read-ata-disk: no more than 0x100 sectors&quot;</span>)
 <span id="L989" class="LineNr"> 989 </span>  }
 <span id="L990" class="LineNr"> 990 </span>  <span class="subxComment"># check for drive</span>
 <span id="L991" class="LineNr"> 991 </span>  (<a href='boot.subx.html#L1154'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
 <span id="L992" class="LineNr"> 992 </span>  3d/compare-eax-and 0/imm32/false
-<span id="L993" class="LineNr"> 993 </span>  0f 84/jump-if-= $load-sectors:end/disp32
+<span id="L993" class="LineNr"> 993 </span>  0f 84/jump-if-= $read-ata-disk:end/disp32
 <span id="L994" class="LineNr"> 994 </span>  <span class="subxComment"># kick off read</span>
 <span id="L995" class="LineNr"> 995 </span>  (<a href='boot.subx.html#L1218'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
 <span id="L996" class="LineNr"> 996 </span>  (<a href='boot.subx.html#L1247'>clear-ata-error</a> *(ebp+8))
@@ -657,7 +657,7 @@ if ('onhashchange' in window) {
 <span id="L1032" class="LineNr">1032 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;next sector\n&quot; 7 0)</span>
 <span id="L1033" class="LineNr">1033 </span>    e9/jump <span class="Constant">loop</span>/disp32
 <span id="L1034" class="LineNr">1034 </span>  }
-<span id="L1035" class="LineNr">1035 </span><span class="Constant">$load-sectors:end</span>:
+<span id="L1035" class="LineNr">1035 </span><span class="Constant">$read-ata-disk:end</span>:
 <span id="L1036" class="LineNr">1036 </span>  <span class="subxS1Comment"># . restore registers</span>
 <span id="L1037" class="LineNr">1037 </span>  5a/pop-to-edx
 <span id="L1038" class="LineNr">1038 </span>  59/pop-to-ecx
@@ -667,7 +667,7 @@ if ('onhashchange' in window) {
 <span id="L1042" class="LineNr">1042 </span>  5d/pop-to-ebp
 <span id="L1043" class="LineNr">1043 </span>  c3/return
 <span id="L1044" class="LineNr">1044 </span>
-<span id="L1045" class="LineNr">1045 </span><span class="subxFunction">store-sectors</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, in: (addr stream byte)</span>
+<span id="L1045" class="LineNr">1045 </span><span class="subxFunction">write-ata-disk</span>:  <span class="subxComment"># disk: (addr disk), lba: int, n: int, in: (addr stream byte)</span>
 <span id="L1046" class="LineNr">1046 </span>  <span class="subxS1Comment"># . prologue</span>
 <span id="L1047" class="LineNr">1047 </span>  55/push-ebp
 <span id="L1048" class="LineNr">1048 </span>  89/&lt;- %ebp 4/r32/esp
@@ -679,7 +679,7 @@ if ('onhashchange' in window) {
 <span id="L1054" class="LineNr">1054 </span>  <span class="subxComment"># check for drive</span>
 <span id="L1055" class="LineNr">1055 </span>  (<a href='boot.subx.html#L1154'>drive-exists?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
 <span id="L1056" class="LineNr">1056 </span>  3d/compare-eax-and 0/imm32/false
-<span id="L1057" class="LineNr">1057 </span>  0f 84/jump-if-= $store-sectors:end/disp32
+<span id="L1057" class="LineNr">1057 </span>  0f 84/jump-if-= $write-ata-disk:end/disp32
 <span id="L1058" class="LineNr">1058 </span>  <span class="subxComment"># kick off write</span>
 <span id="L1059" class="LineNr">1059 </span>  (<a href='boot.subx.html#L1218'>ata-drive-select</a> *(ebp+8) *(ebp+0xc))
 <span id="L1060" class="LineNr">1060 </span>  (<a href='boot.subx.html#L1247'>clear-ata-error</a> *(ebp+8))
@@ -702,7 +702,7 @@ if ('onhashchange' in window) {
 <span id="L1077" class="LineNr">1077 </span>    <span class="subxS1Comment"># . when it's more than 0xff, we're at an even-numbered byte</span>
 <span id="L1078" class="LineNr">1078 </span>    bb/copy-to-ebx 0xffff/imm32
 <span id="L1079" class="LineNr">1079 </span><span class="CommentedCode">#?     (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;D&quot; 7 0)</span>
-<span id="L1080" class="LineNr">1080 </span><span class="Constant">$store-sectors:store-sector</span>:
+<span id="L1080" class="LineNr">1080 </span><span class="Constant">$write-ata-disk:store-sector</span>:
 <span id="L1081" class="LineNr">1081 </span>    {
 <span id="L1082" class="LineNr">1082 </span>      81 7/subop/compare %ecx 0/imm32
 <span id="L1083" class="LineNr">1083 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
@@ -717,7 +717,7 @@ if ('onhashchange' in window) {
 <span id="L1092" class="LineNr">1092 </span>      {
 <span id="L1093" class="LineNr">1093 </span>        7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
 <span id="L1094" class="LineNr">1094 </span>        89/&lt;- %ebx 0/r32/eax
-<span id="L1095" class="LineNr">1095 </span>        eb/jump $store-sectors:store-sector/disp8
+<span id="L1095" class="LineNr">1095 </span>        eb/jump $write-ata-disk:store-sector/disp8
 <span id="L1096" class="LineNr">1096 </span>      }
 <span id="L1097" class="LineNr">1097 </span>      <span class="subxComment"># otherwise OR it with first-byte and write it out</span>
 <span id="L1098" class="LineNr">1098 </span>      c1/shift 4/subop/left %eax 8/imm8
@@ -763,7 +763,7 @@ if ('onhashchange' in window) {
 <span id="L1138" class="LineNr">1138 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;F&quot; 7 0)</span>
 <span id="L1139" class="LineNr">1139 </span>  (<a href='boot.subx.html#L1421'>flush-ata-cache</a> *(ebp+8))
 <span id="L1140" class="LineNr">1140 </span><span class="CommentedCode">#?   (draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0 &quot;Y&quot; 7 0)</span>
-<span id="L1141" class="LineNr">1141 </span><span class="Constant">$store-sectors:end</span>:
+<span id="L1141" class="LineNr">1141 </span><span class="Constant">$write-ata-disk:end</span>:
 <span id="L1142" class="LineNr">1142 </span>  <span class="subxS1Comment"># . restore registers</span>
 <span id="L1143" class="LineNr">1143 </span>  5b/pop-to-ebx
 <span id="L1144" class="LineNr">1144 </span>  5a/pop-to-edx
@@ -774,7 +774,7 @@ if ('onhashchange' in window) {
 <span id="L1149" class="LineNr">1149 </span>  5d/pop-to-ebp
 <span id="L1150" class="LineNr">1150 </span>  c3/return
 <span id="L1151" class="LineNr">1151 </span>
-<span id="L1152" class="Folded">1152 </span><span class="Folded">+--289 lines: # disk helpers -----------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L1152" class="Folded">1152 </span><span class="Folded">+--289 lines: # disk helpers ------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
 <span id="L1441" class="LineNr">1441 </span>
 <span id="L1442" class="LineNr">1442 </span><span class="subxComment">## Controlling a PS/2 mouse</span>
 <span id="L1443" class="LineNr">1443 </span><span class="subxComment"># Uses no IRQs, just polling.</span>
@@ -835,7 +835,7 @@ if ('onhashchange' in window) {
 <span id="L1498" class="LineNr">1498 </span>  5d/pop-to-ebp
 <span id="L1499" class="LineNr">1499 </span>  c3/return
 <span id="L1500" class="LineNr">1500 </span>
-<span id="L1501" class="Folded">1501 </span><span class="Folded">+--147 lines: # mouse helpers ----------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L1501" class="Folded">1501 </span><span class="Folded">+--147 lines: # mouse helpers -----------------------------------------------------------------------------------------------------------------------------------------------------------</span>
 <span id="L1648" class="LineNr">1648 </span>
 <span id="L1649" class="LineNr">1649 </span><span class="subxComment"># vim&#0058;ft=subx</span>
 </pre>
