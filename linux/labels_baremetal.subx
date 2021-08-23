@@ -1,16 +1,14 @@
-# Assign addresses (co-ordinates) to instructions (landmarks) in a program
-# (landscape).
-# Read a list of addresses and labels from a file called 'labels',
-# then replace labels in stdin with their addresses.
+# Read a list of labels and their addresses from a file called 'labels', then
+# replace labels in stdin with their addresses.
 #
 # To build:
 #   $ bootstrap/bootstrap translate [01]*.subx subx-params.subx labels_baremetal.subx  -o labels_baremetal
 #
 # Stdin should be a stream of bytes and some interspersed labels. Comments and
-# '==' segment headers are allowed, but names are ignored. The emitted code
-# will all lie in a single contiguous address range starting at address 0x7c00.
-# Addresses in segment headers are optional. If provided, this program will
-# insert padding in the output until the desired address is reached.
+# '==' segment headers are allowed, but segment names are ignored. The emitted
+# code will all lie in a single contiguous address range starting at address
+# 0x7c00. Addresses in segment headers are optional. If provided, this program
+# will insert padding in the output until the desired address is reached.
 #
 #   $ cat x
 #   == code
@@ -26,7 +24,7 @@
 # The output is the stream of bytes without segment headers or label definitions,
 # and with label references replaced with numeric values/displacements.
 #
-#   $ cat x  |bootstrap/bootstrap run survey_baremetal labels
+#   $ cat x  |bootstrap/bootstrap run labels_baremetal labels
 #   # 0x7c00
 #   aa bb nn  # some computed address
 #   cc dd nn nn nn nn  # some computed displacement
