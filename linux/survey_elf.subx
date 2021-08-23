@@ -451,7 +451,7 @@ compute-offsets:  # in: (addr stream byte), segments: (addr stream {(handle arra
     #         break  (next line)
     #       else if label?(word-slice)
     #         strip trailing ':' from word-slice
-    #         linfo: (addr label-info) = get-or-insert-slice(labels, word-slice)
+    #         linfo: (addr label-info) = insert-slice-or-abort(labels, word-slice)
     #         linfo->segment-name = curr-segment-name
     #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'.")
     #         linfo->segment-offset = segment-offset
@@ -753,15 +753,15 @@ $compute-offsets:case-label:
     0f 84/jump-if-=  $compute-offsets:case-default/disp32
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # decrement *(edx+4)
-    # linfo/edi = get-or-insert-slice(labels, word-slice, row-size=24)
-    # . eax = get-or-insert-slice(labels, word-slice, row-size=24)
+    # linfo/edi = insert-slice-or-abort(labels, word-slice, row-size=24)
+    # . eax = insert-slice-or-abort(labels, word-slice, row-size=24)
     # . . push args
     68/push  Heap/imm32
     68/push  0x18/imm32/row-size
     52/push-edx
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
     # . . call
-    e8/call  get-or-insert-slice/disp32
+    e8/call  insert-slice-or-abort/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # . edi = eax

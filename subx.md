@@ -138,10 +138,6 @@ Functions are called using the following syntax:
 Function arguments must be either literals (integers or strings) or a reg/mem
 operand using the syntax in the previous section.
 
-A special label on Linux is `Entry`, which can be used to specify/override the
-entry point of the program. It doesn't have to be unique, and the latest
-definition will override earlier ones.
-
 Another special pair of labels are the block delimiters `{` and `}`. They can
 be nested, and jump instructions can take arguments `loop` or `break` that
 jump to the enclosing `{` and `}` respectively.

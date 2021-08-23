@@ -700,6 +700,154 @@ $test-get-or-insert:end:
     5d/pop-to-ebp
     c3/return
 
+# save 'key' to the next available row
+# if key already exists, abort
+# if there are no rows free, abort
+# return the address of the value
+insert-or-abort:  # table: (addr stream {(handle array byte), T}), key: (addr array byte), row-size: int, ad: (addr allocation-descriptor) -> result/eax: (addr T)
+    # pseudocode:
+    #   curr = table->data
+    #   max = &table->data[table->write]
+    #   while curr < max
+    #     var c: (addr array byte) = lookup(*curr)
+    #     if string-equal?(key, c)
+    #       abort
+    #     curr += row-size
+    #   if table->write >= table->size
+    #     abort
+    #   zero-out(max, row-size)
+    #   copy-array(ad, key, max)
+    #   table->write += row-size
+    #   return max+8
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # var curr/ecx: (addr handle array byte) = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # var max/edx: (addr byte) = &table->data[table->write]
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
+$insert-or-abort:search-loop:
+    # if (curr >= max) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+    73/jump-if-addr>=  $insert-or-abort:not-found/disp8
+    # var c/eax: (addr array byte) = lookup(*curr)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # if (string-equal?(key, c)) abort
+    # . eax = string-equal?(key, c)
+    # . . push args
+    50/push-eax
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  string-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != false) abort
+    3d/compare-eax-and  0/imm32/false
+    0f 85/jump-if-!=  $insert-or-abort:error-duplicate/disp32
+    # curr += row-size
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
+    # loop
+    eb/jump  $insert-or-abort:search-loop/disp8
+$insert-or-abort:not-found:
+    # if (table->write >= table->size) abort
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+    3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(esi+8)
+    0f 83/jump-if-addr>=  $insert-or-abort:error-full/disp32
+    # zero-out(max, row-size)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    52/push-edx
+    # . . call
+    e8/call  zero-out/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # copy-array(ad, key, max)
+    # . . push args
+    52/push-edx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x14/disp8      .                 # push *(ebp+20)
+    # . . call
+    e8/call  copy-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # table->write += row-size
+    # . eax = row-size
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    # . table->write += eax
+    01/add                          0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # add eax to *esi
+    # return max+8
+    # . eax = max
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy edx to eax
+    # . eax += 8
+    05/add-to-eax  8/imm32
+$insert-or-abort:end:
+    # . restore registers
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$insert-or-abort:error-duplicate:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "insert-or-abort: key already exists: "/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . _write(2/stderr, key)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . _write(2/stderr, "\n")
+    # . . push args
+    68/push  "\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall_exit(1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
+$insert-or-abort:error-full:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "insert-or-abort: table is full\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall_exit(1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
 # if no row is found, save 'key' to the next available row
 # if there are no rows free, abort
 # return the address of the value
@@ -1320,6 +1468,169 @@ $test-get-or-insert-slice:end:
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
+
+# if no row is found, save 'key' in the next available row
+# if there are no rows free, abort
+insert-slice-or-abort:  # table: (addr stream {(handle array byte), T}), key: (addr slice), row-size: int, ad: (addr allocation-descriptor) -> result/eax: (addr T)
+    # pseudocode:
+    #   curr = table->data
+    #   max = &table->data[table->write]
+    #   while curr < max
+    #     var c: (addr array byte) = lookup(*curr)
+    #     if slice-equal?(key, *curr)
+    #       return curr+8
+    #     curr += row-size
+    #   if table->write >= table->size
+    #     abort
+    #   zero-out(max, row-size)
+    #   slice-to-string(ad, key, max)
+    #   table->write += row-size
+    #   return max+8
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # var curr/ecx: (addr handle array byte) = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # var max/edx: (addr byte) = &table->data[table->write]
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
+$insert-slice-or-abort:search-loop:
+    # if (curr >= max) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+    73/jump-if-addr>=  $insert-slice-or-abort:not-found/disp8
+    # var c/eax: (addr array byte) = lookup(*curr)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # if (slice-equal?(key, c)) abort
+    # . eax = slice-equal?(key, c)
+    # . . push args
+    50/push-eax
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != false) abort
+    3d/compare-eax-and  0/imm32/false
+    0f 85/jump-if-!=  $insert-slice-or-abort:error-duplicate/disp32
+    # curr += row-size
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
+    # loop
+    eb/jump  $insert-slice-or-abort:search-loop/disp8
+$insert-slice-or-abort:not-found:
+    # result/eax = 0
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    # if (table->write >= table->size) abort
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+    3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(esi+8)
+    0f 8d/jump-if->=  $insert-slice-or-abort:error-full/disp32
+    # zero-out(max, row-size)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    52/push-edx
+    # . . call
+    e8/call  zero-out/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # slice-to-string(ad, key, max)
+    # . . push args
+    52/push-edx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x14/disp8      .                 # push *(ebp+20)
+    # . . call
+    e8/call  slice-to-string/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # table->write += row-size
+    # . eax = row-size
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    # . table->write += eax
+    01/add                          0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # add eax to *esi
+    # return max+8
+    # . eax = max
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy edx to eax
+    # . eax += 8
+    05/add-to-eax  8/imm32
+$insert-slice-or-abort:end:
+    # . restore registers
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$insert-slice-or-abort:error-duplicate:
+    # . flush(Stderr)
+    # . . push args
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "insert-slice-or-abort: key already exists: "/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-slice-buffered(Stderr, key)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-slice-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . flush(Stderr)
+    # . . push args
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . _write(2/stderr, "\n")
+    # . . push args
+    68/push  "\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall_exit(1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
+$insert-slice-or-abort:error-full:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "insert-slice-or-abort: table is full\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall_exit(1)
+    bb/copy-to-ebx  1/imm32
+    e8/call  syscall_exit/disp32
+    # never gets here
+
 
 # if no row is found, stop(ed)
 get-or-stop:  # table: (addr stream {(handle array byte), T}), key: (addr array byte), row-size: int,

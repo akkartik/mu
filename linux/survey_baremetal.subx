@@ -468,6 +468,8 @@ compute-addresses:  # in: (addr stream byte), labels: (addr stream {(handle arra
     #         current-address = new-address
     #       else if label?(word-slice)
     #         strip trailing ':' from word-slice
+    #         var tmp/eax: (addr int) = insert-slice-or-abort(labels, word-slice)
+    #         *tmp = current-address
     #         trace("label '" word-slice "' is at address " current-address ".")
     #         # labels occupy no space, so no need to increment offsets
     #       else
@@ -661,14 +663,14 @@ $compute-addresses:case-label:
     0f 84/jump-if-=  $compute-addresses:case-default/disp32
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # decrement *(edx+4)
-    # var tmp/eax: (addr int) = get-or-insert-slice(labels, word-slice, row-size=12)
+    # var tmp/eax: (addr int) = insert-slice-or-abort(labels, word-slice, row-size=12)
     # . . push args
     68/push  Heap/imm32
     68/push  0xc/imm32/row-size
     52/push-edx
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
-    e8/call  get-or-insert-slice/disp32
+    e8/call  insert-slice-or-abort/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # *tmp = current-address
