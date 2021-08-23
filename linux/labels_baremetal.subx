@@ -1010,11 +1010,12 @@ $emit-output:check-disp8:
     3d/compare-eax-and  0/imm32/false
     74/jump-if-=  $emit-output:check-disp16/disp8
 $emit-output:emit-disp8:
-    # emit-hex(out, *address - address-of-next-instruction, 1)
-    # . . push args
-    68/push  1/imm32
+    # var value/eax: int = *address - address-of-next-instruction
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
     29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # subtract ebx from eax
+    # emit-hex(out, value, 1)
+    # . . push args
+    68/push  1/imm32
     50/push-eax
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
