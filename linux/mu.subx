@@ -7927,6 +7927,50 @@ test-copy-null-value-to-address:
     5d/pop-to-ebp
     c3/return
 
+test-copy-string-literal:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var y/ecx: (addr array byte) <- copy \"a\"\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file Stderr 0)
+    (flush _test-output-buffered-file)
+    # no errors
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-copy-string-literal/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-copy-string-literal/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-copy-string-literal/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-copy-string-literal/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-copy-string-literal/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-copy-string-literal/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-copy-string-literal/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx \"a\"/imm32"  "F - test-copy-string-literal/7")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-copy-string-literal/8")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-copy-string-literal/9")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-copy-string-literal/10")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-copy-string-literal/11")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-copy-string-literal/12")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-copy-string-literal/13")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-copy-string-literal/14")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-copy-invalid-value-to-offset:
     # . prologue
     55/push-ebp
@@ -36256,6 +36300,9 @@ type-category:  # a: (addr type-tree) -> result/eax: int
     # var lit?/ecx: boolean = literal-type?(a)
     (simple-mu-type? *(ebp+8) 0)  # literal => eax
     89/<- %ecx 0/r32/eax
+    # lit? |= string-literal?(a)
+    (simple-mu-type? *(ebp+8) 0x10)  # literal-string => eax
+    09/or %ecx 0/r32/eax
     # var float?/eax: int = float?(a)
     (simple-mu-type? *(ebp+8) 0xf)  # => eax
     # set bits for lit? and float?
