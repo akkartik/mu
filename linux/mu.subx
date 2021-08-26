@@ -28851,7 +28851,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
       (string-equal? %ecx "compute-offset")  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= break/disp32
-      (translate-mu-compute-index-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
+      (translate-mu-compute-offset-stmt *(ebp+8) *(ebp+0xc) *(ebp+0x18) *(ebp+0x1c))
       e9/jump $emit-subx-stmt:end/disp32
     }
     # get field from record
@@ -29883,7 +29883,7 @@ $translate-mu-index-stmt-with-array-on-stack:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-compute-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
+translate-mu-compute-offset-stmt:  # out: (addr buffered-file), stmt: (addr stmt), err: (addr buffered-file), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -29900,11 +29900,11 @@ translate-mu-compute-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     # var first-inout/ebx: (addr stmt-var) = stmt->inouts[0]
     (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
     89/<- %ebx 0/r32/eax
-$translate-mu-compute-index-stmt:emit-index:
+$translate-mu-compute-offset-stmt:emit-index:
     (lookup *(ebx+8) *(ebx+0xc))  # Stmt-var-next Stmt-var-next => eax
     (emit-subx-var-as-rm32 *(ebp+8) %eax)
     (write-buffered *(ebp+8) Space)
-$translate-mu-compute-index-stmt:emit-elem-size:
+$translate-mu-compute-offset-stmt:emit-elem-size:
     # var base/ebx: (addr var)
     (lookup *ebx *(ebx+4))  # Stmt-var-value Stmt-var-value => eax
     89/<- %ebx 0/r32/eax
@@ -29912,7 +29912,7 @@ $translate-mu-compute-index-stmt:emit-elem-size:
     (array-element-size %ebx *(ebp+0x10) *(ebp+0x14))  # => eax
     (write-int32-hex-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) "/imm32 ")
-$translate-mu-compute-index-stmt:emit-output:
+$translate-mu-compute-offset-stmt:emit-output:
     # outputs[0] "/r32"
     (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
@@ -29920,7 +29920,7 @@ $translate-mu-compute-index-stmt:emit-output:
     (get Mu-registers %eax 0xc "Mu-registers")  # => eax: (addr int)
     (write-int32-hex-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
-$translate-mu-compute-index-stmt:end:
+$translate-mu-compute-offset-stmt:end:
     # . restore registers
     5b/pop-to-ebx
     5a/pop-to-edx
