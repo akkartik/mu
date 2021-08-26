@@ -367,6 +367,8 @@ var/reg: (offset T) <- compute-offset arr: (addr array T), idx/regi: int  # arr 
   => "69/multiply %" regi " " size-of(T) "/imm32 " reg "/r32"
 var/reg: (offset T) <- compute-offset arr: (addr array T), idx: int       # arr can be in reg or mem
   => "69/multiply *(ebp+" idx.stack-offset ") " size-of(T) "/imm32 " reg "/r32"
+var/reg: (offset T) <- compute-offset arr: (addr array T), n              # arr can be in reg or mem
+  => "c7 0/subop/copy %" reg " " n*size-of(T) "/imm32"
 var/reg: (addr T) <- index arr/rega: (addr array T), o/rego: (offset T)
   => "81 7/subop/compare %" rega " 0/imm32"
      "0f 84/jump-if-= __mu-abort-null-index-base-address/disp32"
