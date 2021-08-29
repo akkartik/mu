@@ -11,4 +11,6 @@
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var dummy/eax: int <- draw-code-point screen, 0x41/A, 2/row, 1/col, 0xa/fg, 0/bg
+  # wide glyph
+#?   var dummy/eax: int <- draw-code-point screen, 0x1b/esc, 2/row, 1/col, 0xa/fg, 0/bg
 }
