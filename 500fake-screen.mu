@@ -28,6 +28,7 @@ type screen-cell {
   data: grapheme
   color: int
   background-color: int
+  unused?: boolean
 }
 
 fn initialize-screen _screen: (addr screen), width: int, height: int, pixel-graphics?: boolean {
@@ -422,6 +423,24 @@ fn clear-rect-on-real-screen xmin: int, ymin: int, xmax: int, ymax: int, backgro
     y <- increment
     loop
   }
+}
+
+fn screen-cell-unused-at? _screen: (addr screen), x: int, y: int -> _/eax: boolean {
+  var screen/esi: (addr screen) <- copy _screen
+  var index/ecx: int <- screen-cell-index screen, x, y
+  var result/eax: boolean <- screen-cell-unused-at-index? screen, index
+  return result
+}
+
+fn screen-cell-unused-at-index? _screen: (addr screen), _index: int -> _/eax: boolean {
+  var screen/esi: (addr screen) <- copy _screen
+  var data-ah/eax: (addr handle array screen-cell) <- get screen, data
+  var data/eax: (addr array screen-cell) <- lookup *data-ah
+  var index/ecx: int <- copy _index
+  var offset/ecx: (offset screen-cell) <- compute-offset data, index
+  var cell/eax: (addr screen-cell) <- index data, offset
+  var src/eax: (addr boolean) <- get cell, unused?
+  return *src
 }
 
 fn screen-grapheme-at _screen: (addr screen), x: int, y: int -> _/eax: grapheme {

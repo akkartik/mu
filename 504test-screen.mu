@@ -21,6 +21,9 @@ fn check-screen-row-from _screen: (addr screen), x: int, y: int, expected: (addr
     compare done?, 0
     break-if-!=
     {
+      var unused?/eax: boolean <- screen-cell-unused-at-index? screen, index
+      compare unused?, 0/false
+      break-if-!=
       var _g/eax: grapheme <- screen-grapheme-at-index screen, index
       var g/ebx: grapheme <- copy _g
       var expected-grapheme/eax: grapheme <- read-grapheme e-addr
@@ -86,6 +89,9 @@ fn check-screen-row-in-color-from _screen: (addr screen), fg: int, y: int, x: in
     compare done?, 0
     break-if-!=
     {
+      var unused?/eax: boolean <- screen-cell-unused-at-index? screen, index
+      compare unused?, 0/false
+      break-if-!=
       var _g/eax: grapheme <- screen-grapheme-at-index screen, index
       var g/ebx: grapheme <- copy _g
       var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
@@ -179,6 +185,9 @@ fn check-screen-row-in-background-color-from _screen: (addr screen), bg: int, y:
     compare done?, 0
     break-if-!=
     {
+      var unused?/eax: boolean <- screen-cell-unused-at-index? screen, index
+      compare unused?, 0/false
+      break-if-!=
       var _g/eax: grapheme <- screen-grapheme-at-index screen, index
       var g/ebx: grapheme <- copy _g
       var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
@@ -277,6 +286,9 @@ fn check-background-color-in-screen-row-from _screen: (addr screen), bg: int, y:
     compare done?, 0
     break-if-!=
     {
+      var unused?/eax: boolean <- screen-cell-unused-at-index? screen, index
+      compare unused?, 0/false
+      break-if-!=
       var _expected-bit/eax: grapheme <- read-grapheme e-addr
       var expected-bit/edi: grapheme <- copy _expected-bit
       $check-background-color-in-screen-row-from:compare-cells: {
