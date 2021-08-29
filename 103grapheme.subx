@@ -153,36 +153,10 @@ draw-narrow-grapheme-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (a
       # if (ycurr >= ymax) break
       39/compare %edx 7/r32/edi
       0f 8d/jump-if->= break/disp32
-      # var xcurr/eax: int = x*8 + 7
-      8b/-> *(ebp+0x10) 0/r32/eax
-      c1 4/subop/shift-left %eax 3/imm8  # font-width
-      05/add-to-eax 7/imm32  # font-width - 1
-      # var xmin/ecx: int = x*8
-      8b/-> *(ebp+0x10) 1/r32/ecx
-      c1 4/subop/shift-left %ecx 3/imm8
-      # var row-bitmap/ebx: int = *letter-bitmap
+      # var row-bitmap/ebx: byte = *letter-bitmap
       bb/copy-to-ebx 0/imm32
       8a/byte-> *esi 3/r32/BL
-      {
-        # if (xcurr < xmin) break
-        39/compare %eax 1/r32/ecx
-        7c/jump-if-< break/disp8
-        # shift LSB from row-bitmap into carry flag (CF)
-        c1 5/subop/shift-right-logical %ebx 1/imm8
-        # if LSB, draw a pixel in the given color
-        {
-          73/jump-if-not-CF break/disp8
-          (pixel-on-screen-buffer *(ebp+8) %eax %edx *(ebp+0x18) *(ebp+0x20) *(ebp+0x24))
-          eb/jump $draw-grapheme-on-screen-buffer:continue/disp8
-        }
-        # otherwise use the background color
-        (pixel-on-screen-buffer *(ebp+8) %eax %edx *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
-$draw-grapheme-on-screen-buffer:continue:
-        # --x
-        48/decrement-eax
-        #
-        eb/jump loop/disp8
-      }
+      (draw-run-of-pixels-from-glyph *(ebp+8) %ebx *(ebp+0x10) %edx *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
       # ++y
       42/increment-edx
       # next bitmap row
@@ -221,6 +195,54 @@ $draw-wide-grapheme-on-screen-buffer:end:
     5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# draw 8 pixels from a single glyph byte in a font bitmap
+draw-run-of-pixels-from-glyph:  # buffer: (addr byte), glyph-byte: byte, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    # esi = glyph-byte
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var xcurr/eax: int = x*8 + 7
+    8b/-> *(ebp+0x10) 0/r32/eax
+    c1 4/subop/shift-left %eax 3/imm8
+    05/add-to-eax 7/imm32
+    # var xmin/ecx: int = x*8
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    c1 4/subop/shift-left %ecx 3/imm8
+    {
+      # if (xcurr < xmin) break
+      39/compare %eax 1/r32/ecx
+      7c/jump-if-< break/disp8
+      # shift LSB from row-bitmap into carry flag (CF)
+      c1 5/subop/shift-right-logical %esi 1/imm8
+      # if LSB, draw a pixel in the given color
+      {
+        73/jump-if-not-CF break/disp8
+        (pixel-on-screen-buffer *(ebp+8) %eax *(ebp+0x14) *(ebp+0x18) *(ebp+0x20) *(ebp+0x24))
+        eb/jump $draw-grapheme-on-screen-buffer:continue/disp8
+      }
+      # otherwise use the background color
+      (pixel-on-screen-buffer *(ebp+8) %eax *(ebp+0x14) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+$draw-grapheme-on-screen-buffer:continue:
+      # --x
+      48/decrement-eax
+      #
+      eb/jump loop/disp8
+    }
+$draw-run-of-pixels-from-glyph:end:
+    # . restore registers
+    5e/pop-to-esi
     59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
