@@ -139,18 +139,19 @@ draw-narrow-grapheme-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (a
     52/push-edx
     53/push-ebx
     56/push-esi
+    57/push-edi
     # esi = letter-bitmap
     8b/-> *(ebp+0xc) 6/r32/esi
     # var ycurr/edx: int = y*16
     8b/-> *(ebp+0x14) 2/r32/edx
     c1 4/subop/shift-left %edx 4/imm8
-    # var ymax/ebx: int = ycurr + 16
-    8b/-> *(ebp+0x14) 3/r32/ebx
-    c1 4/subop/shift-left %ebx 4/imm8
-    81 0/subop/add %ebx 0x10/imm32
+    # var ymax/edi: int = ycurr + 16
+    8b/-> *(ebp+0x14) 7/r32/edi
+    c1 4/subop/shift-left %edi 4/imm8
+    81 0/subop/add %edi 0x10/imm32
     {
       # if (ycurr >= ymax) break
-      39/compare %edx 3/r32/ebx
+      39/compare %edx 7/r32/edi
       0f 8d/jump-if->= break/disp32
       # var xcurr/eax: int = x*8 + 7
       8b/-> *(ebp+0x10) 0/r32/eax
@@ -160,7 +161,6 @@ draw-narrow-grapheme-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (a
       8b/-> *(ebp+0x10) 1/r32/ecx
       c1 4/subop/shift-left %ecx 3/imm8
       # var row-bitmap/ebx: int = *letter-bitmap
-      53/push-ebx
       bb/copy-to-ebx 0/imm32
       8a/byte-> *esi 3/r32/BL
       {
@@ -183,8 +183,6 @@ $draw-grapheme-on-screen-buffer:continue:
         #
         eb/jump loop/disp8
       }
-      # reclaim row-bitmap
-      5b/pop-to-ebx
       # ++y
       42/increment-edx
       # next bitmap row
@@ -194,6 +192,7 @@ $draw-grapheme-on-screen-buffer:continue:
     }
 $draw-narrow-grapheme-on-screen-buffer:end:
     # . restore registers
+    5f/pop-to-edi
     5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
