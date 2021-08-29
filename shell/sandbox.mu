@@ -242,8 +242,7 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
     {
       compare x, *width
       break-if->=
-      draw-code-point-at-cursor screen, 0x20/space, 0x18/fg, 0/bg
-      move-cursor-right screen
+      draw-code-point-at-cursor-over-full-screen screen, 0x20/space, 0x18/fg, 0/bg
       x <- increment
       loop
     }
@@ -387,7 +386,7 @@ fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen
   var src-grapheme/eax: (addr grapheme) <- get src-cell, data
   var src-color/ecx: (addr int) <- get src-cell, color
   var src-background-color/edx: (addr int) <- get src-cell, background-color
-  draw-grapheme-at-cursor screen, *src-grapheme, *src-color, *src-background-color
+  draw-grapheme-at-cursor-over-full-screen screen, *src-grapheme, *src-color, *src-background-color
 }
 
 fn render-sandbox-edit-menu screen: (addr screen), _self: (addr sandbox) {

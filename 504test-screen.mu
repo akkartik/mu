@@ -43,15 +43,13 @@ fn check-screen-row-from _screen: (addr screen), x: int, y: int, expected: (addr
         failure-count <- increment
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-        draw-grapheme-at-cursor 0/screen, expected-grapheme, 3/cyan, 0/bg
-        move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+        draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg/cyan, 0/bg
-        draw-grapheme-at-cursor 0/screen, g, 3/cyan, 0/bg
-        move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+        draw-grapheme-at-cursor-over-full-screen 0/screen, g, 3/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
         move-cursor-to-left-margin-of-next-line 0/screen
       }
@@ -125,15 +123,13 @@ fn check-screen-row-in-color-from _screen: (addr screen), fg: int, y: int, x: in
           count-test-failure
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor 0/screen, expected-grapheme, 3/cyan, 0/bg
-          move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+          draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor 0/screen, g, 3/cyan, 0/bg
-          move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+          draw-grapheme-at-cursor-over-full-screen 0/screen, g, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
           move-cursor-to-left-margin-of-next-line 0/screen
         }
@@ -149,8 +145,7 @@ fn check-screen-row-in-color-from _screen: (addr screen), fg: int, y: int, x: in
           count-test-failure
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor 0/screen, expected-grapheme, 3/cyan, 0/bg
-          move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+          draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
@@ -221,15 +216,13 @@ fn check-screen-row-in-background-color-from _screen: (addr screen), bg: int, y:
           count-test-failure
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor 0/screen, expected-grapheme, 3/cyan, 0/bg
-          move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+          draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor 0/screen, g, 3/cyan, 0/bg
-          move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+          draw-grapheme-at-cursor-over-full-screen 0/screen, g, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
           move-cursor-to-left-margin-of-next-line 0/screen
           break $check-screen-row-in-background-color-from:compare-graphemes
@@ -246,8 +239,7 @@ fn check-screen-row-in-background-color-from _screen: (addr screen), bg: int, y:
           count-test-failure
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor 0/screen, expected-grapheme, 3/cyan, 0/bg
-          move-cursor-rightward-and-downward 0/screen, 0/xmin, 0x80/xmax=screen-width
+          draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg

@@ -81,17 +81,21 @@ fn move-cursor-to-left-margin-of-next-line screen: (addr screen) {
   set-cursor-position screen, cursor-x, cursor-y
 }
 
-fn draw-grapheme-at-cursor screen: (addr screen), g: grapheme, color: int, background-color: int {
+fn draw-grapheme-at-cursor-over-full-screen screen: (addr screen), g: grapheme, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
   draw-grapheme screen, g, cursor-x, cursor-y, color, background-color
+  var width/eax: int <- copy 0
+  var dummy/ecx: int <- copy 0
+  width, dummy <- screen-size screen
+  move-cursor-rightward-and-downward screen, 0 width
 }
 
 # we can't really render non-ASCII yet, but when we do we'll be ready
-fn draw-code-point-at-cursor screen: (addr screen), c: code-point, color: int, background-color: int {
+fn draw-code-point-at-cursor-over-full-screen screen: (addr screen), c: code-point, color: int, background-color: int {
   var g/eax: grapheme <- copy c
-  draw-grapheme-at-cursor screen, g, color, background-color
+  draw-grapheme-at-cursor-over-full-screen screen, g, color, background-color
 }
 
 # draw a single line of text from x, y to xmax

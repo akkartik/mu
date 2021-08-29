@@ -28,8 +28,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       var key2/eax: int <- copy key
       append-byte in, key2
       var g/eax: grapheme <- copy key2
-      draw-grapheme-at-cursor screen, g, 0xf/fg, 0/bg
-      move-cursor-right 0
+      draw-grapheme-at-cursor-over-full-screen screen, g, 0xf/fg, 0/bg
       loop
     }
     clear-screen screen
