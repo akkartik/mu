@@ -141,9 +141,8 @@ All text-mode screen primitives require a screen object, which can be either
 the real screen on the computer or a fake screen for tests.
 
 The real screen on the Mu computer can currently display only ASCII characters,
-though it's easy to import more of the font. There is only one font. All
-graphemes are 8 pixels wide and 16 pixels tall. These constraints only apply
-to the real screen.
+though it's easy to import more of the font. There is only one font, and it's
+mostly fixed-width, with graphemes being either 8 or 16 pixels wide.
 
 - `draw-grapheme`: draws a single grapheme at a given coordinate, with given
   foreground and background colors.

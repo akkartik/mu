@@ -2,10 +2,6 @@
 #
 # We need to do this in machine code because Mu doesn't have global variables
 # yet (for the start of the font).
-#
-# There are uncomfortable assumptions baked in here about english/latin
-# script. We convert the grid of pixels into a fixed-width grid of graphemes,
-# which may not work well with other language families.
 
 == code
 
@@ -90,8 +86,9 @@ draw-grapheme-on-screen-buffer:  # buffer: (addr byte), g: grapheme, x: int, y: 
     81 7/subop/compare %esi 0x80/imm32
     0f 8d/jump-if->= $draw-grapheme-on-screen-buffer:end/disp32
     # var letter-bitmap/esi = font[g]
-    c1 4/subop/shift-left %esi 4/imm8
+    69/multiply %esi 0x21/imm32/glyph-size 6/r32/esi
     81 0/subop/add %esi Font/imm32
+    46/increment-esi  # skip size
     # var ycurr/edx: int = y*16
     8b/-> *(ebp+0x14) 2/r32/edx
     c1 4/subop/shift-left %edx 4/imm8
