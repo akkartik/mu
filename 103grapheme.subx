@@ -77,8 +77,9 @@ draw-grapheme-on-screen-buffer:  # buffer: (addr byte), g: grapheme, x: int, y: 
     c1 4/subop/shift-left *(ebp+24) 4/imm8/log2-font-height
     # esi = g
     8b/-> *(ebp+0xc) 6/r32/esi
-    # if (g >= 128) return  # characters beyond ASCII currently not supported
-    81 7/subop/compare %esi 0x80/imm32
+    # if (g >= 4352) return  # unicode planes supported: latin, greek, cyrillic, armenian, hebrew, arabic, syriac, thaana, n'ko, indian (iscii), sinhala, thai, lao, tibetan, myanmar, georgian
+                             # next few to support: CJK, ethiopic, cherokee, ...
+    81 7/subop/compare %esi 0x1100/imm32
     0f 8d/jump-if->= $draw-grapheme-on-screen-buffer:end/disp32
     # var letter-bitmap/esi = font[g]
     69/multiply %esi 0x21/imm32/glyph-size 6/r32/esi
