@@ -85,14 +85,21 @@ fn draw-grapheme-at-cursor-over-full-screen screen: (addr screen), g: grapheme, 
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  draw-grapheme screen, g, cursor-x, cursor-y, color, background-color
+  var _offset/eax: int <- draw-grapheme screen, g, cursor-x, cursor-y, color, background-color
+  var offset/edx: int <- copy _offset
   var width/eax: int <- copy 0
   var dummy/ecx: int <- copy 0
   width, dummy <- screen-size screen
   move-cursor-rightward-and-downward screen, 0 width
+  offset <- decrement
+  compare offset, 0
+  {
+    break-if-=
+    # should never move downward here
+    move-cursor-rightward-and-downward screen, 0 width
+  }
 }
 
-# we can't really render non-ASCII yet, but when we do we'll be ready
 fn draw-code-point-at-cursor-over-full-screen screen: (addr screen), c: code-point, color: int, background-color: int {
   var g/eax: grapheme <- copy c
   draw-grapheme-at-cursor-over-full-screen screen, g, color, background-color
@@ -118,8 +125,8 @@ fn draw-stream-rightward screen: (addr screen), stream: (addr stream byte), x: i
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, xcurr, y, color, background-color
-    xcurr <- increment
+    var offset/eax: int <- draw-grapheme screen, g, xcurr, y, color, background-color
+    xcurr <- add offset
     loop
   }
   set-cursor-position screen, xcurr, y
@@ -151,17 +158,17 @@ fn draw-text-rightward-from-cursor-over-full-screen screen: (addr screen), text:
 
 fn render-grapheme screen: (addr screen), g: grapheme, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   compare g, 0xa/newline
-  var x/eax: int <- copy x
+  var x/ecx: int <- copy x
   {
     break-if-!=
     # minimum effort to clear cursor
-    draw-code-point screen, 0x20/space, x, y, color, background-color
+    var dummy/eax: int <- draw-code-point screen, 0x20/space, x, y, color, background-color
     x <- copy xmin
     increment y
     return x, y
   }
-  draw-grapheme screen, g, x, y, color, background-color
-  x <- increment
+  var offset/eax: int <- draw-grapheme screen, g, x, y, color, background-color
+  x <- add offset
   compare x, xmax
   {
     break-if-<
@@ -294,8 +301,8 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, xcurr, ycurr, color, background-color
-    xcurr <- increment
+    var offset/eax: int <- draw-grapheme screen, g, xcurr, ycurr, color, background-color
+    xcurr <- add offset
     compare xcurr, xmax
     {
       break-if-<
@@ -348,8 +355,8 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, xcurr, ycurr, color, background-color
-    xcurr <- increment
+    var offset/eax: int <- draw-grapheme screen, g, xcurr, ycurr, color, background-color
+    xcurr <- add offset
     compare xcurr, xmax
     {
       break-if-<
@@ -408,13 +415,14 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
 # draw a single-line stream vertically from x, y to ymax
 # return the next 'y' coordinate
 # if there isn't enough space, truncate
+# TODO: should we track horizontal width?
 fn draw-stream-downward screen: (addr screen), stream: (addr stream byte), x: int, y: int, ymax: int, color: int, background-color: int -> _/eax: int {
   var ycurr/ecx: int <- copy y
   {
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, x, ycurr, color, background-color
+    var dummy/eax: int <- draw-grapheme screen, g, x, ycurr, color, background-color
     ycurr <- increment
     loop
   }
@@ -447,6 +455,7 @@ fn draw-text-wrapping-down-then-right screen: (addr screen), text: (addr array b
 # return the next (x, y) coordinate in raster order where drawing stopped
 # that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, truncate
+# TODO: should we track horizontal width? just always offset by 2 for now
 fn draw-stream-wrapping-down-then-right screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var xcurr/edx: int <- copy x
   var ycurr/ecx: int <- copy y
@@ -454,12 +463,12 @@ fn draw-stream-wrapping-down-then-right screen: (addr screen), stream: (addr str
     var g/eax: grapheme <- read-grapheme stream
     compare g, 0xffffffff/end-of-file
     break-if-=
-    draw-grapheme screen, g, xcurr, ycurr, color, background-color
+    var offset/eax: int <- draw-grapheme screen, g, xcurr, ycurr, color, background-color
     ycurr <- increment
     compare ycurr, ymax
     {
       break-if-<
-      xcurr <- increment
+      xcurr <- add 2
       ycurr <- copy ymin
     }
     loop

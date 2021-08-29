@@ -337,7 +337,7 @@ fn test-draw-single-grapheme {
   var _screen: screen
   var screen/esi: (addr screen) <- address _screen
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
-  draw-code-point screen, 0x61/a, 0/x, 0/y, 1/fg, 2/bg
+  var dummy/eax: int <- draw-code-point screen, 0x61/a, 0/x, 0/y, 1/fg, 2/bg
   check-screen-row screen, 0/y, "a", "F - test-draw-single-grapheme"  # top-left corner of the screen
   check-screen-row-in-color screen, 1/fg, 0/y, "a", "F - test-draw-single-grapheme-fg"
   check-screen-row-in-background-color screen, 2/bg, 0/y, "a", "F - test-draw-single-grapheme-bg"
