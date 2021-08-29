@@ -678,7 +678,7 @@ fn convert-graphemes-to-pixels _screen: (addr screen) {
     compare y, *height-a
     break-if->=
     var x/edi: int <- copy 0
-    {
+    $convert-graphemes-to-pixels:loop-x: {
       compare x, *width-a
       break-if->=
       {
@@ -696,7 +696,9 @@ fn convert-graphemes-to-pixels _screen: (addr screen) {
         var bg/eax: int <- screen-background-color-at screen, x, y
         var offset/eax: int <- draw-grapheme-on-screen-array data, g, x, y, fg, bg, *width-a, *height-a
         x <- add offset
+        loop $convert-graphemes-to-pixels:loop-x
       }
+      x <- increment
       loop
     }
     y <- increment
