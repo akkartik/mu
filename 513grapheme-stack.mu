@@ -205,8 +205,8 @@ fn test-render-grapheme-stack {
   g <- copy 0x63/c
   push-grapheme-stack gs, g
   # setup: screen
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/esi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 0/y, 0/no-highlight-matching-open-paren, 0/open-paren-depth
@@ -237,8 +237,8 @@ fn test-render-grapheme-stack-while-highlighting-matching-close-paren {
   g <- copy 0x28/open-paren
   push-grapheme-stack gs, g
   # setup: screen
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/esi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
@@ -271,8 +271,8 @@ fn test-render-grapheme-stack-while-highlighting-matching-close-paren-2 {
   g <- copy 0x28/open-paren
   push-grapheme-stack gs, g
   # setup: screen
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/esi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-top screen, gs, 0/x, 2/y, 1/cursor=true
@@ -293,8 +293,8 @@ fn test-render-grapheme-stack-while-highlighting-matching-open-paren-with-close-
   g <- copy 0x29/close-paren
   push-grapheme-stack gs, g
   # setup: screen
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/esi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 2/y, 1/highlight-matching-open-paren, 1/open-paren-depth
@@ -320,8 +320,8 @@ fn test-render-grapheme-stack-while-highlighting-matching-open-paren-with-close-
   g <- copy 0x29/close-paren
   push-grapheme-stack gs, g
   # setup: screen
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/esi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 2/y, 1/highlight-matching-open-paren, 1/open-paren-depth
@@ -339,8 +339,8 @@ fn test-render-grapheme-stack-while-highlighting-matching-open-paren {
   g <- copy 0x62/b
   push-grapheme-stack gs, g
   # setup: screen
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/esi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 2/y, 1/highlight-matching-open-paren, 0/open-paren-depth
@@ -364,8 +364,8 @@ fn test-render-grapheme-stack-while-highlighting-matching-open-paren-2 {
   g <- copy 0x29/close-paren
   push-grapheme-stack gs, g
   # setup: screen
-  var screen-on-stack: screen
-  var screen/esi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/esi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-stack-from-bottom screen, gs, 0/x, 2/y, 1/highlight-matching-open-paren, 0/open-paren-depth

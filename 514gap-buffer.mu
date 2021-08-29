@@ -818,8 +818,8 @@ fn test-render-gap-buffer-without-cursor {
   var gap/esi: (addr gap-buffer) <- address gap-storage
   initialize-gap-buffer-with gap, "abc"
   # setup: screen
-  var screen-on-stack: screen
-  var screen/edi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/edi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 0/no-cursor, 3/fg, 0xc5/bg=blue-bg
@@ -836,8 +836,8 @@ fn test-render-gap-buffer-with-cursor-at-end {
   initialize-gap-buffer-with gap, "abc"
   gap-to-end gap
   # setup: screen
-  var screen-on-stack: screen
-  var screen/edi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/edi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
@@ -856,8 +856,8 @@ fn test-render-gap-buffer-with-cursor-in-middle {
   gap-to-end gap
   var dummy/eax: grapheme <- gap-left gap
   # setup: screen
-  var screen-on-stack: screen
-  var screen/edi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/edi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
@@ -873,8 +873,8 @@ fn test-render-gap-buffer-with-cursor-at-start {
   initialize-gap-buffer-with gap, "abc"
   gap-to-start gap
   # setup: screen
-  var screen-on-stack: screen
-  var screen/edi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/edi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
@@ -890,8 +890,8 @@ fn test-render-gap-buffer-highlight-matching-close-paren {
   initialize-gap-buffer-with gap, "(a)"
   gap-to-start gap
   # setup: screen
-  var screen-on-stack: screen
-  var screen/edi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/edi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
@@ -908,8 +908,8 @@ fn test-render-gap-buffer-highlight-matching-open-paren {
   gap-to-end gap
   var dummy/eax: grapheme <- gap-left gap
   # setup: screen
-  var screen-on-stack: screen
-  var screen/edi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/edi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
@@ -925,8 +925,8 @@ fn test-render-gap-buffer-highlight-matching-open-paren-of-end {
   initialize-gap-buffer-with gap, "(a)"
   gap-to-end gap
   # setup: screen
-  var screen-on-stack: screen
-  var screen/edi: (addr screen) <- address screen-on-stack
+  var screen-storage: screen
+  var screen/edi: (addr screen) <- address screen-storage
   initialize-screen screen, 5, 4, 0/no-pixel-graphics
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
