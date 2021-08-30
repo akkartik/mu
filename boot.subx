@@ -16,6 +16,7 @@
 
 # Memory map of a Mu computer:
 #   code:         [0x00007c00, 0x0007de00)
+#   system font:  [0x00100000, 0x00f00000)
 #   stack:        (0x02000000, 0x01000000]
 #   heap:         [0x02000000, 0x80000000)
 #     see 120allocate.subx; Qemu initializes with 128MB RAM by default; simulating 2GB RAM is known to work
@@ -274,6 +275,13 @@ initialize_32bit_mode:
   8e/->seg 3/mod/direct 0/rm32/ax 5/r32/gs
 
   bc/copy-to-esp 0x02000000/imm32
+
+  ## install the font somewhere non-contiguous (keep sync'd with memory map up top)
+  c7 0/subop/copy *0x00100000 0/imm32/read
+  c7 0/subop/copy *0x00100004 0/imm32/write
+  c7 0/subop/copy *0x00100008 0x00e00000/imm32/size
+  (load-sectors Primary-bus-primary-drive 0x2328 0x120 0x00100000)   # source 0x2328 = sector 9000 on disk, destination 0x00100000
+  # Font is now loaded starting at 0x0010000c.
 
   ## load interrupt handlers
   # We can't refer to the label directly because SubX doesn't do the right
