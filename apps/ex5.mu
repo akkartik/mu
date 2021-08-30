@@ -5,8 +5,6 @@
 #   ./translate apps/ex5.mu        # emits code.img
 # To run:
 #   qemu-system-i386 code.img
-# Or:
-#   bochs -f bochsrc               # bochsrc loads code.img
 #
 # Expected output: text in green near the top-left corner of screen
 

@@ -4,8 +4,6 @@
 #   ./translate apps/ex6.mu        # emits code.img
 # To run:
 #   qemu-system-i386 code.img
-# Or:
-#   bochs -f bochsrc               # bochsrc loads code.img
 #
 # Expected output: a box and text that doesn't overflow it
 

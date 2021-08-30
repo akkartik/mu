@@ -4,8 +4,6 @@
 #   ./translate apps/ex2.mu        # emits code.img
 # To run:
 #   qemu-system-i386 code.img
-# Or:
-#   bochs -f bochsrc               # bochsrc loads code.img
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   var y/eax: int <- copy 0

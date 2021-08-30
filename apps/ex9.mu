@@ -8,9 +8,8 @@
 #       echo 'abc def ghi' |dd of=data.img conv=notrunc
 #   3. Familiarize yourself with how the data disk looks within xxd:
 #       xxd data.img |head
-#   4. Run in an emulator, either Qemu or Bochs.
+#   4. Run:
 #       qemu-system-i386 -hda code.img -hdb data.img
-#       bochs -f bochsrc.2disks
 #   5. Exit the emulator.
 #   6. Notice that the data disk now contains the word count of the original text.
 #       xxd data.img |head

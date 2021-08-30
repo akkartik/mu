@@ -4,8 +4,6 @@
 #   ./translate apps/ex11.mu       # emits code.img
 # To run:
 #   qemu-system-i386 code.img
-# Or:
-#   bochs -f bochsrc               # bochsrc loads code.img
 #
 # Expected output: a spline with 3 control points. Use `Tab` to switch cursor
 # between control points, and arrow keys to move the control point at the

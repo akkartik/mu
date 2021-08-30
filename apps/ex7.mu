@@ -4,8 +4,6 @@
 #   ./translate apps/ex7.mu        # emits code.img
 # To run:
 #   qemu-system-i386 code.img
-# Or:
-#   bochs -f bochsrc               # bochsrc loads code.img
 #
 # Expected output: an interactive game a bit like "snakes". Try pressing h, j,
 # k, l.
