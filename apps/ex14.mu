@@ -23,5 +23,5 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var text-storage: (stream byte 0x200)
   var text/esi: (addr stream byte) <- address text-storage
   load-sectors data-disk, 0/lba, 1/num-sectors, text
-  var dummy/eax: int <- draw-stream-rightward screen, text, 1/x 0x80/xmax 0/y, 0xa/fg, 0/bg
+  var dummy/eax: int <- draw-stream-rightward screen, text, 0/x 0x80/xmax 0/y, 0xa/fg, 0/bg
 }

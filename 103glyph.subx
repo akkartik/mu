@@ -84,7 +84,7 @@ draw-code-point-on-screen-buffer:  # buffer: (addr byte), c: code-point, x: int,
     8b/-> *(ebp+0xc) 6/r32/esi
     # if (c >= 4352) return  # unicode planes supported: latin, greek, cyrillic, armenian, hebrew, arabic, syriac, thaana, n'ko, indian (iscii), sinhala, thai, lao, tibetan, myanmar, georgian
                              # next few to support: CJK, ethiopic, cherokee, ...
-    81 7/subop/compare %esi 0x1100/imm32
+    81 7/subop/compare %esi 0x1100/imm32=4352
     0f 8d/jump-if->= $draw-code-point-on-screen-buffer:end/disp32
     # var letter-bitmap/esi = font[c]
     69/multiply %esi 0x21/imm32/glyph-size 6/r32/esi
@@ -208,14 +208,14 @@ draw-wide-code-point-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (a
       39/compare %edx 7/r32/edi
       0f 8d/jump-if->= break/disp32
       # var row-bitmap/ebx: byte = *letter-bitmap
-      8a/byte-> *(esi+1) 3/r32/BL
+      8a/byte-> *esi 3/r32/BL
       # ecx = x
       8b/-> *(ebp+0x10) 1/r32/ecx
       # first half-row
       (draw-run-of-pixels-from-glyph *(ebp+8) %ebx %ecx %edx *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
       # second half-row
-      8a/byte-> *esi 3/r32/BL
-      49/increment-ecx
+      8a/byte-> *(esi+1) 3/r32/BL
+      41/increment-ecx
       (draw-run-of-pixels-from-glyph *(ebp+8) %ebx %ecx %edx *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
       # ++y
       42/increment-edx
