@@ -12,7 +12,7 @@ export DISK=20160  # 20*16*63 512-byte sectors = almost 10MB
 dd if=/dev/zero of=code.img count=$DISK
 # code: sectors 0-8999
 # font: sectors 9000-10079  (1080 sectors = space enough for 16k glyphs (1080 * 512 / 33 bytes per glyph))
-export FONT=9000
+export FONT=9000  # keep this sync'd with boot.subx
 # debug: sector 10080 onwards
 export DEBUG=10080
 
@@ -75,8 +75,8 @@ fi
 
 dd if=labels of=code.img seek=$DEBUG conv=notrunc  # keep this sync'd with abort.subx
 
-## Some space for font data at another well-defined location
-cat font.subx   |sed 's,#.*,,' |sed 's,/[^ ]*,,'    |linux/hex    > a.font
+## Font data at another well-defined location
+cat font.subx   |sed 's,/[^ ]*,,'    |linux/hex    > a.font
 
 if [ `stat --printf="%s" a.bin` -ge $(( ($DEBUG - $FONT) * 512 )) ]
 then
