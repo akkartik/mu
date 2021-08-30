@@ -11,14 +11,11 @@
 #
 # Mu doesn't currently support combining code points, or graphemes made of
 # multiple code points. One day we will.
-# We also don't currently support code points that translate into multiple
-# or wide graphemes. (In particular, Tab will never be supported.)
+# On Linux, we also don't currently support code points that translate into
+# multiple or wide graphemes. (In particular, Tab will never be supported.)
 
 # transliterated from tb_utf8_unicode_to_char in https://github.com/nsf/termbox
 # https://wiki.tcl-lang.org/page/UTF%2D8+bit+by+bit explains the algorithm
-#
-# The day we want to support combining characters, this function will need to
-# take multiple code points. Or something.
 fn to-grapheme in: code-point -> _/eax: grapheme {
   var c/eax: int <- copy in
   var num-trailers/ecx: int <- copy 0

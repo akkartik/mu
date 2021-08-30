@@ -27,8 +27,8 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       loop-if-=
       var key2/eax: int <- copy key
       append-byte in, key2
-      var g/eax: grapheme <- copy key2
-      draw-grapheme-at-cursor-over-full-screen screen, g, 0xf/fg, 0/bg
+      var c/eax: code-point <- copy key2  # TODO: unicode input
+      draw-code-point-at-cursor-over-full-screen screen, c, 0xf/fg, 0/bg
       loop
     }
     clear-screen screen

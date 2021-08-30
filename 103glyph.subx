@@ -1,4 +1,9 @@
-# Use the built-in font to draw a grapheme to real screen.
+# Use the built-in font to draw glyphs to screen.
+#   https://en.wikipedia.org/wiki/Glyph#Typography
+# The Mu computer can currently only render glyphs corresponding to single
+# code points. No combining characters.
+#   https://en.wikipedia.org/wiki/Code_point
+#   https://en.wikipedia.org/wiki/Combining_character
 #
 # We need to do this in machine code because Mu doesn't have global variables
 # yet (for the start of the font).
@@ -9,20 +14,20 @@
 # The Mu computer's font is 8px wide and 16px tall.
 # Therefore 'x' here is in [0, 128), and 'y' is in [0, 48)
 # Doesn't update the cursor; where the cursor should go after printing the
-# current grapheme is a higher-level concern.
-draw-grapheme-on-real-screen:  # g: grapheme, x: int, y: int, color: int, background-color: int -> _/eax
+# current code-point is a higher-level concern.
+draw-code-point-on-real-screen:  # c: code-point, x: int, y: int, color: int, background-color: int -> _/eax
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (draw-grapheme-on-screen-buffer *Video-memory-addr *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) 0x80 0x30)  # => eax
-$draw-grapheme-on-real-screen:end:
+    (draw-code-point-on-screen-buffer *Video-memory-addr *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) 0x80 0x30)  # => eax
+$draw-code-point-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-draw-grapheme-on-screen-array:  # screen-data: (addr array byte), g: grapheme, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int -> _/eax: int
+draw-code-point-on-screen-array:  # screen-data: (addr array byte), c: code-point, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int -> _/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -39,17 +44,17 @@ draw-grapheme-on-screen-array:  # screen-data: (addr array byte), g: grapheme, x
       8b/-> *(ebp+0x20) 0/r32/eax
       f7 4/subop/multiply-into-eax *(ebp+0x24)
       81 7/subop/compare %edx 0/imm32
-      0f 85/jump-if-!= $draw-grapheme-on-screen-array:overflow/disp32
+      0f 85/jump-if-!= $draw-code-point-on-screen-array:overflow/disp32
       # if (eax > ecx) abort
       39/compare %eax 1/r32/ecx
-      0f 8f/jump-if-> $draw-grapheme-on-screen-array:abort/disp32
+      0f 8f/jump-if-> $draw-code-point-on-screen-array:abort/disp32
     }
     # eax = screen-data+4   (skip length)
     8b/-> *(ebp+8) 0/r32/eax
     05/add-to-eax 4/imm32
     #
-    (draw-grapheme-on-screen-buffer %eax *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))  # => eax
-$draw-grapheme-on-screen-array:end:
+    (draw-code-point-on-screen-buffer %eax *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))  # => eax
+$draw-code-point-on-screen-array:end:
     # . restore registers
     5a/pop-to-edx
     59/pop-to-ecx
@@ -58,30 +63,30 @@ $draw-grapheme-on-screen-array:end:
     5d/pop-to-ebp
     c3/return
 
-$draw-grapheme-on-screen-array:overflow:
-    (abort "draw-grapheme-on-screen-array: screen dimensions too large")
+$draw-code-point-on-screen-array:overflow:
+    (abort "draw-code-point-on-screen-array: screen dimensions too large")
 
-$draw-grapheme-on-screen-array:abort:
-    (abort "draw-grapheme-on-screen-array: coordinates are off the screen. Are the screen dimensions correct?")
+$draw-code-point-on-screen-array:abort:
+    (abort "draw-code-point-on-screen-array: coordinates are off the screen. Are the screen dimensions correct?")
 
 # 'buffer' here is not a valid Mu type: a naked address without a length.
 # returns number of 8x16 units printed to screen (1 or 2).
-draw-grapheme-on-screen-buffer:  # buffer: (addr byte), g: grapheme, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int -> _/eax: int
+draw-code-point-on-screen-buffer:  # buffer: (addr byte), c: code-point, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int -> _/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     56/push-esi
-    # switch screen-width and screen-height from grapheme to pixel units
+    # switch screen-width and screen-height from code-point to pixel units
     c1 4/subop/shift-left *(ebp+20) 3/imm8/log2-font-width
     c1 4/subop/shift-left *(ebp+24) 4/imm8/log2-font-height
-    # esi = g
+    # esi = c
     8b/-> *(ebp+0xc) 6/r32/esi
-    # if (g >= 4352) return  # unicode planes supported: latin, greek, cyrillic, armenian, hebrew, arabic, syriac, thaana, n'ko, indian (iscii), sinhala, thai, lao, tibetan, myanmar, georgian
+    # if (c >= 4352) return  # unicode planes supported: latin, greek, cyrillic, armenian, hebrew, arabic, syriac, thaana, n'ko, indian (iscii), sinhala, thai, lao, tibetan, myanmar, georgian
                              # next few to support: CJK, ethiopic, cherokee, ...
     81 7/subop/compare %esi 0x1100/imm32
-    0f 8d/jump-if->= $draw-grapheme-on-screen-buffer:end/disp32
-    # var letter-bitmap/esi = font[g]
+    0f 8d/jump-if->= $draw-code-point-on-screen-buffer:end/disp32
+    # var letter-bitmap/esi = font[c]
     69/multiply %esi 0x21/imm32/glyph-size 6/r32/esi
     81 0/subop/add %esi 0x0010000c/imm32/Font  # see boot.subx
     # dispatch based on letter-bitmap->size
@@ -91,13 +96,13 @@ draw-grapheme-on-screen-buffer:  # buffer: (addr byte), g: grapheme, x: int, y: 
     3d/compare-eax-and 8/imm32
     {
       75/jump-if-!= break/disp8
-      (draw-narrow-grapheme-on-screen-buffer *(ebp+8) %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+      (draw-narrow-code-point-on-screen-buffer *(ebp+8) %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
       b8/copy-to-eax 1/imm32
-      eb/jump $draw-grapheme-on-screen-buffer:end/disp8
+      eb/jump $draw-code-point-on-screen-buffer:end/disp8
     }
-    (draw-wide-grapheme-on-screen-buffer *(ebp+8) %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+    (draw-wide-code-point-on-screen-buffer *(ebp+8) %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
     b8/copy-to-eax 2/imm32
-$draw-grapheme-on-screen-buffer:end:
+$draw-code-point-on-screen-buffer:end:
     # . restore registers
     5e/pop-to-esi
     # . epilogue
@@ -105,16 +110,16 @@ $draw-grapheme-on-screen-buffer:end:
     5d/pop-to-ebp
     c3/return
 
-wide-grapheme?:  # g: grapheme -> _/eax: boolean
+wide-code-point?:  # c: code-point -> _/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # eax = g
+    # eax = c
     8b/-> *(ebp+8) 0/r32/eax
-    # if (g >= 128) return  # characters beyond ASCII currently not supported
+    # if (c >= 128) return  # characters beyond ASCII currently not supported
     3d/compare-eax-and 0x80/imm32
-    0f 8d/jump-if->= $wide-grapheme?:end/disp32
-    # var letter-bitmap/eax = font[g]
+    0f 8d/jump-if->= $wide-code-point?:end/disp32
+    # var letter-bitmap/eax = font[c]
     69/multiply %eax 0x21/imm32/glyph-size 0/r32/eax
     05/add-to-eax 0x0010000c/imm32/Font  # see boot.subx
     # dispatch based on letter-bitmap->size
@@ -122,7 +127,7 @@ wide-grapheme?:  # g: grapheme -> _/eax: boolean
     25/and-eax-with  0xff/imm32
     3d/compare-eax-and 8/imm32
     0f 95/set-if-!= %eax
-$wide-grapheme?:end:
+$wide-code-point?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -130,7 +135,7 @@ $wide-grapheme?:end:
 
 # buffer: naked address to raw screen RAM without a length
 # letter-bitmap: naked address to 8-pixel wide font glyph
-draw-narrow-grapheme-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (addr byte), x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
+draw-narrow-code-point-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (addr byte), x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -163,7 +168,7 @@ draw-narrow-grapheme-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (a
       #
       e9/jump loop/disp32
     }
-$draw-narrow-grapheme-on-screen-buffer:end:
+$draw-narrow-code-point-on-screen-buffer:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -176,7 +181,7 @@ $draw-narrow-grapheme-on-screen-buffer:end:
 
 # buffer: naked address to raw screen RAM without a length
 # letter-bitmap: naked address to 16-pixel wide font glyph
-draw-wide-grapheme-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (addr byte), x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
+draw-wide-code-point-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (addr byte), x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -219,7 +224,7 @@ draw-wide-grapheme-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (add
       #
       e9/jump loop/disp32
     }
-$draw-wide-grapheme-on-screen-buffer:end:
+$draw-wide-code-point-on-screen-buffer:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -260,11 +265,11 @@ draw-run-of-pixels-from-glyph:  # buffer: (addr byte), glyph-byte: byte, x: int,
       {
         73/jump-if-not-CF break/disp8
         (pixel-on-screen-buffer *(ebp+8) %eax *(ebp+0x14) *(ebp+0x18) *(ebp+0x20) *(ebp+0x24))
-        eb/jump $draw-grapheme-on-screen-buffer:continue/disp8
+        eb/jump $draw-code-point-on-screen-buffer:continue/disp8
       }
       # otherwise use the background color
       (pixel-on-screen-buffer *(ebp+8) %eax *(ebp+0x14) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
-$draw-grapheme-on-screen-buffer:continue:
+$draw-code-point-on-screen-buffer:continue:
       # --x
       48/decrement-eax
       #
@@ -318,7 +323,7 @@ $set-cursor-position-on-real-screen:end:
 #     tracking what was on the screen at this position before and passing it
 #     in again.
 #   - does not stop showing the cursor at this location when the cursor moves
-draw-cursor-on-real-screen:  # g: grapheme
+draw-cursor-on-real-screen:  # c: code-point
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -327,7 +332,7 @@ draw-cursor-on-real-screen:  # g: grapheme
     51/push-ecx
     #
     (cursor-position-on-real-screen)  # => eax, ecx
-    (draw-grapheme-on-real-screen *(ebp+8) %eax %ecx 0 7)  # => eax
+    (draw-code-point-on-real-screen *(ebp+8) %eax %ecx 0 7)  # => eax
 $draw-cursor-on-real-screen:end:
     # . restore registers
     59/pop-to-ecx

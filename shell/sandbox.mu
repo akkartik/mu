@@ -255,8 +255,8 @@ fn render-empty-screen screen: (addr screen), _target-screen: (addr screen), xmi
 
 fn render-screen screen: (addr screen), _target-screen: (addr screen), xmin: int, ymin: int {
   var target-screen/esi: (addr screen) <- copy _target-screen
-  convert-graphemes-to-pixels target-screen  # might overwrite existing pixel data with graphemes
-                                             # overlapping the two is not supported
+  convert-screen-cells-to-pixels target-screen  # might overwrite existing pixel data with screen cells
+                                                # overlapping the two is not supported
   # pixel data
   {
     # screen top left pixels x y width height
@@ -383,10 +383,10 @@ fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen
   var index/ecx: int <- screen-cell-index target, x, y
   var offset/ecx: (offset screen-cell) <- compute-offset data, index
   var src-cell/esi: (addr screen-cell) <- index data, offset
-  var src-grapheme/eax: (addr grapheme) <- get src-cell, data
+  var src-code-point/eax: (addr code-point) <- get src-cell, data
   var src-color/ecx: (addr int) <- get src-cell, color
   var src-background-color/edx: (addr int) <- get src-cell, background-color
-  draw-grapheme-at-cursor-over-full-screen screen, *src-grapheme, *src-color, *src-background-color
+  draw-code-point-at-cursor-over-full-screen screen, *src-code-point, *src-color, *src-background-color
 }
 
 fn render-sandbox-edit-menu screen: (addr screen), _self: (addr sandbox) {

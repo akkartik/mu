@@ -7,18 +7,21 @@
 # Graphemes may consist of multiple code points.
 #
 # Mu graphemes are always represented in utf-8, and they are required to fit
-# in 4 bytes.
+# in 4 bytes. (This can be confusing if you focus just on ASCII, where Mu's
+# graphemes and code-points are identical.)
 #
 # Mu doesn't currently support combining code points, or graphemes made of
 # multiple code points. One day we will.
-# We also don't currently support code points that translate into multiple
-# or wide graphemes. (In particular, Tab will never be supported.)
+#   https://en.wikipedia.org/wiki/Combining_character
+
+fn to-code-point in: grapheme -> _/eax: code-point {
+  var g/eax: grapheme <- copy in
+  var result/eax: code-point <- copy g  # TODO: support non-ASCII
+  return result
+}
 
 # transliterated from tb_utf8_unicode_to_char in https://github.com/nsf/termbox
 # https://wiki.tcl-lang.org/page/UTF%2D8+bit+by+bit explains the algorithm
-#
-# The day we want to support combining characters, this function will need to
-# take multiple code points. Or something.
 fn to-grapheme in: code-point -> _/eax: grapheme {
   var c/eax: int <- copy in
   var num-trailers/ecx: int <- copy 0

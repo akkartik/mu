@@ -378,7 +378,7 @@ fn render-search-input screen: (addr screen), _env: (addr environment) {
     compare x, 0x4a/end-search
     break-if->
     var y/ecx: int <- copy 0
-    x, y <- render-grapheme screen, 0x5f/underscore, 0/xmin 1/ymin, 0x80/xmax, 1/ymax, x, 1/y, 0xf/fg 0/bg
+    x, y <- render-code-point screen, 0x5f/underscore, 0/xmin 1/ymin, 0x80/xmax, 1/ymax, x, 1/y, 0xf/fg 0/bg
     loop
   }
 }
@@ -580,17 +580,17 @@ fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (add
   var xcurr/eax: int <- copy x
   var ycurr/ecx: int <- copy y
   {
-    var g/ebx: grapheme <- read-json-grapheme stream
-    compare g, 0xffffffff/end-of-file
+    var c/ebx: code-point <- read-json-code-point stream
+    compare c, 0xffffffff/end-of-file
     break-if-=
     $draw-json-stream-wrapping-right-then-down:render-grapheme: {
-      compare g, 0x5c/backslash
+      compare c, 0x5c/backslash
       {
         break-if-!=
-        xcurr, ycurr <- render-json-escaped-grapheme screen, stream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+        xcurr, ycurr <- render-json-escaped-code-point screen, stream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
         break $draw-json-stream-wrapping-right-then-down:render-grapheme
       }
-      xcurr, ycurr <- render-grapheme screen, g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+      xcurr, ycurr <- render-code-point screen, c, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     }
     loop
   }
@@ -599,15 +599,16 @@ fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (add
 }
 
 # just return a different register
-fn read-json-grapheme stream: (addr stream byte) -> _/ebx: grapheme {
-  var result/eax: grapheme <- read-grapheme stream
+fn read-json-code-point stream: (addr stream byte) -> _/ebx: code-point {
+  var g/eax: grapheme <- read-grapheme stream
+  var result/eax: code-point <- to-code-point g
   return result
 }
 
 # '\' encountered
 # https://www.json.org/json-en.html
-fn render-json-escaped-grapheme screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
-  var g/ebx: grapheme <- read-json-grapheme stream
+fn render-json-escaped-code-point screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+  var g/ebx: code-point <- read-json-code-point stream
   compare g, 0xffffffff/end-of-file
   {
     break-if-!=
@@ -647,16 +648,16 @@ fn render-json-escaped-grapheme screen: (addr screen), stream: (addr stream byte
   {
     compare g, 0x75/u
     break-if-!=
-    x, y <- render-json-escaped-unicode-grapheme screen, stream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    x, y <- render-json-escaped-unicode-code-point screen, stream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     return x, y
   }
   # most characters escape to themselves
-  x, y <- render-grapheme screen, g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+  x, y <- render-code-point screen, g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
   return x, y
 }
 
 # '\u' encountered
-fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var ustream-storage: (stream byte 4)
   var ustream/esi: (addr stream byte) <- address ustream-storage
   # slurp 4 bytes exactly
@@ -679,7 +680,7 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
     break-if-=
     var x/eax: int <- copy 0
     var y/ecx: int <- copy 0
-    x, y <- render-grapheme screen, 0x2d/dash, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    x, y <- render-code-point screen, 0x2d/dash, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     return x, y
   }
   # \u2014 = -
@@ -689,7 +690,7 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
     break-if-=
     var x/eax: int <- copy 0
     var y/ecx: int <- copy 0
-    x, y <- render-grapheme screen, 0x2d/dash, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    x, y <- render-code-point screen, 0x2d/dash, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     return x, y
   }
   # \u2018 = '
@@ -699,7 +700,7 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
     break-if-=
     var x/eax: int <- copy 0
     var y/ecx: int <- copy 0
-    x, y <- render-grapheme screen, 0x27/quote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    x, y <- render-code-point screen, 0x27/quote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     return x, y
   }
   # \u2019 = '
@@ -709,7 +710,7 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
     break-if-=
     var x/eax: int <- copy 0
     var y/ecx: int <- copy 0
-    x, y <- render-grapheme screen, 0x27/quote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    x, y <- render-code-point screen, 0x27/quote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     return x, y
   }
   # \u201c = "
@@ -719,7 +720,7 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
     break-if-=
     var x/eax: int <- copy 0
     var y/ecx: int <- copy 0
-    x, y <- render-grapheme screen, 0x22/dquote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    x, y <- render-code-point screen, 0x22/dquote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     return x, y
   }
   # \u201d = "
@@ -729,7 +730,7 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
     break-if-=
     var x/eax: int <- copy 0
     var y/ecx: int <- copy 0
-    x, y <- render-grapheme screen, 0x22/dquote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    x, y <- render-code-point screen, 0x22/dquote, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     return x, y
   }
   # \u2022 = *
@@ -739,7 +740,7 @@ fn render-json-escaped-unicode-grapheme screen: (addr screen), stream: (addr str
     break-if-=
     var x/eax: int <- copy 0
     var y/ecx: int <- copy 0
-    x, y <- render-grapheme screen, 0x2a/asterisk, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    x, y <- render-code-point screen, 0x2a/asterisk, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     return x, y
   }
   # \u2026 = ...

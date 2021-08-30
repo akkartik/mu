@@ -3493,7 +3493,7 @@ fn apply-blit _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var dest-ah/eax: (addr handle screen) <- get second, screen-data
   var dest/eax: (addr screen) <- lookup *dest-ah
   #
-  convert-graphemes-to-pixels src
+  convert-screen-cells-to-pixels src
   copy-pixels src, dest
 }
 

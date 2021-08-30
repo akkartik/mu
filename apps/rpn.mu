@@ -19,7 +19,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var in-storage: (stream byte 0x80)
   var in/esi: (addr stream byte) <- address in-storage
   var y/ecx: int <- copy 0
-  var space/edx: grapheme <- copy 0x20
+  var space/edx: code-point <- copy 0x20
   # read-eval-print loop
   {
     # print prompt
@@ -35,12 +35,12 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       loop-if-=
       var key2/eax: int <- copy key
       append-byte in, key2
-      var g/eax: grapheme <- copy key2
-      draw-grapheme-at-cursor-over-full-screen screen, g, 0xf/fg, 0/bg
+      var c/eax: code-point <- copy key2
+      draw-code-point-at-cursor-over-full-screen screen, c, 0xf/fg, 0/bg
       loop
     }
     # clear cursor
-    draw-grapheme-at-cursor-over-full-screen screen, space, 3/fg/never-used, 0/bg
+    draw-code-point-at-cursor-over-full-screen screen, space, 3/fg/never-used, 0/bg
     # parse and eval
     var out/eax: int <- simplify in
     # print

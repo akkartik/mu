@@ -98,7 +98,12 @@ fn render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _sel
     compare i, *top-addr
     break-if->=
     {
-      var g/esi: (addr grapheme) <- index data, i
+      var c: code-point
+      {
+        var g/eax: (addr grapheme) <- index data, i
+        var tmp/eax: code-point <- to-code-point *g
+        copy-to c, tmp
+      }
       var fg: int
       {
         var tmp/eax: int <- copy color
@@ -109,7 +114,7 @@ fn render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _sel
         break-if-!=
         copy-to fg, 0xf/highlight
       }
-      x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, fg, background-color
+      x, y <- render-code-point screen, c, xmin, ymin, xmax, ymax, x, y, fg, background-color
     }
     i <- increment
     loop
@@ -152,8 +157,13 @@ fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: 
     break-if-=
     compare i, 0
     break-if-<
-    var g/esi: (addr grapheme) <- index data, i
-    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, background-color, color
+    var c: code-point
+    {
+      var g/eax: (addr grapheme) <- index data, i
+      var tmp/eax: code-point <- to-code-point *g
+      copy-to c, tmp
+    }
+    x, y <- render-code-point screen, c, xmin, ymin, xmax, ymax, x, y, background-color, color
     i <- decrement
   }
   # remaining iterations
@@ -172,8 +182,13 @@ fn render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: 
       copy-to fg, 0xf/highlight
     }
     #
-    var g/esi: (addr grapheme) <- index data, i
-    x, y <- render-grapheme screen, *g, xmin, ymin, xmax, ymax, x, y, fg, background-color
+    var c: code-point
+    {
+      var g/eax: (addr grapheme) <- index data, i
+      var tmp/eax: code-point <- to-code-point *g
+      copy-to c, tmp
+    }
+    x, y <- render-code-point screen, c, xmin, ymin, xmax, ymax, x, y, fg, background-color
     i <- decrement
     loop
   }

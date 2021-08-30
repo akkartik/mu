@@ -23,7 +23,7 @@ type screen {
 }
 
 type screen-cell {
-  data: grapheme
+  data: code-point
   color: int
   background-color: int
   unused?: boolean
@@ -89,27 +89,27 @@ fn screen-size _screen: (addr screen) -> _/eax: int, _/ecx: int {
 
 # testable screen primitive
 # return number of 8x16 units drawn
-fn draw-grapheme _screen: (addr screen), g: grapheme, x: int, y: int, color: int, background-color: int -> _/eax: int {
+fn draw-code-point _screen: (addr screen), c: code-point, x: int, y: int, color: int, background-color: int -> _/eax: int {
   var screen/esi: (addr screen) <- copy _screen
   {
     compare screen, 0
     break-if-!=
-    var result/eax: int <- draw-grapheme-on-real-screen g, x, y, color, background-color
+    var result/eax: int <- draw-code-point-on-real-screen c, x, y, color, background-color
     return result
   }
   # fake screen
-  var wide?/eax: boolean <- wide-grapheme? g
+  var wide?/eax: boolean <- wide-code-point? c
   compare wide?, 0/false
   {
     break-if-=
-    draw-wide-grapheme-on-fake-screen screen, g, x, y, color, background-color
+    draw-wide-code-point-on-fake-screen screen, c, x, y, color, background-color
     return 2
   }
-  draw-narrow-grapheme-on-fake-screen screen, g, x, y, color, background-color
+  draw-narrow-code-point-on-fake-screen screen, c, x, y, color, background-color
   return 1
 }
 
-fn draw-narrow-grapheme-on-fake-screen _screen: (addr screen), g: grapheme, x: int, y: int, color: int, background-color: int {
+fn draw-narrow-code-point-on-fake-screen _screen: (addr screen), c: code-point, x: int, y: int, color: int, background-color: int {
   var screen/esi: (addr screen) <- copy _screen
   # ignore if out of bounds
   {
@@ -145,9 +145,9 @@ fn draw-narrow-grapheme-on-fake-screen _screen: (addr screen), g: grapheme, x: i
   var data/eax: (addr array screen-cell) <- lookup *data-ah
   var offset/ecx: (offset screen-cell) <- compute-offset data, index
   var dest-cell/ecx: (addr screen-cell) <- index data, offset
-  var dest-grapheme/eax: (addr grapheme) <- get dest-cell, data
-  var g2/edx: grapheme <- copy g
-  copy-to *dest-grapheme, g2
+  var dest-code-point/eax: (addr code-point) <- get dest-cell, data
+  var c2/edx: code-point <- copy c
+  copy-to *dest-code-point, c2
   var dest-color/eax: (addr int) <- get dest-cell, color
   var src-color/edx: int <- copy color
   copy-to *dest-color, src-color
@@ -158,7 +158,7 @@ fn draw-narrow-grapheme-on-fake-screen _screen: (addr screen), g: grapheme, x: i
   copy-to *dest, 0/false
 }
 
-fn draw-wide-grapheme-on-fake-screen _screen: (addr screen), g: grapheme, x: int, y: int, color: int, background-color: int {
+fn draw-wide-code-point-on-fake-screen _screen: (addr screen), c: code-point, x: int, y: int, color: int, background-color: int {
   var screen/esi: (addr screen) <- copy _screen
   # ignore if out of bounds
   {
@@ -169,7 +169,7 @@ fn draw-wide-grapheme-on-fake-screen _screen: (addr screen), g: grapheme, x: int
   {
     var xmax-addr/eax: (addr int) <- get screen, width
     var xmax/eax: int <- copy *xmax-addr
-    xmax <- decrement  # wide graphemes need an extra unit
+    xmax <- decrement  # wide code-points need an extra unit
     compare x, xmax
     break-if-<
     return
@@ -193,9 +193,9 @@ fn draw-wide-grapheme-on-fake-screen _screen: (addr screen), g: grapheme, x: int
     var data/eax: (addr array screen-cell) <- lookup *data-ah
     var offset/ecx: (offset screen-cell) <- compute-offset data, index
     var dest-cell/ecx: (addr screen-cell) <- index data, offset
-    var dest-grapheme/eax: (addr grapheme) <- get dest-cell, data
-    var g2/edx: grapheme <- copy g
-    copy-to *dest-grapheme, g2
+    var dest-code-point/eax: (addr code-point) <- get dest-cell, data
+    var c2/edx: code-point <- copy c
+    copy-to *dest-code-point, c2
     var dest-color/eax: (addr int) <- get dest-cell, color
     var src-color/edx: int <- copy color
     copy-to *dest-color, src-color
@@ -215,14 +215,6 @@ fn draw-wide-grapheme-on-fake-screen _screen: (addr screen), g: grapheme, x: int
     var dest/eax: (addr boolean) <- get dest-cell, unused?
     copy-to *dest, 1/true
   }
-}
-
-# we can't really render non-ASCII yet, but when we do we'll be ready
-# return number of 8x16 units drawn
-fn draw-code-point screen: (addr screen), c: code-point, x: int, y: int, color: int, background-color: int -> _/eax: int {
-  var g/eax: grapheme <- copy c
-  var result/eax: int <- draw-grapheme screen, g, x, y, color, background-color
-  return result
 }
 
 # fake screens only
@@ -298,18 +290,18 @@ fn set-cursor-position _screen: (addr screen), x: int, y: int {
   copy-to *dest, src
 }
 
-fn draw-cursor screen: (addr screen), g: grapheme {
+fn draw-cursor screen: (addr screen), c: code-point {
   {
     compare screen, 0
     break-if-!=
-    draw-cursor-on-real-screen g
+    draw-cursor-on-real-screen c
     return
   }
   # fake screen
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0
   cursor-x, cursor-y <- cursor-position screen
-  var dummy/eax: int <- draw-grapheme screen, g, cursor-x, cursor-y, 0/fg, 7/bg
+  var dummy/eax: int <- draw-code-point screen, c, cursor-x, cursor-y, 0/fg, 7/bg
 }
 
 fn clear-screen _screen: (addr screen) {
@@ -367,11 +359,11 @@ fn fake-screen-empty? _screen: (addr screen) -> _/eax: boolean {
     {
       compare x, *width
       break-if->=
-      var g/eax: grapheme <- screen-grapheme-at screen, x, y
+      var c/eax: code-point <- screen-code-point-at screen, x, y
       {
-        compare g, 0
+        compare c, 0
         break-if-=
-        compare g, 0x20/space
+        compare c, 0x20/space
         break-if-=
         return 0/false
       }
@@ -506,21 +498,21 @@ fn screen-cell-unused-at-index? _screen: (addr screen), _index: int -> _/eax: bo
   return *src
 }
 
-fn screen-grapheme-at _screen: (addr screen), x: int, y: int -> _/eax: grapheme {
+fn screen-code-point-at _screen: (addr screen), x: int, y: int -> _/eax: code-point {
   var screen/esi: (addr screen) <- copy _screen
   var index/ecx: int <- screen-cell-index screen, x, y
-  var result/eax: grapheme <- screen-grapheme-at-index screen, index
+  var result/eax: code-point <- screen-code-point-at-index screen, index
   return result
 }
 
-fn screen-grapheme-at-index _screen: (addr screen), _index: int -> _/eax: grapheme {
+fn screen-code-point-at-index _screen: (addr screen), _index: int -> _/eax: code-point {
   var screen/esi: (addr screen) <- copy _screen
   var data-ah/eax: (addr handle array screen-cell) <- get screen, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
   var index/ecx: int <- copy _index
   var offset/ecx: (offset screen-cell) <- compute-offset data, index
   var cell/eax: (addr screen-cell) <- index data, offset
-  var src/eax: (addr grapheme) <- get cell, data
+  var src/eax: (addr code-point) <- get cell, data
   return *src
 }
 
@@ -661,11 +653,11 @@ fn copy-pixels _screen: (addr screen), target-screen: (addr screen) {
   }
 }
 
-# It turns out double-buffering graphemes is useless because rendering fonts
+# It turns out double-buffering screen-cells is useless because rendering fonts
 # takes too long. (At least under Qemu.)
-# So we'll instead convert graphemes to pixels when double-buffering.
+# So we'll instead convert screen-cells to pixels when double-buffering.
 # 'screen' must be a fake screen.
-fn convert-graphemes-to-pixels _screen: (addr screen) {
+fn convert-screen-cells-to-pixels _screen: (addr screen) {
   var screen/esi: (addr screen) <- copy _screen
   var width-a/ebx: (addr int) <- get screen, width
   var height-a/edx: (addr int) <- get screen, height
@@ -678,25 +670,25 @@ fn convert-graphemes-to-pixels _screen: (addr screen) {
     compare y, *height-a
     break-if->=
     var x/edi: int <- copy 0
-    $convert-graphemes-to-pixels:loop-x: {
+    $convert-screen-cells-to-pixels:loop-x: {
       compare x, *width-a
       break-if->=
       {
-        var tmp/eax: grapheme <- screen-grapheme-at screen, x, y
-        # skip null graphemes that only get created when clearing screen
+        var tmp/eax: code-point <- screen-code-point-at screen, x, y
+        # skip null code-points that only get created when clearing screen
         # there may be other pixels drawn there, and we don't want to clobber them
-        # this is a situation where fake screens aren't faithful to real screens; we don't support overlap between graphemes and raw pixels
+        # this is a situation where fake screens aren't faithful to real screens; we don't support overlap between screen-cells and raw pixels
         compare tmp, 0
         break-if-=
-        var g: grapheme
-        copy-to g, tmp
+        var c: code-point
+        copy-to c, tmp
         var tmp/eax: int <- screen-color-at screen, x, y
         var fg: int
         copy-to fg, tmp
         var bg/eax: int <- screen-background-color-at screen, x, y
-        var offset/eax: int <- draw-grapheme-on-screen-array data, g, x, y, fg, bg, *width-a, *height-a
+        var offset/eax: int <- draw-code-point-on-screen-array data, c, x, y, fg, bg, *width-a, *height-a
         x <- add offset
-        loop $convert-graphemes-to-pixels:loop-x
+        loop $convert-screen-cells-to-pixels:loop-x
       }
       x <- increment
       loop

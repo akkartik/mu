@@ -409,8 +409,8 @@ fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr
     bg <- copy color
   }
   # print a grapheme either way so that cursor position doesn't affect printed width
-  var space/edx: grapheme <- copy 0x20
-  x2, y2 <- render-grapheme screen, space, xmin, ymin, xmax, ymax, x2, y2, fg, bg
+  var space/edx: code-point <- copy 0x20
+  x2, y2 <- render-code-point screen, space, xmin, ymin, xmax, ymax, x2, y2, fg, bg
   return x2, y2
 }
 

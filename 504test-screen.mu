@@ -24,32 +24,33 @@ fn check-screen-row-from _screen: (addr screen), x: int, y: int, expected: (addr
       var unused?/eax: boolean <- screen-cell-unused-at-index? screen, index
       compare unused?, 0/false
       break-if-!=
-      var _g/eax: grapheme <- screen-grapheme-at-index screen, index
-      var g/ebx: grapheme <- copy _g
+      var _c/eax: code-point <- screen-code-point-at-index screen, index
+      var c/ebx: code-point <- copy _c
       var expected-grapheme/eax: grapheme <- read-grapheme e-addr
+      var expected-code-point/eax: code-point <- to-code-point expected-grapheme
       # compare graphemes
       $check-screen-row-from:compare-graphemes: {
-        # if expected-grapheme is space, null grapheme is also ok
+        # if expected-code-point is space, null grapheme is also ok
         {
-          compare expected-grapheme, 0x20
+          compare expected-code-point, 0x20
           break-if-!=
-          compare g, 0
+          compare c, 0
           break-if-= $check-screen-row-from:compare-graphemes
         }
-        # if (g == expected-grapheme) print "."
-        compare g, expected-grapheme
+        # if (c == expected-code-point) print "."
+        compare c, expected-code-point
         break-if-=
         # otherwise print an error
         failure-count <- increment
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-        draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
+        draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
         draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg/cyan, 0/bg
-        draw-grapheme-at-cursor-over-full-screen 0/screen, g, 3/cyan, 0/bg
+        draw-code-point-at-cursor-over-full-screen 0/screen, c, 3/cyan, 0/bg
         draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
         move-cursor-to-left-margin-of-next-line 0/screen
       }
@@ -90,21 +91,22 @@ fn check-screen-row-in-color-from _screen: (addr screen), fg: int, y: int, x: in
       var unused?/eax: boolean <- screen-cell-unused-at-index? screen, index
       compare unused?, 0/false
       break-if-!=
-      var _g/eax: grapheme <- screen-grapheme-at-index screen, index
-      var g/ebx: grapheme <- copy _g
-      var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
-      var expected-grapheme/edi: grapheme <- copy _expected-grapheme
+      var _c/eax: code-point <- screen-code-point-at-index screen, index
+      var c/ebx: code-point <- copy _c
+      var expected-grapheme/eax: grapheme <- read-grapheme e-addr
+      var _expected-code-point/eax: code-point <- to-code-point expected-grapheme
+      var expected-code-point/edi: code-point <- copy _expected-code-point
       $check-screen-row-in-color-from:compare-cells: {
-        # if expected-grapheme is space, null grapheme is also ok
+        # if expected-code-point is space, null grapheme is also ok
         {
-          compare expected-grapheme, 0x20
+          compare expected-code-point, 0x20
           break-if-!=
-          compare g, 0
+          compare c, 0
           break-if-= $check-screen-row-in-color-from:compare-cells
         }
-        # if expected-grapheme is space, a different color is ok
+        # if expected-code-point is space, a different color is ok
         {
-          compare expected-grapheme, 0x20
+          compare expected-code-point, 0x20
           break-if-!=
           var color/eax: int <- screen-color-at-index screen, index
           compare color, fg
@@ -112,8 +114,8 @@ fn check-screen-row-in-color-from _screen: (addr screen), fg: int, y: int, x: in
         }
         # compare graphemes
         $check-screen-row-in-color-from:compare-graphemes: {
-          # if (g == expected-grapheme) print "."
-          compare g, expected-grapheme
+          # if (c == expected-code-point) print "."
+          compare c, expected-code-point
           {
             break-if-!=
             draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
@@ -123,13 +125,13 @@ fn check-screen-row-in-color-from _screen: (addr screen), fg: int, y: int, x: in
           count-test-failure
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
+          draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor-over-full-screen 0/screen, g, 3/cyan, 0/bg
+          draw-code-point-at-cursor-over-full-screen 0/screen, c, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
           move-cursor-to-left-margin-of-next-line 0/screen
         }
@@ -145,7 +147,7 @@ fn check-screen-row-in-color-from _screen: (addr screen), fg: int, y: int, x: in
           count-test-failure
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
+          draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
@@ -183,21 +185,22 @@ fn check-screen-row-in-background-color-from _screen: (addr screen), bg: int, y:
       var unused?/eax: boolean <- screen-cell-unused-at-index? screen, index
       compare unused?, 0/false
       break-if-!=
-      var _g/eax: grapheme <- screen-grapheme-at-index screen, index
-      var g/ebx: grapheme <- copy _g
-      var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
-      var expected-grapheme/edi: grapheme <- copy _expected-grapheme
+      var _g/eax: code-point <- screen-code-point-at-index screen, index
+      var g/ebx: code-point <- copy _g
+      var expected-grapheme/eax: grapheme <- read-grapheme e-addr
+      var _expected-code-point/eax: code-point <- to-code-point expected-grapheme
+      var expected-code-point/edi: code-point <- copy _expected-code-point
       $check-screen-row-in-background-color-from:compare-cells: {
-        # if expected-grapheme is space, null grapheme is also ok
+        # if expected-code-point is space, null grapheme is also ok
         {
-          compare expected-grapheme, 0x20
+          compare expected-code-point, 0x20
           break-if-!=
           compare g, 0
           break-if-= $check-screen-row-in-background-color-from:compare-cells
         }
-        # if expected-grapheme is space, a different background-color is ok
+        # if expected-code-point is space, a different background-color is ok
         {
-          compare expected-grapheme, 0x20
+          compare expected-code-point, 0x20
           break-if-!=
           var background-color/eax: int <- screen-background-color-at-index screen, index
           compare background-color, bg
@@ -205,8 +208,8 @@ fn check-screen-row-in-background-color-from _screen: (addr screen), bg: int, y:
         }
         # compare graphemes
         $check-screen-row-in-background-color-from:compare-graphemes: {
-          # if (g == expected-grapheme) print "."
-          compare g, expected-grapheme
+          # if (g == expected-code-point) print "."
+          compare g, expected-code-point
           {
             break-if-!=
             draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
@@ -216,13 +219,13 @@ fn check-screen-row-in-background-color-from _screen: (addr screen), bg: int, y:
           count-test-failure
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
+          draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor-over-full-screen 0/screen, g, 3/cyan, 0/bg
+          draw-code-point-at-cursor-over-full-screen 0/screen, g, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
           move-cursor-to-left-margin-of-next-line 0/screen
           break $check-screen-row-in-background-color-from:compare-graphemes
@@ -239,7 +242,7 @@ fn check-screen-row-in-background-color-from _screen: (addr screen), bg: int, y:
           count-test-failure
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
-          draw-grapheme-at-cursor-over-full-screen 0/screen, expected-grapheme, 3/cyan, 0/bg
+          draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
           draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
           draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
