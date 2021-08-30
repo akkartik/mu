@@ -14,9 +14,88 @@
 # multiple code points. One day we will.
 #   https://en.wikipedia.org/wiki/Combining_character
 
+fn test-unicode-serialization-and-deserialization {
+  var i/ebx: int <- copy 0
+  var init?/esi: boolean <- copy 1/true
+  {
+    compare i, 0x10000  # 32 bits of utf-8 are sufficient for https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane
+                        # but not emoji
+    break-if->=
+    var c/eax: code-point <- copy i
+    var _g/eax: grapheme <- to-grapheme c
+    var g/ecx: grapheme <- copy _g
+    var c2/eax: code-point <- to-code-point g
+    compare i, c2
+    {
+      break-if-=
+      {
+        compare init?, 0/false
+        break-if-=
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "F - test-unicode-serialization-and-deserialization: ", 3/fg 0/bg
+      }
+      init? <- copy 0/false
+      draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, i, 3/fg 0/bg
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "/", 3/fg 0/bg
+      {
+        var x/eax: int <- copy g
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg 0/bg
+      }
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "/", 3/fg 0/bg
+      {
+        var x2/eax: int <- copy c2
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x2, 3/fg 0/bg
+      }
+      draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " ", 3/fg 0/bg
+    }
+    i <- add 0xf  # to speed things up; ensure increment is not a power of 2
+    loop
+  }
+}
+
+# transliterated from tb_utf8_char_to_unicode in https://github.com/nsf/termbox
 fn to-code-point in: grapheme -> _/eax: code-point {
-  var g/eax: grapheme <- copy in
-  var result/eax: code-point <- copy g  # TODO: support non-ASCII
+  var g/ebx: int <- copy in
+  # if single byte, just return it
+  {
+    compare g, 0xff
+    break-if->
+    var result/eax: code-point <- copy g
+    return result
+  }
+  #
+  var len/edx: int <- grapheme-length in
+  # extract bits from first byte
+  var b/eax: byte <- copy-byte g
+  var result/edi: code-point <- copy b
+  {
+    compare len, 2
+    break-if-!=
+    result <- and 0x1f
+  }
+  {
+    compare len, 3
+    break-if-!=
+    result <- and 0x0f
+  }
+  {
+    compare len, 4
+    break-if-!=
+    result <- and 0x07
+  }
+  # extract bits from remaining bytes
+  g <- shift-right 8
+  var i/ecx: int <- copy 1
+  {
+    compare i, len
+    break-if->=
+    var b/eax: byte <- copy-byte g
+    b <- and 0x3f
+    result <- shift-left 6
+    result <- or b
+    g <- shift-right 8
+    i <- increment
+    loop
+  }
   return result
 }
 
@@ -218,6 +297,25 @@ fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
     loop
   }
   return result
+}
+
+fn grapheme-length g: grapheme -> _/edx: int {
+  {
+    compare g, 0xff
+    break-if->
+    return 1
+  }
+  {
+    compare g, 0xffff
+    break-if->
+    return 2
+  }
+  {
+    compare g, 0xffffff
+    break-if->
+    return 3
+  }
+  return 4
 }
 
 # needed because available primitives only shift by a literal/constant number of bits
