@@ -63,42 +63,40 @@ if ('onhashchange' in window) {
 <span id="L4" class="LineNr"> 4 </span><span class="muComment">#   ./translate apps/ex10.mu       # emits code.img</span>
 <span id="L5" class="LineNr"> 5 </span><span class="muComment"># To run:</span>
 <span id="L6" class="LineNr"> 6 </span><span class="muComment">#   qemu-system-i386 code.img</span>
-<span id="L7" class="LineNr"> 7 </span><span class="muComment"># Or:</span>
-<span id="L8" class="LineNr"> 8 </span><span class="muComment">#   bochs -f bochsrc               # bochsrc loads code.img</span>
-<span id="L9" class="LineNr"> 9 </span><span class="muComment">#</span>
-<span id="L10" class="LineNr">10 </span><span class="muComment"># Expected output:</span>
-<span id="L11" class="LineNr">11 </span><span class="muComment">#   Values between -256 and +255 as you move the mouse over the window.</span>
-<span id="L12" class="LineNr">12 </span><span class="muComment">#   You might need to click on the window once.</span>
-<span id="L13" class="LineNr">13 </span>
-<span id="L14" class="LineNr">14 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex10.mu.html#L14'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
-<span id="L15" class="LineNr">15 </span>  <span class="muComment"># repeatedly print out mouse driver results if non-zero</span>
-<span id="L16" class="LineNr">16 </span>  $main:event-loop: <span class="Delimiter">{</span>
-<span id="L17" class="LineNr">17 </span>    <span class="PreProc">var</span> dx/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L18" class="LineNr">18 </span>    <span class="PreProc">var</span> dy/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L19" class="LineNr">19 </span>    dx, dy <span class="Special">&lt;-</span> read-mouse-event
-<span id="L20" class="LineNr">20 </span>    <span class="Delimiter">{</span>
-<span id="L21" class="LineNr">21 </span>      compare dx, <span class="Constant">0</span>
+<span id="L7" class="LineNr"> 7 </span><span class="muComment">#</span>
+<span id="L8" class="LineNr"> 8 </span><span class="muComment"># Expected output:</span>
+<span id="L9" class="LineNr"> 9 </span><span class="muComment">#   Values between -256 and +255 as you move the mouse over the window.</span>
+<span id="L10" class="LineNr">10 </span><span class="muComment">#   You might need to click on the window once.</span>
+<span id="L11" class="LineNr">11 </span>
+<span id="L12" class="LineNr">12 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex10.mu.html#L12'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
+<span id="L13" class="LineNr">13 </span>  <span class="muComment"># repeatedly print out mouse driver results if non-zero</span>
+<span id="L14" class="LineNr">14 </span>  $main:event-loop: <span class="Delimiter">{</span>
+<span id="L15" class="LineNr">15 </span>    <span class="PreProc">var</span> dx/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L16" class="LineNr">16 </span>    <span class="PreProc">var</span> dy/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L17" class="LineNr">17 </span>    dx, dy <span class="Special">&lt;-</span> read-mouse-event
+<span id="L18" class="LineNr">18 </span>    <span class="Delimiter">{</span>
+<span id="L19" class="LineNr">19 </span>      compare dx, <span class="Constant">0</span>
+<span id="L20" class="LineNr">20 </span>      <span class="PreProc">break-if-!=</span>
+<span id="L21" class="LineNr">21 </span>      compare dy, <span class="Constant">0</span>
 <span id="L22" class="LineNr">22 </span>      <span class="PreProc">break-if-!=</span>
-<span id="L23" class="LineNr">23 </span>      compare dy, <span class="Constant">0</span>
-<span id="L24" class="LineNr">24 </span>      <span class="PreProc">break-if-!=</span>
-<span id="L25" class="LineNr">25 </span>      <span class="PreProc">loop</span> $main:event-loop
-<span id="L26" class="LineNr">26 </span>    <span class="Delimiter">}</span>
-<span id="L27" class="LineNr">27 </span>    <span class="Delimiter">{</span>
-<span id="L28" class="LineNr">28 </span>      <span class="PreProc">var</span> dummy1/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L29" class="LineNr">29 </span>      <span class="PreProc">var</span> dummy2/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L30" class="LineNr">30 </span>      dummy1, dummy2 <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L253'>draw-text-wrapping-right-then-down-over-full-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;         &quot;</span>, <span class="Constant">0</span>/x, <span class="Constant">0x10</span>/y, <span class="Constant">0x31</span>/fg, <span class="Constant">0</span>/bg
-<span id="L31" class="LineNr">31 </span>    <span class="Delimiter">}</span>
-<span id="L32" class="LineNr">32 </span>    <span class="Delimiter">{</span>
-<span id="L33" class="LineNr">33 </span>      <span class="PreProc">var</span> dummy/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L34" class="LineNr">34 </span>      dx, dummy <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L361'>draw-int32-decimal-wrapping-right-then-down-over-full-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, dx, <span class="Constant">0</span>/x, <span class="Constant">0x10</span>/y, <span class="Constant">0x31</span>/fg, <span class="Constant">0</span>/bg
-<span id="L35" class="LineNr">35 </span>    <span class="Delimiter">}</span>
-<span id="L36" class="LineNr">36 </span>    <span class="Delimiter">{</span>
-<span id="L37" class="LineNr">37 </span>      <span class="PreProc">var</span> dummy/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L38" class="LineNr">38 </span>      dummy, dy <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L361'>draw-int32-decimal-wrapping-right-then-down-over-full-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, dy, <span class="Constant">5</span>/x, <span class="Constant">0x10</span>/y, <span class="Constant">0x31</span>/fg, <span class="Constant">0</span>/bg
-<span id="L39" class="LineNr">39 </span>    <span class="Delimiter">}</span>
-<span id="L40" class="LineNr">40 </span>    <span class="PreProc">loop</span>
-<span id="L41" class="LineNr">41 </span>  <span class="Delimiter">}</span>
-<span id="L42" class="LineNr">42 </span><span class="Delimiter">}</span>
+<span id="L23" class="LineNr">23 </span>      <span class="PreProc">loop</span> $main:event-loop
+<span id="L24" class="LineNr">24 </span>    <span class="Delimiter">}</span>
+<span id="L25" class="LineNr">25 </span>    <span class="Delimiter">{</span>
+<span id="L26" class="LineNr">26 </span>      <span class="PreProc">var</span> dummy1/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L27" class="LineNr">27 </span>      <span class="PreProc">var</span> dummy2/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L28" class="LineNr">28 </span>      dummy1, dummy2 <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L261'>draw-text-wrapping-right-then-down-over-full-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;         &quot;</span>, <span class="Constant">0</span>/x, <span class="Constant">0x10</span>/y, <span class="Constant">0x31</span>/fg, <span class="Constant">0</span>/bg
+<span id="L29" class="LineNr">29 </span>    <span class="Delimiter">}</span>
+<span id="L30" class="LineNr">30 </span>    <span class="Delimiter">{</span>
+<span id="L31" class="LineNr">31 </span>      <span class="PreProc">var</span> dummy/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L32" class="LineNr">32 </span>      dx, dummy <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L371'>draw-int32-decimal-wrapping-right-then-down-over-full-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, dx, <span class="Constant">0</span>/x, <span class="Constant">0x10</span>/y, <span class="Constant">0x31</span>/fg, <span class="Constant">0</span>/bg
+<span id="L33" class="LineNr">33 </span>    <span class="Delimiter">}</span>
+<span id="L34" class="LineNr">34 </span>    <span class="Delimiter">{</span>
+<span id="L35" class="LineNr">35 </span>      <span class="PreProc">var</span> dummy/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L36" class="LineNr">36 </span>      dummy, dy <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L371'>draw-int32-decimal-wrapping-right-then-down-over-full-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, dy, <span class="Constant">5</span>/x, <span class="Constant">0x10</span>/y, <span class="Constant">0x31</span>/fg, <span class="Constant">0</span>/bg
+<span id="L37" class="LineNr">37 </span>    <span class="Delimiter">}</span>
+<span id="L38" class="LineNr">38 </span>    <span class="PreProc">loop</span>
+<span id="L39" class="LineNr">39 </span>  <span class="Delimiter">}</span>
+<span id="L40" class="LineNr">40 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

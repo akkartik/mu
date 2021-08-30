@@ -68,47 +68,46 @@ if ('onhashchange' in window) {
 <span id="L8" class="LineNr"> 8 </span><span class="muComment">#       echo 'abc def ghi' |dd of=data.img conv=notrunc</span>
 <span id="L9" class="LineNr"> 9 </span><span class="muComment">#   3. Familiarize yourself with how the data disk looks within xxd:</span>
 <span id="L10" class="LineNr">10 </span><span class="muComment">#       xxd data.img |head</span>
-<span id="L11" class="LineNr">11 </span><span class="muComment">#   4. Run in an emulator, either Qemu or Bochs.</span>
+<span id="L11" class="LineNr">11 </span><span class="muComment">#   4. Run:</span>
 <span id="L12" class="LineNr">12 </span><span class="muComment">#       qemu-system-i386 -hda code.img -hdb data.img</span>
-<span id="L13" class="LineNr">13 </span><span class="muComment">#       bochs -f bochsrc.2disks</span>
-<span id="L14" class="LineNr">14 </span><span class="muComment">#   5. Exit the emulator.</span>
-<span id="L15" class="LineNr">15 </span><span class="muComment">#   6. Notice that the data disk now contains the word count of the original text.</span>
-<span id="L16" class="LineNr">16 </span><span class="muComment">#       xxd data.img |head</span>
-<span id="L17" class="LineNr">17 </span>
-<span id="L18" class="LineNr">18 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex9.mu.html#L18'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
-<span id="L19" class="LineNr">19 </span>  <span class="PreProc">var</span> text-storage: (stream byte <span class="Constant">0x200</span>)
-<span id="L20" class="LineNr">20 </span>  <span class="PreProc">var</span> text/<span class="muRegEsi">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> address text-storage
-<span id="L21" class="LineNr">21 </span>  <a href='../510disk.mu.html#L1'>load-sectors</a> data-disk, <span class="Constant">0</span>/lba, <span class="Constant">1</span>/num-sectors, text
-<span id="L22" class="LineNr">22 </span>
-<span id="L23" class="LineNr">23 </span>  <span class="PreProc">var</span> <a href='ex9.mu.html#L31'>word-count</a>/eax: int <span class="Special">&lt;-</span> <a href='ex9.mu.html#L31'>word-count</a> text
-<span id="L24" class="LineNr">24 </span>
-<span id="L25" class="LineNr">25 </span>  <span class="PreProc">var</span> result-storage: (stream byte <span class="Constant">0x10</span>)
-<span id="L26" class="LineNr">26 </span>  <span class="PreProc">var</span> result/<span class="muRegEdi">edi</span>: (addr stream byte) <span class="Special">&lt;-</span> address result-storage
-<span id="L27" class="LineNr">27 </span>  <a href='../126write-int-decimal.subx.html#L8'>write-int32-decimal</a> result, <a href='ex9.mu.html#L31'>word-count</a>
-<span id="L28" class="LineNr">28 </span>  <a href='../510disk.mu.html#L23'>store-sectors</a> data-disk, <span class="Constant">0</span>/lba, <span class="Constant">1</span>/num-sectors, result
-<span id="L29" class="LineNr">29 </span><span class="Delimiter">}</span>
-<span id="L30" class="LineNr">30 </span>
-<span id="L31" class="LineNr">31 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex9.mu.html#L31'>word-count</a></span> in: (addr stream byte)<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
-<span id="L32" class="LineNr">32 </span>  <span class="PreProc">var</span> result/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L33" class="LineNr">33 </span>  <span class="Delimiter">{</span>
-<span id="L34" class="LineNr">34 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> in
-<span id="L35" class="LineNr">35 </span>    compare done?, <span class="Constant">0</span>/false
-<span id="L36" class="LineNr">36 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L37" class="LineNr">37 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> in
-<span id="L38" class="LineNr">38 </span>    <span class="Delimiter">{</span>
-<span id="L39" class="LineNr">39 </span>      compare g, <span class="Constant">0x20</span>/space
-<span id="L40" class="LineNr">40 </span>      <span class="PreProc">break-if-!=</span>
-<span id="L41" class="LineNr">41 </span>      result <span class="Special">&lt;-</span> increment
-<span id="L42" class="LineNr">42 </span>    <span class="Delimiter">}</span>
-<span id="L43" class="LineNr">43 </span>    <span class="Delimiter">{</span>
-<span id="L44" class="LineNr">44 </span>      compare g, <span class="Constant">0xa</span>/newline
-<span id="L45" class="LineNr">45 </span>      <span class="PreProc">break-if-!=</span>
-<span id="L46" class="LineNr">46 </span>      result <span class="Special">&lt;-</span> increment
-<span id="L47" class="LineNr">47 </span>    <span class="Delimiter">}</span>
-<span id="L48" class="LineNr">48 </span>    <span class="PreProc">loop</span>
-<span id="L49" class="LineNr">49 </span>  <span class="Delimiter">}</span>
-<span id="L50" class="LineNr">50 </span>  <span class="PreProc">return</span> result
-<span id="L51" class="LineNr">51 </span><span class="Delimiter">}</span>
+<span id="L13" class="LineNr">13 </span><span class="muComment">#   5. Exit the emulator.</span>
+<span id="L14" class="LineNr">14 </span><span class="muComment">#   6. Notice that the data disk now contains the word count of the original text.</span>
+<span id="L15" class="LineNr">15 </span><span class="muComment">#       xxd data.img |head</span>
+<span id="L16" class="LineNr">16 </span>
+<span id="L17" class="LineNr">17 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex9.mu.html#L17'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
+<span id="L18" class="LineNr">18 </span>  <span class="PreProc">var</span> text-storage: (stream byte <span class="Constant">0x200</span>)
+<span id="L19" class="LineNr">19 </span>  <span class="PreProc">var</span> text/<span class="muRegEsi">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> address text-storage
+<span id="L20" class="LineNr">20 </span>  <a href='../510disk.mu.html#L1'>load-sectors</a> data-disk, <span class="Constant">0</span>/lba, <span class="Constant">1</span>/num-sectors, text
+<span id="L21" class="LineNr">21 </span>
+<span id="L22" class="LineNr">22 </span>  <span class="PreProc">var</span> <a href='ex9.mu.html#L30'>word-count</a>/eax: int <span class="Special">&lt;-</span> <a href='ex9.mu.html#L30'>word-count</a> text
+<span id="L23" class="LineNr">23 </span>
+<span id="L24" class="LineNr">24 </span>  <span class="PreProc">var</span> result-storage: (stream byte <span class="Constant">0x10</span>)
+<span id="L25" class="LineNr">25 </span>  <span class="PreProc">var</span> result/<span class="muRegEdi">edi</span>: (addr stream byte) <span class="Special">&lt;-</span> address result-storage
+<span id="L26" class="LineNr">26 </span>  <a href='../126write-int-decimal.subx.html#L8'>write-int32-decimal</a> result, <a href='ex9.mu.html#L30'>word-count</a>
+<span id="L27" class="LineNr">27 </span>  <a href='../510disk.mu.html#L23'>store-sectors</a> data-disk, <span class="Constant">0</span>/lba, <span class="Constant">1</span>/num-sectors, result
+<span id="L28" class="LineNr">28 </span><span class="Delimiter">}</span>
+<span id="L29" class="LineNr">29 </span>
+<span id="L30" class="LineNr">30 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex9.mu.html#L30'>word-count</a></span> in: (addr stream byte)<span class="PreProc"> -&gt; </span>_/eax: int <span class="Delimiter">{</span>
+<span id="L31" class="LineNr">31 </span>  <span class="PreProc">var</span> result/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L32" class="LineNr">32 </span>  <span class="Delimiter">{</span>
+<span id="L33" class="LineNr">33 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> in
+<span id="L34" class="LineNr">34 </span>    compare done?, <span class="Constant">0</span>/false
+<span id="L35" class="LineNr">35 </span>    <span class="PreProc">break-if-!=</span>
+<span id="L36" class="LineNr">36 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L236'>read-grapheme</a> in
+<span id="L37" class="LineNr">37 </span>    <span class="Delimiter">{</span>
+<span id="L38" class="LineNr">38 </span>      compare g, <span class="Constant">0x20</span>/space
+<span id="L39" class="LineNr">39 </span>      <span class="PreProc">break-if-!=</span>
+<span id="L40" class="LineNr">40 </span>      result <span class="Special">&lt;-</span> increment
+<span id="L41" class="LineNr">41 </span>    <span class="Delimiter">}</span>
+<span id="L42" class="LineNr">42 </span>    <span class="Delimiter">{</span>
+<span id="L43" class="LineNr">43 </span>      compare g, <span class="Constant">0xa</span>/newline
+<span id="L44" class="LineNr">44 </span>      <span class="PreProc">break-if-!=</span>
+<span id="L45" class="LineNr">45 </span>      result <span class="Special">&lt;-</span> increment
+<span id="L46" class="LineNr">46 </span>    <span class="Delimiter">}</span>
+<span id="L47" class="LineNr">47 </span>    <span class="PreProc">loop</span>
+<span id="L48" class="LineNr">48 </span>  <span class="Delimiter">}</span>
+<span id="L49" class="LineNr">49 </span>  <span class="PreProc">return</span> result
+<span id="L50" class="LineNr">50 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

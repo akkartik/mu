@@ -323,7 +323,7 @@ if ('onhashchange' in window) {
 <span id="L312" class="LineNr">312 </span>  <span class="PreProc">var</span> buffer/<span class="muRegEdi">edi</span>: (addr <a href='../514gap-buffer.mu.html#L3'>gap-buffer</a>) <span class="Special">&lt;-</span> address buffer-storage
 <span id="L313" class="LineNr">313 </span>  <a href='../514gap-buffer.mu.html#L11'>initialize-gap-buffer</a> buffer, <span class="Constant">0x40</span>/max-symbol-size
 <span id="L314" class="LineNr">314 </span>  <span class="muComment"># scan for first non-$</span>
-<span id="L315" class="LineNr">315 </span>  <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> sym-data
+<span id="L315" class="LineNr">315 </span>  <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L236'>read-grapheme</a> sym-data
 <span id="L316" class="LineNr">316 </span>  <a href='../514gap-buffer.mu.html#L441'>add-grapheme-at-gap</a> buffer, g
 <span id="L317" class="LineNr">317 </span>  <span class="Delimiter">{</span>
 <span id="L318" class="LineNr">318 </span>    compare g, <span class="Constant">0x24</span>/dollar
@@ -334,7 +334,7 @@ if ('onhashchange' in window) {
 <span id="L323" class="LineNr">323 </span>      <span class="PreProc">break-if-=</span>
 <span id="L324" class="LineNr">324 </span>      <span class="PreProc">return</span>  <span class="muComment"># symbol is all '$'s; do nothing</span>
 <span id="L325" class="LineNr">325 </span>    <span class="Delimiter">}</span>
-<span id="L326" class="LineNr">326 </span>    g <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> sym-data
+<span id="L326" class="LineNr">326 </span>    g <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L236'>read-grapheme</a> sym-data
 <span id="L327" class="LineNr">327 </span>    <a href='../514gap-buffer.mu.html#L441'>add-grapheme-at-gap</a> buffer, g
 <span id="L328" class="LineNr">328 </span>    <span class="PreProc">loop</span>
 <span id="L329" class="LineNr">329 </span>  <span class="Delimiter">}</span>
@@ -345,7 +345,7 @@ if ('onhashchange' in window) {
 <span id="L334" class="LineNr">334 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> sym-data
 <span id="L335" class="LineNr">335 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L336" class="LineNr">336 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L337" class="LineNr">337 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> sym-data
+<span id="L337" class="LineNr">337 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L236'>read-grapheme</a> sym-data
 <span id="L338" class="LineNr">338 </span>    <span class="Delimiter">{</span>
 <span id="L339" class="LineNr">339 </span>      <span class="PreProc">var</span> curr-operator?/eax: boolean <span class="Special">&lt;-</span> <a href='infix.mu.html#L458'>operator-grapheme?</a> g
 <span id="L340" class="LineNr">340 </span>      compare curr-operator?, operator-so-far?
@@ -432,7 +432,7 @@ if ('onhashchange' in window) {
 <span id="L421" class="LineNr">421 </span>  <span class="PreProc">var</span> _x-data/eax: (addr stream byte) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L235'>lookup</a> *x-data-ah
 <span id="L422" class="LineNr">422 </span>  <span class="PreProc">var</span> x-data/<span class="muRegEsi">esi</span>: (addr stream byte) <span class="Special">&lt;-</span> copy _x-data
 <span id="L423" class="LineNr">423 </span>  <a href='../106stream.subx.html#L59'>rewind-stream</a> x-data
-<span id="L424" class="LineNr">424 </span>  <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> x-data
+<span id="L424" class="LineNr">424 </span>  <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L236'>read-grapheme</a> x-data
 <span id="L425" class="LineNr">425 </span>  <span class="muComment"># special case: '$' is reserved for gensyms, and can work with either</span>
 <span id="L426" class="LineNr">426 </span>  <span class="muComment"># operator or non-operator symbols.</span>
 <span id="L427" class="LineNr">427 </span>  <span class="Delimiter">{</span>
@@ -445,7 +445,7 @@ if ('onhashchange' in window) {
 <span id="L434" class="LineNr">434 </span>      <span class="muComment"># '$', '$$', '$$$', etc. are regular symbols</span>
 <span id="L435" class="LineNr">435 </span>      <span class="PreProc">return</span> <span class="Constant">0</span>/false
 <span id="L436" class="LineNr">436 </span>    <span class="Delimiter">}</span>
-<span id="L437" class="LineNr">437 </span>    g <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> x-data
+<span id="L437" class="LineNr">437 </span>    g <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L236'>read-grapheme</a> x-data
 <span id="L438" class="LineNr">438 </span>    <span class="PreProc">loop</span>
 <span id="L439" class="LineNr">439 </span>  <span class="Delimiter">}</span>
 <span id="L440" class="LineNr">440 </span>  <span class="Delimiter">{</span>
@@ -460,7 +460,7 @@ if ('onhashchange' in window) {
 <span id="L449" class="LineNr">449 </span>      compare done?, <span class="Constant">0</span>/false
 <span id="L450" class="LineNr">450 </span>    <span class="Delimiter">}</span>
 <span id="L451" class="LineNr">451 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L452" class="LineNr">452 </span>    g <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L92'>read-grapheme</a> x-data
+<span id="L452" class="LineNr">452 </span>    g <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L236'>read-grapheme</a> x-data
 <span id="L453" class="LineNr">453 </span>    <span class="PreProc">loop</span>
 <span id="L454" class="LineNr">454 </span>  <span class="Delimiter">}</span>
 <span id="L455" class="LineNr">455 </span>  <span class="PreProc">return</span> <span class="Constant">1</span>/true

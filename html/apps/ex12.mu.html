@@ -64,28 +64,26 @@ if ('onhashchange' in window) {
 <span id="L4" class="LineNr"> 4 </span><span class="muComment">#   ./translate apps/ex12.mu       # emits code.img</span>
 <span id="L5" class="LineNr"> 5 </span><span class="muComment"># To run:</span>
 <span id="L6" class="LineNr"> 6 </span><span class="muComment">#   qemu-system-i386 code.img</span>
-<span id="L7" class="LineNr"> 7 </span><span class="muComment"># Or:</span>
-<span id="L8" class="LineNr"> 8 </span><span class="muComment">#   bochs -f bochsrc               # bochsrc loads code.img</span>
-<span id="L9" class="LineNr"> 9 </span><span class="muComment">#</span>
-<span id="L10" class="LineNr">10 </span><span class="muComment"># Expected output: text with slowly updating colors</span>
-<span id="L11" class="LineNr">11 </span>
-<span id="L12" class="LineNr">12 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex12.mu.html#L12'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
-<span id="L13" class="LineNr">13 </span>  <span class="PreProc">var</span> fg/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L14" class="LineNr">14 </span>  <span class="PreProc">var</span> prev-timer-counter/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L15" class="LineNr">15 </span>  <span class="Delimiter">{</span>
-<span id="L16" class="LineNr">16 </span>    <span class="PreProc">var</span> dummy/eax: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L100'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;hello from baremetal Mu!&quot;</span>, <span class="Constant">0x10</span>/x, <span class="Constant">0x400</span>/xmax, <span class="Constant">0x10</span>/y, fg, <span class="Constant">0</span>/bg
-<span id="L17" class="LineNr">17 </span>    <span class="muComment"># wait for timer to bump</span>
-<span id="L18" class="LineNr">18 </span>    <span class="Delimiter">{</span>
-<span id="L19" class="LineNr">19 </span>      <span class="PreProc">var</span> curr-timer-counter/eax: int <span class="Special">&lt;-</span> <a href='../319timer.subx.html#L3'>timer-counter</a>
-<span id="L20" class="LineNr">20 </span>      compare curr-timer-counter, prev-timer-counter
-<span id="L21" class="LineNr">21 </span>      <span class="PreProc">loop-if-=</span>
-<span id="L22" class="LineNr">22 </span>      prev-timer-counter <span class="Special">&lt;-</span> copy curr-timer-counter
-<span id="L23" class="LineNr">23 </span>    <span class="Delimiter">}</span>
-<span id="L24" class="LineNr">24 </span>    <span class="muComment"># switch color</span>
-<span id="L25" class="LineNr">25 </span>    fg <span class="Special">&lt;-</span> increment
-<span id="L26" class="LineNr">26 </span>    <span class="PreProc">loop</span>
-<span id="L27" class="LineNr">27 </span>  <span class="Delimiter">}</span>
-<span id="L28" class="LineNr">28 </span><span class="Delimiter">}</span>
+<span id="L7" class="LineNr"> 7 </span><span class="muComment">#</span>
+<span id="L8" class="LineNr"> 8 </span><span class="muComment"># Expected output: text with slowly updating colors</span>
+<span id="L9" class="LineNr"> 9 </span>
+<span id="L10" class="LineNr">10 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex12.mu.html#L10'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
+<span id="L11" class="LineNr">11 </span>  <span class="PreProc">var</span> fg/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L12" class="LineNr">12 </span>  <span class="PreProc">var</span> prev-timer-counter/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L13" class="LineNr">13 </span>  <span class="Delimiter">{</span>
+<span id="L14" class="LineNr">14 </span>    <span class="PreProc">var</span> dummy/eax: int <span class="Special">&lt;-</span> <a href='../501draw-text.mu.html#L106'>draw-text-rightward</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <span class="Constant">&quot;hello from baremetal Mu!&quot;</span>, <span class="Constant">0x10</span>/x, <span class="Constant">0x400</span>/xmax, <span class="Constant">0x10</span>/y, fg, <span class="Constant">0</span>/bg
+<span id="L15" class="LineNr">15 </span>    <span class="muComment"># wait for timer to bump</span>
+<span id="L16" class="LineNr">16 </span>    <span class="Delimiter">{</span>
+<span id="L17" class="LineNr">17 </span>      <span class="PreProc">var</span> curr-timer-counter/eax: int <span class="Special">&lt;-</span> <a href='../319timer.subx.html#L3'>timer-counter</a>
+<span id="L18" class="LineNr">18 </span>      compare curr-timer-counter, prev-timer-counter
+<span id="L19" class="LineNr">19 </span>      <span class="PreProc">loop-if-=</span>
+<span id="L20" class="LineNr">20 </span>      prev-timer-counter <span class="Special">&lt;-</span> copy curr-timer-counter
+<span id="L21" class="LineNr">21 </span>    <span class="Delimiter">}</span>
+<span id="L22" class="LineNr">22 </span>    <span class="muComment"># switch color</span>
+<span id="L23" class="LineNr">23 </span>    fg <span class="Special">&lt;-</span> increment
+<span id="L24" class="LineNr">24 </span>    <span class="PreProc">loop</span>
+<span id="L25" class="LineNr">25 </span>  <span class="Delimiter">}</span>
+<span id="L26" class="LineNr">26 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
