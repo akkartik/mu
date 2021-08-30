@@ -89,7 +89,69 @@ fn to-grapheme in: code-point -> _/eax: grapheme {
   return result
 }
 
-# TODO: bring in tests once we have check-ints-equal
+# single-byte code point have identical graphemes
+fn test-to-grapheme-single-byte {
+  var in-int/ecx: int <- copy 0
+  {
+    compare in-int, 0x7f
+    break-if->
+    var in/eax: code-point <- copy in-int
+    var out/eax: grapheme <- to-grapheme in
+    var out-int/eax: int <- copy out
+    check-ints-equal out-int, in-int, "F - test-to-grapheme-single-byte"
+    in-int <- increment
+    loop
+  }
+}
+
+                                                              # byte       | byte      | byte      | byte
+# smallest 2-byte utf-8
+fn test-to-grapheme-two-bytes-min {
+  var in/eax: code-point <- copy 0x80                         #                                 10     00-0000
+  var out/eax: grapheme <- to-grapheme in
+  var out-int/eax: int <- copy out
+  check-ints-equal out-int, 0x80c2, "F - to-grapheme/2a"      #                         110 0-0010  10 00-0000
+}
+
+# largest 2-byte utf-8
+fn test-to-grapheme-two-bytes-max {
+  var in/eax: code-point <- copy 0x7ff                        #                             1-1111     11-1111
+  var out/eax: grapheme <- to-grapheme in
+  var out-int/eax: int <- copy out
+  check-ints-equal out-int, 0xbfdf, "F - to-grapheme/2b"      #                         110 1-1111  10 11-1111
+}
+
+# smallest 3-byte utf-8
+fn test-to-grapheme-three-bytes-min {
+  var in/eax: code-point <- copy 0x800                        #                            10-0000     00-0000
+  var out/eax: grapheme <- to-grapheme in
+  var out-int/eax: int <- copy out
+  check-ints-equal out-int, 0x80a0e0, "F - to-grapheme/3a"    #              1110 0000  10 10-0000  10 00-0000
+}
+
+# largest 3-byte utf-8
+fn test-to-grapheme-three-bytes-max {
+  var in/eax: code-point <- copy 0xffff                       #                   1111     11-1111     11-1111
+  var out/eax: grapheme <- to-grapheme in
+  var out-int/eax: int <- copy out
+  check-ints-equal out-int, 0xbfbfef, "F - to-grapheme/3b"    #              1110 1111  10 11-1111  10 11-1111
+}
+
+# smallest 4-byte utf-8
+fn test-to-grapheme-four-bytes-min {
+  var in/eax: code-point <- copy 0x10000                      #                 1-0000     00-0000     00-0000
+  var out/eax: grapheme <- to-grapheme in
+  var out-int/eax: int <- copy out
+  check-ints-equal out-int, 0x808090f0, "F - to-grapheme/4a"  # 1111-0 000  10 01-0000  10 00-0000  10 00-0000
+}
+
+# largest 4-byte utf-8
+fn test-to-grapheme-four-bytes-max {
+  var in/eax: code-point <- copy 0x1fffff                     #        111     11-1111     11-1111     11-1111
+  var out/eax: grapheme <- to-grapheme in
+  var out-int/eax: int <- copy out
+  check-ints-equal out-int, 0xbfbfbff7, "F - to-grapheme/4b"  # 1111-0 111  10 11-1111  10 11-1111  10 11-1111
+}
 
 # read the next grapheme from a stream of bytes
 fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
