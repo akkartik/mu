@@ -658,24 +658,24 @@ fn render-json-escaped-code-point screen: (addr screen), stream: (addr stream by
 
 # '\u' encountered
 fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
-  var ustream-storage: (stream byte 4)
-  var ustream/esi: (addr stream byte) <- address ustream-storage
+  var hex-digits-storage: (array byte 4)
+  var hex-digits/esi: (addr array byte) <- address hex-digits-storage
   # slurp 4 bytes exactly
-  var b/eax: byte <- read-byte stream
-  var b-int/eax: int <- copy b
-  append-byte ustream, b-int
-  var b/eax: byte <- read-byte stream
-  var b-int/eax: int <- copy b
-  append-byte ustream, b-int
-  var b/eax: byte <- read-byte stream
-  var b-int/eax: int <- copy b
-  append-byte ustream, b-int
-  var b/eax: byte <- read-byte stream
-  var b-int/eax: int <- copy b
-  append-byte ustream, b-int
+  var src/eax: byte <- read-byte stream
+  var dest/ecx: (addr byte) <- index hex-digits, 0
+  copy-byte-to *dest, src
+  src <- read-byte stream
+  dest <- index hex-digits, 1
+  copy-byte-to *dest, src
+  src <- read-byte stream
+  dest <- index hex-digits, 2
+  copy-byte-to *dest, src
+  src <- read-byte stream
+  dest <- index hex-digits, 3
+  copy-byte-to *dest, src
   # \u2013 = -
   {
-    var endash?/eax: boolean <- stream-data-equal? ustream, "2013"
+    var endash?/eax: boolean <- string-equal? hex-digits, "2013"
     compare endash?, 0/false
     break-if-=
     var x/eax: int <- copy 0
@@ -685,7 +685,7 @@ fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr s
   }
   # \u2014 = -
   {
-    var emdash?/eax: boolean <- stream-data-equal? ustream, "2014"
+    var emdash?/eax: boolean <- string-equal? hex-digits, "2014"
     compare emdash?, 0/false
     break-if-=
     var x/eax: int <- copy 0
@@ -695,7 +695,7 @@ fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr s
   }
   # \u2018 = '
   {
-    var left-quote?/eax: boolean <- stream-data-equal? ustream, "2018"
+    var left-quote?/eax: boolean <- string-equal? hex-digits, "2018"
     compare left-quote?, 0/false
     break-if-=
     var x/eax: int <- copy 0
@@ -705,7 +705,7 @@ fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr s
   }
   # \u2019 = '
   {
-    var right-quote?/eax: boolean <- stream-data-equal? ustream, "2019"
+    var right-quote?/eax: boolean <- string-equal? hex-digits, "2019"
     compare right-quote?, 0/false
     break-if-=
     var x/eax: int <- copy 0
@@ -715,7 +715,7 @@ fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr s
   }
   # \u201c = "
   {
-    var left-dquote?/eax: boolean <- stream-data-equal? ustream, "201c"
+    var left-dquote?/eax: boolean <- string-equal? hex-digits, "201c"
     compare left-dquote?, 0/false
     break-if-=
     var x/eax: int <- copy 0
@@ -725,7 +725,7 @@ fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr s
   }
   # \u201d = "
   {
-    var right-dquote?/eax: boolean <- stream-data-equal? ustream, "201d"
+    var right-dquote?/eax: boolean <- string-equal? hex-digits, "201d"
     compare right-dquote?, 0/false
     break-if-=
     var x/eax: int <- copy 0
@@ -735,7 +735,7 @@ fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr s
   }
   # \u2022 = *
   {
-    var bullet?/eax: boolean <- stream-data-equal? ustream, "2022"
+    var bullet?/eax: boolean <- string-equal? hex-digits, "2022"
     compare bullet?, 0/false
     break-if-=
     var x/eax: int <- copy 0
@@ -745,7 +745,7 @@ fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr s
   }
   # \u2026 = ...
   {
-    var ellipses?/eax: boolean <- stream-data-equal? ustream, "2026"
+    var ellipses?/eax: boolean <- string-equal? hex-digits, "2026"
     compare ellipses?, 0/false
     break-if-=
     var x/eax: int <- copy 0
@@ -753,10 +753,11 @@ fn render-json-escaped-unicode-code-point screen: (addr screen), stream: (addr s
     x, y <- draw-text-wrapping-right-then-down screen, "...", xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
     return x, y
   }
-  # TODO: rest of Unicode
+  var n/eax: int <- parse-hex-int hex-digits
+  var c/edx: code-point <- copy n
   var x/eax: int <- copy 0
   var y/ecx: int <- copy 0
-  x, y <- draw-stream-wrapping-right-then-down screen, ustream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+  x, y <- render-code-point screen, c, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
   return x, y
 }
 
