@@ -11,7 +11,7 @@ set -v
 export DISK=20160  # 20*16*63 512-byte sectors = almost 10MB
 dd if=/dev/zero of=code.img count=$DISK status=none
 # code: sectors 0-8999
-# font: sectors 9000-10079  (1080 sectors = space enough for 16k glyphs (1080 * 512 / 33 bytes per glyph))
+# font: sectors 9000-10079  (1080 sectors = space enough for 16k glyphs (1080 * 512 / 34 bytes per glyph))
 export FONT=9000  # keep this sync'd with boot.subx
 # debug: sector 10080 onwards
 export DEBUG=10080
@@ -77,6 +77,18 @@ dd if=labels of=code.img seek=$DEBUG conv=notrunc status=none  # keep this sync'
 
 ## Font data at another well-defined location
 cat font.subx   |sed 's,/[^ ]*,,'    |linux/hex    > a.font
+
+if [ `stat --printf="%s" a.font` -ge 262144 ]  # 0x200 sectors * 512 bytes per sector (keep this sync'd with boot.subx)
+then
+  echo "font won't all be loaded on boot"
+  exit 1
+fi
+
+if [ `stat --printf="%s" a.font` -ge 14680064 ]  # 0x00e00000 = 0x00f00000 - 0x00100000
+then
+  echo "font is so large it overlaps the ISA memory hole; see https://wiki.osdev.org/Memory_Map_(x86)"
+  exit 1
+fi
 
 if [ `stat --printf="%s" a.font` -ge $(( ($DEBUG - $FONT) * 512 )) ]
 then

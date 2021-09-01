@@ -87,11 +87,12 @@ draw-code-point-on-screen-buffer:  # buffer: (addr byte), c: code-point, x: int,
     81 7/subop/compare %esi 0x1100/imm32/4352
     0f 8d/jump-if->= $draw-code-point-on-screen-buffer:end/disp32
     # var letter-bitmap/esi = font[c]
-    69/multiply %esi 0x21/imm32/glyph-size 6/r32/esi
+    69/multiply %esi 0x22/imm32/glyph-size 6/r32/esi
     81 0/subop/add %esi 0x0010000c/imm32/Font  # see boot.subx
     # dispatch based on letter-bitmap->size
     b8/copy-to-eax 0/imm32
     8a/byte-> *esi 0/r32/AL
+    46/increment-esi  # skip size
     46/increment-esi  # skip size
     3d/compare-eax-and 8/imm32
     {
@@ -120,7 +121,7 @@ wide-code-point?:  # c: code-point -> _/eax: boolean
     3d/compare-eax-and 0x80/imm32
     0f 8d/jump-if->= $wide-code-point?:end/disp32
     # var letter-bitmap/eax = font[c]
-    69/multiply %eax 0x21/imm32/glyph-size 0/r32/eax
+    69/multiply %eax 0x22/imm32/glyph-size 0/r32/eax
     05/add-to-eax 0x0010000c/imm32/Font  # see boot.subx
     # dispatch based on letter-bitmap->size
     8a/byte-> *eax 0/r32/AL
