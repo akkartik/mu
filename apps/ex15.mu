@@ -14,8 +14,14 @@
 #   2. Run:
 #       qemu-system-i386 -hda code.img -hdb data.img
 #
-# Expected output: 'à' in green in a few places near the top-left corner of
-# screen, showing off what this approach can and cannot do.
+# Expected output:
+#   'à' in green in a few places near the top-left corner of screen, showing off
+#   what this approach can and cannot do.
+#
+#   A few Devanagari letter combinations.
+#
+#   Others? (Patches welcome.) I suspect Tibetan in particular will not work
+#   well with this approach. But I need native readers to assess quality.
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
   # at the top of screen, the accent is almost cropped
@@ -33,4 +39,41 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var dummy/eax: int <-    draw-code-point-on-real-screen   0x67/g,                       8/x 3/y, 3/fg 0/bg
   var dummy/eax: int <-    draw-code-point-on-real-screen   0x61/a,                       9/x 3/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0300/combining-grave-accent,  9/x 3/y, 3/fg 0/bg
+
+  # a single devanagari letter combined with different vowel _matras_
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 4/x 8/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 7/x 8/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x093e/devanagari-vowel-aa, 7/x 8/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0xa/x 8/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x093f/devanagari-vowel-i, 0xa/x 8/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0xd/x 8/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x0940/devanagari-vowel-ii, 0xd/x 8/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x10/x 8/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x0941/devanagari-vowel-u, 0x10/x 8/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x13/x 8/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x0942/devanagari-vowel-oo, 0x13/x 8/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 4/x 9/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x0947/devanagari-vowel-E, 4/x 9/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 7/x 9/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x0948/devanagari-vowel-ai, 7/x 9/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0xa/x 9/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x094b/devanagari-vowel-o, 0xa/x 9/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0xd/x 9/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x094f/devanagari-vowel-aw, 0xd/x 9/y, 3/fg 0/bg
+
+  # bump the last couple down to show the letter without overlap; we've already established above that overlap is an issue
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x10/x 0xa/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x0902/devanagari-anusvara, 0x10/x 0xa/y, 3/fg 0/bg
+
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x13/x 0xa/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x0901/devanagari-chandrabindu, 0x13/x 0xa/y, 3/fg 0/bg
 }
