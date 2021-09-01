@@ -1,9 +1,10 @@
 # Use the built-in font to draw glyphs to screen.
 #   https://en.wikipedia.org/wiki/Glyph#Typography
-# The Mu computer can currently only render glyphs corresponding to single
-# code points. No combining characters.
+# Extremely hacky support for combining characters.
 #   https://en.wikipedia.org/wiki/Code_point
 #   https://en.wikipedia.org/wiki/Combining_character
+# All we support is drawing combining characters atop the same screen cell as
+# a single base code point. See the overlay? arguments below.
 #
 # We need to do this in machine code because Mu doesn't have global variables
 # yet (for the start of the font).
@@ -20,8 +21,20 @@ draw-code-point-on-real-screen:  # c: code-point, x: int, y: int, color: int, ba
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-    (draw-code-point-on-screen-buffer *Video-memory-addr *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) 0x80 0x30)  # => eax
+    (draw-code-point-on-screen-buffer *Video-memory-addr *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) 0 0x80 0x30)  # 0/no-overlay => eax
 $draw-code-point-on-real-screen:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+overlay-code-point-on-real-screen:  # c: code-point, x: int, y: int, color: int, background-color: int -> _/eax
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (draw-code-point-on-screen-buffer *Video-memory-addr *(ebp+8) *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) 1 0x80 0x30)  # 1/overlay => eax
+$overlay-code-point-on-real-screen:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -71,15 +84,15 @@ $draw-code-point-on-screen-array:abort:
 
 # 'buffer' here is not a valid Mu type: a naked address without a length.
 # returns number of 8x16 units printed to screen (1 or 2).
-draw-code-point-on-screen-buffer:  # buffer: (addr byte), c: code-point, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int -> _/eax: int
+draw-code-point-on-screen-buffer:  # buffer: (addr byte), c: code-point, x: int, y: int, color: int, background-color: int, overlay?: boolean, screen-width: int, screen-height: int -> _/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     56/push-esi
     # switch screen-width and screen-height from code-point to pixel units
-    c1 4/subop/shift-left *(ebp+20) 3/imm8/log2-font-width
-    c1 4/subop/shift-left *(ebp+24) 4/imm8/log2-font-height
+    c1 4/subop/shift-left *(ebp+24) 3/imm8/log2-font-width
+    c1 4/subop/shift-left *(ebp+28) 4/imm8/log2-font-height
     # esi = c
     8b/-> *(ebp+0xc) 6/r32/esi
     # if (c >= 4352) return  # unicode planes supported: latin, greek, cyrillic, armenian, hebrew, arabic, syriac, thaana, n'ko, indian (iscii), sinhala, thai, lao, tibetan, myanmar, georgian
@@ -97,11 +110,11 @@ draw-code-point-on-screen-buffer:  # buffer: (addr byte), c: code-point, x: int,
     3d/compare-eax-and 8/imm32
     {
       75/jump-if-!= break/disp8
-      (draw-narrow-code-point-on-screen-buffer *(ebp+8) %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+      (draw-narrow-code-point-on-screen-buffer *(ebp+8) %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24) *(ebp+0x28))
       b8/copy-to-eax 1/imm32
       eb/jump $draw-code-point-on-screen-buffer:end/disp8
     }
-    (draw-wide-code-point-on-screen-buffer *(ebp+8) %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+    (draw-wide-code-point-on-screen-buffer *(ebp+8) %esi *(ebp+0x10) *(ebp+0x14) *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24) *(ebp+0x28))
     b8/copy-to-eax 2/imm32
 $draw-code-point-on-screen-buffer:end:
     # . restore registers
@@ -134,9 +147,30 @@ $wide-code-point?:end:
     5d/pop-to-ebp
     c3/return
 
+combining-code-point?:  # c: code-point -> _/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax = c
+    8b/-> *(ebp+8) 0/r32/eax
+    # if (c >= 128) return  # characters beyond ASCII currently not supported
+    3d/compare-eax-and 0x80/imm32
+    0f 8d/jump-if->= $combining-code-point?:end/disp32
+    # var letter-bitmap/eax = font[c]
+    69/multiply %eax 0x22/imm32/glyph-size 0/r32/eax
+    05/add-to-eax 0x0010000c/imm32/Font  # see boot.subx
+    # dispatch based on letter-bitmap->is-combine?
+    8a/byte-> *(eax+1) 0/r32/AL
+    25/and-eax-with  0xff/imm32
+$combining-code-point?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 # buffer: naked address to raw screen RAM without a length
 # letter-bitmap: naked address to 8-pixel wide font glyph
-draw-narrow-code-point-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (addr byte), x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
+draw-narrow-code-point-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (addr byte), x: int, y: int, color: int, background-color: int, overlay?: boolean, screen-width: int, screen-height: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -161,7 +195,7 @@ draw-narrow-code-point-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: 
       # var row-bitmap/ebx: byte = *letter-bitmap
       bb/copy-to-ebx 0/imm32
       8a/byte-> *esi 3/r32/BL
-      (draw-run-of-pixels-from-glyph *(ebp+8) %ebx *(ebp+0x10) %edx *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+      (draw-run-of-pixels-from-glyph *(ebp+8) %ebx *(ebp+0x10) %edx *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24) *(ebp+0x28))
       # ++y
       42/increment-edx
       # next bitmap row
@@ -182,7 +216,7 @@ $draw-narrow-code-point-on-screen-buffer:end:
 
 # buffer: naked address to raw screen RAM without a length
 # letter-bitmap: naked address to 16-pixel wide font glyph
-draw-wide-code-point-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (addr byte), x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
+draw-wide-code-point-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (addr byte), x: int, y: int, color: int, background-color: int, overlay?: boolean, screen-width: int, screen-height: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -213,11 +247,11 @@ draw-wide-code-point-on-screen-buffer:  # buffer: (addr byte), letter-bitmap: (a
       # ecx = x
       8b/-> *(ebp+0x10) 1/r32/ecx
       # first half-row
-      (draw-run-of-pixels-from-glyph *(ebp+8) %ebx %ecx %edx *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+      (draw-run-of-pixels-from-glyph *(ebp+8) %ebx %ecx %edx *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24) *(ebp+0x28))
       # second half-row
       8a/byte-> *(esi+1) 3/r32/BL
       41/increment-ecx
-      (draw-run-of-pixels-from-glyph *(ebp+8) %ebx %ecx %edx *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+      (draw-run-of-pixels-from-glyph *(ebp+8) %ebx %ecx %edx *(ebp+0x18) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24) *(ebp+0x28))
       # ++y
       42/increment-edx
       # next bitmap row
@@ -239,7 +273,7 @@ $draw-wide-code-point-on-screen-buffer:end:
     c3/return
 
 # draw 8 pixels from a single glyph byte in a font bitmap
-draw-run-of-pixels-from-glyph:  # buffer: (addr byte), glyph-byte: byte, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int
+draw-run-of-pixels-from-glyph:  # buffer: (addr byte), glyph-byte: byte, x: int, y: int, color: int, background-color: int, overlay?: boolean, screen-width: int, screen-height: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -265,11 +299,15 @@ draw-run-of-pixels-from-glyph:  # buffer: (addr byte), glyph-byte: byte, x: int,
       # if LSB, draw a pixel in the given color
       {
         73/jump-if-not-CF break/disp8
-        (pixel-on-screen-buffer *(ebp+8) %eax *(ebp+0x14) *(ebp+0x18) *(ebp+0x20) *(ebp+0x24))
+        (pixel-on-screen-buffer *(ebp+8) %eax *(ebp+0x14) *(ebp+0x18) *(ebp+0x24) *(ebp+0x28))
         eb/jump $draw-code-point-on-screen-buffer:continue/disp8
       }
-      # otherwise use the background color
-      (pixel-on-screen-buffer *(ebp+8) %eax *(ebp+0x14) *(ebp+0x1c) *(ebp+0x20) *(ebp+0x24))
+      # otherwise use the background color (except when overlay?)
+      {
+        81 7/subop/compare *(ebp+0x20) 0/imm32/false
+        75/jump-if-!= break/disp8
+        (pixel-on-screen-buffer *(ebp+8) %eax *(ebp+0x14) *(ebp+0x1c) *(ebp+0x24) *(ebp+0x28))
+      }
 $draw-code-point-on-screen-buffer:continue:
       # --x
       48/decrement-eax

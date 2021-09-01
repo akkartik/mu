@@ -1,8 +1,10 @@
 # screen
 sig pixel-on-real-screen x: int, y: int, color: int
 sig draw-code-point-on-real-screen c: code-point, x: int, y: int, color: int, background-color: int -> _/eax: int
+sig overlay-code-point-on-real-screen c: code-point, x: int, y: int, color: int, background-color: int -> _/eax: int
 sig draw-code-point-on-screen-array screen-data: (addr array byte), c: code-point, x: int, y: int, color: int, background-color: int, screen-width: int, screen-height: int -> _/eax: int
 sig wide-code-point? c: code-point -> _/eax: boolean
+sig combining-code-point? c: code-point -> _/eax: boolean
 sig cursor-position-on-real-screen -> _/eax: int, _/ecx: int
 sig set-cursor-position-on-real-screen x: int, y: int
 sig draw-cursor-on-real-screen c: code-point
