@@ -153,8 +153,8 @@ fn draw-text-rightward-from-cursor-over-full-screen screen: (addr screen), text:
 }
 
 fn render-code-point screen: (addr screen), c: code-point, xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
-  compare c, 0xa/newline
   var x/ecx: int <- copy x
+  compare c, 0xa/newline
   {
     break-if-!=
     # minimum effort to clear cursor
