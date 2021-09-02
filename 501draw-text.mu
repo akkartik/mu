@@ -231,7 +231,7 @@ fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr str
       var dummy/eax: int <- draw-code-point screen, 0x20/space, xcurr, ycurr, color, background-color
       xcurr <- copy xmin
       ycurr <- increment
-      break $draw-stream-wrapping-right-then-down:loop
+      loop $draw-stream-wrapping-right-then-down:loop
     }
     var offset/eax: int <- draw-code-point screen, c, xcurr, ycurr, color, background-color
     # overlay a combining character if necessary

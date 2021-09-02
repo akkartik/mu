@@ -577,10 +577,22 @@ fn draw-json-text-wrapping-right-then-down screen: (addr screen), _text: (addr a
 # that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, truncate
 fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
-  var xcurr/eax: int <- copy x
-  var ycurr/ecx: int <- copy y
+  var xcurr/ecx: int <- copy x
+  var ycurr/edx: int <- copy y
+  var c/ebx: code-point <- copy 0
+  var next-c/esi: code-point <- copy 0
   {
-    var c/ebx: code-point <- read-json-code-point stream
+    # read c from either next-c or stream
+    $draw-json-stream-wrapping-right-then-down:read-base: {
+      compare next-c, 0
+      {
+        break-if-=
+        c <- copy next-c
+        next-c <- copy 0
+        break $draw-json-stream-wrapping-right-then-down:read-base
+      }
+      c <- read-json-code-point stream
+    }
     compare c, 0xffffffff/end-of-file
     break-if-=
     $draw-json-stream-wrapping-right-then-down:render-grapheme: {
@@ -590,7 +602,47 @@ fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (add
         xcurr, ycurr <- render-json-escaped-code-point screen, stream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
         break $draw-json-stream-wrapping-right-then-down:render-grapheme
       }
-      xcurr, ycurr <- render-code-point screen, c, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+      compare c, 0xa/newline
+      {
+        break-if-!=
+        # minimum effort to clear cursor
+        var dummy/eax: int <- draw-code-point screen, 0x20/space, xcurr, ycurr, color, background-color
+        xcurr <- copy xmin
+        ycurr <- increment
+        break $draw-json-stream-wrapping-right-then-down:render-grapheme
+      }
+      var offset/eax: int <- draw-code-point screen, c, xcurr, ycurr, color, background-color
+      # overlay a combining character if necessary
+      $draw-json-stream-wrapping-right-then-down:read-combiner: {
+        var done?/eax: boolean <- stream-empty? stream
+        compare done?, 0/false
+        break-if-!=
+        # read a character
+        # no combining character allowed here
+        var g/eax: grapheme <- read-grapheme stream
+        var c/eax: code-point <- to-code-point g
+        # if not a combining character, save for next iteration and loop
+        {
+          var combining-code-point?/eax: boolean <- combining-code-point? c
+          compare combining-code-point?, 0/false
+        }
+        {
+          break-if-!=
+          next-c <- copy c
+          break $draw-json-stream-wrapping-right-then-down:read-combiner
+        }
+        # otherwise overlay it without saving its width
+        # This means strange results if a base and its combiner have different
+        # widths. We'll always follow the base width.
+        var dummy/eax: int <- overlay-code-point screen, c, xcurr, ycurr, color, background-color
+      }
+      xcurr <- add offset
+      compare xcurr, xmax
+      {
+        break-if-<
+        xcurr <- copy xmin
+        ycurr <- increment
+      }
     }
     loop
   }
@@ -607,7 +659,7 @@ fn read-json-code-point stream: (addr stream byte) -> _/ebx: code-point {
 
 # '\' encountered
 # https://www.json.org/json-en.html
-fn render-json-escaped-code-point screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
+fn render-json-escaped-code-point screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, xcurr: int, ycurr: int, color: int, background-color: int -> _/ecx: int, _/edx: int {
   var g/ebx: code-point <- read-json-code-point stream
   compare g, 0xffffffff/end-of-file
   {
@@ -649,10 +701,13 @@ fn render-json-escaped-code-point screen: (addr screen), stream: (addr stream by
     compare g, 0x75/u
     break-if-!=
     x, y <- render-json-escaped-unicode-code-point screen, stream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    var y/edx: int <- copy y
     return x, y
   }
   # most characters escape to themselves
+  # combining characters not supported after backslash
   x, y <- render-code-point screen, g, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+  var y/edx: int <- copy y
   return x, y
 }
 

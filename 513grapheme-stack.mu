@@ -114,7 +114,7 @@ fn render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _sel
         break-if-!=
         copy-to fg, 0xf/highlight
       }
-      x, y <- render-code-point screen, c, xmin, ymin, xmax, ymax, x, y, fg, background-color
+      x, y <- render-code-point screen, c, xmin, ymin, xmax, ymax, x, y, fg, background-color  # TODO: handle combining characters
     }
     i <- increment
     loop
