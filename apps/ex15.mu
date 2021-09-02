@@ -41,39 +41,40 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0300/combining-grave-accent,  9/x 3/y, 3/fg 0/bg
 
   # a single devanagari letter combined with different vowel _matras_
+  # ka
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 4/x 8/y, 3/fg 0/bg
-
+  # kaa
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 7/x 8/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x093e/devanagari-vowel-aa, 7/x 8/y, 3/fg 0/bg
-
+  # ki
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0xa/x 8/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x093f/devanagari-vowel-i, 0xa/x 8/y, 3/fg 0/bg
-
+  # kee
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0xd/x 8/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0940/devanagari-vowel-ii, 0xd/x 8/y, 3/fg 0/bg
-
+  # ku
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x10/x 8/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0941/devanagari-vowel-u, 0x10/x 8/y, 3/fg 0/bg
-
+  # koo
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x13/x 8/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0942/devanagari-vowel-oo, 0x13/x 8/y, 3/fg 0/bg
-
+  # kay
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 4/x 9/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0947/devanagari-vowel-E, 4/x 9/y, 3/fg 0/bg
-
+  # kai
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 7/x 9/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0948/devanagari-vowel-ai, 7/x 9/y, 3/fg 0/bg
-
+  # ko
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0xa/x 9/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x094b/devanagari-vowel-o, 0xa/x 9/y, 3/fg 0/bg
-
+  # kow
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0xd/x 9/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x094f/devanagari-vowel-aw, 0xd/x 9/y, 3/fg 0/bg
-
+  # kan
   # bump this letter down to show the letter without overlap; we've already established above that overlap is an issue
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x10/x 0xa/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0902/devanagari-anusvara, 0x10/x 0xa/y, 3/fg 0/bg
-
+  # kaha
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x13/x 9/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0903/devanagari-visarga, 0x13/x 9/y, 3/fg 0/bg
 }
