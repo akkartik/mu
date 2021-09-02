@@ -208,11 +208,9 @@ fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr str
   var ycurr/edx: int <- copy y
   var c/ebx: code-point <- copy 0
   $draw-stream-wrapping-right-then-down:loop: {
-    {
-      var g/eax: grapheme <- read-grapheme stream
-      var _c/eax: code-point <- to-code-point g
-      c <- copy _c
-    }
+    var g/eax: grapheme <- read-grapheme stream
+    var _c/eax: code-point <- to-code-point g
+    c <- copy _c
     compare c, 0xffffffff/end-of-file
     break-if-=
     compare c, 0xa/newline
