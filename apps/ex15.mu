@@ -70,10 +70,10 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0xd/x 9/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x094f/devanagari-vowel-aw, 0xd/x 9/y, 3/fg 0/bg
 
-  # bump the last couple down to show the letter without overlap; we've already established above that overlap is an issue
+  # bump this letter down to show the letter without overlap; we've already established above that overlap is an issue
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x10/x 0xa/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0902/devanagari-anusvara, 0x10/x 0xa/y, 3/fg 0/bg
 
-  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x13/x 0xa/y, 3/fg 0/bg
-  var dummy/eax: int <- overlay-code-point-on-real-screen 0x0901/devanagari-chandrabindu, 0x13/x 0xa/y, 3/fg 0/bg
+  var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x13/x 9/y, 3/fg 0/bg
+  var dummy/eax: int <- overlay-code-point-on-real-screen 0x0903/devanagari-visarga, 0x13/x 9/y, 3/fg 0/bg
 }
