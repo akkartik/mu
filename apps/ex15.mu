@@ -77,4 +77,59 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   # kaha
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x13/x 9/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0903/devanagari-visarga, 0x13/x 9/y, 3/fg 0/bg
+
+  # render the same letters as a single stream of utf-8 graphemes rather than individual code-points.
+  var text-storage: (stream byte 0x200)
+  var text/esi: (addr stream byte) <- address text-storage
+  var g/eax: grapheme <- to-grapheme 0x0915/devanagari-letter-ka
+  var ka/ecx: grapheme <- copy g
+  # ka
+  write-grapheme text, ka
+  # kaa
+  write-grapheme text, ka
+  g <- to-grapheme 0x093e/devanagari-vowel-aa
+  write-grapheme text, g
+  # ki
+  write-grapheme text, ka
+  g <- to-grapheme 0x093f/devanagari-vowel-i
+  write-grapheme text, g
+  # kee
+  write-grapheme text, ka
+  g <- to-grapheme 0x0940/devanagari-vowel-ii
+  write-grapheme text, g
+  # ku
+  write-grapheme text, ka
+  g <- to-grapheme 0x0941/devanagari-vowel-u
+  write-grapheme text, g
+  # koo
+  write-grapheme text, ka
+  g <- to-grapheme 0x0942/devanagari-vowel-oo
+  write-grapheme text, g
+  # kay
+  write-grapheme text, ka
+  g <- to-grapheme 0x0947/devanagari-vowel-E
+  write-grapheme text, g
+  # kai
+  write-grapheme text, ka
+  g <- to-grapheme 0x0948/devanagari-vowel-ai
+  write-grapheme text, g
+  # ko
+  write-grapheme text, ka
+  g <- to-grapheme 0x094b/devanagari-vowel-o
+  write-grapheme text, g
+  # kow
+  write-grapheme text, ka
+  g <- to-grapheme 0x094f/devanagari-vowel-aw
+  write-grapheme text, g
+  # kan
+  write-grapheme text, ka
+  g <- to-grapheme 0x0902/devanagari-anusvara
+  write-grapheme text, g
+  # kaha
+  write-grapheme text, ka
+  g <- to-grapheme 0x0903/devanagari-visarga
+  write-grapheme text, g
+  # render everything
+  set-cursor-position screen, 4/x 0xe/y
+  draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, text, 3/fg 0/bg
 }

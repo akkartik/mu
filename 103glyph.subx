@@ -130,9 +130,9 @@ wide-code-point?:  # c: code-point -> _/eax: boolean
     89/<- %ebp 4/r32/esp
     # eax = c
     8b/-> *(ebp+8) 0/r32/eax
-    # if (c >= 128) return  # characters beyond ASCII currently not supported
-    3d/compare-eax-and 0x80/imm32
-    0f 8d/jump-if->= $wide-code-point?:end/disp32
+    # if (c >= 4352) return false
+    3d/compare-eax-and 0x1100/imm32
+    0f 8d/jump-if->= $wide-code-point?:return-false/disp32
     # var letter-bitmap/eax = font[c]
     69/multiply %eax 0x22/imm32/glyph-size 0/r32/eax
     05/add-to-eax 0x0010000c/imm32/Font  # see boot.subx
@@ -147,15 +147,22 @@ $wide-code-point?:end:
     5d/pop-to-ebp
     c3/return
 
+$wide-code-point?:return-false:
+    b8/copy-to-eax 0/imm32/false
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 combining-code-point?:  # c: code-point -> _/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # eax = c
     8b/-> *(ebp+8) 0/r32/eax
-    # if (c >= 128) return  # characters beyond ASCII currently not supported
-    3d/compare-eax-and 0x80/imm32
-    0f 8d/jump-if->= $combining-code-point?:end/disp32
+    # if (c >= 4352) return false
+    3d/compare-eax-and 0x1100/imm32
+    0f 8d/jump-if->= $combining-code-point?:return-false/disp32
     # var letter-bitmap/eax = font[c]
     69/multiply %eax 0x22/imm32/glyph-size 0/r32/eax
     05/add-to-eax 0x0010000c/imm32/Font  # see boot.subx
@@ -163,6 +170,13 @@ combining-code-point?:  # c: code-point -> _/eax: boolean
     8a/byte-> *(eax+1) 0/r32/AL
     25/and-eax-with  0xff/imm32
 $combining-code-point?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$combining-code-point?:return-false:
+    b8/copy-to-eax 0/imm32/false
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp

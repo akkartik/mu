@@ -207,10 +207,21 @@ fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr str
   var xcurr/ecx: int <- copy x
   var ycurr/edx: int <- copy y
   var c/ebx: code-point <- copy 0
+  var next-c/esi: code-point <- copy 0
   $draw-stream-wrapping-right-then-down:loop: {
-    var g/eax: grapheme <- read-grapheme stream
-    var _c/eax: code-point <- to-code-point g
-    c <- copy _c
+    # read c from either next-c or stream
+    $draw-stream-wrapping-right-then-down:read-base: {
+      compare next-c, 0
+      {
+        break-if-=
+        c <- copy next-c
+        next-c <- copy 0
+        break $draw-stream-wrapping-right-then-down:read-base
+      }
+      var g/eax: grapheme <- read-grapheme stream
+      var _c/eax: code-point <- to-code-point g
+      c <- copy _c
+    }
     compare c, 0xffffffff/end-of-file
     break-if-=
     compare c, 0xa/newline
@@ -223,6 +234,29 @@ fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr str
       break $draw-stream-wrapping-right-then-down:loop
     }
     var offset/eax: int <- draw-code-point screen, c, xcurr, ycurr, color, background-color
+    # overlay a combining character if necessary
+    $draw-stream-wrapping-right-then-down:read-combiner: {
+      var done?/eax: boolean <- stream-empty? stream
+      compare done?, 0/false
+      break-if-!=
+      # read a character
+      var g/eax: grapheme <- read-grapheme stream
+      var c/eax: code-point <- to-code-point g
+      # if not a combining character, save for next iteration and loop
+      {
+        var combining-code-point?/eax: boolean <- combining-code-point? c
+        compare combining-code-point?, 0/false
+      }
+      {
+        break-if-!=
+        next-c <- copy c
+        break $draw-stream-wrapping-right-then-down:read-combiner
+      }
+      # otherwise overlay it without saving its width
+      # This means strange results if a base and its combiner have different
+      # widths. We'll always follow the base width.
+      var dummy/eax: int <- overlay-code-point screen, c, xcurr, ycurr, color, background-color
+    }
     xcurr <- add offset
     compare xcurr, xmax
     {

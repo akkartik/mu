@@ -23,7 +23,7 @@ type screen {
 }
 
 type screen-cell {
-  data: code-point
+  data: code-point  # TODO: support combining characters overlaid on another character
   color: int
   background-color: int
   unused?: boolean
@@ -98,6 +98,27 @@ fn draw-code-point _screen: (addr screen), c: code-point, x: int, y: int, color:
     return result
   }
   # fake screen
+  var wide?/eax: boolean <- wide-code-point? c
+  compare wide?, 0/false
+  {
+    break-if-=
+    draw-wide-code-point-on-fake-screen screen, c, x, y, color, background-color
+    return 2
+  }
+  draw-narrow-code-point-on-fake-screen screen, c, x, y, color, background-color
+  return 1
+}
+
+fn overlay-code-point _screen: (addr screen), c: code-point, x: int, y: int, color: int, background-color: int -> _/eax: int {
+  var screen/esi: (addr screen) <- copy _screen
+  {
+    compare screen, 0
+    break-if-!=
+    var result/eax: int <- overlay-code-point-on-real-screen c, x, y, color, background-color
+    return result
+  }
+  # fake screen
+  # TODO: support overlays in fake screen
   var wide?/eax: boolean <- wide-code-point? c
   compare wide?, 0/false
   {
