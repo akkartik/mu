@@ -204,10 +204,10 @@ fn draw-text-wrapping-right-then-down screen: (addr screen), _text: (addr array 
 # that way the caller can draw more if given the same min and max bounding-box.
 # if there isn't enough space, truncate
 fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr stream byte), xmin: int, ymin: int, xmax: int, ymax: int, x: int, y: int, color: int, background-color: int -> _/eax: int, _/ecx: int {
-  var xcurr/eax: int <- copy x
-  var ycurr/ecx: int <- copy y
+  var xcurr/ecx: int <- copy x
+  var ycurr/edx: int <- copy y
   var c/ebx: code-point <- copy 0
-  {
+  $draw-stream-wrapping-right-then-down:loop: {
     {
       var g/eax: grapheme <- read-grapheme stream
       var _c/eax: code-point <- to-code-point g
@@ -215,7 +215,23 @@ fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr str
     }
     compare c, 0xffffffff/end-of-file
     break-if-=
-    xcurr, ycurr <- render-code-point screen, c, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
+    compare c, 0xa/newline
+    {
+      break-if-!=
+      # minimum effort to clear cursor
+      var dummy/eax: int <- draw-code-point screen, 0x20/space, xcurr, ycurr, color, background-color
+      xcurr <- copy xmin
+      ycurr <- increment
+      break $draw-stream-wrapping-right-then-down:loop
+    }
+    var offset/eax: int <- draw-code-point screen, c, xcurr, ycurr, color, background-color
+    xcurr <- add offset
+    compare xcurr, xmax
+    {
+      break-if-<
+      xcurr <- copy xmin
+      ycurr <- increment
+    }
     loop
   }
   set-cursor-position screen, xcurr, ycurr
