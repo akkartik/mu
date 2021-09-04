@@ -9,10 +9,9 @@
 # k, l.
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
-  var space/eax: grapheme <- copy 0x20
   set-cursor-position screen, 0, 0
   {
-    draw-cursor screen, space
+    draw-cursor screen, 0x20/space
     var key/eax: byte <- read-key keyboard
     {
       compare key, 0x68/h
