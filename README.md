@@ -33,7 +33,8 @@ their own. I want to encourage a style of active and interactive reading with
 Mu. If something doesn't make sense, try changing it and see what tests break.
 Any breaking change should cause a failure in some well-named test somewhere.
 
-Currently Mu requires a 32-bit x86 processor.
+Currently Mu requires a 32-bit x86 processor. It supports a short list of
+generic hardware, and can't do networking yet.
 
 ## Goals
 
