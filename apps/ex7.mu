@@ -14,25 +14,25 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
     draw-cursor screen, 0x20/space
     var key/eax: byte <- read-key keyboard
     {
-      compare key, 0x68/h
+      compare key, 0x80/left-arrow
       break-if-!=
       draw-code-point-at-cursor screen, 0x2d/dash, 0x31/fg, 0/bg
       move-cursor-left 0
     }
     {
-      compare key, 0x6a/j
+      compare key, 0x81/down-arrow
       break-if-!=
       draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x31/fg, 0/bg
       move-cursor-down 0
     }
     {
-      compare key, 0x6b/k
+      compare key, 0x82/up-arrow
       break-if-!=
       draw-code-point-at-cursor screen, 0x7c/vertical-bar, 0x31/fg, 0/bg
       move-cursor-up 0
     }
     {
-      compare key, 0x6c/l
+      compare key, 0x83/right-arrow
       break-if-!=
       var g/eax: code-point <- copy 0x2d/dash
       draw-code-point-at-cursor screen, 0x2d/dash, 0x31/fg, 0/bg
