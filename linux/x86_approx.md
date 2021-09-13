@@ -110,6 +110,8 @@ the fourth decimal place.
 Among the x86 instructions Mu supports, two are described in the Intel manual
 as "approximate": `reciprocal` (`rcpss`) and `inverse-square-root` (`rsqrtss`).
 Intel introduced these instructions as part of its SSE expansion in 1999. When
-it upgraded SSE to SSE2 (in 2000), most of its single-precision floating-point
-instructions got upgraded to double-precision &mdash; but not these two. So
-they seem to be an evolutionary dead-end.
+it upgraded SSE to SSE2 (in 2000), most of its scalar[1] single-precision
+floating-point instructions got upgraded to double-precision &mdash; but not
+these two. So they seem to be an evolutionary dead-end.
+
+[1] Thanks boulos for feedback: https://news.ycombinator.com/item?id=28501429#28507118
