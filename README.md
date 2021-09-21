@@ -50,8 +50,7 @@ In priority order:
   - Clear error messages over expressive syntax.
 - Safe.
   - Thorough test coverage. If you break something you should immediately see
-    an error message. If you can manually test for something you should be
-    able to write an automated test for it.
+    an error message.
   - Memory leaks over memory corruption.
 - Teach the computer bottom-up.
 
@@ -74,8 +73,12 @@ which enables robust tests for performance, concurrency, fault-tolerance, etc.
 - Compatibility. The goal is to get off mainstream stacks, not to perpetuate
   them. Sometimes the right long-term solution is to [bump the major version number](http://akkartik.name/post/versioning).
 - Syntax. Mu code is meant to be comprehended by [running, not just reading](http://akkartik.name/post/comprehension).
-  For now it's a thin memory-safe veneer over machine code. I'm working on a
-  high-level "shell" for the Mu computer.
+  It will always be just a thin memory-safe veneer over machine code.
+  I don't know how to make higher-level notations both fast and
+  comprehensible, so they are likely to remain slow and comprehensible, useful
+  for prototyping but invariably needing to be rewritten in statements that
+  map 1:1 with machine code. The goal of a prototype should be a risk-free
+  rewrite, thanks to tests that capture all the details of lessons learned.
 
 ## Toolchain
 
