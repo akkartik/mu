@@ -12,7 +12,7 @@ type environment {
 
 type tab {
   type: int
-      # type 0: everything
+      # type 0: all items
       # type 1: items in a channel
       # type 2: search for a term
       # type 3: comments in a single thread
