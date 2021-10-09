@@ -417,12 +417,12 @@ fn render-main-menu screen: (addr screen), _env: (addr environment) {
     draw-text-rightward-from-cursor screen, " Esc ", width, 0/fg 0xf/bg
     draw-text-rightward-from-cursor screen, " go back  ", width, 0xf/fg, 0/bg
   }
-  draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
-  draw-text-rightward-from-cursor screen, " go to thread  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " / ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " search  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " Tab ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " go to channels  ", width, 0xf/fg, 0/bg
+  draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
+  draw-text-rightward-from-cursor screen, " go to thread  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " << page  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg 0xf/bg
