@@ -18,6 +18,8 @@ type tab {
       # type 3: comments in a single thread
   item-index: int  # what item in the corresponding list we start rendering
                    # the current page at
+  # only for type 0
+  hidden-items: (handle stream int)
   # only for type 1
   channel-index: int
   # only for type 2
@@ -222,9 +224,16 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), show-cursor
   var items-data/edi: (addr array item) <- copy _items-data
   var y/ecx: int <- copy 2/search-space-ver
   y <- add 1/item-padding-ver
-  {
+  $render-all-items:loop: {
     compare i, 0
     break-if-<
+    {
+      var hide?/eax: boolean <- should-hide? current-tab, i, _items
+      compare hide?, 0/false
+      break-if-=
+      i <- decrement
+      loop $render-all-items:loop
+    }
     compare y, screen-height
     break-if->=
     var offset/eax: (offset item) <- compute-offset items-data, i
@@ -423,6 +432,17 @@ fn render-main-menu screen: (addr screen), _env: (addr environment) {
   draw-text-rightward-from-cursor screen, " go to channels  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " Enter ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " go to thread  ", width, 0xf/fg, 0/bg
+  {
+    {
+      var is-all-items-or-channel?/eax: boolean <- current-tab-is-all-items-or-channel? _env
+      compare is-all-items-or-channel?, 0/false
+    }
+    break-if-=
+    draw-text-rightward-from-cursor screen, " ^h ", width, 0/fg 0xf/bg
+    draw-text-rightward-from-cursor screen, " hide thread  ", width, 0xf/fg, 0/bg
+    draw-text-rightward-from-cursor screen, " ^u ", width, 0/fg 0xf/bg
+    draw-text-rightward-from-cursor screen, " unhide all  ", width, 0xf/fg, 0/bg
+  }
   draw-text-rightward-from-cursor screen, " ^b ", width, 0/fg 0xf/bg
   draw-text-rightward-from-cursor screen, " << page  ", width, 0xf/fg, 0/bg
   draw-text-rightward-from-cursor screen, " ^f ", width, 0/fg 0xf/bg
@@ -879,6 +899,24 @@ fn update-main-panel env: (addr environment), key: byte, users: (addr array user
     return
   }
   {
+    compare key, 8/ctrl-h
+    break-if-!=
+    var is-all-items-or-channel?/eax: boolean <- current-tab-is-all-items-or-channel? env
+    compare is-all-items-or-channel?, 0/false
+    break-if-=
+    hide-thread env, users, channels, items
+    return
+  }
+  {
+    compare key, 0x15/ctrl-u
+    break-if-!=
+    var is-all-items-or-channel?/eax: boolean <- current-tab-is-all-items-or-channel? env
+    compare is-all-items-or-channel?, 0/false
+    break-if-=
+    new-all-items-tab env, users, channels, items
+    return
+  }
+  {
     compare key, 0x81/down-arrow
     break-if-!=
     next-item env, users, channels, items
@@ -902,6 +940,29 @@ fn update-main-panel env: (addr environment), key: byte, users: (addr array user
     page-up env, users, channels, items
     return
   }
+}
+
+fn current-tab-is-all-items-or-channel? _env: (addr environment) -> _/eax: boolean {
+  var env/esi: (addr environment) <- copy _env
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var tabs/edx: (addr array tab) <- copy _tabs
+  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
+  var current-tab-index/eax: int <- copy *current-tab-index-a
+  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-type/eax: (addr int) <- get current-tab, type
+  {
+    compare *current-tab-type, 0/all-items
+    break-if-!=
+    return 1/true
+  }
+  {
+    compare *current-tab-type, 1/channel
+    break-if-!=
+    return 1/true
+  }
+  return 0/false
 }
 
 # TODO: clamp cursor within bounds
@@ -953,6 +1014,30 @@ fn update-search _env: (addr environment), key: byte, users: (addr array user), 
   var search-terms/eax: (addr gap-buffer) <- lookup *search-terms-ah
   var g/ecx: grapheme <- copy key
   edit-gap-buffer search-terms, g
+}
+
+fn new-all-items-tab _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  var current-tab-index-addr/ecx: (addr int) <- get env, current-tab-index
+  increment *current-tab-index-addr
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var max-tabs/ebx: int <- length tabs
+  {
+    compare *current-tab-index-addr, max-tabs
+    break-if-<
+    abort "history overflow; grow max-history (we should probably improve this)"
+  }
+  var current-tab-index/ecx: int <- copy *current-tab-index-addr
+  var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+  clear-object current-tab
+  var items/eax: (addr item-list) <- copy _items
+  var items-data-first-free-a/eax: (addr int) <- get items, data-first-free
+  var final-item/edx: int <- copy *items-data-first-free-a
+  final-item <- decrement
+  var dest/edi: (addr int) <- get current-tab, item-index
+  copy-to *dest, final-item
 }
 
 fn new-thread-tab _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
@@ -1025,6 +1110,72 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
   abort "new-thread-tab: should never leave previous loop without returning"
 }
 
+# hide a thread in a (channel or all-items) tab
+fn hide-thread _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
+  var env/edi: (addr environment) <- copy _env
+  var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
+  var current-tab-index/ecx: int <- copy *current-tab-index-addr
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
+  var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab-hidden-items-ah/edx: (addr handle stream int) <- get current-tab, hidden-items
+  var current-tab-hidden-items/eax: (addr stream int) <- lookup *current-tab-hidden-items-ah
+  {
+    compare current-tab-hidden-items, 0
+    break-if-!=
+    populate-stream current-tab-hidden-items-ah, 0x10/max-hidden-threads
+    current-tab-hidden-items <- lookup *current-tab-hidden-items-ah
+  }
+  {
+    var too-many-hidden-items?/eax: boolean <- stream-full? current-tab-hidden-items
+    compare too-many-hidden-items?, 0/false
+    break-if-=
+    abort "too many hidden threads in this tab"  # TODO: create a space for flash error messages on screen
+    return
+  }
+  var current-item-index/esi: int <- item-index current-tab, channels
+  var current-post-index-value/ecx: int <- post-index items, current-item-index
+  # . turn current-post-index into an addr
+  var current-post-index-storage: int
+  copy-to current-post-index-storage, current-post-index-value
+  var current-post-index-addr/ecx: (addr int) <- address current-post-index-storage
+  #
+  write-to-stream current-tab-hidden-items, current-post-index-addr
+}
+
+fn should-hide? _tab: (addr tab), item-index: int, items: (addr item-list) -> _/eax: boolean {
+  var post-index/ecx: int <- post-index items, item-index
+  var tab/esi: (addr tab) <- copy _tab
+  var tab-hidden-items-ah/edx: (addr handle stream int) <- get tab, hidden-items
+  var tab-hidden-items/eax: (addr stream int) <- lookup *tab-hidden-items-ah
+  compare tab-hidden-items, 0
+  {
+    break-if-!=
+    return 0/false
+  }
+  rewind-stream tab-hidden-items
+  {
+    {
+      var done?/eax: boolean <- stream-empty? tab-hidden-items
+      compare done?, 0/false
+    }
+    break-if-!=
+    var curr-item: int
+    var curr-item-addr/edx: (addr int) <- address curr-item
+    read-from-stream tab-hidden-items, curr-item-addr
+    # if curr-item == post-index, return true
+    compare curr-item, post-index
+    {
+      break-if-!=
+      return 1/true
+    }
+    loop
+  }
+  return 0/false
+}
+
+# what index in the global items list is the cursor at in the current tab?
 fn item-index _tab: (addr tab), _channels: (addr array channel) -> _/esi: int {
   var tab/esi: (addr tab) <- copy _tab
   var tab-type/eax: (addr int) <- get tab, type
@@ -1063,6 +1214,7 @@ fn item-index _tab: (addr tab), _channels: (addr array channel) -> _/esi: int {
   return -1
 }
 
+# go from a comment item to its parent post
 fn post-index _items: (addr item-list), item-index: int -> _/ecx: int {
   var items/eax: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
