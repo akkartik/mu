@@ -1118,7 +1118,7 @@ fn hide-thread _env: (addr environment), users: (addr array user), channels: (ad
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
   var tabs/eax: (addr array tab) <- lookup *tabs-ah
   var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
-  var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
+  var current-tab/ebx: (addr tab) <- index tabs, current-tab-offset
   var current-tab-hidden-items-ah/edx: (addr handle stream int) <- get current-tab, hidden-items
   var current-tab-hidden-items/eax: (addr stream int) <- lookup *current-tab-hidden-items-ah
   {
@@ -1142,6 +1142,14 @@ fn hide-thread _env: (addr environment), users: (addr array user), channels: (ad
   var current-post-index-addr/ecx: (addr int) <- address current-post-index-storage
   #
   write-to-stream current-tab-hidden-items, current-post-index-addr
+  # current-tab's item-index is now on a hidden item
+  # try to position it on a visible item
+  var item-index-addr/esi: (addr int) <- get current-tab, item-index
+  var old-item-index/eax: int <- copy *item-index-addr
+  next-item env, users, channels, items
+  compare *item-index-addr, old-item-index
+  break-if-!=
+  previous-item env, users, channels, items
 }
 
 fn should-hide? _tab: (addr tab), item-index: int, items: (addr item-list) -> _/eax: boolean {
@@ -1152,6 +1160,8 @@ fn should-hide? _tab: (addr tab), item-index: int, items: (addr item-list) -> _/
   compare tab-hidden-items, 0
   {
     break-if-!=
+    # either we haven't hidden anything, or we're in a tab type that doesn't
+    # support hiding
     return 0/false
   }
   rewind-stream tab-hidden-items
@@ -1417,7 +1427,7 @@ fn previous-tab _env: (addr environment) {
   }
 }
 
-fn next-item _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+fn next-item _env: (addr environment), users: (addr array user), _channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
   var _tabs/eax: (addr array tab) <- lookup *tabs-ah
@@ -1426,10 +1436,36 @@ fn next-item _env: (addr environment), users: (addr array user), channels: (addr
   var current-tab-index/eax: int <- copy *current-tab-index-a
   var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  var dest/eax: (addr int) <- get current-tab, item-index
-  compare *dest, 0
-  break-if-<=
-  decrement *dest
+  var dest/ebx: (addr int) <- get current-tab, item-index
+  # if current-tab isn't all-items or channel, no need to worry about hidden items
+  var current-tab-type/eax: (addr int) <- get current-tab, type
+  {
+    compare *current-tab-type, 0/all-items
+    break-if-=
+    compare *current-tab-type, 1/channel
+    break-if-=
+    {
+      compare *dest, 0
+      break-if-<=
+      decrement *dest
+    }
+    return
+  }
+  var old-value/ecx: int <- copy *dest
+  # do { --*dest } while *dest > 0 and should-hide?(current-tab, *dest)
+  {
+    compare *dest, 0
+    break-if-<=
+    decrement *dest
+    # if current item is not hidden, return
+    var current-item-index/esi: int <- item-index current-tab, _channels
+    var should-hide?/eax: boolean <- should-hide? current-tab, current-item-index, _items
+    compare should-hide?, 0/false
+    loop-if-!=
+    return
+  }
+  # couldn't find a visible item. Restore.
+  copy-to *dest, old-value
 }
 
 fn previous-item _env: (addr environment), users: (addr array user), _channels: (addr array channel), _items: (addr item-list) {
@@ -1449,10 +1485,22 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
     var items-data-first-free-a/ecx: (addr int) <- get items, data-first-free
     var final-item-index/ecx: int <- copy *items-data-first-free-a
     final-item-index <- decrement
-    var dest/eax: (addr int) <- get current-tab, item-index
-    compare *dest, final-item-index
-    break-if->=
-    increment *dest
+    var dest/ebx: (addr int) <- get current-tab, item-index
+    var old-value/eax: int <- copy *dest
+    # do { ++*dest } while *dest < final-index and should-hide?(current-tab, *dest)
+    {
+      compare *dest, final-item-index
+      break-if->=
+      increment *dest
+      # if current item is not hidden, return
+      var current-item-index/esi: int <- item-index current-tab, _channels
+      var should-hide?/eax: boolean <- should-hide? current-tab, current-item-index, _items
+      compare should-hide?, 0/false
+      loop-if-!=
+      return
+    }
+    # couldn't find a visible item. Restore.
+    copy-to *dest, old-value
     return
   }
   compare *current-tab-type, 1/channel
@@ -1466,10 +1514,22 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
     var current-channel-posts-first-free-addr/eax: (addr int) <- get current-channel, posts-first-free
     var final-item-index/ecx: int <- copy *current-channel-posts-first-free-addr
     final-item-index <- decrement
-    var dest/eax: (addr int) <- get current-tab, item-index
-    compare *dest, final-item-index
-    break-if->=
-    increment *dest
+    var dest/ebx: (addr int) <- get current-tab, item-index
+    var old-value/eax: int <- copy *dest
+    # do { ++*dest } while *dest < final-index and should-hide?(current-tab, *dest)
+    {
+      compare *dest, final-item-index
+      break-if->=
+      increment *dest
+      # if current item is not hidden, return
+      var current-item-index/esi: int <- item-index current-tab, _channels
+      var should-hide?/eax: boolean <- should-hide? current-tab, current-item-index, _items
+      compare should-hide?, 0/false
+      loop-if-!=
+      return
+    }
+    # couldn't find a visible item. Restore.
+    copy-to *dest, old-value
     return
   }
   compare *current-tab-type, 2/search
