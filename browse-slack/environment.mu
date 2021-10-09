@@ -957,10 +957,10 @@ fn update-search _env: (addr environment), key: byte, users: (addr array user), 
 
 fn new-thread-tab _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
-  var current-tab-index-a/ecx: (addr int) <- get env, current-tab-index
+  var current-tab-index-addr/ecx: (addr int) <- get env, current-tab-index
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
   var tabs/eax: (addr array tab) <- lookup *tabs-ah
-  var current-tab-index/ecx: int <- copy *current-tab-index-a
+  var current-tab-index/ecx: int <- copy *current-tab-index-addr
   var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
   var item-index/esi: int <- item-index current-tab, channels
