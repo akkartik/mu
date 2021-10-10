@@ -97,7 +97,7 @@ fn render-environment screen: (addr screen), _env: (addr environment), users: (a
   clear-screen screen
   render-search-input screen, env
   render-channels screen, env, channels
-  render-item-list screen, env, items, channels, users
+  render-item-list screen, env, users, channels, items
   render-menu screen, env
   var dirty?/eax: (addr boolean) <- get env, dirty?
   copy-to *dirty?, 0/false
@@ -150,7 +150,7 @@ fn render-channels screen: (addr screen), _env: (addr environment), _channels: (
   }
 }
 
-fn render-item-list screen: (addr screen), _env: (addr environment), items: (addr item-list), channels: (addr array channel), users: (addr array user) {
+fn render-item-list screen: (addr screen), _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
   var env/esi: (addr environment) <- copy _env
   var tmp-width/eax: int <- copy 0
   var tmp-height/ecx: int <- copy 0
@@ -177,13 +177,13 @@ fn render-item-list screen: (addr screen), _env: (addr environment), items: (add
     break-if-!=
     copy-to show-cursor?, 1/true
   }
-  render-tab screen, current-tab, show-cursor?, items, channels, users, screen-height
+  render-tab screen, current-tab, show-cursor?, users, channels, items, screen-height
   var top/eax: int <- copy screen-height
   top <- subtract 2/menu-space-ver
   clear-rect screen, 0 top, screen-width screen-height, 0/bg
 }
 
-fn render-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
+fn render-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, users: (addr array user), channels: (addr array channel), items: (addr item-list), screen-height: int {
   var current-tab/esi: (addr tab) <- copy _current-tab
   var current-tab-type/eax: (addr int) <- get current-tab, type
   compare *current-tab-type, 0/all-items
@@ -195,19 +195,19 @@ fn render-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boo
   compare *current-tab-type, 1/channel
   {
     break-if-!=
-    render-channel-tab screen, current-tab, show-cursor?, items, channels, users, screen-height
+    render-channel-tab screen, current-tab, show-cursor?, users, channels, items, screen-height
     return
   }
   compare *current-tab-type, 2/search
   {
     break-if-!=
-    render-search-tab screen, current-tab, show-cursor?, items, channels, users, screen-height
+    render-search-tab screen, current-tab, show-cursor?, users, channels, items, screen-height
     return
   }
   compare *current-tab-type, 3/thread
   {
     break-if-!=
-    render-thread-tab screen, current-tab, show-cursor?, items, channels, users, screen-height
+    render-thread-tab screen, current-tab, show-cursor?, users, channels, items, screen-height
     return
   }
 }
@@ -246,7 +246,7 @@ fn render-all-items screen: (addr screen), _current-tab: (addr tab), show-cursor
   }
 }
 
-fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, _items: (addr item-list), _channels: (addr array channel), users: (addr array user), screen-height: int {
+fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, users: (addr array user), _channels: (addr array channel), _items: (addr item-list), screen-height: int {
   var current-tab/esi: (addr tab) <- copy _current-tab
   var items/edi: (addr item-list) <- copy _items
   var channels/ebx: (addr array channel) <- copy _channels
@@ -285,7 +285,7 @@ fn render-channel-tab screen: (addr screen), _current-tab: (addr tab), show-curs
   }
 }
 
-fn render-search-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, _items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
+fn render-search-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, users: (addr array user), channels: (addr array channel), _items: (addr item-list), screen-height: int {
   var current-tab/esi: (addr tab) <- copy _current-tab
   var items/edi: (addr item-list) <- copy _items
   var current-tab-search-items-ah/eax: (addr handle array int) <- get current-tab, search-items
@@ -325,7 +325,7 @@ fn render-search-tab screen: (addr screen), _current-tab: (addr tab), show-curso
   }
 }
 
-fn render-thread-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, _items: (addr item-list), channels: (addr array channel), users: (addr array user), screen-height: int {
+fn render-thread-tab screen: (addr screen), _current-tab: (addr tab), show-cursor?: boolean, users: (addr array user), channels: (addr array channel), _items: (addr item-list), screen-height: int {
   var current-tab/esi: (addr tab) <- copy _current-tab
   var items/eax: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
