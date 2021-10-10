@@ -1048,7 +1048,7 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
   var current-tab-index/ecx: int <- copy *current-tab-index-addr
   var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
-  var item-index/esi: int <- item-index current-tab, _items, channels
+  var item-index/esi: int <- item-index env, _items, channels
   var post-index/ecx: int <- post-index _items, item-index
   var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
   increment *current-tab-index-addr
@@ -1134,7 +1134,7 @@ fn hide-thread _env: (addr environment), users: (addr array user), channels: (ad
     abort "too many hidden threads in this tab"  # TODO: create a space for flash error messages on screen
     return
   }
-  var current-item-index/esi: int <- item-index current-tab, items, channels
+  var current-item-index/esi: int <- item-index env, items, channels
   var current-post-index-value/ecx: int <- post-index items, current-item-index
   # . turn current-post-index into an addr
   var current-post-index-storage: int
@@ -1186,8 +1186,14 @@ fn should-hide? _tab: (addr tab), item-index: int, items: (addr item-list) -> _/
 }
 
 # what index in the global items list is the cursor at in the current tab?
-fn item-index _tab: (addr tab), _items: (addr item-list), _channels: (addr array channel) -> _/esi: int {
-  var tab/esi: (addr tab) <- copy _tab
+fn item-index _env: (addr environment), _items: (addr item-list), _channels: (addr array channel) -> _/esi: int {
+  var env/eax: (addr environment) <- copy _env
+  var current-tab-index-addr/esi: (addr int) <- get env, current-tab-index
+  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
+  var tabs/eax: (addr array tab) <- lookup *tabs-ah
+  var tab-index/esi: int <- copy *current-tab-index-addr
+  var tab-offset/esi: (offset tab) <- compute-offset tabs, tab-index
+  var tab/esi: (addr tab) <- index tabs, tab-offset
   var tab-type/eax: (addr int) <- get tab, type
   {
     compare *tab-type, 0/all-items
@@ -1476,7 +1482,7 @@ fn next-item _env: (addr environment), users: (addr array user), _channels: (add
     break-if-<=
     decrement *dest
     # if current item is not hidden, return
-    var current-item-index/esi: int <- item-index current-tab, _items, _channels
+    var current-item-index/esi: int <- item-index env, _items, _channels
     var should-hide?/eax: boolean <- should-hide? current-tab, current-item-index, _items
     compare should-hide?, 0/false
     loop-if-!=
@@ -1511,7 +1517,7 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
       break-if->=
       increment *dest
       # if current item is not hidden, return
-      var current-item-index/esi: int <- item-index current-tab, _items, _channels
+      var current-item-index/esi: int <- item-index env, _items, _channels
       var should-hide?/eax: boolean <- should-hide? current-tab, current-item-index, _items
       compare should-hide?, 0/false
       loop-if-!=
@@ -1540,7 +1546,7 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
       break-if->=
       increment *dest
       # if current item is not hidden, return
-      var current-item-index/esi: int <- item-index current-tab, _items, _channels
+      var current-item-index/esi: int <- item-index env, _items, _channels
       var should-hide?/eax: boolean <- should-hide? current-tab, current-item-index, _items
       compare should-hide?, 0/false
       loop-if-!=
@@ -1584,406 +1590,81 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
   }
 }
 
-fn page-down _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
+fn page-down _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
-  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
-  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
-  var tabs/ecx: (addr array tab) <- copy _tabs
-  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
-  var current-tab-index/eax: int <- copy *current-tab-index-a
-  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
-  var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  var current-tab-type/eax: (addr int) <- get current-tab, type
-  compare *current-tab-type, 0/all-items
-  {
-    break-if-!=
-    all-items-page-down current-tab, users, channels, items
-    return
-  }
-  compare *current-tab-type, 1/channel
-  {
-    break-if-!=
-    channel-page-down current-tab, users, channels, items
-    return
-  }
-  compare *current-tab-type, 2/search
-  {
-    break-if-!=
-    search-page-down current-tab, users, channels, items
-    return
-  }
-  compare *current-tab-type, 3/thread
-  {
-    break-if-!=
-    thread-page-down current-tab, users, channels, items
-    return
-  }
-}
-
-fn all-items-page-down _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
-  var items/esi: (addr item-list) <- copy _items
-  var items-data-ah/eax: (addr handle array item) <- get items, data
-  var _items-data/eax: (addr array item) <- lookup *items-data-ah
-  var items-data/ebx: (addr array item) <- copy _items-data
-  var current-tab/eax: (addr tab) <- copy _current-tab
-  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  var new-item-index/ecx: int <- copy *current-tab-item-index-addr
-  var y/edx: int <- copy 2
-  {
-    compare new-item-index, 0
-    break-if-<
-    compare y, 0x28/screen-height-minus-menu
-    break-if->=
-    var offset/eax: (offset item) <- compute-offset items-data, new-item-index
-    var item/eax: (addr item) <- index items-data, offset
-    var item-text-ah/eax: (addr handle array byte) <- get item, text
-    var item-text/eax: (addr array byte) <- lookup *item-text-ah
-    var h/eax: int <- estimate-height item-text
-    y <- add h
-    new-item-index <- decrement
-    loop
-  }
-  new-item-index <- increment
-  {
-    # HACK: make sure we make forward progress even if a single post takes up
-    # the whole screen.
-    # We can't see the rest of that single post at the moment. But at least we
-    # can go past it.
-    compare new-item-index, *current-tab-item-index-addr
-    break-if-!=
-    # Don't make "forward progress" past post 0.
-    compare new-item-index, 0
-    break-if-=
-    new-item-index <- decrement
-  }
-  copy-to *current-tab-item-index-addr, new-item-index
-}
-
-fn channel-page-down _current-tab: (addr tab), users: (addr array user), _channels: (addr array channel), _items: (addr item-list) {
-  var current-tab/edi: (addr tab) <- copy _current-tab
-  var current-channel-index-addr/eax: (addr int) <- get current-tab, channel-index
-  var current-channel-index/eax: int <- copy *current-channel-index-addr
-  var channels/esi: (addr array channel) <- copy _channels
-  var current-channel-offset/eax: (offset channel) <- compute-offset channels, current-channel-index
-  var current-channel/esi: (addr channel) <- index channels, current-channel-offset
-  var current-channel-posts-ah/eax: (addr handle array int) <- get current-channel, posts
-  var _current-channel-posts/eax: (addr array int) <- lookup *current-channel-posts-ah
-  var current-channel-posts/esi: (addr array int) <- copy _current-channel-posts
   var items/eax: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/ebx: (addr array item) <- copy _items-data
-  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
+  var _old-item-index/esi: int <- item-index env, _items, channels
+  var old-item-index/ecx: int <- copy _old-item-index
   var y/edx: int <- copy 2
   {
-    compare new-tab-item-index, 0
-    break-if-<
     compare y, 0x28/screen-height-minus-menu
     break-if->=
-    var current-item-index-addr/eax: (addr int) <- index current-channel-posts, new-tab-item-index
-    var current-item-index/eax: int <- copy *current-item-index-addr
-    var offset/eax: (offset item) <- compute-offset items-data, current-item-index
-    var item/eax: (addr item) <- index items-data, offset
+    var item-index/esi: int <- item-index env, _items, channels
+    {
+      compare y, 2
+      break-if-=  # skip this condition on first iteration
+      compare item-index, old-item-index
+      break-if-!=
+      # no forward progress; we're at the bottom of the current tab
+      return
+    }
+    var item-offset/eax: (offset item) <- compute-offset items-data, item-index
+    var item/eax: (addr item) <- index items-data, item-offset
     var item-text-ah/eax: (addr handle array byte) <- get item, text
     var item-text/eax: (addr array byte) <- lookup *item-text-ah
     var h/eax: int <- estimate-height item-text
     y <- add h
-    new-tab-item-index <- decrement
+    next-item env, users, channels, _items
     loop
   }
-  new-tab-item-index <- increment
+  # we're past the end of the screen now, so bounce back for some continuity
+  previous-item env, users, channels, _items
   {
     # HACK: make sure we make forward progress even if a single post takes up
     # the whole screen.
     # We can't see the rest of that single post at the moment. But at least we
     # can go past it.
-    compare new-tab-item-index, *current-tab-item-index-addr
+    var old-item-index/eax: int <- copy old-item-index
+    var item-index/esi: int <- item-index env, _items, channels
+    compare item-index, old-item-index
     break-if-!=
-    # Don't make "forward progress" past post 0.
-    compare new-tab-item-index, 0
-    break-if-=
-    new-tab-item-index <- decrement
+    next-item env, users, channels, _items
   }
-  copy-to *current-tab-item-index-addr, new-tab-item-index
 }
 
-fn search-page-down _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
-  var current-tab/edi: (addr tab) <- copy _current-tab
-  var current-tab-search-items-ah/eax: (addr handle array int) <- get current-tab, search-items
-  var _current-tab-search-items/eax: (addr array int) <- lookup *current-tab-search-items-ah
-  var current-tab-search-items/esi: (addr array int) <- copy _current-tab-search-items
-  var items/eax: (addr item-list) <- copy _items
-  var items-data-ah/eax: (addr handle array item) <- get items, data
-  var _items-data/eax: (addr array item) <- lookup *items-data-ah
-  var items-data/ebx: (addr array item) <- copy _items-data
-  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
-  var y/edx: int <- copy 2
-  {
-    compare new-tab-item-index, 0
-    break-if-<
-    compare y, 0x28/screen-height-minus-menu
-    break-if->=
-    var current-item-index-addr/eax: (addr int) <- index current-tab-search-items, new-tab-item-index
-    var current-item-index/eax: int <- copy *current-item-index-addr
-    var offset/eax: (offset item) <- compute-offset items-data, current-item-index
-    var item/eax: (addr item) <- index items-data, offset
-    var item-text-ah/eax: (addr handle array byte) <- get item, text
-    var item-text/eax: (addr array byte) <- lookup *item-text-ah
-    var h/eax: int <- estimate-height item-text
-    y <- add h
-    new-tab-item-index <- decrement
-    loop
-  }
-  new-tab-item-index <- increment
-  {
-    # HACK: make sure we make forward progress even if a single post takes up
-    # the whole screen.
-    # We can't see the rest of that single post at the moment. But at least we
-    # can go past it.
-    compare new-tab-item-index, *current-tab-item-index-addr
-    break-if-!=
-    # Don't make "forward progress" past post 0.
-    compare new-tab-item-index, 0
-    break-if-=
-    new-tab-item-index <- decrement
-  }
-  copy-to *current-tab-item-index-addr, new-tab-item-index
-}
-
-fn thread-page-down _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
-  var current-tab/edi: (addr tab) <- copy _current-tab
-  var items/eax: (addr item-list) <- copy _items
-  var items-data-ah/eax: (addr handle array item) <- get items, data
-  var _items-data/eax: (addr array item) <- lookup *items-data-ah
-  var items-data/esi: (addr array item) <- copy _items-data
-  var current-tab-root-index-addr/eax: (addr int) <- get current-tab, root-index
-  var current-tab-root-index/eax: int <- copy *current-tab-root-index-addr
-  var current-tab-root-offset/eax: (offset item) <- compute-offset items-data, current-tab-root-index
-  var post/eax: (addr item) <- index items-data, current-tab-root-offset
-  var post-comments-ah/eax: (addr handle array int) <- get post, comments
-  var _post-comments/eax: (addr array int) <- lookup *post-comments-ah
-  var post-comments/ebx: (addr array int) <- copy _post-comments
-  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
-  var y/edx: int <- copy 2
-  {
-    compare new-tab-item-index, 0
-    break-if-<
-    compare y, 0x28/screen-height-minus-menu
-    break-if->=
-    var current-item-index-addr/eax: (addr int) <- index post-comments, new-tab-item-index
-    var current-item-index/eax: int <- copy *current-item-index-addr
-    var offset/eax: (offset item) <- compute-offset items-data, current-item-index
-    var item/eax: (addr item) <- index items-data, offset
-    var item-text-ah/eax: (addr handle array byte) <- get item, text
-    var item-text/eax: (addr array byte) <- lookup *item-text-ah
-    var h/eax: int <- estimate-height item-text
-    y <- add h
-    new-tab-item-index <- decrement
-    loop
-  }
-  new-tab-item-index <- increment
-  {
-    # HACK: make sure we make forward progress even if a single post takes up
-    # the whole screen.
-    # We can't see the rest of that single post at the moment. But at least we
-    # can go past it.
-    compare new-tab-item-index, *current-tab-item-index-addr
-    break-if-!=
-    # Don't make "forward progress" past post 0.
-    compare new-tab-item-index, 0
-    break-if-=
-    new-tab-item-index <- decrement
-  }
-  copy-to *current-tab-item-index-addr, new-tab-item-index
-}
-
-fn page-up _env: (addr environment), users: (addr array user), channels: (addr array channel), items: (addr item-list) {
+fn page-up _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
-  var tabs-ah/eax: (addr handle array tab) <- get env, tabs
-  var _tabs/eax: (addr array tab) <- lookup *tabs-ah
-  var tabs/ecx: (addr array tab) <- copy _tabs
-  var current-tab-index-a/eax: (addr int) <- get env, current-tab-index
-  var current-tab-index/eax: int <- copy *current-tab-index-a
-  var current-tab-offset/eax: (offset tab) <- compute-offset tabs, current-tab-index
-  var current-tab/edx: (addr tab) <- index tabs, current-tab-offset
-  var current-tab-type/eax: (addr int) <- get current-tab, type
-  compare *current-tab-type, 0/all-items
-  {
-    break-if-!=
-    all-items-page-up current-tab, users, channels, items
-    return
-  }
-  compare *current-tab-type, 1/channel
-  {
-    break-if-!=
-    channel-page-up current-tab, users, channels, items
-    return
-  }
-  compare *current-tab-type, 2/search
-  {
-    break-if-!=
-    search-page-up current-tab, users, channels, items
-    return
-  }
-  compare *current-tab-type, 3/thread
-  {
-    break-if-!=
-    thread-page-up current-tab, users, channels, items
-    return
-  }
-}
-
-fn all-items-page-up _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
-  var items/esi: (addr item-list) <- copy _items
-  var items-data-ah/eax: (addr handle array item) <- get items, data
-  var _items-data/eax: (addr array item) <- lookup *items-data-ah
-  var items-data/ebx: (addr array item) <- copy _items-data
-  var items-data-first-free-a/eax: (addr int) <- get items, data-first-free
-  var final-item-index/esi: int <- copy *items-data-first-free-a
-  final-item-index <- decrement
-  var current-tab/eax: (addr tab) <- copy _current-tab
-  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  var new-item-index/ecx: int <- copy *current-tab-item-index-addr
-  var y/edx: int <- copy 2
-  {
-    compare new-item-index, final-item-index
-    break-if->
-    compare y, 0x28/screen-height-minus-menu
-    break-if->=
-    var offset/eax: (offset item) <- compute-offset items-data, new-item-index
-    var item/eax: (addr item) <- index items-data, offset
-    var item-text-ah/eax: (addr handle array byte) <- get item, text
-    var item-text/eax: (addr array byte) <- lookup *item-text-ah
-    var h/eax: int <- estimate-height item-text
-    y <- add h
-    new-item-index <- increment
-    loop
-  }
-  new-item-index <- decrement
-  copy-to *current-tab-item-index-addr, new-item-index
-}
-
-fn channel-page-up _current-tab: (addr tab), users: (addr array user), _channels: (addr array channel), _items: (addr item-list) {
-  var current-tab/edi: (addr tab) <- copy _current-tab
-  var current-channel-index-addr/eax: (addr int) <- get current-tab, channel-index
-  var current-channel-index/eax: int <- copy *current-channel-index-addr
-  var channels/esi: (addr array channel) <- copy _channels
-  var current-channel-offset/eax: (offset channel) <- compute-offset channels, current-channel-index
-  var current-channel/esi: (addr channel) <- index channels, current-channel-offset
-  var current-channel-posts-first-free-addr/eax: (addr int) <- get current-channel, posts-first-free
-  var tmp/eax: int <- copy *current-channel-posts-first-free-addr
-  var final-tab-post-index: int
-  copy-to final-tab-post-index, tmp
-  decrement final-tab-post-index
-  var current-channel-posts-ah/eax: (addr handle array int) <- get current-channel, posts
-  var _current-channel-posts/eax: (addr array int) <- lookup *current-channel-posts-ah
-  var current-channel-posts/esi: (addr array int) <- copy _current-channel-posts
-  var items/esi: (addr item-list) <- copy _items
-  var items-data-ah/eax: (addr handle array item) <- get items, data
-  var _items-data/eax: (addr array item) <- lookup *items-data-ah
-  var items-data/ebx: (addr array item) <- copy _items-data
-  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
-  var y/edx: int <- copy 2
-  {
-    compare new-tab-item-index, final-tab-post-index
-    break-if->
-    compare y, 0x28/screen-height-minus-menu
-    break-if->=
-    var offset/eax: (offset item) <- compute-offset items-data, new-tab-item-index
-    var item/eax: (addr item) <- index items-data, offset
-    var item-text-ah/eax: (addr handle array byte) <- get item, text
-    var item-text/eax: (addr array byte) <- lookup *item-text-ah
-    var h/eax: int <- estimate-height item-text
-    y <- add h
-    new-tab-item-index <- increment
-    loop
-  }
-  new-tab-item-index <- decrement
-  copy-to *current-tab-item-index-addr, new-tab-item-index
-}
-
-fn search-page-up _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
-  var current-tab/edi: (addr tab) <- copy _current-tab
-  var current-tab-search-items-first-free-addr/eax: (addr int) <- get current-tab, search-items-first-free
-  var final-tab-post-index: int
-  var tmp/eax: int <- copy *current-tab-search-items-first-free-addr
-  copy-to final-tab-post-index, tmp
-  decrement final-tab-post-index
-  var current-tab-search-items-ah/eax: (addr handle array int) <- get current-tab, search-items
-  var _current-tab-search-items/eax: (addr array int) <- lookup *current-tab-search-items-ah
-  var current-tab-search-items/esi: (addr array int) <- copy _current-tab-search-items
   var items/eax: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
   var _items-data/eax: (addr array item) <- lookup *items-data-ah
   var items-data/ebx: (addr array item) <- copy _items-data
-  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
+  var _old-item-index/esi: int <- item-index env, _items, channels
+  var old-item-index/ecx: int <- copy _old-item-index
   var y/edx: int <- copy 2
   {
-    compare new-tab-item-index, final-tab-post-index
-    break-if->
     compare y, 0x28/screen-height-minus-menu
     break-if->=
-    var current-item-index-addr/eax: (addr int) <- index current-tab-search-items, new-tab-item-index
-    var current-item-index/eax: int <- copy *current-item-index-addr
-    var offset/eax: (offset item) <- compute-offset items-data, current-item-index
-    var item/eax: (addr item) <- index items-data, offset
+    var item-index/esi: int <- item-index env, _items, channels
+    {
+      compare y, 2
+      break-if-=  # skip this condition on first iteration
+      compare item-index, old-item-index
+      break-if-!=
+      # no forward progress; we're at the bottom of the current tab
+      return
+    }
+    var item-offset/eax: (offset item) <- compute-offset items-data, item-index
+    var item/eax: (addr item) <- index items-data, item-offset
     var item-text-ah/eax: (addr handle array byte) <- get item, text
     var item-text/eax: (addr array byte) <- lookup *item-text-ah
     var h/eax: int <- estimate-height item-text
     y <- add h
-    new-tab-item-index <- increment
+    previous-item env, users, channels, _items
     loop
   }
-  new-tab-item-index <- decrement
-  copy-to *current-tab-item-index-addr, new-tab-item-index
-}
-
-fn thread-page-up _current-tab: (addr tab), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
-  var current-tab/edi: (addr tab) <- copy _current-tab
-  var items/eax: (addr item-list) <- copy _items
-  var items-data-ah/eax: (addr handle array item) <- get items, data
-  var _items-data/eax: (addr array item) <- lookup *items-data-ah
-  var items-data/esi: (addr array item) <- copy _items-data
-  var current-tab-root-index-addr/eax: (addr int) <- get current-tab, root-index
-  var current-tab-root-index/eax: int <- copy *current-tab-root-index-addr
-  var current-tab-root-offset/eax: (offset item) <- compute-offset items-data, current-tab-root-index
-  var post/eax: (addr item) <- index items-data, current-tab-root-offset
-  var post-comments-first-free-addr/ecx: (addr int) <- get post, comments-first-free
-  var post-comments-ah/eax: (addr handle array int) <- get post, comments
-  var _post-comments/eax: (addr array int) <- lookup *post-comments-ah
-  var post-comments/ebx: (addr array int) <- copy _post-comments
-  var final-tab-comment-index: int
-  {
-    var tmp/eax: int <- copy *post-comments-first-free-addr
-    tmp <- decrement
-    copy-to final-tab-comment-index, tmp
-  }
-  var current-tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
-  var new-tab-item-index/ecx: int <- copy *current-tab-item-index-addr
-  var y/edx: int <- copy 2
-  {
-    compare new-tab-item-index, final-tab-comment-index
-    break-if->
-    compare y, 0x28/screen-height-minus-menu
-    break-if->=
-    var current-item-index-addr/eax: (addr int) <- index post-comments, new-tab-item-index
-    var current-item-index/eax: int <- copy *current-item-index-addr
-    var offset/eax: (offset item) <- compute-offset items-data, current-item-index
-    var item/eax: (addr item) <- index items-data, offset
-    var item-text-ah/eax: (addr handle array byte) <- get item, text
-    var item-text/eax: (addr array byte) <- lookup *item-text-ah
-    var h/eax: int <- estimate-height item-text
-    y <- add h
-    new-tab-item-index <- increment
-    loop
-  }
-  new-tab-item-index <- decrement
-  copy-to *current-tab-item-index-addr, new-tab-item-index
 }
 
 # keep sync'd with render-item
