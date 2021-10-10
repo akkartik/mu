@@ -18,7 +18,7 @@ type tab {
       # type 3: comments in a single thread
   item-index: int  # what item in the corresponding list we start rendering
                    # the current page at
-  # only for type 0
+  # only for type 0, 1
   hidden-items: (handle stream int)
   # only for type 1
   channel-index: int
@@ -1048,7 +1048,7 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
   var current-tab-index/ecx: int <- copy *current-tab-index-addr
   var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
   var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
-  var item-index/esi: int <- item-index current-tab, channels
+  var item-index/esi: int <- item-index current-tab, _items, channels
   var post-index/ecx: int <- post-index _items, item-index
   var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
   increment *current-tab-index-addr
@@ -1134,7 +1134,7 @@ fn hide-thread _env: (addr environment), users: (addr array user), channels: (ad
     abort "too many hidden threads in this tab"  # TODO: create a space for flash error messages on screen
     return
   }
-  var current-item-index/esi: int <- item-index current-tab, channels
+  var current-item-index/esi: int <- item-index current-tab, items, channels
   var current-post-index-value/ecx: int <- post-index items, current-item-index
   # . turn current-post-index into an addr
   var current-post-index-storage: int
@@ -1186,7 +1186,7 @@ fn should-hide? _tab: (addr tab), item-index: int, items: (addr item-list) -> _/
 }
 
 # what index in the global items list is the cursor at in the current tab?
-fn item-index _tab: (addr tab), _channels: (addr array channel) -> _/esi: int {
+fn item-index _tab: (addr tab), _items: (addr item-list), _channels: (addr array channel) -> _/esi: int {
   var tab/esi: (addr tab) <- copy _tab
   var tab-type/eax: (addr int) <- get tab, type
   {
@@ -1218,6 +1218,24 @@ fn item-index _tab: (addr tab), _channels: (addr array channel) -> _/esi: int {
     var tab-search-items-index-addr/ecx: (addr int) <- get tab, item-index
     var tab-search-items-index/ecx: int <- copy *tab-search-items-index-addr
     var src/eax: (addr int) <- index tab-search-items, tab-search-items-index
+    return *src
+  }
+  {
+    compare *tab-type, 3/thread
+    break-if-!=
+    var items/eax: (addr item-list) <- copy _items
+    var items-data-ah/eax: (addr handle array item) <- get items, data
+    var _items-data/eax: (addr array item) <- lookup *items-data-ah
+    var items-data/edi: (addr array item) <- copy _items-data
+    var tab-root-index-addr/eax: (addr int) <- get tab, root-index
+    var tab-root-index/eax: int <- copy *tab-root-index-addr
+    var tab-root-offset/eax: (offset item) <- compute-offset items-data, tab-root-index
+    var post/eax: (addr item) <- index items-data, tab-root-offset
+    var post-comments-ah/eax: (addr handle array int) <- get post, comments
+    var post-comments/eax: (addr array int) <- lookup *post-comments-ah
+    var tab-item-index-addr/ecx: (addr int) <- get tab, item-index
+    var tab-item-index/ecx: int <- copy *tab-item-index-addr
+    var src/eax: (addr int) <- index post-comments, tab-item-index
     return *src
   }
   abort "item-index: unknown tab type"
@@ -1458,7 +1476,7 @@ fn next-item _env: (addr environment), users: (addr array user), _channels: (add
     break-if-<=
     decrement *dest
     # if current item is not hidden, return
-    var current-item-index/esi: int <- item-index current-tab, _channels
+    var current-item-index/esi: int <- item-index current-tab, _items, _channels
     var should-hide?/eax: boolean <- should-hide? current-tab, current-item-index, _items
     compare should-hide?, 0/false
     loop-if-!=
@@ -1493,7 +1511,7 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
       break-if->=
       increment *dest
       # if current item is not hidden, return
-      var current-item-index/esi: int <- item-index current-tab, _channels
+      var current-item-index/esi: int <- item-index current-tab, _items, _channels
       var should-hide?/eax: boolean <- should-hide? current-tab, current-item-index, _items
       compare should-hide?, 0/false
       loop-if-!=
@@ -1522,7 +1540,7 @@ fn previous-item _env: (addr environment), users: (addr array user), _channels: 
       break-if->=
       increment *dest
       # if current item is not hidden, return
-      var current-item-index/esi: int <- item-index current-tab, _channels
+      var current-item-index/esi: int <- item-index current-tab, _items, _channels
       var should-hide?/eax: boolean <- should-hide? current-tab, current-item-index, _items
       compare should-hide?, 0/false
       loop-if-!=
