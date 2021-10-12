@@ -10,6 +10,8 @@
 # - Drawing pixels atop text or vice versa is not supported. Results in a fake
 #   screen will not mimic real screens in these situations.
 # - Fake screens currently also assume a fixed-width 8x16 font.
+# - Combining characters don't render like in a real screen (which itself
+#   isn't ideal).
 
 type screen {
   # text mode
@@ -23,7 +25,7 @@ type screen {
 }
 
 type screen-cell {
-  data: code-point  # TODO: support combining characters overlaid on another character
+  data: code-point
   color: int
   background-color: int
   unused?: boolean
