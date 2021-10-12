@@ -122,6 +122,18 @@
      (while ,test
        ,@body
        ,update))])
+    (repeat . [# Ideally we shouldn't have to provide
+# var.
+# But then nested repeats won't work
+# until we use gensyms.
+# And shell doesn't currently support
+# gensyms.
+# By exposing var to caller, it becomes
+# caller's responsibility to use unique
+# vars for each invocation of repeat.
+mac (repeat var n . body)
+  `(for ,var 0 (,var < ,n) (++ ,var)
+     ,@body)])
     (grid . [def (grid m n val)
   ret g (populate n ())
     for i 0 (< i n) ++i
