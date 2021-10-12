@@ -74,7 +74,7 @@ if ('onhashchange' in window) {
 <span id="L10" class="LineNr"> 10 </span><span class="muComment"># Run:</span>
 <span id="L11" class="LineNr"> 11 </span><span class="muComment">#   $ qemu-system-i386 code.img</span>
 <span id="L12" class="LineNr"> 12 </span>
-<span id="L13" class="LineNr"> 13 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-fixed.mu.html#L13'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
+<span id="L13" class="LineNr"> 13 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-fixed.mu.html#L13'>main</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
 <span id="L14" class="LineNr"> 14 </span>  <span class="muComment"># Initially the viewport is centered at 0, 0 in the scene.</span>
 <span id="L15" class="LineNr"> 15 </span>  <span class="PreProc">var</span> scene-cx-f: int
 <span id="L16" class="LineNr"> 16 </span>  <span class="PreProc">var</span> scene-cy-f: int
@@ -82,7 +82,7 @@ if ('onhashchange' in window) {
 <span id="L18" class="LineNr"> 18 </span>  <span class="PreProc">var</span> scene-width-f: int
 <span id="L19" class="LineNr"> 19 </span>  copy-to scene-width-f, <span class="Constant">0x400</span>/<span class="Constant">4</span>
 <span id="L20" class="LineNr"> 20 </span>  <span class="Delimiter">{</span>
-<span id="L21" class="LineNr"> 21 </span>    <a href='mandelbrot-fixed.mu.html#L127'>mandelbrot</a> <a href='../500fake-screen.mu.html#L14'>screen</a> scene-cx-f, scene-cy-f, scene-width-f
+<span id="L21" class="LineNr"> 21 </span>    <a href='mandelbrot-fixed.mu.html#L127'>mandelbrot</a> <a href='../500fake-screen.mu.html#L16'>screen</a> scene-cx-f, scene-cy-f, scene-width-f
 <span id="L22" class="LineNr"> 22 </span>    <span class="muComment"># move at an angle slowly towards the edge</span>
 <span id="L23" class="LineNr"> 23 </span>    <span class="PreProc">var</span> adj-f/eax: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L100'>multiply-fixed</a> scene-width-f, <span class="Constant">0x12</span>/<span class="Constant">0</span>.<span class="Constant">07</span>
 <span id="L24" class="LineNr"> 24 </span>    subtract-from scene-cx-f, adj-f
@@ -188,10 +188,10 @@ if ('onhashchange' in window) {
 <span id="L124" class="LineNr">124 </span>
 <span id="L125" class="LineNr">125 </span><span class="muComment"># adding and subtracting two fixed-point numbers can use existing instructions.</span>
 <span id="L126" class="LineNr">126 </span>
-<span id="L127" class="LineNr">127 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-fixed.mu.html#L127'>mandelbrot</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), scene-cx-f: int, scene-cy-f: int, scene-width-f: int <span class="Delimiter">{</span>
+<span id="L127" class="LineNr">127 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-fixed.mu.html#L127'>mandelbrot</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), scene-cx-f: int, scene-cy-f: int, scene-width-f: int <span class="Delimiter">{</span>
 <span id="L128" class="LineNr">128 </span>  <span class="PreProc">var</span> a/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L129" class="LineNr">129 </span>  <span class="PreProc">var</span> b/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L130" class="LineNr">130 </span>  a, b <span class="Special">&lt;-</span> <a href='../500fake-screen.mu.html#L73'>screen-size</a> <a href='../500fake-screen.mu.html#L14'>screen</a>
+<span id="L130" class="LineNr">130 </span>  a, b <span class="Special">&lt;-</span> <a href='../500fake-screen.mu.html#L75'>screen-size</a> <a href='../500fake-screen.mu.html#L16'>screen</a>
 <span id="L131" class="LineNr">131 </span>  <span class="PreProc">var</span> width/<span class="muRegEsi">esi</span>: int <span class="Special">&lt;-</span> copy a
 <span id="L132" class="LineNr">132 </span>  width <span class="Special">&lt;-</span> shift-left <span class="Constant">3</span>/log2-font-width
 <span id="L133" class="LineNr">133 </span>  <span class="PreProc">var</span> height/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy b
@@ -214,7 +214,7 @@ if ('onhashchange' in window) {
 <span id="L150" class="LineNr">150 </span>        dummy, color <span class="Special">&lt;-</span> <a href='../314divide.subx.html#L3'>integer-divide</a> iterations, <span class="Constant">0x18</span>/<span class="Constant">24</span>/size-of-cycle-0
 <span id="L151" class="LineNr">151 </span>        color <span class="Special">&lt;-</span> add <span class="Constant">0x20</span>/cycle-0
 <span id="L152" class="LineNr">152 </span>      <span class="Delimiter">}</span>
-<span id="L153" class="LineNr">153 </span>      <a href='../500fake-screen.mu.html#L578'>pixel</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, x, y, color
+<span id="L153" class="LineNr">153 </span>      <a href='../500fake-screen.mu.html#L580'>pixel</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, x, y, color
 <span id="L154" class="LineNr">154 </span>      x <span class="Special">&lt;-</span> increment
 <span id="L155" class="LineNr">155 </span>      <span class="PreProc">loop</span>
 <span id="L156" class="LineNr">156 </span>    <span class="Delimiter">}</span>

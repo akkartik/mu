@@ -72,12 +72,12 @@ if ('onhashchange' in window) {
 <span id="L9" class="LineNr">  9 </span><span class="muComment"># between control points, and arrow keys to move the control point at the</span>
 <span id="L10" class="LineNr"> 10 </span><span class="muComment"># cursor.</span>
 <span id="L11" class="LineNr"> 11 </span>
-<span id="L12" class="LineNr"> 12 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L12'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
+<span id="L12" class="LineNr"> 12 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L12'>main</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
 <span id="L13" class="LineNr"> 13 </span>  <span class="PreProc">var</span> env-storage: <a href='ex11.mu.html#L23'>environment</a>
 <span id="L14" class="LineNr"> 14 </span>  <span class="PreProc">var</span> env/<span class="muRegEsi">esi</span>: (addr <a href='ex11.mu.html#L23'>environment</a>) <span class="Special">&lt;-</span> address env-storage
 <span id="L15" class="LineNr"> 15 </span>  <a href='ex11.mu.html#L231'>initialize-environment</a> env, <span class="Constant">0x200</span> <span class="Constant">0x20</span>, <span class="Constant">0x180</span> <span class="Constant">0x90</span>, <span class="Constant">0x180</span> <span class="Constant">0x160</span>
 <span id="L16" class="LineNr"> 16 </span>  <span class="Delimiter">{</span>
-<span id="L17" class="LineNr"> 17 </span>    <a href='ex11.mu.html#L35'>render</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, env
+<span id="L17" class="LineNr"> 17 </span>    <a href='ex11.mu.html#L35'>render</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, env
 <span id="L18" class="LineNr"> 18 </span>    <a href='ex11.mu.html#L99'>edit</a> keyboard, env
 <span id="L19" class="LineNr"> 19 </span>    <span class="PreProc">loop</span>
 <span id="L20" class="LineNr"> 20 </span>  <span class="Delimiter">}</span>
@@ -95,8 +95,8 @@ if ('onhashchange' in window) {
 <span id="L32" class="LineNr"> 32 </span>  y: int
 <span id="L33" class="LineNr"> 33 </span><span class="Delimiter">}</span>
 <span id="L34" class="LineNr"> 34 </span>
-<span id="L35" class="LineNr"> 35 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L35'>render</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _self: (addr <a href='ex11.mu.html#L23'>environment</a>) <span class="Delimiter">{</span>
-<span id="L36" class="LineNr"> 36 </span>  <a href='../500fake-screen.mu.html#L328'>clear-screen</a> <a href='../500fake-screen.mu.html#L14'>screen</a>
+<span id="L35" class="LineNr"> 35 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L35'>render</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), _self: (addr <a href='ex11.mu.html#L23'>environment</a>) <span class="Delimiter">{</span>
+<span id="L36" class="LineNr"> 36 </span>  <a href='../500fake-screen.mu.html#L330'>clear-screen</a> <a href='../500fake-screen.mu.html#L16'>screen</a>
 <span id="L37" class="LineNr"> 37 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='ex11.mu.html#L23'>environment</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L38" class="LineNr"> 38 </span>  <span class="PreProc">var</span> tmp-ah/<span class="muRegEcx">ecx</span>: (addr handle <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> get self, p0
 <span id="L39" class="LineNr"> 39 </span>  <span class="PreProc">var</span> tmp/eax: (addr <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L235'>lookup</a> *tmp-ah
@@ -108,21 +108,21 @@ if ('onhashchange' in window) {
 <span id="L45" class="LineNr"> 45 </span>  tmp <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L235'>lookup</a> *tmp-ah
 <span id="L46" class="LineNr"> 46 </span>  <span class="PreProc">var</span> p2/<span class="muRegEcx">ecx</span>: (addr <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> copy tmp
 <span id="L47" class="LineNr"> 47 </span>  <span class="muComment"># control lines</span>
-<span id="L48" class="LineNr"> 48 </span>  <a href='ex11.mu.html#L214'>line</a>    <a href='../500fake-screen.mu.html#L14'>screen</a>, p0, p1,                 <span class="Constant">7</span>/color
-<span id="L49" class="LineNr"> 49 </span>  <a href='ex11.mu.html#L214'>line</a>    <a href='../500fake-screen.mu.html#L14'>screen</a>, p1, p2,                 <span class="Constant">7</span>/color
+<span id="L48" class="LineNr"> 48 </span>  <a href='ex11.mu.html#L214'>line</a>    <a href='../500fake-screen.mu.html#L16'>screen</a>, p0, p1,                 <span class="Constant">7</span>/color
+<span id="L49" class="LineNr"> 49 </span>  <a href='ex11.mu.html#L214'>line</a>    <a href='../500fake-screen.mu.html#L16'>screen</a>, p1, p2,                 <span class="Constant">7</span>/color
 <span id="L50" class="LineNr"> 50 </span>  <span class="muComment"># curve above control lines</span>
-<span id="L51" class="LineNr"> 51 </span>  <a href='ex11.mu.html#L62'>bezier</a>  <a href='../500fake-screen.mu.html#L14'>screen</a>, p0, p1, p2,             <span class="Constant">0xc</span>/color
+<span id="L51" class="LineNr"> 51 </span>  <a href='ex11.mu.html#L62'>bezier</a>  <a href='../500fake-screen.mu.html#L16'>screen</a>, p0, p1, p2,             <span class="Constant">0xc</span>/color
 <span id="L52" class="LineNr"> 52 </span>  <span class="muComment"># points above curve</span>
-<span id="L53" class="LineNr"> 53 </span>  <a href='ex11.mu.html#L224'>disc</a>    <a href='../500fake-screen.mu.html#L14'>screen</a>, p0,           <span class="Constant">3</span>/radius, <span class="Constant">7</span>/color   <span class="Constant">0xf</span>/border
-<span id="L54" class="LineNr"> 54 </span>  <a href='ex11.mu.html#L224'>disc</a>    <a href='../500fake-screen.mu.html#L14'>screen</a>, p1,           <span class="Constant">3</span>/radius, <span class="Constant">7</span>/color   <span class="Constant">0xf</span>/border
-<span id="L55" class="LineNr"> 55 </span>  <a href='ex11.mu.html#L224'>disc</a>    <a href='../500fake-screen.mu.html#L14'>screen</a>, p2,           <span class="Constant">3</span>/radius, <span class="Constant">7</span>/color   <span class="Constant">0xf</span>/border
+<span id="L53" class="LineNr"> 53 </span>  <a href='ex11.mu.html#L224'>disc</a>    <a href='../500fake-screen.mu.html#L16'>screen</a>, p0,           <span class="Constant">3</span>/radius, <span class="Constant">7</span>/color   <span class="Constant">0xf</span>/border
+<span id="L54" class="LineNr"> 54 </span>  <a href='ex11.mu.html#L224'>disc</a>    <a href='../500fake-screen.mu.html#L16'>screen</a>, p1,           <span class="Constant">3</span>/radius, <span class="Constant">7</span>/color   <span class="Constant">0xf</span>/border
+<span id="L55" class="LineNr"> 55 </span>  <a href='ex11.mu.html#L224'>disc</a>    <a href='../500fake-screen.mu.html#L16'>screen</a>, p2,           <span class="Constant">3</span>/radius, <span class="Constant">7</span>/color   <span class="Constant">0xf</span>/border
 <span id="L56" class="LineNr"> 56 </span>  <span class="muComment"># cursor last of all</span>
 <span id="L57" class="LineNr"> 57 </span>  <span class="PreProc">var</span> cursor-ah/eax: (addr handle <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> get self, <a href='ex11.mu.html#L75'>cursor</a>
 <span id="L58" class="LineNr"> 58 </span>  <span class="PreProc">var</span> <a href='ex11.mu.html#L75'>cursor</a>/eax: (addr <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L235'>lookup</a> *cursor-ah
-<span id="L59" class="LineNr"> 59 </span>  <a href='ex11.mu.html#L75'>cursor</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, <a href='ex11.mu.html#L75'>cursor</a>, <span class="Constant">0xa</span>/side, <span class="Constant">3</span>/color
+<span id="L59" class="LineNr"> 59 </span>  <a href='ex11.mu.html#L75'>cursor</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, <a href='ex11.mu.html#L75'>cursor</a>, <span class="Constant">0xa</span>/side, <span class="Constant">3</span>/color
 <span id="L60" class="LineNr"> 60 </span><span class="Delimiter">}</span>
 <span id="L61" class="LineNr"> 61 </span>
-<span id="L62" class="LineNr"> 62 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L62'>bezier</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _p0: (addr <a href='ex11.mu.html#L30'>point</a>), _p1: (addr <a href='ex11.mu.html#L30'>point</a>), _p2: (addr <a href='ex11.mu.html#L30'>point</a>), color: int <span class="Delimiter">{</span>
+<span id="L62" class="LineNr"> 62 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L62'>bezier</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), _p0: (addr <a href='ex11.mu.html#L30'>point</a>), _p1: (addr <a href='ex11.mu.html#L30'>point</a>), _p2: (addr <a href='ex11.mu.html#L30'>point</a>), color: int <span class="Delimiter">{</span>
 <span id="L63" class="LineNr"> 63 </span>  <span class="PreProc">var</span> p0/<span class="muRegEsi">esi</span>: (addr <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> copy _p0
 <span id="L64" class="LineNr"> 64 </span>  <span class="PreProc">var</span> x0/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> get p0, x
 <span id="L65" class="LineNr"> 65 </span>  <span class="PreProc">var</span> y0/<span class="muRegEdx">edx</span>: (addr int) <span class="Special">&lt;-</span> get p0, y
@@ -132,10 +132,10 @@ if ('onhashchange' in window) {
 <span id="L69" class="LineNr"> 69 </span>  <span class="PreProc">var</span> p2/<span class="muRegEsi">esi</span>: (addr <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> copy _p2
 <span id="L70" class="LineNr"> 70 </span>  <span class="PreProc">var</span> x2/<span class="muRegEdi">edi</span>: (addr int) <span class="Special">&lt;-</span> get p2, x
 <span id="L71" class="LineNr"> 71 </span>  <span class="PreProc">var</span> y2/<span class="muRegEsi">esi</span>: (addr int) <span class="Special">&lt;-</span> get p2, y
-<span id="L72" class="LineNr"> 72 </span>  <a href='../509bezier.mu.html#L14'>draw-monotonic-bezier</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, *x0 *y0, *x1 *y1, *x2 *y2, color
+<span id="L72" class="LineNr"> 72 </span>  <a href='../509bezier.mu.html#L14'>draw-monotonic-bezier</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, *x0 *y0, *x1 *y1, *x2 *y2, color
 <span id="L73" class="LineNr"> 73 </span><span class="Delimiter">}</span>
 <span id="L74" class="LineNr"> 74 </span>
-<span id="L75" class="LineNr"> 75 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L75'>cursor</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _p: (addr <a href='ex11.mu.html#L30'>point</a>), side: int, color: int <span class="Delimiter">{</span>
+<span id="L75" class="LineNr"> 75 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L75'>cursor</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), _p: (addr <a href='ex11.mu.html#L30'>point</a>), side: int, color: int <span class="Delimiter">{</span>
 <span id="L76" class="LineNr"> 76 </span>  <span class="PreProc">var</span> half-side/eax: int <span class="Special">&lt;-</span> copy side
 <span id="L77" class="LineNr"> 77 </span>  half-side <span class="Special">&lt;-</span> shift-right <span class="Constant">1</span>
 <span id="L78" class="LineNr"> 78 </span>  <span class="PreProc">var</span> p/<span class="muRegEsi">esi</span>: (addr <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> copy _p
@@ -147,16 +147,16 @@ if ('onhashchange' in window) {
 <span id="L84" class="LineNr"> 84 </span>  top-y <span class="Special">&lt;-</span> subtract half-side
 <span id="L85" class="LineNr"> 85 </span>  <span class="PreProc">var</span> max/eax: int <span class="Special">&lt;-</span> copy left-x
 <span id="L86" class="LineNr"> 86 </span>  max <span class="Special">&lt;-</span> add side
-<span id="L87" class="LineNr"> 87 </span>  <a href='../507line.mu.html#L64'>draw-horizontal-line</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, top-y, left-x, max, color
+<span id="L87" class="LineNr"> 87 </span>  <a href='../507line.mu.html#L64'>draw-horizontal-line</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, top-y, left-x, max, color
 <span id="L88" class="LineNr"> 88 </span>  max <span class="Special">&lt;-</span> copy top-y
 <span id="L89" class="LineNr"> 89 </span>  max <span class="Special">&lt;-</span> add side
-<span id="L90" class="LineNr"> 90 </span>  <a href='../507line.mu.html#L75'>draw-vertical-line</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, left-x, top-y, max, color
+<span id="L90" class="LineNr"> 90 </span>  <a href='../507line.mu.html#L75'>draw-vertical-line</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, left-x, top-y, max, color
 <span id="L91" class="LineNr"> 91 </span>  <span class="PreProc">var</span> right-x/<span class="muRegEbx">ebx</span>: int <span class="Special">&lt;-</span> copy left-x
 <span id="L92" class="LineNr"> 92 </span>  right-x <span class="Special">&lt;-</span> add side
-<span id="L93" class="LineNr"> 93 </span>  <a href='../507line.mu.html#L75'>draw-vertical-line</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, right-x, top-y, max, color
+<span id="L93" class="LineNr"> 93 </span>  <a href='../507line.mu.html#L75'>draw-vertical-line</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, right-x, top-y, max, color
 <span id="L94" class="LineNr"> 94 </span>  <span class="PreProc">var</span> bottom-y/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy top-y
 <span id="L95" class="LineNr"> 95 </span>  bottom-y <span class="Special">&lt;-</span> add side
-<span id="L96" class="LineNr"> 96 </span>  <a href='../507line.mu.html#L64'>draw-horizontal-line</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, bottom-y, left-x, right-x, color
+<span id="L96" class="LineNr"> 96 </span>  <a href='../507line.mu.html#L64'>draw-horizontal-line</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, bottom-y, left-x, right-x, color
 <span id="L97" class="LineNr"> 97 </span><span class="Delimiter">}</span>
 <span id="L98" class="LineNr"> 98 </span>
 <span id="L99" class="LineNr"> 99 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L99'>edit</a></span> keyboard: (addr keyboard), _self: (addr <a href='ex11.mu.html#L23'>environment</a>) <span class="Delimiter">{</span>
@@ -274,21 +274,21 @@ if ('onhashchange' in window) {
 <span id="L211" class="LineNr">211 </span>  <span class="Delimiter">}</span>
 <span id="L212" class="LineNr">212 </span><span class="Delimiter">}</span>
 <span id="L213" class="LineNr">213 </span>
-<span id="L214" class="LineNr">214 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L214'>line</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _p0: (addr <a href='ex11.mu.html#L30'>point</a>), _p1: (addr <a href='ex11.mu.html#L30'>point</a>), color: int <span class="Delimiter">{</span>
+<span id="L214" class="LineNr">214 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L214'>line</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), _p0: (addr <a href='ex11.mu.html#L30'>point</a>), _p1: (addr <a href='ex11.mu.html#L30'>point</a>), color: int <span class="Delimiter">{</span>
 <span id="L215" class="LineNr">215 </span>  <span class="PreProc">var</span> p0/<span class="muRegEsi">esi</span>: (addr <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> copy _p0
 <span id="L216" class="LineNr">216 </span>  <span class="PreProc">var</span> x0/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> get p0, x
 <span id="L217" class="LineNr">217 </span>  <span class="PreProc">var</span> y0/<span class="muRegEdx">edx</span>: (addr int) <span class="Special">&lt;-</span> get p0, y
 <span id="L218" class="LineNr">218 </span>  <span class="PreProc">var</span> p1/<span class="muRegEsi">esi</span>: (addr <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> copy _p1
 <span id="L219" class="LineNr">219 </span>  <span class="PreProc">var</span> x1/<span class="muRegEbx">ebx</span>: (addr int) <span class="Special">&lt;-</span> get p1, x
 <span id="L220" class="LineNr">220 </span>  <span class="PreProc">var</span> y1/eax: (addr int) <span class="Special">&lt;-</span> get p1, y
-<span id="L221" class="LineNr">221 </span>  <a href='../507line.mu.html#L1'>draw-line</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, *x0 *y0, *x1 *y1, color
+<span id="L221" class="LineNr">221 </span>  <a href='../507line.mu.html#L1'>draw-line</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, *x0 *y0, *x1 *y1, color
 <span id="L222" class="LineNr">222 </span><span class="Delimiter">}</span>
 <span id="L223" class="LineNr">223 </span>
-<span id="L224" class="LineNr">224 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L224'>disc</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), _p: (addr <a href='ex11.mu.html#L30'>point</a>), radius: int, color: int, border-color: int <span class="Delimiter">{</span>
+<span id="L224" class="LineNr">224 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L224'>disc</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), _p: (addr <a href='ex11.mu.html#L30'>point</a>), radius: int, color: int, border-color: int <span class="Delimiter">{</span>
 <span id="L225" class="LineNr">225 </span>  <span class="PreProc">var</span> p/<span class="muRegEsi">esi</span>: (addr <a href='ex11.mu.html#L30'>point</a>) <span class="Special">&lt;-</span> copy _p
 <span id="L226" class="LineNr">226 </span>  <span class="PreProc">var</span> x/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> get p, x
 <span id="L227" class="LineNr">227 </span>  <span class="PreProc">var</span> y/<span class="muRegEdx">edx</span>: (addr int) <span class="Special">&lt;-</span> get p, y
-<span id="L228" class="LineNr">228 </span>  <a href='../508circle.mu.html#L80'>draw-disc</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, *x *y, radius, color, border-color
+<span id="L228" class="LineNr">228 </span>  <a href='../508circle.mu.html#L80'>draw-disc</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, *x *y, radius, color, border-color
 <span id="L229" class="LineNr">229 </span><span class="Delimiter">}</span>
 <span id="L230" class="LineNr">230 </span>
 <span id="L231" class="LineNr">231 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='ex11.mu.html#L231'>initialize-environment</a></span> _self: (addr <a href='ex11.mu.html#L23'>environment</a>), x0: int, y0: int, x1: int, y1: int, x2: int, y2: int <span class="Delimiter">{</span>

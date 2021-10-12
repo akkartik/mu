@@ -63,20 +63,20 @@ if ('onhashchange' in window) {
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr"> 1 </span><span class="muComment"># Guess the result of mixing two colors.</span>
 <span id="L2" class="LineNr"> 2 </span>
-<span id="L3" class="LineNr"> 3 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='color-game.mu.html#L3'>main</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
-<span id="L4" class="LineNr"> 4 </span>  <span class="PreProc">var</span> second-buffer: <a href='../500fake-screen.mu.html#L14'>screen</a>
-<span id="L5" class="LineNr"> 5 </span>  <span class="PreProc">var</span> second-screen/<span class="muRegEdi">edi</span>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>) <span class="Special">&lt;-</span> address second-buffer
-<span id="L6" class="LineNr"> 6 </span>  <a href='../500fake-screen.mu.html#L32'>initialize-screen</a> second-screen, <span class="Constant">0x80</span>, <span class="Constant">0x30</span>, <span class="Constant">1</span>/include-pixels
+<span id="L3" class="LineNr"> 3 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='color-game.mu.html#L3'>main</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), keyboard: (addr keyboard), data-disk: (addr disk) <span class="Delimiter">{</span>
+<span id="L4" class="LineNr"> 4 </span>  <span class="PreProc">var</span> second-buffer: <a href='../500fake-screen.mu.html#L16'>screen</a>
+<span id="L5" class="LineNr"> 5 </span>  <span class="PreProc">var</span> second-screen/<span class="muRegEdi">edi</span>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>) <span class="Special">&lt;-</span> address second-buffer
+<span id="L6" class="LineNr"> 6 </span>  <a href='../500fake-screen.mu.html#L34'>initialize-screen</a> second-screen, <span class="Constant">0x80</span>, <span class="Constant">0x30</span>, <span class="Constant">1</span>/include-pixels
 <span id="L7" class="LineNr"> 7 </span>  <span class="PreProc">var</span> leftx/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0x80</span>
 <span id="L8" class="LineNr"> 8 </span>  <span class="PreProc">var</span> rightx/<span class="muRegEbx">ebx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0x380</span>
 <span id="L9" class="LineNr"> 9 </span>  <span class="Delimiter">{</span>
 <span id="L10" class="LineNr">10 </span>    compare leftx, rightx
 <span id="L11" class="LineNr">11 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L12" class="LineNr">12 </span>    <a href='../500fake-screen.mu.html#L328'>clear-screen</a> second-screen
+<span id="L12" class="LineNr">12 </span>    <a href='../500fake-screen.mu.html#L330'>clear-screen</a> second-screen
 <span id="L13" class="LineNr">13 </span>    <span class="muComment"># interesting value: 9/blue with 0xe/yellow</span>
 <span id="L14" class="LineNr">14 </span>    <a href='color-game.mu.html#L31'>color-field</a> second-screen, leftx <span class="Constant">0x40</span>/y, <span class="Constant">0x40</span>/width <span class="Constant">0x40</span>/height, <span class="Constant">1</span>/blue
 <span id="L15" class="LineNr">15 </span>    <a href='color-game.mu.html#L31'>color-field</a> second-screen, rightx <span class="Constant">0x41</span>/y, <span class="Constant">0x40</span>/width <span class="Constant">0x40</span>/height, <span class="Constant">2</span>/green
-<span id="L16" class="LineNr">16 </span>    <a href='../500fake-screen.mu.html#L641'>copy-pixels</a> second-screen, <a href='../500fake-screen.mu.html#L14'>screen</a>
+<span id="L16" class="LineNr">16 </span>    <a href='../500fake-screen.mu.html#L643'>copy-pixels</a> second-screen, <a href='../500fake-screen.mu.html#L16'>screen</a>
 <span id="L17" class="LineNr">17 </span>    <span class="muComment"># on the first iteration, give everyone a chance to make their guess</span>
 <span id="L18" class="LineNr">18 </span>    <span class="Delimiter">{</span>
 <span id="L19" class="LineNr">19 </span>      compare leftx, <span class="Constant">0x80</span>
@@ -91,7 +91,7 @@ if ('onhashchange' in window) {
 <span id="L28" class="LineNr">28 </span>  <span class="Delimiter">}</span>
 <span id="L29" class="LineNr">29 </span><span class="Delimiter">}</span>
 <span id="L30" class="LineNr">30 </span>
-<span id="L31" class="LineNr">31 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='color-game.mu.html#L31'>color-field</a></span> <a href='../500fake-screen.mu.html#L14'>screen</a>: (addr <a href='../500fake-screen.mu.html#L14'>screen</a>), xmin: int, ymin: int, width: int, height: int, color: int <span class="Delimiter">{</span>
+<span id="L31" class="LineNr">31 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='color-game.mu.html#L31'>color-field</a></span> <a href='../500fake-screen.mu.html#L16'>screen</a>: (addr <a href='../500fake-screen.mu.html#L16'>screen</a>), xmin: int, ymin: int, width: int, height: int, color: int <span class="Delimiter">{</span>
 <span id="L32" class="LineNr">32 </span>  <span class="PreProc">var</span> xmax/<span class="muRegEsi">esi</span>: int <span class="Special">&lt;-</span> copy xmin
 <span id="L33" class="LineNr">33 </span>  xmax <span class="Special">&lt;-</span> add width
 <span id="L34" class="LineNr">34 </span>  <span class="PreProc">var</span> ymax/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy ymin
@@ -104,7 +104,7 @@ if ('onhashchange' in window) {
 <span id="L41" class="LineNr">41 </span>    <span class="Delimiter">{</span>
 <span id="L42" class="LineNr">42 </span>      compare x, xmax
 <span id="L43" class="LineNr">43 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L44" class="LineNr">44 </span>      <a href='../500fake-screen.mu.html#L578'>pixel</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, x, y, color
+<span id="L44" class="LineNr">44 </span>      <a href='../500fake-screen.mu.html#L580'>pixel</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, x, y, color
 <span id="L45" class="LineNr">45 </span>      x <span class="Special">&lt;-</span> add <span class="Constant">2</span>
 <span id="L46" class="LineNr">46 </span>      <span class="PreProc">loop</span>
 <span id="L47" class="LineNr">47 </span>    <span class="Delimiter">}</span>
@@ -116,7 +116,7 @@ if ('onhashchange' in window) {
 <span id="L53" class="LineNr">53 </span>    <span class="Delimiter">{</span>
 <span id="L54" class="LineNr">54 </span>      compare x, xmax
 <span id="L55" class="LineNr">55 </span>      <span class="PreProc">break-if-&gt;=</span>
-<span id="L56" class="LineNr">56 </span>      <a href='../500fake-screen.mu.html#L578'>pixel</a> <a href='../500fake-screen.mu.html#L14'>screen</a>, x, y, color
+<span id="L56" class="LineNr">56 </span>      <a href='../500fake-screen.mu.html#L580'>pixel</a> <a href='../500fake-screen.mu.html#L16'>screen</a>, x, y, color
 <span id="L57" class="LineNr">57 </span>      x <span class="Special">&lt;-</span> add <span class="Constant">2</span>
 <span id="L58" class="LineNr">58 </span>      <span class="PreProc">loop</span>
 <span id="L59" class="LineNr">59 </span>    <span class="Delimiter">}</span>
