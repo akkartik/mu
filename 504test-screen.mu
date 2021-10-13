@@ -42,16 +42,16 @@ fn check-screen-row-from _screen: (addr screen), x: int, y: int, expected: (addr
         break-if-=
         # otherwise print an error
         failure-count <- increment
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg=cyan, 0/bg
         draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg/cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg=cyan, 0/bg
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg=cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg=cyan, 0/bg
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg=cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg=cyan, 0/bg
         draw-code-point-at-cursor-over-full-screen 0/screen, c, 3/cyan, 0/bg
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg=cyan, 0/bg
         move-cursor-to-left-margin-of-next-line 0/screen
       }
     }
@@ -67,7 +67,7 @@ fn check-screen-row-from _screen: (addr screen), x: int, y: int, expected: (addr
     return
   }
   # otherwise print a "."
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg=cyan, 0/bg
 }
 
 # various variants by screen-cell attribute; spaces in the 'expected' data should not match the attribute
@@ -118,21 +118,21 @@ fn check-screen-row-in-color-from _screen: (addr screen), fg: int, y: int, x: in
           compare c, expected-code-point
           {
             break-if-!=
-            draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
+            draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg=cyan, 0/bg
             break $check-screen-row-in-color-from:compare-graphemes
           }
           # otherwise print an error
           count-test-failure
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg=cyan, 0/bg
           draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg=cyan, 0/bg
           draw-code-point-at-cursor-over-full-screen 0/screen, c, 3/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg=cyan, 0/bg
           move-cursor-to-left-margin-of-next-line 0/screen
         }
         $check-screen-row-in-color-from:compare-colors: {
@@ -140,22 +140,22 @@ fn check-screen-row-in-color-from _screen: (addr screen), fg: int, y: int, x: in
           compare fg, color
           {
             break-if-!=
-            draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
+            draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg=cyan, 0/bg
             break $check-screen-row-in-color-from:compare-colors
           }
           # otherwise print an error
           count-test-failure
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg=cyan, 0/bg
           draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") in color ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, fg, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed color ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, color, 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") in color ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, fg, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed color ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, color, 3/fg=cyan, 0/bg
           move-cursor-to-left-margin-of-next-line 0/screen
         }
       }
@@ -212,21 +212,21 @@ fn check-screen-row-in-background-color-from _screen: (addr screen), bg: int, y:
           compare g, expected-code-point
           {
             break-if-!=
-            draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
+            draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg=cyan, 0/bg
             break $check-screen-row-in-background-color-from:compare-graphemes
           }
           # otherwise print an error
           count-test-failure
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg=cyan, 0/bg
           draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") but observed '", 3/fg=cyan, 0/bg
           draw-code-point-at-cursor-over-full-screen 0/screen, g, 3/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "'", 3/fg=cyan, 0/bg
           move-cursor-to-left-margin-of-next-line 0/screen
           break $check-screen-row-in-background-color-from:compare-graphemes
         }
@@ -235,22 +235,22 @@ fn check-screen-row-in-background-color-from _screen: (addr screen), bg: int, y:
           compare bg, background-color
           {
             break-if-!=
-            draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
+            draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg=cyan, 0/bg
             break $check-screen-row-in-background-color-from:compare-background-colors
           }
           # otherwise print an error
           count-test-failure
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected '", 3/fg=cyan, 0/bg
           draw-code-point-at-cursor-over-full-screen 0/screen, expected-code-point, 3/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") in background-color ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, bg, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed background-color ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, background-color, 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, "' at (", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") in background-color ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, bg, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed background-color ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, background-color, 3/fg=cyan, 0/bg
           move-cursor-to-left-margin-of-next-line 0/screen
         }
       }
@@ -295,13 +295,13 @@ fn check-background-color-in-screen-row-from _screen: (addr screen), bg: int, y:
           compare background-color, bg
           break-if-!= $check-background-color-in-screen-row-from:compare-cells
           increment failure-count
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected (", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
-          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") to not be in background-color ", 3/fg/cyan, 0/bg
-          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, bg, 3/fg/cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected (", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg=cyan, 0/bg
+          draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") to not be in background-color ", 3/fg=cyan, 0/bg
+          draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, bg, 3/fg=cyan, 0/bg
           move-cursor-to-left-margin-of-next-line 0/screen
           break $check-background-color-in-screen-row-from:compare-cells
         }
@@ -309,15 +309,15 @@ fn check-background-color-in-screen-row-from _screen: (addr screen), bg: int, y:
         compare background-color, bg
         break-if-= $check-background-color-in-screen-row-from:compare-cells
         increment failure-count
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected (", 3/fg/cyan, 0/bg
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg/cyan, 0/bg
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg/cyan, 0/bg
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg/cyan, 0/bg
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") in background-color ", 3/fg/cyan, 0/bg
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, bg, 3/fg/cyan, 0/bg
-        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed background-color ", 3/fg/cyan, 0/bg
-        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, background-color, 3/fg/cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ": expected (", 3/fg=cyan, 0/bg
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 3/fg=cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ", ", 3/fg=cyan, 0/bg
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 3/fg=cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ") in background-color ", 3/fg=cyan, 0/bg
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, bg, 3/fg=cyan, 0/bg
+        draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, " but observed background-color ", 3/fg=cyan, 0/bg
+        draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, background-color, 3/fg=cyan, 0/bg
         move-cursor-to-left-margin-of-next-line 0/screen
       }
     }
@@ -333,7 +333,7 @@ fn check-background-color-in-screen-row-from _screen: (addr screen), bg: int, y:
     return
   }
   # otherwise print a "."
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg=cyan, 0/bg
 }
 
 fn test-draw-single-grapheme {

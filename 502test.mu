@@ -4,10 +4,10 @@ fn check-ints-equal _a: int, b: int, msg: (addr array byte) {
   compare a, b
   {
     break-if-!=
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg=cyan, 0/bg
     return
   }
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
   move-cursor-to-left-margin-of-next-line 0/screen
   count-test-failure
 }
@@ -21,10 +21,10 @@ fn check _a: boolean, msg: (addr array byte) {
   compare a, 0/false
   {
     break-if-=
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg=cyan, 0/bg
     return
   }
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
   move-cursor-to-left-margin-of-next-line 0/screen
   count-test-failure
 }
@@ -34,10 +34,10 @@ fn check-not _a: boolean, msg: (addr array byte) {
   compare a, 0/false
   {
     break-if-!=
-    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg/cyan, 0/bg
+    draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, ".", 3/fg=cyan, 0/bg
     return
   }
-  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg/cyan, 0/bg
+  draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, msg, 3/fg=cyan, 0/bg
   move-cursor-to-left-margin-of-next-line 0/screen
   count-test-failure
 }
