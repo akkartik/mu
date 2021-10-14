@@ -76,4 +76,29 @@ test-append-byte-single:
     # . end
     c3/return
 
+undo-append-byte:  # f: (addr stream byte)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    # eax = f
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    # if (f->write <= 0) abort
+    81          7/subop/compare     0/mod/indirect  0/rm32/eax    .           .             .           .           .               0/imm32           # compare *eax
+    7e/jump-if-<=  $undo-append-byte:abort/disp8
+    # --f->write
+    ff          1/subop/decrement   0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # decrement *eax
+$undo-append-byte:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$undo-append-byte:abort:
+    (abort "undo-append-byte: empty stream")
+    # never gets here
+
 # . . vim:nowrap:textwidth=0
