@@ -198,7 +198,8 @@ command as often as you like:
 ./translate tutorial/task5.mu  &&  qemu-system-i386 code.img
 ```
 
-The section on [integer primitives](https://github.com/akkartik/mu/blob/main/mu.md#integer-primitives) shows that Mu consistently follows a few rules:
+The section on [integer primitives](https://github.com/akkartik/mu/blob/main/mu.md#integer-primitives)
+shows that Mu consistently follows a few rules:
 * Instructions that write to a register always have an output before the `<-`.
 * Instructions that use an argument in memory always have it as the first
   inout.
