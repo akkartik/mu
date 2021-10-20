@@ -149,8 +149,8 @@ You should see a failing test that looks something like this:
 
 Open `tutorial/task4.mu` in your text editor. Think about how to add a line
 between the `{}` lines to make `the-answer` return 42. Rerun the above
-commands. You'll know you got it right all the tests pass, i.e. when the rows
-of dots and text above are replaced by an empty screen.
+commands. You'll know you got it right when all the tests pass, i.e. when the
+rows of dots and text above are replaced by an empty screen.
 
 Don't be afraid to run the above commands over and over again as you try out
 different solutions. Here's a way to run them together so they're easy to
