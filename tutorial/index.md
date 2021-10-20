@@ -182,6 +182,8 @@ The section on [integer primitives](https://github.com/akkartik/mu/blob/main/mu.
 also provides a useful cheatsheet of the different forms of instructions you
 will need.
 
+Here's the exercise, with comments starting with `#` highlighting the gaps in
+the program:
 ```
 fn foo -> _/eax: int {
   var x: int
