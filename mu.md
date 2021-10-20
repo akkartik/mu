@@ -197,6 +197,7 @@ var/reg <- increment
 increment var
 var/reg <- decrement
 decrement var
+
 var1/reg1 <- add var2/reg2
 var/reg <- add var2
 add-to var1, var2/reg
