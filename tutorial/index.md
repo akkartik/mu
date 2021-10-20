@@ -166,4 +166,4 @@ ask questions or share your experience](http://akkartik.name/contact).
 
 One gotcha to keep in mind is that numbers in Mu must always be in hexadecimal
 notation, starting with `0x`. Use a calculator on your computer or phone to
-convert 42 to hexadecimal, or [this page on your web browser](http://akkartik.github.io/mu/tutorial/task4-calculator.html).
+convert 42 to hexadecimal, or [this page on your web browser](http://akkartik.github.io/mu/tutorial/converter.html).
