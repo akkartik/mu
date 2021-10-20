@@ -164,6 +164,9 @@ In programming there is no penalty for making mistakes, and once you arrive at
 the correct solution you have it forever. As always, [feel free to ping me and
 ask questions or share your experience](http://akkartik.name/contact).
 
+Mu statements can have _outputs_ on the left (before the `<-`) and _inouts_ on
+the right (after the instruction name).
+
 One gotcha to keep in mind is that numbers in Mu must always be in hexadecimal
 notation, starting with `0x`. Use a calculator on your computer or phone to
 convert 42 to hexadecimal, or [this page on your web browser](http://akkartik.github.io/mu/tutorial/converter.html).
@@ -175,7 +178,8 @@ a second one in memory. To prepare for this, reread the first section of the
 [Mu syntax description](https://github.com/akkartik/mu/blob/main/mu.md), and
 then its section on [local variables](https://github.com/akkartik/mu/blob/main/mu.md#local-variables).
 The section on [integer primitives](https://github.com/akkartik/mu/blob/main/mu.md#integer-primitives)
-also provides a useful cheatsheet of the instruction forms you will need.
+also provides a useful cheatsheet of the different forms of instructions you
+will need.
 
 ```
 fn foo -> _/eax: int {
