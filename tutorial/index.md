@@ -39,7 +39,7 @@ page to be accessible to people who are in the process of learning
 programming, but I'm sure it isn't good enough yet for that. Ask me questions
 and help me improve it.
 
-# Task 1: getting started
+## Task 1: getting started
 
 Open a terminal and run the following commands to prepare Mu on your computer:
 
@@ -73,7 +73,7 @@ it. Just [get in touch](http://akkartik.name/contact).
 (You can look at `apps/ex5.mu` at this point if you like. It's just a few
 lines long. But don't worry if it doesn't make much sense.)
 
-# Task 2: running tests
+## Task 2: running tests
 
 Here's a new program to run:
 
@@ -99,7 +99,7 @@ messages from failing tests and implicitly asking you to first fix them.
 
 (Don't worry just yet about what the message in the middle of all the dots means.)
 
-# Task 3: configure your text editor
+## Task 3: configure your text editor
 
 So far we haven't used a text editor yet, but we will now be starting to do
 so. Before we do, it's worth spending a little bit of time setting your
@@ -116,7 +116,7 @@ It's particularly useful to highlight _comments_ which the computer ignores
 (everything on a line after a `#` character) and _strings_ within `""` double
 quotes.
 
-# Task 4: your first Mu statement
+## Task 4: your first Mu statement
 
 Mu is a statement-oriented language. Read the first section of the [Mu syntax
 description](https://github.com/akkartik/mu/blob/main/mu.md) to learn a little
