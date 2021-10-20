@@ -206,3 +206,7 @@ shows that Mu consistently follows a few rules:
 * Instructions that write to memory have a preposition in their name. Contrast
   `add` to a register vs `add-to` a memory location, `subtract` from a
   register vs `subtract-from` a memory location, and so on.
+
+If you're stuck, as always, [my door is open](http://akkartik.name/contact).
+You can also see a solution in the repository, though I won't link to it lest
+it encourage peeking.
