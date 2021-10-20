@@ -164,8 +164,9 @@ In programming there is no penalty for making mistakes, and once you arrive at
 the correct solution you have it forever. As always, [feel free to ping me and
 ask questions or share your experience](http://akkartik.name/contact).
 
-Mu statements can have _outputs_ on the left (before the `<-`) and _inouts_ on
-the right (after the instruction name).
+Mu statements can have _outputs_ on the left (before the `<-`) and _inouts_
+(either inputs or outputs) on the right, after the instruction name. The order
+matters.
 
 One gotcha to keep in mind is that numbers in Mu must always be in hexadecimal
 notation, starting with `0x`. Use a calculator on your computer or phone to
