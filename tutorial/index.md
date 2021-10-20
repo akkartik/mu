@@ -167,3 +167,28 @@ ask questions or share your experience](http://akkartik.name/contact).
 One gotcha to keep in mind is that numbers in Mu must always be in hexadecimal
 notation, starting with `0x`. Use a calculator on your computer or phone to
 convert 42 to hexadecimal, or [this page on your web browser](http://akkartik.github.io/mu/tutorial/converter.html).
+
+## Task 5: variables in registers, variables in memory
+
+We'll now practice managing one variable in a register (like last time) and
+a second one in memory. To prepare for this, reread the first section of the
+[Mu syntax description](https://github.com/akkartik/mu/blob/main/mu.md), and
+then its section on [local variables](https://github.com/akkartik/mu/blob/main/mu.md#local-variables).
+The section on [integer primitives](https://github.com/akkartik/mu/blob/main/mu.md#integer-primitives)
+also provides a useful cheatsheet of the instruction forms you will need.
+
+```
+fn foo -> _/eax: int {
+  var x: int
+  # statement 1: store 3 in x
+  # statement 2: define a new variable 'y' in register eax and store 4 in it
+  # statement 3: add y to x, storing the result in x
+  return x
+}
+```
+
+Again, you're encouraged to repeatedly try out your programs by running this
+command as often as you like:
+```
+./translate tutorial/task5.mu  &&  qemu-system-i386 code.img
+```
