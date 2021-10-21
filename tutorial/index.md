@@ -51,7 +51,7 @@ cd mu
 Run a small program to start:
 
 ```
-./translate apps/ex5.mu
+./translate tutorial/task1.mu
 qemu-system-i386 code.img
 ```
 
@@ -59,7 +59,7 @@ If you aren't on Linux, the command for creating `code.img` will be slightly
 different:
 
 ```
-./translate_emulated apps/ex5.mu
+./translate_emulated tutorial/task1.mu
 qemu-system-i386 code.img
 ```
 
@@ -70,7 +70,7 @@ Either way, you should see this:
 If you have any trouble at this point, don't waste _any_ time thinking about
 it. Just [get in touch](http://akkartik.name/contact).
 
-(You can look at `apps/ex5.mu` at this point if you like. It's just a few
+(You can look at `tutorial/task1.mu` at this point if you like. It's just 3
 lines long. But don't worry if it doesn't make much sense.)
 
 ## Task 2: running tests
@@ -89,10 +89,11 @@ This time the screen will look like this:
 
 <img alt='screenshot of failing test on the Mu computer' src='task2.png'>
 
-Each of the dots is a _test_, a little self-contained and automated program
-run with an expected result. Mu comes with a lot of tests, and it always runs
-all tests before it runs any program. You may have missed the dots when you
-ran Task 1 because there were no failures. They were printed on the screen and
+Each of the dots represents a _test_, a little self-contained and automated
+program run and its results verified. Mu comes with a lot of tests (every
+function starting with 'test-' is a test), and it always runs all tests on
+boot before it runs any program. You may have missed the dots when you ran
+Task 1 because there were no failures. They were printed on the screen and
 then immediately erased. In Task 2, however, we've deliberately included a
 failing test. When any tests fail, Mu will immediately stop, showing you
 messages from failing tests and implicitly asking you to first fix them.
@@ -119,8 +120,8 @@ quotes.
 ## Task 4: your first Mu statement
 
 Mu is a statement-oriented language. Read the first section of the [Mu syntax
-description](https://github.com/akkartik/mu/blob/main/mu.md) to learn a little
-bit about it.
+description](https://github.com/akkartik/mu/blob/main/mu.md) (until the first
+sub-heading, "functions and calls") to learn a little bit about it.
 
 Here's a skeleton of a Mu function that's missing a single statement.
 
