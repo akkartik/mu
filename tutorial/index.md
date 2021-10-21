@@ -31,6 +31,8 @@ You will need:
 * [QEMU](https://www.qemu.org) for emulating a processor without Linux.
 * Basic knowledge of number bases, and the difference between decimal and
   hexadecimal numbers.
+* Basic knowledge of the inside of a processor, such as the difference between
+  a small number of registers and a large number of locations in memory.
 
 If you have trouble with any of this, [I'm always nearby and available to
 answer questions](http://akkartik.name/contact). The prerequisites are just
