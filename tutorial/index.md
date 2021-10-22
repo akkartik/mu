@@ -264,3 +264,19 @@ trying out the next one.)
 Runbooks are a handy tool for working with computers. In a runbook you write
 instructions to your future self or for others you're working with. They're
 instructions for programming people, not computers.
+
+## Task 7: variables in registers, variables in memory (again)
+
+Go back to your program in Task 5. Replace the first statement declaring
+variable `x`:
+```
+var x: int
+```
+
+so it looks like this:
+```
+var x/edx: int <- copy 0
+```
+
+Run `translate` (or `translate_emulated`) as usual. Use your runbook from Task
+6 to address the errors that arise.
