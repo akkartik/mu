@@ -1,0 +1,20 @@
+If I encounter an error that looks like this:
+  fn main: stmt copy: output 'm' not in a register
+
+then I should do the following:
+  - find the function mentioned (here `main`);
+  - look for a statement that contains the mentioned output (here `m`) before
+    the `<-`; and
+  - replace the statement with a version of the same instruction that writes
+    to an inout in memory. (Here, replace `m <- copy` with `copy-to m`.)
+
+===
+
+If I encounter an error that looks like this:
+  label table: get-slice: key not found: copy-to
+
+then I should do the following:
+  - look for a statement with the same instruction (here `copy-to`) whose
+    first inout is not a variable stored in memory; and
+  - email Kartik (http://akkartik.name/contact) to ask why this message is so
+    much less helpful then the previous one.

@@ -1,6 +1,6 @@
 fn main {
   var m: int
-  var reg/edx: int <- copy 0
+  var r/edx: int <- copy 0
   # insert a single statement below
-
+  copy-to r, 3
 }

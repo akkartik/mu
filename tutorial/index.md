@@ -260,3 +260,7 @@ real, during a real programming session.
 
 (Also, don't forget to delete the statement you typed in before you move on to
 trying out the next one.)
+
+Runbooks are a handy tool for working with computers. In a runbook you write
+instructions to your future self or for others you're working with. They're
+instructions for programming people, not computers.
