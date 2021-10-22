@@ -215,3 +215,48 @@ shows that Mu consistently follows a few rules:
 If you're stuck, as always, [my door is open](http://akkartik.name/contact).
 You can also see a solution in the repository, though I won't link to it lest
 it encourage peeking.
+
+## Task 6: getting used to a few error messages
+
+If you're like me, seeing an error message can feel a bit stressful. It
+usually happens when you're trying to get somewhere, it can feel like the
+computer is being deliberately obtrusive, there's uncertainty about what's
+wrong.
+
+Well, I'd like to share one trick I recently learned to stop fearing error
+messages: deliberately trigger them at a time and place of your choosing, when
+you're mentally prepared to see them. That takes the stress right out.
+
+Here's the skeleton for `tutorial/task6.mu`:
+
+```
+fn main {
+  var m: int
+  var r/edx: int <- copy 0
+  # insert a single statement below
+
+}
+```
+
+(Reminder: `m` here is stored somewhere in memory, while `r` is stored in
+register `edx`. Variables in registers must always be initialized when they're
+created. Variables in memory must never be initialized, because they're always
+implicitly initialized to 0.)
+
+Now, starting from this skeleton, type the following statements in, one at a
+time. Your program should only ever have one more statement than the above
+skeleton. We'll try out the following statements, one by one:
+
+* `m <- copy 3`
+* `r <- copy 3`
+* `copy-to r, 3`
+* `copy-to m, 3`
+
+Before typing in each one, write down whether you expect an error. After
+trying it out, compare your answer. It can also be useful to write down the
+exact error you see, and what it means, in your own words. Flipping the
+"runbook" that way can be a useful aid to memory when you see an error for
+real, during a real programming session.
+
+(Also, don't forget to delete the statement you typed in before you move on to
+trying out the next one.)
