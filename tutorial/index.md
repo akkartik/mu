@@ -254,16 +254,17 @@ skeleton. We'll try out the following statements, one by one:
 
 Before typing in each one, write down whether you expect an error. After
 trying it out, compare your answer. It can also be useful to write down the
-exact error you see, and what it means, in your own words. Flipping the
-"runbook" that way can be a useful aid to memory when you see an error for
-real, during a real programming session.
+exact error you see, and what it means, in your own words.
 
 (Also, don't forget to delete the statement you typed in before you move on to
 trying out the next one.)
 
-Runbooks are a handy tool for working with computers. In a runbook you write
-instructions to your future self or for others you're working with. They're
-instructions for programming people, not computers.
+Making notes about error messages is an example of a more general trick called
+a [runbook](https://en.wikipedia.org/wiki/Runbook). Runbooks are aids to
+memory, scripts for what to do when you run into a problem. People think worse
+in the presence of stress, and runbooks can help reduce the need for thinking
+in the presence of stress. They're a way of programming people (your future
+self or others) rather than computers.
 
 ## Task 7: variables in registers, variables in memory (again)
 
