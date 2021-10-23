@@ -210,12 +210,6 @@ subtract-from var1, var2/reg
 var/reg <- subtract n
 subtract-from var, n
 
-var1/reg1 <- xor var2/reg2
-var/reg <- xor var2
-xor-with var1, var2/reg
-var/reg <- xor n
-xor-with var, n
-
 var1/reg1 <- negate
 negate var
 
@@ -256,6 +250,12 @@ or-with var, n
 
 var1/reg1 <- not
 not var
+
+var1/reg1 <- xor var2/reg2
+var/reg <- xor var2
+xor-with var1, var2/reg
+var/reg <- xor n
+xor-with var, n
 ```
 
 Any statement above that takes a variable in memory can be replaced with a
