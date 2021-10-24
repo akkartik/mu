@@ -249,7 +249,7 @@ However, there's no way to jump to a block that doesn't contain the `loop` or
 
 ### Integer arithmetic
 
-These instructions require variables of non-`addr`, non-float types.
+These instructions require variables of non-`addr`, non-`float` types.
 
 Add:
 ```
@@ -346,7 +346,7 @@ fourth decimal place](linux/x86_approx.md). If you need more precision, use
 
 ### Bitwise boolean operations
 
-These require variables of non-`addr`, non-float types.
+These require variables of non-`addr`, non-`float` types.
 
 And:
 ```
@@ -383,7 +383,7 @@ Xor:
 
 ### Shifts
 
-Shifts require variables of non-`addr`, non-float types.
+Shifts require variables of non-`addr`, non-`float` types.
 
 ```
   var/reg <- shift-left n
