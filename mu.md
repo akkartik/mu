@@ -164,16 +164,20 @@ Correspondingly, there are ways to convert floats into integers.
 Work with variables of any 32-bit type. `addr` variables can only be compared
 to 0.
 
+```
   compare var1, var2/reg
   compare var1/reg, var2
   compare var/eax, n
   compare var, n
+```
 
 Floating-point numbers cannot be compared to literals, and the register must
 come first.
 
+```
   compare var1/xreg1, var2/xreg2
   compare var1/xreg1, var2
+```
 
 ### Branches
 
