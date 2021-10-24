@@ -11,8 +11,8 @@ Define functions with the `fn` keyword. For example:
 ```
 
 Functions contain `{}` blocks, `var` declarations, primitive statements and
-calls to other functions. Primitive statements and function calls look
-similar:
+calls to other functions. Only `{}` blocks can nest. Primitive statements and
+function calls look similar:
 
 ```
   out1, out2, out3, ... <- operation inout1, inout2, inout3, ...
@@ -36,8 +36,9 @@ Declare local variables in a function using the `var` keyword.
 
 You can declare local variables in either registers or memory (the stack). So
 a `var` statement has two forms:
-  - `var x/eax: int <- copy 0`
-  - `var x: int`
+  - Living in a register, e.g. `var x/eax: int <- copy 0` defines `x` which
+    lives in `eax`.
+  - Living in memory, e.g. `var x: int` defines `x` on the stack.
 
 Variables in registers must be initialized. Variables on the stack are
 implicitly zeroed out.
