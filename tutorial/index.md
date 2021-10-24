@@ -121,9 +121,10 @@ quotes.
 
 ## Task 4: your first Mu statement
 
-Mu is a statement-oriented language. Read the first section of the [Mu syntax
-description](https://github.com/akkartik/mu/blob/main/mu.md) (until the first
-sub-heading, "functions and calls") to learn a little bit about it.
+Mu is a statement-oriented language. Most statements translate into a single
+instruction to the x86 processor. Read the first two sections of the [Mu
+syntax description](https://github.com/akkartik/mu/blob/main/mu.md) (about
+functions and variables) to learn a little bit about it.
 
 Here's a skeleton of a Mu function that's missing a single statement.
 
@@ -178,10 +179,9 @@ convert 42 to hexadecimal, or [this page on your web browser](http://akkartik.gi
 ## Task 5: variables in registers, variables in memory
 
 We'll now practice managing one variable in a register (like last time) and
-a second one in memory. To prepare for this, reread the first section of the
-[Mu syntax description](https://github.com/akkartik/mu/blob/main/mu.md), and
-then its section on [local variables](https://github.com/akkartik/mu/blob/main/mu.md#local-variables).
-The section on [integer primitives](https://github.com/akkartik/mu/blob/main/mu.md#integer-primitives)
+a second one in memory. To prepare for this, reread the first two sections of
+the [Mu syntax description](https://github.com/akkartik/mu/blob/main/mu.md).
+The section on [integer arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#integer-arithmetic)
 also provides a useful cheatsheet of the different forms of instructions you
 will need.
 
@@ -203,7 +203,7 @@ command as often as you like:
 ./translate tutorial/task5.mu  &&  qemu-system-i386 code.img
 ```
 
-The section on [integer primitives](https://github.com/akkartik/mu/blob/main/mu.md#integer-primitives)
+The section on [integer arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#integer-arithmetic)
 shows that Mu consistently follows a few rules:
 * Instructions that write to a register always have an output before the `<-`.
 * Instructions that use an argument in memory always have it as the first
