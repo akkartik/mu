@@ -42,6 +42,13 @@ a `var` statement has two forms:
 Variables in registers must be initialized. Variables on the stack are
 implicitly zeroed out.
 
+Variables exist only within the `{}` block they're defined in. Space allocated
+to them on the stack is reclaimed after execution leaves the block. Registers
+restore whatever variable was using them in the outer block.
+
+It is perfectly ok to reuse a register for a new variable. Even in a single
+block (though you permanently lose the old variable then).
+
 Variables can be in six 32-bit _general-purpose_ registers of the x86 processor.
   - eax
   - ebx
@@ -49,6 +56,9 @@ Variables can be in six 32-bit _general-purpose_ registers of the x86 processor.
   - edx
   - esi ('s' often a mnemonic for 'source')
   - edi ('d' often a mnemonic for 'destination')
+
+Most functions return results in `eax` by convention. In practice, it ends up
+churning through variables pretty quickly.
 
 You can store several types in these registers:
   - int
@@ -381,7 +391,7 @@ Xor:
   xor-with var, n
 ```
 
-### Shifts
+### Bitwise shifts
 
 Shifts require variables of non-`addr`, non-`float` types.
 
@@ -415,6 +425,7 @@ You can compute the address of any variable in memory (never in registers):
 
 As mentioned up top, `addr` variables can never escape the function where
 they're computed. You can't store them on the heap, or in compound types.
+Think of them as short-lived things.
 
 To manage long-lived addresses, _allocate_ them on the heap.
 
@@ -429,10 +440,6 @@ have to first convert them into a short-lived `addr` using _lookup_.
 ```
   var y/eax: (addr T) <- lookup x: (handle T)
 ```
-
-The output of `lookup` is always returned in register `eax`. Many other
-function calls do the same thing. In practice, this means `eax` ends up being
-a temporary location used to store lots of variables in quick succession.
 
 Since handles are large compound types, there's a special helper for comparing
 them:
