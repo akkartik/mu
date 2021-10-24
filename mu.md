@@ -101,11 +101,12 @@ Other miscellaneous restrictions:
 These usually operate on variables with 32-bit types, with some restrictions
 noted below. Most instructions with multiple args require types to match.
 
-Notation in this section:
-  - `var/reg` indicates a variable in a register
-  - `var/xreg` indicates a variable in a floating-point register
+Some notation for describing statement forms:
+  - `var/reg` indicates a variable in some register. Sometimes we require a
+    variable in a specific register, e.g. `var/eax`.
+  - `var/xreg` indicates a variable in some floating-point register.
   - `var` without a `reg` indicates either a variable on the stack or
-    dereferencing a variable in a (non-floating-point) register: `*var/reg`
+    dereferencing a variable in a (non-floating-point) register: `*var/reg`.
   - `n` indicates a literal integer. There are no floating-point literals.
 
 ### Moving values around
