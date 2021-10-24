@@ -84,6 +84,8 @@ Types that require more than 32 bits (4 bytes) cannot be stored in registers:
 `T` here can be any type, including combinations of types. For example:
   - (array int) -- an array of ints
   - (addr int) -- an address to an int
+  - (addr array byte) -- an address to an array of bytes, useful for Unicode
+    text strings
   - (handle int) -- a handle to an int
   - (addr handle int) -- an address to a handle to int
   - (addr array handle int) -- an address to an array of handles to ints
