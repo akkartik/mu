@@ -467,7 +467,10 @@ Arrays are declared in two ways:
   var x-ah/eax: (addr handle array int) <- address x
   populate x-ah, 8
 ```
-  The `8` here can also be an int in a register or memory.
+
+The `8` here can also be an int in a register or memory. (The `-ah` is a
+common variable naming convention and stands for "address of a handle".
+Essential for allocating long-lived data on the heap.)
 
 You can compute the length of an array, though you'll need an `addr` to do so:
 
