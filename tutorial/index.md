@@ -181,8 +181,8 @@ convert 42 to hexadecimal, or [this page on your web browser](http://akkartik.gi
 
 We'll now practice managing one variable in a register (like last time) and
 a second one in memory. To prepare for this, reread the first two sections of
-the [Mu syntax description](https://github.com/akkartik/mu/blob/main/mu.md).
-The section on [integer arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#integer-arithmetic)
+the [Mu reference](https://github.com/akkartik/mu/blob/main/mu.md). The
+section on [integer arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#integer-arithmetic)
 also provides a useful cheatsheet of the different forms of instructions you
 will need.
 
@@ -282,3 +282,29 @@ var x/edx: int <- copy 0
 
 Run `translate` (or `translate_emulated`) as usual. Use your runbook from Task
 6 to address the errors that arise.
+
+## Task 8: floating point
+
+All our variables so far have had type `int` (integer), but there are limits
+to what you can do with just whole integers. For example, here's the formula
+a visitor to the US will require to convert a distance on a road sign to
+kilometers:
+
+```
+distance * 1.609
+```
+
+Write a function to perform this conversion. Some starting points:
+- reread [the section on variables and registers](https://github.com/akkartik/mu/blob/main/mu.md#variables-registers-and-memory)
+  with special attention to the `float` type.
+- read [the section on floating-point arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#floating-point-arithmetic).
+- One wrinkle is that the x86 instruction set doesn't permit literal
+  fractional arguments. So you'll need to _create_ 1.609 somehow. Relevant is
+  [the section on moving values around](https://github.com/akkartik/mu/blob/main/mu.md#moving-values-around).
+
+This task has four source files in the repo that reveal more and more of the
+answer. Start from the first, and bump down if you need a hint.
+- tutorial/task8.mu
+- tutorial/task8-hint1.mu
+- tutorial/task8-hint2.mu
+- tutorial/task8-hint3.mu

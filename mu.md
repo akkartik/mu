@@ -27,6 +27,9 @@ constants. Outputs are always variables in registers.
 Inouts in memory can be either inputs or outputs (if they're addresses being
 written to). Hence the name.
 
+Primitives usually require their inouts to be in specific combinations of
+memory and register. User-defined functions are flexible.
+
 Primitives can often write to arbitrary output registers. User-defined
 functions, however, require rigidly specified output registers.
 
@@ -113,8 +116,8 @@ Some notation for describing statement forms:
 
 ### Moving values around
 
-These instructions work with variables of any 32-bit type except `addr` and
-`float`.
+These instructions work with variables of any 32-bit type except `addr`,
+`byte` and `float`.
 
 ```
   var/reg <- copy var2/reg2
@@ -132,8 +135,8 @@ Byte variables have their own instructions:
   copy-byte-to *var1/reg1, var2/reg2  # var1 must have type (addr byte)
 ```
 
-Floating point instructions can be copied as well, but only to floating-point
-registers `xmm_`.
+Floating point variables can be copied as well, but only to or from
+floating-point registers `xmm_`.
 
 ```
   var/xreg <- copy var2/xreg2
@@ -162,6 +165,20 @@ Correspondingly, there are ways to convert floats into integers.
   var/reg <- truncate var2
   var/reg <- truncate *var2/reg2
 ```
+
+Still, the absence of fractional literals is an annoyance. Mu provides some
+helpers to mitigate it somewhat:
+
+```
+  result/xmm0 <- rational nr: int, dr: int
+  fill-in-rational out: (addr float), nr: int, dr: int
+```
+
+These are functions, so the inouts have fewer restrictions while the outputs
+have more. The inouts can be registers, or memory, or even literals. The
+output for `rational` _must_ be in register `xmm0`. The `:` notation describes
+type constraints; `nr` and `dr` are required to be integers, while `out` must
+be an address to a float.
 
 ### Comparing values
 
