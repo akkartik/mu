@@ -22,23 +22,27 @@ They can take any number of inouts and outputs, including 0. Statements
 with 0 outputs also drop the `<-`.
 
 Inouts can be either variables in memory, variables in registers, or
-constants. Outputs are always variables in registers.
+literal constants (either integers or string literals that get replaced with
+constant addresses). Outputs are always variables in registers.
 
 Inouts in memory can be either inputs or outputs (if they're addresses being
 written to). Hence the name.
 
 Primitives usually require their inouts to be in specific combinations of
-memory and register. User-defined functions are flexible.
+memory and register. They can't handle more than one inout in memory.
+User-defined functions are flexible.
 
 Primitives can often write to arbitrary output registers. User-defined
-functions, however, require rigidly specified output registers.
+functions, however, require rigidly specified output registers. Notice how the
+definition of `foo` above writes to `eax`.
 
 ## Variables, registers and memory
 
-Declare local variables in a function using the `var` keyword.
+Declare local variables in a function using the `var` keyword. As shown above,
+all variable declarations should specify a type after a `:`.
 
-You can declare local variables in either registers or memory (the stack). So
-a `var` statement has two forms:
+You can declare local variables in either registers or memory (the _stack_
+segment). So a `var` statement has two forms:
   - Living in a register, e.g. `var x/eax: int <- copy 0` defines `x` which
     lives in `eax`.
   - Living in memory, e.g. `var x: int` defines `x` on the stack.
