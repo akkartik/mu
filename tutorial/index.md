@@ -354,6 +354,48 @@ the precise register a function header specifies. The return value can even be
 a literal integer or in memory somewhere. The `return` is really just a `copy`
 to the appropriate register(s). This is why the second example above is legal.
 
+## Task 9: juggling registers between function calls
+
+Here's a program:
+
+```
+fn f -> _/eax: int {
+  return 2
+}
+
+fn g -> _/eax: int {
+  return 3
+}
+
+fn add-f-and-g -> _/eax: int {
+  var x/eax: int <- f
+  var y/eax: int <- g
+  x <- add y
+  return x
+}
+```
+
+What's wrong with this program? How can you fix it and pass all tests by
+modifying just function `add-f-and-g`?
+
+By convention, most functions in Mu return their results in register `eax`.
+That creates a fair bit of contention for this register, and we often end up
+having to move the output of a function call around to some other location to
+free up space for the next function we need to call.
+
+An alternative approach would be to distribute the load between registers so
+that different functions use different output registers. That would reduce the
+odds of conflict, but not eradicate them entirely. It would also add some
+difficulty in calling functions; now you have to remember what register they
+write their outputs to. It's unclear if the benefits of this alternative
+outweigh the costs, so Mu follows long-established conventions in other
+Assembly languages. I do, however, violate the `eax` convention in some cases
+where a helper function is only narrowly useful in a single sort of
+circumstance and registers are at a premium. See, for example, the definition
+of the helper `_read-dithering-error` [when rendering images](http://akkartik.github.io/mu/html/511image.mu.html).
+The leading underscore indicates that it's an internal detail of
+`render-image`, and not really intended to be called by itself.
+
 ## Task 10: operating with fractional numbers
 
 All our variables so far have had type `int` (integer), but there are limits

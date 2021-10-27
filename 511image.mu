@@ -368,12 +368,12 @@ fn dither-pgm-unordered-monochrome _src: (addr image), _dest: (addr image) {
       curr-int <- shift-left 0x10  # we have 32 bits; we'll use 16 bits for the fraction and leave 8 for unanticipated overflow
       var error/esi: int <- _read-dithering-error errors, x, y, src-width
       error <- add curr-int
-      $_dither-pgm-unordered-monochrome:update-error: {
+      $dither-pgm-unordered-monochrome:update-error: {
         compare error, 0x800000
         {
           break-if->=
           _write-raw-buffer dest-data, x, y, src-width, 0/black
-          break $_dither-pgm-unordered-monochrome:update-error
+          break $dither-pgm-unordered-monochrome:update-error
         }
         _write-raw-buffer dest-data, x, y, src-width, 1/white
         error <- subtract 0xff0000
