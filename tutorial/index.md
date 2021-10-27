@@ -75,7 +75,7 @@ it. Just [get in touch](http://akkartik.name/contact).
 (You can look at `tutorial/task1.mu` at this point if you like. It's just 3
 lines long. But don't worry if it doesn't make much sense.)
 
-## Task 2: running tests
+## Task 2: running automated tests
 
 Here's a new program to run:
 
@@ -91,14 +91,16 @@ This time the screen will look like this:
 
 <img alt='screenshot of failing test on the Mu computer' src='task2.png'>
 
-Each of the dots represents a _test_, a little self-contained and automated
-program run and its results verified. Mu comes with a lot of tests (every
-function starting with 'test-' is a test), and it always runs all tests on
-boot before it runs any program. You may have missed the dots when you ran
+Each of the dots represents an automated _test_, a little self-contained and
+automated program run and its results verified. Mu comes with a lot of tests
+(every function starting with 'test-' is a test), and it always runs all tests
+on boot before it runs any program. You may have missed the dots when you ran
 Task 1 because there were no failures. They were printed on the screen and
 then immediately erased. In Task 2, however, we've deliberately included a
 failing test. When any tests fail, Mu will immediately stop, showing you
-messages from failing tests and implicitly asking you to first fix them.
+messages from failing tests and implicitly asking you to first fix them. A lot
+of learning programming is about building a sense for when you need to write
+tests for the code you write.
 
 (Don't worry just yet about what the message in the middle of all the dots means.)
 
@@ -452,3 +454,45 @@ two.
 
 The section on [integer arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#integer-arithmetic)
 is again worth referring to when working on this task.
+
+## Task 12: fun with some graphics
+
+Here's a program to draw a rectangle on screen:
+
+```
+fn main screen: (addr screen) {
+  draw-line screen, 0x100/x1 0x100/y1, 0x300/x2 0x100/y2, 3/color=green
+  draw-line screen, 0x100/x1 0x200/y1, 0x300/x2 0x200/y2, 3/color=green
+  draw-line screen, 0x100/x1 0x100/y1, 0x100/x2 0x200/y2, 3/color=green
+  draw-line screen, 0x300/x1 0x100/y1, 0x300/x2 0x200/y2, 3/color=green
+}
+```
+
+Play around with this function a bit, commenting out some statements with a
+leading `#` and rerunning the program. Build up a sense for how the statements
+map to lines on screen.
+
+Modify the rectangle to start at the top-left corner on screen. How about
+other corners?
+
+Notice the `screen` variable. The `main` function always has access to a
+`screen` variable, and any function wanting to draw screen will need this
+variable. Later you'll learn to create and pass _fake screens_ within
+automated tests, so that we can maintain confidence that our graphics
+functions work as expected.
+
+The &ldquo;real&rdquo; screen on a Mu computer is sized to 1024 (0x400) pixels
+wide and 768 (0x300) pixels tall by default. Each pixel can take on 256
+colors. Many other screen configurations are possible, but it'll be up to you
+to learn how to get to them.
+
+Graphics in Mu often involve literal integer constants. To help remember what
+they mean, you can attach _comment tokens_ -- any string without whitespace --
+to a literal integer after a `/`. For example, an argument of `1` can
+sometimes mean the width of a line, and at other times mean a boolean with a
+true value. Getting into the habit of including comment tokens is an easy way
+to make your programs easier to understand.
+
+Another thing to notice in this program is the commas. Commas are entirely
+optional in Mu, and it can be handy to drop them selectively to group
+arguments together.
