@@ -301,7 +301,7 @@ These instructions require variables of non-`addr`, non-`float` types.
 Add:
 ```
   var1/reg1 <- add var2/reg2
-  var/reg <- add var2
+  var1/reg <- add var2
   add-to var1, var2/reg                 # var1 += var2
   var/reg <- add n
   add-to var, n
@@ -310,7 +310,7 @@ Add:
 Subtract:
 ```
   var1/reg1 <- subtract var2/reg2
-  var/reg <- subtract var2
+  var1/reg <- subtract var2
   subtract-from var1, var2/reg          # var1 -= var2
   var/reg <- subtract n
   subtract-from var, n
@@ -330,14 +330,14 @@ Subtract one:
 
 Multiply:
 ```
-  var/reg <- multiply var2
+  var1/reg <- multiply var2
 ```
 
 The result of a multiply must be a register.
 
 Negate:
 ```
-  var1/reg1 <- negate
+  var/reg1 <- negate
   negate var
 ```
 
@@ -349,41 +349,41 @@ still use the general-purpose registers when dereferencing variables of type
 `(addr float)`.
 
 ```
-  var/xreg <- add var2/xreg2
-  var/xreg <- add var2
-  var/xreg <- add *var2/reg2
+  var1/xreg <- add var2/xreg2
+  var1/xreg <- add var2
+  var1/xreg <- add *var2/reg2
 
-  var/xreg <- subtract var2/xreg2
-  var/xreg <- subtract var2
-  var/xreg <- subtract *var2/reg2
+  var1/xreg <- subtract var2/xreg2
+  var1/xreg <- subtract var2
+  var1/xreg <- subtract *var2/reg2
 
-  var/xreg <- multiply var2/xreg2
-  var/xreg <- multiply var2
-  var/xreg <- multiply *var2/reg2
+  var1/xreg <- multiply var2/xreg2
+  var1/xreg <- multiply var2
+  var1/xreg <- multiply *var2/reg2
 
-  var/xreg <- divide var2/xreg2
-  var/xreg <- divide var2
-  var/xreg <- divide *var2/reg2
+  var1/xreg <- divide var2/xreg2
+  var1/xreg <- divide var2
+  var1/xreg <- divide *var2/reg2
 
-  var/xreg <- reciprocal var2/xreg2
-  var/xreg <- reciprocal var2
-  var/xreg <- reciprocal *var2/reg2
+  var1/xreg <- reciprocal var2/xreg2
+  var1/xreg <- reciprocal var2
+  var1/xreg <- reciprocal *var2/reg2
 
-  var/xreg <- square-root var2/xreg2
-  var/xreg <- square-root var2
-  var/xreg <- square-root *var2/reg2
+  var1/xreg <- square-root var2/xreg2
+  var1/xreg <- square-root var2
+  var1/xreg <- square-root *var2/reg2
 
-  var/xreg <- inverse-square-root var2/xreg2
-  var/xreg <- inverse-square-root var2
-  var/xreg <- inverse-square-root *var2/reg2
+  var1/xreg <- inverse-square-root var2/xreg2
+  var1/xreg <- inverse-square-root var2
+  var1/xreg <- inverse-square-root *var2/reg2
 
-  var/xreg <- min var2/xreg2
-  var/xreg <- min var2
-  var/xreg <- min *var2/reg2
+  var1/xreg <- min var2/xreg2
+  var1/xreg <- min var2
+  var1/xreg <- min *var2/reg2
 
-  var/xreg <- max var2/xreg2
-  var/xreg <- max var2
-  var/xreg <- max *var2/reg2
+  var1/xreg <- max var2/xreg2
+  var1/xreg <- max var2
+  var1/xreg <- max *var2/reg2
 ```
 
 Two instructions in the above list are approximate. According to the Intel
@@ -398,7 +398,7 @@ These require variables of non-`addr`, non-`float` types.
 And:
 ```
   var1/reg1 <- and var2/reg2
-  var/reg <- and var2
+  var1/reg <- and var2
   and-with var1, var2/reg
   var/reg <- and n
   and-with var, n
@@ -407,7 +407,7 @@ And:
 Or:
 ```
   var1/reg1 <- or var2/reg2
-  var/reg <- or var2
+  var1/reg <- or var2
   or-with var1, var2/reg
   var/reg <- or n
   or-with var, n
@@ -422,7 +422,7 @@ Not:
 Xor:
 ```
   var1/reg1 <- xor var2/reg2
-  var/reg <- xor var2
+  var1/reg <- xor var2
   xor-with var1, var2/reg
   var/reg <- xor n
   xor-with var, n
@@ -457,7 +457,7 @@ constraints after a `:`.
 You can compute the address of any variable in memory (never in registers):
 
 ```
-  var/reg: (addr T) <- address var2: T
+  var1/reg: (addr T) <- address var2: T
 ```
 
 As mentioned up top, `addr` variables can never escape the function where
@@ -475,7 +475,7 @@ large to fit in a register. You also can't access their payload directly, you
 have to first convert them into a short-lived `addr` using _lookup_.
 
 ```
-  var y/eax: (addr T) <- lookup x: (handle T)
+  var1/eax: (addr T) <- lookup var2: (handle T)  # var2 in either register or memory
 ```
 
 Since handles are large compound types, there's a special helper for comparing
