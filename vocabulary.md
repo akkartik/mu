@@ -140,9 +140,9 @@ The most useful functions from 400.mu and later .mu files. Look for definitions
 All text-mode screen primitives require a screen object, which can be either
 the real screen on the computer or a fake screen for tests.
 
-The real screen on the Mu computer can currently display only ASCII characters,
-though it's easy to import more of the font. There is only one font, and it's
-mostly fixed-width, with graphemes being either 8 or 16 pixels wide.
+The real screen on the Mu computer can currently display a subset of Unicode.
+There is only one font, and it's mostly fixed-width, with graphemes being
+either 8 or 16 pixels wide.
 
 - `draw-grapheme`: draws a single grapheme at a given coordinate, with given
   foreground and background colors.
