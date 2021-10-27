@@ -288,7 +288,7 @@ var x/edx: int <- copy 0
 Run `translate` (or `translate_emulated`) as usual. Use your runbook from Task
 6 to address the errors that arise.
 
-## Task 8: fractional numbers
+## Task 9: operating with fractional numbers
 
 All our variables so far have had type `int` (integer), but there are limits
 to what you can do with just whole integers. For example, here's the formula
