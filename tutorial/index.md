@@ -217,6 +217,11 @@ If you're stuck, as always, [my door is open](http://akkartik.name/contact).
 You can also see a solution in the repository, though I won't link to it lest
 it encourage peeking.
 
+Where possible, try to store variables in registers rather than the stack. The
+two main reasons to use the stack are:
+* when you need lots of variables and run out of registers, and
+* when you have types that don't fit in 32 bits.
+
 ## Task 6: getting used to a few error messages
 
 If you're like me, seeing an error message can feel a bit stressful. It
