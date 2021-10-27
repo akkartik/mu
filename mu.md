@@ -101,17 +101,20 @@ Other miscellaneous restrictions:
     by being written to a memory location. When you need that sort of thing,
     use a `handle` instead.
 
-## Primitive statement types
+## Operations on simple types
 
-These usually operate on variables with 32-bit types, with some restrictions
-noted below. Most instructions with multiple args require types to match.
-
-Some notation for describing statement forms:
-  - `var/reg` indicates a variable in some register. Sometimes we require a
-    variable in a specific register, e.g. `var/eax`.
-  - `var/xreg` indicates a variable in some floating-point register.
-  - `var` without a `reg` indicates either a variable on the stack or
+We'll now survey a long list of statement forms that operate on 32-bit types.
+Most of these are primitives, but some are also implemented as functions
+(which have slightly different rules as mentioned up top). Most instructions
+with multiple args require types to match. Various operations have other
+restrictions which we'll note below, using the following notation:
+  - `var/reg` indicates a variable in some register. Where we require a
+    variable in a specific register, we'll mention it explicitly. E.g.
+    `var/eax`.
+  - `var/xreg` indicates a variable in some floating-point register `xmm_`.
+  - `var` without a `reg` indicates either a variable on the stack, or
     dereferencing a variable in a (non-floating-point) register: `*var/reg`.
+  - `var: type` indicates a variable that must satisfy some type constraint.
   - `n` indicates a literal integer. There are no floating-point literals.
 
 ### Moving values around
@@ -154,7 +157,8 @@ there's a few ways to convert non-float values in general-purpose registers.
   var/xreg <- convert *var2/reg2
 ```
 
-Correspondingly, there are ways to convert floats into integers.
+Correspondingly, there are ways to convert floats into integers, with and
+without rounding.
 
 ```
   var/reg <- convert var2/xreg2
@@ -170,15 +174,13 @@ Still, the absence of fractional literals is an annoyance. Mu provides some
 helpers to mitigate it somewhat:
 
 ```
-  result/xmm0 <- rational nr: int, dr: int
-  fill-in-rational out: (addr float), nr: int, dr: int
+  result/xmm0 <- rational numerator: int, denominator: int
+  fill-in-rational out: (addr float), numerator: int, denominator: int
 ```
 
 These are functions, so the inouts have fewer restrictions while the outputs
 have more. The inouts can be registers, or memory, or even literals. The
-output for `rational` _must_ be in register `xmm0`. The `:` notation describes
-type constraints; `nr` and `dr` are required to be integers, while `out` must
-be an address to a float.
+output for `rational` _must_ be in register `xmm0`.
 
 ### Comparing values
 
