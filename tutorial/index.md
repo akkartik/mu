@@ -283,7 +283,7 @@ var x/edx: int <- copy 0
 Run `translate` (or `translate_emulated`) as usual. Use your runbook from Task
 6 to address the errors that arise.
 
-## Task 8: floating point
+## Task 8: fractional numbers
 
 All our variables so far have had type `int` (integer), but there are limits
 to what you can do with just whole integers. For example, here's the formula
@@ -297,7 +297,7 @@ distance * 1.609
 Write a function to perform this conversion. Some starting points:
 * Reread [the section on variables and registers](https://github.com/akkartik/mu/blob/main/mu.md#variables-registers-and-memory)
   with special attention to the `float` type.
-* Read [the section on floating-point arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#floating-point-arithmetic).
+* Read [the section on fractional arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#fractional-arithmetic).
 * One wrinkle is that the x86 instruction set doesn't permit literal
   fractional arguments. So you'll need to _create_ 1.609 somehow. See the
   section on moving values around under [operations on simple types](https://github.com/akkartik/mu/blob/main/mu.md#operations-on-simple-types).

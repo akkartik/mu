@@ -331,7 +331,7 @@ Negate:
   negate var
 ```
 
-### Floating-point arithmetic
+### Fractional arithmetic
 
 Operations on `float` variables include a few we've seen before and some new
 ones. Notice here that we mostly use floating-point registers `xmm_`, but
