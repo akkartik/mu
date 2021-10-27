@@ -354,7 +354,7 @@ the precise register a function header specifies. The return value can even be
 a literal integer or in memory somewhere. The `return` is really just a `copy`
 to the appropriate register(s). This is why the second example above is legal.
 
-## Task 9: operating with fractional numbers
+## Task 10: operating with fractional numbers
 
 All our variables so far have had type `int` (integer), but there are limits
 to what you can do with just whole integers. For example, here's the formula
@@ -375,7 +375,7 @@ Write a function to perform this conversion. Some starting points:
 
 This task has four source files in the repo that reveal more and more of the
 answer. Start from the first, and bump down if you need a hint.
-* tutorial/task8.mu
-* tutorial/task8-hint1.mu
-* tutorial/task8-hint2.mu
-* tutorial/task8-hint3.mu
+* tutorial/task10.mu
+* tutorial/task10-hint1.mu
+* tutorial/task10-hint2.mu
+* tutorial/task10-hint3.mu
