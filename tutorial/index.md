@@ -421,3 +421,34 @@ answer. Start from the first, and bump down if you need a hint.
 * tutorial/task10-hint1.mu
 * tutorial/task10-hint2.mu
 * tutorial/task10-hint3.mu
+
+## Task 11: conditionally executing statements
+
+Here's a fragment of Mu code:
+
+```
+{
+  compare x, 0
+  break-if-<
+  x <- copy 0
+}
+```
+
+The combination of `compare` and `break` results in the variable `x` being
+assigned 0 _if and only if_ its value was less than 0 at the beginning. The
+`break` family of instructions is used to jump to the end of an enclosing `{}`
+block, skipping all intervening instructions.
+
+To prepare for this task, read the sections in the Mu reference on
+[`compare`](https://github.com/akkartik/mu/blob/main/mu.md#comparing-values)
+and [branches](https://github.com/akkartik/mu/blob/main/mu.md#branches).
+
+Now make the tests pass in `tutorial/task11.mu`. The goal is to implement our
+colloquial understanding of the &ldquo;difference&rdquo; between two numbers.
+In lay English, we say the difference between the first-place and third-place
+runner in a race is two places. This answer doesn't depend on the order in
+which we mention the runners; the difference between third and first is also
+two.
+
+The section on [integer arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#integer-arithmetic)
+is again worth referring to when working on this task.
