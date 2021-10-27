@@ -531,7 +531,7 @@ The result of a `compute-offset` statement can be passed to `index`:
   var/reg: (addr T) <- index arr/reg: (addr array T), idx/reg: (offset T)
 ```
 
-### Stream operations
+### Streams
 
 A common use for arrays is as buffers. Save a few items to a scratch space and
 then process them. This pattern is so common (we use it in files) that there's

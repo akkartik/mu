@@ -238,11 +238,12 @@ Mu doesn't currently support interrupt-based mouse events.
 
 #### persistent storage
 
-`load-sector` synchronously reads a single _sector_ from a _disk_ of persistent
-storage. The disk must follow the ATA specification with a 28-bit sector
-address. Each sector is 512 bytes. Therefore, Mu currently supports ATA hard
-disks of up to 128GB capacity.
+`read-ata-disk` synchronously reads a whole number of _sectors_ from a _disk_
+of persistent storage. The disk must follow the ATA specification with a
+28-bit sector address. Each sector is 512 bytes. Therefore, Mu currently
+supports ATA hard disks of up to 128GB capacity.
 
-Similarly, `store-sector` synchronously writes a single sector to disk.
+Similarly, `write-ata-disk` synchronously writes a whole number of sectors to
+disk.
 
 Mu doesn't currently support asynchronous transfers to or from a disk.
