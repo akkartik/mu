@@ -116,8 +116,8 @@ Some notation for describing statement forms:
 
 ### Moving values around
 
-These instructions work with variables of any 32-bit type except `addr`,
-`byte` and `float`.
+These instructions work with variables of any 32-bit type except `byte` and
+`float`.
 
 ```
   var/reg <- copy var2/reg2
