@@ -429,7 +429,7 @@ Here's a fragment of Mu code:
 ```
 {
   compare x, 0
-  break-if-<
+  break-if->=
   x <- copy 0
 }
 ```
@@ -437,7 +437,7 @@ Here's a fragment of Mu code:
 The combination of `compare` and `break` results in the variable `x` being
 assigned 0 _if and only if_ its value was less than 0 at the beginning. The
 `break` family of instructions is used to jump to the end of an enclosing `{}`
-block, skipping all intervening instructions.
+block if some condition is satisfied, skipping all intervening instructions.
 
 To prepare for this task, read the sections in the Mu reference on
 [`compare`](https://github.com/akkartik/mu/blob/main/mu.md#comparing-values)
