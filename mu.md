@@ -7,7 +7,7 @@ Mu programs are sequences of `fn` and `type` definitions.
 Define functions with the `fn` keyword. For example:
 
 ```
-  fn foo arg1: int, arg2: int -> result/eax: boolean
+  fn foo arg1: int, arg2: int -> _/eax: boolean
 ```
 
 Functions contain `{}` blocks, `var` declarations, primitive statements and
@@ -35,6 +35,12 @@ User-defined functions are flexible.
 Primitives can often write to arbitrary output registers. User-defined
 functions, however, require rigidly specified output registers. Notice how the
 definition of `foo` above writes to `eax`.
+
+A function's header names its inouts, but not its outputs (hence the `_`
+above).
+
+All Mu programs must define at least one function: `main`. That's where they
+begin executing instructions.
 
 ## Variables, registers and memory
 

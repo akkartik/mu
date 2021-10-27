@@ -288,6 +288,72 @@ var x/edx: int <- copy 0
 Run `translate` (or `translate_emulated`) as usual. Use your runbook from Task
 6 to address the errors that arise.
 
+## Task 8: primitive statements vs function calls
+
+Managing variables in memory vs register is one of two key skills to
+programming in Mu. The second key skill is calling primitives (which are
+provided by the x86 instruction set) vs functions (which are defined in terms
+of primitives).
+
+To prepare for this task, reread the very first section of the Mu reference,
+on [functions and function calls](https://github.com/akkartik/mu/blob/main/mu.md#functions).
+
+Now look at the following programs. In each case, write down whether you
+expect translation to return any errors and why.
+
+```
+fn f a: int {
+}
+
+fn main {
+  f 0
+  var r/eax: int <- copy 3
+  f r
+  var m: int
+  f m
+}
+```
+
+(When you're ready, try the above program out as `./translate tutorial/task8a.mu`.)
+
+```
+fn f -> _/eax: int {
+  var result/ecx: int <- copy 0
+  return result
+}
+
+fn main {
+  var x/eax: int <- f
+}
+```
+
+(When you're ready, try the above program out as `./translate tutorial/task8b.mu`.)
+
+
+```
+fn f -> _/eax: int {
+  return 3
+}
+
+fn main {
+  var x/ecx: int <- f
+}
+```
+
+(When you're ready, try the above program out as `./translate tutorial/task8c.mu`.)
+
+Functions have fewer restrictions than primitives on inouts, but more
+restrictions on outputs. Inouts can be registers, or memory, or even literals.
+This is why the first example above is legal. Outputs, however, _must_
+hard-code specific registers, and function calls must write their outputs to
+matching registers. This is why the third example above is illegal.
+
+One subtlety here is that we only require agreement on output registers
+between function call and function header. We don't actually have to `return`
+the precise register a function header specifies. The return value can even be
+a literal integer or in memory somewhere. The `return` is really just a `copy`
+to the appropriate register(s). This is why the second example above is legal.
+
 ## Task 9: operating with fractional numbers
 
 All our variables so far have had type `int` (integer), but there are limits
