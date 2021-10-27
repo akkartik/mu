@@ -123,7 +123,7 @@ quotes.
 
 Mu is a statement-oriented language. Most statements translate into a single
 instruction to the x86 processor. Quickly read the first two sections of the
-[Mu syntax description](https://github.com/akkartik/mu/blob/main/mu.md) (about
+[Mu reference](https://github.com/akkartik/mu/blob/main/mu.md) (about
 functions and variables) to learn a little bit about it. It's ok if it doesn't
 all make sense just yet. We'll reread it later.
 

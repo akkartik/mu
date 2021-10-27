@@ -1,4 +1,4 @@
-# Mu reference
+# Mu Reference
 
 Mu programs are sequences of `fn` and `type` definitions.
 
