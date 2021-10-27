@@ -436,7 +436,7 @@ Shifting bits right inserts zeros on the left by default.
 A _signed_ shift right duplicates the leftmost bit, thereby preserving the
 sign of an integer.
 
-## More complex instructions on more complex types
+## Operations on more complex types
 
 These instructions work with any type `T`. As before we use `/reg` here to
 indicate when a variable must live in a register. We also include type
@@ -605,7 +605,7 @@ type point {
 }
 ```
 
-Mu programs are currently sequences of `fn` and `type` definitions.
+Mu programs are sequences of just `fn` and `type` definitions.
 
 Compound types can't include `addr` types for safety reasons (use `handle` instead,
 which is described below). They also can't currently include `array`, `stream`
@@ -643,4 +643,3 @@ You can shallow-copy compound types using the `copy-object` function:
 ```
 copy-object src: (addr T), dest: (addr T)
 ```
-

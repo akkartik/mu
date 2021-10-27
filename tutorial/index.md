@@ -300,11 +300,11 @@ Write a function to perform this conversion. Some starting points:
 * Read [the section on floating-point arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#floating-point-arithmetic).
 * One wrinkle is that the x86 instruction set doesn't permit literal
   fractional arguments. So you'll need to _create_ 1.609 somehow. See the
-  sub-section on moving values around under [operations on simple types](https://github.com/akkartik/mu/blob/main/mu.md#operations-on-simple-types).
+  section on moving values around under [operations on simple types](https://github.com/akkartik/mu/blob/main/mu.md#operations-on-simple-types).
 
 This task has four source files in the repo that reveal more and more of the
 answer. Start from the first, and bump down if you need a hint.
-- tutorial/task8.mu
-- tutorial/task8-hint1.mu
-- tutorial/task8-hint2.mu
-- tutorial/task8-hint3.mu
+* tutorial/task8.mu
+* tutorial/task8-hint1.mu
+* tutorial/task8-hint2.mu
+* tutorial/task8-hint3.mu
