@@ -7,20 +7,21 @@ instruction set. Everything easy to change to your needs
 ([habitable](http://akkartik.name/post/habitability)), everything easy to
 check up on ([auditable](http://akkartik.name/post/neighborhood)).
 
-This page is a guided tour through Mu's Readme and reference documentation.
-We'll start out really slow and gradually accelerate as we build up skills. By
-the end of it all, I hope you'll be able to program your processor to run some
-small graphical programs. The programs will only use a small subset of your
-computer's capabilities; there's still a lot I don't know and therefore cannot
-teach. However, the programs will run on a _real_ processor without needing
-any other intermediary software.
+This page is a guided tour through [Mu's Readme](https://github.com/akkartik/mu)
+and reference documentation. We'll start out really slow and gradually
+accelerate as we build up skills. By the end of it all, I hope you'll be able
+to program your processor to run some small graphical programs. The programs
+will only use a small subset of your computer's capabilities; there's still a
+lot I don't know and therefore cannot teach. However, the programs will run on
+a _real_ processor without needing any other intermediary software.
 
 _Prerequisites_
 
 You will need:
 
-* A computer with an x86 processor running Linux. We're going to slowly escape
-  Linux, but we'll need it at the start. Mu works on other platforms, but be
+* A computer with an x86 processor running Linux. Mu is designed to eventually
+  escape Linux, but still needs some _host_ environment for now. Other
+  platforms will also do (BSD, Mac OS, Windows Subsystem for Linux), but be
   warned that things will be _much_ (~20x) slower.
 * Some fluency in typing commands at the terminal and interpreting their
   output.
