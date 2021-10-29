@@ -32,8 +32,7 @@ What do all these numbers mean? SubX supports a small subset of the 32-bit x86
 instruction set that likely runs on your computer. (Think of the name as short
 for "sub-x86".) The instruction set contains instructions like `89/copy`,
 `01/add`, `3d/compare` and `51/push-ecx` which modify registers and a byte-addressable
-memory. For a complete list of supported instructions, run `bootstrap help
-opcodes`.
+memory. For a complete list of supported instructions, run `./help opcodes`.
 
 The registers instructions operate on are as follows:
 
