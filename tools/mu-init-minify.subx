@@ -1,0 +1,19 @@
+# Initialize the minimal runtime for Mu programs without any tests.
+#
+# See translate_min for how this file is used.
+#
+# Mu programs start at a function called 'main' with this signature:
+#   fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
+
+== code
+
+Entry:
+  # initialize stack
+  bd/copy-to-ebp 0/imm32
+  #
+  (main 0 0 Primary-bus-secondary-drive)
+
+  # hang indefinitely
+  {
+    eb/jump loop/disp8
+  }

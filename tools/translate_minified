@@ -1,0 +1,106 @@
+#!/bin/sh
+# Translate a Mu program to a _minified_ bootable disk image.
+#
+# Hacky; only intended for some stats at the moment, even though all programs
+# I've run through it seem to continue to work. If there are no power-on unit
+# tests, I don't trust it.
+
+set -ev
+
+# Map of the Mu code disk
+export DISK=20160  # 20*16*63 512-byte sectors = almost 10MB
+dd if=/dev/zero of=code.img count=$DISK status=none
+# code: sectors 0-8999
+# font: sectors 9000-10079  (1080 sectors = space enough for 16k glyphs (1080 * 512 / 34 bytes per glyph))
+export FONT=9000  # keep this sync'd with boot.subx
+# debug: sector 10080 onwards
+export DEBUG=10080
+
+## Code
+
+cat $* [0-9]*.mu                                          |linux/mu                         > a.subx
+
+cat boot.subx                                             |grep -vh '^\s*$\|^\s*#'          > a.boot.strip
+cat           tools/mu-init-minify.subx [0-9]*.subx a.subx|grep -vh '^\s*$\|^\s*#'          > a.strip
+
+# treeshake everything but boot.subx, which isn't quite standard SubX and
+# doesn't get parsed correctly by treeshake for some reason.
+cat a.strip                                               |tools/treeshake                  > a.treeshake
+
+cat a.boot.strip a.treeshake                              |linux/braces                     > a.braces
+
+cat a.braces                                              |linux/calls                      > a.calls
+
+cat a.calls                                               |linux/sigils                     > a.sigils
+
+cat a.sigils                                              |linux/tests                      > a.tests
+
+# no assort since baremetal SubX doesn't have segments yet
+
+cat a.tests                                               |linux/dquotes                    > a.dquotes
+
+cat a.dquotes                                             |linux/pack                       > a.pack
+
+cat a.pack                                                |linux/survey_baremetal > labels
+cat a.pack                                                |linux/labels_baremetal   labels  > a.survey
+
+cat a.survey                                              |linux/hex                        > a.bin
+
+dd if=a.bin of=code.img conv=notrunc status=none
+
+if [ `stat --printf="%s" a.bin` -ge 492544 ]  # 15 tracks * 63 sectors per track * 512 bytes per sector (keep this sync'd with boot.subx)
+then
+  echo "a.bin won't all be loaded on boot"
+  exit 1
+fi
+
+if [ `stat --printf="%s" a.bin` -ge 492544 ]  # 15 tracks * 63 sectors per track * 512 bytes per sector
+then
+  echo "a.bin will overwrite BIOS/Video memory; you'll need to adjust boot.subx to load code to some other non-contiguous area of memory"
+  exit 1
+fi
+
+if [ `stat --printf="%s" a.bin` -ge $(($FONT*512)) ]
+then
+  echo "a.bin will overwrite font in disk"
+  exit 1
+fi
+
+## Latter half of disk is for debug info
+
+if [ `stat --printf="%s" labels` -ge 1048576 ]  # 8 reads * 256 sectors * 512 bytes per sector
+then
+  echo "labels won't all be loaded on abort"
+  exit 1
+fi
+
+if [ `wc -l < labels` -gt 20480 ]  # 0x5000 stream capacity in abort.subx
+then
+  echo "abort will go into infinite regress"
+  exit 1
+fi
+
+dd if=labels of=code.img seek=$DEBUG conv=notrunc status=none  # keep this sync'd with abort.subx
+
+## Font data at another well-defined location
+cat font.subx   |sed 's,/[^ ]*,,'    |linux/hex    > a.font
+
+if [ `stat --printf="%s" a.font` -ge 262144 ]  # 0x200 sectors * 512 bytes per sector (keep this sync'd with boot.subx)
+then
+  echo "font won't all be loaded on boot"
+  exit 1
+fi
+
+if [ `stat --printf="%s" a.font` -ge 14680064 ]  # 0x00e00000 = 0x00f00000 - 0x00100000
+then
+  echo "font is so large it overlaps the ISA memory hole; see https://wiki.osdev.org/Memory_Map_(x86)"
+  exit 1
+fi
+
+if [ `stat --printf="%s" a.font` -ge $(( ($DEBUG - $FONT) * 512 )) ]
+then
+  echo "font will overwrite debug info in disk"
+  exit 1
+fi
+
+dd if=a.font of=code.img seek=$FONT conv=notrunc status=none
