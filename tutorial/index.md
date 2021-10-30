@@ -500,3 +500,117 @@ arguments together.
 
 This is a good time to skim [Mu's vocabulary of functions for pixel graphics](https://github.com/akkartik/mu/blob/main/vocabulary.md#pixel-graphics).
 They're fun to play with.
+
+## Task 13: reading input from keyboard
+
+Read the section on [events](https://github.com/akkartik/mu/blob/main/vocabulary.md#events)
+from Mu's vocabulary. Write a program to read a key from the keyboard. Mu
+receives a keyboard object as the second argument of `main`:
+
+```
+fn main screen: (addr screen), keyboard: (addr keyboard) {
+  # TODO: read a key from keyboard
+}
+```
+
+The _signature_ of `read-key` -- along with many other functions -- is in
+[400.mu](https://github.com/akkartik/mu/blob/main/400.mu).
+
+One wrinkle in this problem is that `read-key` may not actually return a key.
+You have to keep retrying until it does. You may have already encountered the
+list of `loop` operations in the section on [branches](https://github.com/akkartik/mu/blob/main/mu.md#branches).
+It might be a good time to refresh your knowledge there.
+
+## Task 14: streams and scanning input from the keyboard
+
+Check out the idiomatic way for processing text from the keyboard:
+
+```
+fn main screen: (addr screen), keyboard: (addr keyboard) {
+  var in-storage: (stream byte 0x80)
+  var in/esi: (addr stream byte) <- address in-storage
+  read-line-from-keyboard keyboard, in, screen, 0xf/fg 0/bg
+  {
+    var done?/eax: boolean <- stream-empty? in
+    compare done?, 0/false
+    break-if-!=
+    var g/eax: grapheme <- read-grapheme in
+    loop
+  }
+}
+```
+
+Can you modify this program to print out the text read from keyboard a second
+time? How about printing a space after every character (grapheme)?
+
+Now skim the section in the Mu reference on [streams](https://github.com/akkartik/mu/blob/main/mu.md#streams).
+Does the above program make sense?
+
+## Task 15: generating cool patterns
+
+Back to drawing to screen. Here's a program that draws every pixel on `screen`
+with a `color` equal to the value of its `x` coordinate.
+
+```
+fn main screen: (addr screen) {
+  var y/eax: int <- copy 0
+  {
+    compare y, 0x300/screen-height=768
+    break-if->=
+    var x/edx: int <- copy 0
+    {
+      compare x, 0x400/screen-width=1024
+      break-if->=
+      var color/ecx: int <- copy x
+      color <- and 0xff
+      pixel screen x, y, color
+      x <- increment
+      loop
+    }
+    y <- increment
+    loop
+  }
+}
+```
+
+Before you run it, form a hypothesis about what the picture will look like.
+The screen is 1024 pixels wide, but there are only 256 colors. What are the
+implications of these facts?
+
+After you run this program, try to modify it so every pixel gets a `color`
+equal to the sum of its `x` and `y` coordinates. Can you guess what pattern
+will result? Play around with more complex formulae. I particularly like the
+sum of squares of `x` and `y` coordinates. Check out the [Mandelbrot set](https://github.com/akkartik/mu/blob/main/apps/mandelbrot-silhouette.mu)
+for a really complex example of this sort of _procedural graphics_.
+
+## Task 16: a simple app
+
+We now know how to read keys from keyboard and draw on the screen. Look at
+[tutorial/counter.mu](https://github.com/akkartik/mu/blob/main/tutorial/counter.mu)
+which implements a simple counter app.
+
+<img alt='screenshot of the counter app' src='counter.png'>
+
+Do all the parts make sense? Read the extensive vocabulary of functions for
+[drawing text to screen](https://github.com/akkartik/mu/blob/main/vocabulary.md#events).
+
+---
+
+Here's a more challenging problem. Build an app to convert celsius to
+fahrenheit and vice versa. Two text fields, the `<Tab>` key to move the cursor
+between them, type in either field and hit `<Enter>` to populate the other
+field.
+
+After you build it, compare your solution with [tutorial/converter.mu](https://github.com/akkartik/mu/blob/main/tutorial/converter.mu).
+A second version breaks the program down into multiple functions, in
+[tutorial/converter2.mu](https://github.com/akkartik/mu/blob/main/tutorial/converter.mu).
+Can you see how the two do the same thing? Which one do you like better?
+
+---
+
+There's lots more programs in this repository. Look in the `apps/` directory.
+Check out the Mu `shell/`, which persists data between runs to a separate data
+disk. Hopefully this gives you some sense for how little software it takes to
+build useful programs for yourself. Do you have any new ideas for programs to
+write in Mu? [Tell me about them!](http://akkartik.name/about) I'd love to jam
+with you.

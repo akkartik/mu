@@ -243,6 +243,10 @@ Assertions for tests:
 `read-key` reads a single key from the keyboard and returns it if it exists.
 Returns 0 if no key has been pressed.
 
+`read-line-from-keyboard` reads keys from keyboard, echoes them to screen
+(with given fg/bg colors) and accumulates them in a stream until it encounters
+a newline.
+
 `read-mouse-event` returns a recent change in x and y coordinate.
 
 `timer-counter` returns a monotonically increasing counter with some
@@ -250,6 +254,8 @@ fixed frequency. You can periodically poll it to check for intervals passing,
 but can't make assumptions about how much time has passed.
 
 Mu doesn't currently support interrupt-based events.
+
+We also don't yet have a fake keyboard.
 
 #### persistent storage
 

@@ -10,21 +10,6 @@
 #   error checking for input without hard-aborting
 
 fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk) {
-  # imgui approach
-  forever {
-    number-input fahrenheit, cursor-in-fahrenheit?
-    number-input celsius, cursor-in-celsius?
-    if (menu-key 9/tab "Tab" "switch sides") {  # requires non-blocking input
-      cursor-in-celsius? <- not
-      cursor-in-fahrenheit? <- not
-    }
-    if (menu-key 0xa/newline "Enter" "convert") {
-      if cursor-in-fahrenheit
-        celsius = fahrenheit-to-celsius fahrenheit
-      else
-        fahrenheit = celsius-to-fahrenheit celsius
-    }
-  }
   # celsius numeric representation
   var zero: float
   var celsius/xmm1: float <- fahrenheit-to-celsius zero
@@ -47,7 +32,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   # event loop
   {
     # render
-    render-state celsius-input, fahrenheit-input, cursor-in-celsius?
+    render-state screen, celsius-input, fahrenheit-input, cursor-in-celsius?
     render-menu-bar screen
     # process a single keystroke
     $main:input: {
