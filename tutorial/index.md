@@ -592,7 +592,7 @@ which implements a simple counter app.
 <img alt='screenshot of the counter app' src='counter.png'>
 
 Do all the parts make sense? Read the extensive vocabulary of functions for
-[drawing text to screen](https://github.com/akkartik/mu/blob/main/vocabulary.md#events).
+[drawing text to screen](https://github.com/akkartik/mu/blob/main/vocabulary.md#printing-to-screen).
 
 ---
 
