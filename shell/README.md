@@ -18,7 +18,7 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
 2. Create a data disk with a library of functions.
 
   ```sh
-  dd if=/dev/zero of=data.img count=20160
+  dd if=/dev/zero of=data.img count=20160         # approximately 10MB
   dd if=shell/data.limg of=data.img conv=notrunc
   ```
 
