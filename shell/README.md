@@ -47,6 +47,11 @@ Currently runs a tiny dialect of Lisp. Steps to run it from the top-level:
   results. Hit `ctrl-m` to focus on the `...` after a run, and browse how the
   _trace_ of how the results were computed. [Here's a 2-minute demo](https://archive.org/details/akkartik-mu-2021-05-31).
 
+  To navigate to a function to edit, hit `ctrl-g`. The list of functions
+  doubles as a bare-bones &ldquo;file system,&rdquo; and functions are
+  rendered in order of most recently touched, like in [Tiddlywiki](https://tiddlywiki.com).
+  There is no scrolling anywhere yet.
+
 3. If your Qemu installation supports them, an `-accel` argument
    will speed up emulation. Try `-accel help` to list your options.
 
