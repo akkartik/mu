@@ -510,7 +510,9 @@ receives a keyboard object as the second argument of `main`:
 
 ```
 fn main screen: (addr screen), keyboard: (addr keyboard) {
-  # TODO: read a key from keyboard
+  # edit in here {
+
+  # }
 }
 ```
 
