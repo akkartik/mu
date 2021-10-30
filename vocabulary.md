@@ -43,8 +43,8 @@ how they work under the hood.
 
 ### Functions
 
-The most useful functions from 400.mu and later .mu files. Look for definitions
-(using `ctags`) to see type signatures.
+The most useful functions from 400.mu and later .mu files. Look in
+signatures.mu for their full type signatures.
 
 - `abort`: print a message in red on the bottom left of the screen and halt
 

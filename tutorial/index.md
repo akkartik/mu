@@ -477,15 +477,15 @@ Modify the rectangle to start at the top-left corner on screen. How about
 other corners?
 
 Notice the `screen` variable. The `main` function always has access to a
-`screen` variable, and any function wanting to draw screen will need this
-variable. Later you'll learn to create and pass _fake screens_ within
+`screen` variable, and any function wanting to draw to the screen will need
+this variable. Later you'll learn to create and pass _fake screens_ within
 automated tests, so that we can maintain confidence that our graphics
 functions work as expected.
 
 The &ldquo;real&rdquo; screen on a Mu computer is sized to 1024 (0x400) pixels
-wide and 768 (0x300) pixels tall by default. Each pixel can take on 256
-colors. Many other screen configurations are possible, but it'll be up to you
-to learn how to get to them.
+wide and 768 (0x300) pixels tall by default. Each pixel can take on [256 colors](http://akkartik.github.io/mu/html/vga_palette.html).
+Many other screen configurations are possible, but it'll be up to you to learn
+how to get to them.
 
 Graphics in Mu often involve literal integer constants. To help remember what
 they mean, you can attach _comment tokens_ -- any string without whitespace --
@@ -499,7 +499,8 @@ optional in Mu, and it can be handy to drop them selectively to group
 arguments together.
 
 This is a good time to skim [Mu's vocabulary of functions for pixel graphics](https://github.com/akkartik/mu/blob/main/vocabulary.md#pixel-graphics).
-They're fun to play with.
+They're fun to play with. Once you want to use a specific function, look for
+details on the arguments it expects in `signatures.mu`.
 
 ## Task 13: reading input from keyboard
 
