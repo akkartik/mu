@@ -227,6 +227,17 @@ Assertions for tests:
   at any screen location.
 - `check-background-color-in-screen-row-from`
 
+#### pixel graphics
+
+- `pixel`: draw a single point at (x, y) with a given color between 0 and 255.
+- `draw-line`: between two points (x1, y1) and (x2, y2)
+- `draw-horizontal-line`
+- `draw-vertical-line`
+- `draw-circle`
+- `draw-disc`: takes an inner and outer radius
+- `draw-monotonic-bezier`: draw curved lines with a single control point.
+  Doesn't support curves with "U-turns".
+
 #### events
 
 `read-key` reads a single key from the keyboard and returns it if it exists.
@@ -234,7 +245,11 @@ Returns 0 if no key has been pressed.
 
 `read-mouse-event` returns a recent change in x and y coordinate.
 
-Mu doesn't currently support interrupt-based mouse events.
+`timer-counter` returns a monotonically increasing counter with some
+fixed frequency. You can periodically poll it to check for intervals passing,
+but can't make assumptions about how much time has passed.
+
+Mu doesn't currently support interrupt-based events.
 
 #### persistent storage
 

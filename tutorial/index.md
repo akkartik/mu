@@ -497,3 +497,6 @@ to make your programs easier to understand.
 Another thing to notice in this program is the commas. Commas are entirely
 optional in Mu, and it can be handy to drop them selectively to group
 arguments together.
+
+This is a good time to skim [Mu's vocabulary of functions for pixel graphics](https://github.com/akkartik/mu/blob/main/vocabulary.md#pixel-graphics).
+They're fun to play with.
