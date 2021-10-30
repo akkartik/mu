@@ -456,7 +456,7 @@ two.
 The section on [integer arithmetic](https://github.com/akkartik/mu/blob/main/mu.md#integer-arithmetic)
 is again worth referring to when working on this task.
 
-## Task 12: fun with some graphics
+## Task 12: fun with graphics
 
 Here's a program to draw a rectangle on screen:
 
