@@ -530,7 +530,7 @@ It might be a good time to refresh your knowledge there.
 
 ## Task 14: streams and scanning input from the keyboard
 
-Check out the idiomatic way for processing text from the keyboard:
+Here's a skeleton of a program for processing text typed in at a keyboard:
 
 ```
 fn main screen: (addr screen), keyboard: (addr keyboard) {
@@ -542,23 +542,27 @@ fn main screen: (addr screen), keyboard: (addr keyboard) {
     compare done?, 0/false
     break-if-!=
     var g/eax: grapheme <- read-grapheme in
+    # do stuff with g here
     loop
   }
 }
 ```
 
 `read-line-from-keyboard` reads keystrokes from the keyboard until you press
-the `Enter` (also called `newline`) key, and accumulates them into a _stream_.
+the `Enter` (also called `newline`) key, and accumulates them into a _stream_
+of bytes. The loop then repeatedly reads _graphemes_ from the stream. A
+grapheme can consist of multiple bytes, particularly outside of the Latin
+alphabet and Arabic digits most prevalent in the West. Mu doesn't yet support
+non-Qwerty keyboards, but support for other keyboards should be easy to add.
+
 This is a good time to skim the section in the Mu reference on
 [streams](https://github.com/akkartik/mu/blob/main/mu.md#streams), just to
-give yourself a sense of what you can do with them.
-
-Does the above program make sense now?  Feel free to experiment to make sense
-of it.
+give yourself a sense of what you can do with them. Does the above program
+make sense now?  Feel free to experiment to make sense of it.
 
 Can you modify it to print out the line a second time, after you've typed it
 out until the `Enter` key? Can you print a space after every character
-(grapheme) when you print it out?
+(grapheme) when you print the line out a second time?
 
 ## Task 15: generating cool patterns
 
