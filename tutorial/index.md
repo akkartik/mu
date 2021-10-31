@@ -547,11 +547,18 @@ fn main screen: (addr screen), keyboard: (addr keyboard) {
 }
 ```
 
-Can you modify this program to print out the text read from keyboard a second
-time? How about printing a space after every character (grapheme)?
+`read-line-from-keyboard` reads keystrokes from the keyboard until you press
+the `Enter` (also called `newline`) key, and accumulates them into a _stream_.
+This is a good time to skim the section in the Mu reference on
+[streams](https://github.com/akkartik/mu/blob/main/mu.md#streams), just to
+give yourself a sense of what you can do with them.
 
-Now skim the section in the Mu reference on [streams](https://github.com/akkartik/mu/blob/main/mu.md#streams).
-Does the above program make sense?
+Does the above program make sense now?  Feel free to experiment to make sense
+of it.
+
+Can you modify it to print out the line a second time, after you've typed it
+out until the `Enter` key? Can you print a space after every character
+(grapheme) when you print it out?
 
 ## Task 15: generating cool patterns
 
