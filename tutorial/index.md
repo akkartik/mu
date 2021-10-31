@@ -62,8 +62,8 @@ Run a small program to start:
 qemu-system-i386 code.img
 ```
 
-If you aren't on Linux (or &ldquo;Windows Subsystem for Linux&rdquo;), the
-command for creating `code.img` will be slightly different:
+If you aren't on Linux (or Windows Subsystem for Linux), the command for
+creating `code.img` will be slightly different:
 
 ```
 ./translate_emulated tutorial/task1.mu
