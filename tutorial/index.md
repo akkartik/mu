@@ -45,7 +45,7 @@ and help me improve it.
 ## Task 1: getting started
 
 Read the first half of [the Readme](https://github.com/akkartik/mu/blob/main/README.md)
-(stop before the section on &ldqu;Syntax&rdquo;). Can you figure out the
+(stop before the section on &ldquo;Syntax&rdquo;). Can you figure out the
 commands to prepare Mu on your computer?
 
 Open a terminal and run the following commands to prepare Mu on your computer:
