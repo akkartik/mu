@@ -44,6 +44,10 @@ and help me improve it.
 
 ## Task 1: getting started
 
+Read the first half of [the Readme](https://github.com/akkartik/mu/blob/main/README.md)
+(stop before the section on &ldqu;Syntax&rdquo;). Can you figure out the
+commands to prepare Mu on your computer?
+
 Open a terminal and run the following commands to prepare Mu on your computer:
 
 ```
@@ -58,8 +62,8 @@ Run a small program to start:
 qemu-system-i386 code.img
 ```
 
-If you aren't on Linux, the command for creating `code.img` will be slightly
-different:
+If you aren't on Linux (or &ldquo;Windows Subsystem for Linux&rdquo;), the
+command for creating `code.img` will be slightly different:
 
 ```
 ./translate_emulated tutorial/task1.mu
