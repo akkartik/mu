@@ -561,8 +561,14 @@ give yourself a sense of what you can do with them. Does the above program
 make sense now?  Feel free to experiment to make sense of it.
 
 Can you modify it to print out the line a second time, after you've typed it
-out until the `Enter` key? Can you print a space after every character
-(grapheme) when you print the line out a second time?
+out until the `Enter` key? Can you print a space after every grapheme when you
+print the line out a second time? You'll need to skim the section on
+[printing to screen](https://github.com/akkartik/mu/blob/main/vocabulary.md#printing-to-screen)
+from Mu's vocabulary. Pay particular attention to the difference between a
+grapheme and a _code-point_. Mu programs often read characters in units of
+graphemes, but they must draw in units of code-points that the font manages.
+(This adds some complexity but helps combine multiple code-points into a
+single glyph as needed for some languages.)
 
 ## Task 15: generating cool patterns
 

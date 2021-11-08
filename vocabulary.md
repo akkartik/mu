@@ -38,8 +38,10 @@ how they work under the hood.
   By default, writes to a stream abort if it's full. Reads to a stream abort
   if it's empty.
 
-- Graphemes: 32-bit fragments of utf-8 that encode a single Unicode code-point.
-- Code-points: 32-bit integers representing a Unicode character.
+- Graphemes: a sequence of up to 4 utf-8 bytes that encode a single Unicode
+  code-point.
+- Code-points: integer representing a Unicode character. Must be representable
+  in 32 bits as utf-8; largest supported value is 0x10000.
 
 ### Functions
 
@@ -114,8 +116,8 @@ signatures.mu for their full type signatures.
 - `append-byte-hex`: writes textual representation of lowest byte in hex to
   a stream of bytes. Does not write a '0x' prefix.
 - `read-byte`: reads a single byte from a stream of bytes.
-- `read-grapheme`: reads a single unicode grapheme (up to 4 bytes containing a
-  single code-point encoded in utf-8) from a stream of bytes.
+- `read-grapheme`: reads a single unicode grapheme (up to 4 bytes) from a
+  stream of bytes.
 
 #### reading/writing hex representations of integers
 
@@ -141,14 +143,15 @@ All text-mode screen primitives require a screen object, which can be either
 the real screen on the computer or a fake screen for tests.
 
 The real screen on the Mu computer can currently display a subset of Unicode.
-There is only one font, and it's mostly fixed-width, with graphemes being
-either 8 or 16 pixels wide.
+There is only one font, and it's mostly fixed-width, with individual glyphs
+for code-points being either 8 or 16 pixels wide.
 
-- `draw-grapheme`: draws a single grapheme at a given coordinate, with given
-  foreground and background colors.
-- `render-grapheme`: like `draw-grapheme` and can also handle newlines
-  assuming text is printed left-to-right, top-to-bottom.
-- `draw-code-point`
+- `draw-code-point`: draws a single code-point at a given coordinate, with
+  given foreground and background colors. Returns the number of 8-pixel wide
+  grid locations used (either 1 or 2).
+- `render-code-point`: like `draw-code-point`, but handles newlines and
+  updates cursor position. Assumes text is printed left-to-right,
+  top-to-bottom.
 - `clear-screen`
 
 - `draw-text-rightward`: draws a single line of text, stopping when it reaches
@@ -176,12 +179,13 @@ Similar primitives for writing text top-to-bottom, left-to-right.
 - `draw-int32-decimal-wrapping-down-then-right`
 - `draw-int32-decimal-wrapping-down-then-right-over-full-screen`
 
-Screens remember the current cursor position.
+Screens remember the current cursor position. The following primitives
+automatically read and update the cursor position in various ways.
 
 - `cursor-position`
 - `set-cursor-position`
-- `draw-grapheme-at-cursor`
-- `draw-code-point-at-cursor`
+- `draw-code-point-at-cursor-over-full-screen`: `render-code-point` at
+  cursor position.
 - `draw-cursor`: highlights the current position of the cursor. Programs must
   pass in the grapheme to draw at the cursor position, and are responsible for
   clearing the highlight when the cursor moves.
@@ -191,16 +195,21 @@ Screens remember the current cursor position.
 - `move-cursor-to-left-margin-of-next-line`
 - `move-cursor-rightward-and-downward`: move cursor one grapheme to the right
 
-- `draw-text-rightward-from-cursor`
-- `draw-text-wrapping-right-then-down-from-cursor`
-- `draw-text-wrapping-right-then-down-from-cursor-over-full-screen`
+- `draw-text-rightward-from-cursor`: truncate at some right margin.
+- `draw-text-rightward-from-cursor-over-full-screen`: truncate at right edge
+  of screen.
+- `draw-text-wrapping-right-then-down-from-cursor`: wrap at some right margin.
+- `draw-text-wrapping-right-then-down-from-cursor-over-full-screen`: wrap at
+  right edge of screen.
 - `draw-int32-hex-wrapping-right-then-down-from-cursor`
 - `draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen`
 - `draw-int32-decimal-wrapping-right-then-down-from-cursor`
 - `draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen`
 
-- `draw-text-wrapping-down-then-right-from-cursor`
-- `draw-text-wrapping-down-then-right-from-cursor-over-full-screen`
+- `draw-text-wrapping-down-then-right-from-cursor`: wrap at some bottom
+  margin.
+- `draw-text-wrapping-down-then-right-from-cursor-over-full-screen`: wrap at
+  bottom edge of screen.
 
 Assertions for tests:
 

@@ -81,13 +81,6 @@ fn move-cursor-to-left-margin-of-next-line screen: (addr screen) {
   set-cursor-position screen, cursor-x, cursor-y
 }
 
-fn draw-code-point-at-cursor screen: (addr screen), c: code-point, color: int, background-color: int {
-  var cursor-x/eax: int <- copy 0
-  var cursor-y/ecx: int <- copy 0
-  cursor-x, cursor-y <- cursor-position screen
-  var dummy/eax: int <- draw-code-point screen, c, cursor-x, cursor-y, color, background-color
-}
-
 fn draw-code-point-at-cursor-over-full-screen screen: (addr screen), c: code-point, color: int, background-color: int {
   var cursor-x/eax: int <- copy 0
   var cursor-y/ecx: int <- copy 0

@@ -142,7 +142,6 @@ sig move-cursor-right screen: (addr screen)
 sig move-cursor-up screen: (addr screen)
 sig move-cursor-down screen: (addr screen)
 sig move-cursor-to-left-margin-of-next-line screen: (addr screen)
-sig draw-code-point-at-cursor screen: (addr screen), c: code-point, color: int, background-color: int
 sig draw-code-point-at-cursor-over-full-screen screen: (addr screen), c: code-point, color: int, background-color: int
 sig draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, xmax: int, y: int, color: int, background-color: int -> _/eax: int
 sig draw-stream-rightward screen: (addr screen), stream: (addr stream byte), x: int, xmax: int, y: int, color: int, background-color: int -> _/eax: int
