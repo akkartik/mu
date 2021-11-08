@@ -609,14 +609,14 @@ for a really complex example of this sort of _procedural graphics_.
 
 ## Task 16: a simple app
 
-We now know how to read keys from keyboard and draw on the screen. Look at
+We now know how to read keys from keyboard and draw on the screen. Try out
 [tutorial/counter.mu](https://github.com/akkartik/mu/blob/main/tutorial/counter.mu)
 which implements a simple counter app.
 
 <img alt='screenshot of the counter app' src='counter.png'>
 
-Do all the parts make sense? Read the extensive vocabulary of functions for
-[drawing text to screen](https://github.com/akkartik/mu/blob/main/vocabulary.md#printing-to-screen).
+Now look at its code. Do all the parts make sense? Reread the extensive
+vocabulary of functions for [drawing text to screen](https://github.com/akkartik/mu/blob/main/vocabulary.md#printing-to-screen).
 
 ---
 
