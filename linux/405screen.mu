@@ -18,7 +18,7 @@ type screen {
 }
 
 type screen-cell {
-  data: grapheme
+  data: code-point-utf8
   color: int
   background-color: int
   bold?: boolean
@@ -83,7 +83,7 @@ fn clear-screen screen: (addr screen) {
     return
   }
   # fake screen
-  var space/edi: grapheme <- copy 0x20
+  var space/edi: code-point-utf8 <- copy 0x20
   move-cursor screen, 1, 1
   var screen-addr/esi: (addr screen) <- copy screen
   var i/eax: int <- copy 1
@@ -96,7 +96,7 @@ fn clear-screen screen: (addr screen) {
     {
       compare j, *ncols
       break-if->
-      print-grapheme screen, space
+      print-code-point-utf8 screen, space
       j <- increment
       loop
     }
@@ -186,8 +186,8 @@ fn print-stream _screen: (addr screen), s: (addr stream byte) {
     var done?/eax: boolean <- stream-empty? s
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- read-grapheme s
-    print-grapheme screen, g
+    var g/eax: code-point-utf8 <- read-code-point-utf8 s
+    print-code-point-utf8 screen, g
     loop
   }
 }
@@ -211,11 +211,11 @@ fn print-array-of-ints-in-decimal screen: (addr screen), _a: (addr array int) {
   }
 }
 
-fn print-grapheme screen: (addr screen), c: grapheme {
+fn print-code-point-utf8 screen: (addr screen), c: code-point-utf8 {
   compare screen, 0
   {
     break-if-!=
-    print-grapheme-to-real-screen c
+    print-code-point-utf8-to-real-screen c
     return
   }
   # fake screen
@@ -239,7 +239,7 @@ fn print-grapheme screen: (addr screen), c: grapheme {
     break-if-<=
     copy-to *cursor-row-addr, num-rows
     # if (top-index > data size) top-index = 0, otherwise top-index += num-cols
-    $print-grapheme:perform-scroll: {
+    $print-code-point-utf8:perform-scroll: {
       var top-index-addr/ebx: (addr int) <- get screen-addr, top-index
       var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
       var data/eax: (addr array screen-cell) <- lookup *data-ah
@@ -248,7 +248,7 @@ fn print-grapheme screen: (addr screen), c: grapheme {
       {
         break-if->=
         add-to *top-index-addr, num-cols
-        break $print-grapheme:perform-scroll
+        break $print-code-point-utf8:perform-scroll
       }
       {
         break-if-<
@@ -257,7 +257,7 @@ fn print-grapheme screen: (addr screen), c: grapheme {
     }
   }
   var idx/ecx: int <- current-screen-cell-index screen-addr
-#?   print-string-to-real-screen "printing grapheme at screen index "
+#?   print-string-to-real-screen "printing code-point-utf8 at screen index "
 #?   print-int32-hex-to-real-screen idx
 #?   print-string-to-real-screen ": "
   var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
@@ -266,9 +266,9 @@ fn print-grapheme screen: (addr screen), c: grapheme {
   var dest-cell/ecx: (addr screen-cell) <- index data, offset
   var src-cell/eax: (addr screen-cell) <- get screen-addr, curr-attributes
   copy-object src-cell, dest-cell
-  var dest/eax: (addr grapheme) <- get dest-cell, data
-  var c2/ecx: grapheme <- copy c
-#?   print-grapheme-to-real-screen c2
+  var dest/eax: (addr code-point-utf8) <- get dest-cell, data
+  var c2/ecx: code-point-utf8 <- copy c
+#?   print-code-point-utf8-to-real-screen c2
 #?   print-string-to-real-screen "\n"
   copy-to *dest, c2
   increment *cursor-col-addr
@@ -305,21 +305,21 @@ fn screen-cell-index screen-on-stack: (addr screen), row: int, col: int -> _/ecx
   return result
 }
 
-fn screen-grapheme-at screen-on-stack: (addr screen), row: int, col: int -> _/eax: grapheme {
+fn screen-code-point-utf8-at screen-on-stack: (addr screen), row: int, col: int -> _/eax: code-point-utf8 {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen-addr, row, col
-  var result/eax: grapheme <- screen-grapheme-at-idx screen-addr, idx
+  var result/eax: code-point-utf8 <- screen-code-point-utf8-at-idx screen-addr, idx
   return result
 }
 
-fn screen-grapheme-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: grapheme {
+fn screen-code-point-utf8-at-idx screen-on-stack: (addr screen), idx-on-stack: int -> _/eax: code-point-utf8 {
   var screen-addr/esi: (addr screen) <- copy screen-on-stack
   var data-ah/eax: (addr handle array screen-cell) <- get screen-addr, data
   var data/eax: (addr array screen-cell) <- lookup *data-ah
   var idx/ecx: int <- copy idx-on-stack
   var offset/ecx: (offset screen-cell) <- compute-offset data, idx
   var cell/eax: (addr screen-cell) <- index data, offset
-  var src/eax: (addr grapheme) <- get cell, data
+  var src/eax: (addr code-point-utf8) <- get cell, data
   return *src
 }
 
@@ -433,8 +433,8 @@ fn screen-blink-at-idx? screen-on-stack: (addr screen), idx-on-stack: int -> _/e
 }
 
 fn print-code-point screen: (addr screen), c: code-point {
-  var g/eax: grapheme <- to-grapheme c
-  print-grapheme screen, g
+  var g/eax: code-point-utf8 <- to-utf8 c
+  print-code-point-utf8 screen, g
 }
 
 fn print-int32-hex screen: (addr screen), n: int {
@@ -453,8 +453,8 @@ fn print-int32-hex screen: (addr screen), n: int {
     var done?/eax: boolean <- stream-empty? s2-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- read-grapheme s2-addr
-    print-grapheme screen, g
+    var g/eax: code-point-utf8 <- read-code-point-utf8 s2-addr
+    print-code-point-utf8 screen, g
     loop
   }
 }
@@ -475,8 +475,8 @@ fn print-int32-hex-bits screen: (addr screen), n: int, bits: int {
     var done?/eax: boolean <- stream-empty? s2-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- read-grapheme s2-addr
-    print-grapheme screen, g
+    var g/eax: code-point-utf8 <- read-code-point-utf8 s2-addr
+    print-code-point-utf8 screen, g
     loop
   }
 }
@@ -497,8 +497,8 @@ fn print-int32-decimal screen: (addr screen), n: int {
     var done?/eax: boolean <- stream-empty? s2-addr
     compare done?, 0
     break-if-!=
-    var g/eax: grapheme <- read-grapheme s2-addr
-    print-grapheme screen, g
+    var g/eax: code-point-utf8 <- read-code-point-utf8 s2-addr
+    print-code-point-utf8 screen, g
     loop
   }
 }
@@ -631,7 +631,7 @@ fn check-screen-row screen: (addr screen), row-idx: int, expected: (addr array b
 fn check-screen-row-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
-  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  # compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
   write e-addr, expected
@@ -639,35 +639,35 @@ fn check-screen-row-from screen-on-stack: (addr screen), row-idx: int, col-idx: 
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g/ebx: grapheme <- copy _g
-    var expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    # compare graphemes
-    $check-screen-row-from:compare-graphemes: {
-      # if expected-grapheme is space, null grapheme is also ok
+    var _g/eax: code-point-utf8 <- screen-code-point-utf8-at-idx screen, idx
+    var g/ebx: code-point-utf8 <- copy _g
+    var expected-code-point-utf8/eax: code-point-utf8 <- read-code-point-utf8 e-addr
+    # compare code-point-utf8s
+    $check-screen-row-from:compare-code-point-utf8s: {
+      # if expected-code-point-utf8 is space, null code-point-utf8 is also ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         compare g, 0
-        break-if-= $check-screen-row-from:compare-graphemes
+        break-if-= $check-screen-row-from:compare-code-point-utf8s
       }
-      # if (g == expected-grapheme) print "."
-      compare g, expected-grapheme
+      # if (g == expected-code-point-utf8) print "."
+      compare g, expected-code-point-utf8
       {
         break-if-!=
         print-string-to-real-screen "."
-        break $check-screen-row-from:compare-graphemes
+        break $check-screen-row-from:compare-code-point-utf8s
       }
       # otherwise print an error
       print-string-to-real-screen msg
       print-string-to-real-screen ": expected '"
-      print-grapheme-to-real-screen expected-grapheme
+      print-code-point-utf8-to-real-screen expected-code-point-utf8
       print-string-to-real-screen "' at ("
       print-int32-hex-to-real-screen row-idx
       print-string-to-real-screen ", "
       print-int32-hex-to-real-screen col-idx
       print-string-to-real-screen ") but observed '"
-      print-grapheme-to-real-screen g
+      print-code-point-utf8-to-real-screen g
       print-string-to-real-screen "'\n"
     }
     idx <- increment
@@ -685,7 +685,7 @@ fn check-screen-row-in-color screen: (addr screen), fg: int, row-idx: int, expec
 fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
-  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  # compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
   write e-addr, expected
@@ -693,45 +693,45 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, row-i
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g/ebx: grapheme <- copy _g
-    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme/edi: grapheme <- copy _expected-grapheme
+    var _g/eax: code-point-utf8 <- screen-code-point-utf8-at-idx screen, idx
+    var g/ebx: code-point-utf8 <- copy _g
+    var _expected-code-point-utf8/eax: code-point-utf8 <- read-code-point-utf8 e-addr
+    var expected-code-point-utf8/edi: code-point-utf8 <- copy _expected-code-point-utf8
     $check-screen-row-in-color-from:compare-cells: {
-      # if expected-grapheme is space, null grapheme is also ok
+      # if expected-code-point-utf8 is space, null code-point-utf8 is also ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         compare g, 0
         break-if-= $check-screen-row-in-color-from:compare-cells
       }
-      # if expected-grapheme is space, a different color is ok
+      # if expected-code-point-utf8 is space, a different color is ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         var color/eax: int <- screen-color-at-idx screen, idx
         compare color, fg
         break-if-!= $check-screen-row-in-color-from:compare-cells
       }
-      # compare graphemes
-      $check-screen-row-in-color-from:compare-graphemes: {
-        # if (g == expected-grapheme) print "."
-        compare g, expected-grapheme
+      # compare code-point-utf8s
+      $check-screen-row-in-color-from:compare-code-point-utf8s: {
+        # if (g == expected-code-point-utf8) print "."
+        compare g, expected-code-point-utf8
         {
           break-if-!=
           print-string-to-real-screen "."
-          break $check-screen-row-in-color-from:compare-graphemes
+          break $check-screen-row-in-color-from:compare-code-point-utf8s
         }
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
         print-int32-hex-to-real-screen col-idx
         print-string-to-real-screen ") but observed '"
-        print-grapheme-to-real-screen g
+        print-code-point-utf8-to-real-screen g
         print-string-to-real-screen "'\n"
       }
       $check-screen-row-in-color-from:compare-colors: {
@@ -745,7 +745,7 @@ fn check-screen-row-in-color-from screen-on-stack: (addr screen), fg: int, row-i
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
@@ -772,7 +772,7 @@ fn check-screen-row-in-background-color screen: (addr screen), bg: int, row-idx:
 fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), bg: int, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
-  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  # compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
   write e-addr, expected
@@ -780,45 +780,45 @@ fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), bg:
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g/ebx: grapheme <- copy _g
-    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    var _g/eax: code-point-utf8 <- screen-code-point-utf8-at-idx screen, idx
+    var g/ebx: code-point-utf8 <- copy _g
+    var _expected-code-point-utf8/eax: code-point-utf8 <- read-code-point-utf8 e-addr
+    var expected-code-point-utf8/edx: code-point-utf8 <- copy _expected-code-point-utf8
     $check-screen-row-in-background-color-from:compare-cells: {
-      # if expected-grapheme is space, null grapheme is also ok
+      # if expected-code-point-utf8 is space, null code-point-utf8 is also ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         compare g, 0
         break-if-= $check-screen-row-in-background-color-from:compare-cells
       }
-      # if expected-grapheme is space, a different color is ok
+      # if expected-code-point-utf8 is space, a different color is ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         var color/eax: int <- screen-background-color-at-idx screen, idx
         compare color, bg
         break-if-!= $check-screen-row-in-background-color-from:compare-cells
       }
-      # compare graphemes
-      $check-screen-row-in-background-color-from:compare-graphemes: {
-        # if (g == expected-grapheme) print "."
-        compare g, expected-grapheme
+      # compare code-point-utf8s
+      $check-screen-row-in-background-color-from:compare-code-point-utf8s: {
+        # if (g == expected-code-point-utf8) print "."
+        compare g, expected-code-point-utf8
         {
           break-if-!=
           print-string-to-real-screen "."
-          break $check-screen-row-in-background-color-from:compare-graphemes
+          break $check-screen-row-in-background-color-from:compare-code-point-utf8s
         }
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
         print-int32-hex-to-real-screen col-idx
         print-string-to-real-screen ") but observed '"
-        print-grapheme-to-real-screen g
+        print-code-point-utf8-to-real-screen g
         print-string-to-real-screen "'\n"
       }
       $check-screen-row-in-background-color-from:compare-colors: {
@@ -832,7 +832,7 @@ fn check-screen-row-in-background-color-from screen-on-stack: (addr screen), bg:
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
@@ -857,7 +857,7 @@ fn check-screen-row-in-bold screen: (addr screen), row-idx: int, expected: (addr
 fn check-screen-row-in-bold-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
-  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  # compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
   write e-addr, expected
@@ -865,45 +865,45 @@ fn check-screen-row-in-bold-from screen-on-stack: (addr screen), row-idx: int, c
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g/ebx: grapheme <- copy _g
-    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    var _g/eax: code-point-utf8 <- screen-code-point-utf8-at-idx screen, idx
+    var g/ebx: code-point-utf8 <- copy _g
+    var _expected-code-point-utf8/eax: code-point-utf8 <- read-code-point-utf8 e-addr
+    var expected-code-point-utf8/edx: code-point-utf8 <- copy _expected-code-point-utf8
     $check-screen-row-in-bold-from:compare-cells: {
-      # if expected-grapheme is space, null grapheme is also ok
+      # if expected-code-point-utf8 is space, null code-point-utf8 is also ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         compare g, 0
         break-if-= $check-screen-row-in-bold-from:compare-cells
       }
-      # if expected-grapheme is space, non-bold is ok
+      # if expected-code-point-utf8 is space, non-bold is ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         var bold?/eax: boolean <- screen-bold-at-idx? screen, idx
         compare bold?, 1
         break-if-!= $check-screen-row-in-bold-from:compare-cells
       }
-      # compare graphemes
-      $check-screen-row-in-bold-from:compare-graphemes: {
-        # if (g == expected-grapheme) print "."
-        compare g, expected-grapheme
+      # compare code-point-utf8s
+      $check-screen-row-in-bold-from:compare-code-point-utf8s: {
+        # if (g == expected-code-point-utf8) print "."
+        compare g, expected-code-point-utf8
         {
           break-if-!=
           print-string-to-real-screen "."
-          break $check-screen-row-in-bold-from:compare-graphemes
+          break $check-screen-row-in-bold-from:compare-code-point-utf8s
         }
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
         print-int32-hex-to-real-screen col-idx
         print-string-to-real-screen ") but observed '"
-        print-grapheme-to-real-screen g
+        print-code-point-utf8-to-real-screen g
         print-string-to-real-screen "'\n"
       }
       $check-screen-row-in-bold-from:compare-bold: {
@@ -917,7 +917,7 @@ fn check-screen-row-in-bold-from screen-on-stack: (addr screen), row-idx: int, c
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
@@ -938,7 +938,7 @@ fn check-screen-row-in-underline screen: (addr screen), row-idx: int, expected: 
 fn check-screen-row-in-underline-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
-  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  # compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
   write e-addr, expected
@@ -946,45 +946,45 @@ fn check-screen-row-in-underline-from screen-on-stack: (addr screen), row-idx: i
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g/ebx: grapheme <- copy _g
-    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    var _g/eax: code-point-utf8 <- screen-code-point-utf8-at-idx screen, idx
+    var g/ebx: code-point-utf8 <- copy _g
+    var _expected-code-point-utf8/eax: code-point-utf8 <- read-code-point-utf8 e-addr
+    var expected-code-point-utf8/edx: code-point-utf8 <- copy _expected-code-point-utf8
     $check-screen-row-in-underline-from:compare-cells: {
-      # if expected-grapheme is space, null grapheme is also ok
+      # if expected-code-point-utf8 is space, null code-point-utf8 is also ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         compare g, 0
         break-if-= $check-screen-row-in-underline-from:compare-cells
       }
-      # if expected-grapheme is space, non-underline is ok
+      # if expected-code-point-utf8 is space, non-underline is ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         var underline?/eax: boolean <- screen-underline-at-idx? screen, idx
         compare underline?, 1
         break-if-!= $check-screen-row-in-underline-from:compare-cells
       }
-      # compare graphemes
-      $check-screen-row-in-underline-from:compare-graphemes: {
-        # if (g == expected-grapheme) print "."
-        compare g, expected-grapheme
+      # compare code-point-utf8s
+      $check-screen-row-in-underline-from:compare-code-point-utf8s: {
+        # if (g == expected-code-point-utf8) print "."
+        compare g, expected-code-point-utf8
         {
           break-if-!=
           print-string-to-real-screen "."
-          break $check-screen-row-in-underline-from:compare-graphemes
+          break $check-screen-row-in-underline-from:compare-code-point-utf8s
         }
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
         print-int32-hex-to-real-screen col-idx
         print-string-to-real-screen ") but observed '"
-        print-grapheme-to-real-screen g
+        print-code-point-utf8-to-real-screen g
         print-string-to-real-screen "'\n"
       }
       $check-screen-row-in-underline-from:compare-underline: {
@@ -998,7 +998,7 @@ fn check-screen-row-in-underline-from screen-on-stack: (addr screen), row-idx: i
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
@@ -1019,7 +1019,7 @@ fn check-screen-row-in-reverse screen: (addr screen), row-idx: int, expected: (a
 fn check-screen-row-in-reverse-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
-  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  # compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
   write e-addr, expected
@@ -1027,45 +1027,45 @@ fn check-screen-row-in-reverse-from screen-on-stack: (addr screen), row-idx: int
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g/ebx: grapheme <- copy _g
-    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    var _g/eax: code-point-utf8 <- screen-code-point-utf8-at-idx screen, idx
+    var g/ebx: code-point-utf8 <- copy _g
+    var _expected-code-point-utf8/eax: code-point-utf8 <- read-code-point-utf8 e-addr
+    var expected-code-point-utf8/edx: code-point-utf8 <- copy _expected-code-point-utf8
     $check-screen-row-in-reverse-from:compare-cells: {
-      # if expected-grapheme is space, null grapheme is also ok
+      # if expected-code-point-utf8 is space, null code-point-utf8 is also ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         compare g, 0
         break-if-= $check-screen-row-in-reverse-from:compare-cells
       }
-      # if expected-grapheme is space, non-reverse is ok
+      # if expected-code-point-utf8 is space, non-reverse is ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         var reverse?/eax: boolean <- screen-reverse-at-idx? screen, idx
         compare reverse?, 1
         break-if-!= $check-screen-row-in-reverse-from:compare-cells
       }
-      # compare graphemes
-      $check-screen-row-in-reverse-from:compare-graphemes: {
-        # if (g == expected-grapheme) print "."
-        compare g, expected-grapheme
+      # compare code-point-utf8s
+      $check-screen-row-in-reverse-from:compare-code-point-utf8s: {
+        # if (g == expected-code-point-utf8) print "."
+        compare g, expected-code-point-utf8
         {
           break-if-!=
           print-string-to-real-screen "."
-          break $check-screen-row-in-reverse-from:compare-graphemes
+          break $check-screen-row-in-reverse-from:compare-code-point-utf8s
         }
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
         print-int32-hex-to-real-screen col-idx
         print-string-to-real-screen ") but observed '"
-        print-grapheme-to-real-screen g
+        print-code-point-utf8-to-real-screen g
         print-string-to-real-screen "'\n"
       }
       $check-screen-row-in-reverse-from:compare-reverse: {
@@ -1079,7 +1079,7 @@ fn check-screen-row-in-reverse-from screen-on-stack: (addr screen), row-idx: int
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
@@ -1100,7 +1100,7 @@ fn check-screen-row-in-blinking screen: (addr screen), row-idx: int, expected: (
 fn check-screen-row-in-blinking-from screen-on-stack: (addr screen), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) {
   var screen/esi: (addr screen) <- copy screen-on-stack
   var idx/ecx: int <- screen-cell-index screen, row-idx, col-idx
-  # compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme
+  # compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8
   var e: (stream byte 0x100)
   var e-addr/edx: (addr stream byte) <- address e
   write e-addr, expected
@@ -1108,45 +1108,45 @@ fn check-screen-row-in-blinking-from screen-on-stack: (addr screen), row-idx: in
     var done?/eax: boolean <- stream-empty? e-addr
     compare done?, 0
     break-if-!=
-    var _g/eax: grapheme <- screen-grapheme-at-idx screen, idx
-    var g/ebx: grapheme <- copy _g
-    var _expected-grapheme/eax: grapheme <- read-grapheme e-addr
-    var expected-grapheme/edx: grapheme <- copy _expected-grapheme
+    var _g/eax: code-point-utf8 <- screen-code-point-utf8-at-idx screen, idx
+    var g/ebx: code-point-utf8 <- copy _g
+    var _expected-code-point-utf8/eax: code-point-utf8 <- read-code-point-utf8 e-addr
+    var expected-code-point-utf8/edx: code-point-utf8 <- copy _expected-code-point-utf8
     $check-screen-row-in-blinking-from:compare-cells: {
-      # if expected-grapheme is space, null grapheme is also ok
+      # if expected-code-point-utf8 is space, null code-point-utf8 is also ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         compare g, 0
         break-if-= $check-screen-row-in-blinking-from:compare-cells
       }
-      # if expected-grapheme is space, non-blinking is ok
+      # if expected-code-point-utf8 is space, non-blinking is ok
       {
-        compare expected-grapheme, 0x20
+        compare expected-code-point-utf8, 0x20
         break-if-!=
         var blinking?/eax: boolean <- screen-blink-at-idx? screen, idx
         compare blinking?, 1
         break-if-!= $check-screen-row-in-blinking-from:compare-cells
       }
-      # compare graphemes
-      $check-screen-row-in-blinking-from:compare-graphemes: {
-        # if (g == expected-grapheme) print "."
-        compare g, expected-grapheme
+      # compare code-point-utf8s
+      $check-screen-row-in-blinking-from:compare-code-point-utf8s: {
+        # if (g == expected-code-point-utf8) print "."
+        compare g, expected-code-point-utf8
         {
           break-if-!=
           print-string-to-real-screen "."
-          break $check-screen-row-in-blinking-from:compare-graphemes
+          break $check-screen-row-in-blinking-from:compare-code-point-utf8s
         }
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
         print-int32-hex-to-real-screen col-idx
         print-string-to-real-screen ") but observed '"
-        print-grapheme-to-real-screen g
+        print-code-point-utf8-to-real-screen g
         print-string-to-real-screen "'\n"
       }
       $check-screen-row-in-blinking-from:compare-blinking: {
@@ -1160,7 +1160,7 @@ fn check-screen-row-in-blinking-from screen-on-stack: (addr screen), row-idx: in
         # otherwise print an error
         print-string-to-real-screen msg
         print-string-to-real-screen ": expected '"
-        print-grapheme-to-real-screen expected-grapheme
+        print-code-point-utf8-to-real-screen expected-code-point-utf8
         print-string-to-real-screen "' at ("
         print-int32-hex-to-real-screen row-idx
         print-string-to-real-screen ", "
@@ -1175,21 +1175,21 @@ fn check-screen-row-in-blinking-from screen-on-stack: (addr screen), row-idx: in
   }
 }
 
-fn test-print-single-grapheme {
+fn test-print-single-code-point-utf8 {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
-  check-screen-row screen, 1/row, "a", "F - test-print-single-grapheme"  # top-left corner of the screen
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
+  check-screen-row screen, 1/row, "a", "F - test-print-single-code-point-utf8"  # top-left corner of the screen
 }
 
-fn test-print-multiple-graphemes {
+fn test-print-multiple-code-point-utf8s {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   print-string screen, "Hello, 世界"
-  check-screen-row screen, 1/row, "Hello, 世界", "F - test-print-multiple-graphemes"
+  check-screen-row screen, 1/row, "Hello, 世界", "F - test-print-multiple-code-point-utf8s"
 }
 
 fn test-move-cursor {
@@ -1197,8 +1197,8 @@ fn test-move-cursor {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 1, 4
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   check-screen-row screen, 1/row, "   a", "F - test-move-cursor"  # top row
 }
 
@@ -1207,8 +1207,8 @@ fn test-move-cursor-zeroes {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 0, 0
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   check-screen-row screen, 1/row, "a", "F - test-move-cursor-zeroes"  # top-left corner of the screen
 }
 
@@ -1217,8 +1217,8 @@ fn test-move-cursor-zero-row {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 0, 2
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   check-screen-row screen, 1/row, " a", "F - test-move-cursor-zero-row"  # top row
 }
 
@@ -1227,8 +1227,8 @@ fn test-move-cursor-zero-column {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 4, 0
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   check-screen-row screen, 4/row, "a", "F - test-move-cursor-zero-column"
 }
 
@@ -1237,8 +1237,8 @@ fn test-move-cursor-negative-row {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 3
   move-cursor screen, -1/row, 2/col
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   # no move
   check-screen-row screen, 1/row, "a", "F - test-move-cursor-negative-row"
 }
@@ -1248,8 +1248,8 @@ fn test-move-cursor-negative-column {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5, 3
   move-cursor screen, 2/row, -1/col
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   # no move
   check-screen-row screen, 1/row, "a", "F - test-move-cursor-negative-column"
 }
@@ -1259,8 +1259,8 @@ fn test-move-cursor-column-too-large {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 3/cols
   move-cursor screen, 1/row, 4/col
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   # top row is empty
   check-screen-row screen, 1/row, "   ", "F - test-move-cursor-column-too-large"
   # character shows up on next row
@@ -1272,8 +1272,8 @@ fn test-move-cursor-column-too-large-saturates {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 3/cols
   move-cursor screen, 1/row, 6/col
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   # top row is empty
   check-screen-row screen, 1/row, "   ", "F - test-move-cursor-column-too-large-saturates"  # top-left corner of the screen
   # character shows up at the start of next row
@@ -1285,8 +1285,8 @@ fn test-move-cursor-row-too-large {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 3/cols
   move-cursor screen, 6/row, 2/col
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   # bottom row shows the character
   check-screen-row screen, 5/row, " a", "F - test-move-cursor-row-too-large"
 }
@@ -1296,8 +1296,8 @@ fn test-move-cursor-row-too-large-saturates {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 3/cols
   move-cursor screen, 9/row, 2/col
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   # bottom row shows the character
   check-screen-row screen, 5/row, " a", "F - test-move-cursor-row-too-large-saturates"
 }
@@ -1307,8 +1307,8 @@ fn test-check-screen-row-from {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   move-cursor screen, 1, 4
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   check-screen-row screen, 1/row, "   a", "F - test-check-screen-row-from/baseline"
   check-screen-row-from screen, 1/row, 4/col, "a", "F - test-check-screen-row-from"
 }
@@ -1328,8 +1328,8 @@ fn test-check-screen-scrolls-on-overflow {
   initialize-screen screen, 5/rows, 4/cols
   # single character starting at bottom right
   move-cursor screen, 5/rows, 4/cols
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   check-screen-row-from screen, 5/row, 4/col, "a", "F - test-check-screen-scrolls-on-overflow/baseline"  # bottom-right corner of the screen
   # multiple characters starting at bottom right
   move-cursor screen, 5, 4
@@ -1348,14 +1348,14 @@ fn test-check-screen-color {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   start-color screen, 1/fg, 0/bg
   c <- copy 0x62/b
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   start-color screen, 0/fg, 7/bg
   c <- copy 0x63/c
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   check-screen-row-in-color screen, 0/fg, 1/row, "a c", "F - test-check-screen-color"
 }
 
@@ -1363,14 +1363,14 @@ fn test-check-screen-background-color {
   var screen-on-stack: screen
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   start-color screen, 0/fg, 1/bg
   c <- copy 0x62/b
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   start-color screen, 0/fg, 7/bg
   c <- copy 0x63/c
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   check-screen-row-in-background-color screen, 7/bg, 1/row, "a c", "F - test-check-screen-background-color"
 }
 
@@ -1379,14 +1379,14 @@ fn test-check-screen-bold {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   start-bold screen
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   reset-formatting screen
   c <- copy 0x62/b
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   start-bold screen
   c <- copy 0x63/c
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   check-screen-row-in-bold screen, 1/row, "a c", "F - test-check-screen-bold"
 }
 
@@ -1395,14 +1395,14 @@ fn test-check-screen-underline {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   start-underline screen
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   reset-formatting screen
   c <- copy 0x62/b
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   start-underline screen
   c <- copy 0x63/c
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   check-screen-row-in-underline screen, 1/row, "a c", "F - test-check-screen-underline"
 }
 
@@ -1411,14 +1411,14 @@ fn test-check-screen-reverse {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   start-reverse-video screen
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   reset-formatting screen
   c <- copy 0x62/b
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   start-reverse-video screen
   c <- copy 0x63/c
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   check-screen-row-in-reverse screen, 1/row, "a c", "F - test-check-screen-reverse"
 }
 
@@ -1427,14 +1427,14 @@ fn test-check-screen-blinking {
   var screen/esi: (addr screen) <- address screen-on-stack
   initialize-screen screen, 5/rows, 4/cols
   start-blinking screen
-  var c/eax: grapheme <- copy 0x61/a
-  print-grapheme screen, c
+  var c/eax: code-point-utf8 <- copy 0x61/a
+  print-code-point-utf8 screen, c
   reset-formatting screen
   c <- copy 0x62/b
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   start-blinking screen
   c <- copy 0x63/c
-  print-grapheme screen, c
+  print-code-point-utf8 screen, c
   check-screen-row-in-blinking screen, 1/row, "a c", "F - test-check-screen-blinking"
 }
 

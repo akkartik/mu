@@ -206,8 +206,8 @@ doesn't yet parse floating-point literals:
 - `print-int32-buffered`: int -> buffered-file
   - textual representation in hex, including '0x' prefix
 
-- `write-grapheme`: grapheme -> stream
-- `to-grapheme`: code-point -> grapheme
+- `write-code-point-utf8`: code-point-utf8 -> stream
+- `to-utf8`: code-point -> code-point-utf8
 
 - `write-float-decimal-approximate`: float, precision: int -> stream
 
@@ -226,8 +226,8 @@ there isn't enough room in the destination stream.
 - `read-line-buffered`: buffered-file -> stream
   - Will abort the entire program if there isn't enough room.
 
-- `read-grapheme`: stream -> grapheme
-- `read-grapheme-buffered`: buffered-file -> grapheme
+- `read-code-point-utf8`: stream -> code-point-utf8
+- `read-code-point-utf8-buffered`: buffered-file -> code-point-utf8
 
 - `read-lines`: buffered-file -> array of strings
 
@@ -268,7 +268,7 @@ Unix terminal properties supported by almost all modern terminal emulators.
 
 - `print-string`: string -> screen
 - `print-stream`
-- `print-grapheme`
+- `print-code-point-utf8`
 - `print-code-point`
 - `print-int32-hex`
 - `print-int32-decimal`
@@ -290,7 +290,7 @@ manipulated.
 
 Assertions for tests:
 
-- `screen-grapheme-at`
+- `screen-code-point-utf8-at`
 - `screen-color-at`
 - `screen-background-color-at`
 - `screen-bold-at?`

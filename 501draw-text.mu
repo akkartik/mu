@@ -117,7 +117,7 @@ fn draw-text-rightward screen: (addr screen), text: (addr array byte), x: int, x
 fn draw-stream-rightward screen: (addr screen), stream: (addr stream byte), x: int, xmax: int, y: int, color: int, background-color: int -> _/eax: int {
   var xcurr/ecx: int <- copy x
   {
-    var g/eax: grapheme <- read-grapheme stream
+    var g/eax: code-point-utf8 <- read-code-point-utf8 stream
     compare g, 0xffffffff/end-of-file
     break-if-=
     var c/eax: code-point <- to-code-point g
@@ -218,7 +218,7 @@ fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr str
         next-c <- copy 0
         break $draw-stream-wrapping-right-then-down:read-base
       }
-      var g/eax: grapheme <- read-grapheme stream
+      var g/eax: code-point-utf8 <- read-code-point-utf8 stream
       var _c/eax: code-point <- to-code-point g
       c <- copy _c
     }
@@ -240,7 +240,7 @@ fn draw-stream-wrapping-right-then-down screen: (addr screen), stream: (addr str
       compare done?, 0/false
       break-if-!=
       # read a character
-      var g/eax: grapheme <- read-grapheme stream
+      var g/eax: code-point-utf8 <- read-code-point-utf8 stream
       var c/eax: code-point <- to-code-point g
       # if not a combining character, save for next iteration and loop
       {
@@ -343,7 +343,7 @@ fn draw-int32-hex-wrapping-right-then-down screen: (addr screen), n: int, xmin: 
   var xcurr/edx: int <- copy x
   var ycurr/ecx: int <- copy y
   {
-    var g/eax: grapheme <- read-grapheme stream
+    var g/eax: code-point-utf8 <- read-code-point-utf8 stream
     compare g, 0xffffffff/end-of-file
     break-if-=
     var c/eax: code-point <- to-code-point g
@@ -398,7 +398,7 @@ fn draw-int32-decimal-wrapping-right-then-down screen: (addr screen), n: int, xm
   var xcurr/edx: int <- copy x
   var ycurr/ecx: int <- copy y
   {
-    var g/eax: grapheme <- read-grapheme stream
+    var g/eax: code-point-utf8 <- read-code-point-utf8 stream
     compare g, 0xffffffff/end-of-file
     break-if-=
     var c/eax: code-point <- to-code-point g
@@ -466,7 +466,7 @@ fn draw-text-downward screen: (addr screen), text: (addr array byte), x: int, y:
 fn draw-stream-downward screen: (addr screen), stream: (addr stream byte), x: int, y: int, ymax: int, color: int, background-color: int -> _/eax: int {
   var ycurr/ecx: int <- copy y
   {
-    var g/eax: grapheme <- read-grapheme stream
+    var g/eax: code-point-utf8 <- read-code-point-utf8 stream
     compare g, 0xffffffff/end-of-file
     break-if-=
     var c/eax: code-point <- to-code-point g
@@ -508,7 +508,7 @@ fn draw-stream-wrapping-down-then-right screen: (addr screen), stream: (addr str
   var xcurr/edx: int <- copy x
   var ycurr/ecx: int <- copy y
   {
-    var g/eax: grapheme <- read-grapheme stream
+    var g/eax: code-point-utf8 <- read-code-point-utf8 stream
     compare g, 0xffffffff/end-of-file
     break-if-=
     var c/eax: code-point <- to-code-point g

@@ -904,7 +904,7 @@ fn render-trace-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " show whole line  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
-fn edit-trace _self: (addr trace), key: grapheme {
+fn edit-trace _self: (addr trace), key: code-point-utf8 {
   var self/esi: (addr trace) <- copy _self
   # cursor down
   {

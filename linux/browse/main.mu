@@ -49,7 +49,7 @@ fn interactive fs: (addr buffered-file) {
   #
   {
     render paginated-screen, fs
-    var key/eax: grapheme <- read-key-from-real-keyboard
+    var key/eax: code-point-utf8 <- read-key-from-real-keyboard
     compare key, 0x71/'q'
     loop-if-!=
   }
@@ -160,13 +160,13 @@ fn test-render-asterisk-in-text {
 fn render-normal screen: (addr paginated-screen), fs: (addr buffered-file) {
   var newline-seen?/esi: boolean <- copy 0/false
   var start-of-paragraph?/edi: boolean <- copy 1/true
-  var previous-grapheme/ebx: grapheme <- copy 0
+  var previous-code-point-utf8/ebx: code-point-utf8 <- copy 0
 $render-normal:loop: {
     # if done-drawing?(screen) break
     var done?/eax: boolean <- done-drawing? screen
     compare done?, 0/false
     break-if-!=
-    var c/eax: grapheme <- read-grapheme-buffered fs
+    var c/eax: code-point-utf8 <- read-code-point-utf8-buffered fs
 $render-normal:loop-body: {
       # if (c == EOF) break
       compare c, 0xffffffff/end-of-file
@@ -186,8 +186,8 @@ $render-normal:loop-body: {
         # otherwise render two newlines
         {
           break-if-=
-          add-grapheme screen, 0xa/newline
-          add-grapheme screen, 0xa/newline
+          add-code-point-utf8 screen, 0xa/newline
+          add-code-point-utf8 screen, 0xa/newline
           newline-seen? <- copy 0/false
           start-of-paragraph? <- copy 1/true
           break $render-normal:loop-body
@@ -221,20 +221,20 @@ $render-normal:flush-buffered-newline: {
         {
           compare c, 0x20
           break-if-!=
-          add-grapheme screen, 0xa/newline
+          add-code-point-utf8 screen, 0xa/newline
           break $render-normal:flush-buffered-newline
         }
-        add-grapheme screen, 0x20/space
+        add-code-point-utf8 screen, 0x20/space
         # fall through to print c
       }
       ## end soft newline support
 
 $render-normal:whitespace-separated-regions: {
-        # if previous-grapheme wasn't whitespace, skip this block
+        # if previous-code-point-utf8 wasn't whitespace, skip this block
         {
-          compare previous-grapheme, 0x20/space
+          compare previous-code-point-utf8, 0x20/space
           break-if-=
-          compare previous-grapheme, 0xa/newline
+          compare previous-code-point-utf8, 0xa/newline
           break-if-=
           break $render-normal:whitespace-separated-regions
         }
@@ -260,9 +260,9 @@ $render-normal:whitespace-separated-regions: {
         }
       }
       #
-      add-grapheme screen, c
+      add-code-point-utf8 screen, c
     }  # $render-normal:loop-body
-    previous-grapheme <- copy c
+    previous-code-point-utf8 <- copy c
     loop
   }  # $render-normal:loop
 }
@@ -271,7 +271,7 @@ fn render-header-line screen: (addr paginated-screen), fs: (addr buffered-file) 
 $render-header-line:body: {
   # compute color based on number of '#'s
   var header-level/esi: int <- copy 1  # caller already grabbed one
-  var c/eax: grapheme <- copy 0
+  var c/eax: code-point-utf8 <- copy 0
   {
     # if done-drawing?(screen) return
     {
@@ -280,7 +280,7 @@ $render-header-line:body: {
       break-if-!= $render-header-line:body
     }
     #
-    c <- read-grapheme-buffered fs
+    c <- read-code-point-utf8-buffered fs
     # if (c != '#') break
     compare c, 0x23/'#'
     break-if-!=
@@ -298,7 +298,7 @@ $render-header-line:body: {
       break-if-!=
     }
     #
-    c <- read-grapheme-buffered fs
+    c <- read-code-point-utf8-buffered fs
     # if (c == EOF) break
     compare c, 0xffffffff/end-of-file
     break-if-=
@@ -306,7 +306,7 @@ $render-header-line:body: {
     compare c, 0xa/newline
     break-if-=
     #
-    add-grapheme screen, c
+    add-code-point-utf8 screen, c
     #
     loop
   }
@@ -353,7 +353,7 @@ fn render-until-asterisk screen: (addr paginated-screen), fs: (addr buffered-fil
     compare done?, 0/false
     break-if-!=
     #
-    var c/eax: grapheme <- read-grapheme-buffered fs
+    var c/eax: code-point-utf8 <- read-code-point-utf8-buffered fs
     # if (c == EOF) break
     compare c, 0xffffffff/end-of-file
     break-if-=
@@ -361,7 +361,7 @@ fn render-until-asterisk screen: (addr paginated-screen), fs: (addr buffered-fil
     compare c, 0x2a/'*'
     break-if-=
     #
-    add-grapheme screen, c
+    add-code-point-utf8 screen, c
     #
     loop
   }
@@ -374,7 +374,7 @@ fn render-until-underscore screen: (addr paginated-screen), fs: (addr buffered-f
     compare done?, 0/false
     break-if-!=
     #
-    var c/eax: grapheme <- read-grapheme-buffered fs
+    var c/eax: code-point-utf8 <- read-code-point-utf8-buffered fs
     # if (c == EOF) break
     compare c, 0xffffffff/end-of-file
     break-if-=
@@ -382,7 +382,7 @@ fn render-until-underscore screen: (addr paginated-screen), fs: (addr buffered-f
     compare c, 0x5f/'_'
     break-if-=
     #
-    add-grapheme screen, c
+    add-code-point-utf8 screen, c
     #
     loop
   }

@@ -28,7 +28,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var second-screen/edi: (addr screen) <- address second-buffer
   initialize-screen second-screen, 0x80, 0x30, 1/include-pixels
   render second-screen, env
-  convert-graphemes-to-pixels second-screen
+  convert-code-point-utf8s-to-pixels second-screen
   copy-pixels second-screen, screen
   {
     edit keyboard, env
@@ -39,7 +39,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
       step env
       clear-screen second-screen
       render second-screen, env
-      convert-graphemes-to-pixels second-screen
+      convert-code-point-utf8s-to-pixels second-screen
       copy-pixels second-screen, screen
     }
     linger

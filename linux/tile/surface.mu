@@ -111,10 +111,10 @@ fn print-surface-cell-at _self: (addr surface), screen-row: int, screen-col: int
   compare idx, 0
   {
     break-if->=
-    var space/ecx: grapheme <- copy 0x20
+    var space/ecx: code-point-utf8 <- copy 0x20
     var screen-ah/edi: (addr handle screen) <- get self, screen
     var screen/eax: (addr screen) <- lookup *screen-ah
-    print-grapheme screen, space
+    print-code-point-utf8 screen, space
     return
   }
   # otherwise print the appropriate screen-cell
@@ -156,9 +156,9 @@ fn print-screen-cell screen: (addr screen), _cell: (addr screen-cell) {
     break-if-=
     start-blinking screen
   }
-  var g/eax: (addr grapheme) <- get cell, data
-  print-grapheme screen, *g
-#?   var g2/eax: grapheme <- copy *g
+  var g/eax: (addr code-point-utf8) <- get cell, data
+  print-code-point-utf8 screen, *g
+#?   var g2/eax: code-point-utf8 <- copy *g
 #?   var g3/eax: int <- copy g2
 #?   print-int32-hex-to-real-screen g3
 #?   print-string-to-real-screen "\n"
@@ -264,7 +264,7 @@ fn num-lines in: (addr array byte) -> _/ecx: int {
     var done?/eax: boolean <- stream-empty? s-addr
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme s-addr
+    var g/eax: code-point-utf8 <- read-code-point-utf8 s-addr
     compare g, 0xa/newline
     loop-if-!=
     result <- increment
@@ -282,7 +282,7 @@ fn first-line-length in: (addr array byte) -> _/edx: int {
     var done?/eax: boolean <- stream-empty? s-addr
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme s-addr
+    var g/eax: code-point-utf8 <- read-code-point-utf8 s-addr
     compare g, 0xa/newline
     break-if-=
     result <- increment
@@ -301,12 +301,12 @@ fn fill-in _out: (addr array screen-cell), in: (addr array byte) {
     var done?/eax: boolean <- stream-empty? s-addr
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme s-addr
+    var g/eax: code-point-utf8 <- read-code-point-utf8 s-addr
     compare g, 0xa/newline
     loop-if-=
     var offset/edx: (offset screen-cell) <- compute-offset out, idx
     var dest/edx: (addr screen-cell) <- index out, offset
-    var dest2/edx: (addr grapheme) <- get dest, data
+    var dest2/edx: (addr code-point-utf8) <- get dest, data
     copy-to *dest2, g
     idx <- increment
     loop

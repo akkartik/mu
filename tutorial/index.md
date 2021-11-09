@@ -541,7 +541,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard) {
     var done?/eax: boolean <- stream-empty? in
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme in
+    var g/eax: code-point-utf8 <- read-code-point-utf8 in
     # do stuff with g here
     loop
   }
@@ -550,8 +550,8 @@ fn main screen: (addr screen), keyboard: (addr keyboard) {
 
 `read-line-from-keyboard` reads keystrokes from the keyboard until you press
 the `Enter` (also called `newline`) key, and accumulates them into a _stream_
-of bytes. The loop then repeatedly reads _graphemes_ from the stream. A
-grapheme can consist of multiple bytes, particularly outside of the Latin
+of bytes. The loop then repeatedly reads _code-point-utf8s_ from the stream. A
+code-point-utf8 can consist of multiple bytes, particularly outside of the Latin
 alphabet and Arabic digits most prevalent in the West. Mu doesn't yet support
 non-Qwerty keyboards, but support for other keyboards should be easy to add.
 
@@ -561,12 +561,12 @@ give yourself a sense of what you can do with them. Does the above program
 make sense now?  Feel free to experiment to make sense of it.
 
 Can you modify it to print out the line a second time, after you've typed it
-out until the `Enter` key? Can you print a space after every grapheme when you
+out until the `Enter` key? Can you print a space after every code-point-utf8 when you
 print the line out a second time? You'll need to skim the section on
 [printing to screen](https://github.com/akkartik/mu/blob/main/vocabulary.md#printing-to-screen)
 from Mu's vocabulary. Pay particular attention to the difference between a
-grapheme and a _code-point_. Mu programs often read characters in units of
-graphemes, but they must draw in units of code-points that the font manages.
+code-point-utf8 and a _code-point_. Mu programs often read characters in units of
+code-point-utf8s, but they must draw in units of code-points that the font manages.
 (This adds some complexity but helps combine multiple code-points into a
 single glyph as needed for some languages.)
 

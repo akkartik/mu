@@ -78,7 +78,7 @@ fn clear-rect screen: (addr screen), row1: int, col1: int, row2: int, col2: int 
     {
       compare j, col2
       break-if->
-      print-grapheme screen 0x20/space
+      print-code-point-utf8 screen 0x20/space
       j <- increment
       loop
     }
@@ -98,7 +98,7 @@ fn clear-rect2 screen: (addr screen), row1: int, col1: int, w: int, h: int {
     {
       compare j, h
       break-if->=
-      print-grapheme screen 0x20/space
+      print-code-point-utf8 screen 0x20/space
       j <- increment
       loop
     }

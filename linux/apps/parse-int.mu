@@ -37,7 +37,7 @@ fn parse-int _in: (addr array byte) -> _/eax: int {
     var tmp/ebx: (addr byte) <- index in, i
     var c/eax: byte <- copy-byte *tmp
     #
-    var g/eax: grapheme <- copy c
+    var g/eax: code-point-utf8 <- copy c
     var digit/eax: int <- to-decimal-digit g
     result <- add digit
     i <- increment

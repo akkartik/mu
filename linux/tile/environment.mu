@@ -70,7 +70,7 @@ fn initialize-environment-with-fake-screen _self: (addr environment), nrows: int
 # Iterate
 #############
 
-fn process _self: (addr environment), key: grapheme {
+fn process _self: (addr environment), key: code-point-utf8 {
   var self/esi: (addr environment) <- copy _self
   var fn-name-ah/eax: (addr handle word) <- get self, partial-function-name
   var fn-name/eax: (addr word) <- lookup *fn-name-ah
@@ -102,7 +102,7 @@ fn process _self: (addr environment), key: grapheme {
 }
 
 # collect new name in partial-function-name, and move the cursor to function with that name
-fn process-goto-dialog _self: (addr environment), key: grapheme {
+fn process-goto-dialog _self: (addr environment), key: code-point-utf8 {
   var self/esi: (addr environment) <- copy _self
   var fn-name-ah/edi: (addr handle word) <- get self, partial-function-name
   # if 'esc' pressed, cancel goto
@@ -130,7 +130,7 @@ fn process-goto-dialog _self: (addr environment), key: grapheme {
   compare key, 0x7f/del  # backspace on Macs
   $process-goto-dialog:backspace: {
     break-if-!=
-    # if not at start, delete grapheme before cursor
+    # if not at start, delete code-point-utf8 before cursor
     var fn-name/eax: (addr word) <- lookup *fn-name-ah
     var at-start?/eax: boolean <- cursor-at-start? fn-name
     compare at-start?, 0/false
@@ -142,24 +142,24 @@ fn process-goto-dialog _self: (addr environment), key: grapheme {
     return
   }
   # otherwise insert key within current word
-  var print?/eax: boolean <- real-grapheme? key
-  $process-goto-dialog:real-grapheme: {
+  var print?/eax: boolean <- real-code-point-utf8? key
+  $process-goto-dialog:real-code-point-utf8: {
     compare print?, 0/false
     break-if-=
     var fn-name/eax: (addr word) <- lookup *fn-name-ah
-    add-grapheme-to-word fn-name, key
+    add-code-point-utf8-to-word fn-name, key
     return
   }
   # silently ignore other hotkeys
 }
 
-fn process-function _self: (addr environment), _function: (addr function), key: grapheme {
+fn process-function _self: (addr environment), _function: (addr function), key: code-point-utf8 {
   var self/esi: (addr environment) <- copy _self
   var function/edi: (addr function) <- copy _function
   process-function-edit self, function, key
 }
 
-fn process-function-edit _self: (addr environment), _function: (addr function), key: grapheme {
+fn process-function-edit _self: (addr environment), _function: (addr function), key: code-point-utf8 {
   var self/esi: (addr environment) <- copy _self
   var function/edi: (addr function) <- copy _function
   var cursor-word-ah/ebx: (addr handle word) <- get function, cursor-word
@@ -290,7 +290,7 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
   compare key, 0x7f/del  # backspace on Macs
   $process-function-edit:backspace: {
     break-if-!=
-    # if not at start of some word, delete grapheme before cursor within current word
+    # if not at start of some word, delete code-point-utf8 before cursor within current word
     var at-start?/eax: boolean <- cursor-at-start? cursor-word
     compare at-start?, 0/false
     {
@@ -325,25 +325,25 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
       copy-object new-prev-word-ah, cursor-word-ah
       return
     }
-    # if start of word is quote and grapheme before cursor is not, just insert it as usual
+    # if start of word is quote and code-point-utf8 before cursor is not, just insert it as usual
     # TODO: support string escaping
     {
-      var first-grapheme/eax: grapheme <- first-grapheme cursor-word
-      compare first-grapheme, 0x22/double-quote
+      var first-code-point-utf8/eax: code-point-utf8 <- first-code-point-utf8 cursor-word
+      compare first-code-point-utf8, 0x22/double-quote
       break-if-!=
-      var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
-      compare final-grapheme, 0x22/double-quote
+      var final-code-point-utf8/eax: code-point-utf8 <- code-point-utf8-before-cursor cursor-word
+      compare final-code-point-utf8, 0x22/double-quote
       break-if-=
       break $process-function-edit:space
     }
-    # if start of word is '[' and grapheme before cursor is not ']', just insert it as usual
+    # if start of word is '[' and code-point-utf8 before cursor is not ']', just insert it as usual
     # TODO: support nested arrays
     {
-      var first-grapheme/eax: grapheme <- first-grapheme cursor-word
-      compare first-grapheme, 0x5b/[
+      var first-code-point-utf8/eax: code-point-utf8 <- first-code-point-utf8 cursor-word
+      compare first-code-point-utf8, 0x5b/[
       break-if-!=
-      var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
-      compare final-grapheme, 0x5d/]
+      var final-code-point-utf8/eax: code-point-utf8 <- code-point-utf8-before-cursor cursor-word
+      compare final-code-point-utf8, 0x5d/]
       break-if-=
       break $process-function-edit:space
     }
@@ -368,26 +368,26 @@ fn process-function-edit _self: (addr environment), _function: (addr function), 
       var at-end?/eax: boolean <- cursor-at-end? cursor-word
       compare at-end?, 0/false
       break-if-!=
-      var g/eax: grapheme <- pop-after-cursor cursor-word
-      add-grapheme-to-word next-word, g
+      var g/eax: code-point-utf8 <- pop-after-cursor cursor-word
+      add-code-point-utf8-to-word next-word, g
       loop
     }
     cursor-to-start next-word
     return
   }
   # otherwise insert key within current word
-  var g/edx: grapheme <- copy key
-  var print?/eax: boolean <- real-grapheme? key
-  $process-function-edit:real-grapheme: {
+  var g/edx: code-point-utf8 <- copy key
+  var print?/eax: boolean <- real-code-point-utf8? key
+  $process-function-edit:real-code-point-utf8: {
     compare print?, 0/false
     break-if-=
-    add-grapheme-to-word cursor-word, g
+    add-code-point-utf8-to-word cursor-word, g
     return
   }
   # silently ignore other hotkeys
 }
 
-fn process-sandbox _self: (addr environment), _sandbox: (addr sandbox), key: grapheme {
+fn process-sandbox _self: (addr environment), _sandbox: (addr sandbox), key: code-point-utf8 {
   var self/esi: (addr environment) <- copy _self
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var rename-word-mode-ah?/ecx: (addr handle word) <- get sandbox, partial-name-for-cursor-word
@@ -413,7 +413,7 @@ fn process-sandbox _self: (addr environment), _sandbox: (addr sandbox), key: gra
   process-sandbox-edit self, sandbox, key
 }
 
-fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key: grapheme {
+fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key: code-point-utf8 {
   var self/esi: (addr environment) <- copy _self
   var sandbox/edi: (addr sandbox) <- copy _sandbox
   var cursor-call-path-ah/eax: (addr handle call-path-element) <- get sandbox, cursor-call-path
@@ -730,7 +730,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
   compare key, 0x7f/del  # backspace on Macs
   $process-sandbox-edit:backspace: {
     break-if-!=
-    # if not at start of some word, delete grapheme before cursor within current word
+    # if not at start of some word, delete code-point-utf8 before cursor within current word
     var at-start?/eax: boolean <- cursor-at-start? cursor-word
     compare at-start?, 0/false
     {
@@ -766,25 +766,25 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
       decrement-final-element cursor-call-path
       return
     }
-    # if start of word is quote and grapheme before cursor is not, just insert it as usual
+    # if start of word is quote and code-point-utf8 before cursor is not, just insert it as usual
     # TODO: support string escaping
     {
-      var first-grapheme/eax: grapheme <- first-grapheme cursor-word
-      compare first-grapheme, 0x22/double-quote
+      var first-code-point-utf8/eax: code-point-utf8 <- first-code-point-utf8 cursor-word
+      compare first-code-point-utf8, 0x22/double-quote
       break-if-!=
-      var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
-      compare final-grapheme, 0x22/double-quote
+      var final-code-point-utf8/eax: code-point-utf8 <- code-point-utf8-before-cursor cursor-word
+      compare final-code-point-utf8, 0x22/double-quote
       break-if-=
       break $process-sandbox-edit:space
     }
-    # if start of word is '[' and grapheme before cursor is not ']', just insert it as usual
+    # if start of word is '[' and code-point-utf8 before cursor is not ']', just insert it as usual
     # TODO: support nested arrays
     {
-      var first-grapheme/eax: grapheme <- first-grapheme cursor-word
-      compare first-grapheme, 0x5b/[
+      var first-code-point-utf8/eax: code-point-utf8 <- first-code-point-utf8 cursor-word
+      compare first-code-point-utf8, 0x5b/[
       break-if-!=
-      var final-grapheme/eax: grapheme <- grapheme-before-cursor cursor-word
-      compare final-grapheme, 0x5d/]
+      var final-code-point-utf8/eax: code-point-utf8 <- code-point-utf8-before-cursor cursor-word
+      compare final-code-point-utf8, 0x5d/]
       break-if-=
       break $process-sandbox-edit:space
     }
@@ -809,8 +809,8 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
       var at-end?/eax: boolean <- cursor-at-end? cursor-word
       compare at-end?, 0/false
       break-if-!=
-      var g/eax: grapheme <- pop-after-cursor cursor-word
-      add-grapheme-to-word next-word, g
+      var g/eax: code-point-utf8 <- pop-after-cursor cursor-word
+      add-code-point-utf8-to-word next-word, g
       loop
     }
     cursor-to-start next-word
@@ -838,12 +838,12 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
     return
   }
   # otherwise insert key within current word
-  var g/edx: grapheme <- copy key
-  var print?/eax: boolean <- real-grapheme? key
-  $process-sandbox-edit:real-grapheme: {
+  var g/edx: code-point-utf8 <- copy key
+  var print?/eax: boolean <- real-code-point-utf8? key
+  $process-sandbox-edit:real-code-point-utf8: {
     compare print?, 0/false
     break-if-=
-    add-grapheme-to-word cursor-word, g
+    add-code-point-utf8-to-word cursor-word, g
     return
   }
   # silently ignore other hotkeys
@@ -852,7 +852,7 @@ fn process-sandbox-edit _self: (addr environment), _sandbox: (addr sandbox), key
 # collect new name in partial-name-for-cursor-word, and then rename the word
 # at cursor to it
 # Precondition: cursor-call-path is a singleton (not within a call)
-fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
+fn process-sandbox-rename _sandbox: (addr sandbox), key: code-point-utf8 {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var new-name-ah/edi: (addr handle word) <- get sandbox, partial-name-for-cursor-word
   # if 'esc' pressed, cancel rename
@@ -911,7 +911,7 @@ fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
     {
       var new-name/eax: (addr word) <- lookup *new-name-ah
       cursor-to-start new-name
-      add-grapheme-to-word new-name, 0x3d/=
+      add-code-point-utf8-to-word new-name, 0x3d/=
     }
     # append name to new line
     chain-words new-line-word-ah, new-name-ah
@@ -941,7 +941,7 @@ fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
   compare key, 0x7f/del  # backspace on Macs
   $process-sandbox-rename:backspace: {
     break-if-!=
-    # if not at start, delete grapheme before cursor
+    # if not at start, delete code-point-utf8 before cursor
     var new-name/eax: (addr word) <- lookup *new-name-ah
     var at-start?/eax: boolean <- cursor-at-start? new-name
     compare at-start?, 0/false
@@ -953,12 +953,12 @@ fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
     return
   }
   # otherwise insert key within current word
-  var print?/eax: boolean <- real-grapheme? key
-  $process-sandbox-rename:real-grapheme: {
+  var print?/eax: boolean <- real-code-point-utf8? key
+  $process-sandbox-rename:real-code-point-utf8: {
     compare print?, 0/false
     break-if-=
     var new-name/eax: (addr word) <- lookup *new-name-ah
-    add-grapheme-to-word new-name, key
+    add-code-point-utf8-to-word new-name, key
     return
   }
   # silently ignore other hotkeys
@@ -968,7 +968,7 @@ fn process-sandbox-rename _sandbox: (addr sandbox), key: grapheme {
 # of the sandbox to be a new function with that name. Replace the last line
 # with a call to the appropriate function.
 # Precondition: cursor-call-path is a singleton (not within a call)
-fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle function), key: grapheme {
+fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle function), key: code-point-utf8 {
   var sandbox/esi: (addr sandbox) <- copy _sandbox
   var new-name-ah/edi: (addr handle word) <- get sandbox, partial-name-for-function
   # if 'esc' pressed, cancel define
@@ -1033,7 +1033,7 @@ fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle func
   compare key, 0x7f/del  # backspace on Macs
   $process-sandbox-define:backspace: {
     break-if-!=
-    # if not at start, delete grapheme before cursor
+    # if not at start, delete code-point-utf8 before cursor
     var new-name/eax: (addr word) <- lookup *new-name-ah
     var at-start?/eax: boolean <- cursor-at-start? new-name
     compare at-start?, 0/false
@@ -1045,12 +1045,12 @@ fn process-sandbox-define _sandbox: (addr sandbox), functions: (addr handle func
     return
   }
   # otherwise insert key within current word
-  var print?/eax: boolean <- real-grapheme? key
-  $process-sandbox-define:real-grapheme: {
+  var print?/eax: boolean <- real-code-point-utf8? key
+  $process-sandbox-define:real-code-point-utf8: {
     compare print?, 0/false
     break-if-=
     var new-name/eax: (addr word) <- lookup *new-name-ah
-    add-grapheme-to-word new-name, key
+    add-code-point-utf8-to-word new-name, key
     return
   }
   # silently ignore other hotkeys
@@ -2107,7 +2107,7 @@ fn render-function-right-aligned screen: (addr screen), row: int, right-col: int
   start-color screen, 0, 0xf7
   clear-rect screen, row, col, new-row, col2
   col <- add 1
-#?   var dummy/eax: grapheme <- read-key-from-real-keyboard
+#?   var dummy/eax: code-point-utf8 <- read-key-from-real-keyboard
   render-function screen, row, col, f
   new-row <- add 1/function-bottom-margin
   col <- subtract 1/function-left-padding
@@ -2144,7 +2144,7 @@ fn render-function screen: (addr screen), row: int, col: int, _f: (addr function
   render-line-without-stack screen, body, row, col, cursor-word, cursor-row, cursor-col
 }
 
-fn real-grapheme? g: grapheme -> _/eax: boolean {
+fn real-code-point-utf8? g: code-point-utf8 -> _/eax: boolean {
   # if g == newline return true
   compare g, 0xa
   {

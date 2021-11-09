@@ -54,7 +54,7 @@ fn interactive {
   initialize-environment env
   {
     render env
-    var key/eax: grapheme <- read-key-from-real-keyboard
+    var key/eax: code-point-utf8 <- read-key-from-real-keyboard
     compare key, 0x11/ctrl-q
     break-if-=
     process env, key
@@ -79,7 +79,7 @@ fn process-all env: (addr environment), cmds: (addr array byte) {
     var done?/eax: boolean <- stream-empty? cmds-stream-a
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme cmds-stream-a
+    var g/eax: code-point-utf8 <- read-code-point-utf8 cmds-stream-a
     process env, g
     loop
   }
@@ -105,7 +105,7 @@ fn repl {
       var done?/eax: boolean <- stream-empty? line
       compare done?, 0/false
       break-if-!=
-      var g/eax: grapheme <- read-grapheme line
+      var g/eax: code-point-utf8 <- read-code-point-utf8 line
       process env, g
       loop
     }

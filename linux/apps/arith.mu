@@ -33,7 +33,7 @@
 
 fn main -> _/ebx: int {
   enable-keyboard-immediate-mode
-  var look/esi: grapheme <- copy 0  # lookahead
+  var look/esi: code-point-utf8 <- copy 0  # lookahead
   var n/eax: int <- copy 0  # result of each expression
   print-string 0/screen, "press ctrl-c or ctrl-d to exit\n"
   # read-eval-print loop
@@ -55,17 +55,17 @@ fn main -> _/ebx: int {
   return 0
 }
 
-fn simplify -> _/eax: int, _/esi: grapheme {
+fn simplify -> _/eax: int, _/esi: code-point-utf8 {
   # prime the pump
-  var look/esi: grapheme <- get-char
+  var look/esi: code-point-utf8 <- get-char
   # do it
   var result/eax: int <- copy 0
   result, look <- expression look
   return result, look
 }
 
-fn expression _look: grapheme -> _/eax: int, _/esi: grapheme {
-  var look/esi: grapheme <- copy _look
+fn expression _look: code-point-utf8 -> _/eax: int, _/esi: code-point-utf8 {
+  var look/esi: code-point-utf8 <- copy _look
   # read arg
   var result/eax: int <- copy 0
   result, look <- term look
@@ -78,7 +78,7 @@ fn expression _look: grapheme -> _/eax: int, _/esi: grapheme {
       break-if-= $expression:loop
     }
     # read operator
-    var op/ecx: grapheme <- copy 0
+    var op/ecx: code-point-utf8 <- copy 0
     op, look <- operator look
     # read next arg
     var second/edx: int <- copy 0
@@ -109,8 +109,8 @@ fn expression _look: grapheme -> _/eax: int, _/esi: grapheme {
   return result, look
 }
 
-fn term _look: grapheme -> _/eax: int, _/esi: grapheme {
-  var look/esi: grapheme <- copy _look
+fn term _look: code-point-utf8 -> _/eax: int, _/esi: code-point-utf8 {
+  var look/esi: code-point-utf8 <- copy _look
   # read arg
   look <- skip-spaces look
   var result/eax: int <- copy 0
@@ -124,7 +124,7 @@ fn term _look: grapheme -> _/eax: int, _/esi: grapheme {
       break-if-= $term:loop
     }
     # read operator
-    var op/ecx: grapheme <- copy 0
+    var op/ecx: code-point-utf8 <- copy 0
     op, look <- operator look
     # read next arg
     var second/edx: int <- copy 0
@@ -154,8 +154,8 @@ fn term _look: grapheme -> _/eax: int, _/esi: grapheme {
   return result, look
 }
 
-fn factor _look: grapheme -> _/eax: int, _/esi: grapheme {
-  var look/esi: grapheme <- copy _look  # should be a no-op
+fn factor _look: code-point-utf8 -> _/eax: int, _/esi: code-point-utf8 {
+  var look/esi: code-point-utf8 <- copy _look  # should be a no-op
   look <- skip-spaces look
   # if next char is not '(', parse a number
   compare look, 0x28/open-paren
@@ -174,7 +174,7 @@ fn factor _look: grapheme -> _/eax: int, _/esi: grapheme {
   return result, look
 }
 
-fn mul-or-div? c: grapheme -> _/eax: boolean {
+fn mul-or-div? c: code-point-utf8 -> _/eax: boolean {
   compare c, 0x2a/*
   {
     break-if-!=
@@ -188,7 +188,7 @@ fn mul-or-div? c: grapheme -> _/eax: boolean {
   return 0/false
 }
 
-fn add-or-sub? c: grapheme -> _/eax: boolean {
+fn add-or-sub? c: code-point-utf8 -> _/eax: boolean {
   compare c, 0x2b/+
   {
     break-if-!=
@@ -202,14 +202,14 @@ fn add-or-sub? c: grapheme -> _/eax: boolean {
   return 0/false
 }
 
-fn operator _look: grapheme -> _/ecx: grapheme, _/esi: grapheme {
-  var op/ecx: grapheme <- copy _look
-  var look/esi: grapheme <- get-char
+fn operator _look: code-point-utf8 -> _/ecx: code-point-utf8, _/esi: code-point-utf8 {
+  var op/ecx: code-point-utf8 <- copy _look
+  var look/esi: code-point-utf8 <- get-char
   return op, look
 }
 
-fn num _look: grapheme -> _/eax: int, _/esi: grapheme {
-  var look/esi: grapheme <- copy _look
+fn num _look: code-point-utf8 -> _/eax: int, _/esi: code-point-utf8 {
+  var look/esi: code-point-utf8 <- copy _look
   var result/edi: int <- copy 0
   {
     var first-digit/eax: int <- to-decimal-digit look
@@ -234,8 +234,8 @@ fn num _look: grapheme -> _/eax: int, _/esi: grapheme {
   return result, look
 }
 
-fn skip-spaces _look: grapheme -> _/esi: grapheme {
-  var look/esi: grapheme <- copy _look  # should be a no-op
+fn skip-spaces _look: code-point-utf8 -> _/esi: code-point-utf8 {
+  var look/esi: code-point-utf8 <- copy _look  # should be a no-op
   {
     compare look, 0x20
     break-if-!=
@@ -245,9 +245,9 @@ fn skip-spaces _look: grapheme -> _/esi: grapheme {
   return look
 }
 
-fn get-char -> _/esi: grapheme {
-  var look/eax: grapheme <- read-key-from-real-keyboard
-  print-grapheme-to-real-screen look
+fn get-char -> _/esi: code-point-utf8 {
+  var look/eax: code-point-utf8 <- read-key-from-real-keyboard
+  print-code-point-utf8-to-real-screen look
   compare look, 4
   {
     break-if-!=

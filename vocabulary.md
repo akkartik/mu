@@ -43,7 +43,7 @@ how they work under the hood.
 - Code-points: integer representing a Unicode character. Must be representable
   in 32 bits as utf-8; largest supported value is 0x10000.
 
-Mu will let you convert between bytes, graphemes and code-points using `copy`,
+Mu will let you convert between bytes, code-point-utf8s and code-points using `copy`,
 and trust that you know what you're doing. Be aware that doing so is only
 correct for English/Latin characters, digits and symbols.
 
@@ -120,7 +120,7 @@ signatures.mu for their full type signatures.
 - `append-byte-hex`: writes textual representation of lowest byte in hex to
   a stream of bytes. Does not write a '0x' prefix.
 - `read-byte`: reads a single byte from a stream of bytes.
-- `read-grapheme`: reads a single unicode grapheme (up to 4 bytes) from a
+- `read-code-point-utf8`: reads a single unicode code-point-utf8 (up to 4 bytes) from a
   stream of bytes.
 
 #### reading/writing hex representations of integers
@@ -137,7 +137,7 @@ signatures.mu for their full type signatures.
 - `parse-decimal-int-from-slice`
 - `parse-decimal-int-from-stream`
 - `parse-array-of-decimal-ints`
-- `decimal-digit?`: checks if a grapheme is in [0, 9]
+- `decimal-digit?`: checks if a code-point-utf8 is in [0, 9]
 
 #### printing to screen
 
@@ -197,7 +197,7 @@ automatically read and update the cursor position in various ways.
   These primitives always silently fail if the desired movement would go out
   of screen bounds.
 - `move-cursor-to-left-margin-of-next-line`
-- `move-cursor-rightward-and-downward`: move cursor one grapheme to the right
+- `move-cursor-rightward-and-downward`: move cursor one code-point-utf8 to the right
 
 - `draw-text-rightward-from-cursor`: truncate at some right margin.
 - `draw-text-rightward-from-cursor-over-full-screen`: truncate at right edge
@@ -255,7 +255,7 @@ Assertions for tests:
 
 `read-key` reads a single key from the keyboard and returns it if it exists.
 Returns 0 if no key has been pressed. Currently only support single-byte keys,
-which are identical to their code-point and grapheme representations.
+which are identical to their code-point and code-point-utf8 representations.
 
 `read-line-from-keyboard` reads keys from keyboard, echoes them to screen
 (with given fg/bg colors) and accumulates them in a stream until it encounters

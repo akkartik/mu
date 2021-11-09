@@ -33,7 +33,7 @@ fn word-count in: (addr stream byte) -> _/eax: int {
     var done?/eax: boolean <- stream-empty? in
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme in
+    var g/eax: code-point-utf8 <- read-code-point-utf8 in
     {
       compare g, 0x20/space
       break-if-!=

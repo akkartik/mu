@@ -30,8 +30,8 @@ fn main _args: (addr array addr array byte) -> _/ebx: int {
       var c/eax: byte <- read-byte-buffered in-addr
       compare c, 0xffffffff/end-of-file
       break-if-=
-      var g/eax: grapheme <- copy c
-      print-grapheme 0/screen, g
+      var g/eax: code-point-utf8 <- copy c
+      print-code-point-utf8 0/screen, g
       loop
     }
   }

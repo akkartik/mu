@@ -97,8 +97,8 @@ sig write-slice out: (addr stream byte), s: (addr slice)
 # bad name alert
 sig slice-to-string ad: (addr allocation-descriptor), in: (addr slice), out: (addr handle array byte)
 sig write-int32-decimal out: (addr stream byte), n: int
-sig decimal-digit? c: grapheme -> _/eax: boolean
-sig to-decimal-digit in: grapheme -> _/eax: int
+sig decimal-digit? c: code-point-utf8 -> _/eax: boolean
+sig to-decimal-digit in: code-point-utf8 -> _/eax: int
 # bad name alert
 # next-word really tokenizes
 # next-raw-word really reads whitespace-separated words

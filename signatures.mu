@@ -69,8 +69,8 @@ sig slice-starts-with? s: (addr slice), head: (addr array byte) -> _/eax: boolea
 sig write-slice out: (addr stream byte), s: (addr slice)
 sig slice-to-string ad: (addr allocation-descriptor), in: (addr slice), out: (addr handle array byte)
 sig write-int32-decimal out: (addr stream byte), n: int
-sig decimal-digit? c: grapheme -> _/eax: boolean
-sig to-decimal-digit in: grapheme -> _/eax: int
+sig decimal-digit? c: code-point-utf8 -> _/eax: boolean
+sig to-decimal-digit in: code-point-utf8 -> _/eax: int
 sig next-word line: (addr stream byte), out: (addr slice)  # merges '#' comments into a single word
 sig next-raw-word line: (addr stream byte), out: (addr slice)  # does not merge '#' comments
 sig skip-chars-matching in: (addr stream byte), delimiter: byte
@@ -89,18 +89,18 @@ sig parse-array-of-ints s: (addr array byte), out: (addr handle array int)
 sig parse-array-of-decimal-ints s: (addr array byte), out: (addr handle array int)
 sig check-array-equal a: (addr array int), expected: (addr array byte), msg: (addr array byte)
 sig integer-divide a: int, b: int -> _/eax: int, _/edx: int
-sig to-code-point in: grapheme -> _/eax: code-point
-sig to-grapheme in: code-point -> _/eax: grapheme
-sig read-grapheme in: (addr stream byte) -> _/eax: grapheme
-sig grapheme-length g: grapheme -> _/edx: int
+sig to-code-point in: code-point-utf8 -> _/eax: code-point
+sig to-utf8 in: code-point -> _/eax: code-point-utf8
+sig read-code-point-utf8 in: (addr stream byte) -> _/eax: code-point-utf8
+sig utf8-length g: code-point-utf8 -> _/edx: int
 sig shift-left-bytes n: int, k: int -> _/eax: int
-sig write-grapheme out: (addr stream byte), g: grapheme
+sig write-code-point-utf8 out: (addr stream byte), g: code-point-utf8
 sig fill-in-rational _out: (addr float), nr: int, dr: int
 sig fill-in-sqrt _out: (addr float), n: int
 sig rational nr: int, dr: int -> _/xmm0: float
 sig scale-down-and-round-up n: int, m: int -> _/ecx: int
 sig substring in: (addr array byte), start: int, len: int, out-ah: (addr handle array byte)
-sig split-string in: (addr array byte), delim: grapheme, out: (addr handle array (handle array byte))
+sig split-string in: (addr array byte), delim: code-point-utf8, out: (addr handle array (handle array byte))
 sig render-float-decimal screen: (addr screen), in: float, precision: int, x: int, y: int, color: int, background-color: int -> _/eax: int
 sig write-float-decimal-approximate out: (addr stream byte), in: float, precision: int
 sig decimal-digits n: int, _buf: (addr array byte) -> _/eax: int
@@ -242,22 +242,22 @@ sig slide-down _a: (addr array int), start: int, end: int, target: int
 sig find-slide-down-slot-in-array _a: (addr array int), _val: int -> _/ecx: int
 sig check-slide-up before: (addr array byte), start: int, end: int, target: int, after: (addr array byte), msg: (addr array byte)
 sig check-slide-down before: (addr array byte), start: int, end: int, target: int, after: (addr array byte), msg: (addr array byte)
-sig initialize-grapheme-stack _self: (addr grapheme-stack), n: int
-sig clear-grapheme-stack _self: (addr grapheme-stack)
-sig grapheme-stack-empty? _self: (addr grapheme-stack) -> _/eax: boolean
-sig grapheme-stack-length _self: (addr grapheme-stack) -> _/eax: int
-sig push-grapheme-stack _self: (addr grapheme-stack), _val: grapheme
-sig pop-grapheme-stack _self: (addr grapheme-stack) -> _/eax: grapheme
-sig copy-grapheme-stack _src: (addr grapheme-stack), dest: (addr grapheme-stack)
-sig render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _self: (addr grapheme-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int, color: int, background-color: int -> _/eax: int, _/ecx: int
-sig render-stack-from-bottom screen: (addr screen), self: (addr grapheme-stack), x: int, y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int -> _/eax: int
-sig render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: (addr grapheme-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int
-sig render-stack-from-top screen: (addr screen), self: (addr grapheme-stack), x: int, y: int, render-cursor?: boolean -> _/eax: int
-sig get-matching-close-paren-index _self: (addr grapheme-stack), render-cursor?: boolean -> _/edx: int
-sig get-matching-open-paren-index _self: (addr grapheme-stack), control: boolean, depth: int -> _/edx: int
-sig prefix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> _/eax: boolean
-sig suffix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> _/eax: boolean
-sig grapheme-stack-is-decimal-integer? _self: (addr grapheme-stack) -> _/eax: boolean
+sig initialize-code-point-utf8-stack _self: (addr code-point-utf8-stack), n: int
+sig clear-code-point-utf8-stack _self: (addr code-point-utf8-stack)
+sig code-point-utf8-stack-empty? _self: (addr code-point-utf8-stack) -> _/eax: boolean
+sig code-point-utf8-stack-length _self: (addr code-point-utf8-stack) -> _/eax: int
+sig push-code-point-utf8-stack _self: (addr code-point-utf8-stack), _val: code-point-utf8
+sig pop-code-point-utf8-stack _self: (addr code-point-utf8-stack) -> _/eax: code-point-utf8
+sig copy-code-point-utf8-stack _src: (addr code-point-utf8-stack), dest: (addr code-point-utf8-stack)
+sig render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _self: (addr code-point-utf8-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int, color: int, background-color: int -> _/eax: int, _/ecx: int
+sig render-stack-from-bottom screen: (addr screen), self: (addr code-point-utf8-stack), x: int, y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int -> _/eax: int
+sig render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: (addr code-point-utf8-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int
+sig render-stack-from-top screen: (addr screen), self: (addr code-point-utf8-stack), x: int, y: int, render-cursor?: boolean -> _/eax: int
+sig get-matching-close-paren-index _self: (addr code-point-utf8-stack), render-cursor?: boolean -> _/edx: int
+sig get-matching-open-paren-index _self: (addr code-point-utf8-stack), control: boolean, depth: int -> _/edx: int
+sig prefix-match? _self: (addr code-point-utf8-stack), s: (addr stream byte) -> _/eax: boolean
+sig suffix-match? _self: (addr code-point-utf8-stack), s: (addr stream byte) -> _/eax: boolean
+sig code-point-utf8-stack-is-decimal-integer? _self: (addr code-point-utf8-stack) -> _/eax: boolean
 sig initialize-gap-buffer _self: (addr gap-buffer), capacity: int
 sig clear-gap-buffer _self: (addr gap-buffer)
 sig gap-buffer-empty? _self: (addr gap-buffer) -> _/eax: boolean
@@ -266,43 +266,43 @@ sig initialize-gap-buffer-with self: (addr gap-buffer), keys: (addr array byte)
 sig load-gap-buffer-from-stream self: (addr gap-buffer), in: (addr stream byte)
 sig emit-gap-buffer self: (addr gap-buffer), out: (addr stream byte)
 sig append-gap-buffer _self: (addr gap-buffer), out: (addr stream byte)
-sig emit-stack-from-bottom _self: (addr grapheme-stack), out: (addr stream byte)
-sig emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte)
+sig emit-stack-from-bottom _self: (addr code-point-utf8-stack), out: (addr stream byte)
+sig emit-stack-from-top _self: (addr code-point-utf8-stack), out: (addr stream byte)
 sig word-at-gap _self: (addr gap-buffer), out: (addr stream byte)
-sig grapheme-at-gap _self: (addr gap-buffer) -> _/eax: grapheme
-sig top-most-word _self: (addr grapheme-stack) -> _/eax: int
-sig emit-stack-from-index _self: (addr grapheme-stack), start: int, out: (addr stream byte)
-sig emit-stack-to-index _self: (addr grapheme-stack), end: int, out: (addr stream byte)
-sig is-ascii-word-grapheme? g: grapheme -> _/eax: boolean
+sig code-point-utf8-at-gap _self: (addr gap-buffer) -> _/eax: code-point-utf8
+sig top-most-word _self: (addr code-point-utf8-stack) -> _/eax: int
+sig emit-stack-from-index _self: (addr code-point-utf8-stack), start: int, out: (addr stream byte)
+sig emit-stack-to-index _self: (addr code-point-utf8-stack), end: int, out: (addr stream byte)
+sig is-ascii-word-code-point-utf8? g: code-point-utf8 -> _/eax: boolean
 sig render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int
 sig render-gap-buffer screen: (addr screen), gap: (addr gap-buffer), x: int, y: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int
 sig gap-buffer-length _gap: (addr gap-buffer) -> _/eax: int
-sig add-grapheme-at-gap _self: (addr gap-buffer), g: grapheme
+sig add-code-point-utf8-at-gap _self: (addr gap-buffer), g: code-point-utf8
 sig add-code-point-at-gap self: (addr gap-buffer), c: code-point
 sig gap-to-start self: (addr gap-buffer)
 sig gap-to-end self: (addr gap-buffer)
 sig gap-at-start? _self: (addr gap-buffer) -> _/eax: boolean
 sig gap-at-end? _self: (addr gap-buffer) -> _/eax: boolean
-sig gap-right _self: (addr gap-buffer) -> _/eax: grapheme
-sig gap-left _self: (addr gap-buffer) -> _/eax: grapheme
+sig gap-right _self: (addr gap-buffer) -> _/eax: code-point-utf8
+sig gap-left _self: (addr gap-buffer) -> _/eax: code-point-utf8
 sig index-of-gap _self: (addr gap-buffer) -> _/eax: int
-sig first-grapheme-in-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme
-sig grapheme-before-cursor-in-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme
+sig first-code-point-utf8-in-gap-buffer _self: (addr gap-buffer) -> _/eax: code-point-utf8
+sig code-point-utf8-before-cursor-in-gap-buffer _self: (addr gap-buffer) -> _/eax: code-point-utf8
 sig delete-before-gap _self: (addr gap-buffer)
-sig pop-after-gap _self: (addr gap-buffer) -> _/eax: grapheme
+sig pop-after-gap _self: (addr gap-buffer) -> _/eax: code-point-utf8
 sig gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> _/eax: boolean
 sig gap-buffers-equal? self: (addr gap-buffer), g: (addr gap-buffer) -> _/eax: boolean
-sig gap-index _self: (addr gap-buffer), _n: int -> _/eax: grapheme
+sig gap-index _self: (addr gap-buffer), _n: int -> _/eax: code-point-utf8
 sig copy-gap-buffer _src-ah: (addr handle gap-buffer), _dest-ah: (addr handle gap-buffer)
 sig gap-buffer-is-decimal-integer? _self: (addr gap-buffer) -> _/eax: boolean
 sig highlight-matching-open-paren? _gap: (addr gap-buffer), render-cursor?: boolean -> _/ebx: boolean, _/edi: int
 sig rewind-gap-buffer _self: (addr gap-buffer)
 sig gap-buffer-scan-done? _self: (addr gap-buffer) -> _/eax: boolean
-sig peek-from-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme
-sig read-from-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme
+sig peek-from-gap-buffer _self: (addr gap-buffer) -> _/eax: code-point-utf8
+sig read-from-gap-buffer _self: (addr gap-buffer) -> _/eax: code-point-utf8
 sig put-back-from-gap-buffer _self: (addr gap-buffer)
 sig skip-spaces-from-gap-buffer self: (addr gap-buffer)
-sig edit-gap-buffer self: (addr gap-buffer), key: grapheme
+sig edit-gap-buffer self: (addr gap-buffer), key: code-point-utf8
 sig gap-to-start-of-next-word self: (addr gap-buffer)
 sig gap-to-end-of-previous-word self: (addr gap-buffer)
 sig gap-to-previous-start-of-line self: (addr gap-buffer)

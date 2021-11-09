@@ -449,7 +449,7 @@ fn render-keyboard-menu screen: (addr screen) {
   draw-text-rightward-from-cursor screen, " to sandbox  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
-fn edit-sandbox _self: (addr sandbox), key: grapheme, globals: (addr global-table), data-disk: (addr disk) {
+fn edit-sandbox _self: (addr sandbox), key: code-point-utf8, globals: (addr global-table), data-disk: (addr disk) {
   var self/esi: (addr sandbox) <- copy _self
   # ctrl-s
   {

@@ -71,7 +71,7 @@ fn initialize-screen _screen: (addr screen), width: int, height: int, pixel-grap
   copy-to *dest, 0
 }
 
-# in graphemes
+# in code-point-utf8s
 fn screen-size _screen: (addr screen) -> _/eax: int, _/ecx: int {
   var screen/esi: (addr screen) <- copy _screen
   var width/eax: int <- copy 0
@@ -459,7 +459,7 @@ fn clear-rect _screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int
   set-cursor-position screen, 0, 0
 }
 
-# there's no grapheme that guarantees to cover every pixel, so we'll bump down
+# there's no code-point-utf8 that guarantees to cover every pixel, so we'll bump down
 # to pixels for a real screen
 fn clear-real-screen {
   var y/eax: int <- copy 0

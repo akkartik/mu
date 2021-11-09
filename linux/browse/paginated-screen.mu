@@ -7,7 +7,7 @@
 #   on each frame
 #     start-drawing
 #     while !done-drawing
-#       add-grapheme ...
+#       add-code-point-utf8 ...
 
 type paginated-screen {
   screen: (handle screen)
@@ -152,23 +152,23 @@ fn done-drawing? _self: (addr paginated-screen) -> _/eax: boolean {
   return 1/true
 }
 
-fn add-grapheme _self: (addr paginated-screen), c: grapheme {
-#?   print-string-to-real-screen "add-grapheme: "
-#?   print-grapheme-to-real-screen c
+fn add-code-point-utf8 _self: (addr paginated-screen), c: code-point-utf8 {
+#?   print-string-to-real-screen "add-code-point-utf8: "
+#?   print-code-point-utf8-to-real-screen c
 #?   print-string-to-real-screen "\n"
-$add-grapheme:body: {
+$add-code-point-utf8:body: {
   var self/esi: (addr paginated-screen) <- copy _self
   {
     compare c, 0xa/newline
     break-if-!=
     next-line self
     reposition-cursor self
-    break $add-grapheme:body
+    break $add-code-point-utf8:body
   }
   # print c
   var screen-ah/eax: (addr handle screen) <- get self, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
-  print-grapheme screen-addr, c
+  print-code-point-utf8 screen-addr, c
   # self->col++
   var tmp/eax: (addr int) <- get self, col
   increment *tmp
@@ -186,21 +186,21 @@ $add-grapheme:body: {
 
 ## tests
 
-fn test-print-grapheme-on-paginated-screen {
+fn test-print-code-point-utf8-on-paginated-screen {
   var pg-on-stack: paginated-screen
   var pg/eax: (addr paginated-screen) <- address pg-on-stack
   initialize-fake-paginated-screen pg, 3/rows, 0xa/cols, 0xa/page-width, 0, 0
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61/a
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x61/a
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
-    check-ints-equal done, 0, "F - test-print-grapheme-on-paginated-screen/done"
+    check-ints-equal done, 0, "F - test-print-code-point-utf8-on-paginated-screen/done"
   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah
-  check-screen-row screen-addr, 1, "a", "F - test-print-grapheme-on-paginated-screen"
+  check-screen-row screen-addr, 1, "a", "F - test-print-code-point-utf8-on-paginated-screen"
 }
 
 fn test-print-single-page {
@@ -210,29 +210,29 @@ fn test-print-single-page {
   start-drawing pg
   # pages at columns [1, 3), [3, 5)
   {
-    var c/ecx: grapheme <- copy 0x61/a
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x61/a
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62/b
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x62/b
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63/c
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x63/c
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64/d
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x64/d
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page/done-4"
@@ -250,36 +250,36 @@ fn test-print-single-page-narrower-than-page-width {
   initialize-fake-paginated-screen pg, 2/rows, 4/cols, 5/page-width, 0, 0
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61/a
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x61/a
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62/b
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x62/b
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63/c
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x63/c
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64/d
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x64/d
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-4"
   }
   {
-    var c/ecx: grapheme <- copy 0x65/e
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x65/e
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width/done-5"
@@ -297,36 +297,36 @@ fn test-print-single-page-narrower-than-page-width-with-margin {
   initialize-fake-paginated-screen pg, 2/rows, 4/cols, 5/page-width, 0/top-margin, 1/left-margin
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61/a
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x61/a
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62/b
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x62/b
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63/c
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x63/c
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64/d
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x64/d
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-4"
   }
   {
-    var c/ecx: grapheme <- copy 0x65/e
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x65/e
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-single-page-narrower-than-page-width-with-margin/done-5"
@@ -344,29 +344,29 @@ fn test-print-multiple-pages {
   initialize-fake-paginated-screen pg, 2/rows, 2/cols, 1/page-width, 0, 0
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61/a
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x61/a
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62/b
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x62/b
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63/c
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x63/c
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64/d
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x64/d
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 1, "F - test-print-multiple-pages/done-4"
@@ -384,57 +384,57 @@ fn test-print-multiple-pages-2 {
   initialize-fake-paginated-screen pg, 2/rows, 4/cols, 2/page-width, 0, 0
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61/a
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x61/a
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62/b
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x62/b
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63/c
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x63/c
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64/d
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x64/d
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-4"
   }
   {
-    var c/ecx: grapheme <- copy 0x65/e
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x65/e
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-5"
   }
   {
-    var c/ecx: grapheme <- copy 0x66/f
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x66/f
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-6"
   }
   {
-    var c/ecx: grapheme <- copy 0x67/g
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x67/g
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 0, "F - test-print-multiple-pages-2/done-7"
   }
   {
-    var c/ecx: grapheme <- copy 0x68/h
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x68/h
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
     check-ints-equal done, 1, "F - test-print-multiple-pages-2/done-8"
@@ -452,60 +452,60 @@ fn test-print-multiple-pages-with-margins {
   initialize-fake-paginated-screen pg, 3/rows, 6/cols, 2/page-width, 1/top-margin, 1/left-margin
   start-drawing pg
   {
-    var c/ecx: grapheme <- copy 0x61/a
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x61/a
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
-    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-1"
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/code-point-utf8-1"
   }
   {
-    var c/ecx: grapheme <- copy 0x62/b
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x62/b
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
-    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-2"
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/code-point-utf8-2"
   }
   {
-    var c/ecx: grapheme <- copy 0x63/c
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x63/c
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
-    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-3"
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/code-point-utf8-3"
   }
   {
-    var c/ecx: grapheme <- copy 0x64/d
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x64/d
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
-    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-4"
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/code-point-utf8-4"
   }
   {
-    var c/ecx: grapheme <- copy 0x65/e
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x65/e
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
-    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-5"
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/code-point-utf8-5"
   }
   {
-    var c/ecx: grapheme <- copy 0x66/f
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x66/f
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
-    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-6"
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/code-point-utf8-6"
   }
   {
-    var c/ecx: grapheme <- copy 0x67/g
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x67/g
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
-    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/grapheme-7"
+    check-ints-equal done, 0, "F - test-print-multiple-pages-with-margins/code-point-utf8-7"
   }
   {
-    var c/ecx: grapheme <- copy 0x68/h
-    add-grapheme pg, c
+    var c/ecx: code-point-utf8 <- copy 0x68/h
+    add-code-point-utf8 pg, c
     var done?/eax: boolean <- done-drawing? pg
     var done/eax: int <- copy done?
-    check-ints-equal done, 1, "F - test-print-multiple-pages-with-margins/grapheme-8"
+    check-ints-equal done, 1, "F - test-print-multiple-pages-with-margins/code-point-utf8-8"
   }
   var screen-ah/eax: (addr handle screen) <- get pg, screen
   var screen-addr/eax: (addr screen) <- lookup *screen-ah

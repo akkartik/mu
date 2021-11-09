@@ -615,12 +615,12 @@ fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (add
     }
     compare c, 0xffffffff/end-of-file
     break-if-=
-    $draw-json-stream-wrapping-right-then-down:render-grapheme: {
+    $draw-json-stream-wrapping-right-then-down:render-code-point-utf8: {
       compare c, 0x5c/backslash
       {
         break-if-!=
         xcurr, ycurr <- render-json-escaped-code-point screen, stream, xmin, ymin, xmax, ymax, xcurr, ycurr, color, background-color
-        break $draw-json-stream-wrapping-right-then-down:render-grapheme
+        break $draw-json-stream-wrapping-right-then-down:render-code-point-utf8
       }
       compare c, 0xa/newline
       {
@@ -629,7 +629,7 @@ fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (add
         var dummy/eax: int <- draw-code-point screen, 0x20/space, xcurr, ycurr, color, background-color
         xcurr <- copy xmin
         ycurr <- increment
-        break $draw-json-stream-wrapping-right-then-down:render-grapheme
+        break $draw-json-stream-wrapping-right-then-down:render-code-point-utf8
       }
       var offset/eax: int <- draw-code-point screen, c, xcurr, ycurr, color, background-color
       # overlay a combining character if necessary
@@ -639,7 +639,7 @@ fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (add
         break-if-!=
         # read a character
         # no combining character allowed here
-        var g/eax: grapheme <- read-grapheme stream
+        var g/eax: code-point-utf8 <- read-code-point-utf8 stream
         var c/eax: code-point <- to-code-point g
         # if not a combining character, save for next iteration and loop
         {
@@ -672,7 +672,7 @@ fn draw-json-stream-wrapping-right-then-down screen: (addr screen), stream: (add
 
 # just return a different register
 fn read-json-code-point stream: (addr stream byte) -> _/ebx: code-point {
-  var g/eax: grapheme <- read-grapheme stream
+  var g/eax: code-point-utf8 <- read-code-point-utf8 stream
   var result/eax: code-point <- to-code-point g
   return result
 }
@@ -1012,7 +1012,7 @@ fn update-search _env: (addr environment), key: byte, users: (addr array user), 
   # otherwise delegate
   var search-terms-ah/eax: (addr handle gap-buffer) <- get env, search-terms
   var search-terms/eax: (addr gap-buffer) <- lookup *search-terms-ah
-  var g/ecx: grapheme <- copy key
+  var g/ecx: code-point-utf8 <- copy key
   edit-gap-buffer search-terms, g
 }
 

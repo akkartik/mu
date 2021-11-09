@@ -416,8 +416,8 @@ Type-id:  # (stream (addr array byte))
   "stream"/imm32  # 11
   "slice"/imm32  # 12
   "code-point"/imm32  # 13; smallest scannable unit from a text stream
-  "grapheme"/imm32  # 14; smallest printable unit; will eventually be composed of multiple code-points, but currently corresponds 1:1
-                    # only 4-byte graphemes in utf-8 are currently supported;
+  "code-point-utf8"/imm32  # 14; smallest printable unit; will eventually be composed of multiple code-points, but currently corresponds 1:1
+                    # only 4-byte code-point-utf8s in utf-8 are currently supported;
                     # unclear how we should deal with larger clusters.
   "float"/imm32     # 15
   # 0x40
@@ -22183,9 +22183,9 @@ $mu-numberlike-output?:check-code-point:
     (simple-mu-type? %esi 0xd)  # code-point => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= $mu-numberlike-output?:return-true/disp8
-$mu-numberlike-output?:check-grapheme:
-    # if t is a grapheme, return
-    (simple-mu-type? %esi 0xe)  # grapheme => eax
+$mu-numberlike-output?:check-code-point-utf8:
+    # if t is a code-point-utf8, return
+    (simple-mu-type? %esi 0xe)  # code-point-utf8 => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= $mu-numberlike-output?:return-true/disp8
 $mu-numberlike-output?:return-false:

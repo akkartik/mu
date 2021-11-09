@@ -1,4 +1,4 @@
-# read up to 'len' graphemes after skipping the first 'start' ones
+# read up to 'len' code-point-utf8s after skipping the first 'start' ones
 fn substring in: (addr array byte), start: int, len: int, out-ah: (addr handle array byte) {
   var in-stream: (stream byte 0x100)
   var in-stream-addr/esi: (addr stream byte) <- address in-stream
@@ -6,29 +6,29 @@ fn substring in: (addr array byte), start: int, len: int, out-ah: (addr handle a
   var out-stream: (stream byte 0x100)
   var out-stream-addr/edi: (addr stream byte) <- address out-stream
   $substring:core: {
-    # skip 'start' graphemes
+    # skip 'start' code-point-utf8s
     var i/eax: int <- copy 0
     {
       compare i, start
       break-if->=
       {
-        var dummy/eax: grapheme <- read-grapheme in-stream-addr
+        var dummy/eax: code-point-utf8 <- read-code-point-utf8 in-stream-addr
         compare dummy, 0xffffffff/end-of-file
         break-if-= $substring:core
       }
       i <- increment
       loop
     }
-    # copy 'len' graphemes
+    # copy 'len' code-point-utf8s
     i <- copy 0
     {
       compare i, len
       break-if->=
       {
-        var g/eax: grapheme <- read-grapheme in-stream-addr
+        var g/eax: code-point-utf8 <- read-code-point-utf8 in-stream-addr
         compare g, 0xffffffff/end-of-file
         break-if-= $substring:core
-        write-grapheme out-stream-addr, g
+        write-code-point-utf8 out-stream-addr, g
       }
       i <- increment
       loop
@@ -85,7 +85,7 @@ fn test-substring {
   check-strings-equal out, "bcde", "F - test-substring/middle-too-small"
 }
 
-fn split-string in: (addr array byte), delim: grapheme, out: (addr handle array (handle array byte)) {
+fn split-string in: (addr array byte), delim: code-point-utf8, out: (addr handle array (handle array byte)) {
   var in-stream: (stream byte 0x100)
   var in-stream-addr/esi: (addr stream byte) <- address in-stream
   write in-stream-addr, in
@@ -94,10 +94,10 @@ fn split-string in: (addr array byte), delim: grapheme, out: (addr handle array 
   var curr-stream: (stream byte 0x100)
   var curr-stream-addr/ecx: (addr stream byte) <- address curr-stream
   $split-string:core: {
-    var g/eax: grapheme <- read-grapheme in-stream-addr
+    var g/eax: code-point-utf8 <- read-code-point-utf8 in-stream-addr
     compare g, 0xffffffff
     break-if-=
-#?     print-grapheme-to-real-screen g
+#?     print-code-point-utf8-to-real-screen g
 #?     print-string-to-real-screen "\n"
     compare g, delim
     {
@@ -110,7 +110,7 @@ fn split-string in: (addr array byte), delim: grapheme, out: (addr handle array 
       clear-stream curr-stream-addr
       loop $split-string:core
     }
-    write-grapheme curr-stream-addr, g
+    write-code-point-utf8 curr-stream-addr, g
     loop
   }
   stream-to-array tokens-stream-addr, out

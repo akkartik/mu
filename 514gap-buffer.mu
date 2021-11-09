@@ -1,8 +1,8 @@
 # primitive for editing text
 
 type gap-buffer {
-  left: grapheme-stack
-  right: grapheme-stack
+  left: code-point-utf8-stack
+  right: code-point-utf8-stack
   # some fields for scanning incrementally through a gap-buffer
   left-read-index: int
   right-read-index: int
@@ -10,41 +10,41 @@ type gap-buffer {
 
 fn initialize-gap-buffer _self: (addr gap-buffer), capacity: int {
   var self/esi: (addr gap-buffer) <- copy _self
-  var left/eax: (addr grapheme-stack) <- get self, left
-  initialize-grapheme-stack left, capacity
-  var right/eax: (addr grapheme-stack) <- get self, right
-  initialize-grapheme-stack right, capacity
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
+  initialize-code-point-utf8-stack left, capacity
+  var right/eax: (addr code-point-utf8-stack) <- get self, right
+  initialize-code-point-utf8-stack right, capacity
 }
 
 fn clear-gap-buffer _self: (addr gap-buffer) {
   var self/esi: (addr gap-buffer) <- copy _self
-  var left/eax: (addr grapheme-stack) <- get self, left
-  clear-grapheme-stack left
-  var right/eax: (addr grapheme-stack) <- get self, right
-  clear-grapheme-stack right
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
+  clear-code-point-utf8-stack left
+  var right/eax: (addr code-point-utf8-stack) <- get self, right
+  clear-code-point-utf8-stack right
 }
 
 fn gap-buffer-empty? _self: (addr gap-buffer) -> _/eax: boolean {
   var self/esi: (addr gap-buffer) <- copy _self
   # if !empty?(left) return false
   {
-    var left/eax: (addr grapheme-stack) <- get self, left
-    var result/eax: boolean <- grapheme-stack-empty? left
+    var left/eax: (addr code-point-utf8-stack) <- get self, left
+    var result/eax: boolean <- code-point-utf8-stack-empty? left
     compare result, 0/false
     break-if-!=
     return 0/false
   }
   # return empty?(right)
-  var left/eax: (addr grapheme-stack) <- get self, left
-  var result/eax: boolean <- grapheme-stack-empty? left
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
+  var result/eax: boolean <- code-point-utf8-stack-empty? left
   return result
 }
 
 fn gap-buffer-capacity _gap: (addr gap-buffer) -> _/edx: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
-  var left/eax: (addr grapheme-stack) <- get gap, left
-  var left-data-ah/eax: (addr handle array grapheme) <- get left, data
-  var left-data/eax: (addr array grapheme) <- lookup *left-data-ah
+  var left/eax: (addr code-point-utf8-stack) <- get gap, left
+  var left-data-ah/eax: (addr handle array code-point-utf8) <- get left, data
+  var left-data/eax: (addr array code-point-utf8) <- lookup *left-data-ah
   var result/eax: int <- length left-data
   return result
 }
@@ -58,8 +58,8 @@ fn initialize-gap-buffer-with self: (addr gap-buffer), keys: (addr array byte) {
     var done?/eax: boolean <- stream-empty? input-stream
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme input-stream
-    add-grapheme-at-gap self, g
+    var g/eax: code-point-utf8 <- read-code-point-utf8 input-stream
+    add-code-point-utf8-at-gap self, g
     loop
   }
 }
@@ -73,7 +73,7 @@ fn load-gap-buffer-from-stream self: (addr gap-buffer), in: (addr stream byte) {
     var key/eax: byte <- read-byte in
     compare key, 0/null
     break-if-=
-    var g/eax: grapheme <- copy key
+    var g/eax: code-point-utf8 <- copy key
     edit-gap-buffer self, g
     loop
   }
@@ -86,44 +86,44 @@ fn emit-gap-buffer self: (addr gap-buffer), out: (addr stream byte) {
 
 fn append-gap-buffer _self: (addr gap-buffer), out: (addr stream byte) {
   var self/esi: (addr gap-buffer) <- copy _self
-  var left/eax: (addr grapheme-stack) <- get self, left
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
   emit-stack-from-bottom left, out
-  var right/eax: (addr grapheme-stack) <- get self, right
+  var right/eax: (addr code-point-utf8-stack) <- get self, right
   emit-stack-from-top right, out
 }
 
 # dump stack from bottom to top
-fn emit-stack-from-bottom _self: (addr grapheme-stack), out: (addr stream byte) {
-  var self/esi: (addr grapheme-stack) <- copy _self
-  var data-ah/edi: (addr handle array grapheme) <- get self, data
-  var _data/eax: (addr array grapheme) <- lookup *data-ah
-  var data/edi: (addr array grapheme) <- copy _data
+fn emit-stack-from-bottom _self: (addr code-point-utf8-stack), out: (addr stream byte) {
+  var self/esi: (addr code-point-utf8-stack) <- copy _self
+  var data-ah/edi: (addr handle array code-point-utf8) <- get self, data
+  var _data/eax: (addr array code-point-utf8) <- lookup *data-ah
+  var data/edi: (addr array code-point-utf8) <- copy _data
   var top-addr/ecx: (addr int) <- get self, top
   var i/eax: int <- copy 0
   {
     compare i, *top-addr
     break-if->=
-    var g/edx: (addr grapheme) <- index data, i
-    write-grapheme out, *g
+    var g/edx: (addr code-point-utf8) <- index data, i
+    write-code-point-utf8 out, *g
     i <- increment
     loop
   }
 }
 
 # dump stack from top to bottom
-fn emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte) {
-  var self/esi: (addr grapheme-stack) <- copy _self
-  var data-ah/edi: (addr handle array grapheme) <- get self, data
-  var _data/eax: (addr array grapheme) <- lookup *data-ah
-  var data/edi: (addr array grapheme) <- copy _data
+fn emit-stack-from-top _self: (addr code-point-utf8-stack), out: (addr stream byte) {
+  var self/esi: (addr code-point-utf8-stack) <- copy _self
+  var data-ah/edi: (addr handle array code-point-utf8) <- get self, data
+  var _data/eax: (addr array code-point-utf8) <- lookup *data-ah
+  var data/edi: (addr array code-point-utf8) <- copy _data
   var top-addr/ecx: (addr int) <- get self, top
   var i/eax: int <- copy *top-addr
   i <- decrement
   {
     compare i, 0
     break-if-<
-    var g/edx: (addr grapheme) <- index data, i
-    write-grapheme out, *g
+    var g/edx: (addr code-point-utf8) <- index data, i
+    write-code-point-utf8 out, *g
     i <- decrement
     loop
   }
@@ -133,16 +133,16 @@ fn word-at-gap _self: (addr gap-buffer), out: (addr stream byte) {
   var self/esi: (addr gap-buffer) <- copy _self
   clear-stream out
   {
-    var g/eax: grapheme <- grapheme-at-gap self
-    var at-word?/eax: boolean <- is-ascii-word-grapheme? g
+    var g/eax: code-point-utf8 <- code-point-utf8-at-gap self
+    var at-word?/eax: boolean <- is-ascii-word-code-point-utf8? g
     compare at-word?, 0/false
     break-if-!=
     return
   }
-  var left/ecx: (addr grapheme-stack) <- get self, left
+  var left/ecx: (addr code-point-utf8-stack) <- get self, left
   var left-index/eax: int <- top-most-word left
   emit-stack-from-index left, left-index, out
-  var right/ecx: (addr grapheme-stack) <- get self, right
+  var right/ecx: (addr code-point-utf8-stack) <- get self, right
   var right-index/eax: int <- top-most-word right
   emit-stack-to-index right, right-index, out
 }
@@ -170,7 +170,7 @@ fn test-word-at-gap-single-word-with-gap-at-start {
   check-stream-equal out, "abc", "F - test-word-at-gap-single-word-with-gap-at-start"
 }
 
-fn test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-end {
+fn test-word-at-gap-multiple-words-with-gap-at-non-word-code-point-utf8-at-end {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer-with g, "abc "
@@ -178,10 +178,10 @@ fn test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-end {
   var out-storage: (stream byte 0x10)
   var out/eax: (addr stream byte) <- address out-storage
   word-at-gap g, out
-  check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-end"
+  check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-non-word-code-point-utf8-at-end"
 }
 
-fn test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-start {
+fn test-word-at-gap-multiple-words-with-gap-at-non-word-code-point-utf8-at-start {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer-with g, " abc"
@@ -190,7 +190,7 @@ fn test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-start {
   var out-storage: (stream byte 0x10)
   var out/eax: (addr stream byte) <- address out-storage
   word-at-gap g, out
-  check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-non-word-grapheme-at-start"
+  check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-non-word-code-point-utf8-at-start"
 }
 
 fn test-word-at-gap-multiple-words-with-gap-at-end {
@@ -220,7 +220,7 @@ fn test-word-at-gap-multiple-words-with-gap-at-final-word {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer-with g, "a bc d"
-  var dummy/eax: grapheme <- gap-left g
+  var dummy/eax: code-point-utf8 <- gap-left g
   # gap is at final word
   var out-storage: (stream byte 0x10)
   var out/eax: (addr stream byte) <- address out-storage
@@ -232,7 +232,7 @@ fn test-word-at-gap-multiple-words-with-gap-at-final-non-word {
   var _g: gap-buffer
   var g/esi: (addr gap-buffer) <- address _g
   initialize-gap-buffer-with g, "abc "
-  var dummy/eax: grapheme <- gap-left g
+  var dummy/eax: code-point-utf8 <- gap-left g
   # gap is at final word
   var out-storage: (stream byte 0x10)
   var out/eax: (addr stream byte) <- address out-storage
@@ -240,51 +240,51 @@ fn test-word-at-gap-multiple-words-with-gap-at-final-non-word {
   check-stream-equal out, "", "F - test-word-at-gap-multiple-words-with-gap-at-final-non-word"
 }
 
-fn grapheme-at-gap _self: (addr gap-buffer) -> _/eax: grapheme {
+fn code-point-utf8-at-gap _self: (addr gap-buffer) -> _/eax: code-point-utf8 {
   # send top of right most of the time
   var self/esi: (addr gap-buffer) <- copy _self
-  var right/edi: (addr grapheme-stack) <- get self, right
-  var data-ah/eax: (addr handle array grapheme) <- get right, data
-  var data/eax: (addr array grapheme) <- lookup *data-ah
+  var right/edi: (addr code-point-utf8-stack) <- get self, right
+  var data-ah/eax: (addr handle array code-point-utf8) <- get right, data
+  var data/eax: (addr array code-point-utf8) <- lookup *data-ah
   var top-addr/ecx: (addr int) <- get right, top
   {
     compare *top-addr, 0
     break-if-<=
     var top/ecx: int <- copy *top-addr
     top <- decrement
-    var result/eax: (addr grapheme) <- index data, top
+    var result/eax: (addr code-point-utf8) <- index data, top
     return *result
   }
   # send top of left only if right is empty
-  var left/edi: (addr grapheme-stack) <- get self, left
-  var data-ah/eax: (addr handle array grapheme) <- get left, data
-  var data/eax: (addr array grapheme) <- lookup *data-ah
+  var left/edi: (addr code-point-utf8-stack) <- get self, left
+  var data-ah/eax: (addr handle array code-point-utf8) <- get left, data
+  var data/eax: (addr array code-point-utf8) <- lookup *data-ah
   var top-addr/ecx: (addr int) <- get left, top
   {
     compare *top-addr, 0
     break-if-<=
     var top/ecx: int <- copy *top-addr
     top <- decrement
-    var result/eax: (addr grapheme) <- index data, top
+    var result/eax: (addr code-point-utf8) <- index data, top
     return *result
   }
   # send null if everything is empty
   return 0
 }
 
-fn top-most-word _self: (addr grapheme-stack) -> _/eax: int {
-  var self/esi: (addr grapheme-stack) <- copy _self
-  var data-ah/edi: (addr handle array grapheme) <- get self, data
-  var _data/eax: (addr array grapheme) <- lookup *data-ah
-  var data/edi: (addr array grapheme) <- copy _data
+fn top-most-word _self: (addr code-point-utf8-stack) -> _/eax: int {
+  var self/esi: (addr code-point-utf8-stack) <- copy _self
+  var data-ah/edi: (addr handle array code-point-utf8) <- get self, data
+  var _data/eax: (addr array code-point-utf8) <- lookup *data-ah
+  var data/edi: (addr array code-point-utf8) <- copy _data
   var top-addr/ecx: (addr int) <- get self, top
   var i/ebx: int <- copy *top-addr
   i <- decrement
   {
     compare i, 0
     break-if-<
-    var g/edx: (addr grapheme) <- index data, i
-    var is-word?/eax: boolean <- is-ascii-word-grapheme? *g
+    var g/edx: (addr code-point-utf8) <- index data, i
+    var is-word?/eax: boolean <- is-ascii-word-code-point-utf8? *g
     compare is-word?, 0/false
     break-if-=
     i <- decrement
@@ -294,28 +294,28 @@ fn top-most-word _self: (addr grapheme-stack) -> _/eax: int {
   return i
 }
 
-fn emit-stack-from-index _self: (addr grapheme-stack), start: int, out: (addr stream byte) {
-  var self/esi: (addr grapheme-stack) <- copy _self
-  var data-ah/edi: (addr handle array grapheme) <- get self, data
-  var _data/eax: (addr array grapheme) <- lookup *data-ah
-  var data/edi: (addr array grapheme) <- copy _data
+fn emit-stack-from-index _self: (addr code-point-utf8-stack), start: int, out: (addr stream byte) {
+  var self/esi: (addr code-point-utf8-stack) <- copy _self
+  var data-ah/edi: (addr handle array code-point-utf8) <- get self, data
+  var _data/eax: (addr array code-point-utf8) <- lookup *data-ah
+  var data/edi: (addr array code-point-utf8) <- copy _data
   var top-addr/ecx: (addr int) <- get self, top
   var i/eax: int <- copy start
   {
     compare i, *top-addr
     break-if->=
-    var g/edx: (addr grapheme) <- index data, i
-    write-grapheme out, *g
+    var g/edx: (addr code-point-utf8) <- index data, i
+    write-code-point-utf8 out, *g
     i <- increment
     loop
   }
 }
 
-fn emit-stack-to-index _self: (addr grapheme-stack), end: int, out: (addr stream byte) {
-  var self/esi: (addr grapheme-stack) <- copy _self
-  var data-ah/edi: (addr handle array grapheme) <- get self, data
-  var _data/eax: (addr array grapheme) <- lookup *data-ah
-  var data/edi: (addr array grapheme) <- copy _data
+fn emit-stack-to-index _self: (addr code-point-utf8-stack), end: int, out: (addr stream byte) {
+  var self/esi: (addr code-point-utf8-stack) <- copy _self
+  var data-ah/edi: (addr handle array code-point-utf8) <- get self, data
+  var _data/eax: (addr array code-point-utf8) <- lookup *data-ah
+  var data/edi: (addr array code-point-utf8) <- copy _data
   var top-addr/ecx: (addr int) <- get self, top
   var i/eax: int <- copy *top-addr
   i <- decrement
@@ -324,14 +324,14 @@ fn emit-stack-to-index _self: (addr grapheme-stack), end: int, out: (addr stream
     break-if-<
     compare i, end
     break-if-<
-    var g/edx: (addr grapheme) <- index data, i
-    write-grapheme out, *g
+    var g/edx: (addr code-point-utf8) <- index data, i
+    write-code-point-utf8 out, *g
     i <- decrement
     loop
   }
 }
 
-fn is-ascii-word-grapheme? g: grapheme -> _/eax: boolean {
+fn is-ascii-word-code-point-utf8? g: code-point-utf8 -> _/eax: boolean {
   compare g, 0x21/!
   {
     break-if-!=
@@ -384,14 +384,14 @@ fn is-ascii-word-grapheme? g: grapheme -> _/eax: boolean {
 # cursor is a single other color.
 fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
-  var left/edx: (addr grapheme-stack) <- get gap, left
+  var left/edx: (addr code-point-utf8-stack) <- get gap, left
   var highlight-matching-open-paren?/ebx: boolean <- copy 0/false
   var matching-open-paren-depth/edi: int <- copy 0
   highlight-matching-open-paren?, matching-open-paren-depth <- highlight-matching-open-paren? gap, render-cursor?
   var x2/eax: int <- copy 0
   var y2/ecx: int <- copy 0
   x2, y2 <- render-stack-from-bottom-wrapping-right-then-down screen, left, xmin, ymin, xmax, ymax, xmin, ymin, highlight-matching-open-paren?, matching-open-paren-depth, color, background-color
-  var right/edx: (addr grapheme-stack) <- get gap, right
+  var right/edx: (addr code-point-utf8-stack) <- get gap, right
   x2, y2 <- render-stack-from-top-wrapping-right-then-down screen, right, xmin, ymin, xmax, ymax, x2, y2, render-cursor?, color, background-color
   # decide whether we still need to print a cursor
   var fg/edi: int <- copy color
@@ -399,15 +399,15 @@ fn render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr
   compare render-cursor?, 0/false
   {
     break-if-=
-    # if the right side is empty, grapheme stack didn't print the cursor
-    var empty?/eax: boolean <- grapheme-stack-empty? right
+    # if the right side is empty, code-point-utf8 stack didn't print the cursor
+    var empty?/eax: boolean <- code-point-utf8-stack-empty? right
     compare empty?, 0/false
     break-if-=
     # swap foreground and background
     fg <- copy background-color
     bg <- copy color
   }
-  # print a grapheme either way so that cursor position doesn't affect printed width
+  # print a code-point-utf8 either way so that cursor position doesn't affect printed width
   var space/edx: code-point <- copy 0x20
   x2, y2 <- render-code-point screen, space, xmin, ymin, xmax, ymax, x2, y2, fg, bg
   return x2, y2
@@ -427,30 +427,30 @@ fn render-gap-buffer screen: (addr screen), gap: (addr gap-buffer), x: int, y: i
 
 fn gap-buffer-length _gap: (addr gap-buffer) -> _/eax: int {
   var gap/esi: (addr gap-buffer) <- copy _gap
-  var left/eax: (addr grapheme-stack) <- get gap, left
+  var left/eax: (addr code-point-utf8-stack) <- get gap, left
   var tmp/eax: (addr int) <- get left, top
   var left-length/ecx: int <- copy *tmp
-  var right/esi: (addr grapheme-stack) <- get gap, right
+  var right/esi: (addr code-point-utf8-stack) <- get gap, right
   tmp <- get right, top
   var result/eax: int <- copy *tmp
   result <- add left-length
   return result
 }
 
-fn add-grapheme-at-gap _self: (addr gap-buffer), g: grapheme {
+fn add-code-point-utf8-at-gap _self: (addr gap-buffer), g: code-point-utf8 {
   var self/esi: (addr gap-buffer) <- copy _self
-  var left/eax: (addr grapheme-stack) <- get self, left
-  push-grapheme-stack left, g
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
+  push-code-point-utf8-stack left, g
 }
 
 fn add-code-point-at-gap self: (addr gap-buffer), c: code-point {
-  var g/eax: grapheme <- copy c
-  add-grapheme-at-gap self, g
+  var g/eax: code-point-utf8 <- copy c
+  add-code-point-utf8-at-gap self, g
 }
 
 fn gap-to-start self: (addr gap-buffer) {
   {
-    var curr/eax: grapheme <- gap-left self
+    var curr/eax: code-point-utf8 <- gap-left self
     compare curr, -1
     loop-if-!=
   }
@@ -458,7 +458,7 @@ fn gap-to-start self: (addr gap-buffer) {
 
 fn gap-to-end self: (addr gap-buffer) {
   {
-    var curr/eax: grapheme <- gap-right self
+    var curr/eax: code-point-utf8 <- gap-right self
     compare curr, -1
     loop-if-!=
   }
@@ -466,96 +466,96 @@ fn gap-to-end self: (addr gap-buffer) {
 
 fn gap-at-start? _self: (addr gap-buffer) -> _/eax: boolean {
   var self/esi: (addr gap-buffer) <- copy _self
-  var left/eax: (addr grapheme-stack) <- get self, left
-  var result/eax: boolean <- grapheme-stack-empty? left
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
+  var result/eax: boolean <- code-point-utf8-stack-empty? left
   return result
 }
 
 fn gap-at-end? _self: (addr gap-buffer) -> _/eax: boolean {
   var self/esi: (addr gap-buffer) <- copy _self
-  var right/eax: (addr grapheme-stack) <- get self, right
-  var result/eax: boolean <- grapheme-stack-empty? right
+  var right/eax: (addr code-point-utf8-stack) <- get self, right
+  var result/eax: boolean <- code-point-utf8-stack-empty? right
   return result
 }
 
-fn gap-right _self: (addr gap-buffer) -> _/eax: grapheme {
+fn gap-right _self: (addr gap-buffer) -> _/eax: code-point-utf8 {
   var self/esi: (addr gap-buffer) <- copy _self
-  var g/eax: grapheme <- copy 0
-  var right/ecx: (addr grapheme-stack) <- get self, right
-  g <- pop-grapheme-stack right
+  var g/eax: code-point-utf8 <- copy 0
+  var right/ecx: (addr code-point-utf8-stack) <- get self, right
+  g <- pop-code-point-utf8-stack right
   compare g, -1
   {
     break-if-=
-    var left/ecx: (addr grapheme-stack) <- get self, left
-    push-grapheme-stack left, g
+    var left/ecx: (addr code-point-utf8-stack) <- get self, left
+    push-code-point-utf8-stack left, g
   }
   return g
 }
 
-fn gap-left _self: (addr gap-buffer) -> _/eax: grapheme {
+fn gap-left _self: (addr gap-buffer) -> _/eax: code-point-utf8 {
   var self/esi: (addr gap-buffer) <- copy _self
-  var g/eax: grapheme <- copy 0
+  var g/eax: code-point-utf8 <- copy 0
   {
-    var left/ecx: (addr grapheme-stack) <- get self, left
-    g <- pop-grapheme-stack left
+    var left/ecx: (addr code-point-utf8-stack) <- get self, left
+    g <- pop-code-point-utf8-stack left
   }
   compare g, -1
   {
     break-if-=
-    var right/ecx: (addr grapheme-stack) <- get self, right
-    push-grapheme-stack right, g
+    var right/ecx: (addr code-point-utf8-stack) <- get self, right
+    push-code-point-utf8-stack right, g
   }
   return g
 }
 
 fn index-of-gap _self: (addr gap-buffer) -> _/eax: int {
   var self/eax: (addr gap-buffer) <- copy _self
-  var left/eax: (addr grapheme-stack) <- get self, left
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
   var top-addr/eax: (addr int) <- get left, top
   var result/eax: int <- copy *top-addr
   return result
 }
 
-fn first-grapheme-in-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme {
+fn first-code-point-utf8-in-gap-buffer _self: (addr gap-buffer) -> _/eax: code-point-utf8 {
   var self/esi: (addr gap-buffer) <- copy _self
   # try to read from left
-  var left/eax: (addr grapheme-stack) <- get self, left
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
   var top-addr/ecx: (addr int) <- get left, top
   compare *top-addr, 0
   {
     break-if-<=
-    var data-ah/eax: (addr handle array grapheme) <- get left, data
-    var data/eax: (addr array grapheme) <- lookup *data-ah
-    var result-addr/eax: (addr grapheme) <- index data, 0
+    var data-ah/eax: (addr handle array code-point-utf8) <- get left, data
+    var data/eax: (addr array code-point-utf8) <- lookup *data-ah
+    var result-addr/eax: (addr code-point-utf8) <- index data, 0
     return *result-addr
   }
   # try to read from right
-  var right/eax: (addr grapheme-stack) <- get self, right
+  var right/eax: (addr code-point-utf8-stack) <- get self, right
   top-addr <- get right, top
   compare *top-addr, 0
   {
     break-if-<=
-    var data-ah/eax: (addr handle array grapheme) <- get right, data
-    var data/eax: (addr array grapheme) <- lookup *data-ah
+    var data-ah/eax: (addr handle array code-point-utf8) <- get right, data
+    var data/eax: (addr array code-point-utf8) <- lookup *data-ah
     var top/ecx: int <- copy *top-addr
     top <- decrement
-    var result-addr/eax: (addr grapheme) <- index data, top
+    var result-addr/eax: (addr code-point-utf8) <- index data, top
     return *result-addr
   }
   # give up
   return -1
 }
 
-fn grapheme-before-cursor-in-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme {
+fn code-point-utf8-before-cursor-in-gap-buffer _self: (addr gap-buffer) -> _/eax: code-point-utf8 {
   var self/esi: (addr gap-buffer) <- copy _self
   # try to read from left
-  var left/ecx: (addr grapheme-stack) <- get self, left
+  var left/ecx: (addr code-point-utf8-stack) <- get self, left
   var top-addr/edx: (addr int) <- get left, top
   compare *top-addr, 0
   {
     break-if-<=
-    var result/eax: grapheme <- pop-grapheme-stack left
-    push-grapheme-stack left, result
+    var result/eax: code-point-utf8 <- pop-code-point-utf8-stack left
+    push-code-point-utf8-stack left, result
     return result
   }
   # give up
@@ -564,27 +564,27 @@ fn grapheme-before-cursor-in-gap-buffer _self: (addr gap-buffer) -> _/eax: graph
 
 fn delete-before-gap _self: (addr gap-buffer) {
   var self/eax: (addr gap-buffer) <- copy _self
-  var left/eax: (addr grapheme-stack) <- get self, left
-  var dummy/eax: grapheme <- pop-grapheme-stack left
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
+  var dummy/eax: code-point-utf8 <- pop-code-point-utf8-stack left
 }
 
-fn pop-after-gap _self: (addr gap-buffer) -> _/eax: grapheme {
+fn pop-after-gap _self: (addr gap-buffer) -> _/eax: code-point-utf8 {
   var self/eax: (addr gap-buffer) <- copy _self
-  var right/eax: (addr grapheme-stack) <- get self, right
-  var result/eax: grapheme <- pop-grapheme-stack right
+  var right/eax: (addr code-point-utf8-stack) <- get self, right
+  var result/eax: code-point-utf8 <- pop-code-point-utf8-stack right
   return result
 }
 
 fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> _/eax: boolean {
   var self/esi: (addr gap-buffer) <- copy _self
-  # complication: graphemes may be multiple bytes
+  # complication: code-point-utf8s may be multiple bytes
   # so don't rely on length
   # instead turn the expected result into a stream and arrange to read from it in order
   var stream-storage: (stream byte 0x10/capacity)
   var expected-stream/ecx: (addr stream byte) <- address stream-storage
   write expected-stream, s
   # compare left
-  var left/edx: (addr grapheme-stack) <- get self, left
+  var left/edx: (addr code-point-utf8-stack) <- get self, left
   var result/eax: boolean <- prefix-match? left, expected-stream
   compare result, 0/false
   {
@@ -592,7 +592,7 @@ fn gap-buffer-equal? _self: (addr gap-buffer), s: (addr array byte) -> _/eax: bo
     return result
   }
   # compare right
-  var right/edx: (addr grapheme-stack) <- get self, right
+  var right/edx: (addr code-point-utf8-stack) <- get self, right
   result <- suffix-match? right, expected-stream
   compare result, 0/false
   {
@@ -625,7 +625,7 @@ fn test-gap-buffer-equal-from-middle {
   add-code-point-at-gap g, 0x61/a
   add-code-point-at-gap g, 0x61/a
   add-code-point-at-gap g, 0x61/a
-  var dummy/eax: grapheme <- gap-left g
+  var dummy/eax: code-point-utf8 <- gap-left g
   # gap is in the middle
   var result/eax: boolean <- gap-buffer-equal? g, "aaa"
   check result, "F - test-gap-buffer-equal-from-middle"
@@ -639,7 +639,7 @@ fn test-gap-buffer-equal-from-start {
   add-code-point-at-gap g, 0x61/a
   add-code-point-at-gap g, 0x61/a
   add-code-point-at-gap g, 0x61/a
-  var dummy/eax: grapheme <- gap-left g
+  var dummy/eax: code-point-utf8 <- gap-left g
   dummy <- gap-left g
   dummy <- gap-left g
   # gap is at the start
@@ -674,9 +674,9 @@ fn gap-buffers-equal? self: (addr gap-buffer), g: (addr gap-buffer) -> _/eax: bo
     compare i, len
     break-if->=
     {
-      var tmp/eax: grapheme <- gap-index self, i
-      var curr/ecx: grapheme <- copy tmp
-      var currg/eax: grapheme <- gap-index g, i
+      var tmp/eax: code-point-utf8 <- gap-index self, i
+      var curr/ecx: code-point-utf8 <- copy tmp
+      var currg/eax: code-point-utf8 <- gap-index g, i
       compare curr, currg
       break-if-=
       return 0/false
@@ -687,36 +687,36 @@ fn gap-buffers-equal? self: (addr gap-buffer), g: (addr gap-buffer) -> _/eax: bo
   return 1/true
 }
 
-fn gap-index _self: (addr gap-buffer), _n: int -> _/eax: grapheme {
+fn gap-index _self: (addr gap-buffer), _n: int -> _/eax: code-point-utf8 {
   var self/esi: (addr gap-buffer) <- copy _self
   var n/ebx: int <- copy _n
   # if n < left->length, index into left
-  var left/edi: (addr grapheme-stack) <- get self, left
+  var left/edi: (addr code-point-utf8-stack) <- get self, left
   var left-len-a/edx: (addr int) <- get left, top
   compare n, *left-len-a
   {
     break-if->=
-    var data-ah/eax: (addr handle array grapheme) <- get left, data
-    var data/eax: (addr array grapheme) <- lookup *data-ah
-    var result/eax: (addr grapheme) <- index data, n
+    var data-ah/eax: (addr handle array code-point-utf8) <- get left, data
+    var data/eax: (addr array code-point-utf8) <- lookup *data-ah
+    var result/eax: (addr code-point-utf8) <- index data, n
     return *result
   }
   # shrink n
   n <- subtract *left-len-a
   # if n < right->length, index into right
-  var right/edi: (addr grapheme-stack) <- get self, right
+  var right/edi: (addr code-point-utf8-stack) <- get self, right
   var right-len-a/edx: (addr int) <- get right, top
   compare n, *right-len-a
   {
     break-if->=
-    var data-ah/eax: (addr handle array grapheme) <- get right, data
-    var data/eax: (addr array grapheme) <- lookup *data-ah
+    var data-ah/eax: (addr handle array code-point-utf8) <- get right, data
+    var data/eax: (addr array code-point-utf8) <- lookup *data-ah
     # idx = right->len - n - 1
     var idx/ebx: int <- copy n
     idx <- subtract *right-len-a
     idx <- negate
     idx <- subtract 1
-    var result/eax: (addr grapheme) <- index data, idx
+    var result/eax: (addr code-point-utf8) <- index data, idx
     return *result
   }
   # error
@@ -757,25 +757,25 @@ fn test-gap-buffer-index {
   var gap/esi: (addr gap-buffer) <- address gap-storage
   initialize-gap-buffer-with gap, "abc"
   # gap is at end, all contents are in left
-  var g/eax: grapheme <- gap-index gap, 0
+  var g/eax: code-point-utf8 <- gap-index gap, 0
   var x/ecx: int <- copy g
   check-ints-equal x, 0x61/a, "F - test-gap-index/left-1"
-  var g/eax: grapheme <- gap-index gap, 1
+  var g/eax: code-point-utf8 <- gap-index gap, 1
   var x/ecx: int <- copy g
   check-ints-equal x, 0x62/b, "F - test-gap-index/left-2"
-  var g/eax: grapheme <- gap-index gap, 2
+  var g/eax: code-point-utf8 <- gap-index gap, 2
   var x/ecx: int <- copy g
   check-ints-equal x, 0x63/c, "F - test-gap-index/left-3"
   # now check when everything is to the right
   gap-to-start gap
   rewind-gap-buffer gap
-  var g/eax: grapheme <- gap-index gap, 0
+  var g/eax: code-point-utf8 <- gap-index gap, 0
   var x/ecx: int <- copy g
   check-ints-equal x, 0x61/a, "F - test-gap-index/right-1"
-  var g/eax: grapheme <- gap-index gap, 1
+  var g/eax: code-point-utf8 <- gap-index gap, 1
   var x/ecx: int <- copy g
   check-ints-equal x, 0x62/b, "F - test-gap-index/right-2"
-  var g/eax: grapheme <- gap-index gap, 2
+  var g/eax: code-point-utf8 <- gap-index gap, 2
   var x/ecx: int <- copy g
   check-ints-equal x, 0x63/c, "F - test-gap-index/right-3"
 }
@@ -788,25 +788,25 @@ fn copy-gap-buffer _src-ah: (addr handle gap-buffer), _dest-ah: (addr handle gap
   var dest-ah/eax: (addr handle gap-buffer) <- copy _dest-ah
   var _dest-a/eax: (addr gap-buffer) <- lookup *dest-ah
   var dest-a/edi: (addr gap-buffer) <- copy _dest-a
-  # copy left grapheme-stack
-  var src/ecx: (addr grapheme-stack) <- get src-a, left
-  var dest/edx: (addr grapheme-stack) <- get dest-a, left
-  copy-grapheme-stack src, dest
-  # copy right grapheme-stack
+  # copy left code-point-utf8-stack
+  var src/ecx: (addr code-point-utf8-stack) <- get src-a, left
+  var dest/edx: (addr code-point-utf8-stack) <- get dest-a, left
+  copy-code-point-utf8-stack src, dest
+  # copy right code-point-utf8-stack
   src <- get src-a, right
   dest <- get dest-a, right
-  copy-grapheme-stack src, dest
+  copy-code-point-utf8-stack src, dest
 }
 
 fn gap-buffer-is-decimal-integer? _self: (addr gap-buffer) -> _/eax: boolean {
   var self/esi: (addr gap-buffer) <- copy _self
-  var curr/ecx: (addr grapheme-stack) <- get self, left
-  var result/eax: boolean <- grapheme-stack-is-decimal-integer? curr
+  var curr/ecx: (addr code-point-utf8-stack) <- get self, left
+  var result/eax: boolean <- code-point-utf8-stack-is-decimal-integer? curr
   {
     compare result, 0/false
     break-if-=
     curr <- get self, right
-    result <- grapheme-stack-is-decimal-integer? curr
+    result <- code-point-utf8-stack-is-decimal-integer? curr
   }
   return result
 }
@@ -841,7 +841,7 @@ fn test-render-gap-buffer-with-cursor-at-end {
   #
   var x/eax: int <- render-gap-buffer screen, gap, 0/x, 0/y, 1/show-cursor, 3/fg, 0xc5/bg=blue-bg
   check-screen-row screen, 0/y, "abc ", "F - test-render-gap-buffer-with-cursor-at-end"
-  # we've drawn one extra grapheme for the cursor
+  # we've drawn one extra code-point-utf8 for the cursor
   check-ints-equal x, 4, "F - test-render-gap-buffer-with-cursor-at-end: result"
                                                                 # abc
   check-background-color-in-screen-row screen, 3/bg=reverse, 0/y, "   |", "F - test-render-gap-buffer-with-cursor-at-end: bg"
@@ -853,7 +853,7 @@ fn test-render-gap-buffer-with-cursor-in-middle {
   var gap/esi: (addr gap-buffer) <- address gap-storage
   initialize-gap-buffer-with gap, "abc"
   gap-to-end gap
-  var dummy/eax: grapheme <- gap-left gap
+  var dummy/eax: code-point-utf8 <- gap-left gap
   # setup: screen
   var screen-storage: screen
   var screen/edi: (addr screen) <- address screen-storage
@@ -905,7 +905,7 @@ fn test-render-gap-buffer-highlight-matching-open-paren {
   var gap/esi: (addr gap-buffer) <- address gap-storage
   initialize-gap-buffer-with gap, "(a)"
   gap-to-end gap
-  var dummy/eax: grapheme <- gap-left gap
+  var dummy/eax: code-point-utf8 <- gap-left gap
   # setup: screen
   var screen-storage: screen
   var screen/edi: (addr screen) <- address screen-storage
@@ -947,7 +947,7 @@ fn highlight-matching-open-paren? _gap: (addr gap-buffer), render-cursor?: boole
     return 0/false, 0
   }
   var gap/esi: (addr gap-buffer) <- copy _gap
-  var stack/edi: (addr grapheme-stack) <- get gap, right
+  var stack/edi: (addr code-point-utf8-stack) <- get gap, right
   var top-addr/eax: (addr int) <- get stack, top
   var top-index/ecx: int <- copy *top-addr
   compare top-index, 0
@@ -963,9 +963,9 @@ fn highlight-matching-open-paren? _gap: (addr gap-buffer), render-cursor?: boole
       return 0/false, 0
     }
     top-index <- decrement
-    var data-ah/eax: (addr handle array grapheme) <- get stack, data
-    var data/eax: (addr array grapheme) <- lookup *data-ah
-    var g/eax: (addr grapheme) <- index data, top-index
+    var data-ah/eax: (addr handle array code-point-utf8) <- get stack, data
+    var data/eax: (addr array code-point-utf8) <- lookup *data-ah
+    var g/eax: (addr code-point-utf8) <- index data, top-index
     compare *g, 0x29/close-paren
     {
       break-if-=
@@ -975,9 +975,9 @@ fn highlight-matching-open-paren? _gap: (addr gap-buffer), render-cursor?: boole
   }
   # cursor is not at end; return (char at cursor == ')')
   top-index <- decrement
-  var data-ah/eax: (addr handle array grapheme) <- get stack, data
-  var data/eax: (addr array grapheme) <- lookup *data-ah
-  var g/eax: (addr grapheme) <- index data, top-index
+  var data-ah/eax: (addr handle array code-point-utf8) <- get stack, data
+  var data/eax: (addr array code-point-utf8) <- lookup *data-ah
+  var g/eax: (addr code-point-utf8) <- index data, top-index
   compare *g, 0x29/close-paren
   {
     break-if-=
@@ -998,7 +998,7 @@ fn test-highlight-matching-open-paren {
   highlight-matching-open-paren?, open-paren-depth <- highlight-matching-open-paren? gap, 1/render-cursor
   check highlight-matching-open-paren?, "F - test-highlight-matching-open-paren: at end immediately after ')'"
   check-ints-equal open-paren-depth, 1, "F - test-highlight-matching-open-paren: depth at end immediately after ')'"
-  var dummy/eax: grapheme <- gap-left gap
+  var dummy/eax: code-point-utf8 <- gap-left gap
   highlight-matching-open-paren?, open-paren-depth <- highlight-matching-open-paren? gap, 1/render-cursor
   check highlight-matching-open-paren?, "F - test-highlight-matching-open-paren: on ')'"
   dummy <- gap-left gap
@@ -1022,8 +1022,8 @@ fn rewind-gap-buffer _self: (addr gap-buffer) {
 fn gap-buffer-scan-done? _self: (addr gap-buffer) -> _/eax: boolean {
   var self/esi: (addr gap-buffer) <- copy _self
   # more in left?
-  var left/eax: (addr grapheme-stack) <- get self, left
-  var left-size/eax: int <- grapheme-stack-length left
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
+  var left-size/eax: int <- code-point-utf8-stack-length left
   var left-read-index/ecx: (addr int) <- get self, left-read-index
   compare *left-read-index, left-size
   {
@@ -1031,8 +1031,8 @@ fn gap-buffer-scan-done? _self: (addr gap-buffer) -> _/eax: boolean {
     return 0/false
   }
   # more in right?
-  var right/eax: (addr grapheme-stack) <- get self, right
-  var right-size/eax: int <- grapheme-stack-length right
+  var right/eax: (addr code-point-utf8-stack) <- get self, right
+  var right-size/eax: int <- code-point-utf8-stack-length right
   var right-read-index/ecx: (addr int) <- get self, right-read-index
   compare *right-read-index, right-size
   {
@@ -1043,73 +1043,73 @@ fn gap-buffer-scan-done? _self: (addr gap-buffer) -> _/eax: boolean {
   return 1/true
 }
 
-fn peek-from-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme {
+fn peek-from-gap-buffer _self: (addr gap-buffer) -> _/eax: code-point-utf8 {
   var self/esi: (addr gap-buffer) <- copy _self
   # more in left?
-  var left/ecx: (addr grapheme-stack) <- get self, left
-  var left-size/eax: int <- grapheme-stack-length left
+  var left/ecx: (addr code-point-utf8-stack) <- get self, left
+  var left-size/eax: int <- code-point-utf8-stack-length left
   var left-read-index-a/edx: (addr int) <- get self, left-read-index
   compare *left-read-index-a, left-size
   {
     break-if->=
-    var left-data-ah/eax: (addr handle array grapheme) <- get left, data
-    var left-data/eax: (addr array grapheme) <- lookup *left-data-ah
+    var left-data-ah/eax: (addr handle array code-point-utf8) <- get left, data
+    var left-data/eax: (addr array code-point-utf8) <- lookup *left-data-ah
     var left-read-index/ecx: int <- copy *left-read-index-a
-    var result/eax: (addr grapheme) <- index left-data, left-read-index
+    var result/eax: (addr code-point-utf8) <- index left-data, left-read-index
     return *result
   }
   # more in right?
-  var right/ecx: (addr grapheme-stack) <- get self, right
-  var _right-size/eax: int <- grapheme-stack-length right
+  var right/ecx: (addr code-point-utf8-stack) <- get self, right
+  var _right-size/eax: int <- code-point-utf8-stack-length right
   var right-size/ebx: int <- copy _right-size
   var right-read-index-a/edx: (addr int) <- get self, right-read-index
   compare *right-read-index-a, right-size
   {
     break-if->=
     # read the right from reverse
-    var right-data-ah/eax: (addr handle array grapheme) <- get right, data
-    var right-data/eax: (addr array grapheme) <- lookup *right-data-ah
+    var right-data-ah/eax: (addr handle array code-point-utf8) <- get right, data
+    var right-data/eax: (addr array code-point-utf8) <- lookup *right-data-ah
     var right-read-index/ebx: int <- copy right-size
     right-read-index <- subtract *right-read-index-a
     right-read-index <- subtract 1
-    var result/eax: (addr grapheme) <- index right-data, right-read-index
+    var result/eax: (addr code-point-utf8) <- index right-data, right-read-index
     return *result
   }
   # if we get here there's nothing left
   return 0/nul
 }
 
-fn read-from-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme {
+fn read-from-gap-buffer _self: (addr gap-buffer) -> _/eax: code-point-utf8 {
   var self/esi: (addr gap-buffer) <- copy _self
   # more in left?
-  var left/ecx: (addr grapheme-stack) <- get self, left
-  var left-size/eax: int <- grapheme-stack-length left
+  var left/ecx: (addr code-point-utf8-stack) <- get self, left
+  var left-size/eax: int <- code-point-utf8-stack-length left
   var left-read-index-a/edx: (addr int) <- get self, left-read-index
   compare *left-read-index-a, left-size
   {
     break-if->=
-    var left-data-ah/eax: (addr handle array grapheme) <- get left, data
-    var left-data/eax: (addr array grapheme) <- lookup *left-data-ah
+    var left-data-ah/eax: (addr handle array code-point-utf8) <- get left, data
+    var left-data/eax: (addr array code-point-utf8) <- lookup *left-data-ah
     var left-read-index/ecx: int <- copy *left-read-index-a
-    var result/eax: (addr grapheme) <- index left-data, left-read-index
+    var result/eax: (addr code-point-utf8) <- index left-data, left-read-index
     increment *left-read-index-a
     return *result
   }
   # more in right?
-  var right/ecx: (addr grapheme-stack) <- get self, right
-  var _right-size/eax: int <- grapheme-stack-length right
+  var right/ecx: (addr code-point-utf8-stack) <- get self, right
+  var _right-size/eax: int <- code-point-utf8-stack-length right
   var right-size/ebx: int <- copy _right-size
   var right-read-index-a/edx: (addr int) <- get self, right-read-index
   compare *right-read-index-a, right-size
   {
     break-if->=
     # read the right from reverse
-    var right-data-ah/eax: (addr handle array grapheme) <- get right, data
-    var right-data/eax: (addr array grapheme) <- lookup *right-data-ah
+    var right-data-ah/eax: (addr handle array code-point-utf8) <- get right, data
+    var right-data/eax: (addr array code-point-utf8) <- lookup *right-data-ah
     var right-read-index/ebx: int <- copy right-size
     right-read-index <- subtract *right-read-index-a
     right-read-index <- subtract 1
-    var result/eax: (addr grapheme) <- index right-data, right-read-index
+    var result/eax: (addr code-point-utf8) <- index right-data, right-read-index
     increment *right-read-index-a
     return *result
   }
@@ -1120,8 +1120,8 @@ fn read-from-gap-buffer _self: (addr gap-buffer) -> _/eax: grapheme {
 fn put-back-from-gap-buffer _self: (addr gap-buffer) {
   var self/esi: (addr gap-buffer) <- copy _self
   # more in right?
-  var right/eax: (addr grapheme-stack) <- get self, right
-  var right-size/eax: int <- grapheme-stack-length right
+  var right/eax: (addr code-point-utf8-stack) <- get self, right
+  var right-size/eax: int <- code-point-utf8-stack-length right
   var right-read-index-a/eax: (addr int) <- get self, right-read-index
   compare *right-read-index-a, 0
   {
@@ -1130,8 +1130,8 @@ fn put-back-from-gap-buffer _self: (addr gap-buffer) {
     return
   }
   # more in left?
-  var left/eax: (addr grapheme-stack) <- get self, left
-  var left-size/eax: int <- grapheme-stack-length left
+  var left/eax: (addr code-point-utf8-stack) <- get self, left
+  var left-size/eax: int <- code-point-utf8-stack-length left
   var left-read-index-a/eax: (addr int) <- get self, left-read-index
   decrement *left-read-index-a
 }
@@ -1143,22 +1143,22 @@ fn test-read-from-gap-buffer {
   # gap is at end, all contents are in left
   var done?/eax: boolean <- gap-buffer-scan-done? gap
   check-not done?, "F - test-read-from-gap-buffer/left-1/done"
-  var g/eax: grapheme <- read-from-gap-buffer gap
+  var g/eax: code-point-utf8 <- read-from-gap-buffer gap
   var x/ecx: int <- copy g
   check-ints-equal x, 0x61/a, "F - test-read-from-gap-buffer/left-1"
   var done?/eax: boolean <- gap-buffer-scan-done? gap
   check-not done?, "F - test-read-from-gap-buffer/left-2/done"
-  var g/eax: grapheme <- read-from-gap-buffer gap
+  var g/eax: code-point-utf8 <- read-from-gap-buffer gap
   var x/ecx: int <- copy g
   check-ints-equal x, 0x62/b, "F - test-read-from-gap-buffer/left-2"
   var done?/eax: boolean <- gap-buffer-scan-done? gap
   check-not done?, "F - test-read-from-gap-buffer/left-3/done"
-  var g/eax: grapheme <- read-from-gap-buffer gap
+  var g/eax: code-point-utf8 <- read-from-gap-buffer gap
   var x/ecx: int <- copy g
   check-ints-equal x, 0x63/c, "F - test-read-from-gap-buffer/left-3"
   var done?/eax: boolean <- gap-buffer-scan-done? gap
   check done?, "F - test-read-from-gap-buffer/left-4/done"
-  var g/eax: grapheme <- read-from-gap-buffer gap
+  var g/eax: code-point-utf8 <- read-from-gap-buffer gap
   var x/ecx: int <- copy g
   check-ints-equal x, 0/nul, "F - test-read-from-gap-buffer/left-4"
   # now check when everything is to the right
@@ -1166,22 +1166,22 @@ fn test-read-from-gap-buffer {
   rewind-gap-buffer gap
   var done?/eax: boolean <- gap-buffer-scan-done? gap
   check-not done?, "F - test-read-from-gap-buffer/right-1/done"
-  var g/eax: grapheme <- read-from-gap-buffer gap
+  var g/eax: code-point-utf8 <- read-from-gap-buffer gap
   var x/ecx: int <- copy g
   check-ints-equal x, 0x61/a, "F - test-read-from-gap-buffer/right-1"
   var done?/eax: boolean <- gap-buffer-scan-done? gap
   check-not done?, "F - test-read-from-gap-buffer/right-2/done"
-  var g/eax: grapheme <- read-from-gap-buffer gap
+  var g/eax: code-point-utf8 <- read-from-gap-buffer gap
   var x/ecx: int <- copy g
   check-ints-equal x, 0x62/b, "F - test-read-from-gap-buffer/right-2"
   var done?/eax: boolean <- gap-buffer-scan-done? gap
   check-not done?, "F - test-read-from-gap-buffer/right-3/done"
-  var g/eax: grapheme <- read-from-gap-buffer gap
+  var g/eax: code-point-utf8 <- read-from-gap-buffer gap
   var x/ecx: int <- copy g
   check-ints-equal x, 0x63/c, "F - test-read-from-gap-buffer/right-3"
   var done?/eax: boolean <- gap-buffer-scan-done? gap
   check done?, "F - test-read-from-gap-buffer/right-4/done"
-  var g/eax: grapheme <- read-from-gap-buffer gap
+  var g/eax: code-point-utf8 <- read-from-gap-buffer gap
   var x/ecx: int <- copy g
   check-ints-equal x, 0/nul, "F - test-read-from-gap-buffer/right-4"
 }
@@ -1190,7 +1190,7 @@ fn skip-spaces-from-gap-buffer self: (addr gap-buffer) {
   var done?/eax: boolean <- gap-buffer-scan-done? self
   compare done?, 0/false
   break-if-!=
-  var g/eax: grapheme <- peek-from-gap-buffer self
+  var g/eax: code-point-utf8 <- peek-from-gap-buffer self
   {
     compare g, 0x20/space
     break-if-=
@@ -1200,8 +1200,8 @@ fn skip-spaces-from-gap-buffer self: (addr gap-buffer) {
   loop
 }
 
-fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
-  var g/edx: grapheme <- copy key
+fn edit-gap-buffer self: (addr gap-buffer), key: code-point-utf8 {
+  var g/edx: code-point-utf8 <- copy key
   {
     compare g, 8/backspace
     break-if-!=
@@ -1211,13 +1211,13 @@ fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
   {
     compare g, 0x80/left-arrow
     break-if-!=
-    var dummy/eax: grapheme <- gap-left self
+    var dummy/eax: code-point-utf8 <- gap-left self
     return
   }
   {
     compare g, 0x83/right-arrow
     break-if-!=
-    var dummy/eax: grapheme <- gap-right self
+    var dummy/eax: code-point-utf8 <- gap-right self
     return
   }
   {
@@ -1271,11 +1271,11 @@ fn edit-gap-buffer self: (addr gap-buffer), key: grapheme {
     return
   }
   # default: insert character
-  add-grapheme-at-gap self, g
+  add-code-point-utf8-at-gap self, g
 }
 
 fn gap-to-start-of-next-word self: (addr gap-buffer) {
-  var curr/eax: grapheme <- copy 0
+  var curr/eax: code-point-utf8 <- copy 0
   # skip to next space
   {
     curr <- gap-right self
@@ -1302,7 +1302,7 @@ fn gap-to-start-of-next-word self: (addr gap-buffer) {
 }
 
 fn gap-to-end-of-previous-word self: (addr gap-buffer) {
-  var curr/eax: grapheme <- copy 0
+  var curr/eax: code-point-utf8 <- copy 0
   # skip to previous space
   {
     curr <- gap-left self
@@ -1330,7 +1330,7 @@ fn gap-to-end-of-previous-word self: (addr gap-buffer) {
 
 fn gap-to-previous-start-of-line self: (addr gap-buffer) {
   # skip past immediate newline
-  var dummy/eax: grapheme <- gap-left self
+  var dummy/eax: code-point-utf8 <- gap-left self
   # skip to previous newline
   {
     dummy <- gap-left self
@@ -1351,7 +1351,7 @@ fn gap-to-previous-start-of-line self: (addr gap-buffer) {
 
 fn gap-to-next-end-of-line self: (addr gap-buffer) {
   # skip past immediate newline
-  var dummy/eax: grapheme <- gap-right self
+  var dummy/eax: code-point-utf8 <- gap-right self
   # skip to next newline
   {
     dummy <- gap-right self
@@ -1380,7 +1380,7 @@ fn gap-up self: (addr gap-buffer) {
   {
     compare i, col
     break-if->=
-    var curr/eax: grapheme <- gap-right self
+    var curr/eax: code-point-utf8 <- gap-right self
     {
       compare curr, -1
       break-if-!=
@@ -1402,13 +1402,13 @@ fn gap-down self: (addr gap-buffer) {
   var col/edx: int <- count-columns-to-start-of-line self
   # skip to start of next line
   gap-to-end-of-line self
-  var dummy/eax: grapheme <- gap-right self
+  var dummy/eax: code-point-utf8 <- gap-right self
   # skip ahead by up to col on previous line
   var i/ecx: int <- copy 0
   {
     compare i, col
     break-if->=
-    var curr/eax: grapheme <- gap-right self
+    var curr/eax: code-point-utf8 <- gap-right self
     {
       compare curr, -1
       break-if-!=
@@ -1427,7 +1427,7 @@ fn gap-down self: (addr gap-buffer) {
 
 fn count-columns-to-start-of-line self: (addr gap-buffer) -> _/edx: int {
   var count/edx: int <- copy 0
-  var dummy/eax: grapheme <- copy 0
+  var dummy/eax: code-point-utf8 <- copy 0
   # skip to previous newline
   {
     dummy <- gap-left self
@@ -1449,7 +1449,7 @@ fn count-columns-to-start-of-line self: (addr gap-buffer) -> _/edx: int {
 }
 
 fn gap-to-end-of-line self: (addr gap-buffer) {
-  var dummy/eax: grapheme <- copy 0
+  var dummy/eax: code-point-utf8 <- copy 0
   # skip to next newline
   {
     dummy <- gap-right self

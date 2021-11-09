@@ -80,7 +80,7 @@ You can store several types in these registers:
   - (addr T) (address into memory)
   - byte (uses only 8 bits)
   - code-point (Unicode)
-  - grapheme (code-point encoded in UTF-8)
+  - code-point-utf8 (code-point encoded in UTF-8)
 
 There's one 32-bit type you _cannot_ store in these registers:
   - float
@@ -579,9 +579,9 @@ are a few functions to help with them:
   # bytes
   append-byte s: (addr stream byte), var: int  # write lower byte of var
   var/eax: byte <- read-byte s: (addr stream byte)
-  # 32-bit graphemes encoded in UTF-8
-  write-grapheme out: (addr stream byte), g: grapheme
-  g/eax: grapheme <- read-grapheme in: (addr stream byte)
+  # 32-bit code-point-utf8s encoded in UTF-8
+  write-code-point-utf8 out: (addr stream byte), g: code-point-utf8
+  g/eax: code-point-utf8 <- read-code-point-utf8 in: (addr stream byte)
 ```
 
 You can check if a stream is empty or full:

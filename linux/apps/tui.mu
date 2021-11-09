@@ -23,7 +23,7 @@ fn main -> _/ebx: int {
 
   print-string 0/screen, "press a key to see its code: "
   enable-keyboard-immediate-mode
-  var x/eax: grapheme <- read-key-from-real-keyboard
+  var x/eax: code-point-utf8 <- read-key-from-real-keyboard
   enable-keyboard-type-mode
   enable-screen-type-mode
   print-string 0/screen, "You pressed "

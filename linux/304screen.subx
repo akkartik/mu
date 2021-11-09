@@ -157,8 +157,8 @@ $print-stream-to-real-screen:end:
     5d/pop-to-ebp
     c3/return
 
-# print a grapheme in utf-8 (only up to 4 bytes so far)
-print-grapheme-to-real-screen:  # c: grapheme
+# print a code-point-utf8 in utf-8 (only up to 4 bytes so far)
+print-code-point-utf8-to-real-screen:  # c: code-point-utf8
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -170,31 +170,31 @@ print-grapheme-to-real-screen:  # c: grapheme
     8a/byte-> *(ebp+8) 0/r32/al
     # if (curr == 0) return
     3d/compare-eax-and 0/imm32
-    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+    74/jump-if-= $print-code-point-utf8-to-real-screen:end/disp8
     #
     (print-byte-to-real-screen %eax)
     # curr = *(ebp+9)
     8a/byte-> *(ebp+9) 0/r32/al
     # if (curr == 0) return
     3d/compare-eax-and 0/imm32
-    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+    74/jump-if-= $print-code-point-utf8-to-real-screen:end/disp8
     #
     (print-byte-to-real-screen %eax)
     # curr = *(ebp+10)
     8a/byte-> *(ebp+0xa) 0/r32/al
     # if (curr == 0) return
     3d/compare-eax-and 0/imm32
-    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+    74/jump-if-= $print-code-point-utf8-to-real-screen:end/disp8
     #
     (print-byte-to-real-screen %eax)
     # curr = *(ebp+11)
     8a/byte-> *(ebp+0xb) 0/r32/al
     # if (curr == 0) return
     3d/compare-eax-and 0/imm32
-    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+    74/jump-if-= $print-code-point-utf8-to-real-screen:end/disp8
     #
     (print-byte-to-real-screen %eax)
-$print-grapheme-to-real-screen:end:
+$print-code-point-utf8-to-real-screen:end:
     # . restore registers
     58/pop-to-eax
     # . epilogue

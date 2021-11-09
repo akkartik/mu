@@ -429,13 +429,13 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     next-indent-token in, out, trace  # might not be returned
   }
   skip-spaces-from-gap-buffer in
-  var g/eax: grapheme <- peek-from-gap-buffer in
+  var g/eax: code-point-utf8 <- peek-from-gap-buffer in
   {
     compare g, 0x23/comment
     break-if-!=
     skip-rest-of-line in
   }
-  var g/eax: grapheme <- peek-from-gap-buffer in
+  var g/eax: code-point-utf8 <- peek-from-gap-buffer in
   {
     compare g, 0xa/newline
     break-if-!=
@@ -461,8 +461,8 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     trace-higher trace
     return 1/at-start-of-line
   }
-  var _g/eax: grapheme <- peek-from-gap-buffer in
-  var g/ecx: grapheme <- copy _g
+  var _g/eax: code-point-utf8 <- peek-from-gap-buffer in
+  var g/ecx: code-point-utf8 <- copy _g
   {
     var should-trace?/eax: boolean <- should-trace? trace
     compare should-trace?, 0/false
@@ -479,7 +479,7 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     {
       compare g, 0x22/double-quote
       break-if-!=
-      var dummy/eax: grapheme <- read-from-gap-buffer in  # skip
+      var dummy/eax: code-point-utf8 <- read-from-gap-buffer in  # skip
       next-stream-token in, out, trace
       break $next-token:case
     }
@@ -487,13 +487,13 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     {
       compare g, 0x5b/open-square-bracket
       break-if-!=
-      var dummy/eax: grapheme <- read-from-gap-buffer in  # skip open bracket
+      var dummy/eax: code-point-utf8 <- read-from-gap-buffer in  # skip open bracket
       next-balanced-stream-token in, out, trace
       break $next-token:case
     }
     # other symbol char
     {
-      var symbol?/eax: boolean <- symbol-grapheme? g
+      var symbol?/eax: boolean <- symbol-code-point-utf8? g
       compare symbol?, 0/false
       break-if-=
       next-symbol-token in, out, trace
@@ -508,10 +508,10 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     }
     # other brackets are always single-char tokens
     {
-      var bracket?/eax: boolean <- bracket-grapheme? g
+      var bracket?/eax: boolean <- bracket-code-point-utf8? g
       compare bracket?, 0/false
       break-if-=
-      var g/eax: grapheme <- read-from-gap-buffer in
+      var g/eax: code-point-utf8 <- read-from-gap-buffer in
       next-bracket-token g, out, trace
       break $next-token:case
     }
@@ -519,7 +519,7 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     {
       compare g, 0x27/single-quote
       break-if-!=
-      var g/eax: grapheme <- read-from-gap-buffer in  # consume
+      var g/eax: code-point-utf8 <- read-from-gap-buffer in  # consume
       initialize-token out, "'"
       break $next-token:case
     }
@@ -527,7 +527,7 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     {
       compare g, 0x60/backquote
       break-if-!=
-      var g/eax: grapheme <- read-from-gap-buffer in  # consume
+      var g/eax: code-point-utf8 <- read-from-gap-buffer in  # consume
       initialize-token out, "`"
       break $next-token:case
     }
@@ -535,7 +535,7 @@ fn next-token in: (addr gap-buffer), out: (addr token), start-of-line?: boolean,
     {
       compare g, 0x2c/comma
       break-if-!=
-      var g/eax: grapheme <- read-from-gap-buffer in  # consume
+      var g/eax: code-point-utf8 <- read-from-gap-buffer in  # consume
       # check for unquote-splice
       {
         g <- peek-from-gap-buffer in
@@ -581,7 +581,7 @@ fn next-symbol-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- peek-from-gap-buffer in
+    var g/eax: code-point-utf8 <- peek-from-gap-buffer in
     {
       {
         var should-trace?/eax: boolean <- should-trace? trace
@@ -597,14 +597,14 @@ fn next-symbol-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
     }
     # if non-symbol, return
     {
-      var symbol-grapheme?/eax: boolean <- symbol-grapheme? g
-      compare symbol-grapheme?, 0/false
+      var symbol-code-point-utf8?/eax: boolean <- symbol-code-point-utf8? g
+      compare symbol-code-point-utf8?, 0/false
       break-if-!=
       trace-text trace, "tokenize", "stop"
       break $next-symbol-token:loop
     }
-    var g/eax: grapheme <- read-from-gap-buffer in
-    write-grapheme out-data, g
+    var g/eax: code-point-utf8 <- read-from-gap-buffer in
+    write-code-point-utf8 out-data, g
     loop
   }
   trace-higher trace
@@ -630,16 +630,16 @@ fn next-number-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
   var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
   var out-data/edi: (addr stream byte) <- copy _out-data
   $next-number-token:check-minus: {
-    var g/eax: grapheme <- peek-from-gap-buffer in
+    var g/eax: code-point-utf8 <- peek-from-gap-buffer in
     compare g, 0x2d/minus
     g <- read-from-gap-buffer in  # consume
-    write-grapheme out-data, g
+    write-code-point-utf8 out-data, g
   }
   $next-number-token:loop: {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- peek-from-gap-buffer in
+    var g/eax: code-point-utf8 <- peek-from-gap-buffer in
     {
       {
         var should-trace?/eax: boolean <- should-trace? trace
@@ -653,15 +653,15 @@ fn next-number-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
       write-int32-hex stream, gval
       trace trace, "tokenize", stream
     }
-    # if not symbol grapheme, return
+    # if not symbol code-point-utf8, return
     {
-      var symbol-grapheme?/eax: boolean <- symbol-grapheme? g
-      compare symbol-grapheme?, 0/false
+      var symbol-code-point-utf8?/eax: boolean <- symbol-code-point-utf8? g
+      compare symbol-code-point-utf8?, 0/false
       break-if-!=
       trace-text trace, "tokenize", "stop"
       break $next-number-token:loop
     }
-    # if not digit grapheme, abort
+    # if not digit code-point-utf8, abort
     {
       var digit?/eax: boolean <- decimal-digit? g
       compare digit?, 0/false
@@ -670,8 +670,8 @@ fn next-number-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
       return
     }
     trace-text trace, "tokenize", "append"
-    var g/eax: grapheme <- read-from-gap-buffer in
-    write-grapheme out-data, g
+    var g/eax: code-point-utf8 <- read-from-gap-buffer in
+    write-code-point-utf8 out-data, g
     loop
   }
   trace-higher trace
@@ -696,10 +696,10 @@ fn next-stream-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
       error trace, "unbalanced '\"'"
       return
     }
-    var g/eax: grapheme <- read-from-gap-buffer in
+    var g/eax: code-point-utf8 <- read-from-gap-buffer in
     compare g, 0x22/double-quote
     break-if-=
-    write-grapheme out-data, g
+    write-code-point-utf8 out-data, g
     loop
   }
   {
@@ -735,7 +735,7 @@ fn next-balanced-stream-token in: (addr gap-buffer), _out: (addr token), trace: 
       error trace, "unbalanced '['"
       return
     }
-    var g/eax: grapheme <- read-from-gap-buffer in
+    var g/eax: code-point-utf8 <- read-from-gap-buffer in
     {
       compare g, 0x5b/open-square-bracket
       break-if-!=
@@ -748,7 +748,7 @@ fn next-balanced-stream-token in: (addr gap-buffer), _out: (addr token), trace: 
       break-if-= $next-balanced-stream-token:loop
       decrement bracket-count
     }
-    write-grapheme out-data, g
+    write-code-point-utf8 out-data, g
     loop
   }
   {
@@ -764,14 +764,14 @@ fn next-balanced-stream-token in: (addr gap-buffer), _out: (addr token), trace: 
   }
 }
 
-fn next-bracket-token g: grapheme, _out: (addr token), trace: (addr trace) {
+fn next-bracket-token g: code-point-utf8, _out: (addr token), trace: (addr trace) {
   trace-text trace, "tokenize", "bracket"
   var out/eax: (addr token) <- copy _out
   var out-data-ah/eax: (addr handle stream byte) <- get out, text-data
   populate-stream out-data-ah, 0x40
   var _out-data/eax: (addr stream byte) <- lookup *out-data-ah
   var out-data/edi: (addr stream byte) <- copy _out-data
-  write-grapheme out-data, g
+  write-code-point-utf8 out-data, g
   {
     var should-trace?/eax: boolean <- should-trace? trace
     compare should-trace?, 0/false
@@ -790,7 +790,7 @@ fn skip-rest-of-line in: (addr gap-buffer) {
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- peek-from-gap-buffer in
+    var g/eax: code-point-utf8 <- peek-from-gap-buffer in
     compare g, 0xa/newline
     break-if-=
     g <- read-from-gap-buffer in  # consume
@@ -810,7 +810,7 @@ fn next-indent-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
     var done?/eax: boolean <- gap-buffer-scan-done? in
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- peek-from-gap-buffer in
+    var g/eax: code-point-utf8 <- peek-from-gap-buffer in
     {
       {
         var should-trace?/eax: boolean <- should-trace? trace
@@ -844,7 +844,7 @@ fn next-indent-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
   }
 }
 
-# Mu carves up the space of graphemes into 4 categories:
+# Mu carves up the space of code-point-utf8s into 4 categories:
 #   whitespace
 #   quotes and unquotes (from a Lisp perspective; doesn't include double
 #                        quotes or other Unicode quotes)
@@ -856,20 +856,20 @@ fn next-indent-token in: (addr gap-buffer), _out: (addr token), trace: (addr tra
 # During tokenization operators and symbols are treated identically.
 # A later phase digs into that nuance.
 
-fn symbol-grapheme? g: grapheme -> _/eax: boolean {
-  var whitespace?/eax: boolean <- whitespace-grapheme? g
+fn symbol-code-point-utf8? g: code-point-utf8 -> _/eax: boolean {
+  var whitespace?/eax: boolean <- whitespace-code-point-utf8? g
   compare whitespace?, 0/false
   {
     break-if-=
     return 0/false
   }
-  var quote-or-unquote?/eax: boolean <- quote-or-unquote-grapheme? g
+  var quote-or-unquote?/eax: boolean <- quote-or-unquote-code-point-utf8? g
   compare quote-or-unquote?, 0/false
   {
     break-if-=
     return 0/false
   }
-  var bracket?/eax: boolean <- bracket-grapheme? g
+  var bracket?/eax: boolean <- bracket-code-point-utf8? g
   compare bracket?, 0/false
   {
     break-if-=
@@ -888,7 +888,7 @@ fn symbol-grapheme? g: grapheme -> _/eax: boolean {
   return 1/true
 }
 
-fn whitespace-grapheme? g: grapheme -> _/eax: boolean {
+fn whitespace-code-point-utf8? g: code-point-utf8 -> _/eax: boolean {
   compare g, 9/tab
   {
     break-if-!=
@@ -907,7 +907,7 @@ fn whitespace-grapheme? g: grapheme -> _/eax: boolean {
   return 0/false
 }
 
-fn quote-or-unquote-grapheme? g: grapheme -> _/eax: boolean {
+fn quote-or-unquote-code-point-utf8? g: code-point-utf8 -> _/eax: boolean {
   compare g, 0x27/single-quote
   {
     break-if-!=
@@ -931,7 +931,7 @@ fn quote-or-unquote-grapheme? g: grapheme -> _/eax: boolean {
   return 0/false
 }
 
-fn bracket-grapheme? g: grapheme -> _/eax: boolean {
+fn bracket-code-point-utf8? g: code-point-utf8 -> _/eax: boolean {
   compare g, 0x28/open-paren
   {
     break-if-!=
@@ -971,12 +971,12 @@ fn number-token? _self: (addr token) -> _/eax: boolean {
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
   rewind-stream in-data
-  var g/eax: grapheme <- read-grapheme in-data
+  var g/eax: code-point-utf8 <- read-code-point-utf8 in-data
   # if '-', read another
   {
     compare g, 0x2d/minus
     break-if-!=
-    g <- read-grapheme in-data
+    g <- read-code-point-utf8 in-data
   }
   {
     {
@@ -990,7 +990,7 @@ fn number-token? _self: (addr token) -> _/eax: boolean {
       compare done?, 0/false
     }
     break-if-!=
-    g <- read-grapheme in-data
+    g <- read-code-point-utf8 in-data
     loop
   }
   return 1/true
@@ -1008,8 +1008,8 @@ fn bracket-token? _self: (addr token) -> _/eax: boolean {
   var in-data-ah/eax: (addr handle stream byte) <- get self, text-data
   var in-data/eax: (addr stream byte) <- lookup *in-data-ah
   rewind-stream in-data
-  var g/eax: grapheme <- read-grapheme in-data
-  var result/eax: boolean <- bracket-grapheme? g
+  var g/eax: code-point-utf8 <- read-code-point-utf8 in-data
+  var result/eax: boolean <- bracket-code-point-utf8? g
   return result
 }
 
@@ -1055,7 +1055,7 @@ fn open-paren-token? _self: (addr token) -> _/eax: boolean {
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
   rewind-stream in-data
-  var g/eax: grapheme <- read-grapheme in-data
+  var g/eax: code-point-utf8 <- read-code-point-utf8 in-data
   compare g, 0x28/open-paren
   {
     break-if-!=
@@ -1071,7 +1071,7 @@ fn close-paren-token? _self: (addr token) -> _/eax: boolean {
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
   rewind-stream in-data
-  var g/eax: grapheme <- read-grapheme in-data
+  var g/eax: code-point-utf8 <- read-code-point-utf8 in-data
   compare g, 0x29/close-paren
   {
     break-if-!=
@@ -1087,7 +1087,7 @@ fn dot-token? _self: (addr token) -> _/eax: boolean {
   var _in-data/eax: (addr stream byte) <- lookup *in-data-ah
   var in-data/ecx: (addr stream byte) <- copy _in-data
   rewind-stream in-data
-  var g/eax: grapheme <- read-grapheme in-data
+  var g/eax: code-point-utf8 <- read-code-point-utf8 in-data
   compare g, 0x2e/dot
   {
     break-if-!=

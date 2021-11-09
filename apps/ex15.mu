@@ -32,13 +32,13 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var dummy/eax: int <-    draw-code-point-on-real-screen   0x61/a,                       0/x 0/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0300/combining-grave-accent,  0/x 0/y, 3/fg 0/bg
 
-  # below a grapheme with a descender, the accent uglily overlaps
+  # below a code-point-utf8 with a descender, the accent uglily overlaps
   #   https://en.wikipedia.org/wiki/Descender
   var dummy/eax: int <-    draw-code-point-on-real-screen   0x67/g,                       4/x 3/y, 3/fg 0/bg
   var dummy/eax: int <-    draw-code-point-on-real-screen   0x61/a,                       4/x 4/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0300/combining-grave-accent,  4/x 4/y, 3/fg 0/bg
 
-  # beside a grapheme with a descender, it becomes more obvious that monowidth fonts can't make baselines line up
+  # beside a code-point-utf8 with a descender, it becomes more obvious that monowidth fonts can't make baselines line up
   #   https://en.wikipedia.org/wiki/Baseline_(typography)
   var dummy/eax: int <-    draw-code-point-on-real-screen   0x67/g,                       8/x 3/y, 3/fg 0/bg
   var dummy/eax: int <-    draw-code-point-on-real-screen   0x61/a,                       9/x 3/y, 3/fg 0/bg
@@ -82,62 +82,62 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var dummy/eax: int <- draw-code-point-on-real-screen 0x0915/devanagari-letter-ka, 0x13/x 9/y, 3/fg 0/bg
   var dummy/eax: int <- overlay-code-point-on-real-screen 0x0903/devanagari-visarga, 0x13/x 9/y, 3/fg 0/bg
 
-  # render the same devanagari letters as a single stream of utf-8 graphemes rather than individual code-points.
+  # render the same devanagari letters as a single stream of utf-8 code-point-utf8s rather than individual code-points.
   var text-storage: (stream byte 0x200)
   var text/esi: (addr stream byte) <- address text-storage
-  var g/eax: grapheme <- to-grapheme 0x0915/devanagari-letter-ka
-  var ka/ecx: grapheme <- copy g
+  var g/eax: code-point-utf8 <- to-utf8 0x0915/devanagari-letter-ka
+  var ka/ecx: code-point-utf8 <- copy g
   # ka
-  write-grapheme text, ka
+  write-code-point-utf8 text, ka
   # kaa
-  write-grapheme text, ka
-  g <- to-grapheme 0x093e/devanagari-vowel-aa
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x093e/devanagari-vowel-aa
+  write-code-point-utf8 text, g
   # ki
-  write-grapheme text, ka
-  g <- to-grapheme 0x093f/devanagari-vowel-i
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x093f/devanagari-vowel-i
+  write-code-point-utf8 text, g
   # kee
-  write-grapheme text, ka
-  g <- to-grapheme 0x0940/devanagari-vowel-ii
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x0940/devanagari-vowel-ii
+  write-code-point-utf8 text, g
   # ku
-  write-grapheme text, ka
-  g <- to-grapheme 0x0941/devanagari-vowel-u
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x0941/devanagari-vowel-u
+  write-code-point-utf8 text, g
   # koo
-  write-grapheme text, ka
-  g <- to-grapheme 0x0942/devanagari-vowel-oo
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x0942/devanagari-vowel-oo
+  write-code-point-utf8 text, g
   # kay
-  write-grapheme text, ka
-  g <- to-grapheme 0x0947/devanagari-vowel-E
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x0947/devanagari-vowel-E
+  write-code-point-utf8 text, g
   # kai
-  write-grapheme text, ka
-  g <- to-grapheme 0x0948/devanagari-vowel-ai
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x0948/devanagari-vowel-ai
+  write-code-point-utf8 text, g
   # ko
-  write-grapheme text, ka
-  g <- to-grapheme 0x094b/devanagari-vowel-o
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x094b/devanagari-vowel-o
+  write-code-point-utf8 text, g
   # kow
-  write-grapheme text, ka
-  g <- to-grapheme 0x094f/devanagari-vowel-aw
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x094f/devanagari-vowel-aw
+  write-code-point-utf8 text, g
   # kan
-  write-grapheme text, ka
-  g <- to-grapheme 0x0902/devanagari-anusvara
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x0902/devanagari-anusvara
+  write-code-point-utf8 text, g
   # kaha
-  write-grapheme text, ka
-  g <- to-grapheme 0x0903/devanagari-visarga
-  write-grapheme text, g
+  write-code-point-utf8 text, ka
+  g <- to-utf8 0x0903/devanagari-visarga
+  write-code-point-utf8 text, g
   # render everything
   set-cursor-position screen, 4/x 0xe/y
   draw-stream-wrapping-right-then-down-from-cursor-over-full-screen screen, text, 3/fg 0/bg
 
-  # a stream of tamil graphemes (with interspersed spaces for clarity) that don't look the same in Mu
+  # a stream of tamil code-point-utf8s (with interspersed spaces for clarity) that don't look the same in Mu
   set-cursor-position 0, 4/x 0x12/y
   draw-text-wrapping-right-then-down-from-cursor-over-full-screen 0, "எ ஃ கு ", 3/fg 0/bg
   set-cursor-position 0, 4/x 0x13/y

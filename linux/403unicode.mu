@@ -1,31 +1,31 @@
 # Helpers for Unicode.
 #
-# Mu has no characters, only code points and graphemes.
+# Mu has no characters, only code points and code-point-utf8s.
 # Code points are the indivisible atoms of text streams.
 #   https://en.wikipedia.org/wiki/Code_point
 # Graphemes are the smallest self-contained unit of text.
 # Graphemes may consist of multiple code points.
 #
-# Mu graphemes are always represented in utf-8, and they are required to fit
+# Mu code-point-utf8s are always represented in utf-8, and they are required to fit
 # in 4 bytes.
 #
-# Mu doesn't currently support combining code points, or graphemes made of
+# Mu doesn't currently support combining code points, or code-point-utf8s made of
 # multiple code points. One day we will.
 # On Linux, we also don't currently support code points that translate into
-# multiple or wide graphemes. (In particular, Tab will never be supported.)
+# multiple or wide code-point-utf8s. (In particular, Tab will never be supported.)
 
 # transliterated from tb_utf8_unicode_to_char in https://github.com/nsf/termbox
 # https://wiki.tcl-lang.org/page/UTF%2D8+bit+by+bit explains the algorithm
-fn to-grapheme in: code-point -> _/eax: grapheme {
+fn to-utf8 in: code-point -> _/eax: code-point-utf8 {
   var c/eax: int <- copy in
   var num-trailers/ecx: int <- copy 0
   var first/edx: int <- copy 0
-  $to-grapheme:compute-length: {
+  $to-utf8:compute-length: {
     # single byte: just return it
     compare c, 0x7f
     {
       break-if->
-      var g/eax: grapheme <- copy c
+      var g/eax: code-point-utf8 <- copy c
       return g
     }
     # 2 bytes
@@ -34,7 +34,7 @@ fn to-grapheme in: code-point -> _/eax: grapheme {
       break-if->
       num-trailers <- copy 1
       first <- copy 0xc0
-      break $to-grapheme:compute-length
+      break $to-utf8:compute-length
     }
     # 3 bytes
     compare c, 0xffff
@@ -42,7 +42,7 @@ fn to-grapheme in: code-point -> _/eax: grapheme {
       break-if->
       num-trailers <- copy 2
       first <- copy 0xe0
-      break $to-grapheme:compute-length
+      break $to-utf8:compute-length
     }
     # 4 bytes
     compare c, 0x1fffff
@@ -50,7 +50,7 @@ fn to-grapheme in: code-point -> _/eax: grapheme {
       break-if->
       num-trailers <- copy 3
       first <- copy 0xf0
-      break $to-grapheme:compute-length
+      break $to-utf8:compute-length
     }
     # more than 4 bytes: unsupported
     # TODO: print to stderr
@@ -65,7 +65,7 @@ fn to-grapheme in: code-point -> _/eax: grapheme {
     }
   }
   # emit trailer bytes, 6 bits from 'in', first two bits '10'
-  var result/edi: grapheme <- copy 0
+  var result/edi: code-point-utf8 <- copy 0
   {
     compare num-trailers, 0
     break-if-<=
@@ -87,16 +87,16 @@ fn to-grapheme in: code-point -> _/eax: grapheme {
   return result
 }
 
-# single-byte code point have identical graphemes
-fn test-to-grapheme-single-byte {
+# single-byte code point have identical code-point-utf8s
+fn test-to-utf8-single-byte {
   var in-int/ecx: int <- copy 0
   {
     compare in-int, 0x7f
     break-if->
     var in/eax: code-point <- copy in-int
-    var out/eax: grapheme <- to-grapheme in
+    var out/eax: code-point-utf8 <- to-utf8 in
     var out-int/eax: int <- copy out
-    check-ints-equal out-int, in-int, "F - test-to-grapheme-single-byte"
+    check-ints-equal out-int, in-int, "F - test-to-utf8-single-byte"
     in-int <- increment
     loop
   }
@@ -104,55 +104,55 @@ fn test-to-grapheme-single-byte {
 
                                                               # byte       | byte      | byte      | byte
 # smallest 2-byte utf-8
-fn test-to-grapheme-two-bytes-min {
+fn test-to-utf8-two-bytes-min {
   var in/eax: code-point <- copy 0x80                         #                                 10     00-0000
-  var out/eax: grapheme <- to-grapheme in
+  var out/eax: code-point-utf8 <- to-utf8 in
   var out-int/eax: int <- copy out
-  check-ints-equal out-int, 0x80c2, "F - to-grapheme/2a"      #                         110 0-0010  10 00-0000
+  check-ints-equal out-int, 0x80c2, "F - to-utf8/2a"      #                         110 0-0010  10 00-0000
 }
 
 # largest 2-byte utf-8
-fn test-to-grapheme-two-bytes-max {
+fn test-to-utf8-two-bytes-max {
   var in/eax: code-point <- copy 0x7ff                        #                             1-1111     11-1111
-  var out/eax: grapheme <- to-grapheme in
+  var out/eax: code-point-utf8 <- to-utf8 in
   var out-int/eax: int <- copy out
-  check-ints-equal out-int, 0xbfdf, "F - to-grapheme/2b"      #                         110 1-1111  10 11-1111
+  check-ints-equal out-int, 0xbfdf, "F - to-utf8/2b"      #                         110 1-1111  10 11-1111
 }
 
 # smallest 3-byte utf-8
-fn test-to-grapheme-three-bytes-min {
+fn test-to-utf8-three-bytes-min {
   var in/eax: code-point <- copy 0x800                        #                            10-0000     00-0000
-  var out/eax: grapheme <- to-grapheme in
+  var out/eax: code-point-utf8 <- to-utf8 in
   var out-int/eax: int <- copy out
-  check-ints-equal out-int, 0x80a0e0, "F - to-grapheme/3a"    #              1110 0000  10 10-0000  10 00-0000
+  check-ints-equal out-int, 0x80a0e0, "F - to-utf8/3a"    #              1110 0000  10 10-0000  10 00-0000
 }
 
 # largest 3-byte utf-8
-fn test-to-grapheme-three-bytes-max {
+fn test-to-utf8-three-bytes-max {
   var in/eax: code-point <- copy 0xffff                       #                   1111     11-1111     11-1111
-  var out/eax: grapheme <- to-grapheme in
+  var out/eax: code-point-utf8 <- to-utf8 in
   var out-int/eax: int <- copy out
-  check-ints-equal out-int, 0xbfbfef, "F - to-grapheme/3b"    #              1110 1111  10 11-1111  10 11-1111
+  check-ints-equal out-int, 0xbfbfef, "F - to-utf8/3b"    #              1110 1111  10 11-1111  10 11-1111
 }
 
 # smallest 4-byte utf-8
-fn test-to-grapheme-four-bytes-min {
+fn test-to-utf8-four-bytes-min {
   var in/eax: code-point <- copy 0x10000                      #                 1-0000     00-0000     00-0000
-  var out/eax: grapheme <- to-grapheme in
+  var out/eax: code-point-utf8 <- to-utf8 in
   var out-int/eax: int <- copy out
-  check-ints-equal out-int, 0x808090f0, "F - to-grapheme/4a"  # 1111-0 000  10 01-0000  10 00-0000  10 00-0000
+  check-ints-equal out-int, 0x808090f0, "F - to-utf8/4a"  # 1111-0 000  10 01-0000  10 00-0000  10 00-0000
 }
 
 # largest 4-byte utf-8
-fn test-to-grapheme-four-bytes-max {
+fn test-to-utf8-four-bytes-max {
   var in/eax: code-point <- copy 0x1fffff                     #        111     11-1111     11-1111     11-1111
-  var out/eax: grapheme <- to-grapheme in
+  var out/eax: code-point-utf8 <- to-utf8 in
   var out-int/eax: int <- copy out
-  check-ints-equal out-int, 0xbfbfbff7, "F - to-grapheme/4b"  # 1111-0 111  10 11-1111  10 11-1111  10 11-1111
+  check-ints-equal out-int, 0xbfbfbff7, "F - to-utf8/4b"  # 1111-0 111  10 11-1111  10 11-1111  10 11-1111
 }
 
-# read the next grapheme from a stream of bytes
-fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
+# read the next code-point-utf8 from a stream of bytes
+fn read-code-point-utf8 in: (addr stream byte) -> _/eax: code-point-utf8 {
   # if at eof, return EOF
   {
     var eof?/eax: boolean <- stream-empty? in
@@ -162,18 +162,18 @@ fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
   }
   var c/eax: byte <- read-byte in
   var num-trailers/ecx: int <- copy 0
-  $read-grapheme:compute-length: {
+  $read-code-point-utf8:compute-length: {
     # single byte: just return it
     compare c, 0xc0
     {
       break-if->=
-      var g/eax: grapheme <- copy c
+      var g/eax: code-point-utf8 <- copy c
       return g
     }
     compare c, 0xfe
     {
       break-if-<
-      var g/eax: grapheme <- copy c
+      var g/eax: code-point-utf8 <- copy c
       return g
     }
     # 2 bytes
@@ -181,23 +181,23 @@ fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
     {
       break-if->=
       num-trailers <- copy 1
-      break $read-grapheme:compute-length
+      break $read-code-point-utf8:compute-length
     }
     # 3 bytes
     compare c, 0xf0
     {
       break-if->=
       num-trailers <- copy 2
-      break $read-grapheme:compute-length
+      break $read-code-point-utf8:compute-length
     }
     # 4 bytes
     compare c, 0xf8
     {
       break-if->=
       num-trailers <- copy 3
-      break $read-grapheme:compute-length
+      break $read-code-point-utf8:compute-length
     }
-$read-grapheme:abort: {
+$read-code-point-utf8:abort: {
       # TODO: print to stderr
       print-string-to-real-screen "utf-8 encodings larger than 4 bytes are not yet supported. First byte seen: "
       var n/eax: int <- copy c
@@ -208,7 +208,7 @@ $read-grapheme:abort: {
     }
   }
   # prepend trailer bytes
-  var result/edi: grapheme <- copy c
+  var result/edi: code-point-utf8 <- copy c
   var num-byte-shifts/edx: int <- copy 1
   {
     compare num-trailers, 0
@@ -225,48 +225,48 @@ $read-grapheme:abort: {
   return result
 }
 
-fn test-read-grapheme {
+fn test-read-code-point-utf8 {
   var s: (stream byte 0x30)
   var s2/ecx: (addr stream byte) <- address s
   write s2, "aΒc世d界e"
-  var c/eax: grapheme <- read-grapheme s2
+  var c/eax: code-point-utf8 <- read-code-point-utf8 s2
   var n/eax: int <- copy c
-  check-ints-equal n, 0x61, "F - test grapheme/0"
-  var c/eax: grapheme <- read-grapheme s2
+  check-ints-equal n, 0x61, "F - test code-point-utf8/0"
+  var c/eax: code-point-utf8 <- read-code-point-utf8 s2
   var n/eax: int <- copy c
-  check-ints-equal n, 0x92ce/greek-capital-letter-beta, "F - test grapheme/1"
-  var c/eax: grapheme <- read-grapheme s2
+  check-ints-equal n, 0x92ce/greek-capital-letter-beta, "F - test code-point-utf8/1"
+  var c/eax: code-point-utf8 <- read-code-point-utf8 s2
   var n/eax: int <- copy c
-  check-ints-equal n, 0x63, "F - test grapheme/2"
-  var c/eax: grapheme <- read-grapheme s2
+  check-ints-equal n, 0x63, "F - test code-point-utf8/2"
+  var c/eax: code-point-utf8 <- read-code-point-utf8 s2
   var n/eax: int <- copy c
-  check-ints-equal n, 0x96b8e4, "F - test grapheme/3"
-  var c/eax: grapheme <- read-grapheme s2
+  check-ints-equal n, 0x96b8e4, "F - test code-point-utf8/3"
+  var c/eax: code-point-utf8 <- read-code-point-utf8 s2
   var n/eax: int <- copy c
-  check-ints-equal n, 0x64, "F - test grapheme/4"
-  var c/eax: grapheme <- read-grapheme s2
+  check-ints-equal n, 0x64, "F - test code-point-utf8/4"
+  var c/eax: code-point-utf8 <- read-code-point-utf8 s2
   var n/eax: int <- copy c
-  check-ints-equal n, 0x8c95e7, "F - test grapheme/5"
-  var c/eax: grapheme <- read-grapheme s2
+  check-ints-equal n, 0x8c95e7, "F - test code-point-utf8/5"
+  var c/eax: code-point-utf8 <- read-code-point-utf8 s2
   var n/eax: int <- copy c
-  check-ints-equal n, 0x65, "F - test grapheme/6"
+  check-ints-equal n, 0x65, "F - test code-point-utf8/6"
 }
 
-fn read-grapheme-buffered in: (addr buffered-file) -> _/eax: grapheme {
+fn read-code-point-utf8-buffered in: (addr buffered-file) -> _/eax: code-point-utf8 {
   var c/eax: byte <- read-byte-buffered in
   var num-trailers/ecx: int <- copy 0
-  $read-grapheme-buffered:compute-length: {
+  $read-code-point-utf8-buffered:compute-length: {
     # single byte: just return it
     compare c, 0xc0
     {
       break-if->=
-      var g/eax: grapheme <- copy c
+      var g/eax: code-point-utf8 <- copy c
       return g
     }
     compare c, 0xfe
     {
       break-if-<
-      var g/eax: grapheme <- copy c
+      var g/eax: code-point-utf8 <- copy c
       return g
     }
     # 2 bytes
@@ -274,23 +274,23 @@ fn read-grapheme-buffered in: (addr buffered-file) -> _/eax: grapheme {
     {
       break-if->=
       num-trailers <- copy 1
-      break $read-grapheme-buffered:compute-length
+      break $read-code-point-utf8-buffered:compute-length
     }
     # 3 bytes
     compare c, 0xf0
     {
       break-if->=
       num-trailers <- copy 2
-      break $read-grapheme-buffered:compute-length
+      break $read-code-point-utf8-buffered:compute-length
     }
     # 4 bytes
     compare c, 0xf8
     {
       break-if->=
       num-trailers <- copy 3
-      break $read-grapheme-buffered:compute-length
+      break $read-code-point-utf8-buffered:compute-length
     }
-$read-grapheme-buffered:abort: {
+$read-code-point-utf8-buffered:abort: {
       # TODO: print to stderr
       print-string-to-real-screen "utf-8 encodings larger than 4 bytes are not supported. First byte seen: "
       var n/eax: int <- copy c
@@ -301,7 +301,7 @@ $read-grapheme-buffered:abort: {
     }
   }
   # prepend trailer bytes
-  var result/edi: grapheme <- copy c
+  var result/edi: code-point-utf8 <- copy c
   var num-byte-shifts/edx: int <- copy 1
   {
     compare num-trailers, 0
@@ -364,23 +364,23 @@ fn test-shift-left-bytes-5 {
   check-ints-equal result, 0, "F - shift-left-bytes >4"
 }
 
-# write a grapheme to a stream of bytes
+# write a code-point-utf8 to a stream of bytes
 # this is like write-to-stream, except we skip leading 0 bytes
-fn write-grapheme out: (addr stream byte), g: grapheme {
-$write-grapheme:body: {
+fn write-code-point-utf8 out: (addr stream byte), g: code-point-utf8 {
+$write-code-point-utf8:body: {
   var c/eax: int <- copy g
   append-byte out, c  # first byte is always written
   c <- shift-right 8
   compare c, 0
-  break-if-= $write-grapheme:body
+  break-if-= $write-code-point-utf8:body
   append-byte out, c
   c <- shift-right 8
   compare c, 0
-  break-if-= $write-grapheme:body
+  break-if-= $write-code-point-utf8:body
   append-byte out, c
   c <- shift-right 8
   compare c, 0
-  break-if-= $write-grapheme:body
+  break-if-= $write-code-point-utf8:body
   append-byte out, c
 }
 }

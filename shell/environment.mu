@@ -2,7 +2,7 @@
 #
 # vim:textwidth&
 # It would be nice for tests to use a narrower screen than the standard 0x80 of
-# 1024 pixels with 8px-wide graphemes. But it complicates rendering logic to
+# 1024 pixels with 8px-wide code-point-utf8s. But it complicates rendering logic to
 # make width configurable, so we just use longer lines than usual.
 
 type environment {
@@ -93,7 +93,7 @@ fn type-in self: (addr environment), screen: (addr screen), keys: (addr array by
     var done?/eax: boolean <- stream-empty? input-stream
     compare done?, 0/false
     break-if-!=
-    var key/eax: grapheme <- read-grapheme input-stream
+    var key/eax: code-point-utf8 <- read-code-point-utf8 input-stream
     edit-environment self, key, 0/no-disk
     render-environment screen, self
     loop
@@ -145,7 +145,7 @@ fn render-environment screen: (addr screen), _self: (addr environment) {
   render-sandbox-menu screen, sandbox
 }
 
-fn edit-environment _self: (addr environment), key: grapheme, data-disk: (addr disk) {
+fn edit-environment _self: (addr environment), key: code-point-utf8, data-disk: (addr disk) {
   var self/esi: (addr environment) <- copy _self
   var globals/edi: (addr global-table) <- get self, globals
   var sandbox/ecx: (addr sandbox) <- get self, sandbox

@@ -230,7 +230,7 @@ fn render-globals-menu screen: (addr screen), _self: (addr global-table) {
   draw-text-rightward-from-cursor screen, " >>  ", width, 7/fg, 0xc5/bg=blue-bg
 }
 
-fn edit-globals _self: (addr global-table), key: grapheme {
+fn edit-globals _self: (addr global-table), key: code-point-utf8 {
   var self/esi: (addr global-table) <- copy _self
   # ctrl-s
   {

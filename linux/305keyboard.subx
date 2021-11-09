@@ -121,15 +121,15 @@ $enable-keyboard-type-mode:end:
 
 # read keys or escapes up to 4 bytes
 #
-# fun fact: terminal escapes and graphemes in utf-8 don't conflict!
-# - in graphemes all but the first/lowest byte will have a 1 in the MSB (be
+# fun fact: terminal escapes and code-point-utf8s in utf-8 don't conflict!
+# - in code-point-utf8s all but the first/lowest byte will have a 1 in the MSB (be
 #   greater than 0x7f)
 # - in escapes every byte will have a 0 in the MSB
 # the two categories overlap only when the first/lowest byte is 0x1b or 'esc'
 #
 # Only use this in immediate mode; in type (typewriter) mode 4 bytes may get
 # parts of multiple keys.
-read-key-from-real-keyboard:  # -> result/eax: grapheme
+read-key-from-real-keyboard:  # -> result/eax: code-point-utf8
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp

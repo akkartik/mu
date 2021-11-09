@@ -312,8 +312,8 @@ fn tokenize-infix _sym-ah: (addr handle cell), trace: (addr trace) {
   var buffer/edi: (addr gap-buffer) <- address buffer-storage
   initialize-gap-buffer buffer, 0x40/max-symbol-size
   # scan for first non-$
-  var g/eax: grapheme <- read-grapheme sym-data
-  add-grapheme-at-gap buffer, g
+  var g/eax: code-point-utf8 <- read-code-point-utf8 sym-data
+  add-code-point-utf8-at-gap buffer, g
   {
     compare g, 0x24/dollar
     break-if-!=
@@ -323,28 +323,28 @@ fn tokenize-infix _sym-ah: (addr handle cell), trace: (addr trace) {
       break-if-=
       return  # symbol is all '$'s; do nothing
     }
-    g <- read-grapheme sym-data
-    add-grapheme-at-gap buffer, g
+    g <- read-code-point-utf8 sym-data
+    add-code-point-utf8-at-gap buffer, g
     loop
   }
   var tokenization-needed?: boolean
-  var _operator-so-far?/eax: boolean <- operator-grapheme? g
+  var _operator-so-far?/eax: boolean <- operator-code-point-utf8? g
   var operator-so-far?/ecx: boolean <- copy _operator-so-far?
   {
     var done?/eax: boolean <- stream-empty? sym-data
     compare done?, 0/false
     break-if-!=
-    var g/eax: grapheme <- read-grapheme sym-data
+    var g/eax: code-point-utf8 <- read-code-point-utf8 sym-data
     {
-      var curr-operator?/eax: boolean <- operator-grapheme? g
+      var curr-operator?/eax: boolean <- operator-code-point-utf8? g
       compare curr-operator?, operator-so-far?
       break-if-=
       # state change; insert a space
-      add-grapheme-at-gap buffer, 0x20/space
+      add-code-point-utf8-at-gap buffer, 0x20/space
       operator-so-far? <- copy curr-operator?
       copy-to tokenization-needed?, 1/true
     }
-    add-grapheme-at-gap buffer, g
+    add-code-point-utf8-at-gap buffer, g
     loop
   }
   compare tokenization-needed?, 0/false
@@ -406,7 +406,7 @@ fn test-infix {
 
 # helpers
 
-# return true if x is composed entirely of operator graphemes, optionally prefixed with some '$'s
+# return true if x is composed entirely of operator code-point-utf8s, optionally prefixed with some '$'s
 # some operator, some non-operator => pre-tokenized symbol; return false
 # all '$'s => return false
 fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
@@ -421,7 +421,7 @@ fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
   var _x-data/eax: (addr stream byte) <- lookup *x-data-ah
   var x-data/esi: (addr stream byte) <- copy _x-data
   rewind-stream x-data
-  var g/eax: grapheme <- read-grapheme x-data
+  var g/eax: code-point-utf8 <- read-code-point-utf8 x-data
   # special case: '$' is reserved for gensyms, and can work with either
   # operator or non-operator symbols.
   {
@@ -434,12 +434,12 @@ fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
       # '$', '$$', '$$$', etc. are regular symbols
       return 0/false
     }
-    g <- read-grapheme x-data
+    g <- read-code-point-utf8 x-data
     loop
   }
   {
     {
-      var result/eax: boolean <- operator-grapheme? g
+      var result/eax: boolean <- operator-code-point-utf8? g
       compare result, 0/false
       break-if-!=
       return 0/false
@@ -449,13 +449,13 @@ fn operator-symbol? _x: (addr cell) -> _/eax: boolean {
       compare done?, 0/false
     }
     break-if-!=
-    g <- read-grapheme x-data
+    g <- read-code-point-utf8 x-data
     loop
   }
   return 1/true
 }
 
-fn operator-grapheme? g: grapheme -> _/eax: boolean {
+fn operator-code-point-utf8? g: code-point-utf8 -> _/eax: boolean {
   # '$' is special and can be in either a symbol or operator; here we treat it as a symbol
   compare g, 0x25/percent
   {

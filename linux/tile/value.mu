@@ -90,15 +90,15 @@ fn render-number screen: (addr screen), val: float, top-level?: boolean {
     fg <- copy 0
   }
   start-color screen, fg, bg
-  print-grapheme screen, 0x20/space
+  print-code-point-utf8 screen, 0x20/space
   print-float-decimal-approximate screen, val, 3
-  print-grapheme screen, 0x20/space
+  print-code-point-utf8 screen, 0x20/space
 }
 
 fn render-array-at screen: (addr screen), row: int, col: int, _a: (addr array value) {
   start-color screen, 0xf2, 7
   # don't surround in spaces
-  print-grapheme screen, 0x5b/[
+  print-code-point-utf8 screen, 0x5b/[
   increment col
   var a/esi: (addr array value) <- copy _a
   var max/ecx: int <- length a
@@ -122,7 +122,7 @@ fn render-array-at screen: (addr screen), row: int, col: int, _a: (addr array va
     i <- increment
     loop
   }
-  print-grapheme screen, 0x5d/]
+  print-code-point-utf8 screen, 0x5d/]
 }
 
 fn render-screen screen: (addr screen), row: int, col: int, _target-screen: (addr screen) {
@@ -179,13 +179,13 @@ fn print-screen-cell-of-fake-screen screen: (addr screen), _target: (addr screen
     start-blinking screen
     start-color screen, 0, 1
   }
-  var g/eax: grapheme <- screen-grapheme-at target, row, col
+  var g/eax: code-point-utf8 <- screen-code-point-utf8-at target, row, col
   {
     compare g, 0
     break-if-!=
     g <- copy 0x20/space
   }
-  print-grapheme screen, g
+  print-code-point-utf8 screen, g
   reset-formatting screen
 }
 

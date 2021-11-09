@@ -37,7 +37,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
     # process a single keystroke
     $main:input: {
       var key/eax: byte <- read-key keyboard
-      var key/eax: grapheme <- copy key
+      var key/eax: code-point-utf8 <- copy key
       compare key, 0
       loop-if-=
       # tab = switch cursor between input areas

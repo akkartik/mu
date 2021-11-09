@@ -113,8 +113,8 @@ sig skip-until-close-paren line: (addr stream byte)
 #sig skip-until-close-paren-in-slice curr: (addr byte), end: (addr byte) -> _/eax: (addr byte)
 sig write-stream-data f: (addr buffered-file), s: (addr stream byte)
 sig write-int32-decimal out: (addr stream byte), n: int
-sig decimal-digit? c: grapheme -> _/eax: boolean
-sig to-decimal-digit in: grapheme -> _/eax: int
+sig decimal-digit? c: code-point-utf8 -> _/eax: boolean
+sig to-decimal-digit in: code-point-utf8 -> _/eax: int
 # bad name alert
 # next-word really tokenizes
 # next-raw-word really reads whitespace-separated words
@@ -159,7 +159,7 @@ sig move-cursor-on-real-screen row: int, column: int
 sig print-string-to-real-screen s: (addr array byte)
 sig print-slice-to-real-screen s: (addr slice)
 sig print-stream-to-real-screen s: (addr stream byte)
-sig print-grapheme-to-real-screen c: grapheme
+sig print-code-point-utf8-to-real-screen c: code-point-utf8
 sig print-int32-hex-to-real-screen n: int
 sig print-int32-hex-bits-to-real-screen n: int, bits: int
 sig print-int32-decimal-to-real-screen n: int
@@ -174,7 +174,7 @@ sig hide-cursor-on-real-screen
 sig show-cursor-on-real-screen
 sig enable-keyboard-immediate-mode
 sig enable-keyboard-type-mode
-sig read-key-from-real-keyboard -> _/eax: grapheme
+sig read-key-from-real-keyboard -> _/eax: code-point-utf8
 sig read-line-from-real-keyboard out: (addr stream byte)
 sig open filename: (addr array byte), write?: boolean, out: (addr handle buffered-file)
 sig populate-buffered-file-containing contents: (addr array byte), out: (addr handle buffered-file)

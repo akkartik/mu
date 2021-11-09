@@ -172,7 +172,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  key", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, ": keyboard -> grapheme?", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": keyboard -> code-point-utf8?", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "streams", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
@@ -183,7 +183,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  write", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, ": stream grapheme -> stream", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": stream code-point-utf8 -> stream", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  rewind clear", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
@@ -191,7 +191,7 @@ fn render-primitives screen: (addr screen), xmin: int, xmax: int, ymax: int {
   y <- increment
   var tmpx/eax: int <- copy xmin
   tmpx <- draw-text-rightward screen, "  read", tmpx, left-max, y, 0x2a/fg=orange, 0xdc/bg=green-bg
-  tmpx <- draw-text-rightward screen, ": stream -> grapheme", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
+  tmpx <- draw-text-rightward screen, ": stream -> code-point-utf8", tmpx, left-max, y, 7/fg=grey, 0xdc/bg=green-bg
 }
 
 fn primitive-global? _x: (addr global) -> _/eax: boolean {
@@ -3056,7 +3056,7 @@ fn wait-for-key keyboard: (addr gap-buffer) -> _/eax: int {
     return result
   }
   # otherwise read from fake keyboard
-  var g/eax: grapheme <- read-from-gap-buffer keyboard
+  var g/eax: code-point-utf8 <- read-from-gap-buffer keyboard
   var result/eax: int <- copy g
   return result
 }
@@ -3121,14 +3121,14 @@ fn apply-write _args-ah: (addr handle cell), out: (addr handle cell), trace: (ad
     var second-type/eax: (addr int) <- get second, type
     compare *second-type, 1/number
     break-if-=
-    error trace, "second arg for 'write' is not a number/grapheme"
+    error trace, "second arg for 'write' is not a number/code-point-utf8"
     return
   }
   var second-value/eax: (addr float) <- get second, number-data
   var x-float/xmm0: float <- copy *second-value
   var x/eax: int <- convert x-float
-  var x-grapheme/eax: grapheme <- copy x
-  write-grapheme stream-data, x-grapheme
+  var x-code-point-utf8/eax: code-point-utf8 <- copy x
+  write-code-point-utf8 stream-data, x-code-point-utf8
   # return the stream
   copy-object first-ah, out
 }
@@ -3202,8 +3202,8 @@ fn apply-read _args-ah: (addr handle cell), out: (addr handle cell), trace: (add
   var _stream-data/eax: (addr stream byte) <- lookup *stream-data-ah
   var stream-data/ebx: (addr stream byte) <- copy _stream-data
 #?   rewind-stream stream-data
-  var result-grapheme/eax: grapheme <- read-grapheme stream-data
-  var result/eax: int <- copy result-grapheme
+  var result-code-point-utf8/eax: code-point-utf8 <- read-code-point-utf8 stream-data
+  var result/eax: int <- copy result-code-point-utf8
   new-integer out, result
 }
 
