@@ -297,6 +297,33 @@ fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
   return result
 }
 
+fn test-read-grapheme {
+  var s: (stream byte 0x30)
+  var s2/ecx: (addr stream byte) <- address s
+  write s2, "aΒc世d界e"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x61, "F - test grapheme/0"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x92ce/greek-capital-letter-beta, "F - test grapheme/1"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x63, "F - test grapheme/2"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x96b8e4, "F - test grapheme/3"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x64, "F - test grapheme/4"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x8c95e7, "F - test grapheme/5"
+  var c/eax: grapheme <- read-grapheme s2
+  var n/eax: int <- copy c
+  check-ints-equal n, 0x65, "F - test grapheme/6"
+}
+
 fn grapheme-length g: grapheme -> _/edx: int {
   {
     compare g, 0xff
@@ -330,6 +357,36 @@ fn shift-left-bytes n: int, k: int -> _/eax: int {
     loop
   }
   return result
+}
+
+fn test-shift-left-bytes-0 {
+  var result/eax: int <- shift-left-bytes 1, 0
+  check-ints-equal result, 1, "F - shift-left-bytes 0"
+}
+
+fn test-shift-left-bytes-1 {
+  var result/eax: int <- shift-left-bytes 1, 1
+  check-ints-equal result, 0x100, "F - shift-left-bytes 1"
+}
+
+fn test-shift-left-bytes-2 {
+  var result/eax: int <- shift-left-bytes 1, 2
+  check-ints-equal result, 0x10000, "F - shift-left-bytes 2"
+}
+
+fn test-shift-left-bytes-3 {
+  var result/eax: int <- shift-left-bytes 1, 3
+  check-ints-equal result, 0x1000000, "F - shift-left-bytes 3"
+}
+
+fn test-shift-left-bytes-4 {
+  var result/eax: int <- shift-left-bytes 1, 4
+  check-ints-equal result, 0, "F - shift-left-bytes 4"
+}
+
+fn test-shift-left-bytes-5 {
+  var result/eax: int <- shift-left-bytes 1, 5
+  check-ints-equal result, 0, "F - shift-left-bytes >4"
 }
 
 # write a grapheme to a stream of bytes
