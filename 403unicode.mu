@@ -10,9 +10,7 @@
 # in 4 bytes. (This can be confusing if you focus just on ASCII, where Mu's
 # graphemes and code-points are identical.)
 #
-# Mu doesn't currently support combining code points, or graphemes made of
-# multiple code points. One day we will.
-#   https://en.wikipedia.org/wiki/Combining_character
+# Mu doesn't yet support graphemes consisting of multiple code points.
 
 fn test-unicode-serialization-and-deserialization {
   var i/ebx: int <- copy 0
