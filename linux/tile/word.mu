@@ -58,12 +58,12 @@ fn move-word-contents _src-ah: (addr handle word), _dest-ah: (addr handle word) 
   cursor-to-start src
   var src-data-ah/eax: (addr handle gap-buffer) <- get src, scalar-data
   var src-data/eax: (addr gap-buffer) <- lookup *src-data-ah
-  var src-stack/ecx: (addr code-point-utf8-stack) <- get src-data, right
+  var src-stack/ecx: (addr grapheme-stack) <- get src-data, right
   {
-    var done?/eax: boolean <- code-point-utf8-stack-empty? src-stack
+    var done?/eax: boolean <- grapheme-stack-empty? src-stack
     compare done?, 0/false
     break-if-!=
-    var g/eax: code-point-utf8 <- pop-code-point-utf8-stack src-stack
+    var g/eax: code-point-utf8 <- pop-grapheme-stack src-stack
 #?     print-code-point-utf8 0, g
 #?     print-string 0, "\n"
     add-code-point-utf8-to-word dest, g
@@ -79,7 +79,7 @@ fn copy-word-contents-before-cursor _src-ah: (addr handle word), _dest-ah: (addr
   var src/eax: (addr word) <- lookup *src-ah
   var src-data-ah/eax: (addr handle gap-buffer) <- get src, scalar-data
   var src-data/eax: (addr gap-buffer) <- lookup *src-data-ah
-  var src-stack/ecx: (addr code-point-utf8-stack) <- get src-data, left
+  var src-stack/ecx: (addr grapheme-stack) <- get src-data, left
   var src-stack-data-ah/eax: (addr handle array code-point-utf8) <- get src-stack, data
   var _src-stack-data/eax: (addr array code-point-utf8) <- lookup *src-stack-data-ah
   var src-stack-data/edx: (addr array code-point-utf8) <- copy _src-stack-data

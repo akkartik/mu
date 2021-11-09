@@ -242,22 +242,22 @@ sig slide-down _a: (addr array int), start: int, end: int, target: int
 sig find-slide-down-slot-in-array _a: (addr array int), _val: int -> _/ecx: int
 sig check-slide-up before: (addr array byte), start: int, end: int, target: int, after: (addr array byte), msg: (addr array byte)
 sig check-slide-down before: (addr array byte), start: int, end: int, target: int, after: (addr array byte), msg: (addr array byte)
-sig initialize-code-point-utf8-stack _self: (addr code-point-utf8-stack), n: int
-sig clear-code-point-utf8-stack _self: (addr code-point-utf8-stack)
-sig code-point-utf8-stack-empty? _self: (addr code-point-utf8-stack) -> _/eax: boolean
-sig code-point-utf8-stack-length _self: (addr code-point-utf8-stack) -> _/eax: int
-sig push-code-point-utf8-stack _self: (addr code-point-utf8-stack), _val: code-point-utf8
-sig pop-code-point-utf8-stack _self: (addr code-point-utf8-stack) -> _/eax: code-point-utf8
-sig copy-code-point-utf8-stack _src: (addr code-point-utf8-stack), dest: (addr code-point-utf8-stack)
-sig render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _self: (addr code-point-utf8-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int, color: int, background-color: int -> _/eax: int, _/ecx: int
-sig render-stack-from-bottom screen: (addr screen), self: (addr code-point-utf8-stack), x: int, y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int -> _/eax: int
-sig render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: (addr code-point-utf8-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int
-sig render-stack-from-top screen: (addr screen), self: (addr code-point-utf8-stack), x: int, y: int, render-cursor?: boolean -> _/eax: int
-sig get-matching-close-paren-index _self: (addr code-point-utf8-stack), render-cursor?: boolean -> _/edx: int
-sig get-matching-open-paren-index _self: (addr code-point-utf8-stack), control: boolean, depth: int -> _/edx: int
-sig prefix-match? _self: (addr code-point-utf8-stack), s: (addr stream byte) -> _/eax: boolean
-sig suffix-match? _self: (addr code-point-utf8-stack), s: (addr stream byte) -> _/eax: boolean
-sig code-point-utf8-stack-is-decimal-integer? _self: (addr code-point-utf8-stack) -> _/eax: boolean
+sig initialize-grapheme-stack _self: (addr grapheme-stack), n: int
+sig clear-grapheme-stack _self: (addr grapheme-stack)
+sig grapheme-stack-empty? _self: (addr grapheme-stack) -> _/eax: boolean
+sig grapheme-stack-length _self: (addr grapheme-stack) -> _/eax: int
+sig push-grapheme-stack _self: (addr grapheme-stack), _val: code-point-utf8
+sig pop-grapheme-stack _self: (addr grapheme-stack) -> _/eax: code-point-utf8
+sig copy-grapheme-stack _src: (addr grapheme-stack), dest: (addr grapheme-stack)
+sig render-stack-from-bottom-wrapping-right-then-down screen: (addr screen), _self: (addr grapheme-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int, color: int, background-color: int -> _/eax: int, _/ecx: int
+sig render-stack-from-bottom screen: (addr screen), self: (addr grapheme-stack), x: int, y: int, highlight-matching-open-paren?: boolean, open-paren-depth: int -> _/eax: int
+sig render-stack-from-top-wrapping-right-then-down screen: (addr screen), _self: (addr grapheme-stack), xmin: int, ymin: int, xmax: int, ymax: int, _x: int, _y: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int
+sig render-stack-from-top screen: (addr screen), self: (addr grapheme-stack), x: int, y: int, render-cursor?: boolean -> _/eax: int
+sig get-matching-close-paren-index _self: (addr grapheme-stack), render-cursor?: boolean -> _/edx: int
+sig get-matching-open-paren-index _self: (addr grapheme-stack), control: boolean, depth: int -> _/edx: int
+sig prefix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> _/eax: boolean
+sig suffix-match? _self: (addr grapheme-stack), s: (addr stream byte) -> _/eax: boolean
+sig grapheme-stack-is-decimal-integer? _self: (addr grapheme-stack) -> _/eax: boolean
 sig initialize-gap-buffer _self: (addr gap-buffer), capacity: int
 sig clear-gap-buffer _self: (addr gap-buffer)
 sig gap-buffer-empty? _self: (addr gap-buffer) -> _/eax: boolean
@@ -266,13 +266,13 @@ sig initialize-gap-buffer-with self: (addr gap-buffer), keys: (addr array byte)
 sig load-gap-buffer-from-stream self: (addr gap-buffer), in: (addr stream byte)
 sig emit-gap-buffer self: (addr gap-buffer), out: (addr stream byte)
 sig append-gap-buffer _self: (addr gap-buffer), out: (addr stream byte)
-sig emit-stack-from-bottom _self: (addr code-point-utf8-stack), out: (addr stream byte)
-sig emit-stack-from-top _self: (addr code-point-utf8-stack), out: (addr stream byte)
+sig emit-stack-from-bottom _self: (addr grapheme-stack), out: (addr stream byte)
+sig emit-stack-from-top _self: (addr grapheme-stack), out: (addr stream byte)
 sig word-at-gap _self: (addr gap-buffer), out: (addr stream byte)
 sig code-point-utf8-at-gap _self: (addr gap-buffer) -> _/eax: code-point-utf8
-sig top-most-word _self: (addr code-point-utf8-stack) -> _/eax: int
-sig emit-stack-from-index _self: (addr code-point-utf8-stack), start: int, out: (addr stream byte)
-sig emit-stack-to-index _self: (addr code-point-utf8-stack), end: int, out: (addr stream byte)
+sig top-most-word _self: (addr grapheme-stack) -> _/eax: int
+sig emit-stack-from-index _self: (addr grapheme-stack), start: int, out: (addr stream byte)
+sig emit-stack-to-index _self: (addr grapheme-stack), end: int, out: (addr stream byte)
 sig is-ascii-word-code-point-utf8? g: code-point-utf8 -> _/eax: boolean
 sig render-gap-buffer-wrapping-right-then-down screen: (addr screen), _gap: (addr gap-buffer), xmin: int, ymin: int, xmax: int, ymax: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int, _/ecx: int
 sig render-gap-buffer screen: (addr screen), gap: (addr gap-buffer), x: int, y: int, render-cursor?: boolean, color: int, background-color: int -> _/eax: int
