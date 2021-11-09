@@ -15,18 +15,18 @@ body { font-size:12pt; font-family: monospace; color: #000000; background-color:
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .PreProc { color: #c000c0; }
-.CommentedCode { color: #8a8a8a; }
-.muRegEcx { color: #870000; }
+.muRegEdx { color: #af5f00; }
 .Special { color: #ff6060; }
 .LineNr { }
+.Constant { color: #008787; }
+.muRegEbx { color: #5f00ff; }
 .muRegEsi { color: #005faf; }
 .muRegEdi { color: #00af00; }
-.Constant { color: #008787; }
-.muFunction { color: #af5f00; text-decoration: underline; }
+.muRegEcx { color: #870000; }
 .Delimiter { color: #c000c0; }
+.muFunction { color: #af5f00; text-decoration: underline; }
+.CommentedCode { color: #8a8a8a; }
 .muComment { color: #005faf; }
-.muRegEdx { color: #af5f00; }
-.muRegEbx { color: #5f00ff; }
 -->
 </style>
 
@@ -97,7 +97,7 @@ if ('onhashchange' in window) {
 <span id="L33" class="LineNr"> 33 </span>
 <span id="L34" class="LineNr"> 34 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L34'>main</a></span><span class="PreProc"> -&gt; </span>_/<span class="muRegEbx">ebx</span>: int <span class="Delimiter">{</span>
 <span id="L35" class="LineNr"> 35 </span>  <a href='../305keyboard.subx.html#L6'>enable-keyboard-immediate-mode</a>
-<span id="L36" class="LineNr"> 36 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0</span>  <span class="muComment"># lookahead</span>
+<span id="L36" class="LineNr"> 36 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0</span>  <span class="muComment"># lookahead</span>
 <span id="L37" class="LineNr"> 37 </span>  <span class="PreProc">var</span> n/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>  <span class="muComment"># result of each expression</span>
 <span id="L38" class="LineNr"> 38 </span>  <a href='../405screen.mu.html#L169'>print-string</a> <span class="Constant">0</span>/screen, <span class="Constant">&quot;press ctrl-c or ctrl-d to exit\n&quot;</span>
 <span id="L39" class="LineNr"> 39 </span>  <span class="muComment"># read-eval-print loop</span>
@@ -119,17 +119,17 @@ if ('onhashchange' in window) {
 <span id="L55" class="LineNr"> 55 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>
 <span id="L56" class="LineNr"> 56 </span><span class="Delimiter">}</span>
 <span id="L57" class="LineNr"> 57 </span>
-<span id="L58" class="LineNr"> 58 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L58'>simplify</a></span><span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: grapheme <span class="Delimiter">{</span>
+<span id="L58" class="LineNr"> 58 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L58'>simplify</a></span><span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Delimiter">{</span>
 <span id="L59" class="LineNr"> 59 </span>  <span class="muComment"># prime the pump</span>
-<span id="L60" class="LineNr"> 60 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: grapheme <span class="Special">&lt;-</span> <a href='arith.mu.html#L248'>get-char</a>
+<span id="L60" class="LineNr"> 60 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Special">&lt;-</span> <a href='arith.mu.html#L248'>get-char</a>
 <span id="L61" class="LineNr"> 61 </span>  <span class="muComment"># do it</span>
 <span id="L62" class="LineNr"> 62 </span>  <span class="PreProc">var</span> result/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L63" class="LineNr"> 63 </span>  result, look <span class="Special">&lt;-</span> <a href='arith.mu.html#L67'>expression</a> look
 <span id="L64" class="LineNr"> 64 </span>  <span class="PreProc">return</span> result, look
 <span id="L65" class="LineNr"> 65 </span><span class="Delimiter">}</span>
 <span id="L66" class="LineNr"> 66 </span>
-<span id="L67" class="LineNr"> 67 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L67'>expression</a></span> _look: grapheme<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: grapheme <span class="Delimiter">{</span>
-<span id="L68" class="LineNr"> 68 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: grapheme <span class="Special">&lt;-</span> copy _look
+<span id="L67" class="LineNr"> 67 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L67'>expression</a></span> _look: code-point-utf8<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Delimiter">{</span>
+<span id="L68" class="LineNr"> 68 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _look
 <span id="L69" class="LineNr"> 69 </span>  <span class="muComment"># read arg</span>
 <span id="L70" class="LineNr"> 70 </span>  <span class="PreProc">var</span> result/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L71" class="LineNr"> 71 </span>  result, look <span class="Special">&lt;-</span> <a href='arith.mu.html#L112'>term</a> look
@@ -142,7 +142,7 @@ if ('onhashchange' in window) {
 <span id="L78" class="LineNr"> 78 </span>      <span class="PreProc">break-if-=</span> $expression:<span class="PreProc">loop</span>
 <span id="L79" class="LineNr"> 79 </span>    <span class="Delimiter">}</span>
 <span id="L80" class="LineNr"> 80 </span>    <span class="muComment"># read operator</span>
-<span id="L81" class="LineNr"> 81 </span>    <span class="PreProc">var</span> op/<span class="muRegEcx">ecx</span>: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L81" class="LineNr"> 81 </span>    <span class="PreProc">var</span> op/<span class="muRegEcx">ecx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L82" class="LineNr"> 82 </span>    op, look <span class="Special">&lt;-</span> operator look
 <span id="L83" class="LineNr"> 83 </span>    <span class="muComment"># read next arg</span>
 <span id="L84" class="LineNr"> 84 </span>    <span class="PreProc">var</span> second/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
@@ -173,8 +173,8 @@ if ('onhashchange' in window) {
 <span id="L109" class="LineNr">109 </span>  <span class="PreProc">return</span> result, look
 <span id="L110" class="LineNr">110 </span><span class="Delimiter">}</span>
 <span id="L111" class="LineNr">111 </span>
-<span id="L112" class="LineNr">112 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L112'>term</a></span> _look: grapheme<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: grapheme <span class="Delimiter">{</span>
-<span id="L113" class="LineNr">113 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: grapheme <span class="Special">&lt;-</span> copy _look
+<span id="L112" class="LineNr">112 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L112'>term</a></span> _look: code-point-utf8<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Delimiter">{</span>
+<span id="L113" class="LineNr">113 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _look
 <span id="L114" class="LineNr">114 </span>  <span class="muComment"># read arg</span>
 <span id="L115" class="LineNr">115 </span>  look <span class="Special">&lt;-</span> <a href='arith.mu.html#L237'>skip-spaces</a> look
 <span id="L116" class="LineNr">116 </span>  <span class="PreProc">var</span> result/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
@@ -188,7 +188,7 @@ if ('onhashchange' in window) {
 <span id="L124" class="LineNr">124 </span>      <span class="PreProc">break-if-=</span> $term:<span class="PreProc">loop</span>
 <span id="L125" class="LineNr">125 </span>    <span class="Delimiter">}</span>
 <span id="L126" class="LineNr">126 </span>    <span class="muComment"># read operator</span>
-<span id="L127" class="LineNr">127 </span>    <span class="PreProc">var</span> op/<span class="muRegEcx">ecx</span>: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L127" class="LineNr">127 </span>    <span class="PreProc">var</span> op/<span class="muRegEcx">ecx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L128" class="LineNr">128 </span>    op, look <span class="Special">&lt;-</span> operator look
 <span id="L129" class="LineNr">129 </span>    <span class="muComment"># read next arg</span>
 <span id="L130" class="LineNr">130 </span>    <span class="PreProc">var</span> second/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
@@ -218,8 +218,8 @@ if ('onhashchange' in window) {
 <span id="L154" class="LineNr">154 </span>  <span class="PreProc">return</span> result, look
 <span id="L155" class="LineNr">155 </span><span class="Delimiter">}</span>
 <span id="L156" class="LineNr">156 </span>
-<span id="L157" class="LineNr">157 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L157'>factor</a></span> _look: grapheme<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: grapheme <span class="Delimiter">{</span>
-<span id="L158" class="LineNr">158 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: grapheme <span class="Special">&lt;-</span> copy _look  <span class="muComment"># should be a no-op</span>
+<span id="L157" class="LineNr">157 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L157'>factor</a></span> _look: code-point-utf8<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Delimiter">{</span>
+<span id="L158" class="LineNr">158 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _look  <span class="muComment"># should be a no-op</span>
 <span id="L159" class="LineNr">159 </span>  look <span class="Special">&lt;-</span> <a href='arith.mu.html#L237'>skip-spaces</a> look
 <span id="L160" class="LineNr">160 </span>  <span class="muComment"># if next char is not '(', parse a number</span>
 <span id="L161" class="LineNr">161 </span>  compare look, <span class="Constant">0x28</span>/open-paren
@@ -238,7 +238,7 @@ if ('onhashchange' in window) {
 <span id="L174" class="LineNr">174 </span>  <span class="PreProc">return</span> result, look
 <span id="L175" class="LineNr">175 </span><span class="Delimiter">}</span>
 <span id="L176" class="LineNr">176 </span>
-<span id="L177" class="LineNr">177 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L177'>mul-or-div?</a></span> c: grapheme<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
+<span id="L177" class="LineNr">177 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L177'>mul-or-div?</a></span> c: code-point-utf8<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
 <span id="L178" class="LineNr">178 </span>  compare c, <span class="Constant">0x2a</span>/*
 <span id="L179" class="LineNr">179 </span>  <span class="Delimiter">{</span>
 <span id="L180" class="LineNr">180 </span>    <span class="PreProc">break-if-!=</span>
@@ -252,7 +252,7 @@ if ('onhashchange' in window) {
 <span id="L188" class="LineNr">188 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>/false
 <span id="L189" class="LineNr">189 </span><span class="Delimiter">}</span>
 <span id="L190" class="LineNr">190 </span>
-<span id="L191" class="LineNr">191 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L191'>add-or-sub?</a></span> c: grapheme<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
+<span id="L191" class="LineNr">191 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L191'>add-or-sub?</a></span> c: code-point-utf8<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
 <span id="L192" class="LineNr">192 </span>  compare c, <span class="Constant">0x2b</span>/+
 <span id="L193" class="LineNr">193 </span>  <span class="Delimiter">{</span>
 <span id="L194" class="LineNr">194 </span>    <span class="PreProc">break-if-!=</span>
@@ -266,14 +266,14 @@ if ('onhashchange' in window) {
 <span id="L202" class="LineNr">202 </span>  <span class="PreProc">return</span> <span class="Constant">0</span>/false
 <span id="L203" class="LineNr">203 </span><span class="Delimiter">}</span>
 <span id="L204" class="LineNr">204 </span>
-<span id="L205" class="LineNr">205 </span><span class="PreProc">fn</span> <span class="muFunction">operator</span> _look: grapheme<span class="PreProc"> -&gt; </span>_/<span class="muRegEcx">ecx</span>: grapheme, _/<span class="muRegEsi">esi</span>: grapheme <span class="Delimiter">{</span>
-<span id="L206" class="LineNr">206 </span>  <span class="PreProc">var</span> op/<span class="muRegEcx">ecx</span>: grapheme <span class="Special">&lt;-</span> copy _look
-<span id="L207" class="LineNr">207 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: grapheme <span class="Special">&lt;-</span> <a href='arith.mu.html#L248'>get-char</a>
+<span id="L205" class="LineNr">205 </span><span class="PreProc">fn</span> <span class="muFunction">operator</span> _look: code-point-utf8<span class="PreProc"> -&gt; </span>_/<span class="muRegEcx">ecx</span>: code-point-utf8, _/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Delimiter">{</span>
+<span id="L206" class="LineNr">206 </span>  <span class="PreProc">var</span> op/<span class="muRegEcx">ecx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _look
+<span id="L207" class="LineNr">207 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Special">&lt;-</span> <a href='arith.mu.html#L248'>get-char</a>
 <span id="L208" class="LineNr">208 </span>  <span class="PreProc">return</span> op, look
 <span id="L209" class="LineNr">209 </span><span class="Delimiter">}</span>
 <span id="L210" class="LineNr">210 </span>
-<span id="L211" class="LineNr">211 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L211'>num</a></span> _look: grapheme<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: grapheme <span class="Delimiter">{</span>
-<span id="L212" class="LineNr">212 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: grapheme <span class="Special">&lt;-</span> copy _look
+<span id="L211" class="LineNr">211 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L211'>num</a></span> _look: code-point-utf8<span class="PreProc"> -&gt; </span>_/eax: int, _/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Delimiter">{</span>
+<span id="L212" class="LineNr">212 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _look
 <span id="L213" class="LineNr">213 </span>  <span class="PreProc">var</span> result/<span class="muRegEdi">edi</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L214" class="LineNr">214 </span>  <span class="Delimiter">{</span>
 <span id="L215" class="LineNr">215 </span>    <span class="PreProc">var</span> first-digit/eax: int <span class="Special">&lt;-</span> <a href='../126write-int-decimal.subx.html#L405'>to-decimal-digit</a> look
@@ -298,8 +298,8 @@ if ('onhashchange' in window) {
 <span id="L234" class="LineNr">234 </span>  <span class="PreProc">return</span> result, look
 <span id="L235" class="LineNr">235 </span><span class="Delimiter">}</span>
 <span id="L236" class="LineNr">236 </span>
-<span id="L237" class="LineNr">237 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L237'>skip-spaces</a></span> _look: grapheme<span class="PreProc"> -&gt; </span>_/<span class="muRegEsi">esi</span>: grapheme <span class="Delimiter">{</span>
-<span id="L238" class="LineNr">238 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: grapheme <span class="Special">&lt;-</span> copy _look  <span class="muComment"># should be a no-op</span>
+<span id="L237" class="LineNr">237 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L237'>skip-spaces</a></span> _look: code-point-utf8<span class="PreProc"> -&gt; </span>_/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Delimiter">{</span>
+<span id="L238" class="LineNr">238 </span>  <span class="PreProc">var</span> look/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _look  <span class="muComment"># should be a no-op</span>
 <span id="L239" class="LineNr">239 </span>  <span class="Delimiter">{</span>
 <span id="L240" class="LineNr">240 </span>    compare look, <span class="Constant">0x20</span>
 <span id="L241" class="LineNr">241 </span>    <span class="PreProc">break-if-!=</span>
@@ -309,9 +309,9 @@ if ('onhashchange' in window) {
 <span id="L245" class="LineNr">245 </span>  <span class="PreProc">return</span> look
 <span id="L246" class="LineNr">246 </span><span class="Delimiter">}</span>
 <span id="L247" class="LineNr">247 </span>
-<span id="L248" class="LineNr">248 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L248'>get-char</a></span><span class="PreProc"> -&gt; </span>_/<span class="muRegEsi">esi</span>: grapheme <span class="Delimiter">{</span>
-<span id="L249" class="LineNr">249 </span>  <span class="PreProc">var</span> look/eax: grapheme <span class="Special">&lt;-</span> <a href='../305keyboard.subx.html#L132'>read-key-from-real-keyboard</a>
-<span id="L250" class="LineNr">250 </span>  <a href='../304screen.subx.html#L161'>print-grapheme-to-real-screen</a> look
+<span id="L248" class="LineNr">248 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='arith.mu.html#L248'>get-char</a></span><span class="PreProc"> -&gt; </span>_/<span class="muRegEsi">esi</span>: code-point-utf8 <span class="Delimiter">{</span>
+<span id="L249" class="LineNr">249 </span>  <span class="PreProc">var</span> look/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='../305keyboard.subx.html#L132'>read-key-from-real-keyboard</a>
+<span id="L250" class="LineNr">250 </span>  <a href='../304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> look
 <span id="L251" class="LineNr">251 </span>  compare look, <span class="Constant">4</span>
 <span id="L252" class="LineNr">252 </span>  <span class="Delimiter">{</span>
 <span id="L253" class="LineNr">253 </span>    <span class="PreProc">break-if-!=</span>

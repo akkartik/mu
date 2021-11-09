@@ -15,18 +15,18 @@ body { font-size:12pt; font-family: monospace; color: #000000; background-color:
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .PreProc { color: #c000c0; }
-.CommentedCode { color: #8a8a8a; }
-.muRegEcx { color: #870000; }
 .muRegEdx { color: #af5f00; }
+.muRegEcx { color: #870000; }
 .LineNr { }
+.Constant { color: #008787; }
+.CommentedCode { color: #8a8a8a; }
 .muRegEsi { color: #005faf; }
 .muRegEdi { color: #00af00; }
-.Constant { color: #008787; }
+.muComment { color: #005faf; }
+.Delimiter { color: #c000c0; }
 .muFunction { color: #af5f00; text-decoration: underline; }
 .muRegEbx { color: #5f00ff; }
-.Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
-.muComment { color: #005faf; }
 -->
 </style>
 
@@ -122,15 +122,15 @@ if ('onhashchange' in window) {
 <span id="L58" class="LineNr"> 58 </span>  <a href='word.mu.html#L185'>cursor-to-start</a> src
 <span id="L59" class="LineNr"> 59 </span>  <span class="PreProc">var</span> src-data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, scalar-data
 <span id="L60" class="LineNr"> 60 </span>  <span class="PreProc">var</span> src-data/eax: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-data-ah
-<span id="L61" class="LineNr"> 61 </span>  <span class="PreProc">var</span> src-stack/<span class="muRegEcx">ecx</span>: (addr <a href='grapheme-stack.mu.html#L1'>grapheme-stack</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src-data, right
+<span id="L61" class="LineNr"> 61 </span>  <span class="PreProc">var</span> src-stack/<span class="muRegEcx">ecx</span>: (addr <a href='grapheme-stack.mu.html#L1'>code-point-utf8-stack</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src-data, right
 <span id="L62" class="LineNr"> 62 </span>  <span class="Delimiter">{</span>
-<span id="L63" class="LineNr"> 63 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='grapheme-stack.mu.html#L20'>grapheme-stack-empty?</a> src-stack
+<span id="L63" class="LineNr"> 63 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='grapheme-stack.mu.html#L20'>code-point-utf8-stack-empty?</a> src-stack
 <span id="L64" class="LineNr"> 64 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L65" class="LineNr"> 65 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L66" class="LineNr"> 66 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='grapheme-stack.mu.html#L43'>pop-grapheme-stack</a> src-stack
-<span id="L67" class="LineNr"> 67 </span><span class="CommentedCode">#?     print-grapheme 0, g</span>
+<span id="L66" class="LineNr"> 66 </span>    <span class="PreProc">var</span> g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='grapheme-stack.mu.html#L43'>pop-code-point-utf8-stack</a> src-stack
+<span id="L67" class="LineNr"> 67 </span><span class="CommentedCode">#?     print-code-point-utf8 0, g</span>
 <span id="L68" class="LineNr"> 68 </span><span class="CommentedCode">#?     print-string 0, &quot;\n&quot;</span>
-<span id="L69" class="LineNr"> 69 </span>    <a href='word.mu.html#L148'>add-grapheme-to-word</a> dest, g
+<span id="L69" class="LineNr"> 69 </span>    <a href='word.mu.html#L148'>add-code-point-utf8-to-word</a> dest, g
 <span id="L70" class="LineNr"> 70 </span>    <span class="PreProc">loop</span>
 <span id="L71" class="LineNr"> 71 </span>  <span class="Delimiter">}</span>
 <span id="L72" class="LineNr"> 72 </span><span class="Delimiter">}</span>
@@ -143,17 +143,17 @@ if ('onhashchange' in window) {
 <span id="L79" class="LineNr"> 79 </span>  <span class="PreProc">var</span> src/eax: (addr <a href='data.mu.html#L42'>word</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-ah
 <span id="L80" class="LineNr"> 80 </span>  <span class="PreProc">var</span> src-data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src, scalar-data
 <span id="L81" class="LineNr"> 81 </span>  <span class="PreProc">var</span> src-data/eax: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-data-ah
-<span id="L82" class="LineNr"> 82 </span>  <span class="PreProc">var</span> src-stack/<span class="muRegEcx">ecx</span>: (addr <a href='grapheme-stack.mu.html#L1'>grapheme-stack</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src-data, left
-<span id="L83" class="LineNr"> 83 </span>  <span class="PreProc">var</span> src-stack-data-ah/eax: (addr handle array grapheme) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src-stack, data
-<span id="L84" class="LineNr"> 84 </span>  <span class="PreProc">var</span> _src-stack-data/eax: (addr array grapheme) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-stack-data-ah
-<span id="L85" class="LineNr"> 85 </span>  <span class="PreProc">var</span> src-stack-data/<span class="muRegEdx">edx</span>: (addr array grapheme) <span class="Special">&lt;-</span> copy _src-stack-data
+<span id="L82" class="LineNr"> 82 </span>  <span class="PreProc">var</span> src-stack/<span class="muRegEcx">ecx</span>: (addr <a href='grapheme-stack.mu.html#L1'>code-point-utf8-stack</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src-data, left
+<span id="L83" class="LineNr"> 83 </span>  <span class="PreProc">var</span> src-stack-data-ah/eax: (addr handle array code-point-utf8) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src-stack, data
+<span id="L84" class="LineNr"> 84 </span>  <span class="PreProc">var</span> _src-stack-data/eax: (addr array code-point-utf8) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *src-stack-data-ah
+<span id="L85" class="LineNr"> 85 </span>  <span class="PreProc">var</span> src-stack-data/<span class="muRegEdx">edx</span>: (addr array code-point-utf8) <span class="Special">&lt;-</span> copy _src-stack-data
 <span id="L86" class="LineNr"> 86 </span>  <span class="PreProc">var</span> top-addr/<span class="muRegEcx">ecx</span>: (addr int) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> src-stack, <a href='../203stack.subx.html#L338'>top</a>
 <span id="L87" class="LineNr"> 87 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
 <span id="L88" class="LineNr"> 88 </span>  <span class="Delimiter">{</span>
 <span id="L89" class="LineNr"> 89 </span>    compare i, *top-addr
 <span id="L90" class="LineNr"> 90 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L91" class="LineNr"> 91 </span>    <span class="PreProc">var</span> g/<span class="muRegEdx">edx</span>: (addr grapheme) <span class="Special">&lt;-</span> index src-stack-data, i
-<span id="L92" class="LineNr"> 92 </span>    <a href='word.mu.html#L148'>add-grapheme-to-word</a> dest, *g
+<span id="L91" class="LineNr"> 91 </span>    <span class="PreProc">var</span> g/<span class="muRegEdx">edx</span>: (addr code-point-utf8) <span class="Special">&lt;-</span> index src-stack-data, i
+<span id="L92" class="LineNr"> 92 </span>    <a href='word.mu.html#L148'>add-code-point-utf8-to-word</a> dest, *g
 <span id="L93" class="LineNr"> 93 </span>    i <span class="Special">&lt;-</span> increment
 <span id="L94" class="LineNr"> 94 </span>    <span class="PreProc">loop</span>
 <span id="L95" class="LineNr"> 95 </span>  <span class="Delimiter">}</span>
@@ -193,27 +193,27 @@ if ('onhashchange' in window) {
 <span id="L129" class="LineNr">129 </span>  copy-object curr-ah, out  <span class="muComment"># modify 'out' right at the end, just in case it's same as 'in'</span>
 <span id="L130" class="LineNr">130 </span><span class="Delimiter">}</span>
 <span id="L131" class="LineNr">131 </span>
-<span id="L132" class="LineNr">132 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L132'>first-grapheme</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>)<span class="PreProc"> -&gt; </span>_/eax: grapheme <span class="Delimiter">{</span>
+<span id="L132" class="LineNr">132 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L132'>first-code-point-utf8</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>)<span class="PreProc"> -&gt; </span>_/eax: code-point-utf8 <span class="Delimiter">{</span>
 <span id="L133" class="LineNr">133 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='data.mu.html#L42'>word</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L134" class="LineNr">134 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> self, scalar-data
 <span id="L135" class="LineNr">135 </span>  <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *data-ah
-<span id="L136" class="LineNr">136 </span>  <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L177'>first-grapheme-in-gap-buffer</a> data
+<span id="L136" class="LineNr">136 </span>  <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L177'>first-code-point-utf8-in-gap-buffer</a> data
 <span id="L137" class="LineNr">137 </span>  <span class="PreProc">return</span> <a href='data.mu.html#L82'>result</a>
 <span id="L138" class="LineNr">138 </span><span class="Delimiter">}</span>
 <span id="L139" class="LineNr">139 </span>
-<span id="L140" class="LineNr">140 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L140'>grapheme-before-cursor</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>)<span class="PreProc"> -&gt; </span>_/eax: grapheme <span class="Delimiter">{</span>
+<span id="L140" class="LineNr">140 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L140'>code-point-utf8-before-cursor</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>)<span class="PreProc"> -&gt; </span>_/eax: code-point-utf8 <span class="Delimiter">{</span>
 <span id="L141" class="LineNr">141 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='data.mu.html#L42'>word</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L142" class="LineNr">142 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> self, scalar-data
 <span id="L143" class="LineNr">143 </span>  <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *data-ah
-<span id="L144" class="LineNr">144 </span>  <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L207'>grapheme-before-cursor-in-gap-buffer</a> data
+<span id="L144" class="LineNr">144 </span>  <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L207'>code-point-utf8-before-cursor-in-gap-buffer</a> data
 <span id="L145" class="LineNr">145 </span>  <span class="PreProc">return</span> <a href='data.mu.html#L82'>result</a>
 <span id="L146" class="LineNr">146 </span><span class="Delimiter">}</span>
 <span id="L147" class="LineNr">147 </span>
-<span id="L148" class="LineNr">148 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L148'>add-grapheme-to-word</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>), c: grapheme <span class="Delimiter">{</span>
+<span id="L148" class="LineNr">148 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L148'>add-code-point-utf8-to-word</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>), c: code-point-utf8 <span class="Delimiter">{</span>
 <span id="L149" class="LineNr">149 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='data.mu.html#L42'>word</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L150" class="LineNr">150 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> self, scalar-data
 <span id="L151" class="LineNr">151 </span>  <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *data-ah
-<span id="L152" class="LineNr">152 </span>  <a href='gap-buffer.mu.html#L103'>add-grapheme-at-gap</a> data, c
+<span id="L152" class="LineNr">152 </span>  <a href='gap-buffer.mu.html#L103'>add-code-point-utf8-at-gap</a> data, c
 <span id="L153" class="LineNr">153 </span><span class="Delimiter">}</span>
 <span id="L154" class="LineNr">154 </span>
 <span id="L155" class="LineNr">155 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L155'>cursor-at-start?</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>)<span class="PreProc"> -&gt; </span>_/eax: boolean <span class="Delimiter">{</span>
@@ -236,14 +236,14 @@ if ('onhashchange' in window) {
 <span id="L172" class="LineNr">172 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='data.mu.html#L42'>word</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L173" class="LineNr">173 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> self, scalar-data
 <span id="L174" class="LineNr">174 </span>  <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *data-ah
-<span id="L175" class="LineNr">175 </span>  <span class="PreProc">var</span> dummy/eax: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L153'>gap-left</a> data
+<span id="L175" class="LineNr">175 </span>  <span class="PreProc">var</span> dummy/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L153'>gap-left</a> data
 <span id="L176" class="LineNr">176 </span><span class="Delimiter">}</span>
 <span id="L177" class="LineNr">177 </span>
 <span id="L178" class="LineNr">178 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L178'>cursor-right</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>) <span class="Delimiter">{</span>
 <span id="L179" class="LineNr">179 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='data.mu.html#L42'>word</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L180" class="LineNr">180 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> self, scalar-data
 <span id="L181" class="LineNr">181 </span>  <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *data-ah
-<span id="L182" class="LineNr">182 </span>  <span class="PreProc">var</span> dummy/eax: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L139'>gap-right</a> data
+<span id="L182" class="LineNr">182 </span>  <span class="PreProc">var</span> dummy/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L139'>gap-right</a> data
 <span id="L183" class="LineNr">183 </span><span class="Delimiter">}</span>
 <span id="L184" class="LineNr">184 </span>
 <span id="L185" class="LineNr">185 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L185'>cursor-to-start</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>) <span class="Delimiter">{</span>
@@ -275,11 +275,11 @@ if ('onhashchange' in window) {
 <span id="L211" class="LineNr">211 </span>  <a href='gap-buffer.mu.html#L223'>delete-before-gap</a> data
 <span id="L212" class="LineNr">212 </span><span class="Delimiter">}</span>
 <span id="L213" class="LineNr">213 </span>
-<span id="L214" class="LineNr">214 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L214'>pop-after-cursor</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>)<span class="PreProc"> -&gt; </span>_/eax: grapheme <span class="Delimiter">{</span>
+<span id="L214" class="LineNr">214 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='word.mu.html#L214'>pop-after-cursor</a></span> _self: (addr <a href='data.mu.html#L42'>word</a>)<span class="PreProc"> -&gt; </span>_/eax: code-point-utf8 <span class="Delimiter">{</span>
 <span id="L215" class="LineNr">215 </span>  <span class="PreProc">var</span> self/<span class="muRegEsi">esi</span>: (addr <a href='data.mu.html#L42'>word</a>) <span class="Special">&lt;-</span> copy _self
 <span id="L216" class="LineNr">216 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> self, scalar-data
 <span id="L217" class="LineNr">217 </span>  <span class="PreProc">var</span> data/eax: (addr <a href='gap-buffer.mu.html#L1'>gap-buffer</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *data-ah
-<span id="L218" class="LineNr">218 </span>  <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: grapheme <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L229'>pop-after-gap</a> data
+<span id="L218" class="LineNr">218 </span>  <span class="PreProc">var</span> <a href='data.mu.html#L82'>result</a>/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='gap-buffer.mu.html#L229'>pop-after-gap</a> data
 <span id="L219" class="LineNr">219 </span>  <span class="PreProc">return</span> <a href='data.mu.html#L82'>result</a>
 <span id="L220" class="LineNr">220 </span><span class="Delimiter">}</span>
 <span id="L221" class="LineNr">221 </span>
@@ -617,14 +617,14 @@ if ('onhashchange' in window) {
 <span id="L553" class="LineNr">553 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> in-stream-a
 <span id="L554" class="LineNr">554 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L555" class="LineNr">555 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L556" class="LineNr">556 </span>    <span class="PreProc">var</span> _g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L158'>read-grapheme</a> in-stream-a
-<span id="L557" class="LineNr">557 </span>    <span class="PreProc">var</span> g/<span class="muRegEcx">ecx</span>: grapheme <span class="Special">&lt;-</span> copy _g
+<span id="L556" class="LineNr">556 </span>    <span class="PreProc">var</span> _g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L155'>read-code-point-utf8</a> in-stream-a
+<span id="L557" class="LineNr">557 </span>    <span class="PreProc">var</span> g/<span class="muRegEcx">ecx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _g
 <span id="L558" class="LineNr">558 </span>    <span class="muComment"># if not space, insert</span>
 <span id="L559" class="LineNr">559 </span>    compare g, <span class="Constant">0x20</span>/space
 <span id="L560" class="LineNr">560 </span>    <span class="Delimiter">{</span>
 <span id="L561" class="LineNr">561 </span>      <span class="PreProc">break-if-=</span>
 <span id="L562" class="LineNr">562 </span>      <span class="PreProc">var</span> cursor-word/eax: (addr <a href='data.mu.html#L42'>word</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *cursor-word-ah
-<span id="L563" class="LineNr">563 </span>      <a href='word.mu.html#L148'>add-grapheme-to-word</a> cursor-word, g
+<span id="L563" class="LineNr">563 </span>      <a href='word.mu.html#L148'>add-code-point-utf8-to-word</a> cursor-word, g
 <span id="L564" class="LineNr">564 </span>      <span class="PreProc">loop</span> $parse-words:<span class="PreProc">loop</span>
 <span id="L565" class="LineNr">565 </span>    <span class="Delimiter">}</span>
 <span id="L566" class="LineNr">566 </span>    <span class="muComment"># otherwise insert word after and move cursor to it</span>

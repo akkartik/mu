@@ -16,18 +16,18 @@ a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .LineNr { }
 .Delimiter { color: #c000c0; }
-.muRegEcx { color: #870000; }
-.muRegEdx { color: #af5f00; }
+.muFunction { color: #af5f00; text-decoration: underline; }
 .muRegEbx { color: #5f00ff; }
 .muRegEsi { color: #005faf; }
 .muRegEdi { color: #00af00; }
 .Constant { color: #008787; }
 .Special { color: #ff6060; }
 .PreProc { color: #c000c0; }
-.muFunction { color: #af5f00; text-decoration: underline; }
+.CommentedCode { color: #8a8a8a; }
 .muTest { color: #5f8700; }
 .muComment { color: #005faf; }
-.CommentedCode { color: #8a8a8a; }
+.muRegEcx { color: #870000; }
+.muRegEdx { color: #af5f00; }
 -->
 </style>
 
@@ -176,10 +176,10 @@ if ('onhashchange' in window) {
 <span id="L111" class="LineNr">111 </span>  compare idx, <span class="Constant">0</span>
 <span id="L112" class="LineNr">112 </span>  <span class="Delimiter">{</span>
 <span id="L113" class="LineNr">113 </span>    <span class="PreProc">break-if-&gt;=</span>
-<span id="L114" class="LineNr">114 </span>    <span class="PreProc">var</span> space/<span class="muRegEcx">ecx</span>: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x20</span>
+<span id="L114" class="LineNr">114 </span>    <span class="PreProc">var</span> space/<span class="muRegEcx">ecx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x20</span>
 <span id="L115" class="LineNr">115 </span>    <span class="PreProc">var</span> screen-ah/<span class="muRegEdi">edi</span>: (addr handle <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> self, <a href='../405screen.mu.html#L9'>screen</a>
 <span id="L116" class="LineNr">116 </span>    <span class="PreProc">var</span> <a href='../405screen.mu.html#L9'>screen</a>/eax: (addr <a href='../405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> <a href='../120allocate.subx.html#L258'>lookup</a> *screen-ah
-<span id="L117" class="LineNr">117 </span>    <a href='../405screen.mu.html#L214'>print-grapheme</a> <a href='../405screen.mu.html#L9'>screen</a>, space
+<span id="L117" class="LineNr">117 </span>    <a href='../405screen.mu.html#L214'>print-code-point-utf8</a> <a href='../405screen.mu.html#L9'>screen</a>, space
 <span id="L118" class="LineNr">118 </span>    <span class="PreProc">return</span>
 <span id="L119" class="LineNr">119 </span>  <span class="Delimiter">}</span>
 <span id="L120" class="LineNr">120 </span>  <span class="muComment"># otherwise print the appropriate screen-cell</span>
@@ -221,9 +221,9 @@ if ('onhashchange' in window) {
 <span id="L156" class="LineNr">156 </span>    <span class="PreProc">break-if-=</span>
 <span id="L157" class="LineNr">157 </span>    <a href='../405screen.mu.html#L583'>start-blinking</a> <a href='../405screen.mu.html#L9'>screen</a>
 <span id="L158" class="LineNr">158 </span>  <span class="Delimiter">}</span>
-<span id="L159" class="LineNr">159 </span>  <span class="PreProc">var</span> g/eax: (addr grapheme) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> cell, data
-<span id="L160" class="LineNr">160 </span>  <a href='../405screen.mu.html#L214'>print-grapheme</a> <a href='../405screen.mu.html#L9'>screen</a>, *g
-<span id="L161" class="LineNr">161 </span><span class="CommentedCode">#?   var g2/eax: grapheme &lt;- copy *g</span>
+<span id="L159" class="LineNr">159 </span>  <span class="PreProc">var</span> g/eax: (addr code-point-utf8) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> cell, data
+<span id="L160" class="LineNr">160 </span>  <a href='../405screen.mu.html#L214'>print-code-point-utf8</a> <a href='../405screen.mu.html#L9'>screen</a>, *g
+<span id="L161" class="LineNr">161 </span><span class="CommentedCode">#?   var g2/eax: code-point-utf8 &lt;- copy *g</span>
 <span id="L162" class="LineNr">162 </span><span class="CommentedCode">#?   var g3/eax: int &lt;- copy g2</span>
 <span id="L163" class="LineNr">163 </span><span class="CommentedCode">#?   print-int32-hex-to-real-screen g3</span>
 <span id="L164" class="LineNr">164 </span><span class="CommentedCode">#?   print-string-to-real-screen &quot;\n&quot;</span>
@@ -329,7 +329,7 @@ if ('onhashchange' in window) {
 <span id="L264" class="LineNr">264 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> s-addr
 <span id="L265" class="LineNr">265 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L266" class="LineNr">266 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L267" class="LineNr">267 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L158'>read-grapheme</a> s-addr
+<span id="L267" class="LineNr">267 </span>    <span class="PreProc">var</span> g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L155'>read-code-point-utf8</a> s-addr
 <span id="L268" class="LineNr">268 </span>    compare g, <span class="Constant">0xa</span>/newline
 <span id="L269" class="LineNr">269 </span>    <span class="PreProc">loop-if-!=</span>
 <span id="L270" class="LineNr">270 </span>    <a href='data.mu.html#L82'>result</a> <span class="Special">&lt;-</span> increment
@@ -347,7 +347,7 @@ if ('onhashchange' in window) {
 <span id="L282" class="LineNr">282 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> s-addr
 <span id="L283" class="LineNr">283 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L284" class="LineNr">284 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L285" class="LineNr">285 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L158'>read-grapheme</a> s-addr
+<span id="L285" class="LineNr">285 </span>    <span class="PreProc">var</span> g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L155'>read-code-point-utf8</a> s-addr
 <span id="L286" class="LineNr">286 </span>    compare g, <span class="Constant">0xa</span>/newline
 <span id="L287" class="LineNr">287 </span>    <span class="PreProc">break-if-=</span>
 <span id="L288" class="LineNr">288 </span>    <a href='data.mu.html#L82'>result</a> <span class="Special">&lt;-</span> increment
@@ -366,12 +366,12 @@ if ('onhashchange' in window) {
 <span id="L301" class="LineNr">301 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='../309stream.subx.html#L6'>stream-empty?</a> s-addr
 <span id="L302" class="LineNr">302 </span>    compare done?, <span class="Constant">0</span>/false
 <span id="L303" class="LineNr">303 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L304" class="LineNr">304 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L158'>read-grapheme</a> s-addr
+<span id="L304" class="LineNr">304 </span>    <span class="PreProc">var</span> g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='../403unicode.mu.html#L155'>read-code-point-utf8</a> s-addr
 <span id="L305" class="LineNr">305 </span>    compare g, <span class="Constant">0xa</span>/newline
 <span id="L306" class="LineNr">306 </span>    <span class="PreProc">loop-if-=</span>
 <span id="L307" class="LineNr">307 </span>    <span class="PreProc">var</span> offset/<span class="muRegEdx">edx</span>: (offset <a href='../405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> compute-offset out, idx
 <span id="L308" class="LineNr">308 </span>    <span class="PreProc">var</span> dest/<span class="muRegEdx">edx</span>: (addr <a href='../405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> index out, offset
-<span id="L309" class="LineNr">309 </span>    <span class="PreProc">var</span> dest2/<span class="muRegEdx">edx</span>: (addr grapheme) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest, data
+<span id="L309" class="LineNr">309 </span>    <span class="PreProc">var</span> dest2/<span class="muRegEdx">edx</span>: (addr code-point-utf8) <span class="Special">&lt;-</span> <a href='../131table.subx.html#L26'>get</a> dest, data
 <span id="L310" class="LineNr">310 </span>    copy-to *dest2, g
 <span id="L311" class="LineNr">311 </span>    idx <span class="Special">&lt;-</span> increment
 <span id="L312" class="LineNr">312 </span>    <span class="PreProc">loop</span>

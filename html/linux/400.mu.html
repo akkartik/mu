@@ -15,9 +15,9 @@ body { font-size:12pt; font-family: monospace; color: #000000; background-color:
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .PreProc { color: #c000c0; }
+.LineNr { }
 .muRegEcx { color: #870000; }
 .muRegEdx { color: #af5f00; }
-.LineNr { }
 .muComment { color: #005faf; }
 -->
 </style>
@@ -169,13 +169,13 @@ if ('onhashchange' in window) {
 <span id="L113" class="LineNr">113 </span><span class="muComment">#sig skip-until-close-paren-in-slice curr: (addr byte), end: (addr byte) -&gt; _/eax: (addr byte)</span>
 <span id="L114" class="LineNr">114 </span><span class="PreProc">sig</span> <a href='125write-stream-data.subx.html#L11'>write-stream-data</a> f: (addr buffered-file), s: (addr stream byte)
 <span id="L115" class="LineNr">115 </span><span class="PreProc">sig</span> <a href='126write-int-decimal.subx.html#L8'>write-int32-decimal</a> out: (addr stream byte), n: int
-<span id="L116" class="LineNr">116 </span><span class="PreProc">sig</span> <a href='126write-int-decimal.subx.html#L306'>decimal-digit?</a> c: grapheme<span class="PreProc"> -&gt; </span>_/eax: boolean
-<span id="L117" class="LineNr">117 </span><span class="PreProc">sig</span> <a href='126write-int-decimal.subx.html#L405'>to-decimal-digit</a> in: grapheme<span class="PreProc"> -&gt; </span>_/eax: int
+<span id="L116" class="LineNr">116 </span><span class="PreProc">sig</span> <a href='126write-int-decimal.subx.html#L306'>decimal-digit?</a> c: code-point-utf8<span class="PreProc"> -&gt; </span>_/eax: boolean
+<span id="L117" class="LineNr">117 </span><span class="PreProc">sig</span> <a href='126write-int-decimal.subx.html#L405'>to-decimal-digit</a> in: code-point-utf8<span class="PreProc"> -&gt; </span>_/eax: int
 <span id="L118" class="LineNr">118 </span><span class="muComment"># bad name alert</span>
 <span id="L119" class="LineNr">119 </span><span class="muComment"># next-word really tokenizes</span>
 <span id="L120" class="LineNr">120 </span><span class="muComment"># next-raw-word really reads whitespace-separated words</span>
 <span id="L121" class="LineNr">121 </span><span class="PreProc">sig</span> <a href='127next-word.subx.html#L11'>next-word</a> line: (addr stream byte), out: (addr slice)  <span class="muComment"># skips '#' comments</span>
-<span id="L122" class="LineNr">122 </span><span class="PreProc">sig</span> <a href='127next-word.subx.html#L306'>next-raw-word</a> line: (addr stream byte), out: (addr slice)  <span class="muComment"># does not skip '#' comments</span>
+<span id="L122" class="LineNr">122 </span><span class="PreProc">sig</span> <a href='127next-word.subx.html#L321'>next-raw-word</a> line: (addr stream byte), out: (addr slice)  <span class="muComment"># does not skip '#' comments</span>
 <span id="L123" class="LineNr">123 </span><span class="PreProc">sig</span> <a href='128subx-words.subx.html#L8'>has-metadata?</a> word: (addr slice), s: (addr string)<span class="PreProc"> -&gt; </span>_/eax: boolean
 <span id="L124" class="LineNr">124 </span><span class="PreProc">sig</span> <a href='128subx-words.subx.html#L278'>valid-name?</a> in: (addr slice)<span class="PreProc"> -&gt; </span>_/eax: boolean
 <span id="L125" class="LineNr">125 </span><span class="PreProc">sig</span> <a href='128subx-words.subx.html#L535'>label?</a> word: (addr slice)<span class="PreProc"> -&gt; </span>_/eax: boolean
@@ -215,7 +215,7 @@ if ('onhashchange' in window) {
 <span id="L159" class="LineNr">159 </span><span class="PreProc">sig</span> <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> s: (addr array byte)
 <span id="L160" class="LineNr">160 </span><span class="PreProc">sig</span> <a href='304screen.subx.html#L134'>print-slice-to-real-screen</a> s: (addr slice)
 <span id="L161" class="LineNr">161 </span><span class="PreProc">sig</span> <a href='304screen.subx.html#L147'>print-stream-to-real-screen</a> s: (addr stream byte)
-<span id="L162" class="LineNr">162 </span><span class="PreProc">sig</span> <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> c: grapheme
+<span id="L162" class="LineNr">162 </span><span class="PreProc">sig</span> <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> c: code-point-utf8
 <span id="L163" class="LineNr">163 </span><span class="PreProc">sig</span> <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> n: int
 <span id="L164" class="LineNr">164 </span><span class="PreProc">sig</span> <a href='304screen.subx.html#L239'>print-int32-hex-bits-to-real-screen</a> n: int, bits: int
 <span id="L165" class="LineNr">165 </span><span class="PreProc">sig</span> <a href='304screen.subx.html#L252'>print-int32-decimal-to-real-screen</a> n: int
@@ -230,7 +230,7 @@ if ('onhashchange' in window) {
 <span id="L174" class="LineNr">174 </span><span class="PreProc">sig</span> <a href='304screen.subx.html#L405'>show-cursor-on-real-screen</a>
 <span id="L175" class="LineNr">175 </span><span class="PreProc">sig</span> <a href='305keyboard.subx.html#L6'>enable-keyboard-immediate-mode</a>
 <span id="L176" class="LineNr">176 </span><span class="PreProc">sig</span> <a href='305keyboard.subx.html#L72'>enable-keyboard-type-mode</a>
-<span id="L177" class="LineNr">177 </span><span class="PreProc">sig</span> <a href='305keyboard.subx.html#L132'>read-key-from-real-keyboard</a><span class="PreProc"> -&gt; </span>_/eax: grapheme
+<span id="L177" class="LineNr">177 </span><span class="PreProc">sig</span> <a href='305keyboard.subx.html#L132'>read-key-from-real-keyboard</a><span class="PreProc"> -&gt; </span>_/eax: code-point-utf8
 <span id="L178" class="LineNr">178 </span><span class="PreProc">sig</span> <a href='305keyboard.subx.html#L158'>read-line-from-real-keyboard</a> out: (addr stream byte)
 <span id="L179" class="LineNr">179 </span><span class="PreProc">sig</span> <a href='306files.subx.html#L9'>open</a> filename: (addr array byte), write?: boolean, out: (addr handle buffered-file)
 <span id="L180" class="LineNr">180 </span><span class="PreProc">sig</span> <a href='306files.subx.html#L86'>populate-buffered-file-containing</a> contents: (addr array byte), out: (addr handle buffered-file)

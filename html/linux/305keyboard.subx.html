@@ -14,13 +14,13 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.subxComment { color: #005faf; }
-.LineNr { }
-.subxFunction { color: #af5f00; text-decoration: underline; }
-.subxS1Comment { color: #0000af; }
 .SpecialChar { color: #d70000; }
-.Constant { color: #008787; }
+.subxComment { color: #005faf; }
+.subxS1Comment { color: #0000af; }
+.LineNr { }
 .subxH1Comment { color: #005faf; text-decoration: underline; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
+.Constant { color: #008787; }
 .CommentedCode { color: #8a8a8a; }
 -->
 </style>
@@ -180,15 +180,15 @@ if ('onhashchange' in window) {
 <span id="L121" class="LineNr">121 </span>
 <span id="L122" class="LineNr">122 </span><span class="subxComment"># read keys or escapes up to 4 bytes</span>
 <span id="L123" class="LineNr">123 </span><span class="subxComment">#</span>
-<span id="L124" class="LineNr">124 </span><span class="subxComment"># fun fact: terminal escapes and graphemes in utf-8 don't conflict!</span>
-<span id="L125" class="LineNr">125 </span><span class="subxH1Comment"># - in graphemes all but the first/lowest byte will have a 1 in the MSB (be</span>
+<span id="L124" class="LineNr">124 </span><span class="subxComment"># fun fact: terminal escapes and code-point-utf8s in utf-8 don't conflict!</span>
+<span id="L125" class="LineNr">125 </span><span class="subxH1Comment"># - in code-point-utf8s all but the first/lowest byte will have a 1 in the MSB (be</span>
 <span id="L126" class="LineNr">126 </span><span class="subxComment">#   greater than 0x7f)</span>
 <span id="L127" class="LineNr">127 </span><span class="subxH1Comment"># - in escapes every byte will have a 0 in the MSB</span>
 <span id="L128" class="LineNr">128 </span><span class="subxComment"># the two categories overlap only when the first/lowest byte is 0x1b or 'esc'</span>
 <span id="L129" class="LineNr">129 </span><span class="subxComment">#</span>
 <span id="L130" class="LineNr">130 </span><span class="subxComment"># Only use this in immediate mode; in type (typewriter) mode 4 bytes may get</span>
 <span id="L131" class="LineNr">131 </span><span class="subxComment"># parts of multiple keys.</span>
-<span id="L132" class="LineNr">132 </span><span class="subxFunction">read-key-from-real-keyboard</span>:  <span class="subxComment"># -&gt; result/eax: grapheme</span>
+<span id="L132" class="LineNr">132 </span><span class="subxFunction">read-key-from-real-keyboard</span>:  <span class="subxComment"># -&gt; result/eax: code-point-utf8</span>
 <span id="L133" class="LineNr">133 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L134" class="LineNr">134 </span>    55/push-ebp
 <span id="L135" class="LineNr">135 </span>    89/&lt;- %ebp 4/r32/esp

@@ -14,13 +14,13 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
-.subxComment { color: #005faf; }
-.LineNr { }
-.subxFunction { color: #af5f00; text-decoration: underline; }
-.subxS1Comment { color: #0000af; }
 .SpecialChar { color: #d70000; }
-.Constant { color: #008787; }
+.subxComment { color: #005faf; }
+.subxS1Comment { color: #0000af; }
+.LineNr { }
 .subxMinorFunction { color: #875f5f; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
+.Constant { color: #008787; }
 .CommentedCode { color: #8a8a8a; }
 -->
 </style>
@@ -216,8 +216,8 @@ if ('onhashchange' in window) {
 <span id="L157" class="LineNr">157 </span>    5d/pop-to-ebp
 <span id="L158" class="LineNr">158 </span>    c3/return
 <span id="L159" class="LineNr">159 </span>
-<span id="L160" class="LineNr">160 </span><span class="subxComment"># print a grapheme in utf-8 (only up to 4 bytes so far)</span>
-<span id="L161" class="LineNr">161 </span><span class="subxFunction">print-grapheme-to-real-screen</span>:  <span class="subxComment"># c: grapheme</span>
+<span id="L160" class="LineNr">160 </span><span class="subxComment"># print a code-point-utf8 in utf-8 (only up to 4 bytes so far)</span>
+<span id="L161" class="LineNr">161 </span><span class="subxFunction">print-code-point-utf8-to-real-screen</span>:  <span class="subxComment"># c: code-point-utf8</span>
 <span id="L162" class="LineNr">162 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L163" class="LineNr">163 </span>    55/push-ebp
 <span id="L164" class="LineNr">164 </span>    89/&lt;- %ebp 4/r32/esp
@@ -229,31 +229,31 @@ if ('onhashchange' in window) {
 <span id="L170" class="LineNr">170 </span>    8a/byte-&gt; *(ebp+8) 0/r32/al
 <span id="L171" class="LineNr">171 </span>    <span class="subxComment"># if (curr == 0) return</span>
 <span id="L172" class="LineNr">172 </span>    3d/compare-eax-and 0/imm32
-<span id="L173" class="LineNr">173 </span>    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+<span id="L173" class="LineNr">173 </span>    74/jump-if-= $print-code-point-utf8-to-real-screen:end/disp8
 <span id="L174" class="LineNr">174 </span>    <span class="subxComment">#</span>
 <span id="L175" class="LineNr">175 </span>    (<a href='304screen.subx.html#L205'>print-byte-to-real-screen</a> %eax)
 <span id="L176" class="LineNr">176 </span>    <span class="subxComment"># curr = *(ebp+9)</span>
 <span id="L177" class="LineNr">177 </span>    8a/byte-&gt; *(ebp+9) 0/r32/al
 <span id="L178" class="LineNr">178 </span>    <span class="subxComment"># if (curr == 0) return</span>
 <span id="L179" class="LineNr">179 </span>    3d/compare-eax-and 0/imm32
-<span id="L180" class="LineNr">180 </span>    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+<span id="L180" class="LineNr">180 </span>    74/jump-if-= $print-code-point-utf8-to-real-screen:end/disp8
 <span id="L181" class="LineNr">181 </span>    <span class="subxComment">#</span>
 <span id="L182" class="LineNr">182 </span>    (<a href='304screen.subx.html#L205'>print-byte-to-real-screen</a> %eax)
 <span id="L183" class="LineNr">183 </span>    <span class="subxComment"># curr = *(ebp+10)</span>
 <span id="L184" class="LineNr">184 </span>    8a/byte-&gt; *(ebp+0xa) 0/r32/al
 <span id="L185" class="LineNr">185 </span>    <span class="subxComment"># if (curr == 0) return</span>
 <span id="L186" class="LineNr">186 </span>    3d/compare-eax-and 0/imm32
-<span id="L187" class="LineNr">187 </span>    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+<span id="L187" class="LineNr">187 </span>    74/jump-if-= $print-code-point-utf8-to-real-screen:end/disp8
 <span id="L188" class="LineNr">188 </span>    <span class="subxComment">#</span>
 <span id="L189" class="LineNr">189 </span>    (<a href='304screen.subx.html#L205'>print-byte-to-real-screen</a> %eax)
 <span id="L190" class="LineNr">190 </span>    <span class="subxComment"># curr = *(ebp+11)</span>
 <span id="L191" class="LineNr">191 </span>    8a/byte-&gt; *(ebp+0xb) 0/r32/al
 <span id="L192" class="LineNr">192 </span>    <span class="subxComment"># if (curr == 0) return</span>
 <span id="L193" class="LineNr">193 </span>    3d/compare-eax-and 0/imm32
-<span id="L194" class="LineNr">194 </span>    74/jump-if-= $print-grapheme-to-real-screen:end/disp8
+<span id="L194" class="LineNr">194 </span>    74/jump-if-= $print-code-point-utf8-to-real-screen:end/disp8
 <span id="L195" class="LineNr">195 </span>    <span class="subxComment">#</span>
 <span id="L196" class="LineNr">196 </span>    (<a href='304screen.subx.html#L205'>print-byte-to-real-screen</a> %eax)
-<span id="L197" class="LineNr">197 </span><span class="Constant">$print-grapheme-to-real-screen:end</span>:
+<span id="L197" class="LineNr">197 </span><span class="Constant">$print-code-point-utf8-to-real-screen:end</span>:
 <span id="L198" class="LineNr">198 </span>    <span class="subxS1Comment"># . restore registers</span>
 <span id="L199" class="LineNr">199 </span>    58/pop-to-eax
 <span id="L200" class="LineNr">200 </span>    <span class="subxS1Comment"># . epilogue</span>

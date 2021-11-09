@@ -14,16 +14,17 @@ pre { font-family: monospace; color: #000000; background-color: #ffffd7; }
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
+.subxMinorFunction { color: #875f5f; }
 .subxComment { color: #005faf; }
+.subxS1Comment { color: #0000af; }
 .subxS2Comment { color: #8a8a8a; }
 .LineNr { }
-.subxFunction { color: #af5f00; text-decoration: underline; }
-.subxS1Comment { color: #0000af; }
-.Constant { color: #008787; }
-.SpecialChar { color: #d70000; }
 .Normal { color: #000000; background-color: #ffffd7; padding-bottom: 1px; }
-.subxMinorFunction { color: #875f5f; }
 .subxTest { color: #5f8700; }
+.SpecialChar { color: #d70000; }
+.Constant { color: #008787; }
+.CommentedCode { color: #8a8a8a; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
 -->
 </style>
 
@@ -103,22 +104,22 @@ if ('onhashchange' in window) {
 <span id="L42" class="LineNr"> 42 </span><span class="subxS1Comment"># . op          subop               mod             rm32          base        index         scale       r32</span>
 <span id="L43" class="LineNr"> 43 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
 <span id="L44" class="LineNr"> 44 </span>
-<span id="L45" class="LineNr"> 45 </span><span class="subxComment"># Let's start initializing the default allocation descriptor.</span>
-<span id="L46" class="LineNr"> 46 </span>
-<span id="L47" class="LineNr"> 47 </span><span class="SpecialChar">Entry</span>:
-<span id="L48" class="LineNr"> 48 </span>    <span class="subxComment"># initialize heap</span>
-<span id="L49" class="LineNr"> 49 </span>    <span class="subxS1Comment"># . Heap = new-segment(Heap-size)</span>
-<span id="L50" class="LineNr"> 50 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L51" class="LineNr"> 51 </span>    68/push  <span class="SpecialChar"><a href='120allocate.subx.html#L27'>Heap</a></span>/imm32
-<span id="L52" class="LineNr"> 52 </span>    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          <span class="SpecialChar"><a href='120allocate.subx.html#L34'>Heap-size</a></span>/disp32                  <span class="subxComment"># push *Heap-size</span>
-<span id="L53" class="LineNr"> 53 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L54" class="LineNr"> 54 </span>    e8/call  <a href='104new-segment.subx.html#L40'>new-segment</a>/disp32
-<span id="L55" class="LineNr"> 55 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L56" class="LineNr"> 56 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L45" class="LineNr"> 45 </span><span class="CommentedCode">#? # Let's start initializing the default allocation descriptor.</span>
+<span id="L46" class="LineNr"> 46 </span><span class="CommentedCode">#? </span>
+<span id="L47" class="LineNr"> 47 </span><span class="CommentedCode">#? Entry:</span>
+<span id="L48" class="LineNr"> 48 </span><span class="CommentedCode">#?     # initialize heap</span>
+<span id="L49" class="LineNr"> 49 </span><span class="CommentedCode">#?     # . Heap = new-segment(Heap-size)</span>
+<span id="L50" class="LineNr"> 50 </span><span class="CommentedCode">#?     # . . push args</span>
+<span id="L51" class="LineNr"> 51 </span><span class="CommentedCode">#?     68/push  Heap/imm32</span>
+<span id="L52" class="LineNr"> 52 </span><span class="CommentedCode">#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Heap-size/disp32                  # push *Heap-size</span>
+<span id="L53" class="LineNr"> 53 </span><span class="CommentedCode">#?     # . . call</span>
+<span id="L54" class="LineNr"> 54 </span><span class="CommentedCode">#?     e8/call  new-segment/disp32</span>
+<span id="L55" class="LineNr"> 55 </span><span class="CommentedCode">#?     # . . discard args</span>
+<span id="L56" class="LineNr"> 56 </span><span class="CommentedCode">#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp</span>
 <span id="L57" class="LineNr"> 57 </span>
 <span id="L58" class="LineNr"> 58 </span>    e8/call  run-tests/disp32  <span class="subxComment"># 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.</span>
 <span id="L59" class="LineNr"> 59 </span><span class="Constant">$array-equal-main:end</span>:
-<span id="L60" class="LineNr"> 60 </span>    <span class="subxComment"># syscall(exit, Num-test-failures)</span>
+<span id="L60" class="LineNr"> 60 </span>    <span class="subxComment"># syscall_exit(Num-test-failures)</span>
 <span id="L61" class="LineNr"> 61 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx   <span class="SpecialChar"><a href='102test.subx.html#L89'>Num-test-failures</a></span>/disp32          <span class="subxComment"># copy *Num-test-failures to ebx</span>
 <span id="L62" class="LineNr"> 62 </span>    e8/call  <a href='000init.subx.html#L18'>syscall_exit</a>/disp32
 <span id="L63" class="LineNr"> 63 </span>
@@ -222,7 +223,7 @@ if ('onhashchange' in window) {
 <span id="L161" class="LineNr">161 </span>    e8/call  <a href='101_write.subx.html#L12'>_write</a>/disp32
 <span id="L162" class="LineNr">162 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L163" class="LineNr">163 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L164" class="LineNr">164 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L164" class="LineNr">164 </span>    <span class="subxS1Comment"># . syscall_exit(1)</span>
 <span id="L165" class="LineNr">165 </span>    bb/copy-to-ebx  1/imm32
 <span id="L166" class="LineNr">166 </span>    e8/call  <a href='000init.subx.html#L18'>syscall_exit</a>/disp32
 <span id="L167" class="LineNr">167 </span>    <span class="subxComment"># never gets here</span>
@@ -353,7 +354,7 @@ if ('onhashchange' in window) {
 <span id="L292" class="LineNr">292 </span>    e8/call  <a href='101_write.subx.html#L12'>_write</a>/disp32
 <span id="L293" class="LineNr">293 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L294" class="LineNr">294 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L295" class="LineNr">295 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L295" class="LineNr">295 </span>    <span class="subxS1Comment"># . syscall_exit(1)</span>
 <span id="L296" class="LineNr">296 </span>    bb/copy-to-ebx  1/imm32/exit-status
 <span id="L297" class="LineNr">297 </span>    e8/call  <a href='000init.subx.html#L18'>syscall_exit</a>/disp32
 <span id="L298" class="LineNr">298 </span>
@@ -635,7 +636,7 @@ if ('onhashchange' in window) {
 <span id="L574" class="LineNr">574 </span>    e8/call  <a href='101_write.subx.html#L12'>_write</a>/disp32
 <span id="L575" class="LineNr">575 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L576" class="LineNr">576 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L577" class="LineNr">577 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L577" class="LineNr">577 </span>    <span class="subxS1Comment"># . syscall_exit(1)</span>
 <span id="L578" class="LineNr">578 </span>    bb/copy-to-ebx  1/imm32
 <span id="L579" class="LineNr">579 </span>    e8/call  <a href='000init.subx.html#L18'>syscall_exit</a>/disp32
 <span id="L580" class="LineNr">580 </span>    <span class="subxComment"># never gets here</span>

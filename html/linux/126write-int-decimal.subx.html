@@ -14,18 +14,18 @@ pre { font-family: monospace; color: #000000; background-color: #ffffd7; }
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #ffffd7; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
+.subxH1Comment { color: #005faf; text-decoration: underline; }
 .subxComment { color: #005faf; }
+.subxS1Comment { color: #0000af; }
 .subxS2Comment { color: #8a8a8a; }
 .LineNr { }
-.subxFunction { color: #af5f00; text-decoration: underline; }
-.subxS1Comment { color: #0000af; }
-.Constant { color: #008787; }
-.CommentedCode { color: #8a8a8a; }
 .SpecialChar { color: #d70000; }
+.Constant { color: #008787; }
+.subxTest { color: #5f8700; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
 .Normal { color: #000000; background-color: #ffffd7; padding-bottom: 1px; }
 .Folded { color: #080808; background-color: #949494; }
-.subxTest { color: #5f8700; }
-.subxH1Comment { color: #005faf; text-decoration: underline; }
+.CommentedCode { color: #8a8a8a; }
 -->
 </style>
 
@@ -94,7 +94,7 @@ if ('onhashchange' in window) {
 <span id="L31" class="LineNr"> 31 </span>    <span class="subxComment">#     ++curr</span>
 <span id="L32" class="LineNr"> 32 </span>    <span class="subxComment">#     ++w</span>
 <span id="L33" class="LineNr"> 33 </span>    <span class="subxComment">#   out-&gt;write = w</span>
-<span id="L34" class="LineNr"> 34 </span>    <span class="subxComment"># (based on K&amp;R itoa: <a href="https://en.wikibooks.org/wiki/C_Programming/stdlib.h/itoa)">https://en.wikibooks.org/wiki/C_Programming/stdlib.h/itoa)</a></span>
+<span id="L34" class="LineNr"> 34 </span>    <span class="subxComment"># (based on K&amp;R itoa: <a href="https://en.wikibooks.org/wiki/C_Programming/stdlib.h/itoa">https://en.wikibooks.org/wiki/C_Programming/stdlib.h/itoa</a>)</span>
 <span id="L35" class="LineNr"> 35 </span>    <span class="subxComment"># (this pseudocode contains registers because operations like division</span>
 <span id="L36" class="LineNr"> 36 </span>    <span class="subxComment"># require specific registers in x86)</span>
 <span id="L37" class="LineNr"> 37 </span>    <span class="subxComment">#</span>
@@ -185,7 +185,7 @@ if ('onhashchange' in window) {
 <span id="L122" class="LineNr">122 </span>    e8/call  <a href='101_write.subx.html#L12'>_write</a>/disp32
 <span id="L123" class="LineNr">123 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L124" class="LineNr">124 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L125" class="LineNr">125 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L125" class="LineNr">125 </span>    <span class="subxS1Comment"># . syscall_exit(1)</span>
 <span id="L126" class="LineNr">126 </span>    bb/copy-to-ebx  1/imm32
 <span id="L127" class="LineNr">127 </span>    e8/call  <a href='000init.subx.html#L18'>syscall_exit</a>/disp32
 <span id="L128" class="LineNr">128 </span>    <span class="subxComment"># never gets here</span>
@@ -298,7 +298,7 @@ if ('onhashchange' in window) {
 <span id="L235" class="LineNr">235 </span>    e8/call  <a href='126write-int-decimal.subx.html#L8'>write-int32-decimal</a>/disp32
 <span id="L236" class="LineNr">236 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L237" class="LineNr">237 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L238" class="Folded">238 </span><span class="Folded">+-- 26 lines: #?     # dump _test-stream -----------------------------------------------------------------------------------------------------------------------------------</span>
+<span id="L238" class="Folded">238 </span><span class="Folded">+-- 26 lines: #?     # dump _test-stream ------------------------------------------------------------------------------------------------------------------------------------------------</span>
 <span id="L264" class="LineNr">264 </span>    <span class="subxComment"># check-stream-equal(_test-stream, &quot;-9&quot;, msg)</span>
 <span id="L265" class="LineNr">265 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L266" class="LineNr">266 </span>    68/push  <span class="Constant">&quot;F - test-write-int32-decimal-negative&quot;</span>/imm32
@@ -341,7 +341,7 @@ if ('onhashchange' in window) {
 <span id="L303" class="LineNr">303 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L304" class="LineNr">304 </span>    c3/return
 <span id="L305" class="LineNr">305 </span>
-<span id="L306" class="LineNr">306 </span><span class="subxFunction">decimal-digit?</span>:  <span class="subxComment"># c: grapheme -&gt; result/eax: boolean</span>
+<span id="L306" class="LineNr">306 </span><span class="subxFunction">decimal-digit?</span>:  <span class="subxComment"># c: code-point-utf8 -&gt; result/eax: boolean</span>
 <span id="L307" class="LineNr">307 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L308" class="LineNr">308 </span>    55/push-ebp
 <span id="L309" class="LineNr">309 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -440,7 +440,7 @@ if ('onhashchange' in window) {
 <span id="L402" class="LineNr">402 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
 <span id="L403" class="LineNr">403 </span>    c3/return
 <span id="L404" class="LineNr">404 </span>
-<span id="L405" class="LineNr">405 </span><span class="subxFunction">to-decimal-digit</span>:  <span class="subxComment"># in: grapheme -&gt; out/eax: int</span>
+<span id="L405" class="LineNr">405 </span><span class="subxFunction">to-decimal-digit</span>:  <span class="subxComment"># in: code-point-utf8 -&gt; out/eax: int</span>
 <span id="L406" class="LineNr">406 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L407" class="LineNr">407 </span>    55/push-ebp
 <span id="L408" class="LineNr">408 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -496,7 +496,7 @@ if ('onhashchange' in window) {
 <span id="L458" class="LineNr">458 </span>    e8/call  <a href='115write-byte.subx.html#L81'>flush</a>/disp32
 <span id="L459" class="LineNr">459 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L460" class="LineNr">460 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L461" class="LineNr">461 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L461" class="LineNr">461 </span>    <span class="subxS1Comment"># . syscall_exit(1)</span>
 <span id="L462" class="LineNr">462 </span>    bb/copy-to-ebx  1/imm32
 <span id="L463" class="LineNr">463 </span>    e8/call  <a href='000init.subx.html#L18'>syscall_exit</a>/disp32
 <span id="L464" class="LineNr">464 </span>    <span class="subxComment"># never gets here</span>

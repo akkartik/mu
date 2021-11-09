@@ -16,8 +16,7 @@ a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .LineNr { }
 .Delimiter { color: #c000c0; }
-.muRegEcx { color: #870000; }
-.muRegEdx { color: #af5f00; }
+.CommentedCode { color: #8a8a8a; }
 .muRegEbx { color: #5f00ff; }
 .muRegEsi { color: #005faf; }
 .muRegEdi { color: #00af00; }
@@ -27,7 +26,8 @@ a { color:inherit; }
 .muFunction { color: #af5f00; text-decoration: underline; }
 .muTest { color: #5f8700; }
 .muComment { color: #005faf; }
-.CommentedCode { color: #8a8a8a; }
+.muRegEcx { color: #870000; }
+.muRegEdx { color: #af5f00; }
 -->
 </style>
 
@@ -83,7 +83,7 @@ if ('onhashchange' in window) {
 <span id="L18" class="LineNr">  18 </span><span class="Delimiter">}</span>
 <span id="L19" class="LineNr">  19 </span>
 <span id="L20" class="LineNr">  20 </span><span class="PreProc">type</span> <a href='405screen.mu.html#L20'>screen-cell</a> <span class="Delimiter">{</span>
-<span id="L21" class="LineNr">  21 </span>  data: grapheme
+<span id="L21" class="LineNr">  21 </span>  data: code-point-utf8
 <span id="L22" class="LineNr">  22 </span>  color: int
 <span id="L23" class="LineNr">  23 </span>  background-color: int
 <span id="L24" class="LineNr">  24 </span>  bold?: boolean
@@ -148,7 +148,7 @@ if ('onhashchange' in window) {
 <span id="L83" class="LineNr">  83 </span>    <span class="PreProc">return</span>
 <span id="L84" class="LineNr">  84 </span>  <span class="Delimiter">}</span>
 <span id="L85" class="LineNr">  85 </span>  <span class="muComment"># fake screen</span>
-<span id="L86" class="LineNr">  86 </span>  <span class="PreProc">var</span> space/<span class="muRegEdi">edi</span>: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x20</span>
+<span id="L86" class="LineNr">  86 </span>  <span class="PreProc">var</span> space/<span class="muRegEdi">edi</span>: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x20</span>
 <span id="L87" class="LineNr">  87 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>, <span class="Constant">1</span>
 <span id="L88" class="LineNr">  88 </span>  <span class="PreProc">var</span> screen-addr/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy <a href='405screen.mu.html#L9'>screen</a>
 <span id="L89" class="LineNr">  89 </span>  <span class="PreProc">var</span> i/eax: int <span class="Special">&lt;-</span> copy <span class="Constant">1</span>
@@ -161,7 +161,7 @@ if ('onhashchange' in window) {
 <span id="L96" class="LineNr">  96 </span>    <span class="Delimiter">{</span>
 <span id="L97" class="LineNr">  97 </span>      compare j, *ncols
 <span id="L98" class="LineNr">  98 </span>      <span class="PreProc">break-if-&gt;</span>
-<span id="L99" class="LineNr">  99 </span>      <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, space
+<span id="L99" class="LineNr">  99 </span>      <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, space
 <span id="L100" class="LineNr"> 100 </span>      j <span class="Special">&lt;-</span> increment
 <span id="L101" class="LineNr"> 101 </span>      <span class="PreProc">loop</span>
 <span id="L102" class="LineNr"> 102 </span>    <span class="Delimiter">}</span>
@@ -251,8 +251,8 @@ if ('onhashchange' in window) {
 <span id="L186" class="LineNr"> 186 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> s
 <span id="L187" class="LineNr"> 187 </span>    compare done?, <span class="Constant">0</span>
 <span id="L188" class="LineNr"> 188 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L189" class="LineNr"> 189 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> s
-<span id="L190" class="LineNr"> 190 </span>    <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, g
+<span id="L189" class="LineNr"> 189 </span>    <span class="PreProc">var</span> g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> s
+<span id="L190" class="LineNr"> 190 </span>    <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, g
 <span id="L191" class="LineNr"> 191 </span>    <span class="PreProc">loop</span>
 <span id="L192" class="LineNr"> 192 </span>  <span class="Delimiter">}</span>
 <span id="L193" class="LineNr"> 193 </span><span class="Delimiter">}</span>
@@ -276,11 +276,11 @@ if ('onhashchange' in window) {
 <span id="L211" class="LineNr"> 211 </span>  <span class="Delimiter">}</span>
 <span id="L212" class="LineNr"> 212 </span><span class="Delimiter">}</span>
 <span id="L213" class="LineNr"> 213 </span>
-<span id="L214" class="LineNr"> 214 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L214'>print-grapheme</a></span> <a href='405screen.mu.html#L9'>screen</a>: (addr <a href='405screen.mu.html#L9'>screen</a>), c: grapheme <span class="Delimiter">{</span>
+<span id="L214" class="LineNr"> 214 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L214'>print-code-point-utf8</a></span> <a href='405screen.mu.html#L9'>screen</a>: (addr <a href='405screen.mu.html#L9'>screen</a>), c: code-point-utf8 <span class="Delimiter">{</span>
 <span id="L215" class="LineNr"> 215 </span>  compare <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>
 <span id="L216" class="LineNr"> 216 </span>  <span class="Delimiter">{</span>
 <span id="L217" class="LineNr"> 217 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L218" class="LineNr"> 218 </span>    <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> c
+<span id="L218" class="LineNr"> 218 </span>    <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> c
 <span id="L219" class="LineNr"> 219 </span>    <span class="PreProc">return</span>
 <span id="L220" class="LineNr"> 220 </span>  <span class="Delimiter">}</span>
 <span id="L221" class="LineNr"> 221 </span>  <span class="muComment"># fake screen</span>
@@ -304,7 +304,7 @@ if ('onhashchange' in window) {
 <span id="L239" class="LineNr"> 239 </span>    <span class="PreProc">break-if-&lt;=</span>
 <span id="L240" class="LineNr"> 240 </span>    copy-to *cursor-row-addr, num-rows
 <span id="L241" class="LineNr"> 241 </span>    <span class="muComment"># if (top-index &gt; data size) top-index = 0, otherwise top-index += num-cols</span>
-<span id="L242" class="LineNr"> 242 </span>    $print-grapheme:perform-scroll: <span class="Delimiter">{</span>
+<span id="L242" class="LineNr"> 242 </span>    $print-code-point-utf8:perform-scroll: <span class="Delimiter">{</span>
 <span id="L243" class="LineNr"> 243 </span>      <span class="PreProc">var</span> top-index-addr/<span class="muRegEbx">ebx</span>: (addr int) <span class="Special">&lt;-</span> <a href='131table.subx.html#L26'>get</a> screen-addr, top-index
 <span id="L244" class="LineNr"> 244 </span>      <span class="PreProc">var</span> data-ah/eax: (addr handle array <a href='405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='131table.subx.html#L26'>get</a> screen-addr, data
 <span id="L245" class="LineNr"> 245 </span>      <span class="PreProc">var</span> data/eax: (addr array <a href='405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L258'>lookup</a> *data-ah
@@ -313,7 +313,7 @@ if ('onhashchange' in window) {
 <span id="L248" class="LineNr"> 248 </span>      <span class="Delimiter">{</span>
 <span id="L249" class="LineNr"> 249 </span>        <span class="PreProc">break-if-&gt;=</span>
 <span id="L250" class="LineNr"> 250 </span>        add-to *top-index-addr, num-cols
-<span id="L251" class="LineNr"> 251 </span>        <span class="PreProc">break</span> $print-grapheme:perform-scroll
+<span id="L251" class="LineNr"> 251 </span>        <span class="PreProc">break</span> $print-code-point-utf8:perform-scroll
 <span id="L252" class="LineNr"> 252 </span>      <span class="Delimiter">}</span>
 <span id="L253" class="LineNr"> 253 </span>      <span class="Delimiter">{</span>
 <span id="L254" class="LineNr"> 254 </span>        <span class="PreProc">break-if-&lt;</span>
@@ -322,7 +322,7 @@ if ('onhashchange' in window) {
 <span id="L257" class="LineNr"> 257 </span>    <span class="Delimiter">}</span>
 <span id="L258" class="LineNr"> 258 </span>  <span class="Delimiter">}</span>
 <span id="L259" class="LineNr"> 259 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L277'>current-screen-cell-index</a> screen-addr
-<span id="L260" class="LineNr"> 260 </span><span class="CommentedCode">#?   print-string-to-real-screen &quot;printing grapheme at screen index &quot;</span>
+<span id="L260" class="LineNr"> 260 </span><span class="CommentedCode">#?   print-string-to-real-screen &quot;printing code-point-utf8 at screen index &quot;</span>
 <span id="L261" class="LineNr"> 261 </span><span class="CommentedCode">#?   print-int32-hex-to-real-screen idx</span>
 <span id="L262" class="LineNr"> 262 </span><span class="CommentedCode">#?   print-string-to-real-screen &quot;: &quot;</span>
 <span id="L263" class="LineNr"> 263 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array <a href='405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='131table.subx.html#L26'>get</a> screen-addr, data
@@ -331,9 +331,9 @@ if ('onhashchange' in window) {
 <span id="L266" class="LineNr"> 266 </span>  <span class="PreProc">var</span> dest-cell/<span class="muRegEcx">ecx</span>: (addr <a href='405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
 <span id="L267" class="LineNr"> 267 </span>  <span class="PreProc">var</span> src-cell/eax: (addr <a href='405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='131table.subx.html#L26'>get</a> screen-addr, curr-attributes
 <span id="L268" class="LineNr"> 268 </span>  copy-object src-cell, dest-cell
-<span id="L269" class="LineNr"> 269 </span>  <span class="PreProc">var</span> dest/eax: (addr grapheme) <span class="Special">&lt;-</span> <a href='131table.subx.html#L26'>get</a> dest-cell, data
-<span id="L270" class="LineNr"> 270 </span>  <span class="PreProc">var</span> c2/<span class="muRegEcx">ecx</span>: grapheme <span class="Special">&lt;-</span> copy c
-<span id="L271" class="LineNr"> 271 </span><span class="CommentedCode">#?   print-grapheme-to-real-screen c2</span>
+<span id="L269" class="LineNr"> 269 </span>  <span class="PreProc">var</span> dest/eax: (addr code-point-utf8) <span class="Special">&lt;-</span> <a href='131table.subx.html#L26'>get</a> dest-cell, data
+<span id="L270" class="LineNr"> 270 </span>  <span class="PreProc">var</span> c2/<span class="muRegEcx">ecx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy c
+<span id="L271" class="LineNr"> 271 </span><span class="CommentedCode">#?   print-code-point-utf8-to-real-screen c2</span>
 <span id="L272" class="LineNr"> 272 </span><span class="CommentedCode">#?   print-string-to-real-screen &quot;\n&quot;</span>
 <span id="L273" class="LineNr"> 273 </span>  copy-to *dest, c2
 <span id="L274" class="LineNr"> 274 </span>  increment *cursor-col-addr
@@ -370,21 +370,21 @@ if ('onhashchange' in window) {
 <span id="L305" class="LineNr"> 305 </span>  <span class="PreProc">return</span> result
 <span id="L306" class="LineNr"> 306 </span><span class="Delimiter">}</span>
 <span id="L307" class="LineNr"> 307 </span>
-<span id="L308" class="LineNr"> 308 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L308'>screen-grapheme-at</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), row: int, col: int<span class="PreProc"> -&gt; </span>_/eax: grapheme <span class="Delimiter">{</span>
+<span id="L308" class="LineNr"> 308 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L308'>screen-code-point-utf8-at</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), row: int, col: int<span class="PreProc"> -&gt; </span>_/eax: code-point-utf8 <span class="Delimiter">{</span>
 <span id="L309" class="LineNr"> 309 </span>  <span class="PreProc">var</span> screen-addr/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
 <span id="L310" class="LineNr"> 310 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L285'>screen-cell-index</a> screen-addr, row, col
-<span id="L311" class="LineNr"> 311 </span>  <span class="PreProc">var</span> result/eax: grapheme <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-grapheme-at-idx</a> screen-addr, idx
+<span id="L311" class="LineNr"> 311 </span>  <span class="PreProc">var</span> result/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-code-point-utf8-at-idx</a> screen-addr, idx
 <span id="L312" class="LineNr"> 312 </span>  <span class="PreProc">return</span> result
 <span id="L313" class="LineNr"> 313 </span><span class="Delimiter">}</span>
 <span id="L314" class="LineNr"> 314 </span>
-<span id="L315" class="LineNr"> 315 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L315'>screen-grapheme-at-idx</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), idx-on-stack: int<span class="PreProc"> -&gt; </span>_/eax: grapheme <span class="Delimiter">{</span>
+<span id="L315" class="LineNr"> 315 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L315'>screen-code-point-utf8-at-idx</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), idx-on-stack: int<span class="PreProc"> -&gt; </span>_/eax: code-point-utf8 <span class="Delimiter">{</span>
 <span id="L316" class="LineNr"> 316 </span>  <span class="PreProc">var</span> screen-addr/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
 <span id="L317" class="LineNr"> 317 </span>  <span class="PreProc">var</span> data-ah/eax: (addr handle array <a href='405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='131table.subx.html#L26'>get</a> screen-addr, data
 <span id="L318" class="LineNr"> 318 </span>  <span class="PreProc">var</span> data/eax: (addr array <a href='405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> <a href='120allocate.subx.html#L258'>lookup</a> *data-ah
 <span id="L319" class="LineNr"> 319 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy idx-on-stack
 <span id="L320" class="LineNr"> 320 </span>  <span class="PreProc">var</span> offset/<span class="muRegEcx">ecx</span>: (offset <a href='405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> compute-offset data, idx
 <span id="L321" class="LineNr"> 321 </span>  <span class="PreProc">var</span> cell/eax: (addr <a href='405screen.mu.html#L20'>screen-cell</a>) <span class="Special">&lt;-</span> index data, offset
-<span id="L322" class="LineNr"> 322 </span>  <span class="PreProc">var</span> src/eax: (addr grapheme) <span class="Special">&lt;-</span> <a href='131table.subx.html#L26'>get</a> cell, data
+<span id="L322" class="LineNr"> 322 </span>  <span class="PreProc">var</span> src/eax: (addr code-point-utf8) <span class="Special">&lt;-</span> <a href='131table.subx.html#L26'>get</a> cell, data
 <span id="L323" class="LineNr"> 323 </span>  <span class="PreProc">return</span> *src
 <span id="L324" class="LineNr"> 324 </span><span class="Delimiter">}</span>
 <span id="L325" class="LineNr"> 325 </span>
@@ -498,8 +498,8 @@ if ('onhashchange' in window) {
 <span id="L433" class="LineNr"> 433 </span><span class="Delimiter">}</span>
 <span id="L434" class="LineNr"> 434 </span>
 <span id="L435" class="LineNr"> 435 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L435'>print-code-point</a></span> <a href='405screen.mu.html#L9'>screen</a>: (addr <a href='405screen.mu.html#L9'>screen</a>), c: code-point <span class="Delimiter">{</span>
-<span id="L436" class="LineNr"> 436 </span>  <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L22'>to-grapheme</a> c
-<span id="L437" class="LineNr"> 437 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, g
+<span id="L436" class="LineNr"> 436 </span>  <span class="PreProc">var</span> g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L19'>to-utf8</a> c
+<span id="L437" class="LineNr"> 437 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, g
 <span id="L438" class="LineNr"> 438 </span><span class="Delimiter">}</span>
 <span id="L439" class="LineNr"> 439 </span>
 <span id="L440" class="LineNr"> 440 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L440'>print-int32-hex</a></span> <a href='405screen.mu.html#L9'>screen</a>: (addr <a href='405screen.mu.html#L9'>screen</a>), n: int <span class="Delimiter">{</span>
@@ -518,8 +518,8 @@ if ('onhashchange' in window) {
 <span id="L453" class="LineNr"> 453 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> s2-addr
 <span id="L454" class="LineNr"> 454 </span>    compare done?, <span class="Constant">0</span>
 <span id="L455" class="LineNr"> 455 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L456" class="LineNr"> 456 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> s2-addr
-<span id="L457" class="LineNr"> 457 </span>    <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, g
+<span id="L456" class="LineNr"> 456 </span>    <span class="PreProc">var</span> g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> s2-addr
+<span id="L457" class="LineNr"> 457 </span>    <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, g
 <span id="L458" class="LineNr"> 458 </span>    <span class="PreProc">loop</span>
 <span id="L459" class="LineNr"> 459 </span>  <span class="Delimiter">}</span>
 <span id="L460" class="LineNr"> 460 </span><span class="Delimiter">}</span>
@@ -540,8 +540,8 @@ if ('onhashchange' in window) {
 <span id="L475" class="LineNr"> 475 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> s2-addr
 <span id="L476" class="LineNr"> 476 </span>    compare done?, <span class="Constant">0</span>
 <span id="L477" class="LineNr"> 477 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L478" class="LineNr"> 478 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> s2-addr
-<span id="L479" class="LineNr"> 479 </span>    <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, g
+<span id="L478" class="LineNr"> 478 </span>    <span class="PreProc">var</span> g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> s2-addr
+<span id="L479" class="LineNr"> 479 </span>    <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, g
 <span id="L480" class="LineNr"> 480 </span>    <span class="PreProc">loop</span>
 <span id="L481" class="LineNr"> 481 </span>  <span class="Delimiter">}</span>
 <span id="L482" class="LineNr"> 482 </span><span class="Delimiter">}</span>
@@ -562,8 +562,8 @@ if ('onhashchange' in window) {
 <span id="L497" class="LineNr"> 497 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> s2-addr
 <span id="L498" class="LineNr"> 498 </span>    compare done?, <span class="Constant">0</span>
 <span id="L499" class="LineNr"> 499 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L500" class="LineNr"> 500 </span>    <span class="PreProc">var</span> g/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> s2-addr
-<span id="L501" class="LineNr"> 501 </span>    <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, g
+<span id="L500" class="LineNr"> 500 </span>    <span class="PreProc">var</span> g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> s2-addr
+<span id="L501" class="LineNr"> 501 </span>    <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, g
 <span id="L502" class="LineNr"> 502 </span>    <span class="PreProc">loop</span>
 <span id="L503" class="LineNr"> 503 </span>  <span class="Delimiter">}</span>
 <span id="L504" class="LineNr"> 504 </span><span class="Delimiter">}</span>
@@ -696,7 +696,7 @@ if ('onhashchange' in window) {
 <span id="L631" class="LineNr"> 631 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L631'>check-screen-row-from</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
 <span id="L632" class="LineNr"> 632 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
 <span id="L633" class="LineNr"> 633 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L285'>screen-cell-index</a> <a href='405screen.mu.html#L9'>screen</a>, row-idx, col-idx
-<span id="L634" class="LineNr"> 634 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
+<span id="L634" class="LineNr"> 634 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8</span>
 <span id="L635" class="LineNr"> 635 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L636" class="LineNr"> 636 </span>  <span class="PreProc">var</span> e-addr/<span class="muRegEdx">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
 <span id="L637" class="LineNr"> 637 </span>  <a href='108write.subx.html#L24'>write</a> e-addr, expected
@@ -704,35 +704,35 @@ if ('onhashchange' in window) {
 <span id="L639" class="LineNr"> 639 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L640" class="LineNr"> 640 </span>    compare done?, <span class="Constant">0</span>
 <span id="L641" class="LineNr"> 641 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L642" class="LineNr"> 642 </span>    <span class="PreProc">var</span> _g/eax: grapheme <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-grapheme-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
-<span id="L643" class="LineNr"> 643 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
-<span id="L644" class="LineNr"> 644 </span>    <span class="PreProc">var</span> expected-grapheme/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> e-addr
-<span id="L645" class="LineNr"> 645 </span>    <span class="muComment"># compare graphemes</span>
-<span id="L646" class="LineNr"> 646 </span>    $check-screen-row-from:compare-graphemes: <span class="Delimiter">{</span>
-<span id="L647" class="LineNr"> 647 </span>      <span class="muComment"># if expected-grapheme is space, null grapheme is also ok</span>
+<span id="L642" class="LineNr"> 642 </span>    <span class="PreProc">var</span> _g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-code-point-utf8-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
+<span id="L643" class="LineNr"> 643 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _g
+<span id="L644" class="LineNr"> 644 </span>    <span class="PreProc">var</span> expected-code-point-utf8/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> e-addr
+<span id="L645" class="LineNr"> 645 </span>    <span class="muComment"># compare code-point-utf8s</span>
+<span id="L646" class="LineNr"> 646 </span>    $check-screen-row-from:compare-code-point-utf8s: <span class="Delimiter">{</span>
+<span id="L647" class="LineNr"> 647 </span>      <span class="muComment"># if expected-code-point-utf8 is space, null code-point-utf8 is also ok</span>
 <span id="L648" class="LineNr"> 648 </span>      <span class="Delimiter">{</span>
-<span id="L649" class="LineNr"> 649 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L649" class="LineNr"> 649 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L650" class="LineNr"> 650 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L651" class="LineNr"> 651 </span>        compare g, <span class="Constant">0</span>
-<span id="L652" class="LineNr"> 652 </span>        <span class="PreProc">break-if-=</span> $check-screen-row-from:compare-graphemes
+<span id="L652" class="LineNr"> 652 </span>        <span class="PreProc">break-if-=</span> $check-screen-row-from:compare-code-point-utf8s
 <span id="L653" class="LineNr"> 653 </span>      <span class="Delimiter">}</span>
-<span id="L654" class="LineNr"> 654 </span>      <span class="muComment"># if (g == expected-grapheme) print &quot;.&quot;</span>
-<span id="L655" class="LineNr"> 655 </span>      compare g, expected-grapheme
+<span id="L654" class="LineNr"> 654 </span>      <span class="muComment"># if (g == expected-code-point-utf8) print &quot;.&quot;</span>
+<span id="L655" class="LineNr"> 655 </span>      compare g, expected-code-point-utf8
 <span id="L656" class="LineNr"> 656 </span>      <span class="Delimiter">{</span>
 <span id="L657" class="LineNr"> 657 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L658" class="LineNr"> 658 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;.&quot;</span>
-<span id="L659" class="LineNr"> 659 </span>        <span class="PreProc">break</span> $check-screen-row-from:compare-graphemes
+<span id="L659" class="LineNr"> 659 </span>        <span class="PreProc">break</span> $check-screen-row-from:compare-code-point-utf8s
 <span id="L660" class="LineNr"> 660 </span>      <span class="Delimiter">}</span>
 <span id="L661" class="LineNr"> 661 </span>      <span class="muComment"># otherwise print an error</span>
 <span id="L662" class="LineNr"> 662 </span>      <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L663" class="LineNr"> 663 </span>      <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L664" class="LineNr"> 664 </span>      <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L664" class="LineNr"> 664 </span>      <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L665" class="LineNr"> 665 </span>      <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L666" class="LineNr"> 666 </span>      <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L667" class="LineNr"> 667 </span>      <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
 <span id="L668" class="LineNr"> 668 </span>      <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> col-idx
 <span id="L669" class="LineNr"> 669 </span>      <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;) but observed '&quot;</span>
-<span id="L670" class="LineNr"> 670 </span>      <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> g
+<span id="L670" class="LineNr"> 670 </span>      <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> g
 <span id="L671" class="LineNr"> 671 </span>      <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;'\n&quot;</span>
 <span id="L672" class="LineNr"> 672 </span>    <span class="Delimiter">}</span>
 <span id="L673" class="LineNr"> 673 </span>    idx <span class="Special">&lt;-</span> increment
@@ -750,7 +750,7 @@ if ('onhashchange' in window) {
 <span id="L685" class="LineNr"> 685 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L685'>check-screen-row-in-color-from</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), fg: int, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
 <span id="L686" class="LineNr"> 686 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
 <span id="L687" class="LineNr"> 687 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L285'>screen-cell-index</a> <a href='405screen.mu.html#L9'>screen</a>, row-idx, col-idx
-<span id="L688" class="LineNr"> 688 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
+<span id="L688" class="LineNr"> 688 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8</span>
 <span id="L689" class="LineNr"> 689 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L690" class="LineNr"> 690 </span>  <span class="PreProc">var</span> e-addr/<span class="muRegEdx">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
 <span id="L691" class="LineNr"> 691 </span>  <a href='108write.subx.html#L24'>write</a> e-addr, expected
@@ -758,45 +758,45 @@ if ('onhashchange' in window) {
 <span id="L693" class="LineNr"> 693 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L694" class="LineNr"> 694 </span>    compare done?, <span class="Constant">0</span>
 <span id="L695" class="LineNr"> 695 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L696" class="LineNr"> 696 </span>    <span class="PreProc">var</span> _g/eax: grapheme <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-grapheme-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
-<span id="L697" class="LineNr"> 697 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
-<span id="L698" class="LineNr"> 698 </span>    <span class="PreProc">var</span> _expected-grapheme/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> e-addr
-<span id="L699" class="LineNr"> 699 </span>    <span class="PreProc">var</span> expected-grapheme/<span class="muRegEdi">edi</span>: grapheme <span class="Special">&lt;-</span> copy _expected-grapheme
+<span id="L696" class="LineNr"> 696 </span>    <span class="PreProc">var</span> _g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-code-point-utf8-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
+<span id="L697" class="LineNr"> 697 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _g
+<span id="L698" class="LineNr"> 698 </span>    <span class="PreProc">var</span> _expected-code-point-utf8/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> e-addr
+<span id="L699" class="LineNr"> 699 </span>    <span class="PreProc">var</span> expected-code-point-utf8/<span class="muRegEdi">edi</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _expected-code-point-utf8
 <span id="L700" class="LineNr"> 700 </span>    $check-screen-row-in-color-from:compare-cells: <span class="Delimiter">{</span>
-<span id="L701" class="LineNr"> 701 </span>      <span class="muComment"># if expected-grapheme is space, null grapheme is also ok</span>
+<span id="L701" class="LineNr"> 701 </span>      <span class="muComment"># if expected-code-point-utf8 is space, null code-point-utf8 is also ok</span>
 <span id="L702" class="LineNr"> 702 </span>      <span class="Delimiter">{</span>
-<span id="L703" class="LineNr"> 703 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L703" class="LineNr"> 703 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L704" class="LineNr"> 704 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L705" class="LineNr"> 705 </span>        compare g, <span class="Constant">0</span>
 <span id="L706" class="LineNr"> 706 </span>        <span class="PreProc">break-if-=</span> $check-screen-row-in-color-from:compare-cells
 <span id="L707" class="LineNr"> 707 </span>      <span class="Delimiter">}</span>
-<span id="L708" class="LineNr"> 708 </span>      <span class="muComment"># if expected-grapheme is space, a different color is ok</span>
+<span id="L708" class="LineNr"> 708 </span>      <span class="muComment"># if expected-code-point-utf8 is space, a different color is ok</span>
 <span id="L709" class="LineNr"> 709 </span>      <span class="Delimiter">{</span>
-<span id="L710" class="LineNr"> 710 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L710" class="LineNr"> 710 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L711" class="LineNr"> 711 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L712" class="LineNr"> 712 </span>        <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L333'>screen-color-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
 <span id="L713" class="LineNr"> 713 </span>        compare color, fg
 <span id="L714" class="LineNr"> 714 </span>        <span class="PreProc">break-if-!=</span> $check-screen-row-in-color-from:compare-cells
 <span id="L715" class="LineNr"> 715 </span>      <span class="Delimiter">}</span>
-<span id="L716" class="LineNr"> 716 </span>      <span class="muComment"># compare graphemes</span>
-<span id="L717" class="LineNr"> 717 </span>      $check-screen-row-in-color-from:compare-graphemes: <span class="Delimiter">{</span>
-<span id="L718" class="LineNr"> 718 </span>        <span class="muComment"># if (g == expected-grapheme) print &quot;.&quot;</span>
-<span id="L719" class="LineNr"> 719 </span>        compare g, expected-grapheme
+<span id="L716" class="LineNr"> 716 </span>      <span class="muComment"># compare code-point-utf8s</span>
+<span id="L717" class="LineNr"> 717 </span>      $check-screen-row-in-color-from:compare-code-point-utf8s: <span class="Delimiter">{</span>
+<span id="L718" class="LineNr"> 718 </span>        <span class="muComment"># if (g == expected-code-point-utf8) print &quot;.&quot;</span>
+<span id="L719" class="LineNr"> 719 </span>        compare g, expected-code-point-utf8
 <span id="L720" class="LineNr"> 720 </span>        <span class="Delimiter">{</span>
 <span id="L721" class="LineNr"> 721 </span>          <span class="PreProc">break-if-!=</span>
 <span id="L722" class="LineNr"> 722 </span>          <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;.&quot;</span>
-<span id="L723" class="LineNr"> 723 </span>          <span class="PreProc">break</span> $check-screen-row-in-color-from:compare-graphemes
+<span id="L723" class="LineNr"> 723 </span>          <span class="PreProc">break</span> $check-screen-row-in-color-from:compare-code-point-utf8s
 <span id="L724" class="LineNr"> 724 </span>        <span class="Delimiter">}</span>
 <span id="L725" class="LineNr"> 725 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L726" class="LineNr"> 726 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L727" class="LineNr"> 727 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L728" class="LineNr"> 728 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L728" class="LineNr"> 728 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L729" class="LineNr"> 729 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L730" class="LineNr"> 730 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L731" class="LineNr"> 731 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
 <span id="L732" class="LineNr"> 732 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> col-idx
 <span id="L733" class="LineNr"> 733 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;) but observed '&quot;</span>
-<span id="L734" class="LineNr"> 734 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> g
+<span id="L734" class="LineNr"> 734 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> g
 <span id="L735" class="LineNr"> 735 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;'\n&quot;</span>
 <span id="L736" class="LineNr"> 736 </span>      <span class="Delimiter">}</span>
 <span id="L737" class="LineNr"> 737 </span>      $check-screen-row-in-color-from:compare-colors: <span class="Delimiter">{</span>
@@ -810,7 +810,7 @@ if ('onhashchange' in window) {
 <span id="L745" class="LineNr"> 745 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L746" class="LineNr"> 746 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L747" class="LineNr"> 747 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L748" class="LineNr"> 748 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L748" class="LineNr"> 748 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L749" class="LineNr"> 749 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L750" class="LineNr"> 750 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L751" class="LineNr"> 751 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
@@ -837,7 +837,7 @@ if ('onhashchange' in window) {
 <span id="L772" class="LineNr"> 772 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L772'>check-screen-row-in-background-color-from</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), bg: int, row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
 <span id="L773" class="LineNr"> 773 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
 <span id="L774" class="LineNr"> 774 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L285'>screen-cell-index</a> <a href='405screen.mu.html#L9'>screen</a>, row-idx, col-idx
-<span id="L775" class="LineNr"> 775 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
+<span id="L775" class="LineNr"> 775 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8</span>
 <span id="L776" class="LineNr"> 776 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L777" class="LineNr"> 777 </span>  <span class="PreProc">var</span> e-addr/<span class="muRegEdx">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
 <span id="L778" class="LineNr"> 778 </span>  <a href='108write.subx.html#L24'>write</a> e-addr, expected
@@ -845,45 +845,45 @@ if ('onhashchange' in window) {
 <span id="L780" class="LineNr"> 780 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L781" class="LineNr"> 781 </span>    compare done?, <span class="Constant">0</span>
 <span id="L782" class="LineNr"> 782 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L783" class="LineNr"> 783 </span>    <span class="PreProc">var</span> _g/eax: grapheme <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-grapheme-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
-<span id="L784" class="LineNr"> 784 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
-<span id="L785" class="LineNr"> 785 </span>    <span class="PreProc">var</span> _expected-grapheme/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> e-addr
-<span id="L786" class="LineNr"> 786 </span>    <span class="PreProc">var</span> expected-grapheme/<span class="muRegEdx">edx</span>: grapheme <span class="Special">&lt;-</span> copy _expected-grapheme
+<span id="L783" class="LineNr"> 783 </span>    <span class="PreProc">var</span> _g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-code-point-utf8-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
+<span id="L784" class="LineNr"> 784 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _g
+<span id="L785" class="LineNr"> 785 </span>    <span class="PreProc">var</span> _expected-code-point-utf8/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> e-addr
+<span id="L786" class="LineNr"> 786 </span>    <span class="PreProc">var</span> expected-code-point-utf8/<span class="muRegEdx">edx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _expected-code-point-utf8
 <span id="L787" class="LineNr"> 787 </span>    $check-screen-row-in-background-color-from:compare-cells: <span class="Delimiter">{</span>
-<span id="L788" class="LineNr"> 788 </span>      <span class="muComment"># if expected-grapheme is space, null grapheme is also ok</span>
+<span id="L788" class="LineNr"> 788 </span>      <span class="muComment"># if expected-code-point-utf8 is space, null code-point-utf8 is also ok</span>
 <span id="L789" class="LineNr"> 789 </span>      <span class="Delimiter">{</span>
-<span id="L790" class="LineNr"> 790 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L790" class="LineNr"> 790 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L791" class="LineNr"> 791 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L792" class="LineNr"> 792 </span>        compare g, <span class="Constant">0</span>
 <span id="L793" class="LineNr"> 793 </span>        <span class="PreProc">break-if-=</span> $check-screen-row-in-background-color-from:compare-cells
 <span id="L794" class="LineNr"> 794 </span>      <span class="Delimiter">}</span>
-<span id="L795" class="LineNr"> 795 </span>      <span class="muComment"># if expected-grapheme is space, a different color is ok</span>
+<span id="L795" class="LineNr"> 795 </span>      <span class="muComment"># if expected-code-point-utf8 is space, a different color is ok</span>
 <span id="L796" class="LineNr"> 796 </span>      <span class="Delimiter">{</span>
-<span id="L797" class="LineNr"> 797 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L797" class="LineNr"> 797 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L798" class="LineNr"> 798 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L799" class="LineNr"> 799 </span>        <span class="PreProc">var</span> color/eax: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L352'>screen-background-color-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
 <span id="L800" class="LineNr"> 800 </span>        compare color, bg
 <span id="L801" class="LineNr"> 801 </span>        <span class="PreProc">break-if-!=</span> $check-screen-row-in-background-color-from:compare-cells
 <span id="L802" class="LineNr"> 802 </span>      <span class="Delimiter">}</span>
-<span id="L803" class="LineNr"> 803 </span>      <span class="muComment"># compare graphemes</span>
-<span id="L804" class="LineNr"> 804 </span>      $check-screen-row-in-background-color-from:compare-graphemes: <span class="Delimiter">{</span>
-<span id="L805" class="LineNr"> 805 </span>        <span class="muComment"># if (g == expected-grapheme) print &quot;.&quot;</span>
-<span id="L806" class="LineNr"> 806 </span>        compare g, expected-grapheme
+<span id="L803" class="LineNr"> 803 </span>      <span class="muComment"># compare code-point-utf8s</span>
+<span id="L804" class="LineNr"> 804 </span>      $check-screen-row-in-background-color-from:compare-code-point-utf8s: <span class="Delimiter">{</span>
+<span id="L805" class="LineNr"> 805 </span>        <span class="muComment"># if (g == expected-code-point-utf8) print &quot;.&quot;</span>
+<span id="L806" class="LineNr"> 806 </span>        compare g, expected-code-point-utf8
 <span id="L807" class="LineNr"> 807 </span>        <span class="Delimiter">{</span>
 <span id="L808" class="LineNr"> 808 </span>          <span class="PreProc">break-if-!=</span>
 <span id="L809" class="LineNr"> 809 </span>          <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;.&quot;</span>
-<span id="L810" class="LineNr"> 810 </span>          <span class="PreProc">break</span> $check-screen-row-in-background-color-from:compare-graphemes
+<span id="L810" class="LineNr"> 810 </span>          <span class="PreProc">break</span> $check-screen-row-in-background-color-from:compare-code-point-utf8s
 <span id="L811" class="LineNr"> 811 </span>        <span class="Delimiter">}</span>
 <span id="L812" class="LineNr"> 812 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L813" class="LineNr"> 813 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L814" class="LineNr"> 814 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L815" class="LineNr"> 815 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L815" class="LineNr"> 815 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L816" class="LineNr"> 816 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L817" class="LineNr"> 817 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L818" class="LineNr"> 818 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
 <span id="L819" class="LineNr"> 819 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> col-idx
 <span id="L820" class="LineNr"> 820 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;) but observed '&quot;</span>
-<span id="L821" class="LineNr"> 821 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> g
+<span id="L821" class="LineNr"> 821 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> g
 <span id="L822" class="LineNr"> 822 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;'\n&quot;</span>
 <span id="L823" class="LineNr"> 823 </span>      <span class="Delimiter">}</span>
 <span id="L824" class="LineNr"> 824 </span>      $check-screen-row-in-background-color-from:compare-colors: <span class="Delimiter">{</span>
@@ -897,7 +897,7 @@ if ('onhashchange' in window) {
 <span id="L832" class="LineNr"> 832 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L833" class="LineNr"> 833 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L834" class="LineNr"> 834 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L835" class="LineNr"> 835 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L835" class="LineNr"> 835 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L836" class="LineNr"> 836 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L837" class="LineNr"> 837 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L838" class="LineNr"> 838 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
@@ -922,7 +922,7 @@ if ('onhashchange' in window) {
 <span id="L857" class="LineNr"> 857 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L857'>check-screen-row-in-bold-from</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
 <span id="L858" class="LineNr"> 858 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
 <span id="L859" class="LineNr"> 859 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L285'>screen-cell-index</a> <a href='405screen.mu.html#L9'>screen</a>, row-idx, col-idx
-<span id="L860" class="LineNr"> 860 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
+<span id="L860" class="LineNr"> 860 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8</span>
 <span id="L861" class="LineNr"> 861 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L862" class="LineNr"> 862 </span>  <span class="PreProc">var</span> e-addr/<span class="muRegEdx">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
 <span id="L863" class="LineNr"> 863 </span>  <a href='108write.subx.html#L24'>write</a> e-addr, expected
@@ -930,45 +930,45 @@ if ('onhashchange' in window) {
 <span id="L865" class="LineNr"> 865 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L866" class="LineNr"> 866 </span>    compare done?, <span class="Constant">0</span>
 <span id="L867" class="LineNr"> 867 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L868" class="LineNr"> 868 </span>    <span class="PreProc">var</span> _g/eax: grapheme <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-grapheme-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
-<span id="L869" class="LineNr"> 869 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
-<span id="L870" class="LineNr"> 870 </span>    <span class="PreProc">var</span> _expected-grapheme/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> e-addr
-<span id="L871" class="LineNr"> 871 </span>    <span class="PreProc">var</span> expected-grapheme/<span class="muRegEdx">edx</span>: grapheme <span class="Special">&lt;-</span> copy _expected-grapheme
+<span id="L868" class="LineNr"> 868 </span>    <span class="PreProc">var</span> _g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-code-point-utf8-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
+<span id="L869" class="LineNr"> 869 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _g
+<span id="L870" class="LineNr"> 870 </span>    <span class="PreProc">var</span> _expected-code-point-utf8/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> e-addr
+<span id="L871" class="LineNr"> 871 </span>    <span class="PreProc">var</span> expected-code-point-utf8/<span class="muRegEdx">edx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _expected-code-point-utf8
 <span id="L872" class="LineNr"> 872 </span>    $check-screen-row-in-bold-from:compare-cells: <span class="Delimiter">{</span>
-<span id="L873" class="LineNr"> 873 </span>      <span class="muComment"># if expected-grapheme is space, null grapheme is also ok</span>
+<span id="L873" class="LineNr"> 873 </span>      <span class="muComment"># if expected-code-point-utf8 is space, null code-point-utf8 is also ok</span>
 <span id="L874" class="LineNr"> 874 </span>      <span class="Delimiter">{</span>
-<span id="L875" class="LineNr"> 875 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L875" class="LineNr"> 875 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L876" class="LineNr"> 876 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L877" class="LineNr"> 877 </span>        compare g, <span class="Constant">0</span>
 <span id="L878" class="LineNr"> 878 </span>        <span class="PreProc">break-if-=</span> $check-screen-row-in-bold-from:compare-cells
 <span id="L879" class="LineNr"> 879 </span>      <span class="Delimiter">}</span>
-<span id="L880" class="LineNr"> 880 </span>      <span class="muComment"># if expected-grapheme is space, non-bold is ok</span>
+<span id="L880" class="LineNr"> 880 </span>      <span class="muComment"># if expected-code-point-utf8 is space, non-bold is ok</span>
 <span id="L881" class="LineNr"> 881 </span>      <span class="Delimiter">{</span>
-<span id="L882" class="LineNr"> 882 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L882" class="LineNr"> 882 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L883" class="LineNr"> 883 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L884" class="LineNr"> 884 </span>        <span class="PreProc">var</span> bold?/eax: boolean <span class="Special">&lt;-</span> <a href='405screen.mu.html#L370'>screen-bold-at-idx?</a> <a href='405screen.mu.html#L9'>screen</a>, idx
 <span id="L885" class="LineNr"> 885 </span>        compare bold?, <span class="Constant">1</span>
 <span id="L886" class="LineNr"> 886 </span>        <span class="PreProc">break-if-!=</span> $check-screen-row-in-bold-from:compare-cells
 <span id="L887" class="LineNr"> 887 </span>      <span class="Delimiter">}</span>
-<span id="L888" class="LineNr"> 888 </span>      <span class="muComment"># compare graphemes</span>
-<span id="L889" class="LineNr"> 889 </span>      $check-screen-row-in-bold-from:compare-graphemes: <span class="Delimiter">{</span>
-<span id="L890" class="LineNr"> 890 </span>        <span class="muComment"># if (g == expected-grapheme) print &quot;.&quot;</span>
-<span id="L891" class="LineNr"> 891 </span>        compare g, expected-grapheme
+<span id="L888" class="LineNr"> 888 </span>      <span class="muComment"># compare code-point-utf8s</span>
+<span id="L889" class="LineNr"> 889 </span>      $check-screen-row-in-bold-from:compare-code-point-utf8s: <span class="Delimiter">{</span>
+<span id="L890" class="LineNr"> 890 </span>        <span class="muComment"># if (g == expected-code-point-utf8) print &quot;.&quot;</span>
+<span id="L891" class="LineNr"> 891 </span>        compare g, expected-code-point-utf8
 <span id="L892" class="LineNr"> 892 </span>        <span class="Delimiter">{</span>
 <span id="L893" class="LineNr"> 893 </span>          <span class="PreProc">break-if-!=</span>
 <span id="L894" class="LineNr"> 894 </span>          <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;.&quot;</span>
-<span id="L895" class="LineNr"> 895 </span>          <span class="PreProc">break</span> $check-screen-row-in-bold-from:compare-graphemes
+<span id="L895" class="LineNr"> 895 </span>          <span class="PreProc">break</span> $check-screen-row-in-bold-from:compare-code-point-utf8s
 <span id="L896" class="LineNr"> 896 </span>        <span class="Delimiter">}</span>
 <span id="L897" class="LineNr"> 897 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L898" class="LineNr"> 898 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L899" class="LineNr"> 899 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L900" class="LineNr"> 900 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L900" class="LineNr"> 900 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L901" class="LineNr"> 901 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L902" class="LineNr"> 902 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L903" class="LineNr"> 903 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
 <span id="L904" class="LineNr"> 904 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> col-idx
 <span id="L905" class="LineNr"> 905 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;) but observed '&quot;</span>
-<span id="L906" class="LineNr"> 906 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> g
+<span id="L906" class="LineNr"> 906 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> g
 <span id="L907" class="LineNr"> 907 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;'\n&quot;</span>
 <span id="L908" class="LineNr"> 908 </span>      <span class="Delimiter">}</span>
 <span id="L909" class="LineNr"> 909 </span>      $check-screen-row-in-bold-from:compare-bold: <span class="Delimiter">{</span>
@@ -982,7 +982,7 @@ if ('onhashchange' in window) {
 <span id="L917" class="LineNr"> 917 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L918" class="LineNr"> 918 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L919" class="LineNr"> 919 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L920" class="LineNr"> 920 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L920" class="LineNr"> 920 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L921" class="LineNr"> 921 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L922" class="LineNr"> 922 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L923" class="LineNr"> 923 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
@@ -1003,7 +1003,7 @@ if ('onhashchange' in window) {
 <span id="L938" class="LineNr"> 938 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L938'>check-screen-row-in-underline-from</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
 <span id="L939" class="LineNr"> 939 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
 <span id="L940" class="LineNr"> 940 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L285'>screen-cell-index</a> <a href='405screen.mu.html#L9'>screen</a>, row-idx, col-idx
-<span id="L941" class="LineNr"> 941 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
+<span id="L941" class="LineNr"> 941 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8</span>
 <span id="L942" class="LineNr"> 942 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L943" class="LineNr"> 943 </span>  <span class="PreProc">var</span> e-addr/<span class="muRegEdx">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
 <span id="L944" class="LineNr"> 944 </span>  <a href='108write.subx.html#L24'>write</a> e-addr, expected
@@ -1011,45 +1011,45 @@ if ('onhashchange' in window) {
 <span id="L946" class="LineNr"> 946 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L947" class="LineNr"> 947 </span>    compare done?, <span class="Constant">0</span>
 <span id="L948" class="LineNr"> 948 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L949" class="LineNr"> 949 </span>    <span class="PreProc">var</span> _g/eax: grapheme <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-grapheme-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
-<span id="L950" class="LineNr"> 950 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
-<span id="L951" class="LineNr"> 951 </span>    <span class="PreProc">var</span> _expected-grapheme/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> e-addr
-<span id="L952" class="LineNr"> 952 </span>    <span class="PreProc">var</span> expected-grapheme/<span class="muRegEdx">edx</span>: grapheme <span class="Special">&lt;-</span> copy _expected-grapheme
+<span id="L949" class="LineNr"> 949 </span>    <span class="PreProc">var</span> _g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-code-point-utf8-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
+<span id="L950" class="LineNr"> 950 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _g
+<span id="L951" class="LineNr"> 951 </span>    <span class="PreProc">var</span> _expected-code-point-utf8/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> e-addr
+<span id="L952" class="LineNr"> 952 </span>    <span class="PreProc">var</span> expected-code-point-utf8/<span class="muRegEdx">edx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _expected-code-point-utf8
 <span id="L953" class="LineNr"> 953 </span>    $check-screen-row-in-underline-from:compare-cells: <span class="Delimiter">{</span>
-<span id="L954" class="LineNr"> 954 </span>      <span class="muComment"># if expected-grapheme is space, null grapheme is also ok</span>
+<span id="L954" class="LineNr"> 954 </span>      <span class="muComment"># if expected-code-point-utf8 is space, null code-point-utf8 is also ok</span>
 <span id="L955" class="LineNr"> 955 </span>      <span class="Delimiter">{</span>
-<span id="L956" class="LineNr"> 956 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L956" class="LineNr"> 956 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L957" class="LineNr"> 957 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L958" class="LineNr"> 958 </span>        compare g, <span class="Constant">0</span>
 <span id="L959" class="LineNr"> 959 </span>        <span class="PreProc">break-if-=</span> $check-screen-row-in-underline-from:compare-cells
 <span id="L960" class="LineNr"> 960 </span>      <span class="Delimiter">}</span>
-<span id="L961" class="LineNr"> 961 </span>      <span class="muComment"># if expected-grapheme is space, non-underline is ok</span>
+<span id="L961" class="LineNr"> 961 </span>      <span class="muComment"># if expected-code-point-utf8 is space, non-underline is ok</span>
 <span id="L962" class="LineNr"> 962 </span>      <span class="Delimiter">{</span>
-<span id="L963" class="LineNr"> 963 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L963" class="LineNr"> 963 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L964" class="LineNr"> 964 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L965" class="LineNr"> 965 </span>        <span class="PreProc">var</span> underline?/eax: boolean <span class="Special">&lt;-</span> <a href='405screen.mu.html#L388'>screen-underline-at-idx?</a> <a href='405screen.mu.html#L9'>screen</a>, idx
 <span id="L966" class="LineNr"> 966 </span>        compare underline?, <span class="Constant">1</span>
 <span id="L967" class="LineNr"> 967 </span>        <span class="PreProc">break-if-!=</span> $check-screen-row-in-underline-from:compare-cells
 <span id="L968" class="LineNr"> 968 </span>      <span class="Delimiter">}</span>
-<span id="L969" class="LineNr"> 969 </span>      <span class="muComment"># compare graphemes</span>
-<span id="L970" class="LineNr"> 970 </span>      $check-screen-row-in-underline-from:compare-graphemes: <span class="Delimiter">{</span>
-<span id="L971" class="LineNr"> 971 </span>        <span class="muComment"># if (g == expected-grapheme) print &quot;.&quot;</span>
-<span id="L972" class="LineNr"> 972 </span>        compare g, expected-grapheme
+<span id="L969" class="LineNr"> 969 </span>      <span class="muComment"># compare code-point-utf8s</span>
+<span id="L970" class="LineNr"> 970 </span>      $check-screen-row-in-underline-from:compare-code-point-utf8s: <span class="Delimiter">{</span>
+<span id="L971" class="LineNr"> 971 </span>        <span class="muComment"># if (g == expected-code-point-utf8) print &quot;.&quot;</span>
+<span id="L972" class="LineNr"> 972 </span>        compare g, expected-code-point-utf8
 <span id="L973" class="LineNr"> 973 </span>        <span class="Delimiter">{</span>
 <span id="L974" class="LineNr"> 974 </span>          <span class="PreProc">break-if-!=</span>
 <span id="L975" class="LineNr"> 975 </span>          <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;.&quot;</span>
-<span id="L976" class="LineNr"> 976 </span>          <span class="PreProc">break</span> $check-screen-row-in-underline-from:compare-graphemes
+<span id="L976" class="LineNr"> 976 </span>          <span class="PreProc">break</span> $check-screen-row-in-underline-from:compare-code-point-utf8s
 <span id="L977" class="LineNr"> 977 </span>        <span class="Delimiter">}</span>
 <span id="L978" class="LineNr"> 978 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L979" class="LineNr"> 979 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L980" class="LineNr"> 980 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L981" class="LineNr"> 981 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L981" class="LineNr"> 981 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L982" class="LineNr"> 982 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L983" class="LineNr"> 983 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L984" class="LineNr"> 984 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
 <span id="L985" class="LineNr"> 985 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> col-idx
 <span id="L986" class="LineNr"> 986 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;) but observed '&quot;</span>
-<span id="L987" class="LineNr"> 987 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> g
+<span id="L987" class="LineNr"> 987 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> g
 <span id="L988" class="LineNr"> 988 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;'\n&quot;</span>
 <span id="L989" class="LineNr"> 989 </span>      <span class="Delimiter">}</span>
 <span id="L990" class="LineNr"> 990 </span>      $check-screen-row-in-underline-from:compare-underline: <span class="Delimiter">{</span>
@@ -1063,7 +1063,7 @@ if ('onhashchange' in window) {
 <span id="L998" class="LineNr"> 998 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L999" class="LineNr"> 999 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L1000" class="LineNr">1000 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L1001" class="LineNr">1001 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L1001" class="LineNr">1001 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L1002" class="LineNr">1002 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L1003" class="LineNr">1003 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L1004" class="LineNr">1004 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
@@ -1084,7 +1084,7 @@ if ('onhashchange' in window) {
 <span id="L1019" class="LineNr">1019 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L1019'>check-screen-row-in-reverse-from</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
 <span id="L1020" class="LineNr">1020 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
 <span id="L1021" class="LineNr">1021 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L285'>screen-cell-index</a> <a href='405screen.mu.html#L9'>screen</a>, row-idx, col-idx
-<span id="L1022" class="LineNr">1022 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
+<span id="L1022" class="LineNr">1022 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8</span>
 <span id="L1023" class="LineNr">1023 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L1024" class="LineNr">1024 </span>  <span class="PreProc">var</span> e-addr/<span class="muRegEdx">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
 <span id="L1025" class="LineNr">1025 </span>  <a href='108write.subx.html#L24'>write</a> e-addr, expected
@@ -1092,45 +1092,45 @@ if ('onhashchange' in window) {
 <span id="L1027" class="LineNr">1027 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L1028" class="LineNr">1028 </span>    compare done?, <span class="Constant">0</span>
 <span id="L1029" class="LineNr">1029 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L1030" class="LineNr">1030 </span>    <span class="PreProc">var</span> _g/eax: grapheme <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-grapheme-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
-<span id="L1031" class="LineNr">1031 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
-<span id="L1032" class="LineNr">1032 </span>    <span class="PreProc">var</span> _expected-grapheme/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> e-addr
-<span id="L1033" class="LineNr">1033 </span>    <span class="PreProc">var</span> expected-grapheme/<span class="muRegEdx">edx</span>: grapheme <span class="Special">&lt;-</span> copy _expected-grapheme
+<span id="L1030" class="LineNr">1030 </span>    <span class="PreProc">var</span> _g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-code-point-utf8-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
+<span id="L1031" class="LineNr">1031 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _g
+<span id="L1032" class="LineNr">1032 </span>    <span class="PreProc">var</span> _expected-code-point-utf8/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> e-addr
+<span id="L1033" class="LineNr">1033 </span>    <span class="PreProc">var</span> expected-code-point-utf8/<span class="muRegEdx">edx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _expected-code-point-utf8
 <span id="L1034" class="LineNr">1034 </span>    $check-screen-row-in-reverse-from:compare-cells: <span class="Delimiter">{</span>
-<span id="L1035" class="LineNr">1035 </span>      <span class="muComment"># if expected-grapheme is space, null grapheme is also ok</span>
+<span id="L1035" class="LineNr">1035 </span>      <span class="muComment"># if expected-code-point-utf8 is space, null code-point-utf8 is also ok</span>
 <span id="L1036" class="LineNr">1036 </span>      <span class="Delimiter">{</span>
-<span id="L1037" class="LineNr">1037 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L1037" class="LineNr">1037 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L1038" class="LineNr">1038 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L1039" class="LineNr">1039 </span>        compare g, <span class="Constant">0</span>
 <span id="L1040" class="LineNr">1040 </span>        <span class="PreProc">break-if-=</span> $check-screen-row-in-reverse-from:compare-cells
 <span id="L1041" class="LineNr">1041 </span>      <span class="Delimiter">}</span>
-<span id="L1042" class="LineNr">1042 </span>      <span class="muComment"># if expected-grapheme is space, non-reverse is ok</span>
+<span id="L1042" class="LineNr">1042 </span>      <span class="muComment"># if expected-code-point-utf8 is space, non-reverse is ok</span>
 <span id="L1043" class="LineNr">1043 </span>      <span class="Delimiter">{</span>
-<span id="L1044" class="LineNr">1044 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L1044" class="LineNr">1044 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L1045" class="LineNr">1045 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L1046" class="LineNr">1046 </span>        <span class="PreProc">var</span> reverse?/eax: boolean <span class="Special">&lt;-</span> <a href='405screen.mu.html#L406'>screen-reverse-at-idx?</a> <a href='405screen.mu.html#L9'>screen</a>, idx
 <span id="L1047" class="LineNr">1047 </span>        compare reverse?, <span class="Constant">1</span>
 <span id="L1048" class="LineNr">1048 </span>        <span class="PreProc">break-if-!=</span> $check-screen-row-in-reverse-from:compare-cells
 <span id="L1049" class="LineNr">1049 </span>      <span class="Delimiter">}</span>
-<span id="L1050" class="LineNr">1050 </span>      <span class="muComment"># compare graphemes</span>
-<span id="L1051" class="LineNr">1051 </span>      $check-screen-row-in-reverse-from:compare-graphemes: <span class="Delimiter">{</span>
-<span id="L1052" class="LineNr">1052 </span>        <span class="muComment"># if (g == expected-grapheme) print &quot;.&quot;</span>
-<span id="L1053" class="LineNr">1053 </span>        compare g, expected-grapheme
+<span id="L1050" class="LineNr">1050 </span>      <span class="muComment"># compare code-point-utf8s</span>
+<span id="L1051" class="LineNr">1051 </span>      $check-screen-row-in-reverse-from:compare-code-point-utf8s: <span class="Delimiter">{</span>
+<span id="L1052" class="LineNr">1052 </span>        <span class="muComment"># if (g == expected-code-point-utf8) print &quot;.&quot;</span>
+<span id="L1053" class="LineNr">1053 </span>        compare g, expected-code-point-utf8
 <span id="L1054" class="LineNr">1054 </span>        <span class="Delimiter">{</span>
 <span id="L1055" class="LineNr">1055 </span>          <span class="PreProc">break-if-!=</span>
 <span id="L1056" class="LineNr">1056 </span>          <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;.&quot;</span>
-<span id="L1057" class="LineNr">1057 </span>          <span class="PreProc">break</span> $check-screen-row-in-reverse-from:compare-graphemes
+<span id="L1057" class="LineNr">1057 </span>          <span class="PreProc">break</span> $check-screen-row-in-reverse-from:compare-code-point-utf8s
 <span id="L1058" class="LineNr">1058 </span>        <span class="Delimiter">}</span>
 <span id="L1059" class="LineNr">1059 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L1060" class="LineNr">1060 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L1061" class="LineNr">1061 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L1062" class="LineNr">1062 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L1062" class="LineNr">1062 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L1063" class="LineNr">1063 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L1064" class="LineNr">1064 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L1065" class="LineNr">1065 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
 <span id="L1066" class="LineNr">1066 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> col-idx
 <span id="L1067" class="LineNr">1067 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;) but observed '&quot;</span>
-<span id="L1068" class="LineNr">1068 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> g
+<span id="L1068" class="LineNr">1068 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> g
 <span id="L1069" class="LineNr">1069 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;'\n&quot;</span>
 <span id="L1070" class="LineNr">1070 </span>      <span class="Delimiter">}</span>
 <span id="L1071" class="LineNr">1071 </span>      $check-screen-row-in-reverse-from:compare-reverse: <span class="Delimiter">{</span>
@@ -1144,7 +1144,7 @@ if ('onhashchange' in window) {
 <span id="L1079" class="LineNr">1079 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L1080" class="LineNr">1080 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L1081" class="LineNr">1081 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L1082" class="LineNr">1082 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L1082" class="LineNr">1082 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L1083" class="LineNr">1083 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L1084" class="LineNr">1084 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L1085" class="LineNr">1085 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
@@ -1165,7 +1165,7 @@ if ('onhashchange' in window) {
 <span id="L1100" class="LineNr">1100 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='405screen.mu.html#L1100'>check-screen-row-in-blinking-from</a></span> screen-on-stack: (addr <a href='405screen.mu.html#L9'>screen</a>), row-idx: int, col-idx: int, expected: (addr array byte), msg: (addr array byte) <span class="Delimiter">{</span>
 <span id="L1101" class="LineNr">1101 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> copy screen-on-stack
 <span id="L1102" class="LineNr">1102 </span>  <span class="PreProc">var</span> idx/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> <a href='405screen.mu.html#L285'>screen-cell-index</a> <a href='405screen.mu.html#L9'>screen</a>, row-idx, col-idx
-<span id="L1103" class="LineNr">1103 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', grapheme by grapheme</span>
+<span id="L1103" class="LineNr">1103 </span>  <span class="muComment"># compare 'expected' with the screen contents starting at 'idx', code-point-utf8 by code-point-utf8</span>
 <span id="L1104" class="LineNr">1104 </span>  <span class="PreProc">var</span> e: (stream byte <span class="Constant">0x100</span>)
 <span id="L1105" class="LineNr">1105 </span>  <span class="PreProc">var</span> e-addr/<span class="muRegEdx">edx</span>: (addr stream byte) <span class="Special">&lt;-</span> address e
 <span id="L1106" class="LineNr">1106 </span>  <a href='108write.subx.html#L24'>write</a> e-addr, expected
@@ -1173,45 +1173,45 @@ if ('onhashchange' in window) {
 <span id="L1108" class="LineNr">1108 </span>    <span class="PreProc">var</span> done?/eax: boolean <span class="Special">&lt;-</span> <a href='309stream.subx.html#L6'>stream-empty?</a> e-addr
 <span id="L1109" class="LineNr">1109 </span>    compare done?, <span class="Constant">0</span>
 <span id="L1110" class="LineNr">1110 </span>    <span class="PreProc">break-if-!=</span>
-<span id="L1111" class="LineNr">1111 </span>    <span class="PreProc">var</span> _g/eax: grapheme <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-grapheme-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
-<span id="L1112" class="LineNr">1112 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: grapheme <span class="Special">&lt;-</span> copy _g
-<span id="L1113" class="LineNr">1113 </span>    <span class="PreProc">var</span> _expected-grapheme/eax: grapheme <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L158'>read-grapheme</a> e-addr
-<span id="L1114" class="LineNr">1114 </span>    <span class="PreProc">var</span> expected-grapheme/<span class="muRegEdx">edx</span>: grapheme <span class="Special">&lt;-</span> copy _expected-grapheme
+<span id="L1111" class="LineNr">1111 </span>    <span class="PreProc">var</span> _g/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='405screen.mu.html#L315'>screen-code-point-utf8-at-idx</a> <a href='405screen.mu.html#L9'>screen</a>, idx
+<span id="L1112" class="LineNr">1112 </span>    <span class="PreProc">var</span> g/<span class="muRegEbx">ebx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _g
+<span id="L1113" class="LineNr">1113 </span>    <span class="PreProc">var</span> _expected-code-point-utf8/eax: code-point-utf8 <span class="Special">&lt;-</span> <a href='403unicode.mu.html#L155'>read-code-point-utf8</a> e-addr
+<span id="L1114" class="LineNr">1114 </span>    <span class="PreProc">var</span> expected-code-point-utf8/<span class="muRegEdx">edx</span>: code-point-utf8 <span class="Special">&lt;-</span> copy _expected-code-point-utf8
 <span id="L1115" class="LineNr">1115 </span>    $check-screen-row-in-blinking-from:compare-cells: <span class="Delimiter">{</span>
-<span id="L1116" class="LineNr">1116 </span>      <span class="muComment"># if expected-grapheme is space, null grapheme is also ok</span>
+<span id="L1116" class="LineNr">1116 </span>      <span class="muComment"># if expected-code-point-utf8 is space, null code-point-utf8 is also ok</span>
 <span id="L1117" class="LineNr">1117 </span>      <span class="Delimiter">{</span>
-<span id="L1118" class="LineNr">1118 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L1118" class="LineNr">1118 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L1119" class="LineNr">1119 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L1120" class="LineNr">1120 </span>        compare g, <span class="Constant">0</span>
 <span id="L1121" class="LineNr">1121 </span>        <span class="PreProc">break-if-=</span> $check-screen-row-in-blinking-from:compare-cells
 <span id="L1122" class="LineNr">1122 </span>      <span class="Delimiter">}</span>
-<span id="L1123" class="LineNr">1123 </span>      <span class="muComment"># if expected-grapheme is space, non-blinking is ok</span>
+<span id="L1123" class="LineNr">1123 </span>      <span class="muComment"># if expected-code-point-utf8 is space, non-blinking is ok</span>
 <span id="L1124" class="LineNr">1124 </span>      <span class="Delimiter">{</span>
-<span id="L1125" class="LineNr">1125 </span>        compare expected-grapheme, <span class="Constant">0x20</span>
+<span id="L1125" class="LineNr">1125 </span>        compare expected-code-point-utf8, <span class="Constant">0x20</span>
 <span id="L1126" class="LineNr">1126 </span>        <span class="PreProc">break-if-!=</span>
 <span id="L1127" class="LineNr">1127 </span>        <span class="PreProc">var</span> blinking?/eax: boolean <span class="Special">&lt;-</span> <a href='405screen.mu.html#L424'>screen-blink-at-idx?</a> <a href='405screen.mu.html#L9'>screen</a>, idx
 <span id="L1128" class="LineNr">1128 </span>        compare blinking?, <span class="Constant">1</span>
 <span id="L1129" class="LineNr">1129 </span>        <span class="PreProc">break-if-!=</span> $check-screen-row-in-blinking-from:compare-cells
 <span id="L1130" class="LineNr">1130 </span>      <span class="Delimiter">}</span>
-<span id="L1131" class="LineNr">1131 </span>      <span class="muComment"># compare graphemes</span>
-<span id="L1132" class="LineNr">1132 </span>      $check-screen-row-in-blinking-from:compare-graphemes: <span class="Delimiter">{</span>
-<span id="L1133" class="LineNr">1133 </span>        <span class="muComment"># if (g == expected-grapheme) print &quot;.&quot;</span>
-<span id="L1134" class="LineNr">1134 </span>        compare g, expected-grapheme
+<span id="L1131" class="LineNr">1131 </span>      <span class="muComment"># compare code-point-utf8s</span>
+<span id="L1132" class="LineNr">1132 </span>      $check-screen-row-in-blinking-from:compare-code-point-utf8s: <span class="Delimiter">{</span>
+<span id="L1133" class="LineNr">1133 </span>        <span class="muComment"># if (g == expected-code-point-utf8) print &quot;.&quot;</span>
+<span id="L1134" class="LineNr">1134 </span>        compare g, expected-code-point-utf8
 <span id="L1135" class="LineNr">1135 </span>        <span class="Delimiter">{</span>
 <span id="L1136" class="LineNr">1136 </span>          <span class="PreProc">break-if-!=</span>
 <span id="L1137" class="LineNr">1137 </span>          <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;.&quot;</span>
-<span id="L1138" class="LineNr">1138 </span>          <span class="PreProc">break</span> $check-screen-row-in-blinking-from:compare-graphemes
+<span id="L1138" class="LineNr">1138 </span>          <span class="PreProc">break</span> $check-screen-row-in-blinking-from:compare-code-point-utf8s
 <span id="L1139" class="LineNr">1139 </span>        <span class="Delimiter">}</span>
 <span id="L1140" class="LineNr">1140 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L1141" class="LineNr">1141 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L1142" class="LineNr">1142 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L1143" class="LineNr">1143 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L1143" class="LineNr">1143 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L1144" class="LineNr">1144 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L1145" class="LineNr">1145 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L1146" class="LineNr">1146 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
 <span id="L1147" class="LineNr">1147 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> col-idx
 <span id="L1148" class="LineNr">1148 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;) but observed '&quot;</span>
-<span id="L1149" class="LineNr">1149 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> g
+<span id="L1149" class="LineNr">1149 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> g
 <span id="L1150" class="LineNr">1150 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;'\n&quot;</span>
 <span id="L1151" class="LineNr">1151 </span>      <span class="Delimiter">}</span>
 <span id="L1152" class="LineNr">1152 </span>      $check-screen-row-in-blinking-from:compare-blinking: <span class="Delimiter">{</span>
@@ -1225,7 +1225,7 @@ if ('onhashchange' in window) {
 <span id="L1160" class="LineNr">1160 </span>        <span class="muComment"># otherwise print an error</span>
 <span id="L1161" class="LineNr">1161 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> msg
 <span id="L1162" class="LineNr">1162 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;: expected '&quot;</span>
-<span id="L1163" class="LineNr">1163 </span>        <a href='304screen.subx.html#L161'>print-grapheme-to-real-screen</a> expected-grapheme
+<span id="L1163" class="LineNr">1163 </span>        <a href='304screen.subx.html#L161'>print-code-point-utf8-to-real-screen</a> expected-code-point-utf8
 <span id="L1164" class="LineNr">1164 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;' at (&quot;</span>
 <span id="L1165" class="LineNr">1165 </span>        <a href='304screen.subx.html#L226'>print-int32-hex-to-real-screen</a> row-idx
 <span id="L1166" class="LineNr">1166 </span>        <a href='304screen.subx.html#L122'>print-string-to-real-screen</a> <span class="Constant">&quot;, &quot;</span>
@@ -1240,21 +1240,21 @@ if ('onhashchange' in window) {
 <span id="L1175" class="LineNr">1175 </span>  <span class="Delimiter">}</span>
 <span id="L1176" class="LineNr">1176 </span><span class="Delimiter">}</span>
 <span id="L1177" class="LineNr">1177 </span>
-<span id="L1178" class="LineNr">1178 </span><span class="PreProc">fn</span> <span class="muTest"><a href='405screen.mu.html#L1178'>test-print-single-grapheme</a></span> <span class="Delimiter">{</span>
+<span id="L1178" class="LineNr">1178 </span><span class="PreProc">fn</span> <span class="muTest"><a href='405screen.mu.html#L1178'>test-print-single-code-point-utf8</a></span> <span class="Delimiter">{</span>
 <span id="L1179" class="LineNr">1179 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1180" class="LineNr">1180 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1181" class="LineNr">1181 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
-<span id="L1182" class="LineNr">1182 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1183" class="LineNr">1183 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
-<span id="L1184" class="LineNr">1184 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-print-single-grapheme&quot;</span>  <span class="muComment"># top-left corner of the screen</span>
+<span id="L1182" class="LineNr">1182 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1183" class="LineNr">1183 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1184" class="LineNr">1184 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-print-single-code-point-utf8&quot;</span>  <span class="muComment"># top-left corner of the screen</span>
 <span id="L1185" class="LineNr">1185 </span><span class="Delimiter">}</span>
 <span id="L1186" class="LineNr">1186 </span>
-<span id="L1187" class="LineNr">1187 </span><span class="PreProc">fn</span> <span class="muTest"><a href='405screen.mu.html#L1187'>test-print-multiple-graphemes</a></span> <span class="Delimiter">{</span>
+<span id="L1187" class="LineNr">1187 </span><span class="PreProc">fn</span> <span class="muTest"><a href='405screen.mu.html#L1187'>test-print-multiple-code-point-utf8s</a></span> <span class="Delimiter">{</span>
 <span id="L1188" class="LineNr">1188 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1189" class="LineNr">1189 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1190" class="LineNr">1190 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1191" class="LineNr">1191 </span>  <a href='405screen.mu.html#L169'>print-string</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">&quot;Hello, 世界&quot;</span>
-<span id="L1192" class="LineNr">1192 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;Hello, 世界&quot;</span>, <span class="Constant">&quot;F - test-print-multiple-graphemes&quot;</span>
+<span id="L1192" class="LineNr">1192 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;Hello, 世界&quot;</span>, <span class="Constant">&quot;F - test-print-multiple-code-point-utf8s&quot;</span>
 <span id="L1193" class="LineNr">1193 </span><span class="Delimiter">}</span>
 <span id="L1194" class="LineNr">1194 </span>
 <span id="L1195" class="LineNr">1195 </span><span class="PreProc">fn</span> <span class="muTest"><a href='405screen.mu.html#L1195'>test-move-cursor</a></span> <span class="Delimiter">{</span>
@@ -1262,8 +1262,8 @@ if ('onhashchange' in window) {
 <span id="L1197" class="LineNr">1197 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1198" class="LineNr">1198 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1199" class="LineNr">1199 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>, <span class="Constant">4</span>
-<span id="L1200" class="LineNr">1200 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1201" class="LineNr">1201 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1200" class="LineNr">1200 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1201" class="LineNr">1201 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1202" class="LineNr">1202 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;   a&quot;</span>, <span class="Constant">&quot;F - test-move-cursor&quot;</span>  <span class="muComment"># top row</span>
 <span id="L1203" class="LineNr">1203 </span><span class="Delimiter">}</span>
 <span id="L1204" class="LineNr">1204 </span>
@@ -1272,8 +1272,8 @@ if ('onhashchange' in window) {
 <span id="L1207" class="LineNr">1207 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1208" class="LineNr">1208 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1209" class="LineNr">1209 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>, <span class="Constant">0</span>
-<span id="L1210" class="LineNr">1210 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1211" class="LineNr">1211 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1210" class="LineNr">1210 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1211" class="LineNr">1211 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1212" class="LineNr">1212 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-move-cursor-zeroes&quot;</span>  <span class="muComment"># top-left corner of the screen</span>
 <span id="L1213" class="LineNr">1213 </span><span class="Delimiter">}</span>
 <span id="L1214" class="LineNr">1214 </span>
@@ -1282,8 +1282,8 @@ if ('onhashchange' in window) {
 <span id="L1217" class="LineNr">1217 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1218" class="LineNr">1218 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1219" class="LineNr">1219 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>, <span class="Constant">2</span>
-<span id="L1220" class="LineNr">1220 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1221" class="LineNr">1221 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1220" class="LineNr">1220 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1221" class="LineNr">1221 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1222" class="LineNr">1222 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot; a&quot;</span>, <span class="Constant">&quot;F - test-move-cursor-zero-row&quot;</span>  <span class="muComment"># top row</span>
 <span id="L1223" class="LineNr">1223 </span><span class="Delimiter">}</span>
 <span id="L1224" class="LineNr">1224 </span>
@@ -1292,8 +1292,8 @@ if ('onhashchange' in window) {
 <span id="L1227" class="LineNr">1227 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1228" class="LineNr">1228 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1229" class="LineNr">1229 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">4</span>, <span class="Constant">0</span>
-<span id="L1230" class="LineNr">1230 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1231" class="LineNr">1231 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1230" class="LineNr">1230 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1231" class="LineNr">1231 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1232" class="LineNr">1232 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">4</span>/row, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-move-cursor-zero-column&quot;</span>
 <span id="L1233" class="LineNr">1233 </span><span class="Delimiter">}</span>
 <span id="L1234" class="LineNr">1234 </span>
@@ -1302,8 +1302,8 @@ if ('onhashchange' in window) {
 <span id="L1237" class="LineNr">1237 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1238" class="LineNr">1238 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>, <span class="Constant">3</span>
 <span id="L1239" class="LineNr">1239 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">-1</span>/row, <span class="Constant">2</span>/col
-<span id="L1240" class="LineNr">1240 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1241" class="LineNr">1241 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1240" class="LineNr">1240 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1241" class="LineNr">1241 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1242" class="LineNr">1242 </span>  <span class="muComment"># no move</span>
 <span id="L1243" class="LineNr">1243 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-move-cursor-negative-row&quot;</span>
 <span id="L1244" class="LineNr">1244 </span><span class="Delimiter">}</span>
@@ -1313,8 +1313,8 @@ if ('onhashchange' in window) {
 <span id="L1248" class="LineNr">1248 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1249" class="LineNr">1249 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>, <span class="Constant">3</span>
 <span id="L1250" class="LineNr">1250 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">2</span>/row, <span class="Constant">-1</span>/col
-<span id="L1251" class="LineNr">1251 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1252" class="LineNr">1252 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1251" class="LineNr">1251 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1252" class="LineNr">1252 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1253" class="LineNr">1253 </span>  <span class="muComment"># no move</span>
 <span id="L1254" class="LineNr">1254 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-move-cursor-negative-column&quot;</span>
 <span id="L1255" class="LineNr">1255 </span><span class="Delimiter">}</span>
@@ -1324,8 +1324,8 @@ if ('onhashchange' in window) {
 <span id="L1259" class="LineNr">1259 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1260" class="LineNr">1260 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">3</span>/cols
 <span id="L1261" class="LineNr">1261 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">4</span>/col
-<span id="L1262" class="LineNr">1262 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1263" class="LineNr">1263 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1262" class="LineNr">1262 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1263" class="LineNr">1263 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1264" class="LineNr">1264 </span>  <span class="muComment"># top row is empty</span>
 <span id="L1265" class="LineNr">1265 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;   &quot;</span>, <span class="Constant">&quot;F - test-move-cursor-column-too-large&quot;</span>
 <span id="L1266" class="LineNr">1266 </span>  <span class="muComment"># character shows up on next row</span>
@@ -1337,8 +1337,8 @@ if ('onhashchange' in window) {
 <span id="L1272" class="LineNr">1272 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1273" class="LineNr">1273 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">3</span>/cols
 <span id="L1274" class="LineNr">1274 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">6</span>/col
-<span id="L1275" class="LineNr">1275 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1276" class="LineNr">1276 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1275" class="LineNr">1275 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1276" class="LineNr">1276 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1277" class="LineNr">1277 </span>  <span class="muComment"># top row is empty</span>
 <span id="L1278" class="LineNr">1278 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;   &quot;</span>, <span class="Constant">&quot;F - test-move-cursor-column-too-large-saturates&quot;</span>  <span class="muComment"># top-left corner of the screen</span>
 <span id="L1279" class="LineNr">1279 </span>  <span class="muComment"># character shows up at the start of next row</span>
@@ -1350,8 +1350,8 @@ if ('onhashchange' in window) {
 <span id="L1285" class="LineNr">1285 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1286" class="LineNr">1286 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">3</span>/cols
 <span id="L1287" class="LineNr">1287 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">6</span>/row, <span class="Constant">2</span>/col
-<span id="L1288" class="LineNr">1288 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1289" class="LineNr">1289 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1288" class="LineNr">1288 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1289" class="LineNr">1289 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1290" class="LineNr">1290 </span>  <span class="muComment"># bottom row shows the character</span>
 <span id="L1291" class="LineNr">1291 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/row, <span class="Constant">&quot; a&quot;</span>, <span class="Constant">&quot;F - test-move-cursor-row-too-large&quot;</span>
 <span id="L1292" class="LineNr">1292 </span><span class="Delimiter">}</span>
@@ -1361,8 +1361,8 @@ if ('onhashchange' in window) {
 <span id="L1296" class="LineNr">1296 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1297" class="LineNr">1297 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">3</span>/cols
 <span id="L1298" class="LineNr">1298 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">9</span>/row, <span class="Constant">2</span>/col
-<span id="L1299" class="LineNr">1299 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1300" class="LineNr">1300 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1299" class="LineNr">1299 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1300" class="LineNr">1300 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1301" class="LineNr">1301 </span>  <span class="muComment"># bottom row shows the character</span>
 <span id="L1302" class="LineNr">1302 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/row, <span class="Constant">&quot; a&quot;</span>, <span class="Constant">&quot;F - test-move-cursor-row-too-large-saturates&quot;</span>
 <span id="L1303" class="LineNr">1303 </span><span class="Delimiter">}</span>
@@ -1372,8 +1372,8 @@ if ('onhashchange' in window) {
 <span id="L1307" class="LineNr">1307 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1308" class="LineNr">1308 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1309" class="LineNr">1309 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>, <span class="Constant">4</span>
-<span id="L1310" class="LineNr">1310 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1311" class="LineNr">1311 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1310" class="LineNr">1310 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1311" class="LineNr">1311 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1312" class="LineNr">1312 </span>  <a href='405screen.mu.html#L627'>check-screen-row</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;   a&quot;</span>, <span class="Constant">&quot;F - <a href='405screen.mu.html#L1305'>test-check-screen-row-from</a>/baseline&quot;</span>
 <span id="L1313" class="LineNr">1313 </span>  <a href='405screen.mu.html#L631'>check-screen-row-from</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">4</span>/col, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - test-check-screen-row-from&quot;</span>
 <span id="L1314" class="LineNr">1314 </span><span class="Delimiter">}</span>
@@ -1393,8 +1393,8 @@ if ('onhashchange' in window) {
 <span id="L1328" class="LineNr">1328 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1329" class="LineNr">1329 </span>  <span class="muComment"># single character starting at bottom right</span>
 <span id="L1330" class="LineNr">1330 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
-<span id="L1331" class="LineNr">1331 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1332" class="LineNr">1332 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1331" class="LineNr">1331 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1332" class="LineNr">1332 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1333" class="LineNr">1333 </span>  <a href='405screen.mu.html#L631'>check-screen-row-from</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/row, <span class="Constant">4</span>/col, <span class="Constant">&quot;a&quot;</span>, <span class="Constant">&quot;F - <a href='405screen.mu.html#L1325'>test-check-screen-scrolls-on-overflow</a>/baseline&quot;</span>  <span class="muComment"># bottom-right corner of the screen</span>
 <span id="L1334" class="LineNr">1334 </span>  <span class="muComment"># multiple characters starting at bottom right</span>
 <span id="L1335" class="LineNr">1335 </span>  <a href='405screen.mu.html#L109'>move-cursor</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>, <span class="Constant">4</span>
@@ -1413,14 +1413,14 @@ if ('onhashchange' in window) {
 <span id="L1348" class="LineNr">1348 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1349" class="LineNr">1349 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1350" class="LineNr">1350 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
-<span id="L1351" class="LineNr">1351 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1352" class="LineNr">1352 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1351" class="LineNr">1351 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1352" class="LineNr">1352 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1353" class="LineNr">1353 </span>  <a href='405screen.mu.html#L523'>start-color</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/fg, <span class="Constant">0</span>/bg
 <span id="L1354" class="LineNr">1354 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x62</span>/b
-<span id="L1355" class="LineNr">1355 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1355" class="LineNr">1355 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1356" class="LineNr">1356 </span>  <a href='405screen.mu.html#L523'>start-color</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/fg, <span class="Constant">7</span>/bg
 <span id="L1357" class="LineNr">1357 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x63</span>/c
-<span id="L1358" class="LineNr">1358 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1358" class="LineNr">1358 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1359" class="LineNr">1359 </span>  <a href='405screen.mu.html#L681'>check-screen-row-in-color</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/fg, <span class="Constant">1</span>/row, <span class="Constant">&quot;a c&quot;</span>, <span class="Constant">&quot;F - test-check-screen-color&quot;</span>
 <span id="L1360" class="LineNr">1360 </span><span class="Delimiter">}</span>
 <span id="L1361" class="LineNr">1361 </span>
@@ -1428,14 +1428,14 @@ if ('onhashchange' in window) {
 <span id="L1363" class="LineNr">1363 </span>  <span class="PreProc">var</span> screen-on-stack: <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1364" class="LineNr">1364 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1365" class="LineNr">1365 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
-<span id="L1366" class="LineNr">1366 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1367" class="LineNr">1367 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1366" class="LineNr">1366 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1367" class="LineNr">1367 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1368" class="LineNr">1368 </span>  <a href='405screen.mu.html#L523'>start-color</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/fg, <span class="Constant">1</span>/bg
 <span id="L1369" class="LineNr">1369 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x62</span>/b
-<span id="L1370" class="LineNr">1370 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1370" class="LineNr">1370 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1371" class="LineNr">1371 </span>  <a href='405screen.mu.html#L523'>start-color</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">0</span>/fg, <span class="Constant">7</span>/bg
 <span id="L1372" class="LineNr">1372 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x63</span>/c
-<span id="L1373" class="LineNr">1373 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1373" class="LineNr">1373 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1374" class="LineNr">1374 </span>  <a href='405screen.mu.html#L768'>check-screen-row-in-background-color</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">7</span>/bg, <span class="Constant">1</span>/row, <span class="Constant">&quot;a c&quot;</span>, <span class="Constant">&quot;F - test-check-screen-background-color&quot;</span>
 <span id="L1375" class="LineNr">1375 </span><span class="Delimiter">}</span>
 <span id="L1376" class="LineNr">1376 </span>
@@ -1444,14 +1444,14 @@ if ('onhashchange' in window) {
 <span id="L1379" class="LineNr">1379 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1380" class="LineNr">1380 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1381" class="LineNr">1381 </span>  <a href='405screen.mu.html#L541'>start-bold</a> <a href='405screen.mu.html#L9'>screen</a>
-<span id="L1382" class="LineNr">1382 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1383" class="LineNr">1383 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1382" class="LineNr">1382 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1383" class="LineNr">1383 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1384" class="LineNr">1384 </span>  <a href='405screen.mu.html#L506'>reset-formatting</a> <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1385" class="LineNr">1385 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x62</span>/b
-<span id="L1386" class="LineNr">1386 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1386" class="LineNr">1386 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1387" class="LineNr">1387 </span>  <a href='405screen.mu.html#L541'>start-bold</a> <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1388" class="LineNr">1388 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x63</span>/c
-<span id="L1389" class="LineNr">1389 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1389" class="LineNr">1389 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1390" class="LineNr">1390 </span>  <a href='405screen.mu.html#L853'>check-screen-row-in-bold</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;a c&quot;</span>, <span class="Constant">&quot;F - test-check-screen-bold&quot;</span>
 <span id="L1391" class="LineNr">1391 </span><span class="Delimiter">}</span>
 <span id="L1392" class="LineNr">1392 </span>
@@ -1460,14 +1460,14 @@ if ('onhashchange' in window) {
 <span id="L1395" class="LineNr">1395 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1396" class="LineNr">1396 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1397" class="LineNr">1397 </span>  <a href='405screen.mu.html#L555'>start-underline</a> <a href='405screen.mu.html#L9'>screen</a>
-<span id="L1398" class="LineNr">1398 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1399" class="LineNr">1399 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1398" class="LineNr">1398 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1399" class="LineNr">1399 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1400" class="LineNr">1400 </span>  <a href='405screen.mu.html#L506'>reset-formatting</a> <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1401" class="LineNr">1401 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x62</span>/b
-<span id="L1402" class="LineNr">1402 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1402" class="LineNr">1402 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1403" class="LineNr">1403 </span>  <a href='405screen.mu.html#L555'>start-underline</a> <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1404" class="LineNr">1404 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x63</span>/c
-<span id="L1405" class="LineNr">1405 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1405" class="LineNr">1405 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1406" class="LineNr">1406 </span>  <a href='405screen.mu.html#L934'>check-screen-row-in-underline</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;a c&quot;</span>, <span class="Constant">&quot;F - test-check-screen-underline&quot;</span>
 <span id="L1407" class="LineNr">1407 </span><span class="Delimiter">}</span>
 <span id="L1408" class="LineNr">1408 </span>
@@ -1476,14 +1476,14 @@ if ('onhashchange' in window) {
 <span id="L1411" class="LineNr">1411 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1412" class="LineNr">1412 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1413" class="LineNr">1413 </span>  <a href='405screen.mu.html#L569'>start-reverse-video</a> <a href='405screen.mu.html#L9'>screen</a>
-<span id="L1414" class="LineNr">1414 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1415" class="LineNr">1415 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1414" class="LineNr">1414 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1415" class="LineNr">1415 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1416" class="LineNr">1416 </span>  <a href='405screen.mu.html#L506'>reset-formatting</a> <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1417" class="LineNr">1417 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x62</span>/b
-<span id="L1418" class="LineNr">1418 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1418" class="LineNr">1418 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1419" class="LineNr">1419 </span>  <a href='405screen.mu.html#L569'>start-reverse-video</a> <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1420" class="LineNr">1420 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x63</span>/c
-<span id="L1421" class="LineNr">1421 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1421" class="LineNr">1421 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1422" class="LineNr">1422 </span>  <a href='405screen.mu.html#L1015'>check-screen-row-in-reverse</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;a c&quot;</span>, <span class="Constant">&quot;F - test-check-screen-reverse&quot;</span>
 <span id="L1423" class="LineNr">1423 </span><span class="Delimiter">}</span>
 <span id="L1424" class="LineNr">1424 </span>
@@ -1492,14 +1492,14 @@ if ('onhashchange' in window) {
 <span id="L1427" class="LineNr">1427 </span>  <span class="PreProc">var</span> <a href='405screen.mu.html#L9'>screen</a>/<span class="muRegEsi">esi</span>: (addr <a href='405screen.mu.html#L9'>screen</a>) <span class="Special">&lt;-</span> address screen-on-stack
 <span id="L1428" class="LineNr">1428 </span>  <a href='405screen.mu.html#L30'>initialize-screen</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">5</span>/rows, <span class="Constant">4</span>/cols
 <span id="L1429" class="LineNr">1429 </span>  <a href='405screen.mu.html#L583'>start-blinking</a> <a href='405screen.mu.html#L9'>screen</a>
-<span id="L1430" class="LineNr">1430 </span>  <span class="PreProc">var</span> c/eax: grapheme <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
-<span id="L1431" class="LineNr">1431 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1430" class="LineNr">1430 </span>  <span class="PreProc">var</span> c/eax: code-point-utf8 <span class="Special">&lt;-</span> copy <span class="Constant">0x61</span>/a
+<span id="L1431" class="LineNr">1431 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1432" class="LineNr">1432 </span>  <a href='405screen.mu.html#L506'>reset-formatting</a> <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1433" class="LineNr">1433 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x62</span>/b
-<span id="L1434" class="LineNr">1434 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1434" class="LineNr">1434 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1435" class="LineNr">1435 </span>  <a href='405screen.mu.html#L583'>start-blinking</a> <a href='405screen.mu.html#L9'>screen</a>
 <span id="L1436" class="LineNr">1436 </span>  c <span class="Special">&lt;-</span> copy <span class="Constant">0x63</span>/c
-<span id="L1437" class="LineNr">1437 </span>  <a href='405screen.mu.html#L214'>print-grapheme</a> <a href='405screen.mu.html#L9'>screen</a>, c
+<span id="L1437" class="LineNr">1437 </span>  <a href='405screen.mu.html#L214'>print-code-point-utf8</a> <a href='405screen.mu.html#L9'>screen</a>, c
 <span id="L1438" class="LineNr">1438 </span>  <a href='405screen.mu.html#L1096'>check-screen-row-in-blinking</a> <a href='405screen.mu.html#L9'>screen</a>, <span class="Constant">1</span>/row, <span class="Constant">&quot;a c&quot;</span>, <span class="Constant">&quot;F - test-check-screen-blinking&quot;</span>
 <span id="L1439" class="LineNr">1439 </span><span class="Delimiter">}</span>
 <span id="L1440" class="LineNr">1440 </span>
