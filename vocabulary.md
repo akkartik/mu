@@ -191,8 +191,8 @@ automatically read and update the cursor position in various ways.
 - `draw-code-point-at-cursor-over-full-screen`: `render-code-point` at
   cursor position.
 - `draw-cursor`: highlights the current position of the cursor. Programs must
-  pass in the grapheme to draw at the cursor position, and are responsible for
-  clearing the highlight when the cursor moves.
+  pass in the code-point to draw at the cursor position, and are responsible
+  for clearing the highlight when the cursor moves.
 - `move-cursor-left`, `move-cursor-right`, `move-cursor-up`, `move-cursor-down`.
   These primitives always silently fail if the desired movement would go out
   of screen bounds.
