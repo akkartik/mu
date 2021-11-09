@@ -550,10 +550,11 @@ fn main screen: (addr screen), keyboard: (addr keyboard) {
 
 `read-line-from-keyboard` reads keystrokes from the keyboard until you press
 the `Enter` (also called `newline`) key, and accumulates them into a _stream_
-of bytes. The loop then repeatedly reads _code-point-utf8s_ from the stream. A
-code-point-utf8 can consist of multiple bytes, particularly outside of the Latin
-alphabet and Arabic digits most prevalent in the West. Mu doesn't yet support
-non-Qwerty keyboards, but support for other keyboards should be easy to add.
+of bytes. The loop then repeatedly reads _code points_ from the stream, and
+these code points are encoded in a special encoding of Unicode called UTF-8.
+Mu doesn't yet support non-Qwerty keyboards, but support for keyboards in
+other parts of the world should be easy to add thanks to our support for
+UTF-8.
 
 This is a good time to skim the section in the Mu reference on
 [streams](https://github.com/akkartik/mu/blob/main/mu.md#streams), just to
@@ -561,14 +562,14 @@ give yourself a sense of what you can do with them. Does the above program
 make sense now?  Feel free to experiment to make sense of it.
 
 Can you modify it to print out the line a second time, after you've typed it
-out until the `Enter` key? Can you print a space after every code-point-utf8 when you
-print the line out a second time? You'll need to skim the section on
+out until the `Enter` key? Can you print a space after every code point when
+you print the line out a second time? You'll need to skim the section on
 [printing to screen](https://github.com/akkartik/mu/blob/main/vocabulary.md#printing-to-screen)
-from Mu's vocabulary. Pay particular attention to the difference between a
-code-point-utf8 and a _code-point_. Mu programs often read characters in units of
-code-point-utf8s, but they must draw in units of code-points that the font manages.
-(This adds some complexity but helps combine multiple code-points into a
-single glyph as needed for some languages.)
+from Mu's vocabulary. One common pattern: Mu programs read characters in
+UTF-8, but print raw `code-point`s. Use `to-code-point` to decode UTF-8 and
+get at the underlying raw `code-point`, and use `to-utf8` to encode a
+`code-point` into a `code-point-utf8`. (This stuff is still under
+construction; I hope to simplify it over time.)
 
 ## Task 15: generating cool patterns
 
