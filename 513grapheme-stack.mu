@@ -1,4 +1,6 @@
-# code-point-utf8 stacks are the smallest unit of editable text
+# Grapheme stacks are the smallest unit of editable text.
+#
+# (Currently they just support single-code-point graphemes.)
 
 type grapheme-stack {
   data: (handle array code-point-utf8)
