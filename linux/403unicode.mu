@@ -199,7 +199,7 @@ fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
     }
 $read-grapheme:abort: {
       # TODO: print to stderr
-      print-string-to-real-screen "utf-8 encodings larger than 4 bytes are not supported. First byte seen: "
+      print-string-to-real-screen "utf-8 encodings larger than 4 bytes are not yet supported. First byte seen: "
       var n/eax: int <- copy c
       print-int32-hex-to-real-screen n
       print-string-to-real-screen "\n"

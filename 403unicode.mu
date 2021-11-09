@@ -136,10 +136,10 @@ fn to-grapheme in: code-point -> _/eax: grapheme {
       break $to-grapheme:compute-length
     }
     # more than 4 bytes: unsupported
-    # TODO: print error message to stderr
     compare c, 0x1fffff
     {
       break-if->
+      abort "unsupported code point"
       return 0
     }
   }
@@ -276,7 +276,7 @@ fn read-grapheme in: (addr stream byte) -> _/eax: grapheme {
       num-trailers <- copy 3
       break $read-grapheme:compute-length
     }
-    # TODO: print error message
+    abort "utf-8 encodings larger than 4 bytes are not yet supported"
     return 0
   }
   # prepend trailer bytes
