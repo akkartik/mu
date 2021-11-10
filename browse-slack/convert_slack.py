@@ -32,6 +32,7 @@ import json
 from os import listdir
 from os.path import isfile, join, basename, splitext
 from urllib.parse import urlparse
+import traceback
 
 def look_up_ppm_image(url):
     file_root = splitext(basename(urlparse(url).path))[0]
@@ -49,6 +50,11 @@ with open('users.json') as f:
         user_idx[user['id']] = idx
 
 def by(item):
+    if 'subtype' in item and item['subtype'] == 'bot_message' and 'username' in item:
+        federated_user = item['username']
+        if federated_user not in user_idx:
+            user_idx[federated_user] = len(user_idx)
+        return user_idx[federated_user]
     return user_idx[item['user']]
 
 item_idx = {}
@@ -74,4 +80,5 @@ for item in sorted(items, key=lambda item: item['ts']):
         item_idx[item['ts']] = idx
         idx += 1  # only increment when actually used and no exception raised
     except KeyError:
+        traceback.print_exc(file=stderr)
         stderr.write(repr(item)+'\n')
