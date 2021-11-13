@@ -240,7 +240,7 @@ Mu builds on many ideas that have come before, especially:
 On a more tactical level, this project has made progress in a series of bursts
 as I discovered the following resources. In autobiographical order, with no
 claims of completeness:
-- [&ldquo;Bootstrapping a compiler from nothing&rdquo;](http://web.archive.org/web/20061108010907/http://www.rano.org/bcompiler.html) by Edmund Grumley-Evans.
+- [&ldquo;Bootstrapping a compiler from nothing&rdquo;](http://web.archive.org/web/20061108010907/http://www.rano.org/bcompiler.html) by Edmund Grimley-Evans.
 - [StoneKnifeForth](https://github.com/kragen/stoneknifeforth) by [Kragen Sitaker](http://canonical.org/~kragen),
   including [a tiny sketch of an ELF loader](https://github.com/kragen/stoneknifeforth/blob/master/386.c).
 - [&ldquo;Creating tiny ELF executables&rdquo;](https://www.muppetlabs.com/~breadbox/software/tiny/teensy.html) by Brian Raiter.
