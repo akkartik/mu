@@ -8,7 +8,6 @@ fn main screen: (addr screen) {
       compare x, 0x400/screen-width=1024
       break-if->=
       var color/ecx: int <- copy x
-      color <- and 0xff
       pixel screen x, y, color
       x <- increment
       loop
