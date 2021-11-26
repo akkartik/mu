@@ -1,4 +1,6 @@
-# A slow tour through Mu software on x86 computers
+# A guided tour of Mu on x86 computers
+
+_by Kartik Agaram and [sejo](https://compudanzas.net)_
 
 [Mu](https://github.com/akkartik/mu) shrinks all the software in a computer
 until it can (in principle) fit in a single head. Sensible error messages with
