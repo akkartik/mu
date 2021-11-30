@@ -9,7 +9,7 @@ instruction set. Everything easy to change to your needs
 ([habitable](http://akkartik.name/post/habitability)), everything easy to
 check up on ([auditable](http://akkartik.name/post/neighborhood)).
 
-This page is a guided tour through [Mu's Readme](https://github.com/akkartik/mu)
+This page is a guided tour through [Mu's Readme](https://github.com/akkartik/mu#readme)
 and reference documentation. We'll start out really slow and gradually
 accelerate as we build up skills. By the end of it all, I hope you'll be able
 to program your processor to run some small graphical programs. The programs
