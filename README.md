@@ -200,9 +200,11 @@ pull features upstream!
 
 If you're still reading, here are some more things to check out:
 
+- [A slow guided tour of Mu.](tutorial/index.md)
+
 - [How to get your text editor set up for Mu and SubX programs.](editor/editor.md)
 
-- [Videos demonstrating Mu programs and features.](https://archive.org/details/@kartik_agaram)
+- [Some videos demonstrating Mu programs and features.](https://archive.org/details/@kartik_agaram)
 
 - [A summary](mu_instructions) of how the Mu compiler translates statements
   to SubX. Most Mu statements map to a single x86 instruction.
