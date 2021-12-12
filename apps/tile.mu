@@ -1,4 +1,11 @@
 # Randomly tile from a given set of tiles
+#
+# To build:
+#   $ git clone https://github.com/akkartik/mu
+#   $ cd mu
+#   $ ./translate apps/tile.mu
+# To run:
+#   $ qemu-system-i386 code.img
 
 type tile {
   data: (handle array handle array int)
@@ -13,7 +20,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
 #?   set-tile tiles, 0/idx, 1 0 0, 0 1 0, 0 0 1
 #?   set-tile tiles, 1/idx, 0 0 1, 0 1 0, 1 0 0
 
-  # https://post.lurk.org/@paul/107425083075253587
+  # https://pbat.ch/wiki/trikuf
   var tiles-storage: (array tile 0x62)
   var tiles/esi: (addr array tile) <- address tiles-storage
   set-tile tiles, 0x00/idx, 1 1 1, 0 1 0, 0 0 0
@@ -123,7 +130,7 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   }
   var step/eax: int <- copy 0
   {
-    render-random screen, tiles, 0xc/pixels-per-tile, step
+    render-random screen, tiles, 4/pixels-per-cell, step
     {
       var key/eax: byte <- read-key keyboard
       compare key, 0
@@ -194,15 +201,16 @@ fn render-tiles screen: (addr screen), _tiles: (addr array tile) {
 #?     draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, i, 0x31, 0
     var tile/eax: (addr tile) <- index tiles, i
     var start-x/edx: int <- copy i
-    start-x <- and 0xf  # 16 cells per row
-    start-x <- shift-left 4/pixels-per-cell
+    start-x <- and 0xf/tiles-per-row-minus-one
+    start-x <- shift-left 5  # ceil(log(3 * pixels-per-cell))
     start-x <- add 0x20/left-margin
+#?     draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, start-x, 0x31 0
     var start-y/ebx: int <- copy i
-    start-y <- shift-right 4  # 16 cells per row
-    start-y <- shift-left 4/pixels-per-cell
+    start-y <- shift-right 4/log2-tiles-per-row
+    start-y <- shift-left 5  # ceil(log(3 * pixels-per-cell))
     start-y <- add 0x20/top-margin
 #?     draw-int32-hex-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, start-x, 0x31, 0
-    render-tile screen, tile, start-x, start-y, 4/pixels-per-cell  # 4 * 3 + 4 = 16 pixels wide
+    render-tile screen, tile, start-x, start-y, 8/pixels-per-cell
     i <- increment
     loop
   }
@@ -229,6 +237,8 @@ fn render-tile screen: (addr screen), _tile: (addr tile), start-x: int, start-y:
       var curr/eax: (addr int) <- index curr-row, j
       var color/eax: int <- copy *curr
       color <- shift-left 1
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, x, 9 0
+#?       draw-int32-decimal-wrapping-right-then-down-from-cursor-over-full-screen 0/screen, y, 0xc 0
       draw-rect2 screen, x y, n n, color
       j <- increment
       x <- add n
@@ -240,7 +250,7 @@ fn render-tile screen: (addr screen), _tile: (addr tile), start-x: int, start-y:
   }
 }
 
-fn render-random screen: (addr screen), _tiles: (addr array tile), n: int, seed: int {
+fn render-random screen: (addr screen), _tiles: (addr array tile), pixels-per-cell: int, seed: int {
   draw-rect screen, 0 0, 0x400 0x300, 8
   var tiles/esi: (addr array tile) <- copy _tiles
   var rand/edi: int <- next-random seed
@@ -255,17 +265,21 @@ fn render-random screen: (addr screen), _tiles: (addr array tile), n: int, seed:
       break-if->=
       var i/eax: int <- remainder rand, num-tiles
       var tile/eax: (addr tile) <- index tiles, i
-      render-tile-without-margin screen, tile, x, y, 4/pixels-per-cell
-      x <- add n
+      render-tile-without-margin screen, tile, x, y, pixels-per-cell
+      x <- add pixels-per-cell
+      x <- add pixels-per-cell
+      x <- add pixels-per-cell
       rand <- next-random rand
       loop
     }
-    y <- add n
+    y <- add pixels-per-cell
+    y <- add pixels-per-cell
+    y <- add pixels-per-cell
     loop
   }
 }
 
-fn render-tile-without-margin screen: (addr screen), _tile: (addr tile), start-x: int, start-y: int, n: int {
+fn render-tile-without-margin screen: (addr screen), _tile: (addr tile), start-x: int, start-y: int, pixels-per-cell: int {
   var tile/esi: (addr tile) <- copy _tile
   var y/ecx: int <- copy start-y
   var rows-ah/eax: (addr handle array handle array int) <- get tile, data
@@ -284,13 +298,13 @@ fn render-tile-without-margin screen: (addr screen), _tile: (addr tile), start-x
       var curr/eax: (addr int) <- index curr-row, j
       var color/eax: int <- copy *curr
       color <- shift-left 1
-      draw-rect2 screen, x y, n n, color
+      draw-rect2 screen, x y, pixels-per-cell pixels-per-cell, color
       j <- increment
-      x <- add n
+      x <- add pixels-per-cell
       loop
     }
     i <- increment
-    y <- add n
+    y <- add pixels-per-cell
     loop
   }
 }
