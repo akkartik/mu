@@ -94,6 +94,14 @@ fn draw-rect screen: (addr screen), xmin: int, ymin: int, xmax: int, ymax: int, 
   }
 }
 
+fn draw-rect2 screen: (addr screen), xmin: int, ymin: int, w: int, h: int, color: int {
+  var xmax/eax: int <- copy xmin
+  xmax <- add w
+  var ymax/ecx: int <- copy ymin
+  ymax <- add h
+  draw-rect screen, xmin ymin, xmax ymax, color
+}
+
 # 0 <= u <= 1
 fn line-point u: float, x0: int, x1: int -> _/eax: int {
   var one/eax: int <- copy 1
