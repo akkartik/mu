@@ -308,10 +308,3 @@ fn render-tile-without-margin screen: (addr screen), _tile: (addr tile), start-x
     loop
   }
 }
-
-fn remainder a: int, b: int -> _/eax: int {
-  var q/eax: int <- copy 0
-  var r/edx: int <- copy 0
-  q, r <- integer-divide a, b
-  return r
-}

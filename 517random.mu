@@ -9,3 +9,10 @@ fn next-random prev: int -> _/edi: int {
   next <- remainder next, m
   return next
 }
+
+fn remainder a: int, b: int -> _/eax: int {
+  var q/eax: int <- copy 0
+  var r/edx: int <- copy 0
+  q, r <- integer-divide a, b
+  return r
+}
