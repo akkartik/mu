@@ -33,8 +33,10 @@ their own. I want to encourage a style of active and interactive reading with
 Mu. If something doesn't make sense, try changing it and see what tests break.
 Any breaking change should cause a failure in some well-named test somewhere.
 
-Currently Mu requires a 32-bit x86 processor. It supports a short list of
-generic hardware, and can't do networking yet.
+Mu requires a 32-bit x86 processor. It supports a short list of generic
+hardware. There's no networking support yet. Development has slowed, but I
+still care about it. Feedback, bug reports and other forms of contribution
+continue to be appreciated.
 
 ## Goals
 
@@ -177,7 +179,15 @@ More resources on SubX:
 
 * [Some tips for debugging SubX programs.](linux/subx_debugging.md)
 
-## Forks
+## Mirrors and Forks
+
+As of 2022-01, updates to Mu can be downloaded from the following mirrors:
+* https://github.com/akkartik/mu
+* https://repo.or.cz/mu.git
+* https://codeberg.org/akkartik/mu
+* https://tildegit.org/akkartik/mu
+* https://git.tilde.institute/akkartik/mu
+* https://git.sr.ht/~akkartik/mu
 
 Forks of Mu are encouraged. If you don't like something about this repo, feel
 free to make a fork. If you show it to me, I'll link to it here. I might even
