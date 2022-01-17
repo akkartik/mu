@@ -13,8 +13,11 @@
 #   for f in $(file *.jpg |grep PNG |sed 's/:.*//'); do mv -i $f $(echo $f |sed 's/\.jpg$/.png/'); done
 #   #
 #   mkdir ppm
-#   for f in *.jpg; do jpegtopnm $f |pnmtopnm -plain > ppm/$(echo $f |sed 's/\.jpg$//').ppm; done
-#   for f in *.png; do png2pnm -n $f > ppm/$(echo $f |sed 's/\.png$//').ppm; done
+#   for f in *.jpg; do jpegtopnm $f |pnmtoplainpnm > ppm/$(echo $f |sed 's/\.jpg$//').ppm; done
+#   for f in *.png; do pngtopnm $f |pnmtoplainpnm > ppm/$(echo $f |sed 's/\.png$//').ppm; done
+#
+# (Depending on your OS, you may need to replace pnmtoplainpnm with `pnmtopnm -plain`. Some places also have a pnm2pnm.
+# I don't understand it either.)
 #
 # Step 3: construct a disk image out of the archives and avatars
 #   cd ..  # go back to the top-level archive directory
