@@ -895,7 +895,7 @@ fn update-main-panel env: (addr environment), key: byte, users: (addr array user
   {
     compare key, 0xa/newline
     break-if-!=
-    new-thread-tab env, users, channels, items
+    new-thread-tab-from-cursor env, users, channels, items
     return
   }
   {
@@ -1040,16 +1040,19 @@ fn new-all-items-tab _env: (addr environment), users: (addr array user), channel
   copy-to *dest, final-item
 }
 
-fn new-thread-tab _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+fn new-thread-tab-from-cursor _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
   var env/edi: (addr environment) <- copy _env
   var current-tab-index-addr/ecx: (addr int) <- get env, current-tab-index
   var tabs-ah/eax: (addr handle array tab) <- get env, tabs
   var tabs/eax: (addr array tab) <- lookup *tabs-ah
   var current-tab-index/ecx: int <- copy *current-tab-index-addr
-  var current-tab-offset/ecx: (offset tab) <- compute-offset tabs, current-tab-index
-  var current-tab/ecx: (addr tab) <- index tabs, current-tab-offset
   var item-index/esi: int <- item-index env, _items, channels
   var post-index/ecx: int <- post-index _items, item-index
+  new-thread-tab env, users, channels, _items, post-index, item-index
+}
+
+fn new-thread-tab _env: (addr environment), users: (addr array user), channels: (addr array channel), _items: (addr item-list), _post-index: int, _item-index: int {
+  var env/edi: (addr environment) <- copy _env
   var current-tab-index-addr/eax: (addr int) <- get env, current-tab-index
   increment *current-tab-index-addr
   var current-tab-index/edx: int <- copy *current-tab-index-addr
@@ -1068,6 +1071,7 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
   var current-tab-type/eax: (addr int) <- get current-tab, type
   copy-to *current-tab, 3/thread
   var current-tab-root-index/eax: (addr int) <- get current-tab, root-index
+  var post-index/ecx: int <- copy _post-index
   copy-to *current-tab-root-index, post-index
   var items/eax: (addr item-list) <- copy _items
   var items-data-ah/eax: (addr handle array item) <- get items, data
@@ -1091,15 +1095,18 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
       # if we didn't find the current item in a post's comments, it must be
       # the parent post itself which isn't in the comment list but hackily
       # rendered at the bottom. Just render the whole comment list.
+      var item-index/eax: int <- copy _item-index
       var tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
       copy-to *tab-item-index-addr, curr-post-comment-index
       return
     }
     var curr-comment-index/ecx: (addr int) <- index post-comments, curr-post-comment-index
+    var item-index/eax: int <- copy _item-index
     compare *curr-comment-index, item-index
     {
       break-if-!=
       # item-index found
+      var item-index/eax: int <- copy _item-index
       var tab-item-index-addr/edi: (addr int) <- get current-tab, item-index
       copy-to *tab-item-index-addr, curr-post-comment-index
       return
@@ -1108,6 +1115,87 @@ fn new-thread-tab _env: (addr environment), users: (addr array user), channels: 
     loop
   }
   abort "new-thread-tab: should never leave previous loop without returning"
+}
+
+fn new-thread-tab-from-url _env: (addr environment), _url: (addr array byte), users: (addr array user), channels: (addr array channel), _items: (addr item-list) {
+  var id-storage: (array byte 0x11)
+  var id/ecx: (addr array byte) <- address id-storage
+  var url/edx: (addr array byte) <- copy _url
+  var len/ebx: int <- length url
+  var idx/eax: int <- copy len
+  idx <- subtract 0x11/id-length
+  {
+    var x/eax: (addr byte) <- index url, idx
+    var x2/ecx: byte <- copy-byte *x
+    compare x2, 0x70/p
+    break-if-=
+    abort "not p"
+  }
+  idx <- increment  # skip 'p'
+  var dest-idx/edi: int <- copy 0
+  # insert first 10 digits of id
+  {
+    compare dest-idx, 0xa/ten
+    break-if->=
+    {
+      var c/eax: (addr byte) <- index url, idx
+      var c2/eax: byte <- copy-byte *c
+      var dest/ecx: (addr byte) <- index id, dest-idx
+      copy-byte-to *dest, c2
+    }
+    idx <- increment
+    dest-idx <- increment
+    loop
+  }
+  # insert a decimal point
+  {
+    var dest/ecx: (addr byte) <- index id, dest-idx
+    var decimal-point/eax: byte <- copy 0x2e
+    copy-byte-to *dest, decimal-point
+    dest-idx <- increment
+  }
+  # insert remaining digits of id
+  {
+    compare dest-idx, 0x11/id-length
+    break-if->=
+    {
+      var c/eax: (addr byte) <- index url, idx
+      var c2/eax: byte <- copy-byte *c
+      var dest/ecx: (addr byte) <- index id, dest-idx
+      copy-byte-to *dest, c2
+    }
+    idx <- increment
+    dest-idx <- increment
+    loop
+  }
+  var post-index/eax: int <- find-item-by-id _items, id
+  new-thread-tab _env, users, channels, _items, post-index, post-index
+}
+
+fn find-item-by-id _items: (addr item-list), id: (addr array byte) -> _/eax: int {
+  var items/eax: (addr item-list) <- copy _items
+  var items-data-ah/eax: (addr handle array item) <- get items, data
+  var items-data/eax: (addr array item) <- lookup *items-data-ah
+  var i/ecx: int <- copy 0
+  var len/edx: int <- length items-data
+  {
+    compare i, len
+    break-if->=
+    var offset/edx: (offset item) <- compute-offset items-data, i
+    var curr-item/eax: (addr item) <- index items-data, offset
+    var curr-item-id-ah/eax: (addr handle array byte) <- get curr-item, id
+    var curr-item-id/eax: (addr array byte) <- lookup *curr-item-id-ah
+    {
+      var found?/eax: boolean <- string-equal? curr-item-id, id
+      compare found?, 0/false
+      break-if-=
+      return i
+    }
+    i <- increment
+    loop
+  }
+  abort "find-item-by-id: not found"
+  return -1
 }
 
 # hide a thread in a (channel or all-items) tab

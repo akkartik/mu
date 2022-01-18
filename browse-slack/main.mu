@@ -79,10 +79,12 @@ fn main screen: (addr screen), keyboard: (addr keyboard), data-disk: (addr disk)
   var items-data-ah/eax: (addr handle array item) <- get items, data
   populate items-data-ah, 0x10000/num-items
   parse s, users, channels, items
-  # render
+  # event loop
   var env-storage: environment
   var env/ebx: (addr environment) <- address env-storage
   initialize-environment env, items
+#?   # uncomment this for a hacky feature: browse thread for a specific url
+#?   new-thread-tab-from-url env, "https://futureofcoding.slack.com/archives/C5T9GPWFL/p1599719973216100", users, channels, items
   {
     render-environment screen, env, users, channels, items
     {
