@@ -150,8 +150,9 @@ def (a <> b)
 ```
 
 To permit arbitrary infix operators, the Mu shell partitions the space of
-code-point-utf8s between operators and regular symbols. As a result, you can't define
-symbols mixing the two.
+characters (technically Unicode [`code-point`s](../mu.md#variables-registers-and-memory))
+between operators and regular symbols. As a result, you can't define symbols
+mixing the two.
 ```
 '*global*
 => ((* global) . *)                   # probably not what you want
