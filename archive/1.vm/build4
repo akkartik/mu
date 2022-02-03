@@ -125,24 +125,24 @@ all_exist() {
 }
 
 TMP=`mktemp`
-mv_if_exists ../../tools/enumerate $TMP
+mv_if_exists ../../linux/bootstrap/tools/enumerate $TMP
 (
-  wait_for_all ../../tools/enumerate.cc
-  older_than $TMP ../../tools/enumerate.cc && {
+  wait_for_all ../../linux/bootstrap/tools/enumerate.cc
+  older_than $TMP ../../linux/bootstrap/tools/enumerate.cc && {
     echo "building enumerate"
-    $CXX $CXXFLAGS ../../tools/enumerate.cc -o $TMP  ||  quit
+    $CXX $CXXFLAGS ../../linux/bootstrap/tools/enumerate.cc -o $TMP  ||  quit
     echo "done building enumerate"
   }
-  mv $TMP ../../tools/enumerate
+  mv $TMP ../../linux/bootstrap/tools/enumerate
 ) &
 
 TMP=`mktemp`
-mv_if_exists ../../tools/tangle $TMP
+mv_if_exists ../../linux/bootstrap/tools/tangle $TMP
 (
-  wait_for_all ../../tools/tangle.cc
-  older_than $TMP ../../tools/tangle.cc && {
+  wait_for_all ../../linux/bootstrap/tools/tangle.cc
+  older_than $TMP ../../linux/bootstrap/tools/tangle.cc && {
     echo "building tangle"
-    cd ../../tools
+    cd ../../linux/bootstrap/tools
       # auto-generate various lists (ending in '_list' by convention) {
       # list of function declarations, so I can define them in any order
       grep -h "^[^ #].*) {" tangle.cc  |sed 's/ {.*/;/'  |update tangle.function_list
@@ -153,25 +153,25 @@ mv_if_exists ../../tools/tangle $TMP
       # Now that we have all the _lists, compile 'tangle'
       $CXX $CXXFLAGS tangle.cc -o $TMP  ||  quit
       $TMP test
-    cd ../archive/1.vm
+    cd ../../../archive/1.vm
     echo "done building tangle"
   }
-  mv $TMP ../../tools/tangle
+  mv $TMP ../../linux/bootstrap/tools/tangle
 ) &
 
-wait_for_all ../../tools/enumerate
+wait_for_all ../../linux/bootstrap/tools/enumerate
 echo "enumerating layers"
-LAYERS=$(../../tools/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
+LAYERS=$(../../linux/bootstrap/tools/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
 echo "done enumerating layers"
 
 TMP=`mktemp`
 mv_if_exists mu.cc $TMP
 (
-  wait_for_all $LAYERS ../../tools/enumerate ../../tools/tangle
-  older_than $TMP $LAYERS ../../tools/enumerate ../../tools/tangle && {
+  wait_for_all $LAYERS ../../linux/bootstrap/tools/enumerate ../../linux/bootstrap/tools/tangle
+  older_than $TMP $LAYERS ../../linux/bootstrap/tools/enumerate ../../linux/bootstrap/tools/tangle && {
     echo "running tangle"
     # no update here; rely on 'update' calls downstream
-    ../../tools/tangle $LAYERS >$TMP  ||  quit
+    ../../linux/bootstrap/tools/tangle $LAYERS >$TMP  ||  quit
     echo "done running tangle"
   }
   mv $TMP mu.cc
@@ -273,9 +273,9 @@ mv_if_exists mu_bin $TMP
 
 ## [0-9]*.mu -> core.mu
 
-wait_for_all ../../tools/enumerate
+wait_for_all ../../linux/bootstrap/tools/enumerate
 echo "building core.mu"
-MU_LAYERS=$(../../tools/enumerate --until $UNTIL_LAYER  |grep '\.mu$') || exit 0  # ok if no .mu files
+MU_LAYERS=$(../../linux/bootstrap/tools/enumerate --until $UNTIL_LAYER  |grep '\.mu$') || exit 0  # ok if no .mu files
 cat $MU_LAYERS  |update core.mu
 echo "done building core.mu"
 

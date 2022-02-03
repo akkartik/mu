@@ -21,9 +21,9 @@ export CXXFLAGS="-std=c++98 $CFLAGS"  # CI has an ancient version; don't expect 
 # (layers)   |        |
 #          tangle   $CXX
 
-$CXX $CFLAGS ../../tools/enumerate.cc -o ../../tools/enumerate
+$CXX $CFLAGS ../../linux/bootstrap/tools/enumerate.cc -o ../../linux/bootstrap/tools/enumerate
 
-cd ../../tools
+cd ../../linux/bootstrap/tools
   # auto-generate various lists (ending in '_list' by convention) {
   # list of function declarations, so I can define them in any order
   grep -h "^[^ #].*) {" tangle.cc  |sed 's/ {.*/;/'  > tangle.function_list
@@ -33,7 +33,7 @@ cd ../../tools
   # }
   $CXX $CXXFLAGS tangle.cc -o tangle
   ./tangle test
-cd ../archive/1.vm
+cd ../../../archive/1.vm
 
 cd termbox
   $CC $CFLAGS -c termbox.c
@@ -41,8 +41,8 @@ cd termbox
   ar rcs libtermbox.a *.o
 cd ..
 
-LAYERS=$(../../tools/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
-../../tools/tangle $LAYERS  > mu.cc
+LAYERS=$(../../linux/bootstrap/tools/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
+../../linux/bootstrap/tools/tangle $LAYERS  > mu.cc
 # auto-generate function declarations, so I can define them in any order
 # functions start out unindented, have all args on the same line, and end in ') {'
 #
@@ -55,5 +55,5 @@ $CXX $CXXFLAGS mu.cc termbox/libtermbox.a -o mu_bin
 
 ## [0-9]*.mu -> core.mu
 
-MU_LAYERS=$(../../tools/enumerate --until $UNTIL_LAYER  |grep '\.mu$') || exit 0  # ok if no .mu files
+MU_LAYERS=$(../../linux/bootstrap/tools/enumerate --until $UNTIL_LAYER  |grep '\.mu$') || exit 0  # ok if no .mu files
 cat $MU_LAYERS  > core.mu

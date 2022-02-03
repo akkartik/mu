@@ -81,12 +81,12 @@ noisy_cd() {
   echo "-- `pwd`" >&2
 }
 
-older_than ../../tools/enumerate ../../tools/enumerate.cc && {
-  $CXX $CXXFLAGS ../../tools/enumerate.cc -o ../../tools/enumerate
+older_than ../../linux/bootstrap/tools/enumerate ../../linux/bootstrap/tools/enumerate.cc && {
+  $CXX $CXXFLAGS ../../linux/bootstrap/tools/enumerate.cc -o ../../linux/bootstrap/tools/enumerate
 }
 
-older_than ../../tools/tangle ../../tools/tangle.cc && {
-  noisy_cd ../../tools
+older_than ../../linux/bootstrap/tools/tangle ../../linux/bootstrap/tools/tangle.cc && {
+  noisy_cd ../../linux/bootstrap/tools
     # auto-generate various lists (ending in '_list' by convention) {
     # list of function declarations, so I can define them in any order
     grep -h "^[^ #].*) {" tangle.cc  |sed 's/ {.*/;/'  |update tangle.function_list
@@ -96,13 +96,13 @@ older_than ../../tools/tangle ../../tools/tangle.cc && {
     # }
     $CXX $CFLAGS tangle.cc -o tangle
     ./tangle test
-  noisy_cd ../archive/1.vm  # no effect; just to show us returning to the parent directory
+  noisy_cd ../../../archive/1.vm  # no effect; just to show us returning to the parent directory
 }
 
-LAYERS=$(../../tools/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
-older_than mu.cc $LAYERS ../../tools/enumerate ../../tools/tangle && {
+LAYERS=$(../../linux/bootstrap/tools/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
+older_than mu.cc $LAYERS ../../linux/bootstrap/tools/enumerate ../../linux/bootstrap/tools/tangle && {
   # no update here; rely on 'update' calls downstream
-  ../../tools/tangle $LAYERS  > mu.cc
+  ../../linux/bootstrap/tools/tangle $LAYERS  > mu.cc
 }
 
 older_than cleave/cleave cleave/cleave.cc && {
@@ -150,7 +150,7 @@ older_than mu_bin mu.cc *_list cleave/cleave termbox/* && {
 
 ## [0-9]*.mu -> core.mu
 
-MU_LAYERS=$(../../tools/enumerate --until $UNTIL_LAYER  |grep '\.mu$') || exit 0  # ok if no .mu files
+MU_LAYERS=$(../../linux/bootstrap/tools/enumerate --until $UNTIL_LAYER  |grep '\.mu$') || exit 0  # ok if no .mu files
 cat $MU_LAYERS  |update core.mu
 
 exit 0
