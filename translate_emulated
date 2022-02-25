@@ -41,26 +41,19 @@ cat a.survey                                              |linux/bootstrap/boots
 
 dd if=a.bin of=code.img conv=notrunc
 
-file_size() {
-  stat --printf="%s" $*
-  # if you're on Mac OS and haven't installed GNU coreutils (coreutils on
-  # Homebrew or Macports), switch this to:
-#  stat -f "%z" $*
-}
-
-if [ `file_size a.bin` -ge 492544 ]  # 15 tracks * 63 sectors per track * 512 bytes per sector (keep this sync'd with boot.subx)
+if [ `wc -c < a.bin` -ge 492544 ]  # 15 tracks * 63 sectors per track * 512 bytes per sector (keep this sync'd with boot.subx)
 then
   echo "a.bin won't all be loaded on boot"
   exit 1
 fi
 
-if [ `file_size a.bin` -ge 492544 ]  # 15 tracks * 63 sectors per track * 512 bytes per sector
+if [ `wc -c < a.bin` -ge 492544 ]  # 15 tracks * 63 sectors per track * 512 bytes per sector
 then
   echo "a.bin will overwrite BIOS/Video memory; you'll need to adjust boot.subx to load code to some other non-contiguous area of memory"
   exit 1
 fi
 
-if [ `file_size a.bin` -ge $(($FONT*512)) ]
+if [ `wc -c < a.bin` -ge $(($FONT*512)) ]
 then
   echo "a.bin will overwrite font in disk"
   exit 1
@@ -68,7 +61,7 @@ fi
 
 ## Latter half of disk is for debug info
 
-if [ `file_size labels` -ge 1048576 ]  # 8 reads * 256 sectors * 512 bytes per sector
+if [ `wc -c < labels` -ge 1048576 ]  # 8 reads * 256 sectors * 512 bytes per sector
 then
   echo "labels won't all be loaded on abort"
   exit 1
@@ -85,19 +78,19 @@ dd if=labels of=code.img seek=$DEBUG conv=notrunc
 ## Font data at another well-defined location
 cat font.subx   |sed 's,/[^ ]*,,'    |linux/bootstrap/bootstrap run linux/hex    > a.font
 
-if [ `file_size a.font` -ge 262144 ]  # 0x200 sectors * 512 bytes per sector (keep this sync'd with boot.subx)
+if [ `wc -c < a.font` -ge 262144 ]  # 0x200 sectors * 512 bytes per sector (keep this sync'd with boot.subx)
 then
   echo "font won't all be loaded on boot"
   exit 1
 fi
 
-if [ `file_size a.font` -ge 14680064 ]  # 0x00e00000 = 0x00f00000 - 0x00100000
+if [ `wc -c < a.font` -ge 14680064 ]  # 0x00e00000 = 0x00f00000 - 0x00100000
 then
   echo "font is so large it overlaps the ISA memory hole; see https://wiki.osdev.org/Memory_Map_(x86)"
   exit 1
 fi
 
-if [ `file_size a.font` -ge $(( ($DEBUG - $FONT) * 512 )) ]
+if [ `wc -c < a.font` -ge $(( ($DEBUG - $FONT) * 512 )) ]
 then
   echo "font will overwrite debug info in disk"
   exit 1
