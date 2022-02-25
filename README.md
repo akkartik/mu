@@ -103,6 +103,9 @@ For Macs and other Unix-like systems, use the (much slower) emulator:
 ./translate_emulated apps/ex2.mu  # 2-5 minutes to emit code.img
 ```
 
+(Mac OS may require either editing `translate_emulated` or installing GNU
+coreutils. Look in the script if you get an error about `stat`.)
+
 Mu programs can be written for two very different environments:
 
 * At the top-level, Mu programs emit a bootable image that runs without an OS
