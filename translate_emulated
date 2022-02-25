@@ -9,7 +9,7 @@ set -v
 
 # Map of the Mu code disk
 export DISK=20160  # 20*16*63 512-byte sectors = almost 10MB
-dd if=/dev/zero of=code.img count=$DISK status=none
+dd if=/dev/zero of=code.img count=$DISK
 # code: sectors 0-8999
 # font: sectors 9000-10079  (1080 sectors = space enough for 16k glyphs (1080 * 512 / 34 bytes per glyph))
 export FONT=9000  # keep this sync'd with boot.subx
@@ -39,7 +39,7 @@ cat a.pack                                                |linux/bootstrap/boots
 
 cat a.survey                                              |linux/bootstrap/bootstrap run linux/hex                        > a.bin
 
-dd if=a.bin of=code.img conv=notrunc status=none
+dd if=a.bin of=code.img conv=notrunc
 
 if [ `stat --printf="%s" a.bin` -ge 492544 ]  # 15 tracks * 63 sectors per track * 512 bytes per sector (keep this sync'd with boot.subx)
 then
@@ -73,7 +73,7 @@ then
   exit 1
 fi
 
-dd if=labels of=code.img seek=$DEBUG conv=notrunc status=none  # keep this sync'd with abort.subx
+dd if=labels of=code.img seek=$DEBUG conv=notrunc  # keep this sync'd with abort.subx
 
 ## Font data at another well-defined location
 cat font.subx   |sed 's,/[^ ]*,,'    |linux/bootstrap/bootstrap run linux/hex    > a.font
@@ -96,4 +96,4 @@ then
   exit 1
 fi
 
-dd if=a.font of=code.img seek=$FONT conv=notrunc status=none
+dd if=a.font of=code.img seek=$FONT conv=notrunc
