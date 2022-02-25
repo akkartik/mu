@@ -14,7 +14,7 @@ dd if=/dev/zero of=code.img count=$DISK
 # font: sectors 9000-10079  (1080 sectors = space enough for 16k glyphs (1080 * 512 / 34 bytes per glyph))
 export FONT=9000  # keep this sync'd with boot.subx
 # debug: sector 10080 onwards
-export DEBUG=10080
+export DEBUG=10080  # keep this sync'd with abort.subx
 
 ## Code
 
@@ -73,7 +73,7 @@ then
   exit 1
 fi
 
-dd if=labels of=code.img seek=$DEBUG conv=notrunc  # keep this sync'd with abort.subx
+dd if=labels of=code.img seek=$DEBUG conv=notrunc
 
 ## Font data at another well-defined location
 cat font.subx   |sed 's,/[^ ]*,,'    |linux/bootstrap/bootstrap run linux/hex    > a.font
