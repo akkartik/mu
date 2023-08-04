@@ -181,7 +181,7 @@ More resources on SubX:
 
 ## Mirrors and Forks
 
-As of 2022-01, updates to Mu can be downloaded from the following mirrors:
+Updates to Mu can be downloaded from the following mirrors:
 * https://github.com/akkartik/mu
 * https://repo.or.cz/mu.git
 * https://codeberg.org/akkartik/mu
@@ -214,7 +214,7 @@ If you're still reading, here are some more things to check out:
 
 - [How to get your text editor set up for Mu and SubX programs.](editor/editor.md)
 
-- [Some videos demonstrating Mu programs and features.](https://archive.org/details/@kartik_agaram)
+- [Some videos demonstrating Mu programs and features.](https://www.youtube.com/watch?v=SZBAXgXvzqE&list=PLxyWgjDVNN4qtMcoR7JRcYPbrwMdnGNsS)
 
 - [A summary](mu_instructions) of how the Mu compiler translates statements
   to SubX. Most Mu statements map to a single x86 instruction.
