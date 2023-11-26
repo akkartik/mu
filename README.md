@@ -16,7 +16,7 @@ cd mu
 qemu-system-i386 code.img
 ```
 
-<img alt='screenshot of Game of Life running on the Mu computer' src='html/life.png'>
+![screenshot of Game of Life running on the Mu computer](html/life.png)
 
 ([Colorized sources.](http://akkartik.github.io/mu/html/apps/life.mu.html)
 This is memory-safe code, and most statements map to a single instruction of
@@ -123,7 +123,7 @@ Mu programs can be written for two very different environments:
 The largest program built in Mu today is its prototyping environment for
 writing slow, interpreted programs in a Lisp-based high-level language.
 
-<img alt='screenshot of the Mu shell' src='html/20210624-shell.png'>
+![screenshot of the Mu shell](html/20210624-shell.png)
 
 (For more details, see [the `shell/` directory.](https://github.com/akkartik/mu/tree/main/shell#readme))
 
