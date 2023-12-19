@@ -38,6 +38,11 @@ hardware. There's no networking support yet. Development has slowed, but I
 still care about it. Feedback, bug reports and other forms of contribution
 continue to be appreciated.
 
+_Mu in the press_
+
+* [Qemu Advent Calendar 2023](http://qemu-advent-calendar.org/2023/) (day 4)
+* [Advent of v86](https://copy.sh/v86/advent/2023/?day=4)
+
 ## Goals
 
 In priority order:
