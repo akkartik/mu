@@ -132,8 +132,8 @@ fn mandelbrot-y x: float, y: float, imaginary: float -> _/xmm3: float {
 }
 
 # Scale (x, y) pixel coordinates to a complex plane where the viewport width
-# ranges from -2 to +2. Viewport height just follows the viewport's aspect
-# ratio.
+# ranges from (scene-cx - scene-width/2) to (scene-cx + scene-width/2).
+# Viewport height just follows the viewport's aspect ratio.
 
 fn viewport-to-real x: int, width: int, scene-cx: float, scene-width: float -> _/xmm0: float {
   # 0 in the viewport       goes to scene-cx - scene-width/2 
