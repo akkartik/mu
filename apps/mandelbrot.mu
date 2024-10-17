@@ -159,7 +159,6 @@ fn viewport-to-imaginary y: int, width: int, height: int, scene-cy: float, scene
   # height in the viewport  goes to scene-cy + scene-width/2*height/width
   # Therefore:
   # y in the viewport       goes to (scene-cy - scene-width/2*height/width) + y*scene-width/width
-  #  scene-cy - scene-width/width * (height/2 + y)
   # At most two numbers being multiplied before a divide, so no risk of overflow.
   var result/xmm0: float <- convert y
   result <- multiply scene-width
