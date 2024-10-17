@@ -213,8 +213,8 @@ fn mandelbrot-y x-f: int, y-f: int, imaginary-f: int -> _/ebx: int {
 }
 
 # Scale (x, y) pixel coordinates to a complex plane where the viewport width
-# ranges from -2 to +2. Viewport height just follows the viewport's aspect
-# ratio.
+# ranges from (scene-cx - scene-width/2) to (scene-cx + scene-width/2).
+# Viewport height just follows the viewport's aspect ratio.
 
 fn viewport-to-real-f x: int, width: int, scene-cx-f: int, scene-width-f: int -> _/edx: int {
   # 0 in the viewport       goes to scene-cx - scene-width/2 
@@ -239,7 +239,6 @@ fn viewport-to-imaginary-f y: int, width: int, height: int, scene-cy-f: int, sce
   # height in the viewport  goes to scene-cy + scene-width/2*height/width
   # Therefore:
   # y in the viewport       goes to (scene-cy - scene-width/2*height/width) + y*scene-width/width
-  #  scene-cy - scene-width/width * (height/2 + y)
   # At most two numbers being multiplied before a divide, so no risk of overflow.
   var result-f/eax: int <- int-to-fixed y
   result-f <- multiply-fixed result-f, scene-width-f

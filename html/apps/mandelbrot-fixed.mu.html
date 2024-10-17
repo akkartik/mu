@@ -277,8 +277,8 @@ if ('onhashchange' in window) {
 <span id="L213" class="LineNr">213 </span><span class="Delimiter">}</span>
 <span id="L214" class="LineNr">214 </span>
 <span id="L215" class="LineNr">215 </span><span class="muComment"># Scale (x, y) pixel coordinates to a complex plane where the viewport width</span>
-<span id="L216" class="LineNr">216 </span><span class="muComment"># ranges from -2 to +2. Viewport height just follows the viewport's aspect</span>
-<span id="L217" class="LineNr">217 </span><span class="muComment"># ratio.</span>
+<span id="L216" class="LineNr">216 </span><span class="muComment"># ranges from (scene-cx - scene-width/2) to (scene-cx + scene-width/2).</span>
+<span id="L217" class="LineNr">217 </span><span class="muComment"># Viewport height just follows the viewport's aspect ratio.</span>
 <span id="L218" class="LineNr">218 </span>
 <span id="L219" class="LineNr">219 </span><span class="PreProc">fn</span> <span class="muFunction"><a href='mandelbrot-fixed.mu.html#L219'>viewport-to-real-f</a></span> x: int, width: int, scene-cx-f: int, scene-width-f: int<span class="PreProc"> -&gt; </span>_/<span class="muRegEdx">edx</span>: int <span class="Delimiter">{</span>
 <span id="L220" class="LineNr">220 </span>  <span class="muComment"># 0 in the viewport       goes to scene-cx - scene-width/2 </span>
@@ -303,27 +303,26 @@ if ('onhashchange' in window) {
 <span id="L239" class="LineNr">239 </span>  <span class="muComment"># height in the viewport  goes to scene-cy + scene-width/2*height/width</span>
 <span id="L240" class="LineNr">240 </span>  <span class="muComment"># Therefore:</span>
 <span id="L241" class="LineNr">241 </span>  <span class="muComment"># y in the viewport       goes to (scene-cy - scene-width/2*height/width) + y*scene-width/width</span>
-<span id="L242" class="LineNr">242 </span>  <span class="muComment">#  scene-cy - scene-width/width * (height/2 + y)</span>
-<span id="L243" class="LineNr">243 </span>  <span class="muComment"># At most two numbers being multiplied before a divide, so no risk of overflow.</span>
-<span id="L244" class="LineNr">244 </span>  <span class="PreProc">var</span> result-f/eax: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L36'>int-to-fixed</a> y
-<span id="L245" class="LineNr">245 </span>  result-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L100'>multiply-fixed</a> result-f, scene-width-f
-<span id="L246" class="LineNr">246 </span>  <span class="PreProc">var</span> width-f/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy width
-<span id="L247" class="LineNr">247 </span>  width-f <span class="Special">&lt;-</span> shift-left <span class="Constant">8</span>/fixed-precision
-<span id="L248" class="LineNr">248 </span>  result-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L111'>divide-fixed</a> result-f, width-f
-<span id="L249" class="LineNr">249 </span>  result-f <span class="Special">&lt;-</span> add scene-cy-f
-<span id="L250" class="LineNr">250 </span>  <span class="PreProc">var</span> second-term-f/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
-<span id="L251" class="LineNr">251 </span>  <span class="Delimiter">{</span>
-<span id="L252" class="LineNr">252 </span>    <span class="PreProc">var</span> _second-term-f/eax: int <span class="Special">&lt;-</span> copy scene-width-f
-<span id="L253" class="LineNr">253 </span>    _second-term-f <span class="Special">&lt;-</span> shift-right <span class="Constant">1</span>
-<span id="L254" class="LineNr">254 </span>    <span class="PreProc">var</span> height-f/<span class="muRegEbx">ebx</span>: int <span class="Special">&lt;-</span> copy height
-<span id="L255" class="LineNr">255 </span>    height-f <span class="Special">&lt;-</span> shift-left <span class="Constant">8</span>/fixed-precision
-<span id="L256" class="LineNr">256 </span>    _second-term-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L100'>multiply-fixed</a> _second-term-f, height-f
-<span id="L257" class="LineNr">257 </span>    _second-term-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L111'>divide-fixed</a> _second-term-f, width-f
-<span id="L258" class="LineNr">258 </span>    second-term-f <span class="Special">&lt;-</span> copy _second-term-f
-<span id="L259" class="LineNr">259 </span>  <span class="Delimiter">}</span>
-<span id="L260" class="LineNr">260 </span>  result-f <span class="Special">&lt;-</span> subtract second-term-f
-<span id="L261" class="LineNr">261 </span>  <span class="PreProc">return</span> result-f
-<span id="L262" class="LineNr">262 </span><span class="Delimiter">}</span>
+<span id="L242" class="LineNr">242 </span>  <span class="muComment"># At most two numbers being multiplied before a divide, so no risk of overflow.</span>
+<span id="L243" class="LineNr">243 </span>  <span class="PreProc">var</span> result-f/eax: int <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L36'>int-to-fixed</a> y
+<span id="L244" class="LineNr">244 </span>  result-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L100'>multiply-fixed</a> result-f, scene-width-f
+<span id="L245" class="LineNr">245 </span>  <span class="PreProc">var</span> width-f/<span class="muRegEcx">ecx</span>: int <span class="Special">&lt;-</span> copy width
+<span id="L246" class="LineNr">246 </span>  width-f <span class="Special">&lt;-</span> shift-left <span class="Constant">8</span>/fixed-precision
+<span id="L247" class="LineNr">247 </span>  result-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L111'>divide-fixed</a> result-f, width-f
+<span id="L248" class="LineNr">248 </span>  result-f <span class="Special">&lt;-</span> add scene-cy-f
+<span id="L249" class="LineNr">249 </span>  <span class="PreProc">var</span> second-term-f/<span class="muRegEdx">edx</span>: int <span class="Special">&lt;-</span> copy <span class="Constant">0</span>
+<span id="L250" class="LineNr">250 </span>  <span class="Delimiter">{</span>
+<span id="L251" class="LineNr">251 </span>    <span class="PreProc">var</span> _second-term-f/eax: int <span class="Special">&lt;-</span> copy scene-width-f
+<span id="L252" class="LineNr">252 </span>    _second-term-f <span class="Special">&lt;-</span> shift-right <span class="Constant">1</span>
+<span id="L253" class="LineNr">253 </span>    <span class="PreProc">var</span> height-f/<span class="muRegEbx">ebx</span>: int <span class="Special">&lt;-</span> copy height
+<span id="L254" class="LineNr">254 </span>    height-f <span class="Special">&lt;-</span> shift-left <span class="Constant">8</span>/fixed-precision
+<span id="L255" class="LineNr">255 </span>    _second-term-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L100'>multiply-fixed</a> _second-term-f, height-f
+<span id="L256" class="LineNr">256 </span>    _second-term-f <span class="Special">&lt;-</span> <a href='mandelbrot-fixed.mu.html#L111'>divide-fixed</a> _second-term-f, width-f
+<span id="L257" class="LineNr">257 </span>    second-term-f <span class="Special">&lt;-</span> copy _second-term-f
+<span id="L258" class="LineNr">258 </span>  <span class="Delimiter">}</span>
+<span id="L259" class="LineNr">259 </span>  result-f <span class="Special">&lt;-</span> subtract second-term-f
+<span id="L260" class="LineNr">260 </span>  <span class="PreProc">return</span> result-f
+<span id="L261" class="LineNr">261 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
