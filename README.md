@@ -10,7 +10,7 @@ Running the code you want to run, and nothing else.
 Here's the Mu computer running [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
 
 ```sh
-git clone https://github.com/akkartik/mu
+git clone https://git.sr.ht/~akkartik/mu
 cd mu
 ./translate apps/life.mu  # emit a bootable code.img
 qemu-system-i386 code.img
@@ -187,12 +187,12 @@ More resources on SubX:
 ## Mirrors and Forks
 
 Updates to Mu can be downloaded from the following mirrors:
+* https://git.sr.ht/~akkartik/mu
 * https://github.com/akkartik/mu
 * https://repo.or.cz/mu.git
 * https://codeberg.org/akkartik/mu
 * https://tildegit.org/akkartik/mu
 * https://git.tilde.institute/akkartik/mu
-* https://git.sr.ht/~akkartik/mu
 
 Forks of Mu are encouraged. If you don't like something about this repo, feel
 free to make a fork. If you show it to me, I'll link to it here. I might even
